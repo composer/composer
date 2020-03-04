@@ -51,6 +51,10 @@ use Symfony\Component\Console\Terminal;
  */
 class ShowCommand extends BaseCommand
 {
+    const UNBOUNDED_IGNORE_TARGET_PHP_VERSION = 'php';
+    const UNBOUNDED_IGNORE_TARGET_STABILITY = 'stability';
+    const UNBOUNDED_IGNORE_VERSION_LOCK = 'version';
+
     /** @var VersionParser */
     protected $versionParser;
     protected $colors;
@@ -82,8 +86,7 @@ class ShowCommand extends BaseCommand
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
-                new InputOption('unbounded', 'u', InputOption::VALUE_NONE, 'Ignore version contraints'),
-                new InputOption('unbounded-agressive', 'U', InputOption::VALUE_NONE, 'Agressively ignore version contraints'),
+                new InputOption('unbounded', 'u', InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Ignore constraints'),
             ))
             ->setHelp(
                 <<<EOT
@@ -106,18 +109,28 @@ EOT
         $composer = $this->getComposer(false);
         $io = $this->getIO();
 
-        $showUnboundedAgressively = $showUnbounded = false;
-
-        if ($input->getOption('unbounded-agressive')) {
-            $input->setOption('unbounded', true);
-
-            $showUnboundedAgressively = $input->getOption('unbounded-agressive');
-        }
         if ($input->getOption('unbounded')) {
             $input->setOption('latest', true);
 
+            $candidates = [self::UNBOUNDED_IGNORE_TARGET_PHP_VERSION, self::UNBOUNDED_IGNORE_TARGET_STABILITY, self::UNBOUNDED_IGNORE_VERSION_LOCK];
 
-            $showUnbounded = $input->getOption('unbounded');
+            $unboundedOptions = [];
+            foreach ($input->getOption('unbounded') as $unboundedOption) {
+                $unboundedOption = strtolower($unboundedOption);
+                if (! in_array($unboundedOption, $candidates)) {
+                    $io->writeError("<warning>You are using the invalid value '$unboundedOption' for the 'unbounded' parameter. It will be ignored.</warning>");
+                    continue;
+                }
+                $unboundedOptions[$unboundedOption] = true;
+
+                $io->write("Option unbounded given, ignoring '$unboundedOption'");
+            }
+            if ($io->isVeryVerbose()) {
+                $ignoredOptions = array_diff($candidates, array_keys($unboundedOptions));
+                if (count($ignoredOptions) > 0) {
+                    $io->write("Note: you could have ignored more constraints by specifying also '".implode("','", $ignoredOptions)."' to the unbounded option");
+                }
+            }
         }
 
         if ($input->getOption('installed')) {
@@ -168,6 +181,14 @@ EOT
         }
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
         $phpVersion = $platformRepo->findPackage('php', '*')->getVersion();
+
+        if (isset($unboundedOptions[self::UNBOUNDED_IGNORE_TARGET_PHP_VERSION])) {
+            if ($io->isVeryVerbose()) {
+                $io->write("Ignoring the PHP version. (would have been '$phpVersion' otherwise.)");
+            }
+
+            $phpVersion = null;
+        }
 
         if ($input->getOption('self')) {
             $package = $this->getComposer()->getPackage();
@@ -246,7 +267,7 @@ EOT
             } else {
                 $latestPackage = null;
                 if ($input->getOption('latest')) {
-                    $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, false, $showUnbounded, $showUnboundedAgressively);
+                    $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, false, $unboundedOptions);
                 }
                 if ($input->getOption('outdated') && $input->getOption('strict') && $latestPackage && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion() && !$latestPackage->isAbandoned()) {
                     $exitCode = 1;
@@ -368,7 +389,6 @@ EOT
         $ignoredPackages = array_map('strtolower', $input->getOption('ignore'));
         $indent = $showAllTypes ? '  ' : '';
         $latestPackages = array();
-        $unboundedPackages = array();
         $exitCode = 0;
         $viewData = array();
         $viewMetaData = array();
@@ -381,7 +401,7 @@ EOT
                 if ($showLatest && $showVersion) {
                     foreach ($packages[$type] as $package) {
                         if (is_object($package)) {
-                            $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly, $showUnbounded, $showUnboundedAgressively);
+                            $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly, $unboundedOptions);
                             if ($latestPackage === false) {
                                 continue;
                             }
@@ -1187,7 +1207,7 @@ EOT
      *
      * @return PackageInterface|null
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false, $showUnbounded = false, $showUnboundedAgressively = false)
+    private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false, array $unboundedOptions = null)
     {
         // find the latest version allowed in this pool
         $name = $package->getName();
@@ -1203,22 +1223,35 @@ EOT
             $bestStability = $package->getStability();
         }
 
-        if ($showUnbounded) {
-            $targetVersion = '*';
-        } else {
-            $targetVersion = null;
-            if (0 === strpos($package->getVersion(), 'dev-')) {
-                $targetVersion = $package->getVersion();
+        if (isset($unboundedOptions[self::UNBOUNDED_IGNORE_TARGET_STABILITY])) {
+            $io = $this->getIO();
+            if ($io->isVeryVerbose())
+            {
+                $io->write("Ignoring $name best stability. (would have been '$bestStability' otherwise.)");
             }
+            $bestStability ='dev';
+        }
 
-            if ($targetVersion === null && $minorOnly) {
-                $targetVersion = '^' . $package->getVersion();
+        $targetVersion = null;
+        if (0 === strpos($package->getVersion(), 'dev-')) {
+            $targetVersion = $package->getVersion();
+        }
+
+        if ($targetVersion === null && $minorOnly) {
+            $targetVersion = '^' . $package->getVersion();
+        }
+
+        if (isset($unboundedOptions[self::UNBOUNDED_IGNORE_VERSION_LOCK])) {
+            $io = $this->getIO();
+            if ($io->isVeryVerbose() && !empty($targetVersion))
+            {
+                $io->write("Ignoring $name target version. (would have been '$targetVersion' otherwise.)");
             }
+            $targetVersion = '*';
         }
 
 
-
-        return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability, $showUnboundedAgressively);
+        return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability, $unboundedOptions);
     }
 
 

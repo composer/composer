@@ -46,21 +46,10 @@ class VersionSelector
      * @param  string                $preferredStability
      * @return PackageInterface|bool
      */
-    public function findBestCandidate($packageName, $targetPackageVersion = null, $targetPhpVersion = null, $preferredStability = 'stable', $forceMaxVersionWithoutContraints = false)
+    public function findBestCandidate($packageName, $targetPackageVersion = null, $targetPhpVersion = null, $preferredStability = 'stable')
     {
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
         $candidates = $this->pool->whatProvides(strtolower($packageName), $constraint, true);
-
-        if ($forceMaxVersionWithoutContraints) {
-            $max = null;
-            foreach ($candidates as $candidate) {
-                if (version_compare($max, $candidate->getVersion(), '<')) {
-                    $max = $candidate->getVersion();
-                    $package = $candidate;
-                }
-            }
-            return isset($package) ? $package : false;
-        }
 
         if ($targetPhpVersion) {
             $phpConstraint = new Constraint('==', $this->getParser()->normalize($targetPhpVersion));
