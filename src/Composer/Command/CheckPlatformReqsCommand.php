@@ -116,14 +116,29 @@ EOT
                         );
                     }
                 } else {
-                    $results[] = array(
-                        $require,
-                        'n/a',
-                        $links[0],
-                        '<error>missing</error>',
-                    );
+                    // todo search packages that provide $require
+                    $lock = $this->getComposer()->getLocker()->getLockData();
+                    $providers = array_filter($lock['packages'], function ($package) use ($require) {
+                        return isset($package['provide'][$require]) || false;
+                    });
+                    if (count($providers) > 0) {
+                        // todo compare version
+                        $results[] = array(
+                            $require . ' <comment>(provided by "' . $providers[0]['name'] . '" version ' . $providers[0]['version'] . ')</comment> ',
+                            $providers[0]['provide'][$require],
+                            null,
+                            '<info>success</info>',
+                        );
+                    } else {
+                        $results[] = array(
+                            $require,
+                            'n/a',
+                            $links[0],
+                            '<error>missing</error>',
+                        );
 
-                    $exitCode = max($exitCode, 2);
+                        $exitCode = max($exitCode, 2);
+                    }
                 }
             }
         }
