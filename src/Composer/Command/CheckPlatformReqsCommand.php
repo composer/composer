@@ -69,6 +69,12 @@ EOT
 
         ksort($requires);
 
+        $lock = $this->getComposer()->getLocker()->getLockData();
+        $providers = array_filter($lock['packages'], function ($package) {
+            return isset($package['provide']);
+        });
+
+
         $platformRepo = new PlatformRepository(array(), array());
         $currentPlatformPackages = $platformRepo->getPackages();
         $currentPlatformPackageMap = array();
@@ -116,19 +122,34 @@ EOT
                         );
                     }
                 } else {
-                    // todo search packages that provide $require
-                    $lock = $this->getComposer()->getLocker()->getLockData();
-                    $providers = array_filter($lock['packages'], function ($package) use ($require) {
+                    $requireProviders = array_filter($providers, function ($package) use ($require) {
                         return isset($package['provide'][$require]) || false;
                     });
-                    if (count($providers) > 0) {
-                        // todo compare version
-                        $results[] = array(
-                            $require . ' <comment>(provided by "' . $providers[0]['name'] . '" version ' . $providers[0]['version'] . ')</comment> ',
-                            $providers[0]['provide'][$require],
-                            null,
-                            '<info>success</info>',
-                        );
+                    if (count($requireProviders) > 0) {
+                        $pass = true;
+                        $version = $requireProviders[0]['provide'][$require];
+                        foreach ($links as $link) {
+                            if (!$link->getConstraint()->matches(new Constraint('=', $version))) {
+                                $results[] = array(
+                                    $require,
+                                    $version,
+                                    $link,
+                                    '<error>failed</error> <comment>provided by ' . $providers[0]['name'] . ' ' . $providers[0]['version'] . '</comment>',
+                                );
+                                $pass = false;
+
+                                $exitCode = max($exitCode, 1);
+                            }
+                        }
+
+                        if ($pass) {
+                            $results[] = array(
+                                $require,
+                                $version,
+                                null,
+                                '<info>success</info> <comment>provided by ' . $providers[0]['name'] . ' ' . $providers[0]['version'] . '</comment>',
+                            );
+                        }
                     } else {
                         $results[] = array(
                             $require,
