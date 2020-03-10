@@ -1,3 +1,11 @@
+### [1.10.0] 2020-03-10
+
+  * Added `bearer` auth config to authenticate using `Authorization: Bearer <token>` headers
+  * Added `plugin-api-version` in composer.lock so future Composer versions know if they are running a lock file which was not built by the correct version
+  * Fixed composer fund command and funding info parsing to be more useful
+  * Fixed issue where --no-dev autoload generation was excluding some packages which should not have been excluded
+  * Fixed 1.10-RC regression in create project's handling of absolute paths
+
 ### [1.10.0-RC] 2020-02-14
 
   * Breaking: `composer global exec ...` now executes the process in the current working directory instead of executing it in the global directory.
@@ -811,6 +819,7 @@
 
   * Initial release
 
+[1.10.0]: https://github.com/composer/composer/compare/1.10.0-RC...1.10.0
 [1.10.0-RC]: https://github.com/composer/composer/compare/1.9.3...1.10.0-RC
 [1.9.3]: https://github.com/composer/composer/compare/1.9.2...1.9.3
 [1.9.2]: https://github.com/composer/composer/compare/1.9.1...1.9.2
