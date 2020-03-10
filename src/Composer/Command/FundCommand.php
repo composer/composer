@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Repository\CompositeRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -36,20 +37,19 @@ class FundCommand extends BaseCommand
         $composer = $this->getComposer();
 
         $repo = $composer->getRepositoryManager()->getLocalRepository();
+        $remoteRepos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
         $fundings = array();
         foreach ($repo->getPackages() as $package) {
             if ($package instanceof AliasPackage) {
                 continue;
             }
-            if ($package instanceof CompletePackageInterface && $funding = $package->getFunding()) {
-                foreach ($funding as $fundingOption) {
-                    list($vendor, $packageName) = explode('/', $package->getPrettyName());
-                    $url = $fundingOption['url'];
-                    if (!empty($fundingOption['type']) && $fundingOption['type'] === 'github' && preg_match('{^https://github.com/([^/]+)$}', $url, $match)) {
-                        $url = 'https://github.com/sponsors/'.$match[1];
-                    }
-                    $fundings[$vendor][$url][] = $packageName;
-                }
+            $latest = $remoteRepos->findPackage($package->getName(), 'dev-master');
+            if ($latest instanceof CompletePackageInterface && $latest->getFunding()) {
+                $fundings = $this->insertFundingData($fundings, $latest);
+                continue;
+            }
+            if ($package instanceof CompletePackageInterface && $package->getFunding()) {
+                $fundings = $this->insertFundingData($fundings, $package);
             }
         }
 
@@ -85,5 +85,19 @@ class FundCommand extends BaseCommand
         }
 
         return 0;
+    }
+
+    private function insertFundingData(array $fundings, CompletePackageInterface $package)
+    {
+        foreach ($package->getFunding() as $fundingOption) {
+            list($vendor, $packageName) = explode('/', $package->getPrettyName());
+            $url = $fundingOption['url'];
+            if (!empty($fundingOption['type']) && $fundingOption['type'] === 'github' && preg_match('{^https://github.com/([^/]+)$}', $url, $match)) {
+                $url = 'https://github.com/sponsors/'.$match[1];
+            }
+            $fundings[$vendor][$url][] = $packageName;
+        }
+
+        return $fundings;
     }
 }

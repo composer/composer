@@ -236,6 +236,7 @@ EOF;
 
         // flatten array
         $classMap = array();
+        $ambiguousClasses = array();
         if ($scanPsr0Packages) {
             $namespacesToScan = array();
 
@@ -256,14 +257,23 @@ EOF;
                             continue;
                         }
 
-                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespace, $group['type'], $classMap);
+                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespace, $group['type'], $classMap, $ambiguousClasses);
                     }
                 }
             }
         }
 
         foreach ($autoloads['classmap'] as $dir) {
-            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, null, null, $classMap);
+            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, null, null, $classMap, $ambiguousClasses);
+        }
+
+        foreach ($ambiguousClasses as $className => $ambigiousPaths) {
+            $cleanPath = str_replace(array('$vendorDir . \'', '$baseDir . \'', "',\n"), array($vendorPath, $basePath, ''), $classMap[$className]);
+
+            $this->io->writeError(
+                '<warning>Warning: Ambiguous class resolution, "'.$className.'"'.
+                ' was found '. (count($ambigiousPaths) + 1) .'x: in "'.$cleanPath.'" and "'. implode('", "', $ambigiousPaths) .'", the first will be used.</warning>'
+            );
         }
 
         ksort($classMap);
@@ -326,17 +336,14 @@ EOF;
         return 0;
     }
 
-    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, $autoloadType = null, array $classMap = array())
+    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, $autoloadType = null, array $classMap, array &$ambiguousClasses)
     {
         foreach ($this->generateClassMap($dir, $blacklist, $namespaceFilter, $autoloadType) as $class => $path) {
             $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
             if (!isset($classMap[$class])) {
                 $classMap[$class] = $pathCode;
             } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
-                $this->io->writeError(
-                    '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
-                    ' was found in both "'.str_replace(array('$vendorDir . \'', "',\n"), array($vendorPath, ''), $classMap[$class]).'" and "'.$path.'", the first will be used.</warning>'
-                );
+                $ambiguousClasses[$class][] = $path;
             }
         }
 
@@ -393,8 +400,8 @@ EOF;
     /**
      * Compiles an ordered list of namespace => path mappings
      *
-     * @param  array            $packageMap  array of array(package, installDir-relative-to-composer.json)
-     * @param  PackageInterface $mainPackage root package instance
+     * @param  array            $packageMap                  array of array(package, installDir-relative-to-composer.json)
+     * @param  PackageInterface $mainPackage                 root package instance
      * @param  bool             $filterOutRequireDevPackages whether to filter out require-dev packages
      * @return array            array('psr-0' => array('Ns\\Foo' => array('installDir')))
      */
@@ -939,16 +946,23 @@ INITIALIZER;
     {
         $packages = array();
         $include = array();
+        $replacedBy = array();
 
         foreach ($packageMap as $item) {
             $package = $item[0];
             $name = $package->getName();
             $packages[$name] = $package;
+            foreach ($package->getReplaces() as $replace) {
+                $replacedBy[$replace->getTarget()] = $name;
+            }
         }
 
-        $add = function (PackageInterface $package) use (&$add, $packages, &$include) {
+        $add = function (PackageInterface $package) use (&$add, $packages, &$include, $replacedBy) {
             foreach ($package->getRequires() as $link) {
                 $target = $link->getTarget();
+                if (isset($replacedBy[$target])) {
+                    $target = $replacedBy[$target];
+                }
                 if (!isset($include[$target])) {
                     $include[$target] = true;
                     if (isset($packages[$target])) {

@@ -140,7 +140,16 @@
                 "gitlab-token": {
                     "type": "object",
                     "description": "A hash of domain name => gitlab private tokens, typically {\"gitlab.com\":\"<token>\"}.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "bearer": {
+                    "type": "object",
+                    "description": "A hash of domain name => bearer authentication token, for example {\"example.com\":\"<token>\"}.",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "disable-tls": {
                     "type": "boolean",

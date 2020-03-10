@@ -219,8 +219,8 @@ class Installer
         }
 
         if ($this->runScripts) {
-            $devMode = (int) $this->devMode;
-            putenv("COMPOSER_DEV_MODE=$devMode");
+            $_SERVER['COMPOSER_DEV_MODE'] = (int) $this->devMode;
+            putenv('COMPOSER_DEV_MODE='.$_SERVER['COMPOSER_DEV_MODE']);
 
             // dispatch pre event
             // should we treat this more strictly as running an update and then running an install, triggering events multiple times?

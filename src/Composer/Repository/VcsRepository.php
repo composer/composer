@@ -23,6 +23,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Url;
+use Composer\Semver\Constraint\Constraint;
 use Composer\IO\IOInterface;
 use Composer\Config;
 
@@ -381,7 +382,12 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     private function validateBranch($branch)
     {
         try {
-            return $this->versionParser->normalizeBranch($branch);
+            $normalizedBranch = $this->versionParser->normalizeBranch($branch);
+
+            // validate that the branch name has no weird characters conflicting with constraints
+            $this->versionParser->parseConstraints($normalizedBranch);
+
+            return $normalizedBranch;
         } catch (\Exception $e) {
         }
 
@@ -421,7 +427,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $this->io->overwriteError($msg, false);
             }
 
-            if ($existingPackage = $this->findPackage($cachedPackage['name'], $cachedPackage['version_normalized'])) {
+            if ($existingPackage = $this->findPackage($cachedPackage['name'], new Constraint('=', $cachedPackage['version_normalized']))) {
                 if ($isVeryVerbose) {
                     $this->io->writeError('<warning>Skipped cached version '.$version.', it conflicts with an another tag ('.$existingPackage->getPrettyVersion().') as both resolve to '.$cachedPackage['version_normalized'].' internally</warning>');
                 }

@@ -117,7 +117,7 @@ class AuthHelper
             $message = "\n".'Could not fetch '.$url.', enter your ' . $origin . ' credentials ' .($statusCode === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
 
-            if ($this->io->hasAuthentication($origin) && ($auth = $this->io->getAuthentication($origin)) && in_array($auth['password'], array('gitlab-ci-token', 'private-token'), true)) {
+            if ($this->io->hasAuthentication($origin) && ($auth = $this->io->getAuthentication($origin)) && in_array($auth['password'], array('gitlab-ci-token', 'private-token', 'oauth2'), true)) {
                 throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
             }
 
@@ -196,7 +196,9 @@ class AuthHelper
         if ($this->io->hasAuthentication($origin)) {
             $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($origin);
-            if ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
+            if ($auth['password'] === 'bearer') {
+                $headers[] = 'Authorization: Bearer '.$auth['username'];
+            } elseif ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
                 $headers[] = 'Authorization: token '.$auth['username'];
                 $authenticationDisplayMessage = 'Using GitHub token authentication';
             } elseif (in_array($origin, $this->config->get('gitlab-domains'), true)) {
