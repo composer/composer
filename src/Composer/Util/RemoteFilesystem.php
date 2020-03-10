@@ -817,7 +817,9 @@ class RemoteFilesystem
         if ($this->io->hasAuthentication($originUrl)) {
             $authenticationDisplayMessage = null;
             $auth = $this->io->getAuthentication($originUrl);
-            if ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
+            if ($auth['password'] === 'bearer') {
+                $headers[] = 'Authorization: Bearer '.$auth['username'];
+            } elseif ('github.com' === $originUrl && 'x-oauth-basic' === $auth['password']) {
                 $options['github-token'] = $auth['username'];
                 $authenticationDisplayMessage = 'Using GitHub token authentication';
             } elseif ($this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)) {
@@ -835,8 +837,6 @@ class RemoteFilesystem
                     $headers[] = 'Authorization: Bearer ' . $auth['password'];
                     $authenticationDisplayMessage = 'Using Bitbucket OAuth token authentication';
                 }
-            } elseif ($auth['password'] === 'bearer' ) {
-                $headers[] = 'Authorization: Bearer '.$auth['username'];
             } else {
                 $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
                 $headers[] = 'Authorization: Basic '.$authStr;
