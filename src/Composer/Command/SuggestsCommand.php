@@ -31,6 +31,7 @@ class SuggestsCommand extends BaseCommand
             ->setDefinition(array(
                 new InputOption('by-package', null, InputOption::VALUE_NONE, 'Groups output by suggesting package (default)'),
                 new InputOption('by-suggestion', null, InputOption::VALUE_NONE, 'Groups output by suggested package'),
+                new InputOption('all', 'a', InputOption::VALUE_NONE, 'Show suggestions from all dependencies, including transitive ones'),
                 new InputOption('list', null, InputOption::VALUE_NONE, 'Show only list of suggested package names'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Exclude suggestions from require-dev packages'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that you want to list suggestions from.'),
@@ -70,6 +71,11 @@ EOT
         $reporter = new SuggestedPackagesReporter($this->getIO());
 
         $filter = $input->getArgument('packages');
+        if (empty($filter) && !$input->getOption('all')) {
+            $filter = array_map(function ($link) {
+                return $link->getTarget();
+            }, array_merge($composer->getPackage()->getRequires(), $composer->getPackage()->getDevRequires()));
+        }
         foreach ($installedRepo->getPackages() as $package) {
             if (!empty($filter) && !in_array($package->getName(), $filter)) {
                 continue;

@@ -416,6 +416,8 @@ If you only want a list of suggested package names, use `--list`.
 
 * **--by-package:** Groups output by suggesting package (default).
 * **--by-suggestion:** Groups output by suggested package.
+* **--all:** Show suggestions from all dependencies, including transitive ones (by
+  default only direct dependencies' suggestions are shown).
 * **--list:** Show only list of suggested package names.
 * **--no-dev:** Excludes suggestions from `require-dev` packages.
 
