@@ -604,8 +604,6 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
 
-        $this->markTestSkipped('Skipped until ClassMapGenerator ignoring of invalid PSR-x classes is enabled');
-
         $package->setAutoload(array(
             'psr-0' => array('psr0_' => 'psr0/'),
             'psr-4' => array('psr4\\' => 'psr4/'),
