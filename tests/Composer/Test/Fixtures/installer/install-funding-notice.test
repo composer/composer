@@ -45,9 +45,9 @@ install
 Loading composer repositories with package information
 Updating dependencies
 Lock file operations: 3 installs, 0 updates, 0 removals
+  - Locking a/a (1.0.0)
   - Locking b/b (1.0.0)
   - Locking d/d (1.0.0)
-  - Locking a/a (1.0.0)
 Writing lock file
 Installing dependencies from lock file (including require-dev)
 Package operations: 3 installs, 0 updates, 0 removals

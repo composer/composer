@@ -435,39 +435,60 @@ class Installer
         $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
         $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
 
+        $installsUpdates = $uninstalls = array();
         if ($lockTransaction->getOperations()) {
-            $installs = $updates = $uninstalls = array();
+            $installNames = $updateNames = $uninstallNames = array();
             foreach ($lockTransaction->getOperations() as $operation) {
                 if ($operation instanceof InstallOperation) {
-                    $installs[] = $operation->getPackage()->getPrettyName().':'.$operation->getPackage()->getFullPrettyVersion();
+                    $installsUpdates[] = $operation;
+                    $installNames[] = $operation->getPackage()->getPrettyName().':'.$operation->getPackage()->getFullPrettyVersion();
                 } elseif ($operation instanceof UpdateOperation) {
-                    $updates[] = $operation->getTargetPackage()->getPrettyName().':'.$operation->getTargetPackage()->getFullPrettyVersion();
+                    $installsUpdates[] = $operation;
+                    $updateNames[] = $operation->getTargetPackage()->getPrettyName().':'.$operation->getTargetPackage()->getFullPrettyVersion();
                 } elseif ($operation instanceof UninstallOperation) {
-                    $uninstalls[] = $operation->getPackage()->getPrettyName();
+                    $uninstalls[] = $operation;
+                    $uninstallNames[] = $operation->getPackage()->getPrettyName();
                 }
             }
 
             $this->io->writeError(sprintf(
                 "<info>Lock file operations: %d install%s, %d update%s, %d removal%s</info>",
-                count($installs),
-                1 === count($installs) ? '' : 's',
-                count($updates),
-                1 === count($updates) ? '' : 's',
+                count($installNames),
+                1 === count($installNames) ? '' : 's',
+                count($updateNames),
+                1 === count($updateNames) ? '' : 's',
                 count($uninstalls),
                 1 === count($uninstalls) ? '' : 's'
             ));
-            if ($installs) {
-                $this->io->writeError("Installs: ".implode(', ', $installs), true, IOInterface::VERBOSE);
+            if ($installNames) {
+                $this->io->writeError("Installs: ".implode(', ', $installNames), true, IOInterface::VERBOSE);
             }
-            if ($updates) {
-                $this->io->writeError("Updates: ".implode(', ', $updates), true, IOInterface::VERBOSE);
+            if ($updateNames) {
+                $this->io->writeError("Updates: ".implode(', ', $updateNames), true, IOInterface::VERBOSE);
             }
             if ($uninstalls) {
-                $this->io->writeError("Removals: ".implode(', ', $uninstalls), true, IOInterface::VERBOSE);
+                $this->io->writeError("Removals: ".implode(', ', $uninstallNames), true, IOInterface::VERBOSE);
             }
         }
 
-        foreach ($lockTransaction->getOperations() as $operation) {
+        $sortByName = function ($a, $b) {
+            if ($a instanceof UpdateOperation) {
+                $a = $a->getTargetPackage()->getName();
+            } else {
+                $a = $a->getPackage()->getName();
+            }
+            if ($b instanceof UpdateOperation) {
+                $b = $b->getTargetPackage()->getName();
+            } else {
+                $b = $b->getPackage()->getName();
+            }
+
+            return strcmp($a, $b);
+        };
+        usort($uninstalls, $sortByName);
+        usort($installsUpdates, $sortByName);
+
+        foreach (array_merge($uninstalls, $installsUpdates) as $operation) {
             // collect suggestions
             if ($operation instanceof InstallOperation) {
                 $this->suggestedPackagesReporter->addSuggestionsFromPackage($operation->getPackage());
