@@ -72,10 +72,8 @@ class RootPackageLoader extends ArrayLoader
     {
         if (!isset($config['name'])) {
             $config['name'] = '__root__';
-        } elseif ($this->io) {
-            if ($err = ValidatingArrayLoader::hasPackageNamingError($config['name'])) {
-                $this->io->writeError('<warning>Deprecation warning: Your package name '.$err.' Make sure you fix this as Composer 2.0 will error.</warning>');
-            }
+        } elseif ($err = ValidatingArrayLoader::hasPackageNamingError($config['name'])) {
+            throw new \RuntimeException('Your package name '.$err);
         }
         $autoVersioned = false;
         if (!isset($config['version'])) {
@@ -142,13 +140,11 @@ class RootPackageLoader extends ArrayLoader
             }
         }
 
-        if ($this->io) {
-            foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
-                if (isset($config[$linkType])) {
-                    foreach ($config[$linkType] as $linkName => $constraint) {
-                        if ($err = ValidatingArrayLoader::hasPackageNamingError($linkName, true)) {
-                            $this->io->writeError('<warning>Deprecation warning: '.$linkType.'.'.$err.' Make sure you fix this as Composer 2.0 will error.</warning>');
-                        }
+        foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
+            if (isset($config[$linkType])) {
+                foreach ($config[$linkType] as $linkName => $constraint) {
+                    if ($err = ValidatingArrayLoader::hasPackageNamingError($linkName, true)) {
+                        throw new \RuntimeException($linkType.'.'.$err);
                     }
                 }
             }
