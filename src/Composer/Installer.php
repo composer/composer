@@ -429,7 +429,10 @@ class Installer
             $this->io->writeError('Nothing to modify in lock file');
         }
 
-        $this->extractDevPackages($lockTransaction, $platformRepo, $aliases, $policy);
+        $exitCode = $this->extractDevPackages($lockTransaction, $platformRepo, $aliases, $policy);
+        if ($exitCode !== 0) {
+            return $exitCode;
+        }
 
         // write lock
         $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
@@ -542,7 +545,7 @@ class Installer
     protected function extractDevPackages(LockTransaction $lockTransaction, $platformRepo, $aliases, $policy)
     {
         if (!$this->package->getDevRequires()) {
-            return array();
+            return 0;
         }
 
         $resultRepo = new ArrayRepository(array());
@@ -570,12 +573,15 @@ class Installer
             $solver = null;
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Unable to find a compatible set of packages based on your non-dev requirements alone.</error>', true, IOInterface::QUIET);
+            $this->io->writeError('Your requirements can be successfully resolved when require-dev packages are present.');
             $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool));
 
             return max(1, $e->getCode());
         }
 
         $lockTransaction->setNonDevPackages($nonDevLockTransaction);
+
+        return 0;
     }
 
     /**
