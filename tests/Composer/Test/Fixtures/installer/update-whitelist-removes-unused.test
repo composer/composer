@@ -6,31 +6,31 @@ Update with a package whitelist removes unused packages
         {
             "type": "package",
             "package": [
-                { "name": "whitelisted", "version": "1.1.0" },
-                { "name": "whitelisted", "version": "1.0.0", "require": { "fixed-dependency": "1.0.0", "old-dependency": "1.0.0" } },
-                { "name": "fixed-dependency", "version": "1.1.0" },
-                { "name": "fixed-dependency", "version": "1.0.0" },
-                { "name": "old-dependency", "version": "1.0.0" }
+                { "name": "whitelisted/pkg", "version": "1.1.0" },
+                { "name": "whitelisted/pkg", "version": "1.0.0", "require": { "fixed/dependency": "1.0.0", "old/dependency": "1.0.0" } },
+                { "name": "fixed/dependency", "version": "1.1.0" },
+                { "name": "fixed/dependency", "version": "1.0.0" },
+                { "name": "old/dependency", "version": "1.0.0" }
             ]
         }
     ],
     "require": {
-        "whitelisted": "1.*",
-        "fixed-dependency": "1.*"
+        "whitelisted/pkg": "1.*",
+        "fixed/dependency": "1.*"
     }
 }
 --INSTALLED--
 [
-    { "name": "whitelisted", "version": "1.0.0", "require": { "old-dependency": "1.0.0", "fixed-dependency": "1.0.0" } },
-    { "name": "fixed-dependency", "version": "1.0.0" },
-    { "name": "old-dependency", "version": "1.0.0" }
+    { "name": "whitelisted/pkg", "version": "1.0.0", "require": { "old/dependency": "1.0.0", "fixed/dependency": "1.0.0" } },
+    { "name": "fixed/dependency", "version": "1.0.0" },
+    { "name": "old/dependency", "version": "1.0.0" }
 ]
 --LOCK--
 {
     "packages": [
-        { "name": "whitelisted", "version": "1.0.0", "require": { "old-dependency": "1.0.0", "fixed-dependency": "1.0.0" } },
-        { "name": "fixed-dependency", "version": "1.0.0" },
-        { "name": "old-dependency", "version": "1.0.0" }
+        { "name": "whitelisted/pkg", "version": "1.0.0", "require": { "old/dependency": "1.0.0", "fixed/dependency": "1.0.0" } },
+        { "name": "fixed/dependency", "version": "1.0.0" },
+        { "name": "old/dependency", "version": "1.0.0" }
     ],
     "packages-dev": [],
     "aliases": [],
@@ -42,7 +42,7 @@ Update with a package whitelist removes unused packages
     "platform-dev": []
 }
 --RUN--
-update --with-dependencies whitelisted
+update --with-dependencies whitelisted/pkg
 --EXPECT--
-Uninstalling old-dependency (1.0.0)
-Upgrading whitelisted (1.0.0 => 1.1.0)
+Uninstalling old/dependency (1.0.0)
+Upgrading whitelisted/pkg (1.0.0 => 1.1.0)

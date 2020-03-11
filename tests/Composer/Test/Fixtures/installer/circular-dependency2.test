@@ -2,7 +2,7 @@
 Circular dependencies are possible between packages
 --COMPOSER--
 {
-    "name": "root",
+    "name": "root/pkg",
     "version": "dev-master",
     "require": {
         "require/itself": "1.0.0",

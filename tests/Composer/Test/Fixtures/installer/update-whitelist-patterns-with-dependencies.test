@@ -6,51 +6,51 @@ Update with a package whitelist only updates those packages and their dependenci
         {
             "type": "package",
             "package": [
-                { "name": "fixed", "version": "1.1.0" },
-                { "name": "fixed", "version": "1.0.0" },
-                { "name": "whitelisted-component1", "version": "1.1.0" },
-                { "name": "whitelisted-component1", "version": "1.0.0" },
-                { "name": "whitelisted-component2", "version": "1.1.0", "require": { "dependency": "1.*", "root-dependency": "1.*" } },
-                { "name": "whitelisted-component2", "version": "1.0.0", "require": { "dependency": "1.*", "root-dependency": "1.*" } },
-                { "name": "dependency", "version": "1.1.0" },
-                { "name": "dependency", "version": "1.0.0" },
-                { "name": "root-dependency", "version": "1.1.0" },
-                { "name": "root-dependency", "version": "1.0.0" },
-                { "name": "unrelated", "version": "1.1.0", "require": { "unrelated-dependency": "1.*" }  },
-                { "name": "unrelated", "version": "1.0.0", "require": { "unrelated-dependency": "1.*" }  },
-                { "name": "unrelated-dependency", "version": "1.1.0" },
-                { "name": "unrelated-dependency", "version": "1.0.0" }
+                { "name": "fixed/pkg", "version": "1.1.0" },
+                { "name": "fixed/pkg", "version": "1.0.0" },
+                { "name": "whitelisted/pkg-component1", "version": "1.1.0" },
+                { "name": "whitelisted/pkg-component1", "version": "1.0.0" },
+                { "name": "whitelisted/pkg-component2", "version": "1.1.0", "require": { "dependency/pkg": "1.*", "root/pkg-dependency": "1.*" } },
+                { "name": "whitelisted/pkg-component2", "version": "1.0.0", "require": { "dependency/pkg": "1.*", "root/pkg-dependency": "1.*" } },
+                { "name": "dependency/pkg", "version": "1.1.0" },
+                { "name": "dependency/pkg", "version": "1.0.0" },
+                { "name": "root/pkg-dependency", "version": "1.1.0" },
+                { "name": "root/pkg-dependency", "version": "1.0.0" },
+                { "name": "unrelated/pkg", "version": "1.1.0", "require": { "unrelated/pkg-dependency": "1.*" }  },
+                { "name": "unrelated/pkg", "version": "1.0.0", "require": { "unrelated/pkg-dependency": "1.*" }  },
+                { "name": "unrelated/pkg-dependency", "version": "1.1.0" },
+                { "name": "unrelated/pkg-dependency", "version": "1.0.0" }
             ]
         }
     ],
     "require": {
-        "fixed": "1.*",
-        "whitelisted-component1": "1.*",
-        "whitelisted-component2": "1.*",
-        "root-dependency": "1.*",
-        "unrelated": "1.*"
+        "fixed/pkg": "1.*",
+        "whitelisted/pkg-component1": "1.*",
+        "whitelisted/pkg-component2": "1.*",
+        "root/pkg-dependency": "1.*",
+        "unrelated/pkg": "1.*"
     }
 }
 --INSTALLED--
 [
-    { "name": "fixed", "version": "1.0.0" },
-    { "name": "whitelisted-component1", "version": "1.0.0" },
-    { "name": "whitelisted-component2", "version": "1.0.0", "require": { "dependency": "1.0.0" } },
-    { "name": "root-dependency", "version": "1.0.0" },
-    { "name": "dependency", "version": "1.0.0" },
-    { "name": "unrelated", "version": "1.0.0", "require": { "unrelated-dependency": "1.*" } },
-    { "name": "unrelated-dependency", "version": "1.0.0" }
+    { "name": "fixed/pkg", "version": "1.0.0" },
+    { "name": "whitelisted/pkg-component1", "version": "1.0.0" },
+    { "name": "whitelisted/pkg-component2", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
+    { "name": "root/pkg-dependency", "version": "1.0.0" },
+    { "name": "dependency/pkg", "version": "1.0.0" },
+    { "name": "unrelated/pkg", "version": "1.0.0", "require": { "unrelated/pkg-dependency": "1.*" } },
+    { "name": "unrelated/pkg-dependency", "version": "1.0.0" }
 ]
 --LOCK--
 {
     "packages": [
-        { "name": "fixed", "version": "1.0.0" },
-        { "name": "whitelisted-component1", "version": "1.0.0" },
-        { "name": "whitelisted-component2", "version": "1.0.0", "require": { "dependency": "1.0.0" } },
-        { "name": "root-dependency", "version": "1.0.0" },
-        { "name": "dependency", "version": "1.0.0" },
-        { "name": "unrelated", "version": "1.0.0", "require": { "unrelated-dependency": "1.*" } },
-        { "name": "unrelated-dependency", "version": "1.0.0" }
+        { "name": "fixed/pkg", "version": "1.0.0" },
+        { "name": "whitelisted/pkg-component1", "version": "1.0.0" },
+        { "name": "whitelisted/pkg-component2", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
+        { "name": "root/pkg-dependency", "version": "1.0.0" },
+        { "name": "dependency/pkg", "version": "1.0.0" },
+        { "name": "unrelated/pkg", "version": "1.0.0", "require": { "unrelated/pkg-dependency": "1.*" } },
+        { "name": "unrelated/pkg-dependency", "version": "1.0.0" }
     ],
     "packages-dev": [],
     "aliases": [],
@@ -60,8 +60,8 @@ Update with a package whitelist only updates those packages and their dependenci
     "prefer-lowest": false
 }
 --RUN--
-update whitelisted-* --with-dependencies
+update whitelisted/pkg-* --with-dependencies
 --EXPECT--
-Upgrading whitelisted-component1 (1.0.0 => 1.1.0)
-Upgrading dependency (1.0.0 => 1.1.0)
-Upgrading whitelisted-component2 (1.0.0 => 1.1.0)
+Upgrading whitelisted/pkg-component1 (1.0.0 => 1.1.0)
+Upgrading dependency/pkg (1.0.0 => 1.1.0)
+Upgrading whitelisted/pkg-component2 (1.0.0 => 1.1.0)
