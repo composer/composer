@@ -427,6 +427,29 @@ class GitLabDriver extends VcsDriver
             if ($fetchingRepoData) {
                 $json = JsonFile::parseJson($res, $url);
 
+                // Accessing the API with a token with Guest (10) access will return
+                // more data than unauthenticated access but no default_branch data
+                // accessing files via the API will then also fail
+                if (!isset($json['default_branch']) && isset($json['permissions'])) {
+                    $this->isPrivate = $json['visibility'] !== 'public';
+
+                    $moreThanGuestAccess = false;
+                    // Check both access levels (e.g. project, group)
+                    // - value will be null if no access is set
+                    // - value will be array with key access_level if set
+                    foreach ($json['permissions'] as $permission) {
+                        if ($permission && $permission['access_level'] > 10) {
+                            $moreThanGuestAccess = true;
+                        }
+                    }
+
+                    if (!$moreThanGuestAccess) {
+                        $this->io->writeError('<warning>GitLab token with Guest only access detected</warning>');
+
+                        return $this->attemptCloneFallback(); 
+                    }
+                }
+
                 // force auth as the unauthenticated version of the API is broken
                 if (!isset($json['default_branch'])) {
                     if (!empty($json['id'])) {
