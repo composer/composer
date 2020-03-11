@@ -573,8 +573,9 @@ class Installer
             $solver = null;
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Unable to find a compatible set of packages based on your non-dev requirements alone.</error>', true, IOInterface::QUIET);
-            $this->io->writeError('Your requirements can be successfully resolved when require-dev packages are present.');
-            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool));
+            $this->io->writeError('Your requirements can be resolved successfully when require-dev packages are present.');
+            $this->io->writeError('You may need to move packages from require-dev or some of their dependencies to require.');
+            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, true));
 
             return max(1, $e->getCode());
         }

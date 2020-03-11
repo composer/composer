@@ -163,17 +163,31 @@ class RepositorySet
         return $candidates;
     }
 
-    public function getProviders($packageName)
+    public function getProvidersAndReplacers($packageName)
     {
+        $providers = array();
         foreach ($this->repositories as $repository) {
             if ($repository instanceof ComposerRepository) {
-                if ($providers = $repository->getProviders($packageName)) {
-                    return $providers;
+                if ($repoProviders = $repository->getProviders($packageName)) {
+                    $providers = array_merge($providers, $repoProviders);
+                }
+            } else {
+                foreach ($repository->getPackages() as $candidate) {
+                    foreach (array_merge($candidate->getProvides(), $candidate->getReplaces()) as $link) {
+                        if ($packageName === $link->getTarget()) {
+                            $providers[] = array(
+                                'name' => $candidate->getName(),
+                                'description' => $candidate->getDescription(),
+                                'type' => $candidate->getType(),
+                            );
+                            continue 2;
+                        }
+                    }
                 }
             }
         }
 
-        return array();
+        return $providers;
     }
 
     public function isPackageAcceptable($names, $stability)

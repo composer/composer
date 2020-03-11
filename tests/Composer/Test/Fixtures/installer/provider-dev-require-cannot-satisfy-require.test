@@ -1,0 +1,40 @@
+--TEST--
+Test that an appropriate error is thrown if a requirement is only satisfied by a package provided by a dependency of a dev requirement.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {"name": "provider/requirer", "version": "1.0.0", "type": "metapackage", "require": {"b/b": "1.0.0"}},
+                {"name": "b/b", "version": "1.0.0", "type": "metapackage", "provide": {"provided/pkg": "1.0.0"}}
+            ]
+        }
+    ],
+    "require": {
+        "provided/pkg": "1.0.0"
+    },
+    "require-dev": {
+        "provider/requirer": "1.0.0"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Unable to find a compatible set of packages based on your non-dev requirements alone.
+Your requirements can be resolved successfully when require-dev packages are present.
+You may need to move packages from require-dev or some of their dependencies to require.
+
+  Problem 1
+    - Root composer.json requires provided/pkg 1.0.0, it could not be found in any version, but the following packages provide it:
+      - b/b
+      Consider requiring one of these to satisfy the provided/pkg requirement.
+
+--EXPECT--
