@@ -445,9 +445,8 @@ class GitLabDriver extends VcsDriver
 
                     if (!$moreThanGuestAccess) {
                         $this->io->writeError('<warning>GitLab token with Guest only access detected</warning>');
-                        $this->setupGitDriver($this->generateSshUrl());
 
-                        return $res;
+                        return $this->attemptCloneFallback(); 
                     }
                 }
 
