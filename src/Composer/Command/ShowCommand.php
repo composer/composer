@@ -160,6 +160,7 @@ EOT
             $installedRepo = new InstalledRepository(array($platformRepo));
             if ($composer) {
                 $repos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
+                $installedRepo->addRepository($composer->getRepositoryManager()->getLocalRepository());
             } else {
                 $defaultRepos = RepositoryFactory::defaultRepos($io);
                 $repos = new CompositeRepository($defaultRepos);
@@ -675,15 +676,17 @@ EOT
      */
     protected function printVersions(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo)
     {
-        uasort($versions, 'version_compare');
-        $versions = array_keys(array_reverse($versions));
+        $versions = array_keys($versions);
+        $versions = Semver::rsort($versions);
 
         // highlight installed version
-        if ($installedRepo->hasPackage($package)) {
-            $installedVersion = $package->getPrettyVersion();
-            $key = array_search($installedVersion, $versions);
-            if (false !== $key) {
-                $versions[$key] = '<info>* ' . $installedVersion . '</info>';
+        if ($installedPackages = $installedRepo->findPackages($package->getName())) {
+            foreach ($installedPackages as $installedPackage) {
+                $installedVersion = $installedPackage->getPrettyVersion();
+                $key = array_search($installedVersion, $versions);
+                if (false !== $key) {
+                    $versions[$key] = '<info>* ' . $installedVersion . '</info>';
+                }
             }
         }
 

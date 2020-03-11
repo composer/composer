@@ -273,6 +273,10 @@ class Problem
             $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion();
         }
         foreach ($prepared as $name => $package) {
+            // remove the implicit dev-master alias to avoid cruft in the display
+            if (isset($package['versions']['9999999-dev']) && isset($package['versions']['dev-master'])) {
+                unset($package['versions']['9999999-dev']);
+            }
             $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
         }
 

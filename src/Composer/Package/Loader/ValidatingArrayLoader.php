@@ -219,7 +219,7 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        $unboundConstraint = new Constraint('=', $this->versionParser->normalize('dev-master'));
+        $unboundConstraint = new Constraint('=', '10000000-dev');
         $stableConstraint = new Constraint('=', '1.0.0');
 
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {

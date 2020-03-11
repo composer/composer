@@ -89,6 +89,11 @@ class ArrayLoader implements LoaderInterface
         // handle already normalized versions
         if (isset($config['version_normalized'])) {
             $version = $config['version_normalized'];
+
+            // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained 9999999-dev, we renormalize it
+            if ($version === '9999999-dev') {
+                $version = $this->versionParser->normalize($config['version']);
+            }
         } else {
             $version = $this->versionParser->normalize($config['version']);
         }
@@ -320,39 +325,42 @@ class ArrayLoader implements LoaderInterface
      */
     public function getBranchAlias(array $config)
     {
-        if (('dev-' !== substr($config['version'], 0, 4) && '-dev' !== substr($config['version'], -4))
-            || !isset($config['extra']['branch-alias'])
-            || !is_array($config['extra']['branch-alias'])
-        ) {
+        if ('dev-' !== substr($config['version'], 0, 4) && '-dev' !== substr($config['version'], -4)) {
             return;
         }
 
-        foreach ($config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
-            // ensure it is an alias to a -dev package
-            if ('-dev' !== substr($targetBranch, -4)) {
-                continue;
-            }
+        if (isset($config['extra']['branch-alias']) && is_array($config['extra']['branch-alias'])) {
+            foreach ($config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
+                // ensure it is an alias to a -dev package
+                if ('-dev' !== substr($targetBranch, -4)) {
+                    continue;
+                }
 
-            // normalize without -dev and ensure it's a numeric branch that is parseable
-            $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
-            if ('-dev' !== substr($validatedTargetBranch, -4)) {
-                continue;
-            }
+                // normalize without -dev and ensure it's a numeric branch that is parseable
+                $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+                if ('-dev' !== substr($validatedTargetBranch, -4)) {
+                    continue;
+                }
 
-            // ensure that it is the current branch aliasing itself
-            if (strtolower($config['version']) !== strtolower($sourceBranch)) {
-                continue;
-            }
+                // ensure that it is the current branch aliasing itself
+                if (strtolower($config['version']) !== strtolower($sourceBranch)) {
+                    continue;
+                }
 
-            // If using numeric aliases ensure the alias is a valid subversion
-            if (($sourcePrefix = $this->versionParser->parseNumericAliasPrefix($sourceBranch))
-                && ($targetPrefix = $this->versionParser->parseNumericAliasPrefix($targetBranch))
-                && (stripos($targetPrefix, $sourcePrefix) !== 0)
-            ) {
-                continue;
-            }
+                // If using numeric aliases ensure the alias is a valid subversion
+                if (($sourcePrefix = $this->versionParser->parseNumericAliasPrefix($sourceBranch))
+                    && ($targetPrefix = $this->versionParser->parseNumericAliasPrefix($targetBranch))
+                    && (stripos($targetPrefix, $sourcePrefix) !== 0)
+                ) {
+                    continue;
+                }
 
-            return $validatedTargetBranch;
+                return $validatedTargetBranch;
+            }
+        }
+
+        if (in_array($config['version'], array('dev-master', 'dev-default', 'dev-trunk'), true)) {
+            return '9999999-dev';
         }
     }
 }

@@ -21,3 +21,4 @@ Installs a dev package forcing it's reference
 install
 --EXPECT--
 Installing a/a (dev-master def000)
+Marking a/a (9999999-dev def000) as installed, alias of a/a (dev-master def000)

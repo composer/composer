@@ -89,7 +89,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
         $versionArray = $guesser->guessVersion(array(), 'dummy/path');
 
-        $this->assertEquals("9999999-dev", $versionArray['version']);
+        $this->assertEquals("dev-".$branch, $versionArray['version']);
         $this->assertEquals("dev-".$branch, $versionArray['pretty_version']);
         $this->assertEmpty($versionArray['commit']);
     }
@@ -124,7 +124,7 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
         $versionArray = $guesser->guessVersion(array(), 'dummy/path');
 
-        $this->assertEquals("9999999-dev", $versionArray['version']);
+        $this->assertEquals("dev-master", $versionArray['version']);
         $this->assertEquals("dev-master", $versionArray['pretty_version']);
         $this->assertArrayNotHasKey('feature_version', $versionArray);
         $this->assertArrayNotHasKey('feature_pretty_version', $versionArray);

@@ -43,3 +43,4 @@ install
 --EXPECT--
 Uninstalling a/dependency (dev-master ref)
 Upgrading a/devpackage (dev-master oldref => dev-master newref)
+Marking a/dependency (9999999-dev ref) as uninstalled, alias of a/dependency (dev-master ref)

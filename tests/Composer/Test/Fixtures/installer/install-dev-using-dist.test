@@ -53,3 +53,4 @@ install --prefer-dist
 }
 --EXPECT--
 Installing a/a (dev-master)
+Marking a/a (9999999-dev) as installed, alias of a/a (dev-master)

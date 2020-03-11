@@ -160,6 +160,8 @@ class RootPackageLoaderTest extends TestCase
         $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $executor, new VersionParser()));
         $package = $loader->load(array('require' => array('foo/bar' => 'self.version')));
 
+        $this->assertEquals("9999999-dev", $package->getPrettyVersion());
+        $package = $package->getAliasOf();
         $this->assertEquals("dev-master", $package->getPrettyVersion());
     }
 

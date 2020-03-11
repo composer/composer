@@ -356,7 +356,6 @@ class ValidatingArrayLoaderTest extends TestCase
                     'require' => array(
                         'foo/baz' => '*',
                         'bar/baz' => '>=1.0',
-                        'bar/foo' => 'dev-master',
                         'bar/hacked' => '@stable',
                         'bar/woo' => '1.0.0',
                     ),
@@ -364,7 +363,6 @@ class ValidatingArrayLoaderTest extends TestCase
                 array(
                     'require.foo/baz : unbound version constraints (*) should be avoided',
                     'require.bar/baz : unbound version constraints (>=1.0) should be avoided',
-                    'require.bar/foo : unbound version constraints (dev-master) should be avoided',
                     'require.bar/hacked : unbound version constraints (@stable) should be avoided',
                     'require.bar/woo : exact version constraints (1.0.0) should be avoided if the package follows semantic versioning',
                 ),
