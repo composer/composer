@@ -61,7 +61,7 @@ class UninstallOperation extends SolverOperation
      */
     public function show($lock)
     {
-        return 'Uninstalling '.$this->package->getPrettyName().' ('.$this->package->getFullPrettyVersion().')';
+        return ($lock ? 'Removing ' : 'Uninstalling ').$this->package->getPrettyName().' ('.$this->package->getFullPrettyVersion().')';
     }
 
     /**

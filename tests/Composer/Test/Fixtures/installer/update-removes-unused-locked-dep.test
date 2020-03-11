@@ -56,7 +56,7 @@ update
 Loading composer repositories with package information
 Updating dependencies
 Lock file operations: 0 installs, 0 updates, 1 removal
-  - Uninstalling b/b (1.0.0)
+  - Removing b/b (1.0.0)
 Writing lock file
 Installing dependencies from lock file (including require-dev)
 Package operations: 0 installs, 0 updates, 2 removals
