@@ -251,12 +251,13 @@ class Problem
         if ($providers = $repositorySet->getProvidersAndReplacers($packageName)) {
             $maxProviders = 20;
             $providersStr = implode(array_map(function ($p) {
-                return "      - ${p['name']} ".substr($p['description'], 0, 100)."\n";
+                $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
+                return "      - ${p['name']}".$description."\n";
             }, count($providers) > $maxProviders+1 ? array_slice($providers, 0, $maxProviders) : $providers));
             if (count($providers) > $maxProviders+1) {
                 $providersStr .= '      ... and '.(count($providers)-$maxProviders).' more.'."\n";
             }
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint).", it ", "could not be found in any version, but the following packages provide it: \n".$providersStr."      Consider requiring one of these to satisfy the $packageName requirement.");
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint).", it ", "could not be found in any version, but the following packages provide it:\n".$providersStr."      Consider requiring one of these to satisfy the $packageName requirement.");
         }
 
         return array("- Root composer.json requires $packageName, it ", "could not be found in any version, there may be a typo in the package name.");
