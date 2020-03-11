@@ -1,7 +1,7 @@
 ### [1.10.0] 2020-03-10
 
   * Added `bearer` auth config to authenticate using `Authorization: Bearer <token>` headers
-  * Added `plugin-api-version` in composer.lock so future Composer versions know if they are running a lock file which was not built by the correct version
+  * Added `plugin-api-version` in composer.lock so third-party tools can know which Composer version was used to generate a lock file
   * Fixed composer fund command and funding info parsing to be more useful
   * Fixed issue where --no-dev autoload generation was excluding some packages which should not have been excluded
   * Fixed 1.10-RC regression in create project's handling of absolute paths
