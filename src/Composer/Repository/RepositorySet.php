@@ -22,6 +22,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\LockArrayRepository;
 use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Repository\InstalledRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\StabilityFilter;
 
@@ -190,7 +191,7 @@ class RepositorySet
         $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $eventDispatcher);
 
         foreach ($this->repositories as $repo) {
-            if ($repo instanceof InstalledRepositoryInterface && !$this->allowInstalledRepositories) {
+            if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
                 throw new \LogicException('The pool can not accept packages from an installed repository');
             }
         }
