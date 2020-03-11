@@ -560,6 +560,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if (!isset($versionsToLoad[$version['uid']])) {
                     if (!isset($version['version_normalized'])) {
                         $version['version_normalized'] = $this->versionParser->normalize($version['version']);
+                    } elseif ($version['version_normalized'] === '9999999-dev') {
+                        // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained 9999999-dev, we renormalize it
+                        $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                     }
 
                     if ($this->isVersionAcceptable($acceptableStabilities, $stabilityFlags, null, $normalizedName, $version)) {
@@ -678,6 +681,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     foreach ($versions as $version) {
                         if (!isset($version['version_normalized'])) {
                             $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
+                        } elseif ($version['version_normalized'] === '9999999-dev') {
+                            // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained 9999999-dev, we renormalize it
+                            $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                         }
 
                         if ($repo->isVersionAcceptable($acceptableStabilities, $stabilityFlags, $constraint, $realName, $version)) {
