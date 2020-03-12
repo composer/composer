@@ -248,7 +248,7 @@ class Problem
             return array("- Root composer.json requires $packageName, it ", 'could not be found, it looks like its name is invalid, "'.$illegalChars.'" is not allowed in package names.');
         }
 
-        if ($providers = $repositorySet->getProvidersAndReplacers($packageName)) {
+        if ($providers = $repositorySet->getProviders($packageName)) {
             $maxProviders = 20;
             $providersStr = implode(array_map(function ($p) {
                 $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';

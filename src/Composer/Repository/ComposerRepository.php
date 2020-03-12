@@ -422,11 +422,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     public function getProviders($packageName)
     {
         if (!$this->providersApiUrl) {
+            // TODO should this return the info based on getPackages in other cases?
             return array();
         }
 
         $result = $this->httpDownloader->get(str_replace('%package%', $packageName, $this->providersApiUrl), $this->options)->decodeJson();
 
+        // TODO filter packageName out here?
         return $result['providers'];
     }
 

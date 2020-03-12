@@ -163,7 +163,7 @@ class RepositorySet
         return $candidates;
     }
 
-    public function getProvidersAndReplacers($packageName)
+    public function getProviders($packageName)
     {
         $providers = array();
         foreach ($this->repositories as $repository) {
@@ -173,7 +173,7 @@ class RepositorySet
                 }
             } else {
                 foreach ($repository->getPackages() as $candidate) {
-                    foreach (array_merge($candidate->getProvides(), $candidate->getReplaces()) as $link) {
+                    foreach ($candidate->getProvides() as $link) {
                         if ($packageName === $link->getTarget()) {
                             $providers[] = array(
                                 'name' => $candidate->getName(),
@@ -200,10 +200,8 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPool(Request $request, EventDispatcher $eventDispatcher = null)
+    public function createPool(Request $request, EventDispatcher $eventDispatcher = null, $allPackages = false)
     {
-        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $eventDispatcher);
-
         foreach ($this->repositories as $repo) {
             if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
                 throw new \LogicException('The pool can not accept packages from an installed repository');
@@ -211,6 +209,16 @@ class RepositorySet
         }
 
         $this->locked = true;
+
+        if ($allPackages) {
+            $packages = array();
+            foreach ($this->repositories as $repository) {
+                $packages = array_merge($packages, $repository->getPackages());
+            }
+            return new Pool($packages);
+        }
+
+        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $eventDispatcher);
 
         return $poolBuilder->buildPool($this->repositories, $request);
     }
