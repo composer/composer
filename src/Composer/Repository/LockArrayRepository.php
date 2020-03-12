@@ -19,7 +19,7 @@ namespace Composer\Repository;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class LockArrayRepository extends ArrayRepository implements RepositoryInterface
+class LockArrayRepository extends ArrayRepository
 {
     public function getRepoName()
     {

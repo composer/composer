@@ -421,15 +421,40 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     public function getProviders($packageName)
     {
-        if (!$this->providersApiUrl) {
-            // TODO should this return the info based on getPackages in other cases?
-            return array();
+        $this->loadRootServerFile();
+        $result = array();
+
+        if ($this->providersApiUrl) {
+            $apiResult = $this->httpDownloader->get(str_replace('%package%', $packageName, $this->providersApiUrl), $this->options)->decodeJson();
+
+            foreach ($apiResult['providers'] as $provider) {
+                $result[$provider['name']] = $provider;
+            }
+
+            return $result;
         }
 
-        $result = $this->httpDownloader->get(str_replace('%package%', $packageName, $this->providersApiUrl), $this->options)->decodeJson();
+        if ($this->hasPartialPackages()) {
+            foreach ($this->partialPackagesByName as $versions) {
+                foreach ($versions as $candidate) {
+                    if (isset($result[$candidate['name']]) || !isset($candidate['provide'][$packageName])) {
+                        continue;
+                    }
+                    $result[$candidate['name']] = array(
+                        'name' => $candidate['name'],
+                        'description' => isset($candidate['description']) ? $candidate['description'] : '',
+                        'type' => isset($candidate['type']) ? $candidate['type'] : '',
+                        'repository' => '',
+                    );
+                }
+            }
+        }
 
-        // TODO filter packageName out here?
-        return $result['providers'];
+        if ($this->packages) {
+            $result = array_merge($result, parent::getProviders($packageName));
+        }
+
+        return $result;
     }
 
     private function getProviderNames()

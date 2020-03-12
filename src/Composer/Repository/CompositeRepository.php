@@ -150,6 +150,20 @@ class CompositeRepository implements RepositoryInterface
     /**
      * {@inheritdoc}
      */
+    public function getProviders($packageName)
+    {
+        $results = array();
+        foreach ($this->repositories as $repository) {
+            /* @var $repository RepositoryInterface */
+            $results[] = $repository->getProviders($packageName);
+        }
+
+        return $results ? call_user_func_array('array_merge', $results) : array();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function removePackage(PackageInterface $package)
     {
         foreach ($this->repositories as $repository) {

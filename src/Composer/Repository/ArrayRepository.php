@@ -204,6 +204,33 @@ class ArrayRepository implements RepositoryInterface
         $this->packageMap = null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function getProviders($packageName)
+    {
+        $result = array();
+
+        foreach ($this->getPackages() as $candidate) {
+            if (isset($result[$candidate->getName()])) {
+                continue;
+            }
+            foreach ($candidate->getProvides() as $link) {
+                if ($packageName === $link->getTarget()) {
+                    $result[$candidate->getName()] = array(
+                        'name' => $candidate->getName(),
+                        'description' => $candidate->getDescription(),
+                        'type' => $candidate->getType(),
+                        'repository' => $candidate->getSourceUrl() ?: '',
+                    );
+                    continue 2;
+                }
+            }
+        }
+
+        return $result;
+    }
+
     protected function createAliasPackage(PackageInterface $package, $alias, $prettyAlias)
     {
         return new AliasPackage($package instanceof AliasPackage ? $package->getAliasOf() : $package, $alias, $prettyAlias);

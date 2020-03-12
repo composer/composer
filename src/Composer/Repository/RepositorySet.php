@@ -167,23 +167,8 @@ class RepositorySet
     {
         $providers = array();
         foreach ($this->repositories as $repository) {
-            if ($repository instanceof ComposerRepository) {
-                if ($repoProviders = $repository->getProviders($packageName)) {
-                    $providers = array_merge($providers, $repoProviders);
-                }
-            } else {
-                foreach ($repository->getPackages() as $candidate) {
-                    foreach ($candidate->getProvides() as $link) {
-                        if ($packageName === $link->getTarget()) {
-                            $providers[] = array(
-                                'name' => $candidate->getName(),
-                                'description' => $candidate->getDescription(),
-                                'type' => $candidate->getType(),
-                            );
-                            continue 2;
-                        }
-                    }
-                }
+            if ($repoProviders = $repository->getProviders($packageName)) {
+                $providers = array_merge($providers, $repoProviders);
             }
         }
 

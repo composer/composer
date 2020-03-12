@@ -85,6 +85,17 @@ interface RepositoryInterface extends \Countable
     public function search($query, $mode = 0, $type = null);
 
     /**
+     * Returns a list of packages providing a given package name
+     *
+     * Packages which have the same name as $packageName should not be returned, only those that have a "provide" on it.
+     *
+     * @param string $packageName package name which must be provided
+     *
+     * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...', 'repository' => '...url to source repo if available...')
+     */
+    public function getProviders($packageName);
+
+    /**
      * Returns a name representing this repository to the user
      *
      * This is best effort and definitely can not always be very precise
