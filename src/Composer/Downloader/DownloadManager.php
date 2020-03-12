@@ -175,6 +175,7 @@ class DownloadManager
      */
     public function download(PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
     {
+        $targetDir = $this->normalizeTargetDir($targetDir);
         $this->filesystem->ensureDirectoryExists(dirname($targetDir));
 
         $sources = $this->getAvailableSources($package, $prevPackage);
@@ -244,6 +245,7 @@ class DownloadManager
      */
     public function prepare($type, PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
     {
+        $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
         if ($downloader) {
             return $downloader->prepare($type, $package, $targetDir, $prevPackage);
@@ -262,6 +264,7 @@ class DownloadManager
      */
     public function install(PackageInterface $package, $targetDir)
     {
+        $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
         if ($downloader) {
             return $downloader->install($package, $targetDir);
@@ -280,6 +283,7 @@ class DownloadManager
      */
     public function update(PackageInterface $initial, PackageInterface $target, $targetDir)
     {
+        $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($target);
         $initialDownloader = $this->getDownloaderForPackage($initial);
 
@@ -332,6 +336,7 @@ class DownloadManager
      */
     public function remove(PackageInterface $package, $targetDir)
     {
+        $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
         if ($downloader) {
             return $downloader->remove($package, $targetDir);
@@ -350,6 +355,7 @@ class DownloadManager
      */
     public function cleanup($type, PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
     {
+        $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
         if ($downloader) {
             return $downloader->cleanup($type, $package, $targetDir, $prevPackage);
@@ -421,5 +427,21 @@ class DownloadManager
         }
 
         return $sources;
+    }
+
+    /**
+     * Downloaders expect a /path/to/dir without trailing slash
+     *
+     * If any Installer provides a path with a trailing slash, this can cause bugs so make sure we remove them
+     *
+     * @return string
+     */
+    private function normalizeTargetDir($dir)
+    {
+        if ($dir === '\\' || $dir === '/') {
+            return $dir;
+        }
+
+        return rtrim($dir, '\\/');
     }
 }
