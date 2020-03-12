@@ -20,6 +20,7 @@ use Composer\Package\Version\StabilityFilter;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Plugin\PrePoolCreateEvent;
@@ -55,7 +56,6 @@ class PoolBuilder
     {
         $loadNames = array();
         foreach ($request->getFixedPackages() as $package) {
-            // TODO do we need to add this to nameConstraints at all?
             $this->nameConstraints[$package->getName()] = null;
             $this->loadedNames[$package->getName()] = true;
 
@@ -86,7 +86,6 @@ class PoolBuilder
             }
 
             $loadNames[$packageName] = $constraint;
-            // TODO do we even need to set these in name constraints or can we skip them entirely?
             $this->nameConstraints[$packageName] = $constraint ? new MultiConstraint(array($constraint), false) : null;
         }
 
@@ -219,9 +218,9 @@ class PoolBuilder
             if (!isset($this->loadedNames[$require])) {
                 $loadNames[$require] = null;
             }
-            if ($linkConstraint = $link->getConstraint()) {
-                // TODO check if linkConstraint is EmptyConstraint then set to null as well?
 
+            $linkConstraint = $link->getConstraint()
+            if ($linkConstraint && !($linkConstraint instanceof EmptyConstraint)) {
                 if (!array_key_exists($require, $this->nameConstraints)) {
                     $this->nameConstraints[$require] = new MultiConstraint(array($linkConstraint), false);
                 } elseif ($this->nameConstraints[$require]) {
