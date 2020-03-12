@@ -20,21 +20,33 @@ Test that an appropriate error is thrown if a requirement is only satisfied by a
 }
 
 --RUN--
-update
+update --no-dev
 
---EXPECT-EXIT-CODE--
-2
-
---EXPECT-OUTPUT--
-Loading composer repositories with package information
-Updating dependencies
-Unable to find a compatible set of packages based on your non-dev requirements alone.
-Your requirements can be resolved successfully when require-dev packages are present.
-You may need to move packages from require-dev or some of their dependencies to require.
-
-  Problem 1
-    - Root composer.json requires provided/pkg 1.0.0, it could not be found in any version, but the following packages provide it:
-      - b/b
-      Consider requiring one of these to satisfy the provided/pkg requirement.
-
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "b/b",
+            "version": "1.0.0",
+            "type": "metapackage",
+            "provide": {"provided/pkg": "1.0.0"}
+        }
+    ],
+    "packages-dev": [
+        {
+            "name": "provider/requirer",
+            "version": "1.0.0",
+            "type": "metapackage",
+            "require": {"b/b": "1.0.0"}
+        }
+    ],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --EXPECT--
+Installing b/b (1.0.0)
