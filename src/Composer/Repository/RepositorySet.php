@@ -165,15 +165,29 @@ class RepositorySet
 
     public function getProviders($packageName)
     {
+        $providers = array();
         foreach ($this->repositories as $repository) {
             if ($repository instanceof ComposerRepository) {
-                if ($providers = $repository->getProviders($packageName)) {
-                    return $providers;
+                if ($repoProviders = $repository->getProviders($packageName)) {
+                    $providers = array_merge($providers, $repoProviders);
+                }
+            } else {
+                foreach ($repository->getPackages() as $candidate) {
+                    foreach ($candidate->getProvides() as $link) {
+                        if ($packageName === $link->getTarget()) {
+                            $providers[] = array(
+                                'name' => $candidate->getName(),
+                                'description' => $candidate->getDescription(),
+                                'type' => $candidate->getType(),
+                            );
+                            continue 2;
+                        }
+                    }
                 }
             }
         }
 
-        return array();
+        return $providers;
     }
 
     public function isPackageAcceptable($names, $stability)
@@ -199,6 +213,28 @@ class RepositorySet
         $this->locked = true;
 
         return $poolBuilder->buildPool($this->repositories, $request);
+    }
+
+    /**
+     * Create a pool for dependency resolution from the packages in this repository set.
+     *
+     * @return Pool
+     */
+    public function createPoolWithAllPackages()
+    {
+        foreach ($this->repositories as $repo) {
+            if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
+                throw new \LogicException('The pool can not accept packages from an installed repository');
+            }
+        }
+
+        $this->locked = true;
+
+        $packages = array();
+        foreach ($this->repositories as $repository) {
+            $packages = array_merge($packages, $repository->getPackages());
+        }
+        return new Pool($packages);
     }
 
     // TODO unify this with above in some simpler version without "request"?
