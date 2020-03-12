@@ -63,5 +63,5 @@ Package operations: 0 installs, 0 updates, 2 removals
 Generating autoload files
 
 --EXPECT--
-Uninstalling c/c (1.0.0)
-Uninstalling b/b (1.0.0)
+Removing c/c (1.0.0)
+Removing b/b (1.0.0)

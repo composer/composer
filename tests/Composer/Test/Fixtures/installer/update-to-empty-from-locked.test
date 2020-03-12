@@ -44,5 +44,5 @@ update
     "platform-dev": []
 }
 --EXPECT--
-Uninstalling a/a (dev-master 1234)
+Removing a/a (dev-master 1234)
 Marking a/a (9999999-dev 1234) as uninstalled, alias of a/a (dev-master 1234)

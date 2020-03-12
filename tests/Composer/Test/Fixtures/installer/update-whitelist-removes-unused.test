@@ -44,5 +44,5 @@ Update with a package whitelist removes unused packages
 --RUN--
 update --with-dependencies whitelisted/pkg
 --EXPECT--
-Uninstalling old/dependency (1.0.0)
+Removing old/dependency (1.0.0)
 Upgrading whitelisted/pkg (1.0.0 => 1.1.0)

@@ -40,5 +40,5 @@ Install from a lock file that deleted a package
 --RUN--
 install
 --EXPECT--
-Uninstalling old/dependency (1.0.0)
+Removing old/dependency (1.0.0)
 Upgrading whitelisted/pkg (1.0.0 => 1.1.0)
