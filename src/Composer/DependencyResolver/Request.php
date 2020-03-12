@@ -27,6 +27,9 @@ class Request
     protected $requires = array();
     protected $fixedPackages = array();
     protected $unlockables = array();
+    protected $updateAllowList = array();
+    protected $updateAllowTransitiveDependencies = false;
+    protected $updateAllowTransitiveRootDependencies = false;
 
     public function __construct(LockArrayRepository $lockedRepository = null)
     {
@@ -51,6 +54,18 @@ class Request
         if (!$lockable) {
             $this->unlockables[] = $package;
         }
+    }
+
+    public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies, $updateAllowTransitiveRootDependencies)
+    {
+        $this->updateAllowList = $updateAllowList;
+        $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;
+        $this->updateAllowTransitiveRootDependencies = $updateAllowTransitiveRootDependencies;
+    }
+
+    public function getUpdateAllowList()
+    {
+        return $this->updateAllowList;
     }
 
     public function getRequires()

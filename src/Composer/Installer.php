@@ -356,12 +356,12 @@ class Installer
             if (!$lockedRepository) {
                 $this->io->writeError('<error>Cannot update only a partial set of packages without a lock file present.</error>', true, IOInterface::QUIET);
                 return 1;
-            }
+            }/*
             $this->whitelistUpdateDependencies(
                 $lockedRepository,
                 $this->package->getRequires(),
                 $this->package->getDevRequires()
-            );
+            );*/
         }
 
         $this->io->writeError('<info>Loading composer repositories with package information</info>');
@@ -394,14 +394,9 @@ class Installer
             }
         }
 
-        // if the updateWhitelist is enabled, packages not in it are also fixed
-        // to the version specified in the lock
-        if ($this->updateWhitelist && $lockedRepository) {
-            foreach ($lockedRepository->getPackages() as $lockedPackage) {
-                if (!$this->isUpdateable($lockedPackage)) {
-                    $request->fixPackage($lockedPackage);
-                }
-            }
+        // pass the allow list into the request, so the pool builder can apply it
+        if ($this->updateWhitelist) {
+            $request->setUpdateAllowList($this->updateWhitelist, $this->whitelistTransitiveDependencies, $this->whitelistAllDependencies);
         }
 
         $pool = $repositorySet->createPool($request, $this->eventDispatcher);
@@ -848,26 +843,6 @@ class Installer
     }
 
     /**
-     * @param  PackageInterface $package
-     * @return bool
-     */
-    private function isUpdateable(PackageInterface $package)
-    {
-        if (!$this->updateWhitelist) {
-            throw new \LogicException('isUpdateable should only be called when a whitelist is present');
-        }
-
-        foreach ($this->updateWhitelist as $whiteListedPattern => $void) {
-            $patternRegexp = BasePackage::packageNameToRegexp($whiteListedPattern);
-            if (preg_match($patternRegexp, $package->getName())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * @param  array $links
      * @return array
      */
@@ -881,108 +856,6 @@ class Installer
         }
 
         return $platformReqs;
-    }
-
-    /**
-     * Adds all dependencies of the update whitelist to the whitelist, too.
-     *
-     * Packages which are listed as requirements in the root package will be
-     * skipped including their dependencies, unless they are listed in the
-     * update whitelist themselves or $whitelistAllDependencies is true.
-     *
-     * @param RepositoryInterface $lockRepo        Use the locked repo
-     *                                             As we want the most accurate package list to work with, and installed
-     *                                             repo might be empty but locked repo will always be current.
-     * @param array               $rootRequires    An array of links to packages in require of the root package
-     * @param array               $rootDevRequires An array of links to packages in require-dev of the root package
-     */
-    private function whitelistUpdateDependencies($lockRepo, array $rootRequires, array $rootDevRequires)
-    {
-        $rootRequires = array_merge($rootRequires, $rootDevRequires);
-
-        $skipPackages = array();
-        if (!$this->whitelistAllDependencies) {
-            foreach ($rootRequires as $require) {
-                $skipPackages[$require->getTarget()] = true;
-            }
-        }
-
-        $installedRepo = new InstalledRepository(array($lockRepo));
-
-        $seen = array();
-
-        $rootRequiredPackageNames = array_keys($rootRequires);
-
-        foreach ($this->updateWhitelist as $packageName => $void) {
-            $packageQueue = new \SplQueue;
-            $nameMatchesRequiredPackage = false;
-
-            $depPackages = $installedRepo->findPackagesWithReplacersAndProviders($packageName);
-            $matchesByPattern = array();
-
-            // check if the name is a glob pattern that did not match directly
-            if (empty($depPackages)) {
-                // add any installed package matching the whitelisted name/pattern
-                $whitelistPatternSearchRegexp = BasePackage::packageNameToRegexp($packageName, '^%s$');
-                foreach ($lockRepo->search($whitelistPatternSearchRegexp) as $installedPackage) {
-                    $matchesByPattern[] = $installedRepo->findPackages($installedPackage['name']);
-                }
-
-                // add root requirements which match the whitelisted name/pattern
-                $whitelistPatternRegexp = BasePackage::packageNameToRegexp($packageName);
-                foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
-                    if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
-                        $nameMatchesRequiredPackage = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!empty($matchesByPattern)) {
-                $depPackages = array_merge($depPackages, call_user_func_array('array_merge', $matchesByPattern));
-            }
-
-            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage) {
-                $this->io->writeError('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
-            }
-
-            foreach ($depPackages as $depPackage) {
-                $packageQueue->enqueue($depPackage);
-            }
-
-            while (!$packageQueue->isEmpty()) {
-                $package = $packageQueue->dequeue();
-                if (isset($seen[spl_object_hash($package)])) {
-                    continue;
-                }
-
-                $seen[spl_object_hash($package)] = true;
-                $this->updateWhitelist[$package->getName()] = true;
-
-                if (!$this->whitelistTransitiveDependencies && !$this->whitelistAllDependencies) {
-                    continue;
-                }
-
-                $requires = $package->getRequires();
-
-                foreach ($requires as $require) {
-                    $requirePackages = $installedRepo->findPackagesWithReplacersAndProviders($require->getTarget());
-
-                    foreach ($requirePackages as $requirePackage) {
-                        if (isset($this->updateWhitelist[$requirePackage->getName()])) {
-                            continue;
-                        }
-
-                        if (isset($skipPackages[$requirePackage->getName()]) && !preg_match(BasePackage::packageNameToRegexp($packageName), $requirePackage->getName())) {
-                            $this->io->writeError('<warning>Dependency "' . $requirePackage->getName() . '" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>');
-                            continue;
-                        }
-
-                        $packageQueue->enqueue($requirePackage);
-                    }
-                }
-            }
-        }
     }
 
     /**
