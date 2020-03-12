@@ -565,7 +565,7 @@ class Installer
             $request->requireName($link->getTarget(), $link->getConstraint());
         }
 
-        $pool = $repositorySet->createPool($request, $this->eventDispatcher, true);
+        $pool = $repositorySet->createPoolWithAllPackages();
 
         $solver = new Solver($policy, $pool, $this->io, $repositorySet);
         try {

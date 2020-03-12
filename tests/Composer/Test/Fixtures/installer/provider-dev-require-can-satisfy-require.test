@@ -1,5 +1,5 @@
 --TEST--
-Test that an appropriate error is thrown if a requirement is only satisfied by a package provided by a dependency of a dev requirement.
+Test that a requirement can be satisfied by a providing package required in require-dev.
 --COMPOSER--
 {
     "repositories": [

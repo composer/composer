@@ -200,7 +200,27 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPool(Request $request, EventDispatcher $eventDispatcher = null, $allPackages = false)
+    public function createPool(Request $request, EventDispatcher $eventDispatcher = null)
+    {
+        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $eventDispatcher);
+
+        foreach ($this->repositories as $repo) {
+            if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
+                throw new \LogicException('The pool can not accept packages from an installed repository');
+            }
+        }
+
+        $this->locked = true;
+
+        return $poolBuilder->buildPool($this->repositories, $request);
+    }
+
+    /**
+     * Create a pool for dependency resolution from the packages in this repository set.
+     *
+     * @return Pool
+     */
+    public function createPoolWithAllPackages()
     {
         foreach ($this->repositories as $repo) {
             if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
@@ -210,17 +230,11 @@ class RepositorySet
 
         $this->locked = true;
 
-        if ($allPackages) {
-            $packages = array();
-            foreach ($this->repositories as $repository) {
-                $packages = array_merge($packages, $repository->getPackages());
-            }
-            return new Pool($packages);
+        $packages = array();
+        foreach ($this->repositories as $repository) {
+            $packages = array_merge($packages, $repository->getPackages());
         }
-
-        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $eventDispatcher);
-
-        return $poolBuilder->buildPool($this->repositories, $request);
+        return new Pool($packages);
     }
 
     // TODO unify this with above in some simpler version without "request"?
