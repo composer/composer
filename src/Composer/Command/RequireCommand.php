@@ -248,7 +248,7 @@ EOT
         ;
 
         $status = $install->run();
-        if ($status !== 0) {
+        if ($status !== 0 || $input->getOption('dry-run')) {
             $this->revertComposerFile(false);
         }
 
