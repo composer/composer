@@ -96,7 +96,7 @@ class Problem
             $messages[] = $rule->getPrettyString($repositorySet, $request, $pool, $installedMap, $learnedPool);
         }
 
-        return "\n    - ".implode("\n    - ", $messages);
+        return "\n    - ".implode("\n    - ", array_unique($messages));
     }
 
     public function isCausedByLock()

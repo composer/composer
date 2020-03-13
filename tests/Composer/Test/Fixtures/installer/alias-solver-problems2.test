@@ -1,0 +1,54 @@
+--TEST--
+Test the error output of solver problems with dev-master aliases.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "locked/pkg", "version": "dev-master", "require": {"locked/dependency": "1.0.0"} }
+            ]
+        }
+    ],
+    "require": {
+        "locked/pkg": "*@dev"
+    }
+}
+
+--LOCK--
+{
+    "packages": [
+        { "name": "locked/pkg", "version": "dev-master", "require": {"locked/dependency": "1.0.0"} },
+        { "name": "locked/dependency", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+
+--RUN--
+update locked/dependency
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - locked/pkg is locked to version dev-master and an update of this package was not requested.
+    - locked/pkg dev-master requires locked/dependency 1.0.0 -> found locked/dependency[1.0.0] but it conflicts with another require.
+  Problem 2
+    - locked/pkg dev-master requires locked/dependency 1.0.0 -> found locked/dependency[1.0.0] but it conflicts with another require.
+    - Root composer.json requires locked/pkg *@dev -> satisfiable by locked/pkg[dev-master].
+
+Use the option --with-all-dependencies to allow updates and removals for packages currently locked to specific versions.
+--EXPECT--
+
