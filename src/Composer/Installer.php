@@ -328,7 +328,7 @@ class Installer
                     1 === $fundingCount ? '' : 's',
                     1 === $fundingCount ? 'is' : 'are'
                 ),
-                '<info>Use the composer fund command to find out more!</info>',
+                '<info>Use the `composer fund` command to find out more!</info>',
             ));
         }
 
