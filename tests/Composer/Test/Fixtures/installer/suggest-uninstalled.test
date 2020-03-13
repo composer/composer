@@ -25,7 +25,7 @@ Lock file operations: 1 install, 0 updates, 0 removals
 Writing lock file
 Installing dependencies from lock file (including require-dev)
 Package operations: 1 install, 0 updates, 0 removals
-1 package suggestions were added by new dependencies, use composer suggest to see details.
+1 package suggestions were added by new dependencies, use `composer suggest` to see details.
 Generating autoload files
 
 --EXPECT--
