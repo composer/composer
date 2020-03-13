@@ -49,6 +49,7 @@ class RequireCommand extends InitCommand
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
+                new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('fixed', null, InputOption::VALUE_NONE, 'Write fixed version to the composer.json.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'Do not show package suggestions.'),
@@ -227,6 +228,7 @@ EOT
         $install = Installer::create($io, $composer);
 
         $install
+            ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($input->getOption('prefer-source'))
             ->setPreferDist($input->getOption('prefer-dist'))
