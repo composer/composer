@@ -219,7 +219,7 @@ class PoolBuilder
                 $loadNames[$require] = null;
             }
 
-            $linkConstraint = $link->getConstraint()
+            $linkConstraint = $link->getConstraint();
             if ($linkConstraint && !($linkConstraint instanceof EmptyConstraint)) {
                 if (!array_key_exists($require, $this->nameConstraints)) {
                     $this->nameConstraints[$require] = new MultiConstraint(array($linkConstraint), false);
