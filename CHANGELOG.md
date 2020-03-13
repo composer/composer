@@ -1,3 +1,8 @@
+### [1.10.1] 2020-03-13
+
+  * Fixed path repository warning on empty path when using wildcards
+  * Fixed superfluous warnings when generating optimized autoloaders
+
 ### [1.10.0] 2020-03-10
 
   * Added `bearer` auth config to authenticate using `Authorization: Bearer <token>` headers
