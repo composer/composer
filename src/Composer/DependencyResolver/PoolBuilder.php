@@ -20,6 +20,7 @@ use Composer\Package\Version\StabilityFilter;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Plugin\PrePoolCreateEvent;
@@ -53,14 +54,20 @@ class PoolBuilder
 
     public function buildPool(array $repositories, Request $request)
     {
-        $pool = new Pool();
-
-        // TODO do we really want the request here? kind of want a root requirements thingy instead
         $loadNames = array();
         foreach ($request->getFixedPackages() as $package) {
             $this->nameConstraints[$package->getName()] = null;
             $this->loadedNames[$package->getName()] = true;
-            unset($loadNames[$package->getName()]);
+
+            // replace means conflict, so if a fixed package replaces a name, no need to load that one, packages would conflict anyways
+            foreach ($package->getReplaces() as $link) {
+                $this->nameConstraints[$package->getName()] = null;
+                $this->loadedNames[$link->getTarget()] = true;
+            }
+
+            // TODO in how far can we do the above for conflicts? It's more tricky cause conflicts can be limited to
+            // specific versions while replace is a conflict with all versions of the name
+
             if (
                 $package->getRepository() instanceof RootPackageRepository
                 || $package->getRepository() instanceof PlatformRepository
@@ -73,15 +80,20 @@ class PoolBuilder
         }
 
         foreach ($request->getRequires() as $packageName => $constraint) {
+            // fixed packages have already been added, so if a root require needs one of them, no need to do anything
             if (isset($this->loadedNames[$packageName])) {
                 continue;
             }
-            // TODO currently lock above is always NULL if we adjust that, this needs to merge constraints
-            // TODO does it really make sense that we can have install requests for the same package that is actively locked with non-matching constraints?
-            // also see the solver-problems.test test case
-            $constraint = array_key_exists($packageName, $loadNames) ? null : $constraint;
+
             $loadNames[$packageName] = $constraint;
             $this->nameConstraints[$packageName] = $constraint ? new MultiConstraint(array($constraint), false) : null;
+        }
+
+        // clean up loadNames for anything we manually marked loaded above
+        foreach ($loadNames as $name => $void) {
+            if (isset($this->loadedNames[$name])) {
+                unset($loadNames[$name]);
+            }
         }
 
         while (!empty($loadNames)) {
@@ -206,7 +218,9 @@ class PoolBuilder
             if (!isset($this->loadedNames[$require])) {
                 $loadNames[$require] = null;
             }
-            if ($linkConstraint = $link->getConstraint()) {
+
+            $linkConstraint = $link->getConstraint();
+            if ($linkConstraint && !($linkConstraint instanceof EmptyConstraint)) {
                 if (!array_key_exists($require, $this->nameConstraints)) {
                     $this->nameConstraints[$require] = new MultiConstraint(array($linkConstraint), false);
                 } elseif ($this->nameConstraints[$require]) {
