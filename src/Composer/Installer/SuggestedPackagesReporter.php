@@ -165,7 +165,7 @@ class SuggestedPackagesReporter
     {
         $suggestedPackages = $this->getFilteredSuggestions($installedRepo);
         if ($suggestedPackages) {
-            $this->io->writeError(count($suggestedPackages).' package suggestions were added by new dependencies, use <info>composer suggest</info> to see details.');
+            $this->io->writeError('<info>'.count($suggestedPackages).' package suggestions were added by new dependencies, use `composer suggest` to see details.</info>');
         }
 
         return $this;
