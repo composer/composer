@@ -59,7 +59,7 @@ class ClassMapGenerator
      * @throws \RuntimeException When the path is neither an existing file nor directory
      * @return array             A class map array
      */
-    public static function createMap($path, $blacklist = null, IOInterface $io = null, $namespace = null, $autoloadType = null)
+    public static function createMap($path, $blacklist = null, IOInterface $io = null, $namespace = null, $autoloadType = null, &$scannedFiles = array())
     {
         if (is_string($path)) {
             $basePath = $path;
@@ -94,8 +94,16 @@ class ClassMapGenerator
                 $filePath = preg_replace('{[\\\\/]{2,}}', '/', $filePath);
             }
 
+            $realPath = realpath($filePath);
+
+            // if a list of scanned files is given, avoid scanning twice the same file to save cycles and avoid generating warnings
+            // in case a PSR-0/4 declaration follows another more specific one, or a classmap declaration, which covered this file already
+            if (isset($scannedFiles[$realPath])) {
+                continue;
+            }
+
             // check the realpath of the file against the blacklist as the path might be a symlink and the blacklist is realpath'd so symlink are resolved
-            if ($blacklist && preg_match($blacklist, strtr(realpath($filePath), '\\', '/'))) {
+            if ($blacklist && preg_match($blacklist, strtr($realPath, '\\', '/'))) {
                 continue;
             }
             // check non-realpath of file for directories symlink in project dir
@@ -105,7 +113,15 @@ class ClassMapGenerator
 
             $classes = self::findClasses($filePath);
             if (null !== $autoloadType) {
-                $classes = self::filterByNamespace($classes, $filePath, $namespace, $autoloadType, $basePath, $io);
+                list($classes, $validClasses) = self::filterByNamespace($classes, $filePath, $namespace, $autoloadType, $basePath, $io);
+
+                // if no valid class was found in the file then we do not mark it as scanned as it might still be matched by another rule later
+                if ($validClasses) {
+                    $scannedFiles[$realPath] = true;
+                }
+            } else {
+                // classmap autoload rules always collect all classes so for these we definitely do not want to scan again
+                $scannedFiles[$realPath] = true;
             }
 
             foreach ($classes as $class) {
@@ -192,7 +208,7 @@ class ClassMapGenerator
 
         // TODO enable in Composer 2.0 & unskip test in AutoloadGeneratorTest::testPSRToClassMapIgnoresNonPSRClasses
         //return $validClasses;
-        return $classes;
+        return array($classes, $validClasses);
     }
 
     /**

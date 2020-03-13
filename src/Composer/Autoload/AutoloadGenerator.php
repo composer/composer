@@ -101,15 +101,15 @@ class AutoloadGenerator
         $this->runScripts = (bool) $runScripts;
     }
 
-    public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsr0Packages = false, $suffix = '')
+    public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsrPackages = false, $suffix = '')
     {
         if ($this->classMapAuthoritative) {
-            // Force scanPsr0Packages when classmap is authoritative
-            $scanPsr0Packages = true;
+            // Force scanPsrPackages when classmap is authoritative
+            $scanPsrPackages = true;
         }
         if ($this->runScripts) {
             $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode, array(), array(
-                'optimize' => (bool) $scanPsr0Packages,
+                'optimize' => (bool) $scanPsrPackages,
             ));
         }
 
@@ -234,14 +234,18 @@ EOF;
             $blacklist = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
         }
 
-        // flatten array
         $classMap = array();
         $ambiguousClasses = array();
-        if ($scanPsr0Packages) {
+        $scannedFiles = array();
+        foreach ($autoloads['classmap'] as $dir) {
+            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, null, null, $classMap, $ambiguousClasses, $scannedFiles);
+        }
+
+        if ($scanPsrPackages) {
             $namespacesToScan = array();
 
             // Scan the PSR-0/4 directories for class files, and add them to the class map
-            foreach (array('psr-0', 'psr-4') as $psrType) {
+            foreach (array('psr-4', 'psr-0') as $psrType) {
                 foreach ($autoloads[$psrType] as $namespace => $paths) {
                     $namespacesToScan[$namespace][] = array('paths' => $paths, 'type' => $psrType);
                 }
@@ -257,14 +261,10 @@ EOF;
                             continue;
                         }
 
-                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespace, $group['type'], $classMap, $ambiguousClasses);
+                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespace, $group['type'], $classMap, $ambiguousClasses, $scannedFiles);
                     }
                 }
             }
-        }
-
-        foreach ($autoloads['classmap'] as $dir) {
-            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, null, null, $classMap, $ambiguousClasses);
         }
 
         foreach ($ambiguousClasses as $className => $ambigiousPaths) {
@@ -319,7 +319,7 @@ EOF;
 
         if ($this->runScripts) {
             $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
-                'optimize' => (bool) $scanPsr0Packages,
+                'optimize' => (bool) $scanPsrPackages,
             ));
         }
 
@@ -336,9 +336,9 @@ EOF;
         return 0;
     }
 
-    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespaceFilter, $autoloadType, array $classMap, array &$ambiguousClasses)
+    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespaceFilter, $autoloadType, array $classMap, array &$ambiguousClasses, array &$scannedFiles)
     {
-        foreach ($this->generateClassMap($dir, $blacklist, $namespaceFilter, $autoloadType) as $class => $path) {
+        foreach ($this->generateClassMap($dir, $blacklist, $namespaceFilter, $autoloadType, true, $scannedFiles) as $class => $path) {
             $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
             if (!isset($classMap[$class])) {
                 $classMap[$class] = $pathCode;
@@ -350,9 +350,9 @@ EOF;
         return $classMap;
     }
 
-    private function generateClassMap($dir, $blacklist = null, $namespaceFilter = null, $autoloadType = null, $showAmbiguousWarning = true)
+    private function generateClassMap($dir, $blacklist, $namespaceFilter, $autoloadType, $showAmbiguousWarning, array &$scannedFiles)
     {
-        return ClassMapGenerator::createMap($dir, $blacklist, $showAmbiguousWarning ? $this->io : null, $namespaceFilter, $autoloadType);
+        return ClassMapGenerator::createMap($dir, $blacklist, $showAmbiguousWarning ? $this->io : null, $namespaceFilter, $autoloadType, $scannedFiles);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
@@ -461,9 +461,10 @@ EOF;
                 $blacklist = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
             }
 
+            $scannedFiles = array();
             foreach ($autoloads['classmap'] as $dir) {
                 try {
-                    $loader->addClassMap($this->generateClassMap($dir, $blacklist, null, null, false));
+                    $loader->addClassMap($this->generateClassMap($dir, $blacklist, null, null, false, $scannedFiles));
                 } catch (\RuntimeException $e) {
                     $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
                 }
