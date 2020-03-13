@@ -134,6 +134,17 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         $urlMatches = $this->getUrlMatches();
 
         if (empty($urlMatches)) {
+            if (preg_match('{[*{}]}', $this->url)) {
+                $url = $this->url;
+                while (preg_match('{[*{}]}', $url)) {
+                    $url = dirname($url);
+                }
+                // the parent directory before any wildcard exists, so we assume it is correctly configured but simply empty
+                if (is_dir($url)) {
+                    return;
+                }
+            }
+
             throw new \RuntimeException('The `url` supplied for the path (' . $this->url . ') repository does not exist');
         }
 

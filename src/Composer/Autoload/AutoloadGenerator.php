@@ -336,7 +336,7 @@ EOF;
         return 0;
     }
 
-    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist = null, $namespaceFilter = null, $autoloadType = null, array $classMap, array &$ambiguousClasses)
+    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespaceFilter, $autoloadType, array $classMap, array &$ambiguousClasses)
     {
         foreach ($this->generateClassMap($dir, $blacklist, $namespaceFilter, $autoloadType) as $class => $path) {
             $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
