@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\CompletePackageInterface;
 use Composer\Repository\RepositorySet;
+use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -219,6 +220,14 @@ class Problem
                 if (0 === count($filtered)) {
                     return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' but the package is fixed to '.$fixedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.');
                 }
+            }
+
+            $nonLockedPackages = array_filter($packages, function ($p) {
+                return !$p->getRepository() instanceof LockArrayRepository;
+            });
+
+            if (!$nonLockedPackages) {
+                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' in lock file but not in remote repositories, make sure you avoid updating this package to keep the one from lock file.');
             }
 
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with another require.');
