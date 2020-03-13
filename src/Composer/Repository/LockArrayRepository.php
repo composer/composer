@@ -23,7 +23,7 @@ class LockArrayRepository extends ArrayRepository
 {
     public function getRepoName()
     {
-        return 'lock '.parent::getRepoName();
+        return 'lock repo';
     }
 }
 
