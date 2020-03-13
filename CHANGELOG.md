@@ -824,6 +824,7 @@
 
   * Initial release
 
+[1.10.1]: https://github.com/composer/composer/compare/1.10.0...1.10.1
 [1.10.0]: https://github.com/composer/composer/compare/1.10.0-RC...1.10.0
 [1.10.0-RC]: https://github.com/composer/composer/compare/1.9.3...1.10.0-RC
 [1.9.3]: https://github.com/composer/composer/compare/1.9.2...1.9.3
