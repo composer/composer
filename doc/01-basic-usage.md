@@ -198,7 +198,7 @@ includes PHP itself, PHP extensions and some system libraries.
 
 * `ext-<name>` allows you to require PHP extensions (includes core
   extensions). Versioning can be quite inconsistent here, so it's often
-  a good idea to set the constraint to `*`.  An example of an extension
+  a good idea to set the constraint to `1`.  An example of an extension
   package name is `ext-gd`.
 
 * `lib-<name>` allows constraints to be made on versions of libraries used by
