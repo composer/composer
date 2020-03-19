@@ -47,7 +47,7 @@ class PathRepositoryTest extends TestCase
         $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
         $repository->getPackages();
 
-        $this->assertEquals(1, $repository->count());
+        $this->assertSame(1, $repository->count());
         $this->assertTrue($repository->hasPackage($this->getPackage('test/path-versioned', '0.0.2')));
     }
 
@@ -63,10 +63,10 @@ class PathRepositoryTest extends TestCase
         $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
         $packages = $repository->getPackages();
 
-        $this->assertTrue($repository->count() >= 1);
+        $this->assertGreaterThanOrEqual(1, $repository->count());
 
         $package = $packages[0];
-        $this->assertEquals('test/path-unversioned', $package->getName());
+        $this->assertSame('test/path-unversioned', $package->getName());
 
         $packageVersion = $package->getVersion();
         $this->assertNotEmpty($packageVersion);
@@ -85,7 +85,7 @@ class PathRepositoryTest extends TestCase
         $packages = $repository->getPackages();
         $names = array();
 
-        $this->assertEquals(2, $repository->count() >= 2);
+        $this->assertGreaterThanOrEqual(2, $repository->count());
 
         $package = $packages[0];
         $names[] = $package->getName();
@@ -94,7 +94,7 @@ class PathRepositoryTest extends TestCase
         $names[] = $package->getName();
 
         sort($names);
-        $this->assertEquals(array('test/path-unversioned', 'test/path-versioned'), $names);
+        $this->assertSame(array('test/path-unversioned', 'test/path-versioned'), $names);
     }
 
     /**
@@ -118,13 +118,13 @@ class PathRepositoryTest extends TestCase
         $repository = new PathRepository(array('url' => $relativeUrl), $ioInterface, $config);
         $packages = $repository->getPackages();
 
-        $this->assertEquals(1, $repository->count());
+        $this->assertSame(1, $repository->count());
 
         $package = $packages[0];
-        $this->assertEquals('test/path-versioned', $package->getName());
+        $this->assertSame('test/path-versioned', $package->getName());
 
         // Convert platform specific separators back to generic URL slashes
         $relativeUrl = str_replace(DIRECTORY_SEPARATOR, '/', $relativeUrl);
-        $this->assertEquals($relativeUrl, $package->getDistUrl());
+        $this->assertSame($relativeUrl, $package->getDistUrl());
     }
 }
