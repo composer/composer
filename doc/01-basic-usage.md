@@ -241,7 +241,7 @@ be in your project root, on the same level as `vendor` directory is. An example
 filename would be `src/Foo.php` containing an `Acme\Foo` class.
 
 After adding the [`autoload`](04-schema.md#autoload) field, you have to re-run
-this command :
+this command:
 
 ```sh
 php composer.phar dump-autoload
