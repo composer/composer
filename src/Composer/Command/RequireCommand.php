@@ -53,6 +53,7 @@ class RequireCommand extends InitCommand
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
+                new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('fixed', null, InputOption::VALUE_NONE, 'Write fixed version to the composer.json.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
@@ -253,6 +254,7 @@ EOT
         $install = Installer::create($io, $composer);
 
         $install
+            ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
             ->setPreferSource($input->getOption('prefer-source'))
             ->setPreferDist($input->getOption('prefer-dist'))
@@ -277,7 +279,7 @@ EOT
         }
 
         $status = $install->run();
-        if ($status !== 0) {
+        if ($status !== 0 || $input->getOption('dry-run')) {
             $this->revertComposerFile(false);
         }
 
