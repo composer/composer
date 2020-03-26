@@ -33,7 +33,7 @@ class ClearCacheCommand extends BaseCommand
 The <info>clear-cache</info> deletes all cached packages from composer's
 cache directory.
 
-Read more at https://getcomposer.org/doc/03-cli.md#clear-cache-clearcache-
+Read more at https://getcomposer.org/doc/03-cli.md#clear-cache-clearcache-cc
 EOT
             )
         ;
