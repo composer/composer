@@ -274,6 +274,8 @@ class PoolBuilder
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $replace)) {
                         $this->unfixPackage($request, $replace);
                         $loadNames[$replace] = null;
+                        // TODO should we try to merge constraints here?
+                        $this->nameConstraints[$replace] = null;
                     } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$require]) && $this->io) {
                         $this->updateAllowWarned[$replace] = true;
                         $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
