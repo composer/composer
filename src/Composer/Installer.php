@@ -142,9 +142,8 @@ class Installer
      * @var array|null
      */
     protected $updateMirrors = false;
-    protected $updateWhitelist = null;
-    protected $whitelistTransitiveDependencies = false;
-    protected $whitelistAllDependencies = false;
+    protected $updateAllowList = null;
+    protected $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
 
     /**
      * @var SuggestedPackagesReporter
@@ -199,8 +198,8 @@ class Installer
         gc_collect_cycles();
         gc_disable();
 
-        if ($this->updateWhitelist && $this->updateMirrors) {
-            throw new \RuntimeException("The installer options updateMirrors and updateWhitelist are mutually exclusive.");
+        if ($this->updateAllowList && $this->updateMirrors) {
+            throw new \RuntimeException("The installer options updateMirrors and updateAllowList are mutually exclusive.");
         }
 
         // Force update if there is no lock file present
@@ -352,16 +351,11 @@ class Installer
             $lockedRepository = $this->locker->getLockedRepository(true);
         }
 
-        if ($this->updateWhitelist) {
+        if ($this->updateAllowList) {
             if (!$lockedRepository) {
                 $this->io->writeError('<error>Cannot update only a partial set of packages without a lock file present.</error>', true, IOInterface::QUIET);
                 return 1;
-            }/*
-            $this->whitelistUpdateDependencies(
-                $lockedRepository,
-                $this->package->getRequires(),
-                $this->package->getDevRequires()
-            );*/
+            }
         }
 
         $this->io->writeError('<info>Loading composer repositories with package information</info>');
@@ -395,11 +389,11 @@ class Installer
         }
 
         // pass the allow list into the request, so the pool builder can apply it
-        if ($this->updateWhitelist) {
-            $request->setUpdateAllowList($this->updateWhitelist, $this->whitelistTransitiveDependencies, $this->whitelistAllDependencies);
+        if ($this->updateAllowList) {
+            $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->eventDispatcher);
+        $pool = $repositorySet->createPool($request, $this->eventDispatcher, $this->io);
 
         // solve dependencies
         $solver = new Solver($policy, $pool, $this->io, $repositorySet);
@@ -618,7 +612,7 @@ class Installer
                 $request->requireName($link->getTarget(), $link->getConstraint());
             }
 
-            $pool = $repositorySet->createPool($request, $this->eventDispatcher);
+            $pool = $repositorySet->createPool($request, $this->eventDispatcher, $this->io);
 
             // solve dependencies
             $solver = new Solver($policy, $pool, $this->io, $repositorySet);
@@ -1138,41 +1132,29 @@ class Installer
      * @param  array     $packages
      * @return Installer
      */
-    public function setUpdateWhitelist(array $packages)
+    public function setUpdateAllowList(array $packages)
     {
-        $this->updateWhitelist = array_flip(array_map('strtolower', $packages));
+        $this->updateAllowList = array_flip(array_map('strtolower', $packages));
 
         return $this;
     }
 
     /**
-     * Should dependencies of whitelisted packages (but not direct dependencies) be updated?
+     * Should dependencies of packages marked for update be updated?
      *
-     * This will NOT whitelist any dependencies that are also directly defined
-     * in the root package.
+     * Depending on the chosen constant this will either only update the directly named packages, all transitive
+     * dependencies which are not root requirement or all transitive dependencies including root requirements
      *
-     * @param  bool      $updateTransitiveDependencies
+     * @param  int      $updateAllowTransitiveDependencies One of the UPDATE_ constants on the Request class
      * @return Installer
      */
-    public function setWhitelistTransitiveDependencies($updateTransitiveDependencies = true)
+    public function setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
     {
-        $this->whitelistTransitiveDependencies = (bool) $updateTransitiveDependencies;
+        if (!in_array($updateAllowTransitiveDependencies, array(Request::UPDATE_ONLY_LISTED, Request::UPDATE_TRANSITIVE_DEPENDENCIES, Request::UPDATE_TRANSITIVE_ROOT_DEPENDENCIES), true)) {
+            throw new \RuntimeException("Invalid value for updateAllowTransitiveDependencies supplied");
+        }
 
-        return $this;
-    }
-
-    /**
-     * Should all dependencies of whitelisted packages be updated recursively?
-     *
-     * This will whitelist any dependencies of the whitelisted packages, including
-     * those defined in the root package.
-     *
-     * @param  bool      $updateAllDependencies
-     * @return Installer
-     */
-    public function setWhitelistAllDependencies($updateAllDependencies = true)
-    {
-        $this->whitelistAllDependencies = (bool) $updateAllDependencies;
+        $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;
 
         return $this;
     }

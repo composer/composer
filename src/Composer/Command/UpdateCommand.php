@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Plugin\CommandEvent;
@@ -145,6 +146,13 @@ EOT
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
         $apcu = $input->getOption('apcu-autoloader') || $config->get('apcu-autoloader');
 
+        $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
+        if ($input->getOption('with-all-dependencies')) {
+            $updateAllowTransitiveDependencies = Request::UPDATE_TRANSITIVE_ROOT_DEPENDENCIES;
+        } elseif ($input->getOption('with-dependencies')) {
+            $updateAllowTransitiveDependencies = Request::UPDATE_TRANSITIVE_DEPENDENCIES;
+        }
+
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
@@ -158,9 +166,8 @@ EOT
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
             ->setUpdateMirrors($updateMirrors)
-            ->setUpdateWhitelist($packages)
-            ->setWhitelistTransitiveDependencies($input->getOption('with-dependencies'))
-            ->setWhitelistAllDependencies($input->getOption('with-all-dependencies'))
+            ->setUpdateAllowList($packages)
+            ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))

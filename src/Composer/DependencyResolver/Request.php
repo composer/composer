@@ -23,13 +23,16 @@ use Composer\Semver\Constraint\ConstraintInterface;
  */
 class Request
 {
+    const UPDATE_ONLY_LISTED = 0;
+    const UPDATE_TRANSITIVE_DEPENDENCIES = 1;
+    const UPDATE_TRANSITIVE_ROOT_DEPENDENCIES = 2;
+
     protected $lockedRepository;
     protected $requires = array();
     protected $fixedPackages = array();
     protected $unlockables = array();
     protected $updateAllowList = array();
     protected $updateAllowTransitiveDependencies = false;
-    protected $updateAllowTransitiveRootDependencies = false;
 
     public function __construct(LockArrayRepository $lockedRepository = null)
     {
@@ -52,20 +55,35 @@ class Request
         $this->fixedPackages[spl_object_hash($package)] = $package;
 
         if (!$lockable) {
-            $this->unlockables[] = $package;
+            $this->unlockables[spl_object_hash($package)] = $package;
         }
     }
 
-    public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies, $updateAllowTransitiveRootDependencies)
+    public function unfixPackage(PackageInterface $package)
+    {
+        unset($this->fixedPackages[spl_object_hash($package)]);
+        unset($this->unlockables[spl_object_hash($package)]);
+    }
+
+    public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies)
     {
         $this->updateAllowList = $updateAllowList;
         $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;
-        $this->updateAllowTransitiveRootDependencies = $updateAllowTransitiveRootDependencies;
     }
 
     public function getUpdateAllowList()
     {
         return $this->updateAllowList;
+    }
+
+    public function getUpdateAllowTransitiveDependencies()
+    {
+        return $this->updateAllowTransitiveDependencies !== self::UPDATE_ONLY_LISTED;
+    }
+
+    public function getUpdateAllowTransitiveRootDependencies()
+    {
+        return $this->updateAllowTransitiveDependencies === self::UPDATE_TRANSITIVE_ROOT_DEPENDENCIES;
     }
 
     public function getRequires()

@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Package;
@@ -36,32 +37,41 @@ class PoolBuilder
     private $rootAliases;
     private $rootReferences;
     private $eventDispatcher;
+    private $io;
 
     private $aliasMap = array();
     private $nameConstraints = array();
     private $loadedNames = array();
     private $packages = array();
     private $unacceptableFixedPackages = array();
+    private $updateAllowList = array();
+    private $skippedLoad = array();
+    private $updateAllowWarned = array();
 
-    private $unfixList = array();
-
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, EventDispatcher $eventDispatcher = null)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, EventDispatcher $eventDispatcher = null, IOInterface $io = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
         $this->rootAliases = $rootAliases;
         $this->rootReferences = $rootReferences;
         $this->eventDispatcher = $eventDispatcher;
+        $this->io = $io;
     }
 
     public function buildPool(array $repositories, Request $request)
     {
         if ($request->getUpdateAllowList()) {
-            $this->unfixList = $request->getUpdateAllowList();
+            $this->updateAllowList = $request->getUpdateAllowList();
+            $this->warnAboutNonMatchingUpdateAllowList($request);
 
             foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
-                if (!$this->isUpdateable($lockedPackage)) {
+                if (!$this->isUpdateAllowed($lockedPackage)) {
                     $request->fixPackage($lockedPackage);
+                    // remember which packages we skipped loading remote content for in this partial update
+                    $this->skippedLoad[$lockedPackage->getName()] = true;
+                    foreach ($lockedPackage->getReplaces() as $link) {
+                        $this->skippedLoad[$link->getTarget()] = true;
+                    }
                 }
             }
         }
@@ -85,7 +95,7 @@ class PoolBuilder
                 || $package->getRepository() instanceof PlatformRepository
                 || StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $package->getNames(), $package->getStability())
             ) {
-                $loadNames += $this->loadPackage($request, $package);
+                $loadNames += $this->loadPackage($request, $package, false);
             } else {
                 $this->unacceptableFixedPackages[] = $package;
             }
@@ -94,6 +104,7 @@ class PoolBuilder
         foreach ($request->getRequires() as $packageName => $constraint) {
             // fixed packages have already been added, so if a root require needs one of them, no need to do anything
             if (isset($this->loadedNames[$packageName])) {
+                $this->rootRequireNotUpdated[$packageName] = true;
                 continue;
             }
 
@@ -120,7 +131,6 @@ class PoolBuilder
                 if ($repository instanceof PlatformRepository || $repository === $request->getLockedRepository()) {
                     continue;
                 }
-
                 $result = $repository->loadPackages($loadNames, $this->acceptableStabilities, $this->stabilityFlags);
 
                 foreach ($result['namesFound'] as $name) {
@@ -189,7 +199,7 @@ class PoolBuilder
         return $pool;
     }
 
-    private function loadPackage(Request $request, PackageInterface $package)
+    private function loadPackage(Request $request, PackageInterface $package, $propagateUpdate = true)
     {
         $index = count($this->packages);
         $this->packages[] = $package;
@@ -205,6 +215,7 @@ class PoolBuilder
         // apply to
         if (isset($this->rootReferences[$name])) {
             // do not modify the references on already locked packages
+            // TODO what about unfix on allow update?
             if (!$request->isFixedPackage($package)) {
                 $package->setSourceDistReferences($this->rootReferences[$name]);
             }
@@ -229,9 +240,16 @@ class PoolBuilder
             $require = $link->getTarget();
             if (!isset($this->loadedNames[$require])) {
                 $loadNames[$require] = null;
-            }
-            if (isset($request->getUpdateAllowList()[$package->getName()])) {
-
+            // if this is a partial update with transitive dependencies we need to unfix the package we now know is a
+            // dependency of another package which we are trying to update, and then attempt to load it again
+            } elseif ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies() && isset($this->skippedLoad[$require])) {
+                if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $require)) {
+                    $this->unfixPackage($request, $require);
+                    $loadNames[$require] = null;
+                } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $require) && !isset($this->updateAllowWarned[$require]) && $this->io) {
+                    $this->updateAllowWarned[$require] = true;
+                    $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
+                }
             }
 
             $linkConstraint = $link->getConstraint();
@@ -252,114 +270,23 @@ class PoolBuilder
     }
 
     /**
-     * Adds all dependencies of the update whitelist to the whitelist, too.
+     * Checks if a particular name is required directly in the request
      *
-     * Packages which are listed as requirements in the root package will be
-     * skipped including their dependencies, unless they are listed in the
-     * update whitelist themselves or $whitelistAllDependencies is true.
-     *
-     * @param RepositoryInterface $lockRepo        Use the locked repo
-     *                                             As we want the most accurate package list to work with, and installed
-     *                                             repo might be empty but locked repo will always be current.
-     * @param array               $rootRequires    An array of links to packages in require of the root package
-     * @param array               $rootDevRequires An array of links to packages in require-dev of the root package
+     * @return bool
      */
-    private function whitelistUpdateDependencies($lockRepo, array $rootRequires, array $rootDevRequires)
+    private function isRootRequire(Request $request, $name)
     {
-        $rootRequires = array_merge($rootRequires, $rootDevRequires);
-
-        $skipPackages = array();
-        if (!$this->whitelistAllDependencies) {
-            foreach ($rootRequires as $require) {
-                $skipPackages[$require->getTarget()] = true;
-            }
-        }
-
-        $installedRepo = new InstalledRepository(array($lockRepo));
-
-        $seen = array();
-
-        $rootRequiredPackageNames = array_keys($rootRequires);
-
-        foreach ($this->updateWhitelist as $packageName => $void) {
-            $packageQueue = new \SplQueue;
-            $nameMatchesRequiredPackage = false;
-
-            $depPackages = $installedRepo->findPackagesWithReplacersAndProviders($packageName);
-            $matchesByPattern = array();
-
-            // check if the name is a glob pattern that did not match directly
-            if (empty($depPackages)) {
-                // add any installed package matching the whitelisted name/pattern
-                $whitelistPatternSearchRegexp = BasePackage::packageNameToRegexp($packageName, '^%s$');
-                foreach ($lockRepo->search($whitelistPatternSearchRegexp) as $installedPackage) {
-                    $matchesByPattern[] = $installedRepo->findPackages($installedPackage['name']);
-                }
-
-                // add root requirements which match the whitelisted name/pattern
-                $whitelistPatternRegexp = BasePackage::packageNameToRegexp($packageName);
-                foreach ($rootRequiredPackageNames as $rootRequiredPackageName) {
-                    if (preg_match($whitelistPatternRegexp, $rootRequiredPackageName)) {
-                        $nameMatchesRequiredPackage = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!empty($matchesByPattern)) {
-                $depPackages = array_merge($depPackages, call_user_func_array('array_merge', $matchesByPattern));
-            }
-
-            if (count($depPackages) == 0 && !$nameMatchesRequiredPackage) {
-                $this->io->writeError('<warning>Package "' . $packageName . '" listed for update is not installed. Ignoring.</warning>');
-            }
-
-            foreach ($depPackages as $depPackage) {
-                $packageQueue->enqueue($depPackage);
-            }
-
-            while (!$packageQueue->isEmpty()) {
-                $package = $packageQueue->dequeue();
-                if (isset($seen[spl_object_hash($package)])) {
-                    continue;
-                }
-
-                $seen[spl_object_hash($package)] = true;
-                $this->updateWhitelist[$package->getName()] = true;
-
-                if (!$this->whitelistTransitiveDependencies && !$this->whitelistAllDependencies) {
-                    continue;
-                }
-
-                $requires = $package->getRequires();
-
-                foreach ($requires as $require) {
-                    $requirePackages = $installedRepo->findPackagesWithReplacersAndProviders($require->getTarget());
-
-                    foreach ($requirePackages as $requirePackage) {
-                        if (isset($this->updateWhitelist[$requirePackage->getName()])) {
-                            continue;
-                        }
-
-                        if (isset($skipPackages[$requirePackage->getName()]) && !preg_match(BasePackage::packageNameToRegexp($packageName), $requirePackage->getName())) {
-                            $this->io->writeError('<warning>Dependency "' . $requirePackage->getName() . '" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>');
-                            continue;
-                        }
-
-                        $packageQueue->enqueue($requirePackage);
-                    }
-                }
-            }
-        }
+        $rootRequires = $request->getRequires();
+        return isset($rootRequires[$name]);
     }
 
     /**
-     * @param  PackageInterface $package
+     * Checks whether the update allow list allows this package in the lock file to be updated
      * @return bool
      */
-    private function isUpdateable(PackageInterface $package)
+    private function isUpdateAllowed(PackageInterface $package)
     {
-        foreach ($this->unfixList as $pattern => $void) {
+        foreach ($this->updateAllowList as $pattern => $void) {
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
             if (preg_match($patternRegexp, $package->getName())) {
                 return true;
@@ -367,6 +294,43 @@ class PoolBuilder
         }
 
         return false;
+    }
+
+    private function warnAboutNonMatchingUpdateAllowList(Request $request)
+    {
+        if ($this->io) {
+            foreach ($this->updateAllowList as $pattern => $void) {
+                foreach ($request->getLockedRepository()->getPackages() as $package) {
+                    $patternRegexp = BasePackage::packageNameToRegexp($pattern);
+                    if (preg_match($patternRegexp, $package->getName())) {
+                        continue 2;
+                    }
+                }
+                if (strpos($pattern, '*') !== false) {
+                    $this->io->writeError('<warning>Pattern "' . $pattern . '" listed for update does not match any locked packages.</warning>');
+                } else {
+                    $this->io->writeError('<warning>Package "' . $pattern . '" listed for update is not locked.</warning>');
+                }
+            }
+        }
+    }
+
+    /**
+     * Reverts the decision to use a fixed package from lock file if a partial update with transitive dependencies
+     * found that this package actually needs to be updated
+     */
+    private function unfixPackage(Request $request, $name)
+    {
+        // remove locked package by this name which was already initialized
+        foreach ($this->packages as $i => $loadedPackage) {
+            if ($loadedPackage->getName() === $name && $loadedPackage->getRepository() === $request->getLockedRepository()) {
+                $request->unfixPackage($loadedPackage);
+                unset($this->packages[$i]);
+            }
+        }
+
+        unset($this->skippedLoad[$name]);
+        unset($this->loadedNames[$name]);
     }
 }
 

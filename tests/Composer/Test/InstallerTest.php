@@ -12,6 +12,7 @@
 
 namespace Composer\Test;
 
+use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\Console\Application;
 use Composer\IO\BufferIO;
@@ -279,14 +280,20 @@ class InstallerTest extends TestCase
             $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
             $packages = $filteredPackages;
 
+            $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
+            if ($input->getOption('with-all-dependencies')) {
+                $updateAllowTransitiveDependencies = Request::UPDATE_TRANSITIVE_ROOT_DEPENDENCIES;
+            } elseif ($input->getOption('with-dependencies')) {
+                $updateAllowTransitiveDependencies = Request::UPDATE_TRANSITIVE_DEPENDENCIES;
+            }
+
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setUpdate(true)
                 ->setDryRun($input->getOption('dry-run'))
                 ->setUpdateMirrors($updateMirrors)
-                ->setUpdateWhitelist($packages)
-                ->setWhitelistTransitiveDependencies($input->getOption('with-dependencies'))
-                ->setWhitelistAllDependencies($input->getOption('with-all-dependencies'))
+                ->setUpdateAllowList($packages)
+                ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
                 ->setPreferStable($input->getOption('prefer-stable'))
                 ->setPreferLowest($input->getOption('prefer-lowest'))
                 ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));

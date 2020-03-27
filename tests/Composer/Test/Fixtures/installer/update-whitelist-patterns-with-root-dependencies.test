@@ -70,7 +70,7 @@ Update with a package whitelist only updates those packages and their dependenci
     "platform-dev": []
 }
 --RUN--
-update whitelisted/pkg-* --with-dependencies
+update whitelisted/pkg-* foobar --with-dependencies
 --EXPECT--
 Upgrading dependency/pkg (1.0.0 => 1.1.0)
 Upgrading whitelisted/pkg-component2 (1.0.0 => 1.1.0)
