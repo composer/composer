@@ -215,7 +215,6 @@ class PoolBuilder
         // apply to
         if (isset($this->rootReferences[$name])) {
             // do not modify the references on already locked packages
-            // TODO what about unfix on allow update?
             if (!$request->isFixedPackage($package)) {
                 $package->setSourceDistReferences($this->rootReferences[$name]);
             }
@@ -263,6 +262,23 @@ class PoolBuilder
                 // else it is null and should stay null
             } else {
                 $this->nameConstraints[$require] = null;
+            }
+        }
+
+        // if we're doing a partial update with deps and we're not loading an initial fixed package
+        // we also need to trigger an update for transitive deps which are being replaced
+        if ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies()) {
+            foreach ($package->getReplaces() as $link) {
+                $replace = $link->getTarget();
+                if (isset($this->loadedNames[$replace]) && isset($this->skippedLoad[$replace])) {
+                    if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $replace)) {
+                        $this->unfixPackage($request, $replace);
+                        $loadNames[$replace] = null;
+                    } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$require]) && $this->io) {
+                        $this->updateAllowWarned[$replace] = true;
+                        $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
+                    }
+                }
             }
         }
 
