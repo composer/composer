@@ -300,9 +300,16 @@ class PoolBuilder
     {
         if ($this->io) {
             foreach ($this->updateAllowList as $pattern => $void) {
+                $patternRegexp = BasePackage::packageNameToRegexp($pattern);
+                // update pattern matches a locked package? => all good
                 foreach ($request->getLockedRepository()->getPackages() as $package) {
-                    $patternRegexp = BasePackage::packageNameToRegexp($pattern);
                     if (preg_match($patternRegexp, $package->getName())) {
+                        continue 2;
+                    }
+                }
+                // update pattern matches a root require? => all good, probably a new package
+                foreach ($request->getRequires() as $packageName => $constraint) {
+                    if (preg_match($patternRegexp, $packageName)) {
                         continue 2;
                     }
                 }

@@ -182,7 +182,7 @@ class Problem
             if ($package->getName() === $packageName) {
                 $fixedPackage = $package;
                 if ($pool->isUnacceptableFixedPackage($package)) {
-                    return array("- ", $package->getPrettyName().' is fixed to '.$package->getPrettyVersion().' (lock file version) by a partial update but that version is rejected by your minimum-stability. Make sure you whitelist it for update.');
+                    return array("- ", $package->getPrettyName().' is fixed to '.$package->getPrettyVersion().' (lock file version) by a partial update but that version is rejected by your minimum-stability. Make sure you list it as an argument for the update command.');
                 }
                 break;
             }
@@ -207,7 +207,7 @@ class Problem
                     return $fixedConstraint->matches(new Constraint('==', $p->getVersion()));
                 });
                 if (0 === count($filtered)) {
-                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' but the package is fixed to '.$fixedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you whitelist it for update.');
+                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' but the package is fixed to '.$fixedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.');
                 }
             }
 

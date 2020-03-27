@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Config\JsonConfigSource;
+use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -179,8 +180,8 @@ EOT
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
-            ->setUpdateWhitelist($packages)
-            ->setWhitelistTransitiveDependencies(!$input->getOption('no-update-with-dependencies'))
+            ->setUpdateAllowList($packages)
+            ->setUpdateAllowTransitiveDependencies($input->getOption('no-update-with-dependencies') ? Request::UPDATE_ONLY_LISTED : Request::UPDATE_TRANSITIVE_DEPENDENCIES)
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setDryRun($dryRun)

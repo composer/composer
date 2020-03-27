@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\DependencyResolver\Request;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -248,6 +249,13 @@ EOT
         $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
         $apcu = $input->getOption('apcu-autoloader') || $composer->getConfig()->get('apcu-autoloader');
 
+        $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
+        if ($input->getOption('update-with-all-dependencies')) {
+            $updateAllowTransitiveDependencies = Request::UPDATE_TRANSITIVE_ROOT_DEPENDENCIES;
+        } elseif ($input->getOption('update-with-dependencies')) {
+            $updateAllowTransitiveDependencies = Request::UPDATE_TRANSITIVE_DEPENDENCIES;
+        }
+
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
@@ -264,8 +272,7 @@ EOT
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
-            ->setWhitelistTransitiveDependencies($input->getOption('update-with-dependencies'))
-            ->setWhitelistAllDependencies($input->getOption('update-with-all-dependencies'))
+            ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
@@ -275,7 +282,7 @@ EOT
         // if no lock is present, or the file is brand new, we do not do a
         // partial update as this is not supported by the Installer
         if (!$this->firstRequire && $composer->getConfig()->get('lock')) {
-            $install->setUpdateWhitelist(array_keys($requirements));
+            $install->setUpdateAllowList(array_keys($requirements));
         }
 
         $status = $install->run();
