@@ -1,0 +1,49 @@
+--TEST--
+When partially updating a package to a newer version and the new version has a new requirement for a package we already have installed, mark it for update
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "root/pkg1", "version": "1.0.0", "require": { "current/dep": "^1.0" } },
+                { "name": "root/pkg1", "version": "1.2.0", "require": { "current/dep": "^1.0" } },
+                { "name": "current/dep", "version": "1.0.0" },
+                { "name": "current/dep", "version": "1.2.0" },
+                { "name": "root/pkg2", "version": "1.0.0" },
+                { "name": "root/pkg2", "version": "1.2.0", "require": { "current/dep": "^1.2" } }
+            ]
+        }
+    ],
+    "require": {
+        "root/pkg1": "1.*",
+        "root/pkg2": "1.*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "root/pkg1", "version": "1.0.0", "require": { "current/dep": "^1.0" } },
+    { "name": "current/dep", "version": "1.0.0" },
+    { "name": "root/pkg2", "version": "1.0.0" }
+]
+--LOCK--
+{
+    "packages": [
+        { "name": "root/pkg1", "version": "1.0.0", "require": { "current/dep": "^1.0" } },
+        { "name": "current/dep", "version": "1.0.0" },
+        { "name": "root/pkg2", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update root/pkg2 --with-dependencies
+--EXPECT--
+Upgrading current/dep (1.0.0 => 1.2.0)
+Upgrading root/pkg2 (1.0.0 => 1.2.0)
