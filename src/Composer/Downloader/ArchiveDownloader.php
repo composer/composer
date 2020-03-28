@@ -43,7 +43,10 @@ abstract class ArchiveDownloader extends FileDownloader
             throw new \RuntimeException('Expected empty path to extract '.$package.' into but directory exists: '.$path);
         }
 
-        $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
+        do {
+            $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
+        } while (is_dir($temporaryDir));
+
         $fileName = $this->getFileName($package, $path);
 
         try {
