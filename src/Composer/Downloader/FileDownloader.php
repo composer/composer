@@ -239,13 +239,13 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         if (file_exists($fileName)) {
             $this->filesystem->unlink($fileName);
         }
-        if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
+        if (is_dir($path) && $this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
             $this->filesystem->removeDirectory($this->config->get('vendor-dir').'/composer/');
         }
-        if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
+        if (is_dir($path) && $this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
             $this->filesystem->removeDirectory($this->config->get('vendor-dir'));
         }
-        if ($this->filesystem->isDirEmpty($path)) {
+        if (is_dir($path) && $this->filesystem->isDirEmpty($path)) {
             $this->filesystem->removeDirectory($path);
         }
     }
