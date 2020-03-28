@@ -101,8 +101,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             );
         }
 
-        $this->filesystem->ensureDirectoryExists($path);
         $fileName = $this->getFileName($package, $path);
+        $this->filesystem->ensureDirectoryExists($path);
+        $this->filesystem->ensureDirectoryExists(dirname($fileName));
 
         $io = $this->io;
         $cache = $this->cache;
@@ -234,6 +235,19 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
+        $fileName = $this->getFileName($package, $path);
+        if (file_exists($fileName)) {
+            $this->filesystem->unlink($fileName);
+        }
+        if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
+            $this->filesystem->removeDirectory($this->config->get('vendor-dir').'/composer/');
+        }
+        if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
+            $this->filesystem->removeDirectory($this->config->get('vendor-dir'));
+        }
+        if ($this->filesystem->isDirEmpty($path)) {
+            $this->filesystem->removeDirectory($path);
+        }
     }
 
     /**
@@ -302,7 +316,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return $path.'_'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
+        return rtrim($this->config->get('vendor-dir').'/composer/'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
     }
 
     /**

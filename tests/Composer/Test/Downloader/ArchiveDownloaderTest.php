@@ -16,6 +16,8 @@ use Composer\Test\TestCase;
 
 class ArchiveDownloaderTest extends TestCase
 {
+    protected $config;
+
     public function testGetFileName()
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -28,8 +30,13 @@ class ArchiveDownloaderTest extends TestCase
         $method = new \ReflectionMethod($downloader, 'getFileName');
         $method->setAccessible(true);
 
+        $this->config->expects($this->any())
+            ->method('get')
+            ->with('vendor-dir')
+            ->will($this->returnValue('/vendor'));
+
         $first = $method->invoke($downloader, $packageMock, '/path');
-        $this->assertRegExp('#/path_[a-z0-9]+\.js#', $first);
+        $this->assertRegExp('#/vendor/composer/[a-z0-9]+\.js#', $first);
         $this->assertSame($first, $method->invoke($downloader, $packageMock, '/path'));
     }
 
@@ -158,8 +165,8 @@ class ArchiveDownloaderTest extends TestCase
             'Composer\Downloader\ArchiveDownloader',
             array(
                 $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-                $config = $this->getMockBuilder('Composer\Config')->getMock(),
-                new \Composer\Util\HttpDownloader($io, $config),
+                $this->config = $this->getMockBuilder('Composer\Config')->getMock(),
+                new \Composer\Util\HttpDownloader($io, $this->config),
             )
         );
     }

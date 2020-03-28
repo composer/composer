@@ -91,30 +91,13 @@ abstract class ArchiveDownloader extends FileDownloader
             }
 
             $this->filesystem->removeDirectory($temporaryDir);
-            if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
-                $this->filesystem->removeDirectory($this->config->get('vendor-dir').'/composer/');
-            }
-            if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
-                $this->filesystem->removeDirectory($this->config->get('vendor-dir'));
-            }
         } catch (\Exception $e) {
             // clean up
             $this->filesystem->removeDirectory($path);
             $this->filesystem->removeDirectory($temporaryDir);
-            if (file_exists($fileName)) {
-                $this->filesystem->unlink($fileName);
-            }
 
             throw $e;
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getFileName(PackageInterface $package, $path)
-    {
-        return rtrim($path.'_'.md5($path.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
     }
 
     /**

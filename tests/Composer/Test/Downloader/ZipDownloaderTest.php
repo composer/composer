@@ -69,7 +69,7 @@ class ZipDownloaderTest extends TestCase
             $this->markTestSkipped('zip extension missing');
         }
 
-        $this->config->expects($this->at(0))
+        $this->config->expects($this->any())
             ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));
