@@ -64,7 +64,7 @@ class VersionGuesser
     public function guessVersion(array $packageConfig, $path)
     {
         if (!function_exists('proc_open')) {
-            return;
+            return null;
         }
 
         $versionData = $this->guessGitVersion($packageConfig, $path);
@@ -86,6 +86,8 @@ class VersionGuesser
         if (null !== $versionData && null !== $versionData['version']) {
             return $this->postprocess($versionData);
         }
+        
+        return null;
     }
 
     private function postprocess(array $versionData)
