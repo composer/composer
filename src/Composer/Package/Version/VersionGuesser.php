@@ -63,26 +63,28 @@ class VersionGuesser
      */
     public function guessVersion(array $packageConfig, $path)
     {
-        if (function_exists('proc_open')) {
-            $versionData = $this->guessGitVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
+        if (!function_exists('proc_open')) {
+            return;
+        }
 
-            $versionData = $this->guessHgVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
+        $versionData = $this->guessGitVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
+        }
 
-            $versionData = $this->guessFossilVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
+        $versionData = $this->guessHgVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
+        }
 
-            $versionData = $this->guessSvnVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
+        $versionData = $this->guessFossilVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
+        }
+
+        $versionData = $this->guessSvnVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
         }
     }
 
