@@ -104,7 +104,6 @@ class PoolBuilder
         foreach ($request->getRequires() as $packageName => $constraint) {
             // fixed packages have already been added, so if a root require needs one of them, no need to do anything
             if (isset($this->loadedNames[$packageName])) {
-                $this->rootRequireNotUpdated[$packageName] = true;
                 continue;
             }
 
