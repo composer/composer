@@ -282,9 +282,9 @@ class InstallerTest extends TestCase
 
             $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
             if ($input->getOption('with-all-dependencies')) {
-                $updateAllowTransitiveDependencies = Request::UPDATE_TRANSITIVE_ROOT_DEPENDENCIES;
+                $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
             } elseif ($input->getOption('with-dependencies')) {
-                $updateAllowTransitiveDependencies = Request::UPDATE_TRANSITIVE_DEPENDENCIES;
+                $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
             }
 
             $installer

@@ -181,7 +181,7 @@ EOT
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
             ->setUpdateAllowList($packages)
-            ->setUpdateAllowTransitiveDependencies($input->getOption('no-update-with-dependencies') ? Request::UPDATE_ONLY_LISTED : Request::UPDATE_TRANSITIVE_DEPENDENCIES)
+            ->setUpdateAllowTransitiveDependencies($input->getOption('no-update-with-dependencies') ? Request::UPDATE_ONLY_LISTED : Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE)
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setDryRun($dryRun)

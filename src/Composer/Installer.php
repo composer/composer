@@ -1150,7 +1150,7 @@ class Installer
      */
     public function setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
     {
-        if (!in_array($updateAllowTransitiveDependencies, array(Request::UPDATE_ONLY_LISTED, Request::UPDATE_TRANSITIVE_DEPENDENCIES, Request::UPDATE_TRANSITIVE_ROOT_DEPENDENCIES), true)) {
+        if (!in_array($updateAllowTransitiveDependencies, array(Request::UPDATE_ONLY_LISTED, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS), true)) {
             throw new \RuntimeException("Invalid value for updateAllowTransitiveDependencies supplied");
         }
 
