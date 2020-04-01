@@ -220,7 +220,9 @@ class PoolBuilder
             }
         }
 
-        if (isset($this->rootAliases[$name][$package->getVersion()])) {
+        // if propogateUpdate is false we are loading a fixed package, root aliases do not apply as they are manually
+        // loaded as separate packages in this case
+        if ($propagateUpdate && isset($this->rootAliases[$name][$package->getVersion()])) {
             $alias = $this->rootAliases[$name][$package->getVersion()];
             if ($package instanceof AliasPackage) {
                 $basePackage = $package->getAliasOf();
@@ -345,11 +347,19 @@ class PoolBuilder
     private function unfixPackage(Request $request, $name)
     {
         // remove locked package by this name which was already initialized
-        foreach ($this->packages as $i => $loadedPackage) {
-            if ($loadedPackage->getName() === $name && $loadedPackage->getRepository() === $request->getLockedRepository()) {
-                $request->unfixPackage($loadedPackage);
-                unset($this->packages[$i]);
-                unset($this->aliasMap[spl_object_hash($loadedPackage)]);
+        foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
+            if (!($lockedPackage instanceof AliasPackage) && $lockedPackage->getName() === $name) {
+                if (false !== $index = array_search($lockedPackage, $this->packages, true)) {
+                    $request->unfixPackage($lockedPackage);
+                    unset($this->packages[$index]);
+                    if (isset($this->aliasMap[spl_object_hash($lockedPackage)])) {
+                        foreach ($this->aliasMap[spl_object_hash($lockedPackage)] as $aliasIndex => $aliasPackage) {
+                            $request->unfixPackage($aliasPackage);
+                            unset($this->packages[$aliasIndex]);
+                        }
+                        unset($this->aliasMap[spl_object_hash($lockedPackage)]);
+                    }
+                }
             }
         }
 
