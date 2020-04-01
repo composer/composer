@@ -67,10 +67,11 @@ class PoolBuilder
             foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
                 if (!$this->isUpdateAllowed($lockedPackage)) {
                     $request->fixPackage($lockedPackage);
+                    $lockedName = $lockedPackage->getName();
                     // remember which packages we skipped loading remote content for in this partial update
-                    $this->skippedLoad[$lockedPackage->getName()] = true;
+                    $this->skippedLoad[$lockedPackage->getName()] = $lockedName;
                     foreach ($lockedPackage->getReplaces() as $link) {
-                        $this->skippedLoad[$link->getTarget()] = true;
+                        $this->skippedLoad[$link->getTarget()] = $lockedName;
                     }
                 }
             }
@@ -244,7 +245,7 @@ class PoolBuilder
             // if this is a partial update with transitive dependencies we need to unfix the package we now know is a
             // dependency of another package which we are trying to update, and then attempt to load it again
             } elseif ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies() && isset($this->skippedLoad[$require])) {
-                if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $require)) {
+                if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$require])) {
                     $this->unfixPackage($request, $require);
                     $loadNames[$require] = null;
                 } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $require) && !isset($this->updateAllowWarned[$require])) {
@@ -273,7 +274,7 @@ class PoolBuilder
             foreach ($package->getReplaces() as $link) {
                 $replace = $link->getTarget();
                 if (isset($this->loadedNames[$replace]) && isset($this->skippedLoad[$replace])) {
-                    if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $replace)) {
+                    if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$replace])) {
                         $this->unfixPackage($request, $replace);
                         $loadNames[$replace] = null;
                         // TODO should we try to merge constraints here?
@@ -361,6 +362,11 @@ class PoolBuilder
                     }
                 }
             }
+        }
+
+        // if we unfixed a replaced package name, we also need to unfix the replacer itself
+        if ($this->skippedLoad[$name] !== $name) {
+            $this->unfixPackage($request, $this->skippedLoad[$name]);
         }
 
         unset($this->skippedLoad[$name]);
