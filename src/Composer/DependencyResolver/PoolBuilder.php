@@ -48,7 +48,7 @@ class PoolBuilder
     private $skippedLoad = array();
     private $updateAllowWarned = array();
 
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io = null, EventDispatcher $eventDispatcher = null)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
