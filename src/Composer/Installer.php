@@ -393,7 +393,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->eventDispatcher, $this->io);
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher);
 
         // solve dependencies
         $solver = new Solver($policy, $pool, $this->io, $repositorySet);
@@ -612,7 +612,7 @@ class Installer
                 $request->requireName($link->getTarget(), $link->getConstraint());
             }
 
-            $pool = $repositorySet->createPool($request, $this->eventDispatcher, $this->io);
+            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher);
 
             // solve dependencies
             $solver = new Solver($policy, $pool, $this->io, $repositorySet);

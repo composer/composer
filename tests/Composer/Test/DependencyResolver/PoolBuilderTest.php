@@ -89,7 +89,7 @@ class PoolBuilderTest extends TestCase
             $request->fixPackage($loadPackage($fixedPackage));
         }
 
-        $pool = $repositorySet->createPool($request);
+        $pool = $repositorySet->createPool($request, new NullIO());
         for ($i = 1, $count = count($pool); $i <= $count; $i++) {
             $result[] = $pool->packageById($i);
         }

@@ -48,7 +48,7 @@ class PoolBuilder
     private $skippedLoad = array();
     private $updateAllowWarned = array();
 
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, EventDispatcher $eventDispatcher = null, IOInterface $io = null)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io = null, EventDispatcher $eventDispatcher = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
@@ -244,7 +244,7 @@ class PoolBuilder
                 if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $require)) {
                     $this->unfixPackage($request, $require);
                     $loadNames[$require] = null;
-                } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $require) && !isset($this->updateAllowWarned[$require]) && $this->io) {
+                } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $require) && !isset($this->updateAllowWarned[$require])) {
                     $this->updateAllowWarned[$require] = true;
                     $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
                 }
@@ -275,7 +275,7 @@ class PoolBuilder
                         $loadNames[$replace] = null;
                         // TODO should we try to merge constraints here?
                         $this->nameConstraints[$replace] = null;
-                    } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$require]) && $this->io) {
+                    } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$require])) {
                         $this->updateAllowWarned[$replace] = true;
                         $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
                     }
@@ -315,26 +315,24 @@ class PoolBuilder
 
     private function warnAboutNonMatchingUpdateAllowList(Request $request)
     {
-        if ($this->io) {
-            foreach ($this->updateAllowList as $pattern => $void) {
-                $patternRegexp = BasePackage::packageNameToRegexp($pattern);
-                // update pattern matches a locked package? => all good
-                foreach ($request->getLockedRepository()->getPackages() as $package) {
-                    if (preg_match($patternRegexp, $package->getName())) {
-                        continue 2;
-                    }
+        foreach ($this->updateAllowList as $pattern => $void) {
+            $patternRegexp = BasePackage::packageNameToRegexp($pattern);
+            // update pattern matches a locked package? => all good
+            foreach ($request->getLockedRepository()->getPackages() as $package) {
+                if (preg_match($patternRegexp, $package->getName())) {
+                    continue 2;
                 }
-                // update pattern matches a root require? => all good, probably a new package
-                foreach ($request->getRequires() as $packageName => $constraint) {
-                    if (preg_match($patternRegexp, $packageName)) {
-                        continue 2;
-                    }
+            }
+            // update pattern matches a root require? => all good, probably a new package
+            foreach ($request->getRequires() as $packageName => $constraint) {
+                if (preg_match($patternRegexp, $packageName)) {
+                    continue 2;
                 }
-                if (strpos($pattern, '*') !== false) {
-                    $this->io->writeError('<warning>Pattern "' . $pattern . '" listed for update does not match any locked packages.</warning>');
-                } else {
-                    $this->io->writeError('<warning>Package "' . $pattern . '" listed for update is not locked.</warning>');
-                }
+            }
+            if (strpos($pattern, '*') !== false) {
+                $this->io->writeError('<warning>Pattern "' . $pattern . '" listed for update does not match any locked packages.</warning>');
+            } else {
+                $this->io->writeError('<warning>Package "' . $pattern . '" listed for update is not locked.</warning>');
             }
         }
     }
