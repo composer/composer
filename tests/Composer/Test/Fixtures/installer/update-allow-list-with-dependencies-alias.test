@@ -1,5 +1,5 @@
 --TEST--
-Require a new package in the composer.json and updating with its name as an argument and with-dependencies should update locked dependencies as far as possible
+Verify that a partial update with deps correctly keeps track of all aliases.
 --COMPOSER--
 {
     "repositories": [
@@ -11,15 +11,16 @@ Require a new package in the composer.json and updating with its name as an argu
                 { "name": "current/dep", "version": "1.0.0" },
                 { "name": "current/dep", "version": "1.1.0", "require": {"current/dep2": "*"} },
                 { "name": "current/dep", "version": "1.2.0" },
-                { "name": "current/dep2", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "1.0.x-dev"}}},
-                { "name": "new/pkg", "version": "1.0.0", "require": { "current/dep": "^1.1", "current/dep2": "*"} },
+                { "name": "current/dep2", "version": "dev-foo", "extra": {"branch-alias": {"dev-foo": "1.0.x-dev"}}},
+                { "name": "current/dep2", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "2.x-dev"}}},
+                { "name": "new/pkg", "version": "1.0.0", "require": { "current/dep": "^1.1", "current/dep2": "^1.1"} },
                 { "name": "new/pkg", "version": "1.1.0", "require": { "current/dep": "^1.2" } }
             ]
         }
     ],
     "require": {
         "current/dep": "dev-master as 1.1.0",
-        "current/dep2": "dev-master as 1.1.0",
+        "current/dep2": "dev-master as 1.1.2",
         "current/pkg": "1.0.0 as 2.0.0",
         "new/pkg": "1.*"
     },
@@ -28,14 +29,14 @@ Require a new package in the composer.json and updating with its name as an argu
 --INSTALLED--
 [
     { "name": "current/dep", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "1.0.x-dev"}}},
-    { "name": "current/dep2", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "1.0.x-dev"}}},
+    { "name": "current/dep2", "version": "dev-foo", "extra": {"branch-alias": {"dev-foo": "1.0.x-dev"}}},
     { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "<1.2.0" } }
 ]
 --LOCK--
 {
     "packages": [
         { "name": "current/dep", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "1.0.x-dev"}}, "type": "library"},
-        { "name": "current/dep2", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "1.0.x-dev"}}, "type": "library"},
+        { "name": "current/dep2", "version": "dev-foo", "extra": {"branch-alias": {"dev-foo": "1.0.x-dev"}}, "type": "library"},
         { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "<1.2.0" } }
     ],
     "packages-dev": [],
@@ -45,12 +46,6 @@ Require a new package in the composer.json and updating with its name as an argu
             "alias_normalized": "1.1.0.0",
             "version": "dev-master",
             "package": "current/dep"
-        },
-        {
-            "alias": "1.1.0",
-            "alias_normalized": "1.1.0.0",
-            "version": "dev-master",
-            "package": "current/dep2"
         }
     ],
     "minimum-stability": "dev",
@@ -66,9 +61,9 @@ update new/pkg --with-all-dependencies
 {
     "packages": [
         { "name": "current/dep", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "1.0.x-dev"}}, "type": "library"},
-        { "name": "current/dep2", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "1.0.x-dev"}}, "type": "library"},
+        { "name": "current/dep2", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "2.x-dev"}}, "type": "library"},
         { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "<1.2.0" }, "type": "library"},
-        { "name": "new/pkg", "version": "1.0.0", "require": { "current/dep": "^1.1", "current/dep2": "*"}, "type": "library"}
+        { "name": "new/pkg", "version": "1.0.0", "require": { "current/dep": "^1.1", "current/dep2": "^1.1"}, "type": "library"}
     ],
     "packages-dev": [],
     "aliases": [
@@ -79,16 +74,10 @@ update new/pkg --with-all-dependencies
             "package": "current/dep"
         },
         {
-            "alias": "1.1.0",
-            "alias_normalized": "1.1.0.0",
+            "alias": "1.1.2",
+            "alias_normalized": "1.1.2.0",
             "version": "dev-master",
             "package": "current/dep2"
-        },
-        {
-            "alias": "2.0.0",
-            "alias_normalized": "2.0.0.0",
-            "version": "1.0.0.0",
-            "package": "current/pkg"
         }
     ],
     "minimum-stability": "dev",
@@ -103,6 +92,8 @@ update new/pkg --with-all-dependencies
 }
 --EXPECT--
 Marking current/dep (1.1.0) as installed, alias of current/dep (dev-master)
-Marking current/pkg (2.0.0) as installed, alias of current/pkg (1.0.0)
-Marking current/dep2 (1.1.0) as installed, alias of current/dep2 (dev-master)
+Upgrading current/dep2 (dev-foo => dev-master)
+Marking current/dep2 (1.1.2) as installed, alias of current/dep2 (dev-master)
+Marking current/dep2 (2.x-dev) as installed, alias of current/dep2 (dev-master)
 Installing new/pkg (1.0.0)
+Marking current/dep2 (1.0.x-dev) as uninstalled, alias of current/dep2 (dev-foo)

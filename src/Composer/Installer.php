@@ -497,7 +497,7 @@ class Installer
             $lockTransaction->getNewLockPackages(true, $this->updateMirrors),
             $platformReqs,
             $platformDevReqs,
-            $aliases,
+            $lockTransaction->getAliases($aliases),
             $this->package->getMinimumStability(),
             $this->package->getStabilityFlags(),
             $this->preferStable || $this->package->getPreferStable(),

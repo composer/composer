@@ -112,4 +112,22 @@ class LockTransaction extends Transaction
 
         return $packages;
     }
+
+    /**
+     * Checks which of the given aliases from composer.json are actually in use for the lock file
+     */
+    public function getAliases($aliases)
+    {
+        $usedAliases = array();
+
+        foreach ($this->resultPackages['all'] as $package) {
+            if ($package instanceof AliasPackage) {
+                if (isset($aliases[$package->getName()])) {
+                    $usedAliases[$package->getName()] = $aliases[$package->getName()];
+                }
+            }
+        }
+
+        return $usedAliases;
+    }
 }
