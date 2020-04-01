@@ -200,7 +200,8 @@ class PoolBuilder
 
     private function loadPackage(Request $request, PackageInterface $package, $propagateUpdate = true)
     {
-        $index = count($this->packages);
+        end($this->packages);
+        $index = key($this->packages) + 1;
         $this->packages[] = $package;
 
         if ($package instanceof AliasPackage) {
@@ -348,6 +349,7 @@ class PoolBuilder
             if ($loadedPackage->getName() === $name && $loadedPackage->getRepository() === $request->getLockedRepository()) {
                 $request->unfixPackage($loadedPackage);
                 unset($this->packages[$i]);
+                unset($this->aliasMap[spl_object_hash($loadedPackage)]);
             }
         }
 
