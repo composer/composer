@@ -42,6 +42,10 @@ class RequireCommand extends InitCommand
     private $json;
     private $file;
     private $composerBackup;
+    /** @var string file name */
+    private $lock;
+    /** @var ?string contents before modification if the lock file exists */
+    private $lockBackup;
 
     protected function configure()
     {
@@ -118,7 +122,9 @@ EOT
         }
 
         $this->json = new JsonFile($this->file);
+        $this->lock = Factory::getLockFile($this->file);
         $this->composerBackup = file_get_contents($this->json->getPath());
+        $this->lockBackup = file_exists($this->lock) ? file_get_contents($this->lock) : null;
 
         // check for writability by writing to the file as is_writable can not be trusted on network-mounts
         // see https://github.com/composer/composer/issues/8231 and https://bugs.php.net/bug.php?id=68926
@@ -325,9 +331,19 @@ EOT
         if ($this->newlyCreated) {
             $io->writeError("\n".'<error>Installation failed, deleting '.$this->file.'.</error>');
             unlink($this->json->getPath());
+            if (file_exists($this->lock)) {
+                unlink($this->lock);
+            }
         } else {
-            $io->writeError("\n".'<error>Installation failed, reverting '.$this->file.' to its original content.</error>');
+            $msg = ' to its ';
+            if ($this->lockBackup) {
+                $msg = ' and '.$this->lock.' to their ';
+            }
+            $io->writeError("\n".'<error>Installation failed, reverting '.$this->file.$msg.'original content.</error>');
             file_put_contents($this->json->getPath(), $this->composerBackup);
+            if ($this->lockBackup) {
+                file_put_contents($this->lock, $this->lockBackup);
+            }
         }
 
         if ($hardExit) {
