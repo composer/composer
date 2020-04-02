@@ -1,5 +1,5 @@
 --TEST--
-Require a new package in the composer.json and updating with its name as an argument and with-dependencies should remove packages it replaces which are not root requirements
+If a new requirement cannot be installed on a partial update due to replace, there should be a suggestion to use --with-all-dependencies
 --COMPOSER--
 {
     "repositories": [
