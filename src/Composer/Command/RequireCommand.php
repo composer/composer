@@ -62,6 +62,8 @@ class RequireCommand extends InitCommand
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated, except those that are root requirements.'),
                 new InputOption('update-with-all-dependencies', null, InputOption::VALUE_NONE, 'Allows all inherited dependencies to be updated, including those that are root requirements.'),
+                new InputOption('with-dependencies', null, InputOption::VALUE_NONE, 'Alias for --update-with-dependencies'),
+                new InputOption('with-all-dependencies', null, InputOption::VALUE_NONE, 'Alias for --update-with-all-dependencies'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.'),
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
@@ -250,9 +252,9 @@ EOT
         $apcu = $input->getOption('apcu-autoloader') || $composer->getConfig()->get('apcu-autoloader');
 
         $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
-        if ($input->getOption('update-with-all-dependencies')) {
+        if ($input->getOption('update-with-all-dependencies') || $input->getOption('with-all-dependencies')) {
             $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
-        } elseif ($input->getOption('update-with-dependencies')) {
+        } elseif ($input->getOption('update-with-dependencies') || $input->getOption('with-dependencies')) {
             $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
         }
 
