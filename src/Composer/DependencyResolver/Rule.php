@@ -123,6 +123,11 @@ abstract class Rule
 
     abstract public function isAssertion();
 
+    public function isCausedByLock()
+    {
+        return $this->getReason() === self::RULE_FIXED && $this->reasonData['lockable'];
+    }
+
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, array $installedMap = array(), array $learnedPool = array())
     {
         $literals = $this->getLiterals();
