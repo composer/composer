@@ -23,10 +23,29 @@ use Composer\Semver\Constraint\ConstraintInterface;
  */
 class Request
 {
+    /**
+     * Identifies a partial update for listed packages only, all dependencies will remain at locked versions
+     */
+    const UPDATE_ONLY_LISTED = 0;
+
+    /**
+     * Identifies a partial update for listed packages and recursively all their dependencies, however dependencies
+     * also directly required by the root composer.json and their dependencies will remain at the locked version.
+     */
+    const UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE = 1;
+
+    /**
+     * Identifies a partial update for listed packages and recursively all their dependencies, even dependencies
+     * also directly required by the root composer.json will be updated.
+     */
+    const UPDATE_LISTED_WITH_TRANSITIVE_DEPS = 2;
+
     protected $lockedRepository;
     protected $requires = array();
     protected $fixedPackages = array();
     protected $unlockables = array();
+    protected $updateAllowList = array();
+    protected $updateAllowTransitiveDependencies = false;
 
     public function __construct(LockArrayRepository $lockedRepository = null)
     {
@@ -49,8 +68,35 @@ class Request
         $this->fixedPackages[spl_object_hash($package)] = $package;
 
         if (!$lockable) {
-            $this->unlockables[] = $package;
+            $this->unlockables[spl_object_hash($package)] = $package;
         }
+    }
+
+    public function unfixPackage(PackageInterface $package)
+    {
+        unset($this->fixedPackages[spl_object_hash($package)]);
+        unset($this->unlockables[spl_object_hash($package)]);
+    }
+
+    public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies)
+    {
+        $this->updateAllowList = $updateAllowList;
+        $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;
+    }
+
+    public function getUpdateAllowList()
+    {
+        return $this->updateAllowList;
+    }
+
+    public function getUpdateAllowTransitiveDependencies()
+    {
+        return $this->updateAllowTransitiveDependencies !== self::UPDATE_ONLY_LISTED;
+    }
+
+    public function getUpdateAllowTransitiveRootDependencies()
+    {
+        return $this->updateAllowTransitiveDependencies === self::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
     }
 
     public function getRequires()

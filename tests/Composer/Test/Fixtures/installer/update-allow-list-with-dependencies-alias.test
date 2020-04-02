@@ -1,0 +1,99 @@
+--TEST--
+Verify that a partial update with deps correctly keeps track of all aliases.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "<1.2.0" } },
+                { "name": "current/dep", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "1.0.x-dev"}}},
+                { "name": "current/dep", "version": "1.0.0" },
+                { "name": "current/dep", "version": "1.1.0", "require": {"current/dep2": "*"} },
+                { "name": "current/dep", "version": "1.2.0" },
+                { "name": "current/dep2", "version": "dev-foo", "extra": {"branch-alias": {"dev-foo": "1.0.x-dev"}}},
+                { "name": "current/dep2", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "2.x-dev"}}},
+                { "name": "new/pkg", "version": "1.0.0", "require": { "current/dep": "^1.1", "current/dep2": "^1.1"} },
+                { "name": "new/pkg", "version": "1.1.0", "require": { "current/dep": "^1.2" } }
+            ]
+        }
+    ],
+    "require": {
+        "current/dep": "dev-master as 1.1.0",
+        "current/dep2": "dev-master as 1.1.2",
+        "current/pkg": "1.0.0 as 2.0.0",
+        "new/pkg": "1.*"
+    },
+    "minimum-stability": "dev"
+}
+--INSTALLED--
+[
+    { "name": "current/dep", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "1.0.x-dev"}}},
+    { "name": "current/dep2", "version": "dev-foo", "extra": {"branch-alias": {"dev-foo": "1.0.x-dev"}}},
+    { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "<1.2.0" } }
+]
+--LOCK--
+{
+    "packages": [
+        { "name": "current/dep", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "1.0.x-dev"}}, "type": "library"},
+        { "name": "current/dep2", "version": "dev-foo", "extra": {"branch-alias": {"dev-foo": "1.0.x-dev"}}, "type": "library"},
+        { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "<1.2.0" } }
+    ],
+    "packages-dev": [],
+    "aliases": [
+        {
+            "alias": "1.1.0",
+            "alias_normalized": "1.1.0.0",
+            "version": "dev-master",
+            "package": "current/dep"
+        }
+    ],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update new/pkg --with-all-dependencies
+--EXPECT-LOCK--
+{
+    "packages": [
+        { "name": "current/dep", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "1.0.x-dev"}}, "type": "library"},
+        { "name": "current/dep2", "version": "dev-master", "extra": {"branch-alias": {"dev-master": "2.x-dev"}}, "type": "library"},
+        { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "<1.2.0" }, "type": "library"},
+        { "name": "new/pkg", "version": "1.0.0", "require": { "current/dep": "^1.1", "current/dep2": "^1.1"}, "type": "library"}
+    ],
+    "packages-dev": [],
+    "aliases": [
+        {
+            "alias": "1.1.0",
+            "alias_normalized": "1.1.0.0",
+            "version": "dev-master",
+            "package": "current/dep"
+        },
+        {
+            "alias": "1.1.2",
+            "alias_normalized": "1.1.2.0",
+            "version": "dev-master",
+            "package": "current/dep2"
+        }
+    ],
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "current/dep": 20,
+        "current/dep2": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Marking current/dep (1.1.0) as installed, alias of current/dep (dev-master)
+Upgrading current/dep2 (dev-foo => dev-master)
+Marking current/dep2 (1.1.2) as installed, alias of current/dep2 (dev-master)
+Marking current/dep2 (2.x-dev) as installed, alias of current/dep2 (dev-master)
+Installing new/pkg (1.0.0)
+Marking current/dep2 (1.0.x-dev) as uninstalled, alias of current/dep2 (dev-foo)

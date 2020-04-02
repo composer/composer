@@ -59,4 +59,4 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - b/unstable is fixed to 1.1.0-alpha (lock file version) by a partial update but that version is rejected by your minimum-stability. Make sure you whitelist it for update.
+    - b/unstable is fixed to 1.1.0-alpha (lock file version) by a partial update but that version is rejected by your minimum-stability. Make sure you list it as an argument for the update command.

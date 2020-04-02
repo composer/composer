@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Plugin\CommandEvent;
@@ -48,8 +49,8 @@ class UpdateCommand extends BaseCommand
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
-                new InputOption('with-dependencies', null, InputOption::VALUE_NONE, 'Add also dependencies of whitelisted packages to the whitelist, except those defined in root package.'),
-                new InputOption('with-all-dependencies', null, InputOption::VALUE_NONE, 'Add also all dependencies of whitelisted packages to the whitelist, including those defined in root package.'),
+                new InputOption('with-dependencies', null, InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, except those which are root requirements.'),
+                new InputOption('with-all-dependencies', null, InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, including those which are root requirements.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
@@ -145,6 +146,13 @@ EOT
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
         $apcu = $input->getOption('apcu-autoloader') || $config->get('apcu-autoloader');
 
+        $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
+        if ($input->getOption('with-all-dependencies')) {
+            $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
+        } elseif ($input->getOption('with-dependencies')) {
+            $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
+        }
+
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
@@ -158,9 +166,8 @@ EOT
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
             ->setUpdateMirrors($updateMirrors)
-            ->setUpdateWhitelist($packages)
-            ->setWhitelistTransitiveDependencies($input->getOption('with-dependencies'))
-            ->setWhitelistAllDependencies($input->getOption('with-all-dependencies'))
+            ->setUpdateAllowList($packages)
+            ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))

@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Package;
@@ -36,24 +37,46 @@ class PoolBuilder
     private $rootAliases;
     private $rootReferences;
     private $eventDispatcher;
+    private $io;
 
     private $aliasMap = array();
     private $nameConstraints = array();
     private $loadedNames = array();
     private $packages = array();
     private $unacceptableFixedPackages = array();
+    private $updateAllowList = array();
+    private $skippedLoad = array();
+    private $updateAllowWarned = array();
 
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, EventDispatcher $eventDispatcher = null)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
         $this->rootAliases = $rootAliases;
         $this->rootReferences = $rootReferences;
         $this->eventDispatcher = $eventDispatcher;
+        $this->io = $io;
     }
 
     public function buildPool(array $repositories, Request $request)
     {
+        if ($request->getUpdateAllowList()) {
+            $this->updateAllowList = $request->getUpdateAllowList();
+            $this->warnAboutNonMatchingUpdateAllowList($request);
+
+            foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
+                if (!$this->isUpdateAllowed($lockedPackage)) {
+                    $request->fixPackage($lockedPackage);
+                    $lockedName = $lockedPackage->getName();
+                    // remember which packages we skipped loading remote content for in this partial update
+                    $this->skippedLoad[$lockedPackage->getName()] = $lockedName;
+                    foreach ($lockedPackage->getReplaces() as $link) {
+                        $this->skippedLoad[$link->getTarget()] = $lockedName;
+                    }
+                }
+            }
+        }
+
         $loadNames = array();
         foreach ($request->getFixedPackages() as $package) {
             $this->nameConstraints[$package->getName()] = null;
@@ -73,7 +96,7 @@ class PoolBuilder
                 || $package->getRepository() instanceof PlatformRepository
                 || StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $package->getNames(), $package->getStability())
             ) {
-                $loadNames += $this->loadPackage($request, $package);
+                $loadNames += $this->loadPackage($request, $package, false);
             } else {
                 $this->unacceptableFixedPackages[] = $package;
             }
@@ -108,7 +131,6 @@ class PoolBuilder
                 if ($repository instanceof PlatformRepository || $repository === $request->getLockedRepository()) {
                     continue;
                 }
-
                 $result = $repository->loadPackages($loadNames, $this->acceptableStabilities, $this->stabilityFlags);
 
                 foreach ($result['namesFound'] as $name) {
@@ -177,9 +199,10 @@ class PoolBuilder
         return $pool;
     }
 
-    private function loadPackage(Request $request, PackageInterface $package)
+    private function loadPackage(Request $request, PackageInterface $package, $propagateUpdate = true)
     {
-        $index = count($this->packages);
+        end($this->packages);
+        $index = key($this->packages) + 1;
         $this->packages[] = $package;
 
         if ($package instanceof AliasPackage) {
@@ -198,7 +221,9 @@ class PoolBuilder
             }
         }
 
-        if (isset($this->rootAliases[$name][$package->getVersion()])) {
+        // if propogateUpdate is false we are loading a fixed package, root aliases do not apply as they are manually
+        // loaded as separate packages in this case
+        if ($propagateUpdate && isset($this->rootAliases[$name][$package->getVersion()])) {
             $alias = $this->rootAliases[$name][$package->getVersion()];
             if ($package instanceof AliasPackage) {
                 $basePackage = $package->getAliasOf();
@@ -217,6 +242,16 @@ class PoolBuilder
             $require = $link->getTarget();
             if (!isset($this->loadedNames[$require])) {
                 $loadNames[$require] = null;
+            // if this is a partial update with transitive dependencies we need to unfix the package we now know is a
+            // dependency of another package which we are trying to update, and then attempt to load it again
+            } elseif ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies() && isset($this->skippedLoad[$require])) {
+                if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$require])) {
+                    $this->unfixPackage($request, $require);
+                    $loadNames[$require] = null;
+                } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $require) && !isset($this->updateAllowWarned[$require])) {
+                    $this->updateAllowWarned[$require] = true;
+                    $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
+                }
             }
 
             $linkConstraint = $link->getConstraint();
@@ -233,7 +268,109 @@ class PoolBuilder
             }
         }
 
+        // if we're doing a partial update with deps and we're not loading an initial fixed package
+        // we also need to trigger an update for transitive deps which are being replaced
+        if ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies()) {
+            foreach ($package->getReplaces() as $link) {
+                $replace = $link->getTarget();
+                if (isset($this->loadedNames[$replace]) && isset($this->skippedLoad[$replace])) {
+                    if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$replace])) {
+                        $this->unfixPackage($request, $replace);
+                        $loadNames[$replace] = null;
+                        // TODO should we try to merge constraints here?
+                        $this->nameConstraints[$replace] = null;
+                    } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$require])) {
+                        $this->updateAllowWarned[$replace] = true;
+                        $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
+                    }
+                }
+            }
+        }
+
         return $loadNames;
+    }
+
+    /**
+     * Checks if a particular name is required directly in the request
+     *
+     * @return bool
+     */
+    private function isRootRequire(Request $request, $name)
+    {
+        $rootRequires = $request->getRequires();
+        return isset($rootRequires[$name]);
+    }
+
+    /**
+     * Checks whether the update allow list allows this package in the lock file to be updated
+     * @return bool
+     */
+    private function isUpdateAllowed(PackageInterface $package)
+    {
+        foreach ($this->updateAllowList as $pattern => $void) {
+            $patternRegexp = BasePackage::packageNameToRegexp($pattern);
+            if (preg_match($patternRegexp, $package->getName())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function warnAboutNonMatchingUpdateAllowList(Request $request)
+    {
+        foreach ($this->updateAllowList as $pattern => $void) {
+            $patternRegexp = BasePackage::packageNameToRegexp($pattern);
+            // update pattern matches a locked package? => all good
+            foreach ($request->getLockedRepository()->getPackages() as $package) {
+                if (preg_match($patternRegexp, $package->getName())) {
+                    continue 2;
+                }
+            }
+            // update pattern matches a root require? => all good, probably a new package
+            foreach ($request->getRequires() as $packageName => $constraint) {
+                if (preg_match($patternRegexp, $packageName)) {
+                    continue 2;
+                }
+            }
+            if (strpos($pattern, '*') !== false) {
+                $this->io->writeError('<warning>Pattern "' . $pattern . '" listed for update does not match any locked packages.</warning>');
+            } else {
+                $this->io->writeError('<warning>Package "' . $pattern . '" listed for update is not locked.</warning>');
+            }
+        }
+    }
+
+    /**
+     * Reverts the decision to use a fixed package from lock file if a partial update with transitive dependencies
+     * found that this package actually needs to be updated
+     */
+    private function unfixPackage(Request $request, $name)
+    {
+        // remove locked package by this name which was already initialized
+        foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
+            if (!($lockedPackage instanceof AliasPackage) && $lockedPackage->getName() === $name) {
+                if (false !== $index = array_search($lockedPackage, $this->packages, true)) {
+                    $request->unfixPackage($lockedPackage);
+                    unset($this->packages[$index]);
+                    if (isset($this->aliasMap[spl_object_hash($lockedPackage)])) {
+                        foreach ($this->aliasMap[spl_object_hash($lockedPackage)] as $aliasIndex => $aliasPackage) {
+                            $request->unfixPackage($aliasPackage);
+                            unset($this->packages[$aliasIndex]);
+                        }
+                        unset($this->aliasMap[spl_object_hash($lockedPackage)]);
+                    }
+                }
+            }
+        }
+
+        // if we unfixed a replaced package name, we also need to unfix the replacer itself
+        if ($this->skippedLoad[$name] !== $name) {
+            $this->unfixPackage($request, $this->skippedLoad[$name]);
+        }
+
+        unset($this->skippedLoad[$name]);
+        unset($this->loadedNames[$name]);
     }
 }
 

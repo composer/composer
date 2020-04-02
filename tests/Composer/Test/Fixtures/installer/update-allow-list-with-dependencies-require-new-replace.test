@@ -1,0 +1,44 @@
+--TEST--
+Require a new package in the composer.json and updating with its name as an argument and with-dependencies should remove packages it replaces which are not root requirements
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "*" } },
+                { "name": "current/dep", "version": "1.0.0" },
+                { "name": "new/pkg", "version": "1.0.0", "replace": { "current/dep": "1.0.0" } }
+            ]
+        }
+    ],
+    "require": {
+        "current/pkg": "1.*",
+        "new/pkg": "1.*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "*" } },
+    { "name": "current/dep", "version": "1.0.0" }
+]
+--LOCK--
+{
+    "packages": [
+        { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "*" } },
+        { "name": "current/dep", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update new/pkg --with-dependencies
+--EXPECT--
+Removing current/dep (1.0.0)
+Installing new/pkg (1.0.0)
