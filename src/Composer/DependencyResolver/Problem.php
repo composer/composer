@@ -92,12 +92,22 @@ class Problem
         }
 
         $messages = array();
-
         foreach ($reasons as $rule) {
             $messages[] = $rule->getPrettyString($repositorySet, $request, $pool, $installedMap, $learnedPool);
         }
 
         return "\n    - ".implode("\n    - ", $messages);
+    }
+
+    public function isCausedByLock()
+    {
+        foreach ($this->reasons as $sectionRules) {
+            foreach ($sectionRules as $rule) {
+                if ($rule->isCausedByLock()) {
+                    return true;
+                }
+            }
+        }
     }
 
     /**

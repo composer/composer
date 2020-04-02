@@ -268,8 +268,8 @@ class PoolBuilder
             }
         }
 
-        // if we're doing a partial update with deps and we're not loading an initial fixed package
-        // we also need to trigger an update for transitive deps which are being replaced
+        // if we're doing a partial update with deps we also need to unfix packages which are being replaced in case they
+        // are currently locked and thus prevent this updateable package from being installable/updateable
         if ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies()) {
             foreach ($package->getReplaces() as $link) {
                 $replace = $link->getTarget();

@@ -36,12 +36,15 @@ class SolverProblemsException extends \RuntimeException
         $installedMap = $request->getPresentMap(true);
         $text = "\n";
         $hasExtensionProblems = false;
+        $isCausedByLock = false;
         foreach ($this->problems as $i => $problem) {
             $text .= "  Problem ".($i + 1).$problem->getPrettyString($repositorySet, $request, $pool, $installedMap, $this->learnedPool)."\n";
 
             if (!$hasExtensionProblems && $this->hasExtensionProblems($problem->getReasons())) {
                 $hasExtensionProblems = true;
             }
+
+            $isCausedByLock |= $problem->isCausedByLock();
         }
 
         if (!$isDevExtraction && (strpos($text, 'could not be found') || strpos($text, 'no matching package found'))) {
@@ -50,6 +53,10 @@ class SolverProblemsException extends \RuntimeException
 
         if ($hasExtensionProblems) {
             $text .= $this->createExtensionHint();
+        }
+
+        if ($isCausedByLock && !$isDevExtraction) {
+            $text .= "\nUse the option --with-all-dependencies to allow updates and removals for packages currently locked to specific versions.";
         }
 
         return $text;
