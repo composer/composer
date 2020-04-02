@@ -201,11 +201,11 @@ abstract class Rule
 
                     $reason = null;
                     if ($conflictingNames = array_values(array_intersect($replaces1, $replaces2))) {
-                        $reason = 'They both replace '.(count($conflictingNames) > 1 ? '['.implode(', ', $conflictingNames).']' : $conflictingNames[0]).' and can thus not coexist.';
+                        $reason = 'They both replace '.(count($conflictingNames) > 1 ? '['.implode(', ', $conflictingNames).']' : $conflictingNames[0]).' and thus cannot coexist.';
                     } elseif (in_array($package1->getName(), $replaces2, true)) {
-                        $reason = $package2->getName().' replaces '.$package1->getName().' and can thus not coexist with it.';
+                        $reason = $package2->getName().' replaces '.$package1->getName().' and thus cannot coexist with it.';
                     } elseif (in_array($package2->getName(), $replaces1, true)) {
-                        $reason = $package1->getName().' replaces '.$package2->getName().' and can thus not coexist with it.';
+                        $reason = $package1->getName().' replaces '.$package2->getName().' and thus cannot coexist with it.';
                     }
 
                     if ($reason) {
@@ -216,7 +216,7 @@ abstract class Rule
                             $package1 = $tmp;
                         }
                         if (!isset($installedMap[$package1->id]) && isset($installedMap[$package2->id])) {
-                            return $package1->getPrettyString().' can not be installed as that would require removing '.$package2->getPrettyString().'. '.$reason;
+                            return $package1->getPrettyString().' cannot be installed as that would require removing '.$package2->getPrettyString().'. '.$reason;
                         }
 
                         if (!isset($installedMap[$package1->id]) && !isset($installedMap[$package2->id])) {
@@ -261,7 +261,7 @@ abstract class Rule
                     $replacedNames = count($replacedNames) > 1 ? '['.implode(', ', $replacedNames).']' : $replacedNames[0];
 
                     if ($replacer) {
-                        return 'Only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '. '.$replacer->getName().' replaces '.$replacedNames.' and can thus not coexist with it.';
+                        return 'Only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '. '.$replacer->getName().' replaces '.$replacedNames.' and thus cannot coexist with it.';
                     }
                 }
 
