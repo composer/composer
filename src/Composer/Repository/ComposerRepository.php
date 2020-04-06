@@ -444,7 +444,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         'name' => $candidate['name'],
                         'description' => isset($candidate['description']) ? $candidate['description'] : '',
                         'type' => isset($candidate['type']) ? $candidate['type'] : '',
-                        'repository' => '',
                     );
                 }
             }

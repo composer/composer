@@ -91,7 +91,7 @@ interface RepositoryInterface extends \Countable
      *
      * @param string $packageName package name which must be provided
      *
-     * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...', 'repository' => '...url to source repo if available...')
+     * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...')
      */
     public function getProviders($packageName);
 

@@ -221,7 +221,6 @@ class ArrayRepository implements RepositoryInterface
                         'name' => $candidate->getName(),
                         'description' => $candidate->getDescription(),
                         'type' => $candidate->getType(),
-                        'repository' => $candidate->getSourceUrl() ?: '',
                     );
                     continue 2;
                 }
