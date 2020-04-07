@@ -95,7 +95,7 @@ interface RepositoryInterface extends \Countable
      * @param string $packageName package name which must be provided
      *
      * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...')
-     * @psalm-return array{name: string, description: string, type: string}
+     * @psalm-return array<string, array{name: string, description: string, type: string}>
      */
     public function getProviders($packageName);
 
