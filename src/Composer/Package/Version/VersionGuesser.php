@@ -206,7 +206,7 @@ class VersionGuesser
             $version = $this->versionParser->normalizeBranch($branch);
             $isFeatureBranch = 0 === strpos($version, 'dev-');
 
-            if ('9999999-dev' === $version) {
+            if (VersionParser::DEV_MASTER_ALIAS === $version) {
                 return array('version' => $version, 'commit' => null, 'pretty_version' => 'dev-'.$branch);
             }
 
