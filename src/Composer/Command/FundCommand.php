@@ -91,6 +91,10 @@ class FundCommand extends BaseCommand
     {
         foreach ($package->getFunding() as $fundingOption) {
             list($vendor, $packageName) = explode('/', $package->getPrettyName());
+            // ignore malformed funding entries
+            if (empty($fundingOption['url'])) {
+                continue;
+            }
             $url = $fundingOption['url'];
             if (!empty($fundingOption['type']) && $fundingOption['type'] === 'github' && preg_match('{^https://github.com/([^/]+)$}', $url, $match)) {
                 $url = 'https://github.com/sponsors/'.$match[1];
