@@ -28,6 +28,9 @@ class ArchiveManager
     protected $downloadManager;
     protected $loop;
 
+    /**
+     * @var ArchiverInterface[]
+     */
     protected $archivers = array();
 
     /**
