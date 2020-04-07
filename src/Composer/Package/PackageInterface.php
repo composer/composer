@@ -47,7 +47,7 @@ interface PackageInterface
      *
      * @param bool $provides Whether provided names should be included
      *
-     * @return array An array of strings referring to this package
+     * @return string[] An array of strings referring to this package
      */
     public function getNames($provides = true);
 
