@@ -15,6 +15,7 @@ namespace Composer\Util;
 use Composer\IO\IOInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessUtils;
+use Symfony\Component\Process\Exception\RuntimeException;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -43,6 +44,27 @@ class ProcessExecutor
      */
     public function execute($command, &$output = null, $cwd = null)
     {
+        if (func_num_args() > 1) {
+            return $this->doExecute($command, $cwd, false, $output);
+        }
+
+        return $this->doExecute($command, $cwd, false);
+    }
+
+    /**
+     * runs a process on the commandline in TTY mode
+     *
+     * @param  string $command the command to execute
+     * @param  string $cwd     the working directory
+     * @return int    statuscode
+     */
+    public function executeTty($command, $cwd = null)
+    {
+        return $this->doExecute($command, $cwd, true);
+    }
+
+    private function doExecute($command, $cwd, $tty, &$output = null)
+    {
         if ($this->io && $this->io->isDebug()) {
             $safeCommand = preg_replace_callback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
                 if (preg_match('{^[a-f0-9]{12,}$}', $m['user'])) {
@@ -61,7 +83,7 @@ class ProcessExecutor
             $cwd = realpath(getcwd());
         }
 
-        $this->captureOutput = func_num_args() > 1;
+        $this->captureOutput = func_num_args() > 3;
         $this->errorOutput = null;
 
         // TODO in v3, commands should be passed in as arrays of cmd + args
@@ -69,6 +91,13 @@ class ProcessExecutor
             $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
         } else {
             $process = new Process($command, $cwd, null, null, static::getTimeout());
+        }
+        if (!Platform::isWindows() && $tty) {
+            try {
+                $process->setTty(true);
+            } catch (RuntimeException $e) {
+                // ignore TTY enabling errors
+            }
         }
 
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
@@ -112,18 +141,10 @@ class ProcessExecutor
             return;
         }
 
-        if (method_exists($this->io, 'writeRaw')) {
-            if (Process::ERR === $type) {
-                $this->io->writeErrorRaw($buffer, false);
-            } else {
-                $this->io->writeRaw($buffer, false);
-            }
+        if (Process::ERR === $type) {
+            $this->io->writeErrorRaw($buffer, false);
         } else {
-            if (Process::ERR === $type) {
-                $this->io->writeError($buffer, false);
-            } else {
-                $this->io->write($buffer, false);
-            }
+            $this->io->writeRaw($buffer, false);
         }
     }
 

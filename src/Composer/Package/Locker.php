@@ -14,9 +14,9 @@ namespace Composer\Package;
 
 use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
+use Composer\Repository\LockArrayRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
-use Composer\Repository\ArrayRepository;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Plugin\PluginInterface;
@@ -32,29 +32,34 @@ use Seld\JsonLint\ParsingException;
  */
 class Locker
 {
+    /** @var JsonFile */
     private $lockFile;
-    private $repositoryManager;
+    /** @var InstallationManager */
     private $installationManager;
+    /** @var string */
     private $hash;
+    /** @var string */
     private $contentHash;
+    /** @var ArrayLoader */
     private $loader;
+    /** @var ArrayDumper */
     private $dumper;
+    /** @var ProcessExecutor */
     private $process;
     private $lockDataCache;
+    private $virtualFileWritten;
 
     /**
      * Initializes packages locker.
      *
      * @param IOInterface         $io
      * @param JsonFile            $lockFile             lockfile loader
-     * @param RepositoryManager   $repositoryManager    repository manager instance
      * @param InstallationManager $installationManager  installation manager instance
      * @param string              $composerFileContents The contents of the composer file
      */
-    public function __construct(IOInterface $io, JsonFile $lockFile, RepositoryManager $repositoryManager, InstallationManager $installationManager, $composerFileContents)
+    public function __construct(IOInterface $io, JsonFile $lockFile, InstallationManager $installationManager, $composerFileContents)
     {
         $this->lockFile = $lockFile;
-        $this->repositoryManager = $repositoryManager;
         $this->installationManager = $installationManager;
         $this->hash = md5($composerFileContents);
         $this->contentHash = self::getContentHash($composerFileContents);
@@ -109,7 +114,7 @@ class Locker
      */
     public function isLocked()
     {
-        if (!$this->lockFile->exists()) {
+        if (!$this->virtualFileWritten && !$this->lockFile->exists()) {
             return false;
         }
 
@@ -146,19 +151,19 @@ class Locker
      *
      * @param  bool                                     $withDevReqs true to retrieve the locked dev packages
      * @throws \RuntimeException
-     * @return \Composer\Repository\RepositoryInterface
+     * @return \Composer\Repository\LockArrayRepository
      */
     public function getLockedRepository($withDevReqs = false)
     {
         $lockData = $this->getLockData();
-        $packages = new ArrayRepository();
+        $packages = new LockArrayRepository();
 
         $lockedPackages = $lockData['packages'];
         if ($withDevReqs) {
             if (isset($lockData['packages-dev'])) {
                 $lockedPackages = array_merge($lockedPackages, $lockData['packages-dev']);
             } else {
-                throw new \RuntimeException('The lock file does not contain require-dev information, run install with the --no-dev option or run update to install those packages.');
+                throw new \RuntimeException('The lock file does not contain require-dev information, run install with the --no-dev option or delete it and run composer update to generate a new lock file.');
             }
         }
 
@@ -167,14 +172,30 @@ class Locker
         }
 
         if (isset($lockedPackages[0]['name'])) {
+            $packageByName = array();
             foreach ($lockedPackages as $info) {
-                $packages->addPackage($this->loader->load($info));
+                $package = $this->loader->load($info);
+                $packages->addPackage($package);
+                $packageByName[$package->getName()] = $package;
+
+                if ($package instanceof AliasPackage) {
+                    $packages->addPackage($package->getAliasOf());
+                    $packageByName[$package->getAliasOf()->getName()] = $package->getAliasOf();
+                }
+            }
+
+            if (isset($lockData['aliases'])) {
+                foreach ($lockData['aliases'] as $alias) {
+                    if (isset($packageByName[$alias['package']])) {
+                        $packages->addPackage(new AliasPackage($packageByName[$alias['package']], $alias['alias_normalized'], $alias['alias']));
+                    }
+                }
             }
 
             return $packages;
         }
 
-        throw new \RuntimeException('Your composer.lock was created before 2012-09-15, and is not supported anymore. Run "composer update" to generate a new one.');
+        throw new \RuntimeException('Your composer.lock is invalid. Run "composer update" to generate a new one.');
     }
 
     /**
@@ -190,7 +211,7 @@ class Locker
 
         if (!empty($lockData['platform'])) {
             $requirements = $this->loader->parseLinks(
-                '__ROOT__',
+                '__root__',
                 '1.0.0',
                 'requires',
                 isset($lockData['platform']) ? $lockData['platform'] : array()
@@ -199,7 +220,7 @@ class Locker
 
         if ($withDevReqs && !empty($lockData['platform-dev'])) {
             $devRequirements = $this->loader->parseLinks(
-                '__ROOT__',
+                '__root__',
                 '1.0.0',
                 'requires',
                 isset($lockData['platform-dev']) ? $lockData['platform-dev'] : array()
@@ -283,10 +304,11 @@ class Locker
      * @param bool   $preferStable
      * @param bool   $preferLowest
      * @param array  $platformOverrides
+     * @param bool   $write             Whether to actually write data to disk, useful in tests and for --dry-run
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides, $write = true)
     {
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
@@ -325,22 +347,21 @@ class Locker
         }
         $lock['plugin-api-version'] = PluginInterface::PLUGIN_API_VERSION;
 
-        if (empty($lock['packages']) && empty($lock['packages-dev']) && empty($lock['platform']) && empty($lock['platform-dev'])) {
-            if ($this->lockFile->exists()) {
-                unlink($this->lockFile->getPath());
-            }
-
-            return false;
-        }
-
         try {
             $isLocked = $this->isLocked();
         } catch (ParsingException $e) {
             $isLocked = false;
         }
         if (!$isLocked || $lock !== $this->getLockData()) {
-            $this->lockFile->write($lock);
-            $this->lockDataCache = null;
+            if ($write) {
+                $this->lockFile->write($lock);
+//                $this->lockDataCache = JsonFile::parseJson(JsonFile::encode($lock, 448 & JsonFile::JSON_PRETTY_PRINT));
+                $this->lockDataCache = null;
+                $this->virtualFileWritten = false;
+            } else {
+                $this->virtualFileWritten = true;
+                $this->lockDataCache = JsonFile::parseJson(JsonFile::encode($lock, 448 & JsonFile::JSON_PRETTY_PRINT));
+            }
 
             return true;
         }

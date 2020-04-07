@@ -21,6 +21,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
+use Composer\Util\Url;
 
 /**
  * This repository allows installing local packages that are not necessarily under their own VCS.
@@ -114,6 +115,11 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         }
 
         parent::__construct();
+    }
+
+    public function getRepoName()
+    {
+        return 'path repo ('.Url::sanitize($this->repoConfig['url']).')';
     }
 
     public function getRepoConfig()

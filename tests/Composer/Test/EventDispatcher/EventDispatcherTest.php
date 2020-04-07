@@ -21,7 +21,7 @@ use Composer\Composer;
 use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
 use Composer\Script\ScriptEvents;
-use Composer\Script\CommandEvent;
+use Composer\Script\Event as ScriptEvent;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -50,30 +50,6 @@ class EventDispatcherTest extends TestCase
             ->with('<error>Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
-    }
-
-    /**
-     * @group legacy
-     */
-    public function testDispatcherCanConvertScriptEventToCommandEventForListener()
-    {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsCommandEvent',
-        ), $io);
-
-        $this->setExpectedException('PHPUnit\Framework\Error\Deprecated');
-        $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
-    }
-
-    public function testDispatcherDoesNotAttemptConversionForListenerWithoutTypehint()
-    {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $dispatcher = $this->getDispatcherStubForListenersTest(array(
-            'Composer\Test\EventDispatcher\EventDispatcherTest::expectsVariableEvent',
-        ), $io);
-
-        $this->assertEquals(1, $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false));
     }
 
     /**
@@ -125,7 +101,7 @@ class EventDispatcherTest extends TestCase
         $composer->setPackage($package);
 
         $composer->setRepositoryManager($this->getRepositoryManagerMockForDevModePassingTest());
-        $composer->setInstallationManager($this->getMockBuilder('Composer\Installer\InstallationManager')->getMock());
+        $composer->setInstallationManager($this->getMockBuilder('Composer\Installer\InstallationManager')->disableOriginalConstructor()->getMock());
 
         $dispatcher = new EventDispatcher(
             $composer,
@@ -193,6 +169,49 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnValue($repo));
 
         return $rm;
+    }
+
+    public function testDispatcherRemoveListener()
+    {
+        $composer = $this->createComposerInstance();
+
+        $composer->setRepositoryManager($this->getRepositoryManagerMockForDevModePassingTest());
+        $composer->setInstallationManager($this->getMockBuilder('Composer\Installer\InstallationManager')->disableOriginalConstructor()->getMock());
+
+        $dispatcher = new EventDispatcher(
+            $composer,
+            $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+            $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock()
+        );
+
+        $listener = array($this, 'someMethod');
+        $listener2 = array($this, 'someMethod2');
+        $listener3 = 'Composer\\Test\\EventDispatcher\\EventDispatcherTest::someMethod';
+
+        $dispatcher->addListener('ev1', $listener, 0);
+        $dispatcher->addListener('ev1', $listener, 1);
+        $dispatcher->addListener('ev1', $listener2, 1);
+        $dispatcher->addListener('ev1', $listener3);
+        $dispatcher->addListener('ev2', $listener3);
+        $dispatcher->addListener('ev2', $listener);
+        $dispatcher->dispatch('ev1');
+        $dispatcher->dispatch('ev2');
+
+        $expected = '> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod2'.PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
+
+        $dispatcher->removeListener($this);
+        $dispatcher->dispatch('ev1');
+        $dispatcher->dispatch('ev2');
+
+        $expected .= '> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
     }
 
     public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack()
@@ -358,7 +377,7 @@ class EventDispatcherTest extends TestCase
                 return array();
             }));
 
-        $dispatcher->dispatch('root', new CommandEvent('root', $composer, $io));
+        $dispatcher->dispatch('root', new ScriptEvent('root', $composer, $io));
         $expected = '> root: @group'.PHP_EOL.
             '> group: echo -n foo'.PHP_EOL.
             '> group: @subgroup'.PHP_EOL.
@@ -399,7 +418,7 @@ class EventDispatcherTest extends TestCase
                 return array();
             }));
 
-        $dispatcher->dispatch('helloWorld', new CommandEvent('helloWorld', $composer, $io));
+        $dispatcher->dispatch('helloWorld', new ScriptEvent('helloWorld', $composer, $io));
         $expected = "> helloWorld: @hello World".PHP_EOL.
             "> hello: echo Hello " .escapeshellarg('World').PHP_EOL;
 
@@ -437,7 +456,7 @@ class EventDispatcherTest extends TestCase
                 return array();
             }));
 
-        $dispatcher->dispatch('root', new CommandEvent('root', $composer, $io));
+        $dispatcher->dispatch('root', new ScriptEvent('root', $composer, $io));
     }
 
     private function getDispatcherStubForListenersTest($listeners, $io)
@@ -487,7 +506,7 @@ class EventDispatcherTest extends TestCase
             ->with($this->equalTo('> echo foo'));
 
         $io->expects($this->once())
-            ->method('write')
+            ->method('writeRaw')
             ->with($this->equalTo('foo'.PHP_EOL), false);
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
@@ -519,6 +538,10 @@ class EventDispatcherTest extends TestCase
             ->willReturn('> exit 1');
 
         $io->expects($this->at(2))
+            ->method('isInteractive')
+            ->willReturn(1);
+
+        $io->expects($this->at(3))
             ->method('writeError')
             ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with error code 1</error>'));
 
@@ -542,13 +565,9 @@ class EventDispatcherTest extends TestCase
             ->method('getListeners')
             ->will($this->returnValue(array()));
 
-        $policy = $this->getMockBuilder('Composer\DependencyResolver\PolicyInterface')->getMock();
-        $pool = $this->getMockBuilder('Composer\DependencyResolver\Pool')->disableOriginalConstructor()->getMock();
-        $installedRepo = $this->getMockBuilder('Composer\Repository\CompositeRepository')->disableOriginalConstructor()->getMock();
-        $request = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
+        $transaction = $this->getMockBuilder('Composer\DependencyResolver\LockTransaction')->disableOriginalConstructor()->getMock();
 
-        $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, true, $policy, $pool, $installedRepo, $request);
-        $dispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, true, $policy, $pool, $installedRepo, $request, array());
+        $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_OPERATIONS_EXEC, true, true, $transaction);
     }
 
     public static function call()
@@ -556,17 +575,12 @@ class EventDispatcherTest extends TestCase
         throw new \RuntimeException();
     }
 
-    public static function expectsCommandEvent(CommandEvent $event)
-    {
-        return false;
-    }
-
-    public static function expectsVariableEvent($event)
-    {
-        return false;
-    }
-
     public static function someMethod()
+    {
+        return true;
+    }
+
+    public static function someMethod2()
     {
         return true;
     }

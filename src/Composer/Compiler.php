@@ -124,6 +124,7 @@ class Compiler
             ->in(__DIR__.'/../../vendor/composer/ca-bundle/')
             ->in(__DIR__.'/../../vendor/composer/xdebug-handler/')
             ->in(__DIR__.'/../../vendor/psr/')
+            ->in(__DIR__.'/../../vendor/react/')
             ->sort($finderSort)
         ;
 

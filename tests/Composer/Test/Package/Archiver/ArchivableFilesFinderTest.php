@@ -189,6 +189,7 @@ class ArchivableFilesFinderTest extends TestCase
             'git init && '.
             'git config user.email "you@example.com" && '.
             'git config user.name "Your Name" && '.
+            'git config commit.gpgsign false && '.
             'git add .git* && '.
             'git commit -m "ignore rules" && '.
             'git add . && '.
@@ -308,7 +309,11 @@ class ArchivableFilesFinderTest extends TestCase
 
     protected function getArchivedFiles($command)
     {
-        $process = new Process($command, $this->sources);
+        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+            $process = Process::fromShellCommandline($command, $this->sources);
+        } else {
+            $process = new Process($command, $this->sources);
+        }
         $process->run();
 
         $archive = new \PharData($this->sources.'/archive.zip');

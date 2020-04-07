@@ -1,0 +1,69 @@
+--TEST--
+Update with a package whitelist only updates those corresponding to the pattern
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "vendor/test-package", "version": "2.0" },
+                { "name": "vendor/not-me", "version": "2.0" },
+                { "name": "exact/test-package", "version": "2.0" },
+                { "name": "notexact/testpackage", "version": "2.0" },
+                { "name": "all/package1", "version": "2.0" },
+                { "name": "all/package2", "version": "2.0" },
+                { "name": "another/another", "version": "2.0" },
+                { "name": "no/regexp", "version": "2.0" }
+            ]
+        }
+    ],
+    "require": {
+        "vendor/test-package": "*.*",
+        "vendor/not-me": "*.*",
+        "exact/test-package": "*.*",
+        "notexact/testpackage": "*.*",
+        "all/package1": "*.*",
+        "all/package2": "*.*",
+        "another/another": "*.*",
+        "no/regexp": "*.*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "vendor/test-package", "version": "1.0" },
+    { "name": "vendor/not-me", "version": "1.0" },
+    { "name": "exact/test-package", "version": "1.0" },
+    { "name": "notexact/testpackage", "version": "1.0" },
+    { "name": "all/package1", "version": "1.0" },
+    { "name": "all/package2", "version": "1.0" },
+    { "name": "another/another", "version": "1.0" },
+    { "name": "no/regexp", "version": "1.0" }
+]
+--LOCK--
+{
+    "packages": [
+        { "name": "vendor/test-package", "version": "1.0" },
+        { "name": "vendor/not-me", "version": "1.0" },
+        { "name": "exact/test-package", "version": "1.0" },
+        { "name": "notexact/testpackage", "version": "1.0" },
+        { "name": "all/package1", "version": "1.0" },
+        { "name": "all/package2", "version": "1.0" },
+        { "name": "another/another", "version": "1.0" },
+        { "name": "no/regexp", "version": "1.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update vendor/Test* exact/test-package notexact/Test all/* no/reg.?xp
+--EXPECT--
+Upgrading all/package1 (1.0 => 2.0)
+Upgrading all/package2 (1.0 => 2.0)
+Upgrading exact/test-package (1.0 => 2.0)
+Upgrading vendor/test-package (1.0 => 2.0)

@@ -23,6 +23,7 @@ use Symfony\Component\Finder\Finder;
  */
 class Filesystem
 {
+    /** @var ProcessExecutor */
     private $processExecutor;
 
     public function __construct(ProcessExecutor $executor = null)
@@ -291,6 +292,7 @@ class Filesystem
         $this->ensureDirectoryExists($target);
 
         $result = true;
+        /** @var RecursiveDirectoryIterator $ri */
         foreach ($ri as $file) {
             $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
             if ($file->isDir()) {
@@ -539,6 +541,9 @@ class Filesystem
         return $size;
     }
 
+    /**
+     * @return ProcessExecutor
+     */
     protected function getProcess()
     {
         return $this->processExecutor;

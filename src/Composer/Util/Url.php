@@ -19,6 +19,12 @@ use Composer\Config;
  */
 class Url
 {
+    /**
+     * @param Config $config
+     * @param string $url
+     * @param string $ref
+     * @return string the updated URL
+     */
     public static function updateDistReference(Config $config, $url, $ref)
     {
         $host = parse_url($url, PHP_URL_HOST);
@@ -49,6 +55,67 @@ class Url
         } elseif (in_array($host, $config->get('gitlab-domains'), true)) {
             $url = preg_replace('{(/api/v[34]/projects/[^/]+/repository/archive\.(?:zip|tar\.gz|tar\.bz2|tar)\?sha=).+$}i', '${1}'.$ref, $url);
         }
+
+        return $url;
+    }
+
+    /**
+     * @param string $url
+     * @return string
+     */
+    public static function getOrigin(Config $config, $url)
+    {
+        if (0 === strpos($url, 'file://')) {
+            return $url;
+        }
+
+        $origin = (string) parse_url($url, PHP_URL_HOST);
+        if ($port = parse_url($url, PHP_URL_PORT)) {
+            $origin .= ':'.$port;
+        }
+
+        if (strpos($origin, '.github.com') === (strlen($origin) - 11)) {
+            return 'github.com';
+        }
+
+        if ($origin === 'repo.packagist.org') {
+            return 'packagist.org';
+        }
+
+        if ($origin === '') {
+            $origin = $url;
+        }
+
+        // Gitlab can be installed in a non-root context (i.e. gitlab.com/foo). When downloading archives the originUrl
+        // is the host without the path, so we look for the registered gitlab-domains matching the host here
+        if (
+            is_array($config->get('gitlab-domains'))
+            && false === strpos($origin, '/')
+            && !in_array($origin, $config->get('gitlab-domains'))
+        ) {
+            foreach ($config->get('gitlab-domains') as $gitlabDomain) {
+                if (0 === strpos($gitlabDomain, $origin)) {
+                    return $gitlabDomain;
+                }
+            }
+        }
+
+        return $origin;
+    }
+
+    public static function sanitize($url)
+    {
+        // GitHub repository rename result in redirect locations containing the access_token as GET parameter
+        // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
+        $url = preg_replace('{([&?]access_token=)[^&]+}', '$1***', $url);
+
+        $url = preg_replace_callback('{://(?P<user>[^:/\s@]+):(?P<password>[^@\s/]+)@}i', function ($m) {
+            if (preg_match('{^[a-f0-9]{12,}$}', $m['user'])) {
+                return '://***:***@';
+            }
+
+            return '://'.$m['user'].':***@';
+        }, $url);
 
         return $url;
     }

@@ -23,14 +23,13 @@ class GenericRule extends Rule
     protected $literals;
 
     /**
-     * @param array                 $literals
-     * @param int                   $reason     A RULE_* constant describing the reason for generating this rule
-     * @param Link|PackageInterface $reasonData
-     * @param array                 $job        The job this rule was created from
+     * @param array                          $literals
+     * @param int|null                       $reason     A RULE_* constant describing the reason for generating this rule
+     * @param Link|PackageInterface|int|null $reasonData
      */
-    public function __construct(array $literals, $reason, $reasonData, $job = null)
+    public function __construct(array $literals, $reason, $reasonData)
     {
-        parent::__construct($reason, $reasonData, $job);
+        parent::__construct($reason, $reasonData);
 
         // sort all packages ascending by id
         sort($literals);

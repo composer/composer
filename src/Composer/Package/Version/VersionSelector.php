@@ -17,6 +17,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -27,13 +28,13 @@ use Composer\Semver\Constraint\Constraint;
  */
 class VersionSelector
 {
-    private $pool;
+    private $repositorySet;
 
     private $parser;
 
-    public function __construct(Pool $pool)
+    public function __construct(RepositorySet $repositorySet)
     {
-        $this->pool = $pool;
+        $this->repositorySet = $repositorySet;
     }
 
     /**
@@ -44,12 +45,12 @@ class VersionSelector
      * @param  string                $targetPackageVersion
      * @param  string                $targetPhpVersion
      * @param  string                $preferredStability
-     * @return PackageInterface|bool
+     * @return PackageInterface|false
      */
     public function findBestCandidate($packageName, $targetPackageVersion = null, $targetPhpVersion = null, $preferredStability = 'stable')
     {
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
-        $candidates = $this->pool->whatProvides(strtolower($packageName), $constraint, true);
+        $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint);
 
         if ($targetPhpVersion) {
             $phpConstraint = new Constraint('==', $this->getParser()->normalize($targetPhpVersion));

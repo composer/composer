@@ -113,10 +113,10 @@ class ClassMapGenerator
 
             $classes = self::findClasses($filePath);
             if (null !== $autoloadType) {
-                list($classes, $validClasses) = self::filterByNamespace($classes, $filePath, $namespace, $autoloadType, $basePath, $io);
+                $classes = self::filterByNamespace($classes, $filePath, $namespace, $autoloadType, $basePath, $io);
 
                 // if no valid class was found in the file then we do not mark it as scanned as it might still be matched by another rule later
-                if ($validClasses) {
+                if ($classes) {
                     $scannedFiles[$realPath] = true;
                 }
             } else {
@@ -126,8 +126,7 @@ class ClassMapGenerator
 
             foreach ($classes as $class) {
                 // skip classes not within the given namespace prefix
-                // TODO enable in Composer v1.11 or 2.0 whichever comes first
-                if (/* null === $autoloadType && */ null !== $namespace && '' !== $namespace && 0 !== strpos($class, $namespace)) {
+                if (null === $autoloadType && null !== $namespace && '' !== $namespace && 0 !== strpos($class, $namespace)) {
                     continue;
                 }
 
@@ -196,19 +195,15 @@ class ClassMapGenerator
         // warn only if no valid classes, else silently skip invalid
         if (empty($validClasses)) {
             foreach ($rejectedClasses as $class) {
-                trigger_error(
-                    "Class $class located in ".preg_replace('{^'.preg_quote(getcwd()).'}', '.', $filePath, 1)." does not comply with $namespaceType autoloading standard. It will not autoload anymore in Composer v2.0.",
-                    E_USER_DEPRECATED
-                );
+                if ($io) {
+                    $io->writeError("<warning>Class $class located in ".preg_replace('{^'.preg_quote(getcwd()).'}', '.', $filePath, 1)." does not comply with $namespaceType autoloading standard. Skipping.</warning>");
+                }
             }
 
-            // TODO enable in Composer 2.0
-            //return array();
+            return array();
         }
 
-        // TODO enable in Composer 2.0 & unskip test in AutoloadGeneratorTest::testPSRToClassMapIgnoresNonPSRClasses
-        //return $validClasses;
-        return array($classes, $validClasses);
+        return $validClasses;
     }
 
     /**

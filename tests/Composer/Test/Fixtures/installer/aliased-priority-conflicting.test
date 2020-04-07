@@ -14,12 +14,12 @@ Aliases take precedence over default package even if default is selected
                     "name": "a/req", "version": "dev-master",
                     "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
                     "source": { "reference": "forked", "type": "git", "url": "" }
-                }
-            ]
-        },
-        {
-            "type": "package",
-            "package": [
+                },
+                {
+                    "name": "a/req", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+                    "source": { "reference": "master", "type": "git", "url": "" }
+                },
                 {
                     "name": "a/a", "version": "dev-master",
                     "require": { "a/req": "dev-master" }
@@ -27,11 +27,6 @@ Aliases take precedence over default package even if default is selected
                 {
                     "name": "a/b", "version": "dev-master",
                     "require": { "a/req": "dev-master" }
-                },
-                {
-                    "name": "a/req", "version": "dev-master",
-                    "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
-                    "source": { "reference": "master", "type": "git", "url": "" }
                 }
             ]
         }
@@ -43,10 +38,51 @@ Aliases take precedence over default package even if default is selected
     },
     "minimum-stability": "dev"
 }
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "require": { "a/req": "dev-master" },
+            "type": "library"
+        },
+        {
+            "name": "a/b", "version": "dev-master",
+            "require": { "a/req": "dev-master" },
+            "type": "library"
+        },
+        {
+            "name": "a/req", "version": "dev-feature-foo",
+            "source": { "reference": "feat.f", "type": "git", "url": "" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [
+        {
+            "alias": "dev-master",
+            "alias_normalized": "dev-master",
+            "version": "dev-feature-foo",
+            "package": "a/req"
+        }
+    ],
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "a/a": 20,
+        "a/b": 20,
+        "a/req": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --RUN--
 install
 --EXPECT--
 Installing a/req (dev-feature-foo feat.f)
 Marking a/req (dev-master feat.f) as installed, alias of a/req (dev-feature-foo feat.f)
 Installing a/a (dev-master)
+Marking a/a (9999999-dev) as installed, alias of a/a (dev-master)
 Installing a/b (dev-master)
+Marking a/b (9999999-dev) as installed, alias of a/b (dev-master)

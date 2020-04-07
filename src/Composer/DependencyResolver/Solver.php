@@ -13,7 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\IO\IOInterface;
-use Composer\Repository\RepositoryInterface;
+use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
 
 /**
@@ -28,23 +28,18 @@ class Solver
     protected $policy;
     /** @var Pool */
     protected $pool;
-    /** @var RepositoryInterface */
-    protected $installed;
+
     /** @var RuleSet */
     protected $rules;
     /** @var RuleSetGenerator */
     protected $ruleSetGenerator;
-    /** @var array */
-    protected $jobs;
 
-    /** @var int[] */
-    protected $updateMap = array();
     /** @var RuleWatchGraph */
     protected $watchGraph;
     /** @var Decisions */
     protected $decisions;
-    /** @var int[] */
-    protected $installedMap;
+    /** @var PackageInterface[] */
+    protected $fixedMap;
 
     /** @var int */
     protected $propagateIndex;
@@ -66,16 +61,13 @@ class Solver
     /**
      * @param PolicyInterface     $policy
      * @param Pool                $pool
-     * @param RepositoryInterface $installed
      * @param IOInterface         $io
      */
-    public function __construct(PolicyInterface $policy, Pool $pool, RepositoryInterface $installed, IOInterface $io)
+    public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io)
     {
         $this->io = $io;
         $this->policy = $policy;
         $this->pool = $pool;
-        $this->installed = $installed;
-        $this->ruleSetGenerator = new RuleSetGenerator($policy, $pool);
     }
 
     /**
@@ -84,6 +76,11 @@ class Solver
     public function getRuleSetSize()
     {
         return count($this->rules);
+    }
+
+    public function getPool()
+    {
+        return $this->pool;
     }
 
     // aka solver_makeruledecisions
@@ -121,23 +118,23 @@ class Solver
             $conflict = $this->decisions->decisionRule($literal);
 
             if ($conflict && RuleSet::TYPE_PACKAGE === $conflict->getType()) {
-                $problem = new Problem($this->pool);
+                $problem = new Problem();
 
                 $problem->addRule($rule);
                 $problem->addRule($conflict);
-                $this->disableProblem($rule);
+                $rule->disable();
                 $this->problems[] = $problem;
                 continue;
             }
 
-            // conflict with another job
-            $problem = new Problem($this->pool);
+            // conflict with another root require/fixed package
+            $problem = new Problem();
             $problem->addRule($rule);
             $problem->addRule($conflict);
 
-            // push all of our rules (can only be job rules)
+            // push all of our rules (can only be root require/fixed package rules)
             // asserting this literal on the problem stack
-            foreach ($this->rules->getIteratorFor(RuleSet::TYPE_JOB) as $assertRule) {
+            foreach ($this->rules->getIteratorFor(RuleSet::TYPE_REQUEST) as $assertRule) {
                 if ($assertRule->isDisabled() || !$assertRule->isAssertion()) {
                     continue;
                 }
@@ -148,9 +145,8 @@ class Solver
                 if (abs($literal) !== abs($assertRuleLiteral)) {
                     continue;
                 }
-
                 $problem->addRule($assertRule);
-                $this->disableProblem($assertRule);
+                $assertRule->disable();
             }
             $this->problems[] = $problem;
 
@@ -159,47 +155,29 @@ class Solver
         }
     }
 
-    protected function setupInstalledMap()
+    protected function setupFixedMap(Request $request)
     {
-        $this->installedMap = array();
-        foreach ($this->installed->getPackages() as $package) {
-            $this->installedMap[$package->id] = $package;
+        $this->fixedMap = array();
+        foreach ($request->getFixedPackages() as $package) {
+            $this->fixedMap[$package->id] = $package;
         }
     }
 
     /**
+     * @param  Request $request
      * @param bool $ignorePlatformReqs
      */
-    protected function checkForRootRequireProblems($ignorePlatformReqs)
+    protected function checkForRootRequireProblems($request, $ignorePlatformReqs)
     {
-        foreach ($this->jobs as $job) {
-            switch ($job['cmd']) {
-                case 'update':
-                    $packages = $this->pool->whatProvides($job['packageName'], $job['constraint']);
-                    foreach ($packages as $package) {
-                        if (isset($this->installedMap[$package->id])) {
-                            $this->updateMap[$package->id] = true;
-                        }
-                    }
-                    break;
+        foreach ($request->getRequires() as $packageName => $constraint) {
+            if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $packageName)) {
+                continue;
+            }
 
-                case 'update-all':
-                    foreach ($this->installedMap as $package) {
-                        $this->updateMap[$package->id] = true;
-                    }
-                    break;
-
-                case 'install':
-                    if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $job['packageName'])) {
-                        break;
-                    }
-
-                    if (!$this->pool->whatProvides($job['packageName'], $job['constraint'])) {
-                        $problem = new Problem($this->pool);
-                        $problem->addRule(new GenericRule(array(), null, null, $job));
-                        $this->problems[] = $problem;
-                    }
-                    break;
+            if (!$this->pool->whatProvides($packageName, $constraint)) {
+                $problem = new Problem();
+                $problem->addRule(new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => $packageName, 'constraint' => $constraint)));
+                $this->problems[] = $problem;
             }
         }
     }
@@ -207,15 +185,16 @@ class Solver
     /**
      * @param  Request $request
      * @param  bool    $ignorePlatformReqs
-     * @return array
+     * @return LockTransaction
      */
     public function solve(Request $request, $ignorePlatformReqs = false)
     {
-        $this->jobs = $request->getJobs();
+        $this->setupFixedMap($request);
 
-        $this->setupInstalledMap();
-        $this->rules = $this->ruleSetGenerator->getRulesFor($this->jobs, $this->installedMap, $ignorePlatformReqs);
-        $this->checkForRootRequireProblems($ignorePlatformReqs);
+        $this->io->writeError('Generating rules', true, IOInterface::DEBUG);
+        $this->ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
+        $this->rules = $this->ruleSetGenerator->getRulesFor($request, $ignorePlatformReqs);
+        $this->checkForRootRequireProblems($request, $ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
 
@@ -223,29 +202,20 @@ class Solver
             $this->watchGraph->insert(new RuleWatchNode($rule));
         }
 
-        /* make decisions based on job/update assertions */
+        /* make decisions based on root require/fix assertions */
         $this->makeAssertionRuleDecisions();
 
         $this->io->writeError('Resolving dependencies through SAT', true, IOInterface::DEBUG);
         $before = microtime(true);
-        $this->runSat(true);
+        $this->runSat();
         $this->io->writeError('', true, IOInterface::DEBUG);
         $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
-        // decide to remove everything that's installed and undecided
-        foreach ($this->installedMap as $packageId => $void) {
-            if ($this->decisions->undecided($packageId)) {
-                $this->decisions->decide(-$packageId, 1, null);
-            }
-        }
-
         if ($this->problems) {
-            throw new SolverProblemsException($this->problems, $this->installedMap);
+            throw new SolverProblemsException($this->problems, $this->learnedPool);
         }
 
-        $transaction = new Transaction($this->policy, $this->pool, $this->installedMap, $this->decisions);
-
-        return $transaction->getOperations();
+        return new LockTransaction($this->pool, $request->getPresentMap(), $request->getUnlockableMap(), $this->decisions);
     }
 
     /**
@@ -322,11 +292,10 @@ class Solver
      *
      * @param  int        $level
      * @param  string|int $literal
-     * @param  bool       $disableRules
      * @param  Rule       $rule
      * @return int
      */
-    private function setPropagateLearn($level, $literal, $disableRules, Rule $rule)
+    private function setPropagateLearn($level, $literal, Rule $rule)
     {
         $level++;
 
@@ -340,7 +309,7 @@ class Solver
             }
 
             if ($level == 1) {
-                return $this->analyzeUnsolvable($rule, $disableRules);
+                return $this->analyzeUnsolvable($rule);
             }
 
             // conflict
@@ -377,14 +346,13 @@ class Solver
     /**
      * @param  int   $level
      * @param  array $decisionQueue
-     * @param  bool  $disableRules
      * @param  Rule  $rule
      * @return int
      */
-    private function selectAndInstall($level, array $decisionQueue, $disableRules, Rule $rule)
+    private function selectAndInstall($level, array $decisionQueue, Rule $rule)
     {
         // choose best package to install from decisionQueue
-        $literals = $this->policy->selectPreferredPackages($this->pool, $this->installedMap, $decisionQueue, $rule->getRequiredPackage());
+        $literals = $this->policy->selectPreferredPackages($this->pool, $decisionQueue, $rule->getRequiredPackage());
 
         $selectedLiteral = array_shift($literals);
 
@@ -393,7 +361,7 @@ class Solver
             $this->branches[] = array($literals, $level);
         }
 
-        return $this->setPropagateLearn($level, $selectedLiteral, $disableRules, $rule);
+        return $this->setPropagateLearn($level, $selectedLiteral, $rule);
     }
 
     /**
@@ -539,12 +507,11 @@ class Solver
 
     /**
      * @param  Rule $conflictRule
-     * @param  bool $disableRules
      * @return int
      */
-    private function analyzeUnsolvable(Rule $conflictRule, $disableRules)
+    private function analyzeUnsolvable(Rule $conflictRule)
     {
-        $problem = new Problem($this->pool);
+        $problem = new Problem();
         $problem->addRule($conflictRule);
 
         $this->analyzeUnsolvableRule($problem, $conflictRule);
@@ -586,39 +553,7 @@ class Solver
             }
         }
 
-        if ($disableRules) {
-            foreach ($this->problems[count($this->problems) - 1] as $reason) {
-                $this->disableProblem($reason['rule']);
-            }
-
-            $this->resetSolver();
-
-            return 1;
-        }
-
         return 0;
-    }
-
-    /**
-     * @param Rule $why
-     */
-    private function disableProblem(Rule $why)
-    {
-        $job = $why->getJob();
-
-        if (!$job) {
-            $why->disable();
-
-            return;
-        }
-
-        // disable all rules of this job
-        foreach ($this->rules as $rule) {
-            /** @var Rule $rule */
-            if ($job === $rule->getJob()) {
-                $rule->disable();
-            }
-        }
     }
 
     private function resetSolver()
@@ -661,17 +596,14 @@ class Solver
         }
     }
 
-    /**
-     * @param bool $disableRules
-     */
-    private function runSat($disableRules = true)
+    private function runSat()
     {
         $this->propagateIndex = 0;
 
         /*
          * here's the main loop:
          * 1) propagate new decisions (only needed once)
-         * 2) fulfill jobs
+         * 2) fulfill root requires/fixed packages
          * 3) fulfill all unresolved rules
          * 4) minimalize solution if we had choices
          * if we encounter a problem, we rewind to a safe level and restart
@@ -679,10 +611,7 @@ class Solver
          */
 
         $decisionQueue = array();
-        /**
-         * @todo this makes $disableRules always false; determine the rationale and possibly remove dead code?
-         */
-        $disableRules = array();
+        $decisionSupplementQueue = array();
 
         $level = 1;
         $systemLevel = $level + 1;
@@ -691,7 +620,7 @@ class Solver
             if (1 === $level) {
                 $conflictRule = $this->propagate($level);
                 if (null !== $conflictRule) {
-                    if ($this->analyzeUnsolvable($conflictRule, $disableRules)) {
+                    if ($this->analyzeUnsolvable($conflictRule)) {
                         continue;
                     }
 
@@ -699,9 +628,9 @@ class Solver
                 }
             }
 
-            // handle job rules
+            // handle root require/fixed package rules
             if ($level < $systemLevel) {
-                $iterator = $this->rules->getIteratorFor(RuleSet::TYPE_JOB);
+                $iterator = $this->rules->getIteratorFor(RuleSet::TYPE_REQUEST);
                 foreach ($iterator as $rule) {
                     if ($rule->isEnabled()) {
                         $decisionQueue = array();
@@ -718,26 +647,21 @@ class Solver
                         }
 
                         if ($noneSatisfied && count($decisionQueue)) {
-                            // prune all update packages until installed version
-                            // except for requested updates
-                            if (count($this->installed) != count($this->updateMap)) {
-                                $prunedQueue = array();
-                                foreach ($decisionQueue as $literal) {
-                                    if (isset($this->installedMap[abs($literal)])) {
-                                        $prunedQueue[] = $literal;
-                                        if (isset($this->updateMap[abs($literal)])) {
-                                            $prunedQueue = $decisionQueue;
-                                            break;
-                                        }
-                                    }
+                            // if any of the options in the decision queue are fixed, only use those
+                            $prunedQueue = array();
+                            foreach ($decisionQueue as $literal) {
+                                if (isset($this->fixedMap[abs($literal)])) {
+                                    $prunedQueue[] = $literal;
                                 }
+                            }
+                            if (!empty($prunedQueue)) {
                                 $decisionQueue = $prunedQueue;
                             }
                         }
 
                         if ($noneSatisfied && count($decisionQueue)) {
                             $oLevel = $level;
-                            $level = $this->selectAndInstall($level, $decisionQueue, $disableRules, $rule);
+                            $level = $this->selectAndInstall($level, $decisionQueue, $rule);
 
                             if (0 === $level) {
                                 return;
@@ -751,7 +675,7 @@ class Solver
 
                 $systemLevel = $level + 1;
 
-                // jobs left
+                // root requires/fixed packages left
                 $iterator->next();
                 if ($iterator->valid()) {
                     continue;
@@ -813,7 +737,7 @@ class Solver
                     continue;
                 }
 
-                $level = $this->selectAndInstall($level, $decisionQueue, $disableRules, $rule);
+                $level = $this->selectAndInstall($level, $decisionQueue, $rule);
 
                 if (0 === $level) {
                     return;
@@ -856,7 +780,7 @@ class Solver
 
                     $why = $this->decisions->lastReason();
 
-                    $level = $this->setPropagateLearn($level, $lastLiteral, $disableRules, $why);
+                    $level = $this->setPropagateLearn($level, $lastLiteral, $why);
 
                     if ($level == 0) {
                         return;

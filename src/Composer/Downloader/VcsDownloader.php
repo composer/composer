@@ -20,6 +20,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -54,44 +55,78 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path)
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    {
+        if (!$package->getSourceReference()) {
+            throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
+        }
+
+        $urls = $this->prepareUrls($package->getSourceUrls());
+
+        while ($url = array_shift($urls)) {
+            try {
+                return $this->doDownload($package, $path, $url, $prevPackage);
+            } catch (\Exception $e) {
+                // rethrow phpunit exceptions to avoid hard to debug bug failures
+                if ($e instanceof \PHPUnit\Framework\Exception) {
+                    throw $e;
+                }
+                if ($this->io->isDebug()) {
+                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
+                } elseif (count($urls)) {
+                    $this->io->writeError('    Failed, trying the next URL');
+                }
+                if (!count($urls)) {
+                    throw $e;
+                }
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    {
+        if ($type === 'update') {
+            $this->cleanChanges($prevPackage, $path, true);
+        } elseif ($type === 'install') {
+            $this->filesystem->emptyDirectory($path);
+        } elseif ($type === 'uninstall') {
+            $this->cleanChanges($package, $path, false);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    {
+        if ($type === 'update') {
+            // TODO keep track of whether prepare was called for this package
+            $this->reapplyChanges($path);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function install(PackageInterface $package, $path)
     {
         if (!$package->getSourceReference()) {
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
 
         $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>): ", false);
-        $this->filesystem->emptyDirectory($path);
 
-        $urls = $package->getSourceUrls();
+        $urls = $this->prepareUrls($package->getSourceUrls());
         while ($url = array_shift($urls)) {
             try {
-                if (Filesystem::isLocalPath($url)) {
-                    // realpath() below will not understand
-                    // url that starts with "file://"
-                    $needle = 'file://';
-                    $isFileProtocol = false;
-                    if (0 === strpos($url, $needle)) {
-                        $url = substr($url, strlen($needle));
-                        $isFileProtocol = true;
-                    }
-
-                    // realpath() below will not understand %20 spaces etc.
-                    if (false !== strpos($url, '%')) {
-                        $url = rawurldecode($url);
-                    }
-
-                    $url = realpath($url);
-
-                    if ($isFileProtocol) {
-                        $url = $needle . $url;
-                    }
-                }
-                $this->doDownload($package, $path, $url);
+                $this->doInstall($package, $path, $url);
                 break;
             } catch (\Exception $e) {
                 // rethrow phpunit exceptions to avoid hard to debug bug failures
-                if ($e instanceof \PHPUnit_Framework_Exception) {
+                if ($e instanceof \PHPUnit\Framework\Exception) {
                     throw $e;
                 }
                 if ($this->io->isDebug()) {
@@ -130,25 +165,21 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             $to = $target->getFullPrettyVersion();
         }
 
-        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Updating' : 'Downgrading';
+        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Upgrading' : 'Downgrading';
         $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
 
-        $this->cleanChanges($initial, $path, true);
-        $urls = $target->getSourceUrls();
+        $urls = $this->prepareUrls($target->getSourceUrls());
 
         $exception = null;
         while ($url = array_shift($urls)) {
             try {
-                if (Filesystem::isLocalPath($url)) {
-                    $url = realpath($url);
-                }
                 $this->doUpdate($initial, $target, $path, $url);
 
                 $exception = null;
                 break;
             } catch (\Exception $exception) {
                 // rethrow phpunit exceptions to avoid hard to debug bug failures
-                if ($exception instanceof \PHPUnit_Framework_Exception) {
+                if ($exception instanceof \PHPUnit\Framework\Exception) {
                     throw $exception;
                 }
                 if ($this->io->isDebug()) {
@@ -158,8 +189,6 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 }
             }
         }
-
-        $this->reapplyChanges($path);
 
         // print the commit logs if in verbose mode and VCS metadata is present
         // because in case of missing metadata code would trigger another exception
@@ -196,19 +225,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     public function remove(PackageInterface $package, $path)
     {
         $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
-        $this->cleanChanges($package, $path, false);
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
         }
-    }
-
-    /**
-     * Download progress information is not available for all VCS downloaders.
-     * {@inheritDoc}
-     */
-    public function setOutputProgress($outputProgress)
-    {
-        return $this;
     }
 
     /**
@@ -244,7 +263,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * Guarantee that no changes have been made to the local copy
+     * Reapply previously stashes changes if applicable, only called after an update (regardless if successful or not)
      *
      * @param  string            $path
      * @throws \RuntimeException in case the operation must be aborted or the patch does not apply cleanly
@@ -254,13 +273,27 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
+     * Downloads data needed to run an install/update later
+     *
+     * @param PackageInterface      $package     package instance
+     * @param string                $path        download path
+     * @param string                $url         package url
+     * @param PackageInterface|null $prevPackage previous package (in case of an update)
+     *
+     * @return PromiseInterface|null
+     */
+    abstract protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null);
+
+    /**
      * Downloads specific package into specific folder.
      *
      * @param PackageInterface $package package instance
      * @param string           $path    download path
      * @param string           $url     package url
+     *
+     * @return PromiseInterface|null
      */
-    abstract protected function doDownload(PackageInterface $package, $path, $url);
+    abstract protected function doInstall(PackageInterface $package, $path, $url);
 
     /**
      * Updates specific package in specific folder from initial to target version.
@@ -269,6 +302,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @param PackageInterface $target  updated package
      * @param string           $path    download path
      * @param string           $url     package url
+     *
+     * @return PromiseInterface|null
      */
     abstract protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url);
 
@@ -290,4 +325,33 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @return bool
      */
     abstract protected function hasMetadataRepository($path);
+
+    private function prepareUrls(array $urls)
+    {
+        foreach ($urls as $index => $url) {
+            if (Filesystem::isLocalPath($url)) {
+                // realpath() below will not understand
+                // url that starts with "file://"
+                $fileProtocol = 'file://';
+                $isFileProtocol = false;
+                if (0 === strpos($url, $fileProtocol)) {
+                    $url = substr($url, strlen($fileProtocol));
+                    $isFileProtocol = true;
+                }
+
+                // realpath() below will not understand %20 spaces etc.
+                if (false !== strpos($url, '%')) {
+                    $url = rawurldecode($url);
+                }
+
+                $urls[$index] = realpath($url);
+
+                if ($isFileProtocol) {
+                    $urls[$index] = $fileProtocol . $urls[$index];
+                }
+            }
+        }
+
+        return $urls;
+    }
 }

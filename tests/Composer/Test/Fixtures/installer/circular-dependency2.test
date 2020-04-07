@@ -2,7 +2,7 @@
 Circular dependencies are possible between packages
 --COMPOSER--
 {
-    "name": "root",
+    "name": "root/pkg",
     "version": "dev-master",
     "require": {
         "require/itself": "1.0.0",
@@ -32,5 +32,5 @@ Circular dependencies are possible between packages
 --RUN--
 update -v
 --EXPECT--
-Installing require/itself (1.0.0)
 Installing regular/pkg (1.0.0)
+Installing require/itself (1.0.0)

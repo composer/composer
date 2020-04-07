@@ -66,7 +66,8 @@ class RunScriptCommandTest extends TestCase
 
         $ed->expects($this->once())
             ->method('dispatchScript')
-            ->with($scriptName, $expectedDevMode, array());
+            ->with($scriptName, $expectedDevMode, array())
+            ->willReturn(0);
 
         $composer = $this->createComposerInstance();
         $composer->setEventDispatcher($ed);

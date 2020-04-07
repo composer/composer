@@ -6,28 +6,28 @@ Replace takes precedence only in higher priority repositories and if explicitly 
         {
             "type": "package",
             "package": [
-                { "name": "forked", "version": "1.1.0", "replace": { "package2": "1.1.0" } }
+                { "name": "forked/pkg", "version": "1.1.0", "replace": { "package/2": "1.1.0" } }
             ]
         },
         {
             "type": "package",
             "package": [
-                { "name": "package", "version": "1.0.0" },
-                { "name": "package2", "version": "1.0.0" },
-                { "name": "package3", "version": "1.0.0", "require": { "forked": "*" } },
-                { "name": "hijacker", "version": "1.1.0", "replace": { "package": "1.1.0" } }
+                { "name": "package/1", "version": "1.0.0" },
+                { "name": "package/2", "version": "1.0.0" },
+                { "name": "package/3", "version": "1.0.0", "require": { "forked/pkg": "*" } },
+                { "name": "hijacker/pkg", "version": "1.1.0", "replace": { "package/1": "1.1.0" } }
             ]
         }
     ],
     "require": {
-        "package": "1.*",
-        "package2": "1.*",
-        "package3": "1.*"
+        "package/1": "1.*",
+        "package/2": "1.*",
+        "package/3": "1.*"
     }
 }
 --RUN--
 install
 --EXPECT--
-Installing package (1.0.0)
-Installing forked (1.1.0)
-Installing package3 (1.0.0)
+Installing package/1 (1.0.0)
+Installing forked/pkg (1.1.0)
+Installing package/3 (1.0.0)

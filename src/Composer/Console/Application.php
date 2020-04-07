@@ -230,6 +230,12 @@ class Application extends BaseApplication
                 if (function_exists('posix_getuid') && posix_getuid() === 0) {
                     if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                         $io->writeError('<warning>Do not run Composer as root/super user! See https://getcomposer.org/root for details</warning>');
+                        
+                        if ($io->isInteractive()) {
+                            if (!$io->askConfirmation('<info>Continue as root/super user</info> [<comment>yes</comment>]? ', true)) {
+                                return 1;
+                            }
+                        }
                     }
                     if ($uid = (int) getenv('SUDO_UID')) {
                         // Silently clobber any sudo credentials on the invoking user to avoid privilege escalations later on
@@ -292,7 +298,7 @@ class Application extends BaseApplication
 
             return $result;
         } catch (ScriptExecutionException $e) {
-            return $e->getCode();
+            return (int) $e->getCode();
         } catch (\Exception $e) {
             $this->hintCommonErrors($e);
             restore_error_handler();

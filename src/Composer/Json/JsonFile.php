@@ -15,7 +15,7 @@ namespace Composer\Json;
 use JsonSchema\Validator;
 use Seld\JsonLint\JsonParser;
 use Seld\JsonLint\ParsingException;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 
@@ -37,25 +37,25 @@ class JsonFile
     const COMPOSER_SCHEMA_PATH = '/../../../res/composer-schema.json';
 
     private $path;
-    private $rfs;
+    private $httpDownloader;
     private $io;
 
     /**
      * Initializes json file reader/parser.
      *
-     * @param  string                    $path path to a lockfile
-     * @param  RemoteFilesystem          $rfs  required for loading http/https json files
+     * @param  string                    $path           path to a lockfile
+     * @param  HttpDownloader            $httpDownloader required for loading http/https json files
      * @param  IOInterface               $io
      * @throws \InvalidArgumentException
      */
-    public function __construct($path, RemoteFilesystem $rfs = null, IOInterface $io = null)
+    public function __construct($path, HttpDownloader $httpDownloader = null, IOInterface $io = null)
     {
         $this->path = $path;
 
-        if (null === $rfs && preg_match('{^https?://}i', $path)) {
-            throw new \InvalidArgumentException('http urls require a RemoteFilesystem instance to be passed');
+        if (null === $httpDownloader && preg_match('{^https?://}i', $path)) {
+            throw new \InvalidArgumentException('http urls require a HttpDownloader instance to be passed');
         }
-        $this->rfs = $rfs;
+        $this->httpDownloader = $httpDownloader;
         $this->io = $io;
     }
 
@@ -86,8 +86,8 @@ class JsonFile
     public function read()
     {
         try {
-            if ($this->rfs) {
-                $json = $this->rfs->getContents($this->path, $this->path, false);
+            if ($this->httpDownloader) {
+                $json = $this->httpDownloader->get($this->path)->getBody();
             } else {
                 if ($this->io && $this->io->isDebug()) {
                     $this->io->writeError('Reading ' . $this->path);

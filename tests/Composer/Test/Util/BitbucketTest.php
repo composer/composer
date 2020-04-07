@@ -13,6 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Bitbucket;
+use Composer\Util\Http\Response;
 use Composer\Test\TestCase;
 
 /**
@@ -30,8 +31,8 @@ class BitbucketTest extends TestCase
 
     /** @type \Composer\IO\ConsoleIO|\PHPUnit_Framework_MockObject_MockObject */
     private $io;
-    /** @type \Composer\Util\RemoteFilesystem|\PHPUnit_Framework_MockObject_MockObject */
-    private $rfs;
+    /** @type \Composer\Util\HttpDownloader|\PHPUnit_Framework_MockObject_MockObject */
+    private $httpDownloader;
     /** @type \Composer\Config|\PHPUnit_Framework_MockObject_MockObject */
     private $config;
     /** @type Bitbucket */
@@ -47,8 +48,8 @@ class BitbucketTest extends TestCase
             ->getMock()
         ;
 
-        $this->rfs = $this
-            ->getMockBuilder('Composer\Util\RemoteFilesystem')
+        $this->httpDownloader = $this
+            ->getMockBuilder('Composer\Util\HttpDownloader')
             ->disableOriginalConstructor()
             ->getMock()
         ;
@@ -57,7 +58,7 @@ class BitbucketTest extends TestCase
 
         $this->time = time();
 
-        $this->bitbucket = new Bitbucket($this->io, $this->config, null, $this->rfs, $this->time);
+        $this->bitbucket = new Bitbucket($this->io, $this->config, null, $this->httpDownloader, $this->time);
     }
 
     public function testRequestAccessTokenWithValidOAuthConsumer()
@@ -66,12 +67,10 @@ class BitbucketTest extends TestCase
             ->method('setAuthentication')
             ->with($this->origin, $this->consumer_key, $this->consumer_secret);
 
-        $this->rfs->expects($this->once())
-            ->method('getContents')
+        $this->httpDownloader->expects($this->once())
+            ->method('get')
             ->with(
-                $this->origin,
                 Bitbucket::OAUTH2_ACCESS_TOKEN_URL,
-                false,
                 array(
                     'retry-auth-failure' => false,
                     'http' => array(
@@ -81,9 +80,14 @@ class BitbucketTest extends TestCase
                 )
             )
             ->willReturn(
-                sprintf(
-                    '{"access_token": "%s", "scopes": "repository", "expires_in": 3600, "refresh_token": "refreshtoken", "token_type": "bearer"}',
-                    $this->token
+                new Response(
+                    array('url' => Bitbucket::OAUTH2_ACCESS_TOKEN_URL),
+                    200,
+                    array(),
+                    sprintf(
+                        '{"access_token": "%s", "scopes": "repository", "expires_in": 3600, "refresh_token": "refreshtoken", "token_type": "bearer"}',
+                        $this->token
+                    )
                 )
             );
 
@@ -142,12 +146,10 @@ class BitbucketTest extends TestCase
             ->method('setAuthentication')
             ->with($this->origin, $this->consumer_key, $this->consumer_secret);
 
-        $this->rfs->expects($this->once())
-            ->method('getContents')
+        $this->httpDownloader->expects($this->once())
+            ->method('get')
             ->with(
-                $this->origin,
                 Bitbucket::OAUTH2_ACCESS_TOKEN_URL,
-                false,
                 array(
                     'retry-auth-failure' => false,
                     'http' => array(
@@ -157,9 +159,14 @@ class BitbucketTest extends TestCase
                 )
             )
             ->willReturn(
-                sprintf(
-                    '{"access_token": "%s", "scopes": "repository", "expires_in": 3600, "refresh_token": "refreshtoken", "token_type": "bearer"}',
-                    $this->token
+                new Response(
+                    array('url' => Bitbucket::OAUTH2_ACCESS_TOKEN_URL),
+                    200,
+                    array(),
+                    sprintf(
+                        '{"access_token": "%s", "scopes": "repository", "expires_in": 3600, "refresh_token": "refreshtoken", "token_type": "bearer"}',
+                        $this->token
+                    )
                 )
             );
 
@@ -186,12 +193,10 @@ class BitbucketTest extends TestCase
                 array('2. You are using an OAuth consumer, but didn\'t configure a (dummy) callback url')
             );
 
-        $this->rfs->expects($this->once())
-            ->method('getContents')
+        $this->httpDownloader->expects($this->once())
+            ->method('get')
             ->with(
-                $this->origin,
                 Bitbucket::OAUTH2_ACCESS_TOKEN_URL,
-                false,
                 array(
                     'retry-auth-failure' => false,
                     'http' => array(
@@ -234,21 +239,24 @@ class BitbucketTest extends TestCase
             )
             ->willReturnOnConsecutiveCalls($this->consumer_key, $this->consumer_secret);
 
-        $this->rfs
+        $this->httpDownloader
             ->expects($this->once())
-            ->method('getContents')
+            ->method('get')
             ->with(
-                $this->equalTo($this->origin),
-                $this->equalTo(sprintf('https://%s/site/oauth2/access_token', $this->origin)),
-                $this->isFalse(),
+                $this->equalTo($url = sprintf('https://%s/site/oauth2/access_token', $this->origin)),
                 $this->anything()
             )
             ->willReturn(
-                sprintf(
-                    '{"access_token": "%s", "scopes": "repository", "expires_in": 3600, "refresh_token": "refresh_token", "token_type": "bearer"}',
-                    $this->token
+                new Response(
+                    array('url' => $url),
+                    200,
+                    array(),
+                    sprintf(
+                        '{"access_token": "%s", "scopes": "repository", "expires_in": 3600, "refresh_token": "refresh_token", "token_type": "bearer"}',
+                        $this->token
+                    )
                 )
-            )
+            );
         ;
 
         $this->setExpectationsForStoringAccessToken(true);

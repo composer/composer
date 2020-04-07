@@ -21,7 +21,7 @@ use Composer\Repository\Pear\ChannelInfo;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\Config;
 use Composer\Factory;
 
@@ -38,7 +38,7 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
 {
     private $url;
     private $io;
-    private $rfs;
+    private $httpDownloader;
     private $versionParser;
     private $repoConfig;
 
@@ -47,7 +47,7 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
      */
     private $vendorAlias;
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, EventDispatcher $dispatcher = null, RemoteFilesystem $rfs = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null)
     {
         parent::__construct();
         if (!preg_match('{^https?://}', $repoConfig['url'])) {
@@ -61,10 +61,15 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
         $this->url = rtrim($repoConfig['url'], '/');
         $this->io = $io;
-        $this->rfs = $rfs ?: Factory::createRemoteFilesystem($this->io, $config);
+        $this->httpDownloader = $httpDownloader;
         $this->vendorAlias = isset($repoConfig['vendor-alias']) ? $repoConfig['vendor-alias'] : null;
         $this->versionParser = new VersionParser();
         $this->repoConfig = $repoConfig;
+    }
+
+    public function getRepoName()
+    {
+        return 'pear repo ('.$this->url.')';
     }
 
     public function getRepoConfig()
@@ -78,7 +83,7 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
         $this->io->writeError('Initializing PEAR repository '.$this->url);
 
-        $reader = new ChannelReader($this->rfs);
+        $reader = new ChannelReader($this->httpDownloader);
         try {
             $channelInfo = $reader->read($this->url);
         } catch (\Exception $e) {
@@ -97,7 +102,7 @@ class PearRepository extends ArrayRepository implements ConfigurableRepositoryIn
      *
      * @param  ChannelInfo         $channelInfo
      * @param  SemverVersionParser $versionParser
-     * @return CompletePackage
+     * @return CompletePackage[]
      */
     private function buildComposerPackages(ChannelInfo $channelInfo, SemverVersionParser $versionParser)
     {

@@ -1,0 +1,45 @@
+--TEST--
+Test that names provided by two dependents cause a conflict
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "provider/pkg",
+                    "version": "1.0.0",
+                    "provide": { "third/pkg": "2.*" }
+                },
+                {
+                    "name": "replacer/pkg",
+                    "version": "1.0.0",
+                    "replace": { "third/pkg": "2.*" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "provider/pkg": "*",
+        "replacer/pkg": "*"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires provider/pkg * -> satisfiable by provider/pkg[1.0.0].
+    - Only one of these can be installed: replacer/pkg 1.0.0, provider/pkg 1.0.0.
+    - Root composer.json requires replacer/pkg * -> satisfiable by replacer/pkg[1.0.0].
+
+--EXPECT--
+

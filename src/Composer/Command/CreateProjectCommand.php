@@ -20,7 +20,6 @@ use Composer\Installer\InstallationManager;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
@@ -28,6 +27,7 @@ use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\InputArgument;
@@ -38,6 +38,7 @@ use Symfony\Component\Finder\Finder;
 use Composer\Json\JsonFile;
 use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
+use Composer\Util\Loop;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -181,8 +182,6 @@ EOT
 
             $composer = Factory::create($io, null, $disablePlugins);
         }
-
-        $composer->getDownloadManager()->setOutputProgress(!$noProgress);
 
         $fs = new Filesystem();
 
@@ -334,8 +333,8 @@ EOT
             throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
-        $pool = new Pool($stability);
-        $pool->addRepository($sourceRepo);
+        $repositorySet = new RepositorySet($stability);
+        $repositorySet->addRepository($sourceRepo);
 
         $phpVersion = null;
         $prettyPhpVersion = null;
@@ -349,7 +348,7 @@ EOT
         }
 
         // find the latest version if there are multiple
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $package = $versionSelector->findBestCandidate($name, $packageVersion, $phpVersion, $stability);
 
         if (!$package) {
@@ -384,15 +383,17 @@ EOT
             $package = $package->getAliasOf();
         }
 
-        $dm = $this->createDownloadManager($io, $config);
+        $factory = new Factory();
+
+        $httpDownloader = $factory->createHttpDownloader($io, $config);
+        $dm = $factory->createDownloadManager($io, $config, $httpDownloader);
         $dm->setPreferSource($preferSource)
-            ->setPreferDist($preferDist)
-            ->setOutputProgress(!$noProgress);
+            ->setPreferDist($preferDist);
 
         $projectInstaller = new ProjectInstaller($directory, $dm);
-        $im = $this->createInstallationManager();
+        $im = $factory->createInstallationManager(new Loop($httpDownloader), $io);
         $im->addInstaller($projectInstaller);
-        $im->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
+        $im->execute(new InstalledFilesystemRepository(new JsonFile('php://memory')), array(new InstallOperation($package)));
         $im->notifyInstalls($io);
 
         // collect suggestions
@@ -407,17 +408,5 @@ EOT
         putenv('COMPOSER_ROOT_VERSION='.$_SERVER['COMPOSER_ROOT_VERSION']);
 
         return $installedFromVcs;
-    }
-
-    protected function createDownloadManager(IOInterface $io, Config $config)
-    {
-        $factory = new Factory();
-
-        return $factory->createDownloadManager($io, $config);
-    }
-
-    protected function createInstallationManager()
-    {
-        return new InstallationManager();
     }
 }

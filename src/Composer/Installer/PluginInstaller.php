@@ -50,19 +50,27 @@ class PluginInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function download(PackageInterface $package, PackageInterface $prevPackage = null)
     {
         $extra = $package->getExtra();
         if (empty($extra['class'])) {
             throw new \UnexpectedValueException('Error while installing '.$package->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
         }
 
+        return parent::download($package, $prevPackage);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
+    {
         parent::install($repo, $package);
         try {
             $this->composer->getPluginManager()->registerPackage($package, true);
         } catch (\Exception $e) {
             // Rollback installation
-            $this->io->writeError('Plugin installation failed, rolling back');
+            $this->io->writeError('Plugin initialization failed, uninstalling plugin');
             parent::uninstall($repo, $package);
             throw $e;
         }
@@ -73,12 +81,22 @@ class PluginInstaller extends LibraryInstaller
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
-        $extra = $target->getExtra();
-        if (empty($extra['class'])) {
-            throw new \UnexpectedValueException('Error while installing '.$target->getPrettyName().', composer-plugin packages should have a class defined in their extra key to be usable.');
-        }
-
         parent::update($repo, $initial, $target);
-        $this->composer->getPluginManager()->registerPackage($target, true);
+
+        try {
+            $this->composer->getPluginManager()->deactivatePackage($initial, true);
+            $this->composer->getPluginManager()->registerPackage($target, true);
+        } catch (\Exception $e) {
+            // Rollback installation
+            $this->io->writeError('Plugin initialization failed, uninstalling plugin');
+            parent::uninstall($repo, $target);
+            throw $e;
+        }
+    }
+
+    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
+    {
+        $this->composer->getPluginManager()->uninstallPackage($package, true);
+        parent::uninstall($repo, $package);
     }
 }

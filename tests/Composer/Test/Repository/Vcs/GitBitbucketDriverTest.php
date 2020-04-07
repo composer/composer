@@ -16,6 +16,8 @@ use Composer\Config;
 use Composer\Repository\Vcs\GitBitbucketDriver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
+use Composer\Util\Http\Response;
 
 /**
  * @group bitbucket
@@ -26,8 +28,8 @@ class GitBitbucketDriverTest extends TestCase
     private $io;
     /** @type \Composer\Config */
     private $config;
-    /** @type \Composer\Util\RemoteFilesystem|\PHPUnit_Framework_MockObject_MockObject */
-    private $rfs;
+    /** @type \Composer\Util\HttpDownloader|\PHPUnit_Framework_MockObject_MockObject */
+    private $httpDownloader;
     /** @type string */
     private $home;
     /** @type string */
@@ -46,7 +48,7 @@ class GitBitbucketDriverTest extends TestCase
             ),
         ));
 
-        $this->rfs = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+        $this->httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
             ->disableOriginalConstructor()
             ->getMock();
     }
@@ -67,8 +69,8 @@ class GitBitbucketDriverTest extends TestCase
             $repoConfig,
             $this->io,
             $this->config,
-            null,
-            $this->rfs
+            $this->httpDownloader,
+            new ProcessExecutor($this->io)
         );
 
         $driver->initialize();
@@ -83,15 +85,14 @@ class GitBitbucketDriverTest extends TestCase
             'https://bitbucket.org/user/repo.git does not appear to be a git repository, use https://bitbucket.org/user/repo if this is a mercurial bitbucket repository'
         );
 
-        $this->rfs->expects($this->once())
-            ->method('getContents')
+        $this->httpDownloader->expects($this->once())
+            ->method('get')
             ->with(
-                $this->originUrl,
-                'https://api.bitbucket.org/2.0/repositories/user/repo?fields=-project%2C-owner',
-                false
+                $url = 'https://api.bitbucket.org/2.0/repositories/user/repo?fields=-project%2C-owner',
+                array()
             )
             ->willReturn(
-                '{"scm":"hg","website":"","has_wiki":false,"name":"repo","links":{"branches":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/branches"},"tags":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/tags"},"clone":[{"href":"https:\/\/user@bitbucket.org\/user\/repo","name":"https"},{"href":"ssh:\/\/hg@bitbucket.org\/user\/repo","name":"ssh"}],"html":{"href":"https:\/\/bitbucket.org\/user\/repo"}},"language":"php","created_on":"2015-02-18T16:22:24.688+00:00","updated_on":"2016-05-17T13:20:21.993+00:00","is_private":true,"has_issues":false}'
+                new Response(array('url' => $url), 200, array(), '{"scm":"hg","website":"","has_wiki":false,"name":"repo","links":{"branches":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/branches"},"tags":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/tags"},"clone":[{"href":"https:\/\/user@bitbucket.org\/user\/repo","name":"https"},{"href":"ssh:\/\/hg@bitbucket.org\/user\/repo","name":"ssh"}],"html":{"href":"https:\/\/bitbucket.org\/user\/repo"}},"language":"php","created_on":"2015-02-18T16:22:24.688+00:00","updated_on":"2016-05-17T13:20:21.993+00:00","is_private":true,"has_issues":false}')
             );
 
         $driver = $this->getDriver(array('url' => 'https://bitbucket.org/user/repo.git'));
@@ -103,47 +104,43 @@ class GitBitbucketDriverTest extends TestCase
     {
         $driver = $this->getDriver(array('url' => 'https://bitbucket.org/user/repo.git'));
 
-        $this->rfs->expects($this->any())
-            ->method('getContents')
+        $urls = array(
+            'https://api.bitbucket.org/2.0/repositories/user/repo?fields=-project%2C-owner',
+            'https://api.bitbucket.org/2.0/repositories/user/repo?fields=mainbranch',
+            'https://api.bitbucket.org/2.0/repositories/user/repo/refs/tags?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cnext&sort=-target.date',
+            'https://api.bitbucket.org/2.0/repositories/user/repo/refs/branches?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cvalues.heads%2Cnext&sort=-target.date',
+            'https://api.bitbucket.org/2.0/repositories/user/repo/src/master/composer.json',
+            'https://api.bitbucket.org/2.0/repositories/user/repo/commit/master?fields=date',
+        );
+        $this->httpDownloader->expects($this->any())
+            ->method('get')
             ->withConsecutive(
                 array(
-                    $this->originUrl,
-                    'https://api.bitbucket.org/2.0/repositories/user/repo?fields=-project%2C-owner',
-                    false,
+                    $urls[0], array()
                 ),
                 array(
-                    $this->originUrl,
-                    'https://api.bitbucket.org/2.0/repositories/user/repo?fields=mainbranch',
-                    false,
+                    $urls[1], array()
                 ),
                 array(
-                    $this->originUrl,
-                    'https://api.bitbucket.org/2.0/repositories/user/repo/refs/tags?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cnext&sort=-target.date',
-                    false,
+                    $urls[2], array()
                 ),
                 array(
-                    $this->originUrl,
-                    'https://api.bitbucket.org/2.0/repositories/user/repo/refs/branches?pagelen=100&fields=values.name%2Cvalues.target.hash%2Cvalues.heads%2Cnext&sort=-target.date',
-                    false,
+                    $urls[3], array()
                 ),
                 array(
-                    $this->originUrl,
-                    'https://api.bitbucket.org/2.0/repositories/user/repo/src/master/composer.json',
-                    false,
+                    $urls[4], array()
                 ),
                 array(
-                    $this->originUrl,
-                    'https://api.bitbucket.org/2.0/repositories/user/repo/commit/master?fields=date',
-                    false,
+                    $urls[5], array()
                 )
             )
             ->willReturnOnConsecutiveCalls(
-                '{"scm":"git","website":"","has_wiki":false,"name":"repo","links":{"branches":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/branches"},"tags":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/tags"},"clone":[{"href":"https:\/\/user@bitbucket.org\/user\/repo.git","name":"https"},{"href":"ssh:\/\/git@bitbucket.org\/user\/repo.git","name":"ssh"}],"html":{"href":"https:\/\/bitbucket.org\/user\/repo"}},"language":"php","created_on":"2015-02-18T16:22:24.688+00:00","updated_on":"2016-05-17T13:20:21.993+00:00","is_private":true,"has_issues":false}',
-                '{"mainbranch": {"name": "master"}}',
-                '{"values":[{"name":"1.0.1","target":{"hash":"9b78a3932143497c519e49b8241083838c8ff8a1"}},{"name":"1.0.0","target":{"hash":"d3393d514318a9267d2f8ebbf463a9aaa389f8eb"}}]}',
-                '{"values":[{"name":"master","target":{"hash":"937992d19d72b5116c3e8c4a04f960e5fa270b22"}}]}',
-                '{"name": "user/repo","description": "test repo","license": "GPL","authors": [{"name": "Name","email": "local@domain.tld"}],"require": {"creator/package": "^1.0"},"require-dev": {"phpunit/phpunit": "~4.8"}}',
-                '{"date": "2016-05-17T13:19:52+00:00"}'
+                new Response(array('url' => $urls[0]), 200, array(), '{"scm":"git","website":"","has_wiki":false,"name":"repo","links":{"branches":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/branches"},"tags":{"href":"https:\/\/api.bitbucket.org\/2.0\/repositories\/user\/repo\/refs\/tags"},"clone":[{"href":"https:\/\/user@bitbucket.org\/user\/repo.git","name":"https"},{"href":"ssh:\/\/git@bitbucket.org\/user\/repo.git","name":"ssh"}],"html":{"href":"https:\/\/bitbucket.org\/user\/repo"}},"language":"php","created_on":"2015-02-18T16:22:24.688+00:00","updated_on":"2016-05-17T13:20:21.993+00:00","is_private":true,"has_issues":false}'),
+                new Response(array('url' => $urls[1]), 200, array(), '{"mainbranch": {"name": "master"}}'),
+                new Response(array('url' => $urls[2]), 200, array(), '{"values":[{"name":"1.0.1","target":{"hash":"9b78a3932143497c519e49b8241083838c8ff8a1"}},{"name":"1.0.0","target":{"hash":"d3393d514318a9267d2f8ebbf463a9aaa389f8eb"}}]}'),
+                new Response(array('url' => $urls[3]), 200, array(), '{"values":[{"name":"master","target":{"hash":"937992d19d72b5116c3e8c4a04f960e5fa270b22"}}]}'),
+                new Response(array('url' => $urls[4]), 200, array(), '{"name": "user/repo","description": "test repo","license": "GPL","authors": [{"name": "Name","email": "local@domain.tld"}],"require": {"creator/package": "^1.0"},"require-dev": {"phpunit/phpunit": "~4.8"}}'),
+                new Response(array('url' => $urls[5]), 200, array(), '{"date": "2016-05-17T13:19:52+00:00"}')
             );
 
         $this->assertEquals(

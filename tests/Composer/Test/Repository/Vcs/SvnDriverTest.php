@@ -46,6 +46,7 @@ class SvnDriverTest extends TestCase
     public function testWrongCredentialsInUrl()
     {
         $console = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
 
         $output = "svn: OPTIONS of 'https://corp.svn.local/repo':";
         $output .= " authorization failed: Could not authenticate to server:";
@@ -66,7 +67,7 @@ class SvnDriverTest extends TestCase
             'url' => 'https://till:secret@corp.svn.local/repo',
         );
 
-        $svn = new SvnDriver($repoConfig, $console, $this->config, $process);
+        $svn = new SvnDriver($repoConfig, $console, $this->config, $httpDownloader, $process);
         $svn->initialize();
     }
 

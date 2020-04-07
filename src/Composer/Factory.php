@@ -23,7 +23,8 @@ use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
+use Composer\Util\Loop;
 use Composer\Util\Silencer;
 use Composer\Plugin\PluginEvents;
 use Composer\EventDispatcher\Event;
@@ -222,6 +223,13 @@ class Factory
         return trim(getenv('COMPOSER')) ?: './composer.json';
     }
 
+    public static function getLockFile($composerFile)
+    {
+        return "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
+                ? substr($composerFile, 0, -4).'lock'
+                : $composerFile . '.lock';
+    }
+
     public static function createAdditionalStyles()
     {
         return array(
@@ -325,14 +333,15 @@ class Factory
             $io->loadConfiguration($config);
         }
 
-        $rfs = self::createRemoteFilesystem($io, $config);
+        $httpDownloader = self::createHttpDownloader($io, $config);
+        $loop = new Loop($httpDownloader);
 
         // initialize event dispatcher
         $dispatcher = new EventDispatcher($composer, $io);
         $composer->setEventDispatcher($dispatcher);
 
         // initialize repository manager
-        $rm = RepositoryFactory::manager($io, $config, $dispatcher, $rfs);
+        $rm = RepositoryFactory::manager($io, $config, $httpDownloader, $dispatcher);
         $composer->setRepositoryManager($rm);
 
         // load local repository
@@ -352,12 +361,12 @@ class Factory
         $composer->setPackage($package);
 
         // initialize installation manager
-        $im = $this->createInstallationManager();
+        $im = $this->createInstallationManager($loop, $io, $dispatcher);
         $composer->setInstallationManager($im);
 
         if ($fullLoad) {
             // initialize download manager
-            $dm = $this->createDownloadManager($io, $config, $dispatcher, $rfs);
+            $dm = $this->createDownloadManager($io, $config, $httpDownloader, $dispatcher);
             $composer->setDownloadManager($dm);
 
             // initialize autoload generator
@@ -365,7 +374,7 @@ class Factory
             $composer->setAutoloadGenerator($generator);
 
             // initialize archive manager
-            $am = $this->createArchiveManager($config, $dm);
+            $am = $this->createArchiveManager($config, $dm, $loop);
             $composer->setArchiveManager($am);
         }
 
@@ -386,11 +395,9 @@ class Factory
 
         // init locker if possible
         if ($fullLoad && isset($composerFile)) {
-            $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
-                ? substr($composerFile, 0, -4).'lock'
-                : $composerFile . '.lock';
+            $lockFile = self::getLockFile($composerFile);
 
-            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($composerFile));
+            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $im, file_get_contents($composerFile));
             $composer->setLocker($locker);
         }
 
@@ -411,7 +418,7 @@ class Factory
     /**
      * @param  IOInterface $io             IO instance
      * @param  bool        $disablePlugins Whether plugins should not be loaded
-     * @return Composer
+     * @return Composer|null
      */
     public static function createGlobal(IOInterface $io, $disablePlugins = false)
     {
@@ -451,7 +458,7 @@ class Factory
      * @param  EventDispatcher            $eventDispatcher
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
+    public function createDownloadManager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
     {
         $cache = null;
         if ($config->get('cache-files-ttl') > 0) {
@@ -484,14 +491,14 @@ class Factory
         $dm->setDownloader('fossil', new Downloader\FossilDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config, $executor, $fs));
         $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config));
-        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
-        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
-        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $eventDispatcher, $cache, $rfs));
-        $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
-        $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $eventDispatcher, $cache, $executor, $rfs));
-        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $eventDispatcher, $cache, $rfs));
-        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $eventDispatcher, $cache, $rfs));
-        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $eventDispatcher, $cache, $rfs));
+        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
+        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
+        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
+        $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
+        $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
+        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
+        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
+        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
 
         return $dm;
     }
@@ -501,15 +508,9 @@ class Factory
      * @param  Downloader\DownloadManager $dm     Manager use to download sources
      * @return Archiver\ArchiveManager
      */
-    public function createArchiveManager(Config $config, Downloader\DownloadManager $dm = null)
+    public function createArchiveManager(Config $config, Downloader\DownloadManager $dm, Loop $loop)
     {
-        if (null === $dm) {
-            $io = new IO\NullIO();
-            $io->loadConfiguration($config);
-            $dm = $this->createDownloadManager($io, $config);
-        }
-
-        $am = new Archiver\ArchiveManager($dm);
+        $am = new Archiver\ArchiveManager($dm, $loop);
         $am->addArchiver(new Archiver\ZipArchiver);
         $am->addArchiver(new Archiver\PharArchiver);
 
@@ -531,9 +532,9 @@ class Factory
     /**
      * @return Installer\InstallationManager
      */
-    protected function createInstallationManager()
+    public function createInstallationManager(Loop $loop, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {
-        return new Installer\InstallationManager();
+        return new Installer\InstallationManager($loop, $io, $eventDispatcher);
     }
 
     /**
@@ -579,10 +580,10 @@ class Factory
     /**
      * @param  IOInterface      $io      IO instance
      * @param  Config           $config  Config instance
-     * @param  array            $options Array of options passed directly to RemoteFilesystem constructor
-     * @return RemoteFilesystem
+     * @param  array            $options Array of options passed directly to HttpDownloader constructor
+     * @return HttpDownloader
      */
-    public static function createRemoteFilesystem(IOInterface $io, Config $config = null, $options = array())
+    public static function createHttpDownloader(IOInterface $io, Config $config = null, $options = array())
     {
         static $warned = false;
         $disableTls = false;
@@ -596,18 +597,18 @@ class Factory
             throw new Exception\NoSslException('The openssl extension is required for SSL/TLS protection but is not available. '
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
         }
-        $remoteFilesystemOptions = array();
+        $httpDownloaderOptions = array();
         if ($disableTls === false) {
             if ($config && $config->get('cafile')) {
-                $remoteFilesystemOptions['ssl']['cafile'] = $config->get('cafile');
+                $httpDownloaderOptions['ssl']['cafile'] = $config->get('cafile');
             }
             if ($config && $config->get('capath')) {
-                $remoteFilesystemOptions['ssl']['capath'] = $config->get('capath');
+                $httpDownloaderOptions['ssl']['capath'] = $config->get('capath');
             }
-            $remoteFilesystemOptions = array_replace_recursive($remoteFilesystemOptions, $options);
+            $httpDownloaderOptions = array_replace_recursive($httpDownloaderOptions, $options);
         }
         try {
-            $remoteFilesystem = new RemoteFilesystem($io, $config, $remoteFilesystemOptions, $disableTls);
+            $httpDownloader = new HttpDownloader($io, $config, $httpDownloaderOptions, $disableTls);
         } catch (TransportException $e) {
             if (false !== strpos($e->getMessage(), 'cafile')) {
                 $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
@@ -620,7 +621,7 @@ class Factory
             throw $e;
         }
 
-        return $remoteFilesystem;
+        return $httpDownloader;
     }
 
     /**

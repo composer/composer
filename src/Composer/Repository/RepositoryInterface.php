@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\PackageInterface;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * Repository interface.
@@ -38,8 +39,8 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches for the first match of a package by name and version.
      *
-     * @param string                                                 $name       package name
-     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
+     * @param string                     $name       package name
+     * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface|null
      */
@@ -48,8 +49,8 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches for all packages matching a name and optionally a version.
      *
-     * @param string                                                 $name       package name
-     * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against
+     * @param string                     $name       package name
+     * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface[]
      */
@@ -63,12 +64,43 @@ interface RepositoryInterface extends \Countable
     public function getPackages();
 
     /**
+     * Returns list of registered packages with the supplied name
+     *
+     * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
+     * @param array $acceptableStabilities
+     * @param array $stabilityFlags
+     * @return array [namesFound => string[], packages => PackageInterface[]]
+     */
+    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags);
+
+    /**
      * Searches the repository for packages containing the query
      *
      * @param string $query search query
      * @param int    $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only
+     * @param string $type  The type of package to search for. Defaults to all types of packages
      *
      * @return array[] an array of array('name' => '...', 'description' => '...')
      */
-    public function search($query, $mode = 0);
+    public function search($query, $mode = 0, $type = null);
+
+    /**
+     * Returns a list of packages providing a given package name
+     *
+     * Packages which have the same name as $packageName should not be returned, only those that have a "provide" on it.
+     *
+     * @param string $packageName package name which must be provided
+     *
+     * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...')
+     */
+    public function getProviders($packageName);
+
+    /**
+     * Returns a name representing this repository to the user
+     *
+     * This is best effort and definitely can not always be very precise
+     *
+     * @return string
+     */
+    public function getRepoName();
 }

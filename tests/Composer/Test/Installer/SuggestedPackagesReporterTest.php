@@ -33,14 +33,13 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::__construct
      */
-    public function testContrsuctor()
+    public function testConstructor()
     {
         $this->io->expects($this->once())
-            ->method('writeError');
+            ->method('write');
 
-        $suggestedPackagesReporter = new SuggestedPackagesReporter($this->io);
-        $suggestedPackagesReporter->addPackage('a', 'b', 'c');
-        $suggestedPackagesReporter->output();
+        $this->suggestedPackagesReporter->addPackage('a', 'b', 'c');
+        $this->suggestedPackagesReporter->output(SuggestedPackagesReporter::MODE_LIST);
     }
 
     /**
@@ -135,25 +134,33 @@ class SuggestedPackagesReporterTest extends TestCase
     {
         $this->suggestedPackagesReporter->addPackage('a', 'b', 'c');
 
-        $this->io->expects($this->once())
-            ->method('writeError')
-            ->with('a suggests installing b (c)');
+        $this->io->expects($this->at(0))
+            ->method('write')
+            ->with('<comment>a</comment> suggests:');
 
-        $this->suggestedPackagesReporter->output();
+        $this->io->expects($this->at(1))
+            ->method('write')
+            ->with(' - <info>b</info>: c');
+
+        $this->suggestedPackagesReporter->output(SuggestedPackagesReporter::MODE_BY_PACKAGE);
     }
 
     /**
      * @covers ::output
      */
-    public function testOutputWithNoSuggestedPackage()
+    public function testOutputWithNoSuggestionReason()
     {
         $this->suggestedPackagesReporter->addPackage('a', 'b', '');
 
-        $this->io->expects($this->once())
-            ->method('writeError')
-            ->with('a suggests installing b');
+        $this->io->expects($this->at(0))
+            ->method('write')
+            ->with('<comment>a</comment> suggests:');
 
-        $this->suggestedPackagesReporter->output();
+        $this->io->expects($this->at(1))
+            ->method('write')
+            ->with(' - <info>b</info>');
+
+        $this->suggestedPackagesReporter->output(SuggestedPackagesReporter::MODE_BY_PACKAGE);
     }
 
     /**
@@ -165,14 +172,18 @@ class SuggestedPackagesReporterTest extends TestCase
         $this->suggestedPackagesReporter->addPackage('source', 'target2', "<bg=green>Like us on Facebook</>");
 
         $this->io->expects($this->at(0))
-            ->method('writeError')
-            ->with("source suggests installing target1 ([1;37;42m Like us on Facebook [0m)");
+            ->method('write')
+            ->with('<comment>source</comment> suggests:');
 
         $this->io->expects($this->at(1))
-            ->method('writeError')
-            ->with('source suggests installing target2 (\\<bg=green>Like us on Facebook\\</>)');
+            ->method('write')
+            ->with(' - <info>target1</info>: [1;37;42m Like us on Facebook [0m');
 
-        $this->suggestedPackagesReporter->output();
+        $this->io->expects($this->at(2))
+            ->method('write')
+            ->with(' - <info>target2</info>: \\<bg=green>Like us on Facebook\\</>');
+
+        $this->suggestedPackagesReporter->output(SuggestedPackagesReporter::MODE_BY_PACKAGE);
     }
 
     /**
@@ -184,14 +195,26 @@ class SuggestedPackagesReporterTest extends TestCase
         $this->suggestedPackagesReporter->addPackage('source package', 'target', 'because reasons');
 
         $this->io->expects($this->at(0))
-            ->method('writeError')
-            ->with('a suggests installing b (c)');
+            ->method('write')
+            ->with('<comment>a</comment> suggests:');
 
         $this->io->expects($this->at(1))
-            ->method('writeError')
-            ->with('source package suggests installing target (because reasons)');
+            ->method('write')
+            ->with(' - <info>b</info>: c');
 
-        $this->suggestedPackagesReporter->output();
+        $this->io->expects($this->at(2))
+            ->method('write')
+            ->with('');
+
+        $this->io->expects($this->at(3))
+            ->method('write')
+            ->with('<comment>source package</comment> suggests:');
+
+        $this->io->expects($this->at(4))
+            ->method('write')
+            ->with(' - <info>target</info>: because reasons');
+
+        $this->suggestedPackagesReporter->output(SuggestedPackagesReporter::MODE_BY_PACKAGE);
     }
 
     /**
@@ -221,11 +244,15 @@ class SuggestedPackagesReporterTest extends TestCase
         $this->suggestedPackagesReporter->addPackage('a', 'b', 'c');
         $this->suggestedPackagesReporter->addPackage('source package', 'target', 'because reasons');
 
-        $this->io->expects($this->once())
-            ->method('writeError')
-            ->with('source package suggests installing target (because reasons)');
+        $this->io->expects($this->at(0))
+            ->method('write')
+            ->with('<comment>source package</comment> suggests:');
 
-        $this->suggestedPackagesReporter->output($repository);
+        $this->io->expects($this->at(1))
+            ->method('write')
+            ->with(' - <info>target</info>: because reasons');
+
+        $this->suggestedPackagesReporter->output(SuggestedPackagesReporter::MODE_BY_PACKAGE, $repository);
     }
 
     /**
@@ -237,7 +264,7 @@ class SuggestedPackagesReporterTest extends TestCase
         $repository->expects($this->exactly(0))
             ->method('getPackages');
 
-        $this->suggestedPackagesReporter->output($repository);
+        $this->suggestedPackagesReporter->output(SuggestedPackagesReporter::MODE_BY_PACKAGE, $repository);
     }
 
     private function getSuggestedPackageArray()

@@ -19,7 +19,7 @@ use Composer\Package\PackageInterface;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\IO\IOInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use ZipArchive;
@@ -33,19 +33,21 @@ class ZipDownloader extends ArchiveDownloader
     private static $hasZipArchive;
     private static $isWindows;
 
+    /** @var ProcessExecutor */
     protected $process;
+    /** @var ZipArchive|null */
     private $zipArchiveObject;
 
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null, RemoteFilesystem $rfs = null)
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $downloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null)
     {
         $this->process = $process ?: new ProcessExecutor($io);
-        parent::__construct($io, $config, $eventDispatcher, $cache, $rfs);
+        parent::__construct($io, $config, $downloader, $eventDispatcher, $cache);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path, $output = true)
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
         if (null === self::$hasSystemUnzip) {
             $finder = new ExecutableFinder;
@@ -74,7 +76,7 @@ class ZipDownloader extends ArchiveDownloader
             }
         }
 
-        return parent::download($package, $path, $output);
+        return parent::download($package, $path, $prevPackage, $output);
     }
 
     /**
@@ -185,7 +187,7 @@ class ZipDownloader extends ArchiveDownloader
      * @param string $file File to extract
      * @param string $path Path where to extract file
      */
-    public function extract($file, $path)
+    public function extract(PackageInterface $package, $file, $path)
     {
         // Each extract calls its alternative if not available or fails
         if (self::$isWindows) {

@@ -236,7 +236,7 @@ EOT
         }
 
         $settingKey = $input->getArgument('setting-key');
-        if (!$settingKey) {
+        if (!$settingKey || !is_string($settingKey)) {
             return 0;
         }
 

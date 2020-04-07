@@ -14,33 +14,36 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
+use Composer\Repository\LockArrayRepository;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
+use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
 
 class SolverTest extends TestCase
 {
-    protected $pool;
+    protected $repoSet;
     protected $repo;
-    protected $repoInstalled;
+    protected $repoLocked;
     protected $request;
     protected $policy;
     protected $solver;
+    protected $pool;
 
     public function setUp()
     {
-        $this->pool = new Pool;
+        $this->repoSet = new RepositorySet();
         $this->repo = new ArrayRepository;
-        $this->repoInstalled = new ArrayRepository;
+        $this->repoLocked = new LockArrayRepository;
 
-        $this->request = new Request();
+        $this->request = new Request($this->repoLocked);
         $this->policy = new DefaultPolicy;
-        $this->solver = new Solver($this->policy, $this->pool, $this->repoInstalled, new NullIO());
     }
 
     public function testSolverInstallSingle()
@@ -48,16 +51,16 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageA),
         ));
     }
 
-    public function testSolverRemoveIfNotInstalled()
+    public function testSolverRemoveIfNotRequested()
     {
-        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->reposComplete();
 
         $this->checkSolverResult(array(
@@ -70,8 +73,9 @@ class SolverTest extends TestCase
         $this->repo->addPackage($this->getPackage('A', '1.0'));
         $this->reposComplete();
 
-        $this->request->install('B', $this->getVersionConstraint('==', '1'));
+        $this->request->requireName('B', $this->getVersionConstraint('==', '1'));
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -79,7 +83,7 @@ class SolverTest extends TestCase
             $problems = $e->getProblems();
             $this->assertCount(1, $problems);
             $this->assertEquals(2, $e->getCode());
-            $this->assertEquals("\n    - The requested package b could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString());
+            $this->assertEquals("\n    - Root composer.json requires b, it could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString($this->repoSet, $this->request, $this->pool));
         }
     }
 
@@ -91,11 +95,10 @@ class SolverTest extends TestCase
         $repo1->addPackage($foo1 = $this->getPackage('foo', '1'));
         $repo2->addPackage($foo2 = $this->getPackage('foo', '1'));
 
-        $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($repo1);
-        $this->pool->addRepository($repo2);
+        $this->repoSet->addRepository($repo1);
+        $this->repoSet->addRepository($repo2);
 
-        $this->request->install('foo');
+        $this->request->requireName('foo');
 
         $this->checkSolverResult(array(
                 array('job' => 'install', 'package' => $foo1),
@@ -112,7 +115,7 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageB),
@@ -138,7 +141,7 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $newPackageB11),
@@ -162,9 +165,9 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
-        $this->request->install('B');
-        $this->request->install('C');
+        $this->request->requireName('A');
+        $this->request->requireName('B');
+        $this->request->requireName('C');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageA),
@@ -173,62 +176,38 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverInstallInstalled()
+    public function testSolverFixLocked()
     {
-        $this->repoInstalled->addPackage($this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->fixPackage($packageA);
 
         $this->checkSolverResult(array());
     }
 
-    public function testSolverInstallInstalledWithAlternative()
+    public function testSolverFixLockedWithAlternative()
     {
         $this->repo->addPackage($this->getPackage('A', '1.0'));
-        $this->repoInstalled->addPackage($this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->reposComplete();
 
-        $this->request->install('A');
-
-        $this->checkSolverResult(array());
-    }
-
-    public function testSolverRemoveSingle()
-    {
-        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
-        $this->reposComplete();
-
-        $this->request->remove('A');
-
-        $this->checkSolverResult(array(
-            array('job' => 'remove', 'package' => $packageA),
-        ));
-    }
-
-    public function testSolverRemoveUninstalled()
-    {
-        $this->repo->addPackage($this->getPackage('A', '1.0'));
-        $this->reposComplete();
-
-        $this->request->remove('A');
+        $this->request->fixPackage($packageA);
 
         $this->checkSolverResult(array());
     }
 
     public function testSolverUpdateDoesOnlyUpdate()
     {
-        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
-        $this->repoInstalled->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($packageB = $this->getPackage('B', '1.0'));
         $this->repo->addPackage($newPackageB = $this->getPackage('B', '1.1'));
         $this->reposComplete();
 
         $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0.0.0'), 'requires')));
 
-        $this->request->install('A', $this->getVersionConstraint('=', '1.0.0.0'));
-        $this->request->install('B', $this->getVersionConstraint('=', '1.1.0.0'));
-        $this->request->update('A', $this->getVersionConstraint('=', '1.0.0.0'));
-        $this->request->update('B', $this->getVersionConstraint('=', '1.0.0.0'));
+        $this->request->fixPackage($packageA);
+        $this->request->requireName('B', $this->getVersionConstraint('=', '1.1.0.0'));
 
         $this->checkSolverResult(array(
             array('job' => 'update', 'from' => $packageB, 'to' => $newPackageB),
@@ -237,12 +216,11 @@ class SolverTest extends TestCase
 
     public function testSolverUpdateSingle()
     {
-        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.1'));
         $this->reposComplete();
 
-        $this->request->install('A');
-        $this->request->update('A');
+        $this->request->requireName('A');
 
         $this->checkSolverResult(array(
             array('job' => 'update', 'from' => $packageA, 'to' => $newPackageA),
@@ -251,8 +229,8 @@ class SolverTest extends TestCase
 
     public function testSolverUpdateAll()
     {
-        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
-        $this->repoInstalled->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($packageB = $this->getPackage('B', '1.0'));
         $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.1'));
         $this->repo->addPackage($newPackageB = $this->getPackage('B', '1.1'));
 
@@ -261,8 +239,7 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
-        $this->request->updateAll();
+        $this->request->requireName('A');
 
         $this->checkSolverResult(array(
             array('job' => 'update', 'from' => $packageB, 'to' => $newPackageB),
@@ -272,28 +249,26 @@ class SolverTest extends TestCase
 
     public function testSolverUpdateCurrent()
     {
-        $this->repoInstalled->addPackage($this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($this->getPackage('A', '1.0'));
         $this->repo->addPackage($this->getPackage('A', '1.0'));
         $this->reposComplete();
 
-        $this->request->install('A');
-        $this->request->update('A');
+        $this->request->requireName('A');
 
         $this->checkSolverResult(array());
     }
 
     public function testSolverUpdateOnlyUpdatesSelectedPackage()
     {
-        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
-        $this->repoInstalled->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($packageB = $this->getPackage('B', '1.0'));
         $this->repo->addPackage($packageAnewer = $this->getPackage('A', '1.1'));
         $this->repo->addPackage($packageBnewer = $this->getPackage('B', '1.1'));
 
         $this->reposComplete();
 
-        $this->request->install('A');
-        $this->request->install('B');
-        $this->request->update('A');
+        $this->request->requireName('A');
+        $this->request->fixPackage($packageB);
 
         $this->checkSolverResult(array(
             array('job' => 'update', 'from' => $packageA, 'to' => $packageAnewer),
@@ -302,13 +277,12 @@ class SolverTest extends TestCase
 
     public function testSolverUpdateConstrained()
     {
-        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.2'));
         $this->repo->addPackage($this->getPackage('A', '2.0'));
         $this->reposComplete();
 
-        $this->request->install('A', $this->getVersionConstraint('<', '2.0.0.0'));
-        $this->request->update('A');
+        $this->request->requireName('A', $this->getVersionConstraint('<', '2.0.0.0'));
 
         $this->checkSolverResult(array(array(
             'job' => 'update',
@@ -319,13 +293,12 @@ class SolverTest extends TestCase
 
     public function testSolverUpdateFullyConstrained()
     {
-        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.2'));
         $this->repo->addPackage($this->getPackage('A', '2.0'));
         $this->reposComplete();
 
-        $this->request->install('A', $this->getVersionConstraint('<', '2.0.0.0'));
-        $this->request->update('A', $this->getVersionConstraint('=', '1.0.0.0'));
+        $this->request->requireName('A', $this->getVersionConstraint('<', '2.0.0.0'));
 
         $this->checkSolverResult(array(array(
             'job' => 'update',
@@ -336,32 +309,31 @@ class SolverTest extends TestCase
 
     public function testSolverUpdateFullyConstrainedPrunesInstalledPackages()
     {
-        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
-        $this->repoInstalled->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($packageB = $this->getPackage('B', '1.0'));
         $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.2'));
         $this->repo->addPackage($this->getPackage('A', '2.0'));
         $this->reposComplete();
 
-        $this->request->install('A', $this->getVersionConstraint('<', '2.0.0.0'));
-        $this->request->update('A', $this->getVersionConstraint('=', '1.0.0.0'));
+        $this->request->requireName('A', $this->getVersionConstraint('<', '2.0.0.0'));
 
         $this->checkSolverResult(array(
+            array(
+                'job' => 'remove',
+                'package' => $packageB,
+            ),
             array(
                 'job' => 'update',
                 'from' => $packageA,
                 'to' => $newPackageA,
-            ),
-            array(
-                'job' => 'remove',
-                'package' => $packageB,
             ),
         ));
     }
 
     public function testSolverAllJobs()
     {
-        $this->repoInstalled->addPackage($packageD = $this->getPackage('D', '1.0'));
-        $this->repoInstalled->addPackage($oldPackageC = $this->getPackage('C', '1.0'));
+        $this->repoLocked->addPackage($packageD = $this->getPackage('D', '1.0'));
+        $this->repoLocked->addPackage($oldPackageC = $this->getPackage('C', '1.0'));
 
         $this->repo->addPackage($packageA = $this->getPackage('A', '2.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -372,16 +344,14 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
-        $this->request->install('C');
-        $this->request->update('C');
-        $this->request->remove('D');
+        $this->request->requireName('A');
+        $this->request->requireName('C');
 
         $this->checkSolverResult(array(
-            array('job' => 'update',  'from' => $oldPackageC, 'to' => $packageC),
+            array('job' => 'remove',  'package' => $packageD),
             array('job' => 'install', 'package' => $packageB),
             array('job' => 'install', 'package' => $packageA),
-            array('job' => 'remove',  'package' => $packageD),
+            array('job' => 'update',  'from' => $oldPackageC, 'to' => $packageC),
         ));
     }
 
@@ -396,7 +366,7 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $middlePackageB),
@@ -406,16 +376,17 @@ class SolverTest extends TestCase
 
     public function testSolverObsolete()
     {
-        $this->repoInstalled->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
         $packageB->setReplaces(array('a' => new Link('B', 'A', new MultiConstraint(array()))));
 
         $this->reposComplete();
 
-        $this->request->install('B');
+        $this->request->requireName('B');
 
         $this->checkSolverResult(array(
-            array('job' => 'update', 'from' => $packageA, 'to' => $packageB),
+            array('job' => 'remove', 'package' => $packageA),
+            array('job' => 'install', 'package' => $packageB),
         ));
     }
 
@@ -426,7 +397,7 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageA),
@@ -442,10 +413,11 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
 
         // must explicitly pick the provider, so error in this case
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -459,7 +431,7 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageB),
@@ -476,9 +448,10 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
 
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -492,8 +465,8 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
-        $this->request->install('Q');
+        $this->request->requireName('A');
+        $this->request->requireName('Q');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageQ),
@@ -530,7 +503,7 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('X');
+        $this->request->requireName('X');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $newPackageB),
@@ -549,7 +522,7 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageB2),
@@ -573,13 +546,13 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
-        $this->request->install('C');
+        $this->request->requireName('A');
+        $this->request->requireName('C');
 
         $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageB),
             array('job' => 'install', 'package' => $packageA),
             array('job' => 'install', 'package' => $packageC),
-            array('job' => 'install', 'package' => $packageB),
         ));
     }
 
@@ -611,8 +584,8 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
-        $this->request->install('D');
+        $this->request->requireName('A');
+        $this->request->requireName('D');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageD2),
@@ -647,10 +620,11 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('C', $this->getVersionConstraint('==', '2.0.0.0-dev'));
+        $this->request->requireName('C', $this->getVersionConstraint('==', '2.0.0.0-dev'));
 
         $this->setExpectedException('Composer\DependencyResolver\SolverProblemsException');
 
+        $this->createSolver();
         $this->solver->solve($this->request);
     }
 
@@ -664,9 +638,10 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
-        $this->request->install('B');
+        $this->request->requireName('A');
+        $this->request->requireName('B');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -676,10 +651,10 @@ class SolverTest extends TestCase
 
             $msg = "\n";
             $msg .= "  Problem 1\n";
-            $msg .= "    - Installation request for a -> satisfiable by A[1.0].\n";
-            $msg .= "    - B 1.0 conflicts with A[1.0].\n";
-            $msg .= "    - Installation request for b -> satisfiable by B[1.0].\n";
-            $this->assertEquals($msg, $e->getMessage());
+            $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
+            $msg .= "    - A 1.0 conflicts with B 1.0.\n";
+            $msg .= "    - Root composer.json requires b -> satisfiable by B[1.0].\n";
+            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool));
         }
     }
 
@@ -694,8 +669,9 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -706,15 +682,9 @@ class SolverTest extends TestCase
 
             $msg = "\n";
             $msg .= "  Problem 1\n";
-            $msg .= "    - Installation request for a -> satisfiable by A[1.0].\n";
-            $msg .= "    - A 1.0 requires b >= 2.0 -> no matching package found.\n\n";
-            $msg .= "Potential causes:\n";
-            $msg .= " - A typo in the package name\n";
-            $msg .= " - The package is not available in a stable-enough version according to your minimum-stability setting\n";
-            $msg .= "   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n";
-            $msg .= " - It's a private package and you forgot to add a custom repository to find it\n\n";
-            $msg .= "Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
-            $this->assertEquals($msg, $e->getMessage());
+            $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
+            $msg .= "    - A 1.0 requires b >= 2.0 -> found B[1.0] but it does not match your constraint.\n";
+            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool));
         }
     }
 
@@ -741,8 +711,9 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
 
+        $this->createSolver();
         try {
             $transaction = $this->solver->solve($this->request);
             $this->fail('Unsolvable conflict did not result in exception.');
@@ -755,10 +726,10 @@ class SolverTest extends TestCase
             $msg .= "    - C 1.0 requires d >= 1.0 -> satisfiable by D[1.0].\n";
             $msg .= "    - D 1.0 requires b < 1.0 -> satisfiable by B[0.9].\n";
             $msg .= "    - B 1.0 requires c >= 1.0 -> satisfiable by C[1.0].\n";
-            $msg .= "    - Can only install one of: B[0.9, 1.0].\n";
+            $msg .= "    - You can only install one version of a package, so only one of these can be installed: B[0.9, 1.0].\n";
             $msg .= "    - A 1.0 requires b >= 1.0 -> satisfiable by B[1.0].\n";
-            $msg .= "    - Installation request for a -> satisfiable by A[1.0].\n";
-            $this->assertEquals($msg, $e->getMessage());
+            $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
+            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool));
         }
     }
 
@@ -780,8 +751,8 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('symfony/twig-bridge');
-        $this->request->install('twig/twig');
+        $this->request->requireName('symfony/twig-bridge');
+        $this->request->requireName('twig/twig');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageTwig16),
@@ -806,11 +777,11 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A', $this->getVersionConstraint('==', '1.1.0.0'));
+        $this->request->requireName('A', $this->getVersionConstraint('==', '1.1.0.0'));
 
         $this->checkSolverResult(array(
-            array('job' => 'install', 'package' => $packageA2),
             array('job' => 'install', 'package' => $packageB),
+            array('job' => 'install', 'package' => $packageA2),
             array('job' => 'install', 'package' => $packageA2Alias),
         ));
     }
@@ -828,8 +799,8 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A', $this->getVersionConstraint('==', '2.0'));
-        $this->request->install('B');
+        $this->request->requireName('A', $this->getVersionConstraint('==', '2.0'));
+        $this->request->requireName('B');
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageA),
@@ -889,7 +860,9 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->install('A');
+        $this->request->requireName('A');
+
+        $this->createSolver();
 
         // check correct setup for assertion later
         $this->assertFalse($this->solver->testFlagLearnedPositiveLiteral);
@@ -911,24 +884,32 @@ class SolverTest extends TestCase
 
     protected function reposComplete()
     {
-        $this->pool->addRepository($this->repoInstalled);
-        $this->pool->addRepository($this->repo);
+        $this->repoSet->addRepository($this->repo);
+        $this->repoSet->addRepository($this->repoLocked);
+    }
+
+    protected function createSolver()
+    {
+        $io = new NullIO();
+        $this->pool = $this->repoSet->createPool($this->request, $io);
+        $this->solver = new Solver($this->policy, $this->pool, $io);
     }
 
     protected function checkSolverResult(array $expected)
     {
+        $this->createSolver();
         $transaction = $this->solver->solve($this->request);
 
         $result = array();
-        foreach ($transaction as $operation) {
-            if ('update' === $operation->getJobType()) {
+        foreach ($transaction->getOperations() as $operation) {
+            if ('update' === $operation->getOperationType()) {
                 $result[] = array(
                     'job' => 'update',
                     'from' => $operation->getInitialPackage(),
                     'to' => $operation->getTargetPackage(),
                 );
             } else {
-                $job = ('uninstall' === $operation->getJobType() ? 'remove' : 'install');
+                $job = ('uninstall' === $operation->getOperationType() ? 'remove' : 'install');
                 $result[] = array(
                     'job' => $job,
                     'package' => $operation->getPackage(),

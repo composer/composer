@@ -95,9 +95,9 @@ class ArchiveCommandTest extends TestCase
                 null,
                 false,
                 null
-            );
+            )->willReturn(0);
         $command->method('isInteractive')->willReturn(false);
 
-        $command->run($input, $output);
+        $this->assertEquals(0, $command->run($input, $output));
     }
 }

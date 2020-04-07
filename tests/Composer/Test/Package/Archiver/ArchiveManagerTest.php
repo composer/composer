@@ -12,9 +12,12 @@
 
 namespace Composer\Test\Package\Archiver;
 
+use Composer\IO\NullIO;
 use Composer\Factory;
 use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\PackageInterface;
+use Composer\Util\Loop;
+use Composer\Test\Mock\FactoryMock;
 
 class ArchiveManagerTest extends ArchiverTest
 {
@@ -30,7 +33,13 @@ class ArchiveManagerTest extends ArchiverTest
         parent::setUp();
 
         $factory = new Factory();
-        $this->manager = $factory->createArchiveManager($factory->createConfig());
+        $dm = $factory->createDownloadManager(
+            $io = new NullIO,
+            $config = FactoryMock::createConfig(),
+            $httpDownloader = $factory->createHttpDownloader($io, $config)
+        );
+        $loop = new Loop($httpDownloader);
+        $this->manager = $factory->createArchiveManager($factory->createConfig(), $dm, $loop);
         $this->targetDir = $this->testDir.'/composer_archiver_tests';
     }
 
@@ -111,6 +120,12 @@ class ArchiveManagerTest extends ArchiverTest
         }
 
         $result = $this->process->execute('git config user.email "you@example.com"', $output, $this->testDir);
+        if ($result > 0) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not config: '.$this->process->getErrorOutput());
+        }
+
+        $result = $this->process->execute('git config commit.gpgsign false', $output, $this->testDir);
         if ($result > 0) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not config: '.$this->process->getErrorOutput());

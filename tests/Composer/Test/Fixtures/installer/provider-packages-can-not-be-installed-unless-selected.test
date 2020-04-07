@@ -1,0 +1,55 @@
+--TEST--
+Test that providers can not be installed if they are not selected
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "foo/polyfill",
+                    "provide": {
+                        "foo/standard": "1.0.0"
+                    },
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/standard",
+                    "require": {
+                        "foo/does-not-exist": "1.0.0"
+                    },
+                    "version": "1.0.0"
+                }
+            ]
+        }
+    ],
+    "require": {
+        "foo/standard": "1.0.0"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires foo/standard 1.0.0 -> satisfiable by foo/standard[1.0.0].
+    - foo/standard 1.0.0 requires foo/does-not-exist 1.0.0 -> could not be found in any version, there may be a typo in the package name.
+
+Potential causes:
+ - A typo in the package name
+ - The package is not available in a stable-enough version according to your minimum-stability setting
+   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.
+ - It's a private package and you forgot to add a custom repository to find it
+
+Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
+
+--EXPECT--
+

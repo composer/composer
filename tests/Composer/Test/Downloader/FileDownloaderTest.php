@@ -15,16 +15,26 @@ namespace Composer\Test\Downloader;
 use Composer\Downloader\FileDownloader;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Util\Http\Response;
+use Composer\Util\Loop;
 
 class FileDownloaderTest extends TestCase
 {
-    protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $rfs = null, $filesystem = null)
+    private $httpDownloader;
+    private $config;
+
+    protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $httpDownloader = null, $filesystem = null)
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $config = $config ?: $this->getMockBuilder('Composer\Config')->getMock();
-        $rfs = $rfs ?: $this->getMockBuilder('Composer\Util\RemoteFilesystem')->disableOriginalConstructor()->getMock();
+        $this->config = $config ?: $this->getMockBuilder('Composer\Config')->getMock();
+        $httpDownloader = $httpDownloader ?: $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
+        $httpDownloader
+            ->expects($this->any())
+            ->method('addCopy')
+            ->will($this->returnValue(\React\Promise\resolve(new Response(array('url' => 'http://example.org/'), 200, array(), 'file~'))));
+        $this->httpDownloader = $httpDownloader;
 
-        return new FileDownloader($io, $config, $eventDispatcher, $cache, $rfs, $filesystem);
+        return new FileDownloader($io, $this->config, $httpDownloader, $eventDispatcher, $cache, $filesystem);
     }
 
     /**
@@ -45,11 +55,11 @@ class FileDownloaderTest extends TestCase
     public function testDownloadToExistingFile()
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
-        $packageMock->expects($this->once())
+        $packageMock->expects($this->any())
             ->method('getDistUrl')
             ->will($this->returnValue('url'))
         ;
-        $packageMock->expects($this->once())
+        $packageMock->expects($this->any())
             ->method('getDistUrls')
             ->will($this->returnValue(array('url')))
         ;
@@ -84,7 +94,12 @@ class FileDownloaderTest extends TestCase
         $method = new \ReflectionMethod($downloader, 'getFileName');
         $method->setAccessible(true);
 
-        $this->assertEquals('/path/script.js', $method->invoke($downloader, $packageMock, '/path'));
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('vendor-dir')
+            ->will($this->returnValue('/vendor'));
+
+        $this->assertRegExp('#/vendor/composer/[a-z0-9]+\.js#', $method->invoke($downloader, $packageMock, '/path'));
     }
 
     public function testDownloadButFileIsUnsaved()
@@ -117,9 +132,18 @@ class FileDownloaderTest extends TestCase
         ;
 
         $downloader = $this->getDownloader($ioMock);
+
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('vendor-dir')
+            ->will($this->returnValue($path.'/vendor'));
+
         try {
-            $downloader->download($packageMock, $path);
-            $this->fail();
+            $promise = $downloader->download($packageMock, $path);
+            $loop = new Loop($this->httpDownloader);
+            $loop->wait(array($promise));
+
+            $this->fail('Download was expected to throw');
         } catch (\Exception $e) {
             if (is_dir($path)) {
                 $fs = new Filesystem();
@@ -128,7 +152,7 @@ class FileDownloaderTest extends TestCase
                 unlink($path);
             }
 
-            $this->assertInstanceOf('UnexpectedValueException', $e);
+            $this->assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
             $this->assertContains('could not be saved to', $e->getMessage());
         }
     }
@@ -187,12 +211,25 @@ class FileDownloaderTest extends TestCase
 
         $path = $this->getUniqueTmpDirectory();
         $downloader = $this->getDownloader(null, null, null, null, null, $filesystem);
+
         // make sure the file expected to be downloaded is on disk already
-        touch($path.'/script.js');
+        $this->config->expects($this->any())
+            ->method('get')
+            ->with('vendor-dir')
+            ->will($this->returnValue($path.'/vendor'));
+
+        $method = new \ReflectionMethod($downloader, 'getFileName');
+        $method->setAccessible(true);
+        $dlFile = $method->invoke($downloader, $packageMock, $path);
+        mkdir(dirname($dlFile), 0777, true);
+        touch($dlFile);
 
         try {
-            $downloader->download($packageMock, $path);
-            $this->fail();
+            $promise = $downloader->download($packageMock, $path);
+            $loop = new Loop($this->httpDownloader);
+            $loop->wait(array($promise));
+
+            $this->fail('Download was expected to throw');
         } catch (\Exception $e) {
             if (is_dir($path)) {
                 $fs = new Filesystem();
@@ -201,7 +238,7 @@ class FileDownloaderTest extends TestCase
                 unlink($path);
             }
 
-            $this->assertInstanceOf('UnexpectedValueException', $e);
+            $this->assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
             $this->assertContains('checksum verification', $e->getMessage());
         }
     }
@@ -217,7 +254,7 @@ class FileDownloaderTest extends TestCase
             ->will($this->returnValue('1.2.0.0'));
 
         $newPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
-        $newPackage->expects($this->once())
+        $newPackage->expects($this->any())
             ->method('getFullPrettyVersion')
             ->will($this->returnValue('1.0.0'));
         $newPackage->expects($this->once())
@@ -233,16 +270,36 @@ class FileDownloaderTest extends TestCase
         $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $ioMock->expects($this->at(0))
             ->method('writeError')
+            ->with($this->stringContains('Downloading'));
+
+        $ioMock->expects($this->at(1))
+            ->method('writeError')
             ->with($this->stringContains('Downgrading'));
 
         $path = $this->getUniqueTmpDirectory();
-        touch($path.'/script.js');
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $filesystem->expects($this->once())
             ->method('removeDirectory')
             ->will($this->returnValue(true));
 
         $downloader = $this->getDownloader($ioMock, null, null, null, null, $filesystem);
+
+        // make sure the file expected to be downloaded is on disk already
+        $this->config->expects($this->any())
+            ->method('get')
+            ->with('vendor-dir')
+            ->will($this->returnValue($path.'/vendor'));
+
+        $method = new \ReflectionMethod($downloader, 'getFileName');
+        $method->setAccessible(true);
+        $dlFile = $method->invoke($downloader, $newPackage, $path);
+        mkdir(dirname($dlFile), 0777, true);
+        touch($dlFile);
+
+        $promise = $downloader->download($newPackage, $path, $oldPackage);
+        $loop = new Loop($this->httpDownloader);
+        $loop->wait(array($promise));
+
         $downloader->update($oldPackage, $newPackage, $path);
     }
 }

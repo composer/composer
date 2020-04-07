@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\DependencyResolver\Pool;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
@@ -22,6 +21,7 @@ use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
+use Composer\Repository\RepositorySet;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -42,8 +42,8 @@ class InitCommand extends BaseCommand
     /** @var array */
     private $gitConfig;
 
-    /** @var Pool[] */
-    private $pools;
+    /** @var RepositorySet[] */
+    private $repositorySets;
 
     /**
      * {@inheritdoc}
@@ -86,8 +86,8 @@ EOT
     {
         $io = $this->getIO();
 
-        $whitelist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license');
-        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
+        $allowlist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license');
+        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)));
 
         if (isset($options['author'])) {
             $options['authors'] = $this->formatAuthors($options['author']);
@@ -688,16 +688,16 @@ EOT
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 
-    private function getPool(InputInterface $input, $minimumStability = null)
+    private function getRepositorySet(InputInterface $input, $minimumStability = null)
     {
         $key = $minimumStability ?: 'default';
 
-        if (!isset($this->pools[$key])) {
-            $this->pools[$key] = $pool = new Pool($minimumStability ?: $this->getMinimumStability($input));
-            $pool->addRepository($this->getRepos());
+        if (!isset($this->repositorySets[$key])) {
+            $this->repositorySets[$key] = $repositorySet = new RepositorySet($minimumStability ?: $this->getMinimumStability($input));
+            $repositorySet->addRepository($this->getRepos());
         }
 
-        return $this->pools[$key];
+        return $this->repositorySets[$key];
     }
 
     private function getMinimumStability(InputInterface $input)
@@ -733,8 +733,8 @@ EOT
      */
     private function findBestVersionAndNameForPackage(InputInterface $input, $name, $phpVersion, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null, $fixed = null)
     {
-        // find the latest version allowed in this pool
-        $versionSelector = new VersionSelector($this->getPool($input, $minimumStability));
+        // find the latest version allowed in this repo set
+        $versionSelector = new VersionSelector($this->getRepositorySet($input, $minimumStability));
         $ignorePlatformReqs = $input->hasOption('ignore-platform-reqs') && $input->getOption('ignore-platform-reqs');
 
         // ignore phpVersion if platform requirements are ignored

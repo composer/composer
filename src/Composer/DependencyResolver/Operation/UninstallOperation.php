@@ -47,11 +47,11 @@ class UninstallOperation extends SolverOperation
     }
 
     /**
-     * Returns job type.
+     * Returns operation type.
      *
      * @return string
      */
-    public function getJobType()
+    public function getOperationType()
     {
         return 'uninstall';
     }
@@ -59,8 +59,16 @@ class UninstallOperation extends SolverOperation
     /**
      * {@inheritDoc}
      */
+    public function show($lock)
+    {
+        return 'Removing '.$this->package->getPrettyName().' ('.$this->package->getFullPrettyVersion().')';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function __toString()
     {
-        return 'Uninstalling '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+        return $this->show(false);
     }
 }

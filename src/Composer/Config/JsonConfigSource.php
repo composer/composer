@@ -265,7 +265,7 @@ class JsonConfigSource implements ConfigSourceInterface
      *
      * @param  array $array
      * @param  mixed $value
-     * @return array
+     * @return int
      */
     private function arrayUnshiftRef(&$array, &$value)
     {

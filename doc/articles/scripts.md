@@ -43,8 +43,8 @@ Composer fires the following named events during its execution process:
 
 ### Installer Events
 
-- **pre-dependencies-solving**: occurs before the dependencies are resolved.
-- **post-dependencies-solving**: occurs after the dependencies have been resolved.
+- **pre-operations-exec**: occurs before the install/upgrade/.. operations
+  are executed when installing a lock file.
 
 ### Package Events
 
@@ -61,11 +61,13 @@ Composer fires the following named events during its execution process:
 - **command**: occurs before any Composer Command is executed on the CLI. It
   provides you with access to the input and output objects of the program.
 - **pre-file-download**: occurs before files are downloaded and allows
-  you to manipulate the `RemoteFilesystem` object prior to downloading files
+  you to manipulate the `HttpDownloader` object prior to downloading files
   based on the URL to be downloaded.
 - **pre-command-run**: occurs before a command is executed and allows you to
   manipulate the `InputInterface` object's options and arguments to tweak
   a command's behavior.
+- **pre-pool-create**: occurs before the Pool of packages is created, and lets
+  you filter the list of packages which is going to enter the Solver.
 
 > **Note:** Composer makes no assumptions about the state of your dependencies
 > prior to `install` or `update`. Therefore, you should not specify scripts

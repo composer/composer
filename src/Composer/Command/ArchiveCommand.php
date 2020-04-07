@@ -22,6 +22,7 @@ use Composer\Script\ScriptEvents;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\Filesystem;
+use Composer\Util\Loop;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -111,8 +112,9 @@ EOT
             $archiveManager = $composer->getArchiveManager();
         } else {
             $factory = new Factory;
-            $downloadManager = $factory->createDownloadManager($io, $config);
-            $archiveManager = $factory->createArchiveManager($config, $downloadManager);
+            $httpDownloader = $factory->createHttpDownloader($io, $config);
+            $downloadManager = $factory->createDownloadManager($io, $config, $httpDownloader);
+            $archiveManager = $factory->createArchiveManager($config, $downloadManager, new Loop($httpDownloader));
         }
 
         if ($packageName) {

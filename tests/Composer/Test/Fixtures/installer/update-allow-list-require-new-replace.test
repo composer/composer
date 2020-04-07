@@ -1,0 +1,55 @@
+--TEST--
+If a new requirement cannot be installed on a partial update due to replace, there should be a suggestion to use --with-all-dependencies
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "*" } },
+                { "name": "current/dep", "version": "1.0.0" },
+                { "name": "new/pkg", "version": "1.0.0", "replace": { "current/dep": "1.0.0" } }
+            ]
+        }
+    ],
+    "require": {
+        "current/pkg": "1.*",
+        "new/pkg": "1.*"
+    }
+}
+--INSTALLED--
+[
+    { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "*" } },
+    { "name": "current/dep", "version": "1.0.0" }
+]
+--LOCK--
+{
+    "packages": [
+        { "name": "current/pkg", "version": "1.0.0", "require": { "current/dep": "*" } },
+        { "name": "current/dep", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update new/pkg
+--EXPECT-EXIT-CODE--
+2
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - current/dep is locked to version 1.0.0 and an update of this package was not requested.
+    - new/pkg 1.0.0 cannot be installed as that would require removing current/dep 1.0.0. new/pkg replaces current/dep and thus cannot coexist with it.
+    - Root composer.json requires new/pkg 1.* -> satisfiable by new/pkg[1.0.0].
+
+Use the option --with-all-dependencies to allow updates and removals for packages currently locked to specific versions.
+--EXPECT--
