@@ -70,7 +70,7 @@ class PluginInstaller extends LibraryInstaller
             $this->composer->getPluginManager()->registerPackage($package, true);
         } catch (\Exception $e) {
             // Rollback installation
-            $this->io->writeError('Plugin initialization failed, uninstalling plugin');
+            $this->io->writeError('Plugin initialization failed ('.$e->getMessage().'), uninstalling plugin');
             parent::uninstall($repo, $package);
             throw $e;
         }
