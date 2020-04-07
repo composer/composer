@@ -159,7 +159,7 @@ interface PackageInterface
     /**
      * Returns the urls of the distribution archive of this version, including mirrors
      *
-     * @return array
+     * @return string[]
      */
     public function getDistUrls();
 
