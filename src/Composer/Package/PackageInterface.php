@@ -283,6 +283,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
+     * @psalm-return array<string, array<string, string>>
      */
     public function getAutoload();
 
@@ -295,6 +296,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of dev autoloading rules
+     * @psalm-return array<string, array<string, string>>
      */
     public function getDevAutoload();
 
@@ -302,7 +304,7 @@ interface PackageInterface
      * Returns a list of directories which should get added to PHP's
      * include path.
      *
-     * @return array
+     * @return string[]
      */
     public function getIncludePaths();
 
