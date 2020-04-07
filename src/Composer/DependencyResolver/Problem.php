@@ -17,6 +17,7 @@ use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Package\Version\VersionParser;
 
 /**
  * Represents a problem detected while solving dependencies

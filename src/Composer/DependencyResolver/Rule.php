@@ -17,6 +17,7 @@ use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;
+use Composer\Package\Version\VersionParser;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
