@@ -62,7 +62,7 @@ class PluginInstaller extends LibraryInstaller
             $this->composer->getPluginManager()->registerPackage($package, true);
         } catch (\Exception $e) {
             // Rollback installation
-            $this->io->writeError('Plugin installation failed, rolling back');
+            $this->io->writeError('Plugin installation failed ('.$e->getMessage().'), rolling back');
             parent::uninstall($repo, $package);
             throw $e;
         }
