@@ -857,7 +857,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if (!empty($data['providers-api'])) {
-            $this->providersApiUrl = $data['providers-api'];
+            $this->providersApiUrl = $this->canonicalizeUrl($data['providers-api']);
         }
 
         return $this->rootData = $data;
