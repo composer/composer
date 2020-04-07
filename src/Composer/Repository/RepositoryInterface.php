@@ -71,7 +71,7 @@ interface RepositoryInterface extends \Countable
      * @param array $stabilityFlags
      * 
      * @return array [namesFound => string[], packages => PackageInterface[]]
-     * @psalm-return list<array{namesFound: string[], packages: PackageInterface[]}>
+     * @psalm-return array{namesFound: string[], packages: PackageInterface[]}
      */
     public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags);
 
@@ -83,7 +83,7 @@ interface RepositoryInterface extends \Countable
      * @param string $type  The type of package to search for. Defaults to all types of packages
      *
      * @return array[] an array of array('name' => '...', 'description' => '...')
-     * @psalm-return array{name: string, description: string}
+     * @psalm-return list<array{name: string, description: string}>
      */
     public function search($query, $mode = 0, $type = null);
 
