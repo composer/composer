@@ -270,7 +270,7 @@ interface PackageInterface
      * combination with this package.
      *
      * @return array An array of package suggestions with descriptions
-     * @return array<string, string>
+     * @psalm-return array<string, string>
      */
     public function getSuggests();
 
