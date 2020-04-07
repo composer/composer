@@ -89,14 +89,16 @@ abstract class BasePackage implements PackageInterface
     /**
      * {@inheritDoc}
      */
-    public function getNames()
+    public function getNames($provides = true)
     {
         $names = array(
             $this->getName() => true,
         );
 
-        foreach ($this->getProvides() as $link) {
-            $names[$link->getTarget()] = true;
+        if ($provides) {
+            foreach ($this->getProvides() as $link) {
+                $names[$link->getTarget()] = true;
+            }
         }
 
         foreach ($this->getReplaces() as $link) {

@@ -1,5 +1,5 @@
 --TEST--
-Test that names provided by two dependents cause a conflict
+Providers of a replaced name should be installable
 --COMPOSER--
 {
     "repositories": [
@@ -28,18 +28,6 @@ Test that names provided by two dependents cause a conflict
 --RUN--
 update
 
---EXPECT-EXIT-CODE--
-2
-
---EXPECT-OUTPUT--
-Loading composer repositories with package information
-Updating dependencies
-Your requirements could not be resolved to an installable set of packages.
-
-  Problem 1
-    - Root composer.json requires provider/pkg * -> satisfiable by provider/pkg[1.0.0].
-    - Only one of these can be installed: replacer/pkg 1.0.0, provider/pkg 1.0.0.
-    - Root composer.json requires replacer/pkg * -> satisfiable by replacer/pkg[1.0.0].
-
 --EXPECT--
-
+Installing provider/pkg (1.0.0)
+Installing replacer/pkg (1.0.0)

@@ -45,9 +45,11 @@ interface PackageInterface
      * No version or release type information should be included in any of the
      * names. Provided or replaced package names need to be returned as well.
      *
+     * @param bool $provides Whether provided names should be included
+     *
      * @return array An array of strings referring to this package
      */
-    public function getNames();
+    public function getNames($provides = true);
 
     /**
      * Allows the solver to set an id for this package to refer to it.
