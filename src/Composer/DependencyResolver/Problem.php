@@ -13,7 +13,9 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;
+use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -96,7 +98,7 @@ class Problem
             $messages[] = $rule->getPrettyString($repositorySet, $request, $pool, $installedMap, $learnedPool);
         }
 
-        return "\n    - ".implode("\n    - ", $messages);
+        return "\n    - ".implode("\n    - ", array_unique($messages));
     }
 
     public function isCausedByLock()
@@ -221,6 +223,14 @@ class Problem
                 }
             }
 
+            $nonLockedPackages = array_filter($packages, function ($p) {
+                return !$p->getRepository() instanceof LockArrayRepository;
+            });
+
+            if (!$nonLockedPackages) {
+                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' in lock file but not in remote repositories, make sure you avoid updating this package to keep the one from lock file.');
+            }
+
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with another require.');
         }
 
@@ -281,7 +291,7 @@ class Problem
         $prepared = array();
         foreach ($packages as $package) {
             $prepared[$package->getName()]['name'] = $package->getPrettyName();
-            $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion();
+            $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion().($package instanceof AliasPackage ? ' (alias of '.$package->getAliasOf()->getPrettyVersion().')' : '');
         }
         foreach ($prepared as $name => $package) {
             // remove the implicit dev-master alias to avoid cruft in the display

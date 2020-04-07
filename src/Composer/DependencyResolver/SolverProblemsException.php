@@ -34,17 +34,24 @@ class SolverProblemsException extends \RuntimeException
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isDevExtraction = false)
     {
         $installedMap = $request->getPresentMap(true);
-        $text = "\n";
         $hasExtensionProblems = false;
         $isCausedByLock = false;
-        foreach ($this->problems as $i => $problem) {
-            $text .= "  Problem ".($i + 1).$problem->getPrettyString($repositorySet, $request, $pool, $installedMap, $this->learnedPool)."\n";
+
+        $problems = array();
+        foreach ($this->problems as $problem) {
+            $problems[] = $problem->getPrettyString($repositorySet, $request, $pool, $installedMap, $this->learnedPool)."\n";
 
             if (!$hasExtensionProblems && $this->hasExtensionProblems($problem->getReasons())) {
                 $hasExtensionProblems = true;
             }
 
             $isCausedByLock |= $problem->isCausedByLock();
+        }
+
+        $i = 1;
+        $text = "\n";
+        foreach (array_unique($problems) as $problem) {
+            $text .= "  Problem ".($i++).$problem;
         }
 
         if (!$isDevExtraction && (strpos($text, 'could not be found') || strpos($text, 'no matching package found'))) {

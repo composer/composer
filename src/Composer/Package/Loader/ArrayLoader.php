@@ -247,11 +247,13 @@ class ArrayLoader implements LoaderInterface
         }
 
         if ($aliasNormalized = $this->getBranchAlias($config)) {
+            $prettyAlias = preg_replace('{(\.9{7})+}', '.x', $aliasNormalized);
+
             if ($package instanceof RootPackageInterface) {
-                return new RootAliasPackage($package, $aliasNormalized, preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
+                return new RootAliasPackage($package, $aliasNormalized, $prettyAlias);
             }
 
-            return new AliasPackage($package, $aliasNormalized, preg_replace('{(\.9{7})+}', '.x', $aliasNormalized));
+            return new AliasPackage($package, $aliasNormalized, $prettyAlias);
         }
 
         return $package;

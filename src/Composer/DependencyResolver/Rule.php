@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
+use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;
 
 /**
@@ -153,7 +154,7 @@ abstract class Rule
                 return 'Root composer.json requires '.$packageName.($constraint ? ' '.$constraint->getPrettyString() : '').' -> satisfiable by '.$this->formatPackagesUnique($pool, $packages).'.';
 
             case self::RULE_FIXED:
-                $package = $this->reasonData['package'];
+                $package = $this->deduplicateMasterAlias($this->reasonData['package']);
                 if ($this->reasonData['lockable']) {
                     return $package->getPrettyName().' is locked to version '.$package->getPrettyVersion().' and an update of this package was not requested.';
                 }
@@ -161,14 +162,14 @@ abstract class Rule
                 return $package->getPrettyName().' is present at version '.$package->getPrettyVersion() . ' and cannot be modified by Composer';
 
             case self::RULE_PACKAGE_CONFLICT:
-                $package1 = $pool->literalToPackage($literals[0]);
-                $package2 = $pool->literalToPackage($literals[1]);
+                $package1 = $this->deduplicateMasterAlias($pool->literalToPackage($literals[0]));
+                $package2 = $this->deduplicateMasterAlias($pool->literalToPackage($literals[1]));
 
                 return $package2->getPrettyString().' conflicts with '.$package1->getPrettyString().'.';
 
             case self::RULE_PACKAGE_REQUIRES:
                 $sourceLiteral = array_shift($literals);
-                $sourcePackage = $pool->literalToPackage($sourceLiteral);
+                $sourcePackage = $this->deduplicateMasterAlias($pool->literalToPackage($sourceLiteral));
 
                 $requires = array();
                 foreach ($literals as $literal) {
@@ -278,5 +279,14 @@ abstract class Rule
         }
 
         return $names;
+    }
+
+    private function deduplicateMasterAlias(PackageInterface $package)
+    {
+        if ($package instanceof AliasPackage && $package->getPrettyVersion() === '9999999-dev') {
+            $package = $package->getAliasOf();
+        }
+
+        return $package;
     }
 }
