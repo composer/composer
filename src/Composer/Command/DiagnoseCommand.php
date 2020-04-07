@@ -634,6 +634,9 @@ EOT
                         $text = PHP_EOL."The openssl extension is missing, which means that secure HTTPS transfers are impossible.".PHP_EOL;
                         $text .= "If possible you should enable it or recompile php with --with-openssl";
                         break;
+
+                    default:
+                        throw new \InvalidArgumentException(sprintf("DiagnoseCommand: Unknown error type \"%s\". Please report at https://github.com/composer/composer/issues/new.", $error));
                 }
                 $out($text, 'error');
             }
@@ -698,6 +701,9 @@ EOT
                         $text = "The Windows OneDrive folder is not supported on PHP versions below 7.2.23 and 7.3.10.".PHP_EOL;
                         $text .= "Upgrade your PHP ({$current}) to use this location with Composer.".PHP_EOL;
                         break;
+
+                    default:
+                        throw new \InvalidArgumentException(sprintf("DiagnoseCommand: Unknown warning type \"%s\". Please report at https://github.com/composer/composer/issues/new.", $warning));
                 }
                 $out($text, 'comment');
             }

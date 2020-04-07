@@ -79,7 +79,7 @@ class Git
                     return;
                 }
                 $messages[] = '- ' . $protoUrl . "\n" . preg_replace('#^#m', '  ', $this->process->getErrorOutput());
-                if ($initialClone) {
+                if ($initialClone && isset($origCwd)) {
                     $this->filesystem->removeDirectory($origCwd);
                 }
             }
@@ -238,7 +238,7 @@ class Git
                 }
             }
 
-            if ($initialClone) {
+            if ($initialClone && isset($origCwd)) {
                 $this->filesystem->removeDirectory($origCwd);
             }
 

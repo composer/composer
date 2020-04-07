@@ -616,6 +616,8 @@ class Package extends BasePackage
                     $mirrorUrl = ComposerMirror::processGitUrl($mirror['url'], $this->name, $url, $type);
                 } elseif ($urlType === 'source' && $type === 'hg') {
                     $mirrorUrl = ComposerMirror::processHgUrl($mirror['url'], $this->name, $url, $type);
+                } else {
+                    continue;
                 }
                 if (!in_array($mirrorUrl, $urls)) {
                     $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';

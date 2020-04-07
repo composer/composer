@@ -319,7 +319,7 @@ class InstallerTest extends TestCase
 
         $output = str_replace("\r", '', $io->getOutput());
         $this->assertEquals($expectResult, $result, $output . stream_get_contents($appOutput));
-        if ($expectLock) {
+        if ($expectLock && isset($actualLock)) {
             unset($actualLock['hash']);
             unset($actualLock['content-hash']);
             unset($actualLock['_readme']);
@@ -434,6 +434,7 @@ class InstallerTest extends TestCase
         );
 
         $section = null;
+        $data = array();
         foreach ($tokens as $i => $token) {
             if (null === $section && empty($token)) {
                 continue; // skip leading blank

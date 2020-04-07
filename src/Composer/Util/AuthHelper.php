@@ -161,9 +161,10 @@ class AuthHelper
             if (!$this->io->isInteractive()) {
                 if ($statusCode === 401) {
                     $message = "The '" . $url . "' URL required authentication.\nYou must be using the interactive console to authenticate";
-                }
-                if ($statusCode === 403) {
+                } elseif ($statusCode === 403) {
                     $message = "The '" . $url . "' URL could not be accessed: " . $reason;
+                } else {
+                    $message = "Unknown error code '" . $statusCode . "', reason: " . $reason;
                 }
 
                 throw new TransportException($message, $statusCode);

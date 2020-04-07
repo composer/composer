@@ -1078,6 +1078,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
         }
 
+        if (!isset($data)) {
+            throw new \LogicException("ComposerRepository: Undefined \$data. Please report at https://github.com/composer/composer/issues/new.");
+        }
+
         return $data;
     }
 

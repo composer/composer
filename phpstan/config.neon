@@ -1,14 +1,32 @@
 parameters:
+    level: 1
     autoload_files:
         - autoload.php
-    level: 0
     excludes_analyse:
        - '../tests/Composer/Test/Fixtures/*'
        - '../tests/Composer/Test/Autoload/Fixtures/*'
        - '../tests/Composer/Test/Plugin/Fixtures/*'
     ignoreErrors:
+        # unused parameters
+        - '~^Constructor of class Composer\\Repository\\VcsRepository has an unused parameter \$dispatcher\.$~'
+        - '~^Constructor of class Composer\\Repository\\PearRepository has an unused parameter \$dispatcher\.$~'
+        - '~^Constructor of class Composer\\Util\\Http\\CurlDownloader has an unused parameter \$disableTls\.$~'
+        - '~^Constructor of class Composer\\Util\\Http\\CurlDownloader has an unused parameter \$options\.$~'
+        - '~^Constructor of class Composer\\Repository\\PearRepository has an unused parameter \$config\.$~'
+
         # ion cube is not installed
         - '~^Function ioncube_loader_\w+ not found\.$~'
+        # rar is not installed
+        - '~^Call to static method open\(\) on an unknown class RarArchive\.$~'
+        # imagick is not installed
+        - '~^Instantiated class Imagick not found\.$~'
+        # windows specific constants
+        -
+            message: '~^Constant PHP_WINDOWS_VERSION_MAJOR not found\.$~'
+            path: '*/src/Composer/Downloader/PathDownloader.php'
+        -
+            message: '~^Constant PHP_WINDOWS_VERSION_MINOR not found\.$~'
+            path: '*/src/Composer/Downloader/PathDownloader.php'
 
         # variables from global scope
         - '~^Undefined variable: \$vendorDir$~'

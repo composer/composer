@@ -47,9 +47,9 @@ class DefaultPolicy implements PolicyInterface
     public function selectPreferredPackages(Pool $pool, array $literals, $requiredPackage = null)
     {
         $packages = $this->groupLiteralsByName($pool, $literals);
+        $policy = $this;
 
         foreach ($packages as &$nameLiterals) {
-            $policy = $this;
             usort($nameLiterals, function ($a, $b) use ($policy, $pool, $requiredPackage) {
                 return $policy->compareByPriority($pool, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage, true);
             });

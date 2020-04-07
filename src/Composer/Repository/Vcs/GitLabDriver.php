@@ -366,13 +366,13 @@ class GitLabDriver extends VcsDriver
 
     protected function attemptCloneFallback()
     {
-        try {
-            if ($this->isPrivate === false) {
-                $url = $this->generatePublicUrl();
-            } else {
-                $url = $this->generateSshUrl();
-            }
+        if ($this->isPrivate === false) {
+            $url = $this->generatePublicUrl();
+        } else {
+            $url = $this->generateSshUrl();
+        }
 
+        try {
             // If this repository may be private and we
             // cannot ask for authentication credentials (because we
             // are not interactive) then we fallback to GitDriver.

@@ -362,6 +362,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $this->io = new NullIO;
         $this->io->loadConfiguration($this->config);
         $e = null;
+        $output = '';
 
         try {
             $res = $this->download($package, $targetDir.'_compare', null, false);
