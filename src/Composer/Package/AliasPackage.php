@@ -173,9 +173,9 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
      */
     protected function replaceSelfVersionDependencies(array $links, $linkType)
     {
-        // for self.version requirements, we use the original package's branch name instead of 9999999-dev, to avoid leaking 9999999-dev to users
+        // for self.version requirements, we use the original package's branch name instead, to avoid leaking the magic dev-master-alias to users
         $prettyVersion = $this->prettyVersion;
-        if ($prettyVersion === '9999999-dev') {
+        if ($prettyVersion === VersionParser::DEV_MASTER_ALIAS) {
             $prettyVersion = $this->aliasOf->getPrettyVersion();
         }
 

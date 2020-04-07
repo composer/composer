@@ -279,7 +279,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
             if ($branch === 'trunk' && isset($branches['master'])) {
                 if ($isVeryVerbose) {
-                    $this->io->writeError('<warning>Skipped branch '.$branch.', can not parse both master and trunk branches as they both resolve to 9999999-dev internally</warning>');
+                    $this->io->writeError('<warning>Skipped branch '.$branch.', can not parse both master and trunk branches as they both resolve to '.VersionParser::DEV_MASTER_ALIAS.' internally</warning>');
                 }
                 continue;
             }
@@ -292,7 +292,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             }
 
             // make sure branch packages have a dev flag
-            if ('dev-' === substr($parsedBranch, 0, 4) || '9999999-dev' === $parsedBranch) {
+            if ('dev-' === substr($parsedBranch, 0, 4) || VersionParser::DEV_MASTER_ALIAS === $parsedBranch) {
                 $version = 'dev-' . $branch;
             } else {
                 $prefix = substr($branch, 0, 1) === 'v' ? 'v' : '';

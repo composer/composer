@@ -49,9 +49,9 @@ class VersionParserTest extends TestCase
         return array(
             array('0.9.0.0', '1.0.0.0', true),
             array('1.0.0.0', '0.9.0.0', false),
-            array('1.0.0.0', '9999999-dev', true),
-            array('9999999-dev', '9999999-dev', true),
-            array('9999999-dev', '1.0.0.0', false),
+            array('1.0.0.0', VersionParser::DEV_MASTER_ALIAS, true),
+            array(VersionParser::DEV_MASTER_ALIAS, VersionParser::DEV_MASTER_ALIAS, true),
+            array(VersionParser::DEV_MASTER_ALIAS, '1.0.0.0', false),
             array('1.0.0.0', 'dev-foo', true),
             array('dev-foo', 'dev-foo', true),
             array('dev-foo', '1.0.0.0', true),

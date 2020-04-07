@@ -17,6 +17,7 @@ use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Package\Version\VersionParser;
 
 /**
  * Represents a problem detected while solving dependencies
@@ -295,8 +296,8 @@ class Problem
         }
         foreach ($prepared as $name => $package) {
             // remove the implicit dev-master alias to avoid cruft in the display
-            if (isset($package['versions']['9999999-dev']) && isset($package['versions']['dev-master'])) {
-                unset($package['versions']['9999999-dev']);
+            if (isset($package['versions'][VersionParser::DEV_MASTER_ALIAS]) && isset($package['versions']['dev-master'])) {
+                unset($package['versions'][VersionParser::DEV_MASTER_ALIAS]);
             }
             $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
         }

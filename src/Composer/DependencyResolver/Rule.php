@@ -17,6 +17,7 @@ use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;
+use Composer\Package\Version\VersionParser;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -283,7 +284,7 @@ abstract class Rule
 
     private function deduplicateMasterAlias(PackageInterface $package)
     {
-        if ($package instanceof AliasPackage && $package->getPrettyVersion() === '9999999-dev') {
+        if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEV_MASTER_ALIAS) {
             $package = $package->getAliasOf();
         }
 

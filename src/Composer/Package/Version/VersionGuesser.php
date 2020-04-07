@@ -20,6 +20,8 @@ use Composer\Util\Git as GitUtil;
 use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
+use Composer\Package\Version\VersionParser;
+
 
 /**
  * Try to guess the current version number based on different VCS configuration.
@@ -206,7 +208,7 @@ class VersionGuesser
             $version = $this->versionParser->normalizeBranch($branch);
             $isFeatureBranch = 0 === strpos($version, 'dev-');
 
-            if ('9999999-dev' === $version) {
+            if (VersionParser::DEV_MASTER_ALIAS === $version) {
                 return array('version' => $version, 'commit' => null, 'pretty_version' => 'dev-'.$branch);
             }
 
