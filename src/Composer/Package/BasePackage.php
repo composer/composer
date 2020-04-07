@@ -228,6 +228,8 @@ abstract class BasePackage implements PackageInterface
             case PackageInterface::DISPLAY_DIST_REF:
                 $reference = $this->getDistReference();
                 break;
+            default:
+                throw new \UnexpectedValueException('Display mode '.$displayMode.' is not supported');
         }
 
         // if source reference is a sha1 hash -- truncate

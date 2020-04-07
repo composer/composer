@@ -86,6 +86,7 @@ EOT
                 if ($candidates) {
                     $reqResults = array();
                     foreach ($candidates as $candidate) {
+                        $candidateConstraint = null;
                         if ($candidate->getName() === $require) {
                             $candidateConstraint = new Constraint('=', $candidate->getVersion());
                             $candidateConstraint->setPrettyString($candidate->getPrettyVersion());
@@ -96,6 +97,11 @@ EOT
                                     break;
                                 }
                             }
+                        }
+
+                        // safety check for phpstan, but it should not be possible to get a candidate out of findPackagesWithReplacersAndProviders without a constraint matching $require
+                        if (!$candidateConstraint) {
+                            continue;
                         }
 
                         foreach ($links as $link) {

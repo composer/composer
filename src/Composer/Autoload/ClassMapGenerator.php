@@ -61,8 +61,8 @@ class ClassMapGenerator
      */
     public static function createMap($path, $blacklist = null, IOInterface $io = null, $namespace = null, $autoloadType = null, &$scannedFiles = array())
     {
+        $basePath = $path;
         if (is_string($path)) {
-            $basePath = $path;
             if (is_file($path)) {
                 $path = array(new \SplFileInfo($path));
             } elseif (is_dir($path)) {

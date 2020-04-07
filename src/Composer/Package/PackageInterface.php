@@ -206,6 +206,8 @@ interface PackageInterface
      * @param  bool   $truncate If the source reference is a sha1 hash, truncate it
      * @param  int    $displayMode One of the DISPLAY_ constants on this interface determining display of references
      * @return string version
+     *
+     * @psalm-param self::DISPLAY_SOURCE_REF_IF_DEV|self::DISPLAY_SOURCE_REF|self::DISPLAY_DIST_REF $displayMode
      */
     public function getFullPrettyVersion($truncate = true, $displayMode = self::DISPLAY_SOURCE_REF_IF_DEV);
 

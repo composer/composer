@@ -396,7 +396,7 @@ class Installer
         $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher);
 
         // solve dependencies
-        $solver = new Solver($policy, $pool, $this->io, $repositorySet);
+        $solver = new Solver($policy, $pool, $this->io);
         try {
             $lockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
             $ruleSetSize = $solver->getRuleSetSize();
@@ -556,7 +556,7 @@ class Installer
 
         $pool = $repositorySet->createPoolWithAllPackages();
 
-        $solver = new Solver($policy, $pool, $this->io, $repositorySet);
+        $solver = new Solver($policy, $pool, $this->io);
         try {
             $nonDevLockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
             $solver = null;
@@ -615,7 +615,7 @@ class Installer
             $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher);
 
             // solve dependencies
-            $solver = new Solver($policy, $pool, $this->io, $repositorySet);
+            $solver = new Solver($policy, $pool, $this->io);
             try {
                 $lockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
                 $solver = null;

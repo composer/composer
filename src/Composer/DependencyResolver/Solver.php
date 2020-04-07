@@ -411,6 +411,7 @@ class Solver
                     }
                 }
             }
+            unset($literal);
 
             $l1retry = true;
             while ($l1retry) {

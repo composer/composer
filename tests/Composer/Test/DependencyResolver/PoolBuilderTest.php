@@ -90,6 +90,7 @@ class PoolBuilderTest extends TestCase
         }
 
         $pool = $repositorySet->createPool($request, new NullIO());
+        $result = array();
         for ($i = 1, $count = count($pool); $i <= $count; $i++) {
             $result[] = $pool->packageById($i);
         }
@@ -156,6 +157,7 @@ class PoolBuilderTest extends TestCase
         );
 
         $section = null;
+        $data = array();
         foreach ($tokens as $i => $token) {
             if (null === $section && empty($token)) {
                 continue; // skip leading blank

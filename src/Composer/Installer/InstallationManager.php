@@ -210,12 +210,12 @@ class InstallationManager
                 continue;
             }
 
-            if ($opType === 'install' || $opType === 'uninstall') {
-                $package = $operation->getPackage();
-                $initialPackage = null;
-            } elseif ($opType === 'update') {
+            if ($opType === 'update') {
                 $package = $operation->getTargetPackage();
                 $initialPackage = $operation->getInitialPackage();
+            } else {
+                $package = $operation->getPackage();
+                $initialPackage = null;
             }
             $installer = $this->getInstaller($package->getType());
 
