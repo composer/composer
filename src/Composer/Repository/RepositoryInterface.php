@@ -71,7 +71,7 @@ interface RepositoryInterface extends \Countable
      * @param array $stabilityFlags
      * 
      * @return array [namesFound => string[], packages => PackageInterface[]]
-     * @psalm-return array{namesFound: string[], packages: PackageInterface[]}
+     * @psalm-return list<array{namesFound: string[], packages: PackageInterface[]}>
      */
     public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags);
 
