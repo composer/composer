@@ -59,6 +59,15 @@ class SolverProblemsException extends \RuntimeException
             $text .= "\nUse the option --with-all-dependencies to allow updates and removals for packages currently locked to specific versions.";
         }
 
+        // TODO remove before 2.0 final
+        if (!class_exists('PHPUnit\Framework\TestCase', false)) {
+            if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match')) {
+                $text .= "\nYou are using a snapshot build of Composer 2, which some of your plugins seem to be incompatible with. Make sure you update your plugins or report an issue to them to ask them to support Composer 2. To work around this you can run Composer with --ignore-platform-reqs, but this will also ignore your PHP version and may result in bigger problems down the line.";
+            } else {
+                $text .= "\nYou are using a snapshot build of Composer 2, which may be the cause of the problem. Run `composer self-update --stable` and then try again. In case it solves the problem, please report an issue mentioning Composer 2.";
+            }
+        }
+
         return $text;
     }
 
