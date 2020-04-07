@@ -18,7 +18,7 @@ use Composer\Semver\Semver;
 
 class VersionParser extends SemverVersionParser
 {
-    public const DEV_MASTER_ALIAS = 'VersionParser::DEV_MASTER_ALIAS';
+    public const DEV_MASTER_ALIAS = '9999999-dev';
     
     private static $constraints = array();
 
