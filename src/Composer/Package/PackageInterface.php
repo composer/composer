@@ -325,7 +325,7 @@ interface PackageInterface
     /**
      * Returns the package binaries
      *
-     * @return array
+     * @return string[]
      */
     public function getBinaries();
 
