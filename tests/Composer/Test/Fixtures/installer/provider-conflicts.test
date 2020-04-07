@@ -1,0 +1,49 @@
+--TEST--
+Test that names provided by a dependent and root package cause a conflict only for replace
+--COMPOSER--
+{
+    "version": "1.2.3",
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "provider/pkg",
+                    "version": "1.0.0",
+                    "provide": { "root-provided/transitive-provided": "2.*", "root-replaced/transitive-provided": "2.*" },
+                    "replace": { "root-provided/transitive-replaced": "2.*", "root-replaced/transitive-replaced": "2.*" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "provider/pkg": "*"
+    },
+    "provide": {
+        "root-provided/transitive-replaced": "2.*",
+        "root-provided/transitive-provided": "2.*"
+    },
+    "replace": {
+        "root-replaced/transitive-replaced": "2.*",
+        "root-replaced/transitive-provided": "2.*"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - __root__ is present at version 1.2.3 and cannot be modified by Composer
+    - provider/pkg[1.0.0] cannot be installed as that would require removing __root__[1.2.3]. They both replace root-replaced/transitive-replaced and thus cannot coexist.
+    - Root composer.json requires provider/pkg * -> satisfiable by provider/pkg[1.0.0].
+
+--EXPECT--
+

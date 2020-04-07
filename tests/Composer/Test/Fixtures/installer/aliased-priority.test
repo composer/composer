@@ -51,6 +51,6 @@ install
 Installing a/c (dev-feature-foo feat.f)
 Marking a/c (dev-master feat.f) as installed, alias of a/c (dev-feature-foo feat.f)
 Installing a/b (dev-master forked)
+Marking a/b (1.0.x-dev forked) as installed, alias of a/b (dev-master forked)
 Installing a/a (dev-master master)
 Marking a/a (1.0.x-dev master) as installed, alias of a/a (dev-master master)
-Marking a/b (1.0.x-dev forked) as installed, alias of a/b (dev-master forked)

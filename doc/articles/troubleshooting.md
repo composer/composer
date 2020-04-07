@@ -156,10 +156,10 @@ This issue can also happen on cPanel instances, when the shell fork bomb protect
 
 ## Xdebug impact on Composer
 
-To improve performance when the xdebug extension is enabled, Composer automatically restarts PHP without it.
+To improve performance when the Xdebug extension is enabled, Composer automatically restarts PHP without it.
 You can override this behavior by using an environment variable: `COMPOSER_ALLOW_XDEBUG=1`.
 
-Composer will always show a warning if xdebug is being used, but you can override this with an environment variable:
+Composer will always show a warning if Xdebug is being used, but you can override this with an environment variable:
 `COMPOSER_DISABLE_XDEBUG_WARN=1`. If you see this warning unexpectedly, then the restart process has failed:
 please report this [issue](https://github.com/composer/composer/issues).
 
@@ -210,6 +210,19 @@ To enable the swap you can use for example:
 /sbin/swapon /var/swap.1
 ```
 You can make a permanent swap file following this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04).
+
+## proc_open(): failed to open stream errors (Windows)
+
+If composer shows proc_open(NUL) errors on Windows:
+
+`proc_open(NUL): failed to open stream: No such file or directory`
+
+This could be happening because you are working in a _OneDrive_ directory and
+using a version of PHP that does not support the file system semantics of this
+service. The issue was fixed in PHP 7.2.23 and 7.3.10.
+
+Alternatively it could be because the Windows Null Service is not enabled. For
+more information, see this [issue](https://github.com/composer/composer/issues/7186#issuecomment-373134916).
 
 ## Degraded Mode
 

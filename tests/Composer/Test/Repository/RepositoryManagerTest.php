@@ -86,7 +86,7 @@ class RepositoryManagerTest extends TestCase
         $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
 
         $rm->createRepository('composer', array('url' => 'http://example.org'));
-        $rm->createRepository($type, $options);
+        $this->assertInstanceOf('Composer\Repository\RepositoryInterface', $rm->createRepository($type, $options));
     }
 
     public function creationCases()

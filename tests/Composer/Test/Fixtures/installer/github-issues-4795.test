@@ -14,7 +14,7 @@ dependency of one the requirements that is whitelisted for update.
                 { "name": "a/a", "version": "1.0.0" },
                 { "name": "a/a", "version": "1.1.0" },
                 { "name": "b/b", "version": "1.0.0", "require": { "a/a": "~1.0" } },
-                { "name": "b/b", "version": "1.1.0", "require": { "a/b": "~1.1" } }
+                { "name": "b/b", "version": "1.1.0", "require": { "a/a": "~1.1" } }
             ]
         }
     ],
@@ -30,15 +30,32 @@ dependency of one the requirements that is whitelisted for update.
     { "name": "b/b", "version": "1.0.0", "require": { "a/a": "~1.0" } }
 ]
 
+--LOCK--
+{
+    "packages": [
+        { "name": "a/a", "version": "1.0.0" },
+        { "name": "b/b", "version": "1.0.0", "require": { "a/a": "~1.0" } }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --RUN--
 update b/b --with-dependencies
 
 --EXPECT-OUTPUT--
-<warning>Dependency "a/a" is also a root requirement, but is not explicitly whitelisted. Ignoring.</warning>
 Loading composer repositories with package information
-Updating dependencies (including require-dev)
-Nothing to install or update
+Updating dependencies
+<warning>Dependency "a/a" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>
+Nothing to modify in lock file
 Writing lock file
+Installing dependencies from lock file (including require-dev)
+Nothing to install, update or remove
 Generating autoload files
 
 --EXPECT--

@@ -56,7 +56,6 @@ interface RepositoryInterface extends \Countable
      */
     public function findPackages($name, $constraint = null);
 
-    // TODO this should really not be in this generic interface anymore
     /**
      * Returns list of registered packages.
      *
@@ -68,10 +67,11 @@ interface RepositoryInterface extends \Countable
      * Returns list of registered packages with the supplied name
      *
      * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
-     * @param $isPackageAcceptableCallable
-     * @return PackageInterface[]
+     * @param array $acceptableStabilities
+     * @param array $stabilityFlags
+     * @return array [namesFound => string[], packages => PackageInterface[]]
      */
-    public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable);
+    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags);
 
     /**
      * Searches the repository for packages containing the query
@@ -83,4 +83,24 @@ interface RepositoryInterface extends \Countable
      * @return array[] an array of array('name' => '...', 'description' => '...')
      */
     public function search($query, $mode = 0, $type = null);
+
+    /**
+     * Returns a list of packages providing a given package name
+     *
+     * Packages which have the same name as $packageName should not be returned, only those that have a "provide" on it.
+     *
+     * @param string $packageName package name which must be provided
+     *
+     * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...')
+     */
+    public function getProviders($packageName);
+
+    /**
+     * Returns a name representing this repository to the user
+     *
+     * This is best effort and definitely can not always be very precise
+     *
+     * @return string
+     */
+    public function getRepoName();
 }

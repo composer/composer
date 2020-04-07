@@ -13,7 +13,7 @@
 namespace Composer\Test\Json;
 
 use Composer\Json\JsonManipulator;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class JsonManipulatorTest extends TestCase
 {
@@ -1450,6 +1450,22 @@ class JsonManipulatorTest extends TestCase
 }
 ',
             ),
+            'works on simple ones escaped slash' => array(
+                '{
+    "repositories": {
+        "foo\/bar": {
+            "bar": "baz"
+        }
+    }
+}',
+                'foo/bar',
+                true,
+                '{
+    "repositories": {
+    }
+}
+',
+            ),
             'works on simple ones middle' => array(
                 '{
     "repositories": {
@@ -1793,6 +1809,91 @@ class JsonManipulatorTest extends TestCase
     "extra": {
         "auto-append-gitignore": true,
         "foo-bar": true
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddConfigWithPackage() {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "authors": [],
+                "extra": {
+                    "package-xml": "package.xml"
+                }
+            }
+        }
+    ],
+    "config": {
+        "platform": {
+            "php": "5.3.9"
+        }
+    }
+}');
+
+        $this->assertTrue($manipulator->addConfigSetting('preferred-install.my-organization/stable-package', 'dist'));
+        $this->assertEquals('{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "authors": [],
+                "extra": {
+                    "package-xml": "package.xml"
+                }
+            }
+        }
+    ],
+    "config": {
+        "platform": {
+            "php": "5.3.9"
+        },
+        "preferred-install": {
+            "my-organization/stable-package": "dist"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddSuggestWithPackage()
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "authors": [],
+                "extra": {
+                    "package-xml": "package.xml"
+                }
+            }
+        }
+    ],
+    "suggest": {
+        "package": "Description"
+    }
+}');
+
+        $this->assertTrue($manipulator->addProperty('suggest.new-package', 'new-description'));
+        $this->assertEquals('{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "authors": [],
+                "extra": {
+                    "package-xml": "package.xml"
+                }
+            }
+        }
+    ],
+    "suggest": {
+        "package": "Description",
+        "new-package": "new-description"
     }
 }
 ', $manipulator->getContents());

@@ -13,5 +13,16 @@ class Plugin1 implements PluginInterface
 
     public function activate(Composer $composer, IOInterface $io)
     {
+        $io->write('activate v4-plugin1');
+    }
+
+    public function deactivate(Composer $composer, IOInterface $io)
+    {
+        $io->write('deactivate v4-plugin1');
+    }
+
+    public function uninstall(Composer $composer, IOInterface $io)
+    {
+        $io->write('uninstall v4-plugin1');
     }
 }

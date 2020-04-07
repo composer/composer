@@ -223,6 +223,13 @@ class Factory
         return trim(getenv('COMPOSER')) ?: './composer.json';
     }
 
+    public static function getLockFile($composerFile)
+    {
+        return "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
+                ? substr($composerFile, 0, -4).'lock'
+                : $composerFile . '.lock';
+    }
+
     public static function createAdditionalStyles()
     {
         return array(
@@ -354,7 +361,7 @@ class Factory
         $composer->setPackage($package);
 
         // initialize installation manager
-        $im = $this->createInstallationManager($loop);
+        $im = $this->createInstallationManager($loop, $io, $dispatcher);
         $composer->setInstallationManager($im);
 
         if ($fullLoad) {
@@ -388,11 +395,9 @@ class Factory
 
         // init locker if possible
         if ($fullLoad && isset($composerFile)) {
-            $lockFile = "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
-                ? substr($composerFile, 0, -4).'lock'
-                : $composerFile . '.lock';
+            $lockFile = self::getLockFile($composerFile);
 
-            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($composerFile));
+            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $im, file_get_contents($composerFile));
             $composer->setLocker($locker);
         }
 
@@ -527,9 +532,9 @@ class Factory
     /**
      * @return Installer\InstallationManager
      */
-    public function createInstallationManager(Loop $loop)
+    public function createInstallationManager(Loop $loop, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {
-        return new Installer\InstallationManager($loop);
+        return new Installer\InstallationManager($loop, $io, $eventDispatcher);
     }
 
     /**

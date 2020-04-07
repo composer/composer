@@ -45,6 +45,18 @@ class ZipArchiver implements ArchiverInterface
                 } else {
                     $zip->addFile($filepath, $localname);
                 }
+
+                /**
+                 * ZipArchive::setExternalAttributesName is available from >= PHP 5.6
+                 */
+                if (PHP_VERSION_ID >= 50600) {
+                    $perms = fileperms($filepath);
+
+                    /**
+                     * Ensure to preserve the permission umasks for the filepath in the archive.
+                     */
+                    $zip->setExternalAttributesName($localname, ZipArchive::OPSYS_UNIX, $perms << 16);
+                }
             }
             if ($zip->close()) {
                 return $target;

@@ -173,19 +173,27 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
      */
     protected function replaceSelfVersionDependencies(array $links, $linkType)
     {
+        // for self.version requirements, we use the original package's branch name instead of 9999999-dev, to avoid leaking 9999999-dev to users
+        $prettyVersion = $this->prettyVersion;
+        if ($prettyVersion === '9999999-dev') {
+            $prettyVersion = $this->aliasOf->getPrettyVersion();
+        }
+
         if (in_array($linkType, array('conflicts', 'provides', 'replaces'), true)) {
             $newLinks = array();
             foreach ($links as $link) {
                 // link is self.version, but must be replacing also the replaced version
                 if ('self.version' === $link->getPrettyConstraint()) {
-                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), new Constraint('=', $this->version), $linkType, $this->prettyVersion);
+                    $newLinks[] = new Link($link->getSource(), $link->getTarget(), $constraint = new Constraint('=', $this->version), $linkType, $prettyVersion);
+                    $constraint->setPrettyString($prettyVersion);
                 }
             }
             $links = array_merge($links, $newLinks);
         } else {
             foreach ($links as $index => $link) {
                 if ('self.version' === $link->getPrettyConstraint()) {
-                    $links[$index] = new Link($link->getSource(), $link->getTarget(), new Constraint('=', $this->version), $linkType, $this->prettyVersion);
+                    $links[$index] = new Link($link->getSource(), $link->getTarget(), $constraint = new Constraint('=', $this->version), $linkType, $prettyVersion);
+                    $constraint->setPrettyString($prettyVersion);
                 }
             }
         }
@@ -377,6 +385,11 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         return $this->aliasOf->getSupport();
     }
 
+    public function getFunding()
+    {
+        return $this->aliasOf->getFunding();
+    }
+
     public function getNotificationUrl()
     {
         return $this->aliasOf->getNotificationUrl();
@@ -410,5 +423,10 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     public function setDistType($type)
     {
         return $this->aliasOf->setDistType($type);
+    }
+
+    public function setSourceDistReferences($reference)
+    {
+        return $this->aliasOf->setSourceDistReferences($reference);
     }
 }

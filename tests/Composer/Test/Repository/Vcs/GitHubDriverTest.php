@@ -191,6 +191,11 @@ class GitHubDriverTest extends TestCase
             ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/commits/feature%2F3.2-foo'))
             ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"commit": {"committer":{ "date": "2012-09-10"}}}')));
 
+        $httpDownloader->expects($this->at(3))
+            ->method('get')
+            ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/contents/.github/FUNDING.yml'))
+            ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"encoding": "base64", "content": "'.base64_encode("custom: https://example.com").'"}')));
+
         $repoConfig = array(
             'url' => $repoUrl,
         );
@@ -216,7 +221,63 @@ class GitHubDriverTest extends TestCase
         $this->assertEquals($repoUrl, $source['url']);
         $this->assertEquals($sha, $source['reference']);
 
-        $gitHubDriver->getComposerInformation($identifier);
+        $data = $gitHubDriver->getComposerInformation($identifier);
+
+        $this->assertArrayNotHasKey('abandoned', $data);
+    }
+
+    public function testPublicRepositoryArchived()
+    {
+        $repoUrl = 'http://github.com/composer/packagist';
+        $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
+        $identifier = 'v0.0.0';
+        $sha = 'SOMESHA';
+        $composerJsonUrl = 'https://api.github.com/repos/composer/packagist/contents/composer.json?ref=' . $sha;
+
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io->expects($this->any())
+            ->method('isInteractive')
+            ->will($this->returnValue(true));
+
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
+            ->setConstructorArgs(array($io, $this->config))
+            ->getMock();
+
+        $httpDownloader->expects($this->at(0))
+            ->method('get')
+            ->with($this->equalTo($repoApiUrl))
+            ->will($this->returnValue(new Response(array('url' => $repoApiUrl), 200, array(), '{"master_branch": "test_master", "owner": {"login": "composer"}, "name": "packagist", "archived": true}')));
+
+        $httpDownloader->expects($this->at(1))
+            ->method('get')
+            ->with($this->equalTo($composerJsonUrl))
+            ->will($this->returnValue(new Response(array('url' => $composerJsonUrl), 200, array(), '{"encoding": "base64", "content": "' . base64_encode('{"name": "composer/packagist"}') . '"}')));
+
+        $httpDownloader->expects($this->at(2))
+            ->method('get')
+            ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/commits/'.$sha))
+            ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"commit": {"committer":{ "date": "2012-09-10"}}}')));
+
+        $httpDownloader->expects($this->at(3))
+            ->method('get')
+            ->with($this->equalTo($url = 'https://api.github.com/repos/composer/packagist/contents/.github/FUNDING.yml'))
+            ->will($this->returnValue(new Response(array('url' => $url), 200, array(), '{"encoding": "base64", "content": "'.base64_encode("custom: https://example.com").'"}')));
+
+        $repoConfig = array(
+            'url' => $repoUrl,
+        );
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $process);
+        $gitHubDriver->initialize();
+        $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
+
+        $data = $gitHubDriver->getComposerInformation($sha);
+
+        $this->assertTrue($data['abandoned']);
     }
 
     public function testPrivateRepositoryNoInteraction()

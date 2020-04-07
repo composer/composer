@@ -23,7 +23,7 @@ The locked version will not get overwritten by an install
         { "name": "foo/bar", "version": "1.0.0" },
         { "name": "foo/baz", "version": "2.0.0" }
     ],
-    "packages-dev": null,
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],
@@ -38,4 +38,4 @@ The locked version will not get overwritten by an install
 --RUN--
 install
 --EXPECT--
-Updating foo/baz (1.0.0) to foo/baz (2.0.0)
+Upgrading foo/baz (1.0.0 => 2.0.0)

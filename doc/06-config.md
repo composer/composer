@@ -79,16 +79,16 @@ an OAuth token for GitHub.
 
 A list of domain names and oauth keys. For example using `{"gitlab.com":
 "oauthtoken"}` as the value of this option will use `oauthtoken` to access
-private repositories on gitlab. Please note: If the package is not hosted at 
-gitlab.com the domain names must be also specified with the 
+private repositories on gitlab. Please note: If the package is not hosted at
+gitlab.com the domain names must be also specified with the
 [`gitlab-domains`](06-config.md#gitlab-domains) option.
 
 ## gitlab-token
 
 A list of domain names and private tokens. For example using `{"gitlab.com":
 "privatetoken"}` as the value of this option will use `privatetoken` to access
-private repositories on gitlab. Please note: If the package is not hosted at 
-gitlab.com the domain names must be also specified with the 
+private repositories on gitlab. Please note: If the package is not hosted at
+gitlab.com the domain names must be also specified with the
 [`gitlab-domains`](06-config.md#gitlab-domains) option.
 
 ## disable-tls
@@ -129,10 +129,16 @@ A list of domain names and username/passwords to authenticate against them. For
 example using `{"example.org": {"username": "alice", "password": "foo"}}` as the
 value of this option will let Composer authenticate against example.org.
 
-> **Note:** Authentication-related config options like `http-basic` and
+> **Note:** Authentication-related config options like `http-basic`, `bearer` and
 > `github-oauth` can also be specified inside a `auth.json` file that goes
 > besides your `composer.json`. That way you can gitignore it and every
 > developer can place their own credentials in there.
+
+## bearer
+
+A list of domain names and tokens to authenticate against them. For example using
+`{"example.org": "foo"}` as the value of this option will let Composer authenticate
+against example.org using an `Authorization: Bearer foo` header.
 
 ## platform
 
@@ -260,7 +266,7 @@ driver directly, Composer will still attempt to use GitHub's zip files.
 
 Defaults to `true`. Composer allows repositories to define a notification URL,
 so that they get notified whenever a package from that repository is installed.
-This option allows you to disable that behaviour.
+This option allows you to disable that behavior.
 
 ## discard-changes
 
@@ -295,5 +301,10 @@ Example:
 
 Defaults to `true`. If set to `false`, Composer will not create `.htaccess` files
 in the composer home, cache, and data directories.
+
+## lock
+
+Defaults to `true`. If set to `false`, Composer will not create a `composer.lock`
+file.
 
 &larr; [Repositories](05-repositories.md)  |  [Community](07-community.md) &rarr;

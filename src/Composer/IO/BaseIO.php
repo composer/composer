@@ -31,6 +31,14 @@ abstract class BaseIO implements IOInterface
     /**
      * {@inheritDoc}
      */
+    public function resetAuthentications()
+    {
+        $this->authentications = array();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function hasAuthentication($repositoryName)
     {
         return isset($this->authentications[$repositoryName]);
@@ -54,6 +62,22 @@ abstract class BaseIO implements IOInterface
     public function setAuthentication($repositoryName, $username, $password = null)
     {
         $this->authentications[$repositoryName] = array('username' => $username, 'password' => $password);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function writeRaw($messages, $newline = true, $verbosity = self::NORMAL)
+    {
+        $this->write($messages, $newline, $verbosity);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function writeErrorRaw($messages, $newline = true, $verbosity = self::NORMAL)
+    {
+        $this->writeError($messages, $newline, $verbosity);
     }
 
     /**
@@ -91,6 +115,7 @@ abstract class BaseIO implements IOInterface
         $gitlabOauth = $config->get('gitlab-oauth') ?: array();
         $gitlabToken = $config->get('gitlab-token') ?: array();
         $httpBasic = $config->get('http-basic') ?: array();
+        $bearerToken = $config->get('bearer') ?: array();
 
         // reload oauth tokens from config if available
 
@@ -116,6 +141,10 @@ abstract class BaseIO implements IOInterface
         // reload http basic credentials from config if available
         foreach ($httpBasic as $domain => $cred) {
             $this->checkAndSetAuthentication($domain, $cred['username'], $cred['password']);
+        }
+
+        foreach ($bearerToken as $domain => $token) {
+            $this->checkAndSetAuthentication($domain, $token, 'bearer');
         }
 
         // setup process timeout

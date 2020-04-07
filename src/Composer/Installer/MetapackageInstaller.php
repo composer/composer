@@ -58,6 +58,22 @@ class MetapackageInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
+    public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+        // noop
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+        // noop
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
@@ -77,7 +93,7 @@ class MetapackageInstaller implements InstallerInterface
         $name = $target->getName();
         $from = $initial->getFullPrettyVersion();
         $to = $target->getFullPrettyVersion();
-        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Updating' : 'Downgrading';
+        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Upgrading' : 'Downgrading';
         $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
 
         $repo->removePackage($initial);

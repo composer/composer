@@ -1,0 +1,26 @@
+--TEST--
+Packages found in a higher priority repository take precedence
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "foo/a", "version": "1.0.0" }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "foo/a", "version": "1.1.0" }
+            ]
+        }
+    ],
+    "require": {
+        "foo/a": "1.*"
+    }
+}
+--RUN--
+update
+--EXPECT--
+Installing foo/a (1.0.0)

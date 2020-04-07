@@ -1,0 +1,20 @@
+--TEST--
+Update to a state without dependency works well from a blank slate
+--COMPOSER--
+{
+}
+--RUN--
+update
+--EXPECT-LOCK--
+{
+    "packages": [],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--

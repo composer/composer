@@ -1,9 +1,11 @@
 parameters:
     level: 1
+    autoload_files:
+        - autoload.php
     excludes_analyse:
-        - 'tests/Composer/Test/Fixtures'
-        - 'tests/Composer/Test/Autoload/Fixtures'
-        - 'tests/Composer/Test/Plugin/Fixtures'
+       - '../tests/Composer/Test/Fixtures/*'
+       - '../tests/Composer/Test/Autoload/Fixtures/*'
+       - '../tests/Composer/Test/Plugin/Fixtures/*'
     ignoreErrors:
         # unused parameters
         - '~^Constructor of class Composer\\Repository\\VcsRepository has an unused parameter \$dispatcher\.$~'
@@ -33,11 +35,23 @@ parameters:
         # variable defined in eval
         - '~^Undefined variable: \$res$~'
 
-        # always checked whether the class exists
-        - '~^Instantiated class Symfony\\Component\\Console\\Terminal not found\.$~'
-        - '~^Class Symfony\\Component\\Console\\Input\\StreamableInputInterface not found\.$~'
-        - '~^Call to an undefined static method Symfony\\Component\\Process\\Process::fromShellCommandline\(\).$~'
+        # erroneous detection of missing const, see https://github.com/phpstan/phpstan/issues/2960
+        - '~^Access to undefined constant ZipArchive::LIBZIP_VERSION.$~'
 
-        # parent call in test mocks
-        - '~^Composer\\Test\\Mock\\HttpDownloaderMock::__construct\(\) does not call parent constructor from Composer\\Util\\HttpDownloader\.$~'
-        - '~^Composer\\Test\\Mock\\InstallationManagerMock::__construct\(\) does not call parent constructor from Composer\\Installer\\InstallationManager\.$~'
+        # we don't have different constructors for parent/child
+        - '~^Unsafe usage of new static\(\)\.$~'
+
+        # BC with older PHPUnit
+        - '~^Call to an undefined static method PHPUnit\\Framework\\TestCase::setExpectedException\(\)\.$~'
+
+        # hhvm should have support for $this in closures
+        -
+            count: 1
+            message: '~^Using \$this inside anonymous function is prohibited because of PHP 5\.3 support\.$~'
+            path: '../tests/Composer/Test/Repository/PlatformRepositoryTest.php'
+    paths:
+        - ../src
+        - ../tests
+
+rules:
+    - Composer\PHPStanRules\AnonymousFunctionWithThisRule

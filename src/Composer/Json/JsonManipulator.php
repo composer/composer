@@ -167,6 +167,10 @@ class JsonManipulator
 
     public function addProperty($name, $value)
     {
+        if (substr($name, 0, 8) === 'suggest.') {
+            return $this->addSubNode('suggest', substr($name, 8), $value);
+        }
+
         if (substr($name, 0, 6) === 'extra.') {
             return $this->addSubNode('extra', substr($name, 6), $value);
         }
@@ -180,6 +184,10 @@ class JsonManipulator
 
     public function removeProperty($name)
     {
+        if (substr($name, 0, 8) === 'suggest.') {
+            return $this->removeSubNode('suggest', substr($name, 8));
+        }
+
         if (substr($name, 0, 6) === 'extra.') {
             return $this->removeSubNode('extra', substr($name, 6));
         }
@@ -326,9 +334,10 @@ class JsonManipulator
         }
 
         // try and find a match for the subkey
-        if ($this->pregMatch('{"'.preg_quote($name).'"\s*:}i', $children)) {
+        $keyRegex = str_replace('/', '\\\\?/', preg_quote($name));
+        if ($this->pregMatch('{"'.$keyRegex.'"\s*:}i', $children)) {
             // find best match for the value of "name"
-            if (preg_match_all('{'.self::$DEFINES.'"'.preg_quote($name).'"\s*:\s*(?:(?&json))}x', $children, $matches)) {
+            if (preg_match_all('{'.self::$DEFINES.'"'.$keyRegex.'"\s*:\s*(?:(?&json))}x', $children, $matches)) {
                 $bestMatch = '';
                 foreach ($matches[0] as $match) {
                     if (strlen($bestMatch) < strlen($match)) {

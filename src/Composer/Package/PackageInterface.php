@@ -21,6 +21,10 @@ use Composer\Repository\RepositoryInterface;
  */
 interface PackageInterface
 {
+    const DISPLAY_SOURCE_REF_IF_DEV = 0;
+    const DISPLAY_SOURCE_REF = 1;
+    const DISPLAY_DIST_REF = 2;
+
     /**
      * Returns the package's name without version info, thus not a unique identifier
      *
@@ -41,9 +45,11 @@ interface PackageInterface
      * No version or release type information should be included in any of the
      * names. Provided or replaced package names need to be returned as well.
      *
+     * @param bool $provides Whether provided names should be included
+     *
      * @return array An array of strings referring to this package
      */
-    public function getNames();
+    public function getNames($provides = true);
 
     /**
      * Allows the solver to set an id for this package to refer to it.
@@ -198,9 +204,10 @@ interface PackageInterface
      * @see getPrettyVersion
      *
      * @param  bool   $truncate If the source reference is a sha1 hash, truncate it
+     * @param  int    $displayMode One of the DISPLAY_ constants on this interface determining display of references
      * @return string version
      */
-    public function getFullPrettyVersion($truncate = true);
+    public function getFullPrettyVersion($truncate = true, $displayMode = self::DISPLAY_SOURCE_REF_IF_DEV);
 
     /**
      * Returns the release date of the package
@@ -386,4 +393,13 @@ interface PackageInterface
      * @return void
      */
     public function setDistReference($reference);
+
+    /**
+     * Set dist and source references and update dist URL for ones that contain a reference
+     *
+     * @param string $reference
+     *
+     * @return void
+     */
+    public function setSourceDistReferences($reference);
 }

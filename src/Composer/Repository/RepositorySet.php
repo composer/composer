@@ -15,34 +15,54 @@ namespace Composer\Repository;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\PoolBuilder;
 use Composer\DependencyResolver\Request;
+use Composer\EventDispatcher\EventDispatcher;
+use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
 use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\LockArrayRepository;
+use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Repository\InstalledRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
-use Composer\Test\DependencyResolver\PoolTest;
+use Composer\Package\Version\StabilityFilter;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
 class RepositorySet
 {
+    /**
+     * Packages are returned even though their stability does not match the required stability
+     */
+    const ALLOW_UNACCEPTABLE_STABILITIES = 1;
+    /**
+     * Packages will be looked up in all repositories, even after they have been found in a higher prio one
+     */
+    const ALLOW_SHADOWED_REPOSITORIES = 2;
+
     /** @var array */
     private $rootAliases;
+    /** @var array */
+    private $rootReferences;
 
     /** @var RepositoryInterface[] */
     private $repositories = array();
 
     private $acceptableStabilities;
     private $stabilityFlags;
-    protected $filterRequires;
+    private $rootRequires;
 
-    /** @var Pool */
-    private $pool;
+    /** @var bool */
+    private $locked = false;
+    /** @var bool */
+    private $allowInstalledRepositories = false;
 
-    public function __construct(array $rootAliases = array(), $minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
+    public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
     {
         $this->rootAliases = $rootAliases;
+        $this->rootReferences = $rootReferences;
 
         $this->acceptableStabilities = array();
         foreach (BasePackage::$stabilities as $stability => $value) {
@@ -51,22 +71,35 @@ class RepositorySet
             }
         }
         $this->stabilityFlags = $stabilityFlags;
-        $this->filterRequires = $filterRequires;
-        foreach ($filterRequires as $name => $constraint) {
+        $this->rootRequires = $rootRequires;
+        foreach ($rootRequires as $name => $constraint) {
             if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
-                unset($this->filterRequires[$name]);
+                unset($this->rootRequires[$name]);
             }
         }
+    }
+
+    public function allowInstalledRepositories($allow = true)
+    {
+        $this->allowInstalledRepositories = $allow;
+    }
+
+    public function getRootRequires()
+    {
+        return $this->rootRequires;
     }
 
     /**
      * Adds a repository to this repository set
      *
+     * The first repos added have a higher priority. As soon as a package is found in any
+     * repository the search for that package ends, and following repos will not be consulted.
+     *
      * @param RepositoryInterface $repo        A package repository
      */
     public function addRepository(RepositoryInterface $repo)
     {
-        if ($this->pool) {
+        if ($this->locked) {
             throw new \RuntimeException("Pool has already been created from this repository set, it cannot be modified anymore.");
         }
 
@@ -81,46 +114,49 @@ class RepositorySet
         }
     }
 
-    public function isPackageAcceptable($name, $stability)
-    {
-        foreach ((array) $name as $n) {
-            // allow if package matches the global stability requirement and has no exception
-            if (!isset($this->stabilityFlags[$n]) && isset($this->acceptableStabilities[$stability])) {
-                return true;
-            }
-
-            // allow if package matches the package-specific stability flag
-            if (isset($this->stabilityFlags[$n]) && BasePackage::$stabilities[$stability] <= $this->stabilityFlags[$n]) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     /**
      * Find packages providing or matching a name and optionally meeting a constraint in all repositories
      *
+     * Returned in the order of repositories, matching priority
+     *
      * @param string $name
      * @param ConstraintInterface|null $constraint
-     * @param bool $exactMatch
+     * @param int $flags any of the ALLOW_* constants from this class to tweak what is returned
      * @return array
      */
-    public function findPackages($name, ConstraintInterface $constraint = null, $exactMatch = true)
+    public function findPackages($name, ConstraintInterface $constraint = null, $flags = 0)
     {
+        $ignoreStability = ($flags & self::ALLOW_UNACCEPTABLE_STABILITIES) !== 0;
+        $loadFromAllRepos = ($flags & self::ALLOW_SHADOWED_REPOSITORIES) !== 0;
+
         $packages = array();
-        foreach ($this->repositories as $repository) {
-            $packages[] = $repository->findPackages($name, $constraint) ?: array();
+        if ($loadFromAllRepos) {
+            foreach ($this->repositories as $repository) {
+                $packages[] = $repository->findPackages($name, $constraint) ?: array();
+            }
+        } else {
+            foreach ($this->repositories as $repository) {
+                $result = $repository->loadPackages(array($name => $constraint), $ignoreStability ? BasePackage::$stabilities : $this->acceptableStabilities, $ignoreStability ? array() : $this->stabilityFlags);
+
+                $packages[] = $result['packages'];
+                foreach ($result['namesFound'] as $nameFound) {
+                    // avoid loading the same package again from other repositories once it has been found
+                    if ($name === $nameFound) {
+                        break 2;
+                    }
+                }
+            }
         }
 
         $candidates = $packages ? call_user_func_array('array_merge', $packages) : array();
 
+        // when using loadPackages above (!$loadFromAllRepos) the repos already filter for stability so no need to do it again
+        if ($ignoreStability || !$loadFromAllRepos) {
+            return $candidates;
+        }
+
         $result = array();
         foreach ($candidates as $candidate) {
-            if ($exactMatch && $candidate->getName() !== $name) {
-                continue;
-            }
-
             if ($this->isPackageAcceptable($candidate->getNames(), $candidate->getStability())) {
                 $result[] = $candidate;
             }
@@ -129,15 +165,21 @@ class RepositorySet
         return $candidates;
     }
 
-    public function getPriority(RepositoryInterface $repo)
+    public function getProviders($packageName)
     {
-        $priority = array_search($repo, $this->repositories, true);
-
-        if (false === $priority) {
-            throw new \RuntimeException("Could not determine repository priority. The repository was not registered in the pool.");
+        $providers = array();
+        foreach ($this->repositories as $repository) {
+            if ($repoProviders = $repository->getProviders($packageName)) {
+                $providers = array_merge($providers, $repoProviders);
+            }
         }
 
-        return -$priority;
+        return $providers;
+    }
+
+    public function isPackageAcceptable($names, $stability)
+    {
+        return StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $names, $stability);
     }
 
     /**
@@ -145,35 +187,57 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPool(Request $request)
+    public function createPool(Request $request, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {
-        $poolBuilder = new PoolBuilder(array($this, 'isPackageAcceptable'), $this->filterRequires);
+        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher);
 
-        return $this->pool = $poolBuilder->buildPool($this->repositories, $this->rootAliases, $request);
-    }
-
-    // TODO unify this with above in some simpler version without "request"?
-    public function createPoolForPackage($packageName)
-    {
-        return $this->createPoolForPackages(array($packageName));
-    }
-
-    public function createPoolForPackages($packageNames)
-    {
-        $request = new Request();
-        foreach ($packageNames as $packageName) {
-            $request->install($packageName);
+        foreach ($this->repositories as $repo) {
+            if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
+                throw new \LogicException('The pool can not accept packages from an installed repository');
+            }
         }
 
-        return $this->createPool($request);
+        $this->locked = true;
+
+        return $poolBuilder->buildPool($this->repositories, $request);
     }
 
     /**
-     * Access the pool object after it has been created, relevant for plugins which need to read info from the pool
+     * Create a pool for dependency resolution from the packages in this repository set.
+     *
      * @return Pool
      */
-    public function getPool()
+    public function createPoolWithAllPackages()
     {
-        return $this->pool;
+        foreach ($this->repositories as $repo) {
+            if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
+                throw new \LogicException('The pool can not accept packages from an installed repository');
+            }
+        }
+
+        $this->locked = true;
+
+        $packages = array();
+        foreach ($this->repositories as $repository) {
+            $packages = array_merge($packages, $repository->getPackages());
+        }
+        return new Pool($packages);
+    }
+
+    // TODO unify this with above in some simpler version without "request"?
+    public function createPoolForPackage($packageName, LockArrayRepository $lockedRepo = null)
+    {
+        return $this->createPoolForPackages(array($packageName), $lockedRepo);
+    }
+
+    public function createPoolForPackages($packageNames, LockArrayRepository $lockedRepo = null)
+    {
+        $request = new Request($lockedRepo);
+
+        foreach ($packageNames as $packageName) {
+            $request->requireName($packageName);
+        }
+
+        return $this->createPool($request, new NullIO());
     }
 }

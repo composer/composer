@@ -74,6 +74,22 @@ class ProjectInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
+    public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+        $this->downloadManager->prepare($type, $package, $this->installPath, $prevPackage);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+        $this->downloadManager->cleanup($type, $package, $this->installPath, $prevPackage);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $this->downloadManager->install($package, $this->installPath);

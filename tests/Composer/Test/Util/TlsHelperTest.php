@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\TlsHelper;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class TlsHelperTest extends TestCase
 {

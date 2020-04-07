@@ -1,0 +1,67 @@
+--TEST--
+A composer update should remove unused locked dependencies from the lock file and remove unused installed deps from disk
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0" },
+                { "name": "b/b", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "*"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        { "name": "a/a", "version": "1.0.0" },
+        { "name": "b/b", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--INSTALLED--
+[
+    { "name": "a/a", "version": "1.0.0" },
+    { "name": "b/b", "version": "1.0.0" },
+    { "name": "c/c", "version": "1.0.0" }
+]
+--RUN--
+update
+--EXPECT-LOCK--
+{
+    "packages": [
+        { "name": "a/a", "version": "1.0.0", "type": "library" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 0 updates, 1 removal
+  - Removing b/b (1.0.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 0 installs, 0 updates, 2 removals
+Generating autoload files
+
+--EXPECT--
+Removing c/c (1.0.0)
+Removing b/b (1.0.0)

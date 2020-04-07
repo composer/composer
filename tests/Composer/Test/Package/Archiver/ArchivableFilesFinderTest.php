@@ -309,7 +309,11 @@ class ArchivableFilesFinderTest extends TestCase
 
     protected function getArchivedFiles($command)
     {
-        $process = new Process($command, $this->sources);
+        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+            $process = Process::fromShellCommandline($command, $this->sources);
+        } else {
+            $process = new Process($command, $this->sources);
+        }
         $process->run();
 
         $archive = new \PharData($this->sources.'/archive.zip');

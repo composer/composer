@@ -13,7 +13,7 @@
 namespace Composer\Test\Json;
 
 use Composer\Json\JsonValidationException;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class JsonValidationExceptionTest extends TestCase
 {

@@ -156,7 +156,7 @@ EOT
             $this->outputResult($this->checkVersion($config));
         }
 
-        $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::VERSION));
+        $io->write(sprintf('Composer version: <comment>%s</comment>', Composer::getVersion()));
 
         $platformOverrides = $config->get('platform') ?: array();
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
@@ -171,6 +171,8 @@ EOT
         if (defined('PHP_BINARY')) {
             $io->write(sprintf('PHP binary path: <comment>%s</comment>', PHP_BINARY));
         }
+
+        $io->write(sprintf('OpenSSL version: <comment>%s</comment>', OPENSSL_VERSION_TEXT));
 
         return $this->exitCode;
     }
@@ -254,7 +256,7 @@ EOT
 
         $protocol = extension_loaded('openssl') ? 'https' : 'http';
         try {
-            $json = $this->httpDownloader->get($protocol . '://repo.packagist.org/packages.json')->parseJson();
+            $json = $this->httpDownloader->get($protocol . '://repo.packagist.org/packages.json')->decodeJson();
             $hash = reset($json['provider-includes']);
             $hash = $hash['sha256'];
             $path = str_replace('%hash%', $hash, key($json['provider-includes']));
@@ -375,7 +377,7 @@ EOT
         }
 
         $url = $domain === 'github.com' ? 'https://api.'.$domain.'/rate_limit' : 'https://'.$domain.'/api/rate_limit';
-        $data = $this->httpDownloader->get($url, array('retry-auth-failure' => false))->parseJson();
+        $data = $this->httpDownloader->get($url, array('retry-auth-failure' => false))->decodeJson();
 
         return $data['resources']['core'];
     }
@@ -575,6 +577,13 @@ EOT
             $warnings['xdebug_loaded'] = true;
         }
 
+        if (defined('PHP_WINDOWS_VERSION_BUILD')
+            && (version_compare(PHP_VERSION, '7.2.23', '<')
+            || (version_compare(PHP_VERSION, '7.3.0', '>=')
+            && version_compare(PHP_VERSION, '7.3.10', '<')))) {
+            $warnings['onedrive'] = PHP_VERSION;
+        }
+
         if (!empty($errors)) {
             foreach ($errors as $error => $current) {
                 switch ($error) {
@@ -686,6 +695,11 @@ EOT
                         $text .= "Add the following to the end of your `php.ini` to disable it:".PHP_EOL;
                         $text .= "  xdebug.profiler_enabled = 0";
                         $displayIniMessage = true;
+                        break;
+
+                    case 'onedrive':
+                        $text = "The Windows OneDrive folder is not supported on PHP versions below 7.2.23 and 7.3.10.".PHP_EOL;
+                        $text .= "Upgrade your PHP ({$current}) to use this location with Composer.".PHP_EOL;
                         break;
 
                     default:

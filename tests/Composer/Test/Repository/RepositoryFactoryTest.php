@@ -48,4 +48,24 @@ class RepositoryFactoryTest extends TestCase
             'path',
         ), array_keys($repositoryClasses));
     }
+
+    /**
+     * @dataProvider generateRepositoryNameProvider
+     */
+    public function testGenerateRepositoryName($index, array $config, array $existingRepos, $expected)
+    {
+        $this->assertSame($expected, RepositoryFactory::generateRepositoryName($index, $config, $existingRepos));
+    }
+
+    public function generateRepositoryNameProvider()
+    {
+        return array(
+            array(0, array(), array(), 0),
+            array(0, array(), array(array()), '02'),
+            array(0, array('url' => 'https://example.org'), array(), 'example.org'),
+            array(0, array('url' => 'https://example.org'), array('example.org' => array()), 'example.org2'),
+            array('example.org', array('url' => 'https://example.org/repository'), array(), 'example.org'),
+            array('example.org', array('url' => 'https://example.org/repository'), array('example.org' => array()), 'example.org2'),
+        );
+    }
 }

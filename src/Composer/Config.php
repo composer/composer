@@ -63,12 +63,14 @@ class Config
         'archive-dir' => '.',
         'htaccess-protect' => true,
         'use-github-api' => true,
+        'lock' => true,
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth
         // gitlab-oauth
         // gitlab-token
         // http-basic
+        // bearer
     );
 
     public static $defaultRepositories = array(
@@ -132,7 +134,7 @@ class Config
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic')) && isset($this->config[$key])) {
+                if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer')) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
                 } elseif ('preferred-install' === $key && isset($this->config[$key])) {
                     if (is_array($val) || is_array($this->config[$key])) {
@@ -328,6 +330,8 @@ class Config
             case 'secure-http':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
             case 'use-github-api':
+                return $this->config[$key] !== 'false' && (bool) $this->config[$key];
+            case 'lock':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
             default:
                 if (!isset($this->config[$key])) {

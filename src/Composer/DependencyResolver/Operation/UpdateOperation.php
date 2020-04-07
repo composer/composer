@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver\Operation;
 
 use Composer\Package\PackageInterface;
+use Composer\Package\Version\VersionParser;
 
 /**
  * Solver update operation.
@@ -60,11 +61,11 @@ class UpdateOperation extends SolverOperation
     }
 
     /**
-     * Returns job type.
+     * Returns operation type.
      *
      * @return string
      */
-    public function getJobType()
+    public function getOperationType()
     {
         return 'update';
     }
@@ -72,9 +73,29 @@ class UpdateOperation extends SolverOperation
     /**
      * {@inheritDoc}
      */
+    public function show($lock)
+    {
+        $fromVersion = $this->initialPackage->getFullPrettyVersion();
+        $toVersion = $this->targetPackage->getFullPrettyVersion();
+
+        if ($fromVersion === $toVersion && $this->initialPackage->getSourceReference() !== $this->targetPackage->getSourceReference()) {
+            $fromVersion = $this->initialPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_SOURCE_REF);
+            $toVersion = $this->targetPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_SOURCE_REF);
+        } elseif ($fromVersion === $toVersion && $this->initialPackage->getDistReference() !== $this->targetPackage->getDistReference()) {
+            $fromVersion = $this->initialPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_DIST_REF);
+            $toVersion = $this->targetPackage->getFullPrettyVersion(true, PackageInterface::DISPLAY_DIST_REF);
+        }
+
+        $actionName = VersionParser::isUpgrade($this->initialPackage->getVersion(), $this->targetPackage->getVersion()) ? 'Upgrading' : 'Downgrading';
+
+        return $actionName.' '.$this->initialPackage->getPrettyName().' ('.$fromVersion.' => '.$toVersion.')';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function __toString()
     {
-        return 'Updating '.$this->initialPackage->getPrettyName().' ('.$this->formatVersion($this->initialPackage).') to '.
-            $this->targetPackage->getPrettyName(). ' ('.$this->formatVersion($this->targetPackage).')';
+        return $this->show(false);
     }
 }

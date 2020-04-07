@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
+use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
@@ -85,8 +86,8 @@ EOT
     {
         $io = $this->getIO();
 
-        $whitelist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license');
-        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
+        $allowlist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license');
+        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)));
 
         if (isset($options['author'])) {
             $options['authors'] = $this->formatAuthors($options['author']);
@@ -152,6 +153,8 @@ EOT
         if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question, true)) {
             $this->installDependencies($output);
         }
+
+        return 0;
     }
 
     /**
@@ -168,13 +171,25 @@ EOT
         if ($repositories) {
             $config = Factory::createConfig($io);
             $repos = array(new PlatformRepository);
+            $createDefaultPackagistRepo = true;
             foreach ($repositories as $repo) {
-                $repos[] = RepositoryFactory::fromString($io, $config, $repo);
+                $repoConfig = RepositoryFactory::configFromString($io, $config, $repo);
+                if (
+                    (isset($repoConfig['packagist']) && $repoConfig === array('packagist' => false))
+                    || (isset($repoConfig['packagist.org']) && $repoConfig === array('packagist.org' => false))
+                ) {
+                    $createDefaultPackagistRepo = false;
+                    continue;
+                }
+                $repos[] = RepositoryFactory::createRepo($io, $config, $repoConfig);
             }
-            $repos[] = RepositoryFactory::createRepo($io, $config, array(
-                'type' => 'composer',
-                'url' => 'https://repo.packagist.org',
-            ));
+
+            if ($createDefaultPackagistRepo) {
+                $repos[] = RepositoryFactory::createRepo($io, $config, array(
+                    'type' => 'composer',
+                    'url' => 'https://repo.packagist.org',
+                ));
+            }
 
             $this->repos = new CompositeRepository($repos);
             unset($repos, $config, $repositories);
@@ -388,7 +403,7 @@ EOT
         return $this->repos;
     }
 
-    protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null, $preferredStability = 'stable', $checkProvidedVersions = true)
+    final protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), $phpVersion = null, $preferredStability = 'stable', $checkProvidedVersions = true, $fixed = false)
     {
         if ($requires) {
             $requires = $this->normalizeRequirements($requires);
@@ -398,7 +413,7 @@ EOT
             foreach ($requires as $requirement) {
                 if (!isset($requirement['version'])) {
                     // determine the best version automatically
-                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $phpVersion, $preferredStability);
+                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $phpVersion, $preferredStability, null, null, $fixed);
                     $requirement['version'] = $version;
 
                     // replace package name from packagist.org
@@ -411,7 +426,7 @@ EOT
                     ));
                 } else {
                     // check that the specified version/constraint exists before we proceed
-                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $phpVersion, $preferredStability, $checkProvidedVersions ? $requirement['version'] : null, 'dev');
+                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $phpVersion, $preferredStability, $checkProvidedVersions ? $requirement['version'] : null, 'dev', $fixed);
 
                     // replace package name from packagist.org
                     $requirement['name'] = $name;
@@ -424,11 +439,34 @@ EOT
         }
 
         $versionParser = new VersionParser();
+
+        // Collect existing packages
+        $composer = $this->getComposer(false);
+        $installedRepo = $composer ? $composer->getRepositoryManager()->getLocalRepository() : null;
+        $existingPackages = array();
+        if ($installedRepo) {
+            foreach ($installedRepo->getPackages() as $package) {
+                $existingPackages[] = $package->getName();
+            }
+        }
+        foreach ($requires as $requiredPackage) {
+            $existingPackages[] = substr($requiredPackage, 0, strpos($requiredPackage, ' '));
+        }
+        unset($composer, $installedRepo, $requiredPackage);
+
         $io = $this->getIO();
         while (null !== $package = $io->ask('Search for a package: ')) {
             $matches = $this->findPackages($package);
 
             if (count($matches)) {
+                // Remove existing packages from search results.
+                foreach ($matches as $position => $foundPackage) {
+                    if (in_array($foundPackage['name'], $existingPackages, true)) {
+                        unset($matches[$position]);
+                    }
+                }
+                $matches = array_values($matches);
+
                 $exactMatch = null;
                 $choices = array();
                 foreach ($matches as $position => $foundPackage) {
@@ -526,6 +564,7 @@ EOT
 
                 if (false !== $package) {
                     $requires[] = $package;
+                    $existingPackages[] = substr($package, 0, strpos($package, ' '));
                 }
             }
         }
@@ -654,7 +693,7 @@ EOT
         $key = $minimumStability ?: 'default';
 
         if (!isset($this->repositorySets[$key])) {
-            $this->repositorySets[$key] = $repositorySet = new RepositorySet(array(), $minimumStability ?: $this->getMinimumStability($input));
+            $this->repositorySets[$key] = $repositorySet = new RepositorySet($minimumStability ?: $this->getMinimumStability($input));
             $repositorySet->addRepository($this->getRepos());
         }
 
@@ -664,13 +703,13 @@ EOT
     private function getMinimumStability(InputInterface $input)
     {
         if ($input->hasOption('stability')) {
-            return $input->getOption('stability') ?: 'stable';
+            return VersionParser::normalizeStability($input->getOption('stability') ?: 'stable');
         }
 
         $file = Factory::getComposerFile();
         if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
             if (!empty($composer['minimum-stability'])) {
-                return $composer['minimum-stability'];
+                return VersionParser::normalizeStability($composer['minimum-stability']);
             }
         }
 
@@ -688,10 +727,11 @@ EOT
      * @param  string                    $preferredStability
      * @param  string|null               $requiredVersion
      * @param  string                    $minimumStability
+     * @param  bool                      $fixed
      * @throws \InvalidArgumentException
      * @return array                     name version
      */
-    private function findBestVersionAndNameForPackage(InputInterface $input, $name, $phpVersion, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null)
+    private function findBestVersionAndNameForPackage(InputInterface $input, $name, $phpVersion, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null, $fixed = null)
     {
         // find the latest version allowed in this repo set
         $versionSelector = new VersionSelector($this->getRepositorySet($input, $minimumStability));
@@ -765,7 +805,7 @@ EOT
 
         return array(
             $package->getPrettyName(),
-            $versionSelector->findRecommendedRequireVersion($package),
+            $fixed ? $package->getPrettyVersion() : $versionSelector->findRecommendedRequireVersion($package),
         );
     }
 
@@ -779,7 +819,13 @@ EOT
         }
         $similarPackages = array();
 
+        $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+
         foreach ($results as $result) {
+            if ($installedRepo->findPackage($result['name'], '*')) {
+                // Ignore installed package
+                continue;
+            }
             $similarPackages[$result['name']] = levenshtein($package, $result['name']);
         }
         asort($similarPackages);

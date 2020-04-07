@@ -20,11 +20,11 @@ namespace Composer\DependencyResolver\Operation;
 interface OperationInterface
 {
     /**
-     * Returns job type.
+     * Returns operation type.
      *
      * @return string
      */
-    public function getJobType();
+    public function getOperationType();
 
     /**
      * Returns operation reason.
@@ -32,6 +32,14 @@ interface OperationInterface
      * @return string
      */
     public function getReason();
+
+    /**
+     * Serializes the operation in a human readable format
+     *
+     * @param $lock bool Whether this is an operation on the lock file
+     * @return string
+     */
+    public function show($lock);
 
     /**
      * Serializes the operation in a human readable format

@@ -84,7 +84,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * {@inheritDoc}
      */
-    public function download(PackageInterface $package, $path, $output = true)
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
         if (!$package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
@@ -101,8 +101,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             );
         }
 
-        $this->filesystem->emptyDirectory($path);
         $fileName = $this->getFileName($package, $path);
+        $this->filesystem->ensureDirectoryExists($path);
+        $this->filesystem->ensureDirectoryExists(dirname($fileName));
 
         $io = $this->io;
         $cache = $this->cache;
@@ -127,7 +128,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             // use from cache if it is present and has a valid checksum or we have no checksum to check against
             if ($cache && (!$checksum || $checksum === $cache->sha1($cacheKey)) && $cache->copyTo($cacheKey, $fileName)) {
                 if ($output) {
-                    $io->writeError("  - Loading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>) from cache");
+                    $io->writeError("  - Loading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>) from cache", true, IOInterface::VERY_VERBOSE);
                 }
                 $result = \React\Promise\resolve($fileName);
             } else {
@@ -174,9 +175,11 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             return $fileName;
         };
 
-        $reject = function ($e) use ($io, &$urls, $download, $path, $package, &$retries, $filesystem, $self) {
+        $reject = function ($e) use ($io, &$urls, $download, $fileName, $package, &$retries, $filesystem, $self) {
             // clean up
-            $filesystem->removeDirectory($path);
+            if (file_exists($fileName)) {
+                $filesystem->unlink($fileName);
+            }
             $self->clearLastCacheWrite($package);
 
             if ($e instanceof TransportException) {
@@ -223,12 +226,40 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * {@inheritDoc}
      */
+    public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    {
+        $fileName = $this->getFileName($package, $path);
+        if (file_exists($fileName)) {
+            $this->filesystem->unlink($fileName);
+        }
+        if (is_dir($path) && $this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
+            $this->filesystem->removeDirectory($this->config->get('vendor-dir').'/composer/');
+        }
+        if (is_dir($path) && $this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
+            $this->filesystem->removeDirectory($this->config->get('vendor-dir'));
+        }
+        if (is_dir($path) && $this->filesystem->isDirEmpty($path)) {
+            $this->filesystem->removeDirectory($path);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function install(PackageInterface $package, $path, $output = true)
     {
         if ($output) {
             $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
         }
 
+        $this->filesystem->emptyDirectory($path);
         $this->filesystem->ensureDirectoryExists($path);
         $this->filesystem->rename($this->getFileName($package, $path), $path . pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME));
     }
@@ -254,7 +285,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $from = $initial->getFullPrettyVersion();
         $to = $target->getFullPrettyVersion();
 
-        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Updating' : 'Downgrading';
+        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Upgrading' : 'Downgrading';
         $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
 
         $this->remove($initial, $path, false);
@@ -285,7 +316,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return $path.'_'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
+        return rtrim($this->config->get('vendor-dir').'/composer/'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
     }
 
     /**
@@ -334,7 +365,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $output = '';
 
         try {
-            $res = $this->download($package, $targetDir.'_compare', false);
+            $res = $this->download($package, $targetDir.'_compare', null, false);
             $this->httpDownloader->wait();
             $res = $this->install($package, $targetDir.'_compare', false);
 

@@ -28,7 +28,15 @@ class SvnDownloader extends VcsDownloader
     /**
      * {@inheritDoc}
      */
-    public function doInstall(PackageInterface $package, $path, $url)
+    protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
+    {
+
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function doInstall(PackageInterface $package, $path, $url)
     {
         SvnUtil::cleanEnv();
         $ref = $package->getSourceReference();
@@ -42,13 +50,13 @@ class SvnDownloader extends VcsDownloader
         }
 
         $this->io->writeError(" Checking out ".$package->getSourceReference());
-        $this->execute($url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
+        $this->execute($package, $url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
+    protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
         SvnUtil::cleanEnv();
         $ref = $target->getSourceReference();
@@ -64,7 +72,7 @@ class SvnDownloader extends VcsDownloader
         }
 
         $this->io->writeError(" Checking out " . $ref);
-        $this->execute($url, "svn switch" . $flags, sprintf("%s/%s", $url, $ref), $path);
+        $this->execute($target, $url, "svn switch" . $flags, sprintf("%s/%s", $url, $ref), $path);
     }
 
     /**
@@ -93,7 +101,7 @@ class SvnDownloader extends VcsDownloader
      * @throws \RuntimeException
      * @return string
      */
-    protected function execute($baseUrl, $command, $url, $cwd = null, $path = null)
+    protected function execute(PackageInterface $package, $baseUrl, $command, $url, $cwd = null, $path = null)
     {
         $util = new SvnUtil($baseUrl, $this->io, $this->config);
         $util->setCacheCredentials($this->cacheCredentials);
@@ -101,7 +109,7 @@ class SvnDownloader extends VcsDownloader
             return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
         } catch (\RuntimeException $e) {
             throw new \RuntimeException(
-                'Package could not be downloaded, '.$e->getMessage()
+                $package->getPrettyName().' could not be downloaded, '.$e->getMessage()
             );
         }
     }
@@ -127,14 +135,14 @@ class SvnDownloader extends VcsDownloader
             return '    '.$elem;
         }, preg_split('{\s*\r?\n\s*}', $changes));
         $countChanges = count($changes);
-        $this->io->writeError(sprintf('    <error>The package has modified file%s:</error>', $countChanges === 1 ? '' : 's'));
+        $this->io->writeError(sprintf('    <error>'.$package->getPrettyName().' has modified file%s:</error>', $countChanges === 1 ? '' : 's'));
         $this->io->writeError(array_slice($changes, 0, 10));
         if ($countChanges > 10) {
-            $remaingChanges = $countChanges - 10;
+            $remainingChanges = $countChanges - 10;
             $this->io->writeError(
                 sprintf(
-                    '    <info>'.$remaingChanges.' more file%s modified, choose "v" to view the full list</info>',
-                    $remaingChanges === 1 ? '' : 's'
+                    '    <info>'.$remainingChanges.' more file%s modified, choose "v" to view the full list</info>',
+                    $remainingChanges === 1 ? '' : 's'
                 )
             );
         }

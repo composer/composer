@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
-use Composer\Util\RemoteFilesystem;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
@@ -75,7 +74,7 @@ class CurlDownloader
 
         $this->multiHandle = $mh = curl_multi_init();
         if (function_exists('curl_multi_setopt')) {
-            curl_multi_setopt($mh, CURLMOPT_PIPELINING, /*CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX*/ 3);
+            curl_multi_setopt($mh, CURLMOPT_PIPELINING, PHP_VERSION_ID >= 70400 ? /* CURLPIPE_MULTIPLEX */ 2 : /*CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX*/ 3);
             if (defined('CURLMOPT_MAX_HOST_CONNECTIONS')) {
                 curl_multi_setopt($mh, CURLMOPT_MAX_HOST_CONNECTIONS, 8);
             }
@@ -196,7 +195,7 @@ class CurlDownloader
         $usingProxy = !empty($options['http']['proxy']) ? ' using proxy ' . $options['http']['proxy'] : '';
         $ifModified = false !== strpos(strtolower(implode(',', $options['http']['header'])), 'if-modified-since:') ? ' if modified' : '';
         if ($attributes['redirects'] === 0) {
-            $this->io->writeError('Downloading ' . $url . $usingProxy . $ifModified, true, IOInterface::DEBUG);
+            $this->io->writeError('Downloading ' . Url::sanitize($url) . $usingProxy . $ifModified, true, IOInterface::DEBUG);
         }
 
         $this->checkCurlResult(curl_multi_add_handle($this->multiHandle, $curlHandle));
@@ -255,12 +254,12 @@ class CurlDownloader
                         $contents = stream_get_contents($job['bodyHandle']);
                     }
                     $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
-                    $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
+                    $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
                 } else {
                     rewind($job['bodyHandle']);
                     $contents = stream_get_contents($job['bodyHandle']);
                     $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
-                    $this->io->writeError('['.$statusCode.'] '.$progress['url'], true, IOInterface::DEBUG);
+                    $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
                 }
                 fclose($job['bodyHandle']);
 
@@ -363,7 +362,7 @@ class CurlDownloader
         }
 
         if (!empty($targetUrl)) {
-            $this->io->writeError(sprintf('Following redirect (%u) %s', $job['attributes']['redirects'] + 1, $targetUrl), true, IOInterface::DEBUG);
+            $this->io->writeError(sprintf('Following redirect (%u) %s', $job['attributes']['redirects'] + 1, Url::sanitize($targetUrl)), true, IOInterface::DEBUG);
 
             return $targetUrl;
         }

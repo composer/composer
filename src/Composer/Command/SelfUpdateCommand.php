@@ -154,7 +154,7 @@ EOT
 
         $updatingToTag = !preg_match('{^[0-9a-f]{40}$}', $updateVersion);
 
-        $io->write(sprintf("Updating to version <info>%s</info> (%s channel).", $updateVersion, $versionsUtil->getChannel()));
+        $io->write(sprintf("Upgrading to version <info>%s</info> (%s channel).", $updateVersion, $versionsUtil->getChannel()));
         $remoteFilename = $baseUrl . ($updatingToTag ? "/download/{$updateVersion}/composer.phar" : '/composer.phar');
         $signature = $httpDownloader->get($remoteFilename.'.sig')->getBody();
         $io->writeError('   ', false);
@@ -254,6 +254,8 @@ TAGSPUBKEY
         } else {
             $io->writeError('<warning>A backup of the current version could not be written to '.$backupFile.', no rollback possible</warning>');
         }
+
+        return 0;
     }
 
     protected function fetchKeys(IOInterface $io, Config $config)

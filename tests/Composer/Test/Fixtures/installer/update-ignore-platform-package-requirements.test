@@ -23,4 +23,4 @@ Update in ignore-platform-reqs mode
 --RUN--
 update --ignore-platform-reqs
 --EXPECT--
-Updating a/a (1.0.0) to a/a (1.0.1)
+Upgrading a/a (1.0.0 => 1.0.1)

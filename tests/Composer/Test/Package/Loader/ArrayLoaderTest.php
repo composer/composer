@@ -14,7 +14,7 @@ namespace Composer\Test\Package\Loader;
 
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class ArrayLoaderTest extends TestCase
 {
@@ -83,7 +83,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertEquals('1.2.3.4', $package->getVersion());
     }
 
-    public function testParseDumpProvider()
+    public function parseDumpProvider()
     {
         $validConfig = array(
             'name' => 'A/B',
@@ -96,6 +96,9 @@ class ArrayLoaderTest extends TestCase
             'license' => array('MIT', 'GPLv3'),
             'authors' => array(
                 array('name' => 'Bob', 'email' => 'bob@example.org', 'homepage' => 'example.org', 'role' => 'Developer'),
+            ),
+            'funding' => array(
+                array('type' => 'example', 'url' => 'https://example.org/fund'),
             ),
             'require' => array(
                 'foo/bar' => '1.0',
@@ -142,19 +145,18 @@ class ArrayLoaderTest extends TestCase
      * The default parser should default to loading the config as this
      * allows require-dev libraries to have transport options included.
      *
-     * @dataProvider testParseDumpProvider
+     * @dataProvider parseDumpProvider
      */
     public function testParseDumpDefaultLoadConfig($config)
     {
         $package = $this->loader->load($config);
         $dumper = new ArrayDumper;
-        $expectedConfig = $config;
         $expectedConfig = $this->fixConfigWhenLoadConfigIsFalse($config);
         $this->assertEquals($expectedConfig, $dumper->dump($package));
     }
 
     /**
-     * @dataProvider testParseDumpProvider
+     * @dataProvider parseDumpProvider
      */
     public function testParseDumpTrueLoadConfig($config)
     {
@@ -166,7 +168,7 @@ class ArrayLoaderTest extends TestCase
     }
 
     /**
-     * @dataProvider testParseDumpProvider
+     * @dataProvider parseDumpProvider
      */
     public function testParseDumpFalseLoadConfig($config)
     {

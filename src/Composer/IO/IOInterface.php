@@ -82,6 +82,24 @@ interface IOInterface extends LoggerInterface
     public function writeError($messages, $newline = true, $verbosity = self::NORMAL);
 
     /**
+     * Writes a message to the output, without formatting it.
+     *
+     * @param string|array $messages  The message as an array of lines or a single string
+     * @param bool         $newline   Whether to add a newline or not
+     * @param int          $verbosity Verbosity level from the VERBOSITY_* constants
+     */
+    public function writeRaw($messages, $newline = true, $verbosity = self::NORMAL);
+
+    /**
+     * Writes a message to the error output, without formatting it.
+     *
+     * @param string|array $messages  The message as an array of lines or a single string
+     * @param bool         $newline   Whether to add a newline or not
+     * @param int          $verbosity Verbosity level from the VERBOSITY_* constants
+     */
+    public function writeErrorRaw($messages, $newline = true, $verbosity = self::NORMAL);
+
+    /**
      * Overwrites a previous message to the output.
      *
      * @param string|array $messages  The message as an array of lines or a single string

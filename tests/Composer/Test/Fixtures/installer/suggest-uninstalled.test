@@ -17,11 +17,15 @@ Suggestions are displayed
 --RUN--
 install
 --EXPECT-OUTPUT--
+<warning>No lock file found. Updating dependencies instead of installing from lock file. Use composer update over composer install if you do not have a lock file.</warning>
 Loading composer repositories with package information
-Updating dependencies (including require-dev)
-Package operations: 1 install, 0 updates, 0 removals
-a/a suggests installing b/b (an obscure reason)
+Updating dependencies
+Lock file operations: 1 install, 0 updates, 0 removals
+  - Locking a/a (1.0.0)
 Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 1 install, 0 updates, 0 removals
+1 package suggestions were added by new dependencies, use `composer suggest` to see details.
 Generating autoload files
 
 --EXPECT--

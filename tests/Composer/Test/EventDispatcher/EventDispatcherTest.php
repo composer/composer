@@ -250,6 +250,97 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals($expected, $io->getOutput());
     }
 
+    public function testDispatcherCanPutEnv()
+    {
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs(array(
+                $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ))
+            ->setMethods(array(
+                'getListeners',
+            ))
+            ->getMock();
+
+        $listeners = array(
+            '@putenv ABC=123',
+            'Composer\\Test\\EventDispatcher\\EventDispatcherTest::getTestEnv',
+        );
+
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listeners));
+
+        $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
+
+        $expected = '> post-install-cmd: @putenv ABC=123'.PHP_EOL.
+            '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::getTestEnv'.PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
+    }
+
+    public function testDispatcherAppendsDirBinOnPathForEveryListener()
+    {
+        $currentDirectoryBkp = getcwd();
+        $composerBinDirBkp   = getenv('COMPOSER_BIN_DIR');
+        chdir(__DIR__);
+        putenv('COMPOSER_BIN_DIR=' . __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
+
+        $process    = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->setConstructorArgs(array(
+                $this->createComposerInstance(),
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                $process,
+            ))->setMethods(array(
+                'getListeners',
+            ))->getMock();
+
+        $listeners = array(
+            'Composer\\Test\\EventDispatcher\\EventDispatcherTest::createsVendorBinFolderChecksEnvDoesNotContainsBin',
+            'Composer\\Test\\EventDispatcher\\EventDispatcherTest::createsVendorBinFolderChecksEnvContainsBin',
+        );
+
+        $dispatcher->expects($this->atLeastOnce())->method('getListeners')->will($this->returnValue($listeners));
+
+        $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
+        rmdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
+        rmdir(__DIR__ . sprintf('%svendor', DIRECTORY_SEPARATOR));
+
+        chdir($currentDirectoryBkp);
+        putenv('COMPOSER_BIN_DIR' . ($composerBinDirBkp === false ? '' : '=' . $composerBinDirBkp));
+    }
+
+    static public function createsVendorBinFolderChecksEnvDoesNotContainsBin()
+    {
+        mkdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR), 0700, true);
+        $val = getenv('PATH');
+
+        if (!$val) {
+            $val = getenv('Path');
+        }
+
+        self::assertFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
+    }
+
+    static public function createsVendorBinFolderChecksEnvContainsBin()
+    {
+        $val = getenv('PATH');
+
+        if (!$val) {
+            $val = getenv('Path');
+        }
+
+        self::assertNotFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
+    }
+
+    static public function getTestEnv() {
+        $val = getenv('ABC');
+        if ($val !== '123') {
+            throw new \Exception('getenv() did not return the expected value. expected 123 got '. var_export($val, true));
+        }
+    }
+
     public function testDispatcherCanExecuteComposerScriptGroups()
     {
         $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
@@ -415,7 +506,7 @@ class EventDispatcherTest extends TestCase
             ->with($this->equalTo('> echo foo'));
 
         $io->expects($this->once())
-            ->method('write')
+            ->method('writeRaw')
             ->with($this->equalTo('foo'.PHP_EOL), false);
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
@@ -447,6 +538,10 @@ class EventDispatcherTest extends TestCase
             ->willReturn('> exit 1');
 
         $io->expects($this->at(2))
+            ->method('isInteractive')
+            ->willReturn(1);
+
+        $io->expects($this->at(3))
             ->method('writeError')
             ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with error code 1</error>'));
 
@@ -470,13 +565,9 @@ class EventDispatcherTest extends TestCase
             ->method('getListeners')
             ->will($this->returnValue(array()));
 
-        $policy = $this->getMockBuilder('Composer\DependencyResolver\PolicyInterface')->getMock();
-        $repositorySet = $this->getMockBuilder('Composer\Repository\RepositorySet')->disableOriginalConstructor()->getMock();
-        $installedRepo = $this->getMockBuilder('Composer\Repository\CompositeRepository')->disableOriginalConstructor()->getMock();
-        $request = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
+        $transaction = $this->getMockBuilder('Composer\DependencyResolver\LockTransaction')->disableOriginalConstructor()->getMock();
 
-        $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_DEPENDENCIES_SOLVING, true, $policy, $repositorySet, $installedRepo, $request);
-        $dispatcher->dispatchInstallerEvent(InstallerEvents::POST_DEPENDENCIES_SOLVING, true, $policy, $repositorySet, $installedRepo, $request, array());
+        $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_OPERATIONS_EXEC, true, true, $transaction);
     }
 
     public static function call()

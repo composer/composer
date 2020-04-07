@@ -29,20 +29,6 @@ Update aliased package does not mess up the lock file
     },
     "minimum-stability": "dev"
 }
---LOCK--
-{
-    "_": "outdated lock file, should not have to be loaded in an update",
-    "packages": [
-        { "package": "a/a", "version": "dev-master", "source-reference": "1234" },
-        { "package": "a/a", "version": "dev-master", "alias-pretty-version": "1.0.x-dev", "alias-version": "1.0.9999999.9999999-dev" }
-    ],
-    "packages-dev": null,
-    "aliases": [],
-    "minimum-stability": "dev",
-    "stability-flags": [],
-    "prefer-stable": false,
-    "prefer-lowest": false
-}
 --INSTALLED--
 [
     {
@@ -73,4 +59,4 @@ update
     "platform-dev": []
 }
 --EXPECT--
-Updating a/a (dev-master 1234) to a/a (dev-master master)
+Upgrading a/a (dev-master 1234 => dev-master master)

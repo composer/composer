@@ -104,6 +104,9 @@ class PerforceDownloaderTest extends TestCase
         return $repository;
     }
 
+    /**
+     * @doesNotPerformAssertions
+     */
     public function testInitPerforceInstantiatesANewPerforceObject()
     {
         $this->downloader->initPerforce($this->package, $this->testPath, 'SOURCE_REF');

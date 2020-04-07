@@ -60,9 +60,9 @@ Updates with --no-dev but we still end up with a complete lock file including de
 --RUN--
 update --no-dev
 --EXPECT--
-Uninstalling a/b (1.0.0)
-Updating a/a (1.0.0) to a/a (1.0.1)
-Updating dev/pkg (dev-master old) to dev/pkg (dev-master new)
+Removing a/b (1.0.0)
+Upgrading a/a (1.0.0 => 1.0.1)
 Installing a/c (1.0.0)
+Upgrading dev/pkg (dev-master old => dev-master new)
 Marking dev/pkg (1.1.x-dev new) as installed, alias of dev/pkg (dev-master new)
 Marking dev/pkg (1.0.x-dev old) as uninstalled, alias of dev/pkg (dev-master old)

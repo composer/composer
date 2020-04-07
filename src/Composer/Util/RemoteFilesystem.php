@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
 use Composer\Util\HttpDownloader;
+use Composer\Util\Http\Response;
 
 /**
  * @author François Pluchino <francois.pluchino@opendisplay.com>
@@ -144,27 +145,6 @@ class RemoteFilesystem
     }
 
     /**
-     * @param  array       $headers array of returned headers like from getLastHeaders()
-     * @param  string      $name    header name (case insensitive)
-     * @return string|null
-     */
-    public static function findHeaderValue(array $headers, $name)
-    {
-        $value = null;
-        foreach ($headers as $header) {
-            if (preg_match('{^'.$name.':\s*(.+?)\s*$}i', $header, $match)) {
-                $value = $match[1];
-            } elseif (preg_match('{^HTTP/}i', $header)) {
-                // In case of redirects, http_response_headers contains the headers of all responses
-                // so we reset the flag when a new response is being parsed as we are only interested in the last response
-                $value = null;
-            }
-        }
-
-        return $value;
-    }
-
-    /**
      * @param  array    $headers array of returned headers like from getLastHeaders()
      * @return int|null
      */
@@ -266,7 +246,7 @@ class RemoteFilesystem
 
         $actualContextOptions = stream_context_get_options($ctx);
         $usingProxy = !empty($actualContextOptions['http']['proxy']) ? ' using proxy ' . $actualContextOptions['http']['proxy'] : '';
-        $this->io->writeError((substr($origFileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . $origFileUrl . $usingProxy, true, IOInterface::DEBUG);
+        $this->io->writeError((substr($origFileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . Url::sanitize($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
         unset($origFileUrl, $actualContextOptions);
 
         // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
@@ -286,6 +266,8 @@ class RemoteFilesystem
                 $errorMessage .= "\n";
             }
             $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
+
+            return true;
         });
         $http_response_header = array();
         try {
@@ -293,7 +275,7 @@ class RemoteFilesystem
 
             if (!empty($http_response_header[0])) {
                 $statusCode = $this->findStatusCode($http_response_header);
-                if ($statusCode >= 400 && $this->findHeaderValue($http_response_header, 'content-type') === 'application/json') {
+                if ($statusCode >= 400 && Response::findHeaderValue($http_response_header, 'content-type') === 'application/json') {
                     HttpDownloader::outputWarnings($this->io, $originUrl, json_decode($result, true));
                 }
 
@@ -302,7 +284,7 @@ class RemoteFilesystem
                 }
             }
 
-            $contentLength = !empty($http_response_header[0]) ? $this->findHeaderValue($http_response_header, 'content-length') : null;
+            $contentLength = !empty($http_response_header[0]) ? Response::findHeaderValue($http_response_header, 'content-length') : null;
             if ($contentLength && Platform::strlen($result) < $contentLength) {
                 // alas, this is not possible via the stream callback because STREAM_NOTIFY_COMPLETED is documented, but not implemented anywhere in PHP
                 $e = new TransportException('Content-Length mismatch, received '.Platform::strlen($result).' bytes out of the expected '.$contentLength);
@@ -359,8 +341,8 @@ class RemoteFilesystem
         $locationHeader = null;
         if (!empty($http_response_header[0])) {
             $statusCode = $this->findStatusCode($http_response_header);
-            $contentType = $this->findHeaderValue($http_response_header, 'content-type');
-            $locationHeader = $this->findHeaderValue($http_response_header, 'location');
+            $contentType = Response::findHeaderValue($http_response_header, 'content-type');
+            $locationHeader = Response::findHeaderValue($http_response_header, 'location');
         }
 
         // check for bitbucket login page asking to authenticate
@@ -416,7 +398,7 @@ class RemoteFilesystem
 
         // decode gzip
         if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http' && !$hasFollowedRedirect) {
-            $contentEncoding = $this->findHeaderValue($http_response_header, 'content-encoding');
+            $contentEncoding = Response::findHeaderValue($http_response_header, 'content-encoding');
             $decode = $contentEncoding && 'gzip' === strtolower($contentEncoding);
 
             if ($decode) {
@@ -460,6 +442,8 @@ class RemoteFilesystem
                     $errorMessage .= "\n";
                 }
                 $errorMessage .= preg_replace('{^file_put_contents\(.*?\): }', '', $msg);
+
+                return true;
             });
             $result = (bool) file_put_contents($fileName, $result);
             restore_error_handler();
@@ -699,7 +683,7 @@ class RemoteFilesystem
 
     private function handleRedirect(array $http_response_header, array $additionalOptions, $result)
     {
-        if ($locationHeader = $this->findHeaderValue($http_response_header, 'location')) {
+        if ($locationHeader = Response::findHeaderValue($http_response_header, 'location')) {
             if (parse_url($locationHeader, PHP_URL_SCHEME)) {
                 // Absolute URL; e.g. https://example.com/composer
                 $targetUrl = $locationHeader;
@@ -723,7 +707,7 @@ class RemoteFilesystem
             $this->redirects++;
 
             $this->io->writeError('', true, IOInterface::DEBUG);
-            $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, $targetUrl), true, IOInterface::DEBUG);
+            $this->io->writeError(sprintf('Following redirect (%u) %s', $this->redirects, Url::sanitize($targetUrl)), true, IOInterface::DEBUG);
 
             $additionalOptions['redirects'] = $this->redirects;
 

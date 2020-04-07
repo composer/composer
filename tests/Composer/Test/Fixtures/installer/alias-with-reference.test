@@ -28,4 +28,5 @@ install
 --EXPECT--
 Installing a/aliased (dev-master abcd)
 Marking a/aliased (1.0.0) as installed, alias of a/aliased (dev-master abcd)
+Marking a/aliased (9999999-dev abcd) as installed, alias of a/aliased (dev-master abcd)
 Installing b/requirer (1.0.0)

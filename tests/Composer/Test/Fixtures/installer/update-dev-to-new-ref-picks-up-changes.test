@@ -38,4 +38,5 @@ Updating a dev package to its latest ref should pick up new dependencies
 update
 --EXPECT--
 Installing a/dependency (dev-master ref)
-Updating a/devpackage (dev-master oldref) to a/devpackage (dev-master newref)
+Marking a/dependency (9999999-dev ref) as installed, alias of a/dependency (dev-master ref)
+Upgrading a/devpackage (dev-master oldref => dev-master newref)

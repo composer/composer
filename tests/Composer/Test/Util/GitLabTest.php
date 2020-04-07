@@ -15,7 +15,7 @@ namespace Composer\Test\Util;
 use Composer\Downloader\TransportException;
 use Composer\Util\GitLab;
 use Composer\Util\Http\Response;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * @author Jérôme Tamarelle <jerome@tamarelle.net>
@@ -24,7 +24,6 @@ class GitLabTest extends TestCase
 {
     private $username = 'username';
     private $password = 'password';
-    private $authcode = 'authcode';
     private $message = 'mymessage';
     private $origin = 'gitlab.com';
     private $token = 'gitlabtoken';

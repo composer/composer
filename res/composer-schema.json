@@ -11,7 +11,8 @@
         },
         "type": {
             "description": "Package type, either 'library' for common packages, 'composer-plugin' for plugins, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
         },
         "target-dir": {
             "description": "DEPRECATED: Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
@@ -39,7 +40,8 @@
         },
         "version": {
             "type": "string",
-            "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes."
+            "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes.",
+            "pattern": "^v?\\d+(((\\.\\d+)?\\.\\d+)?\\.\\d+)?|^dev-"
         },
         "time": {
             "type": "string",
@@ -138,7 +140,16 @@
                 "gitlab-token": {
                     "type": "object",
                     "description": "A hash of domain name => gitlab private tokens, typically {\"gitlab.com\":\"<token>\"}.",
-                    "additionalProperties": true
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "bearer": {
+                    "type": "object",
+                    "description": "A hash of domain name => bearer authentication token, for example {\"example.com\":\"<token>\"}.",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 },
                 "disable-tls": {
                     "type": "boolean",
@@ -290,6 +301,10 @@
                 "sort-packages": {
                     "type": "boolean",
                     "description": "Defaults to false. If set to true, Composer will sort packages when adding/updating a new dependency."
+                },
+                "lock": {
+                    "type": "boolean",
+                    "description": "Defaults to true. If set to false, Composer will not create a composer.lock file."
                 }
             }
         },
@@ -513,6 +528,24 @@
                     "type": "string",
                     "description": "URL to the RSS feed.",
                     "format": "uri"
+                }
+            }
+        },
+        "funding": {
+            "type": "array",
+            "description": "A list of options to fund the development and maintenance of the package.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "Type of funding or platform through which funding is possible."
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "URL to a website with details on funding and a way to fund the package.",
+                        "format": "uri"
+                    }
                 }
             }
         },

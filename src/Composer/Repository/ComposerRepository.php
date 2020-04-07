@@ -16,6 +16,7 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
+use Composer\Package\Version\StabilityFilter;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
@@ -31,6 +32,10 @@ use Composer\Downloader\TransportException;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Util\Http\Response;
+use Composer\Util\MetadataMinifier;
+use Composer\Util\Url;
+use React\Promise\Promise;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -48,6 +53,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $cache;
     protected $notifyUrl;
     protected $searchUrl;
+    /** @var string|null a URL containing %package% which can be queried to get providers of a given name */
+    protected $providersApiUrl;
     protected $hasProviders = false;
     protected $providersUrl;
     protected $availablePackages;
@@ -62,6 +69,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $rootData;
     private $hasPartialPackages;
     private $partialPackagesByName;
+
+    /**
+     * TODO v3 should make this private once we can drop PHP 5.3 support
+     * @private
+     * @var array list of package names which returned a 404 and should not be re-fetched in case loadPackage is called several times
+     *          useful for v2 metadata repositories with lazy providers
+     */
+    public $packagesNotFoundCache = array();
     /**
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @private
@@ -113,6 +128,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->loop = new Loop($this->httpDownloader);
     }
 
+    public function getRepoName()
+    {
+        return 'composer repo ('.Url::sanitize($this->url).')';
+    }
+
     public function getRepoConfig()
     {
         return $this->repoConfig;
@@ -142,7 +162,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $packages = $this->loadAsyncPackages(array($name => $constraint));
 
-            return reset($packages);
+            return reset($packages['packages']);
         }
 
         if ($hasProviders) {
@@ -180,7 +200,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return array();
             }
 
-            return $this->loadAsyncPackages(array($name => $constraint));
+            $result = $this->loadAsyncPackages(array($name => $constraint));
+
+            return $result['packages'];
         }
 
         if ($hasProviders) {
@@ -238,14 +260,20 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $packageMap[$name] = new EmptyConstraint();
                 }
 
-                return array_values($this->loadAsyncPackages($packageMap));
+                $result = $this->loadAsyncPackages($packageMap);
+
+                return array_values($result['packages']);
             }
 
-            throw new \LogicException('Composer repositories that have lazy providers and no available-packages list can not load the complete list of packages, use getProviderNames instead.');
+            if ($this->hasPartialPackages()) {
+                return array_values($this->partialPackagesByName);
+            }
+
+            throw new \LogicException('Composer repositories that have lazy providers and no available-packages list can not load the complete list of packages, use getPackageNames instead.');
         }
 
         if ($hasProviders) {
-            throw new \LogicException('Composer repositories that have providers can not load the complete list of packages, use getProviderNames instead.');
+            throw new \LogicException('Composer repositories that have providers can not load the complete list of packages, use getPackageNames instead.');
         }
 
         return parent::getPackages();
@@ -262,6 +290,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             // TODO implement new list API endpoint for those repos somehow?
+
+            if ($this->hasPartialPackages()) {
+                return array_keys($this->partialPackagesByName);
+            }
+
             return array();
         }
 
@@ -277,16 +310,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return $names;
     }
 
-    public function loadPackages(array $packageNameMap, $isPackageAcceptableCallable)
+    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags)
     {
         // this call initializes loadRootServerFile which is needed for the rest below to work
         $hasProviders = $this->hasProviders();
 
         if (!$hasProviders && !$this->hasPartialPackages() && !$this->lazyProvidersUrl) {
-            return parent::loadPackages($packageNameMap, $isPackageAcceptableCallable);
+            return parent::loadPackages($packageNameMap, $acceptableStabilities, $stabilityFlags);
         }
 
         $packages = array();
+        $namesFound = array();
 
         if ($hasProviders || $this->hasPartialPackages()) {
             foreach ($packageNameMap as $name => $constraint) {
@@ -298,11 +332,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     continue;
                 }
 
-                $candidates = $this->whatProvides($name, $isPackageAcceptableCallable);
+                $candidates = $this->whatProvides($name, $acceptableStabilities, $stabilityFlags);
                 foreach ($candidates as $candidate) {
                     if ($candidate->getName() !== $name) {
                         throw new \LogicException('whatProvides should never return a package with a different name than the requested one');
                     }
+                    $namesFound[$name] = true;
                     if (!$constraint || $constraint->matches(new Constraint('==', $candidate->getVersion()))) {
                         $matches[spl_object_hash($candidate)] = $candidate;
                         if ($candidate instanceof AliasPackage && !isset($matches[spl_object_hash($candidate->getAliasOf())])) {
@@ -333,10 +368,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }, ARRAY_FILTER_USE_KEY);
             }
 
-            $packages = array_merge($packages, $this->loadAsyncPackages($packageNameMap, $isPackageAcceptableCallable));
+            $result = $this->loadAsyncPackages($packageNameMap, $acceptableStabilities, $stabilityFlags);
+            $packages = array_merge($packages, $result['packages']);
+            $namesFound = array_merge($namesFound, $result['namesFound']);
         }
 
-        return $packages;
+        return array('namesFound' => array_keys($namesFound), 'packages' => $packages);
     }
 
     /**
@@ -382,6 +419,43 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return parent::search($query, $mode);
     }
 
+    public function getProviders($packageName)
+    {
+        $this->loadRootServerFile();
+        $result = array();
+
+        if ($this->providersApiUrl) {
+            $apiResult = $this->httpDownloader->get(str_replace('%package%', $packageName, $this->providersApiUrl), $this->options)->decodeJson();
+
+            foreach ($apiResult['providers'] as $provider) {
+                $result[$provider['name']] = $provider;
+            }
+
+            return $result;
+        }
+
+        if ($this->hasPartialPackages()) {
+            foreach ($this->partialPackagesByName as $versions) {
+                foreach ($versions as $candidate) {
+                    if (isset($result[$candidate['name']]) || !isset($candidate['provide'][$packageName])) {
+                        continue;
+                    }
+                    $result[$candidate['name']] = array(
+                        'name' => $candidate['name'],
+                        'description' => isset($candidate['description']) ? $candidate['description'] : '',
+                        'type' => isset($candidate['type']) ? $candidate['type'] : '',
+                    );
+                }
+            }
+        }
+
+        if ($this->packages) {
+            $result = array_merge($result, parent::getProviders($packageName));
+        }
+
+        return $result;
+    }
+
     private function getProviderNames()
     {
         $this->loadRootServerFile();
@@ -425,7 +499,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @param callable $isPackageAcceptableCallable
      * @return array|mixed
      */
-    private function whatProvides($name, $isPackageAcceptableCallable = null)
+    private function whatProvides($name, array $acceptableStabilities = null, array $stabilityFlags = null)
     {
         if (!$this->hasPartialPackages() || !isset($this->partialPackagesByName[$name])) {
             // skip platform packages, root package and composer-plugin-api
@@ -512,9 +586,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if (!isset($versionsToLoad[$version['uid']])) {
                     if (!isset($version['version_normalized'])) {
                         $version['version_normalized'] = $this->versionParser->normalize($version['version']);
+                    } elseif ($version['version_normalized'] === '9999999-dev') {
+                        // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained 9999999-dev, we renormalize it
+                        $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                     }
 
-                    if ($this->isVersionAcceptable($isPackageAcceptableCallable, null, $normalizedName, $version)) {
+                    if ($this->isVersionAcceptable($acceptableStabilities, $stabilityFlags, null, $normalizedName, $version)) {
                         $versionsToLoad[$version['uid']] = $version;
                     }
                 }
@@ -571,11 +648,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * @param array $packageNames array of package name => ConstraintInterface|null - if a constraint is provided, only packages matching it will be loaded
      */
-    private function loadAsyncPackages(array $packageNames, $isPackageAcceptableCallable = null)
+    private function loadAsyncPackages(array $packageNames, array $acceptableStabilities = null, array $stabilityFlags = null)
     {
         $this->loadRootServerFile();
 
         $packages = array();
+        $namesFound = array();
         $promises = array();
         $repo = $this;
 
@@ -583,11 +661,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             throw new \LogicException('loadAsyncPackages only supports v2 protocol composer repos with a metadata-url');
         }
 
-        // load ~dev variants as well if present
-        // TODO ideally there should be a flag set from the repositoryset/poolbuilder to know which packages should have the dev packages loaded
-        // so we can optimize away some requests entirely
+        // load ~dev versions of the packages as well if needed
         foreach ($packageNames as $name => $constraint) {
-            $packageNames[$name.'~dev'] = $constraint;
+            if ($acceptableStabilities && $stabilityFlags && StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), 'dev')) {
+                $packageNames[$name.'~dev'] = $constraint;
+            }
         }
 
         foreach ($packageNames as $name => $constraint) {
@@ -609,7 +687,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
-                ->then(function ($response) use (&$packages, $contents, $realName, $constraint, $repo, $isPackageAcceptableCallable) {
+                ->then(function ($response) use (&$packages, &$namesFound, $contents, $realName, $constraint, $repo, $acceptableStabilities, $stabilityFlags) {
                     if (true === $response) {
                         $response = $contents;
                     }
@@ -621,39 +699,20 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $versions = $response['packages'][$realName];
 
                     if (isset($response['minified']) && $response['minified'] === 'composer/2.0') {
-                        // TODO extract in other method
-                        $expanded = array();
-                        $expandedVersion = null;
-                        foreach ($versions as $versionData) {
-                            if (!$expandedVersion) {
-                                $expandedVersion = $versionData;
-                                $expanded[] = $expandedVersion;
-                                continue;
-                            }
-
-                            // add any changes from the previous version to the expanded one
-                            foreach ($versionData as $key => $val) {
-                                if ($val === '__unset') {
-                                    unset($expandedVersion[$key]);
-                                } else {
-                                    $expandedVersion[$key] = $val;
-                                }
-                            }
-
-                            $expanded[] = $expandedVersion;
-                        }
-
-                        $versions = $expanded;
-                        unset($expanded, $expandedVersion, $versionData);
+                        $versions = MetadataMinifier::expand($versions);
                     }
 
+                    $namesFound[$realName] = true;
                     $versionsToLoad = array();
                     foreach ($versions as $version) {
                         if (!isset($version['version_normalized'])) {
                             $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
+                        } elseif ($version['version_normalized'] === '9999999-dev') {
+                            // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained 9999999-dev, we renormalize it
+                            $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
                         }
 
-                        if ($repo->isVersionAcceptable($isPackageAcceptableCallable, $constraint, $realName, $version)) {
+                        if ($repo->isVersionAcceptable($acceptableStabilities, $stabilityFlags, $constraint, $realName, $version)) {
                             $versionsToLoad[] = $version;
                         }
                     }
@@ -673,7 +732,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $this->loop->wait($promises);
 
-        return $packages;
+        return array('namesFound' => $namesFound, 'packages' => $packages);
         // RepositorySet should call loadMetadata, getMetadata when all promises resolved, then metadataComplete when done so we can GC the loaded json and whatnot then as needed
     }
 
@@ -683,7 +742,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @param string $name package name (must be lowercased already)
      * @private
      */
-    public function isVersionAcceptable($isPackageAcceptableCallable, $constraint, $name, $versionData)
+    public function isVersionAcceptable(array $acceptableStabilities = null, array $stabilityFlags = null, $constraint = null, $name, $versionData)
     {
         $versions = array($versionData['version_normalized']);
 
@@ -692,7 +751,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         foreach ($versions as $version) {
-            if ($isPackageAcceptableCallable && !call_user_func($isPackageAcceptableCallable, $name, VersionParser::parseStability($version))) {
+            if (null !== $acceptableStabilities && null !== $stabilityFlags && !StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), VersionParser::parseStability($version))) {
                 continue;
             }
 
@@ -795,6 +854,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (!empty($data['providers']) || !empty($data['providers-includes'])) {
             $this->hasProviders = true;
+        }
+
+        if (!empty($data['providers-api'])) {
+            $this->providersApiUrl = $this->canonicalizeUrl($data['providers-api']);
         }
 
         return $this->rootData = $data;
@@ -1084,6 +1147,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         $retries = 3;
 
+        if (isset($this->packagesNotFoundCache[$filename])) {
+            return new Promise(function ($resolve, $reject) { $resolve(array('packages' => array())); });
+        }
+
         $httpDownloader = $this->httpDownloader;
         if ($this->eventDispatcher) {
             $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
@@ -1096,10 +1163,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $url = $this->url;
         $cache = $this->cache;
         $degradedMode =& $this->degradedMode;
+        $repo = $this;
 
-        $accept = function ($response) use ($io, $url, $cache, $cacheKey) {
+        $accept = function ($response) use ($io, $url, $filename, $cache, $cacheKey, $repo) {
             // package not found is acceptable for a v2 protocol repository
             if ($response->getStatusCode() === 404) {
+                $repo->packagesNotFoundCache[$filename] = true;
                 return array('packages' => array());
             }
 
@@ -1122,8 +1191,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $data;
         };
 
-        $reject = function ($e) use (&$retries, $httpDownloader, $filename, $options, &$reject, $accept, $io, $url, &$degradedMode) {
+        $reject = function ($e) use (&$retries, $httpDownloader, $filename, $options, &$reject, $accept, $io, $url, &$degradedMode, $repo) {
             if ($e instanceof TransportException && $e->getStatusCode() === 404) {
+                $repo->packagesNotFoundCache[$filename] = true;
                 return false;
             }
 
@@ -1143,6 +1213,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $io->writeError('<warning>'.$url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
             }
             $degradedMode = true;
+
+            // special error code returned when network is being artificially disabled
+            if ($e instanceof TransportException && $e->getStatusCode() === 499) {
+                return $accept(new Response(array('url' => $url), 404, array(), ''));
+            }
 
             throw $e;
         };

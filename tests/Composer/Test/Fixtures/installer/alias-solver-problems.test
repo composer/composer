@@ -1,0 +1,57 @@
+--TEST--
+Test the error output of solver problems with dev-master aliases.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {"name": "a/a", "version": "dev-master", "require": {"d/d": "1.0.0"}},
+                {"name": "b/b", "version": "dev-master", "require": {"d/d": "2.0.0"}},
+                {"name": "d/d", "version": "1.0.0"},
+                {"name": "d/d", "version": "2.0.0"}
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "*@dev",
+        "b/b": "*@dev"
+    }
+}
+
+--LOCK--
+{
+    "packages": [
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+
+--RUN--
+update a/a b/b
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires b/b *@dev -> satisfiable by b/b[dev-master].
+    - a/a dev-master requires d/d 1.0.0 -> satisfiable by d/d[1.0.0].
+    - You can only install one version of a package, so only one of these can be installed: d/d[2.0.0, 1.0.0].
+    - Conclusion: install d/d 2.0.0, learned rules:
+        - Root composer.json requires b/b *@dev -> satisfiable by b/b[dev-master].
+        - b/b dev-master requires d/d 2.0.0 -> satisfiable by d/d[2.0.0].
+    - Root composer.json requires a/a *@dev -> satisfiable by a/a[dev-master].
+
+--EXPECT--
+

@@ -25,11 +25,17 @@ class ApplicationTest extends TestCase
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
 
+        putenv('COMPOSER_NO_INTERACTION=1');
+
         $index = 0;
         $inputMock->expects($this->at($index++))
             ->method('hasParameterOption')
             ->with($this->equalTo('--no-plugins'))
             ->will($this->returnValue(true));
+
+        $inputMock->expects($this->at($index++))
+            ->method('setInteractive')
+            ->with($this->equalTo(false));
 
         $inputMock->expects($this->at($index++))
             ->method('hasParameterOption')
@@ -56,7 +62,7 @@ class ApplicationTest extends TestCase
 
             $outputMock->expects($this->at($index++))
                 ->method("write")
-                ->with($this->equalTo('<warning>You are running composer with xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>'));
+                ->with($this->equalTo('<warning>You are running composer with Xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>'));
         }
 
         $outputMock->expects($this->at($index++))
@@ -83,11 +89,17 @@ class ApplicationTest extends TestCase
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
 
+        putenv('COMPOSER_NO_INTERACTION=1');
+
         $index = 0;
         $inputMock->expects($this->at($index++))
             ->method('hasParameterOption')
             ->with($this->equalTo('--no-plugins'))
             ->will($this->returnValue(true));
+
+        $inputMock->expects($this->at($index++))
+            ->method('setInteractive')
+            ->with($this->equalTo(false));
 
         $inputMock->expects($this->at($index++))
             ->method('hasParameterOption')

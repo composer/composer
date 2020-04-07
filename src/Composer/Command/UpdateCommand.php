@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Composer;
+use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Plugin\CommandEvent;
@@ -48,9 +49,8 @@ class UpdateCommand extends BaseCommand
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
-                new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'Do not show package suggestions.'),
-                new InputOption('with-dependencies', null, InputOption::VALUE_NONE, 'Add also dependencies of whitelisted packages to the whitelist, except those defined in root package.'),
-                new InputOption('with-all-dependencies', null, InputOption::VALUE_NONE, 'Add also all dependencies of whitelisted packages to the whitelist, including those defined in root package.'),
+                new InputOption('with-dependencies', null, InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, except those which are root requirements.'),
+                new InputOption('with-all-dependencies', null, InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, including those which are root requirements.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
@@ -121,6 +121,19 @@ EOT
             }
         }
 
+        // the arguments lock/nothing/mirrors are not package names but trigger a mirror update instead
+        // they are further mutually exclusive with listing actual package names
+        $filteredPackages = array_filter($packages, function ($package) {
+            return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
+        });
+        $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
+        $packages = $filteredPackages;
+
+        if ($updateMirrors && !empty($packages)) {
+            $io->writeError('<error>You cannot simultaneously update only a selection of packages and regenerate the lock file metadata.</error>');
+            return -1;
+        }
+
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
@@ -133,6 +146,13 @@ EOT
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
         $apcu = $input->getOption('apcu-autoloader') || $config->get('apcu-autoloader');
 
+        $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
+        if ($input->getOption('with-all-dependencies')) {
+            $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
+        } elseif ($input->getOption('with-dependencies')) {
+            $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
+        }
+
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
@@ -141,14 +161,13 @@ EOT
             ->setDevMode(!$input->getOption('no-dev'))
             ->setDumpAutoloader(!$input->getOption('no-autoloader'))
             ->setRunScripts(!$input->getOption('no-scripts'))
-            ->setSkipSuggest($input->getOption('no-suggest'))
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
-            ->setUpdateWhitelist($input->getOption('lock') ? array('lock') : $packages)
-            ->setWhitelistTransitiveDependencies($input->getOption('with-dependencies'))
-            ->setWhitelistAllDependencies($input->getOption('with-all-dependencies'))
+            ->setUpdateMirrors($updateMirrors)
+            ->setUpdateAllowList($packages)
+            ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))

@@ -66,8 +66,10 @@ class ChannelReaderTest extends TestCase
 
         $reader = new \Composer\Repository\Pear\ChannelReader($httpDownloader);
 
-        $reader->read('http://pear.1.0.net/');
-        $reader->read('http://pear.1.1.net/');
+        $pear10 = $reader->read('http://pear.1.0.net/');
+        $this->assertCount(2, $pear10->getPackages());
+        $pear11 = $reader->read('http://pear.1.1.net/');
+        $this->assertCount(3, $pear11->getPackages());
     }
 
     public function testShouldCreatePackages()

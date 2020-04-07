@@ -1,6 +1,6 @@
 language: php
 
-dist: trusty
+dist: bionic
 
 git:
   depth: 5
@@ -9,33 +9,46 @@ cache:
   directories:
     - $HOME/.composer/cache
 
-addons:
-  apt:
-    packages:
-      - parallel
-
 matrix:
   include:
     - php: 5.3
       dist: precise
     - php: 5.4
+      dist: trusty
     - php: 5.5
+      dist: trusty
     - php: 5.6
+      dist: xenial
     - php: 7.0
+      dist: xenial
     - php: 7.1
+      dist: xenial
     - php: 7.2
+      dist: xenial
     - php: 7.3
-      env: PHPSTAN=1
-    - php: 7.3
+      dist: xenial
+    # Regular 7.4 build with locked deps
+    - php: 7.4
+      env:
+        - SYMFONY_PHPUNIT_VERSION=7.5
+    # High deps check
+    - php: 7.4
       env:
         - deps=high
+        - SYMFONY_PHPUNIT_VERSION=7.5
+    # PHPStan checks
+    - php: 7.4
+      env:
+        - deps=high
+        - PHPSTAN=1
+        - SYMFONY_PHPUNIT_VERSION=7.5
     - php: nightly
   fast_finish: true
   allow_failures:
     - php: nightly
 
 before_install:
-  # disable xdebug if available
+  # disable Xdebug if available
   - phpenv config-rm xdebug.ini || echo "xdebug not available"
   # disable default memory limit
   - export INI=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
@@ -44,9 +57,9 @@ before_install:
 
 install:
   # flags to pass to install
-  - flags="--ansi --prefer-dist --no-interaction --optimize-autoloader --no-suggest --no-progress"
+  - flags="--ansi --prefer-dist --no-interaction --optimize-autoloader --no-progress"
   # update deps to latest in case of high deps build
-  - if [ "$deps" == "high" ]; then composer config platform.php 7.2.4; composer update $flags; fi
+  - if [ "$deps" == "high" ]; then composer config platform.php 7.4.0; composer update $flags; fi
   # install dependencies using system provided composer binary
   - composer install $flags
   # install dependencies using composer from source
@@ -58,12 +71,12 @@ before_script:
   - git config --global user.email travis@example.com
 
 script:
-  # run test suite directories in parallel using GNU parallel
-  - ls -d tests/Composer/Test/* | grep -v TestCase.php | parallel --gnu --keep-order 'echo "Running {} tests"; ./vendor/bin/phpunit -c tests/complete.phpunit.xml --colors=always {} || (echo -e "\e[41mFAILED\e[0m {}" && exit 1);'
-  # Run PHPStan
   - if [[ $PHPSTAN == "1" ]]; then
-      composer require --dev phpstan/phpstan-shim:^0.11 --ignore-platform-reqs &&
-      vendor/bin/phpstan.phar analyse src tests --configuration=phpstan/config.neon --autoload-file=phpstan/autoload.php;
+      bin/composer require --dev phpstan/phpstan:^0.12 phpunit/phpunit:^7.5 --no-update &&
+      bin/composer update phpstan/* phpunit/* sebastian/* --with-dependencies &&
+      vendor/bin/phpstan analyse --configuration=phpstan/config.neon;
+    else
+      vendor/bin/simple-phpunit;
     fi
 
 before_deploy:
@@ -77,4 +90,4 @@ deploy:
   on:
     tags: true
     repo: composer/composer
-    php:  '7.2'
+    php:  '7.3'

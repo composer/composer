@@ -6,52 +6,151 @@ Test the error output of solver problems.
         {
             "type": "package",
             "package": [
+                { "name": "package/found", "version": "2.0.0", "require": {
+                    "unstable/package2": "2.*"
+                } },
+                { "name": "package/found2", "version": "2.0.0", "require": {
+                    "invalid/💩package": "*"
+                } },
+                { "name": "package/found3", "version": "2.0.0", "require": {
+                    "unstable/package2": "2.*"
+                } },
+                { "name": "package/found4", "version": "2.0.0", "require": {
+                    "non-existent/pkg2": "1.*"
+                } },
+                { "name": "package/found5", "version": "2.0.0", "require": {
+                    "requirer/pkg": "1.*"
+                } },
+                { "name": "package/found6", "version": "2.0.0", "require": {
+                    "stable-requiree-excluded/pkg2": "1.0.1"
+                } },
+                { "name": "package/found7", "version": "2.0.0", "require": {
+                    "php-64bit": "1.0.1"
+                } },
+                { "name": "conflict/requirer", "version": "2.0.0", "require": {
+                    "conflict/dep": "1.0.0"
+                } },
+                { "name": "conflict/requirer2", "version": "2.0.0", "require": {
+                    "conflict/dep": "2.0.0"
+                } },
+                { "name": "conflict/dep", "version": "1.0.0" },
+                { "name": "conflict/dep", "version": "2.0.0" },
                 { "name": "unstable/package", "version": "2.0.0-alpha" },
                 { "name": "unstable/package", "version": "1.0.0" },
-                { "name": "requirer/pkg", "version": "1.0.0", "require": {"dependency/pkg": "1.0.0" } },
+                { "name": "unstable/package2", "version": "2.0.0-alpha" },
+                { "name": "unstable/package2", "version": "1.0.0" },
+                { "name": "requirer/pkg", "version": "1.0.0", "require": {
+                    "dependency/pkg": "1.0.0",
+                    "dependency/unstable-pkg": "1.0.0-dev"
+                } },
                 { "name": "dependency/pkg", "version": "2.0.0" },
                 { "name": "dependency/pkg", "version": "1.0.0" },
+                { "name": "dependency/unstable-pkg", "version": "1.0.0-dev" },
                 { "name": "stable-requiree-excluded/pkg", "version": "1.0.1" },
-                { "name": "stable-requiree-excluded/pkg", "version": "1.0.0" }
+                { "name": "stable-requiree-excluded/pkg", "version": "1.0.0" },
+                { "name": "api/provider", "description": "Provides the missing API", "version": "1.0.0", "provide": { "missing/provided-api": "1.*" } }
             ]
         }
     ],
     "require": {
+        "package/found": "2.*",
+        "package/found2": "2.*",
+        "package/found3": "2.*",
+        "package/found4": "2.*",
+        "package/found5": "2.*",
+        "package/found6": "2.*",
+        "package/found7": "2.*",
+        "missing/provided-api": "2.*",
+        "conflict/requirer": "2.*",
+        "conflict/requirer2": "2.*",
         "unstable/package": "2.*",
-        "bogus/pkg": "1.*",
+        "non-existent/pkg": "1.*",
         "requirer/pkg": "1.*",
         "dependency/pkg": "2.*",
-        "stable-requiree-excluded/pkg": "1.0.1"
+        "stable-requiree-excluded/pkg": "1.0.1",
+        "lib-xml": "1002.*",
+        "lib-icu": "1001.*",
+        "ext-xml": "1002.*",
+        "php": "1"
     }
 }
 
 --INSTALLED--
 [
-    { "name": "stable-requiree-excluded/pkg", "version": "1.0.0" }
+    { "name": "stable-requiree-excluded/pkg", "version": "1.0.0" },
+    { "name": "stable-requiree-excluded/pkg2", "version": "1.0.0" }
 ]
 
+--LOCK--
+{
+    "packages": [
+        { "name": "stable-requiree-excluded/pkg", "version": "1.0.0" },
+        { "name": "stable-requiree-excluded/pkg2", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+
 --RUN--
-update unstable/package requirer/pkg dependency/pkg
+update unstable/package requirer/pkg dependency/pkg conflict/requirer
 
 --EXPECT-EXIT-CODE--
 2
 
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-Updating dependencies (including require-dev)
+Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - The requested package unstable/package could not be found in any version, there may be a typo in the package name.
+    - Root composer.json requires missing/provided-api 2.*, it could not be found in any version, but the following packages provide it:
+      - api/provider Provides the missing API
+      Consider requiring one of these to satisfy the missing/provided-api requirement.
   Problem 2
-    - The requested package bogus/pkg could not be found in any version, there may be a typo in the package name.
+    - Root composer.json requires unstable/package 2.*, found unstable/package[2.0.0-alpha] but it does not match your minimum-stability.
   Problem 3
-    - The requested package stable-requiree-excluded/pkg 1.0.1 exists as stable-requiree-excluded/pkg[1.0.0] but these are rejected by your constraint.
+    - Root composer.json requires non-existent/pkg, it could not be found in any version, there may be a typo in the package name.
   Problem 4
-    - The requested package stable-requiree-excluded/pkg (installed at 1.0.0, required as 1.0.1) is satisfiable by stable-requiree-excluded/pkg[1.0.0] but these conflict with your requirements or minimum-stability.
+    - Root composer.json requires stable-requiree-excluded/pkg 1.0.1, found stable-requiree-excluded/pkg[1.0.1] but the package is fixed to 1.0.0 (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.
   Problem 5
-    - Installation request for requirer/pkg 1.* -> satisfiable by requirer/pkg[1.0.0].
-    - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> no matching package found.
+    - Root composer.json requires linked library lib-xml 1002.* but it has the wrong version installed or is missing from your system, make sure to load the extension providing it.
+  Problem 6
+    - Root composer.json requires linked library lib-icu 1001.* but it has the wrong version installed, try upgrading the intl extension.
+  Problem 7
+    - Root composer.json requires PHP extension ext-xml 1002.* but it has the wrong version (%s) installed. Install or enable PHP's xml extension.
+  Problem 8
+    - Root composer.json requires php 1 but your php version (%s) does not satisfy that requirement.
+  Problem 9
+    - Root composer.json requires package/found 2.* -> satisfiable by package/found[2.0.0].
+    - package/found 2.0.0 requires unstable/package2 2.* -> found unstable/package2[2.0.0-alpha] but it does not match your minimum-stability.
+  Problem 10
+    - Root composer.json requires package/found2 2.* -> satisfiable by package/found2[2.0.0].
+    - package/found2 2.0.0 requires invalid/💩package * -> could not be found, it looks like its name is invalid, "💩" is not allowed in package names.
+  Problem 11
+    - Root composer.json requires package/found3 2.* -> satisfiable by package/found3[2.0.0].
+    - package/found3 2.0.0 requires unstable/package2 2.* -> found unstable/package2[2.0.0-alpha] but it does not match your minimum-stability.
+  Problem 12
+    - Root composer.json requires package/found4 2.* -> satisfiable by package/found4[2.0.0].
+    - package/found4 2.0.0 requires non-existent/pkg2 1.* -> could not be found in any version, there may be a typo in the package name.
+  Problem 13
+    - Root composer.json requires package/found6 2.* -> satisfiable by package/found6[2.0.0].
+    - package/found6 2.0.0 requires stable-requiree-excluded/pkg2 1.0.1 -> found stable-requiree-excluded/pkg2[1.0.0] but it does not match your constraint.
+  Problem 14
+    - Root composer.json requires package/found7 2.* -> satisfiable by package/found7[2.0.0].
+    - package/found7 2.0.0 requires php-64bit 1.0.1 -> your php-64bit version (%s) does not satisfy that requirement.
+  Problem 15
+    - Root composer.json requires requirer/pkg 1.* -> satisfiable by requirer/pkg[1.0.0].
+    - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> found dependency/pkg[1.0.0] but it conflicts with your root composer.json require (2.*).
+  Problem 16
+    - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> found dependency/pkg[1.0.0] but it conflicts with your root composer.json require (2.*).
+    - package/found5 2.0.0 requires requirer/pkg 1.* -> satisfiable by requirer/pkg[1.0.0].
+    - Root composer.json requires package/found5 2.* -> satisfiable by package/found5[2.0.0].
 
 Potential causes:
  - A typo in the package name
@@ -60,6 +159,9 @@ Potential causes:
  - It's a private package and you forgot to add a custom repository to find it
 
 Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
+  To enable extensions, verify that they are enabled in your .ini files:
+__inilist__
+  You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.
 
 --EXPECT--
 

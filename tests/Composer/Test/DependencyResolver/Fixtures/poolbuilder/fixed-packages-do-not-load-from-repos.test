@@ -1,0 +1,23 @@
+--TEST--
+Fixed packages do not get loaded from the repos
+
+--REQUEST--
+{
+    "some/pkg": "*"
+}
+
+--FIXED--
+[
+    {"name": "some/pkg", "version": "1.0.3", "id": 1}
+]
+
+--PACKAGES--
+[
+    {"name": "some/pkg", "version": "1.0.0"},
+    {"name": "some/pkg", "version": "1.1.0"}
+]
+
+--EXPECT--
+[
+    1
+]

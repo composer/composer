@@ -626,12 +626,14 @@ especially useful when dealing with monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
 ```
-- apps
-\_ my-app
-  \_ composer.json
-- packages
-\_ my-package
-  \_ composer.json
+...
+├── apps
+│   └── my-app
+│       └── composer.json
+├── packages
+│   └── my-package
+│       └── composer.json
+...
 ```
 
 Then, to add the package `my/package` as a dependency, in your

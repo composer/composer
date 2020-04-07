@@ -15,7 +15,7 @@ namespace Composer\Test\Package\Dumper;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class ArrayDumperTest extends TestCase
 {
@@ -190,6 +190,10 @@ class ArrayDumperTest extends TestCase
             array(
                 'support',
                 array('foo' => 'bar'),
+            ),
+            array(
+                'funding',
+                array('type' => 'foo', 'url' => 'https://example.com'),
             ),
             array(
                 'require',

@@ -19,9 +19,9 @@ use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
+use Composer\Repository\InstalledRepository;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
-use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Plugin\Capability\Capability;
 use Composer\Util\PackageSorter;
@@ -145,7 +145,7 @@ class PluginManager
 
         $oldInstallerPlugin = ($package->getType() === 'composer-installer');
 
-        if (in_array($package->getName(), $this->registeredPlugins)) {
+        if (isset($this->registeredPlugins[$package->getName()])) {
             return;
         }
 
@@ -158,14 +158,13 @@ class PluginManager
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
 
-        $repositorySet = new RepositorySet(array(), 'dev');
-        $repositorySet->addRepository($localRepo);
+        $installedRepo = new InstalledRepository(array($localRepo));
         if ($globalRepo) {
-            $repositorySet->addRepository($globalRepo);
+            $installedRepo->addRepository($globalRepo);
         }
 
         $autoloadPackages = array($package->getName() => $package);
-        $autoloadPackages = $this->collectDependencies($repositorySet, $autoloadPackages, $package);
+        $autoloadPackages = $this->collectDependencies($installedRepo, $autoloadPackages, $package);
 
         $generator = $this->composer->getAutoloadGenerator();
         $autoloads = array();
@@ -201,13 +200,79 @@ class PluginManager
             if ($oldInstallerPlugin) {
                 $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
+                $this->registeredPlugins[$package->getName()] = $installer;
             } elseif (class_exists($class)) {
                 $plugin = new $class();
                 $this->addPlugin($plugin);
-                $this->registeredPlugins[] = $package->getName();
+                $this->registeredPlugins[$package->getName()] = $plugin;
             } elseif ($failOnMissingClasses) {
                 throw new \UnexpectedValueException('Plugin '.$package->getName().' could not be initialized, class not found: '.$class);
             }
+        }
+    }
+
+    /**
+     * Deactivates a plugin package
+     *
+     * If it's of type composer-installer it is unregistered from the installers
+     * instead for BC
+     *
+     * @param PackageInterface $package
+     *
+     * @throws \UnexpectedValueException
+     */
+    public function deactivatePackage(PackageInterface $package)
+    {
+        if ($this->disablePlugins) {
+            return;
+        }
+
+        $oldInstallerPlugin = ($package->getType() === 'composer-installer');
+
+        if (!isset($this->registeredPlugins[$package->getName()])) {
+            return;
+        }
+
+        if ($oldInstallerPlugin) {
+            $installer = $this->registeredPlugins[$package->getName()];
+            unset($this->registeredPlugins[$package->getName()]);
+            $this->composer->getInstallationManager()->removeInstaller($installer);
+        } else {
+            $plugin = $this->registeredPlugins[$package->getName()];
+            unset($this->registeredPlugins[$package->getName()]);
+            $this->removePlugin($plugin);
+        }
+    }
+
+    /**
+     * Uninstall a plugin package
+     *
+     * If it's of type composer-installer it is unregistered from the installers
+     * instead for BC
+     *
+     * @param PackageInterface $package
+     *
+     * @throws \UnexpectedValueException
+     */
+    public function uninstallPackage(PackageInterface $package)
+    {
+        if ($this->disablePlugins) {
+            return;
+        }
+
+        $oldInstallerPlugin = ($package->getType() === 'composer-installer');
+
+        if (!isset($this->registeredPlugins[$package->getName()])) {
+            return;
+        }
+
+        if ($oldInstallerPlugin) {
+            $this->deactivatePackage($package);
+        } else {
+            $plugin = $this->registeredPlugins[$package->getName()];
+            unset($this->registeredPlugins[$package->getName()]);
+            $this->removePlugin($plugin);
+            $this->uninstallPlugin($plugin);
         }
     }
 
@@ -242,6 +307,44 @@ class PluginManager
     }
 
     /**
+     * Removes a plugin, deactivates it and removes any listener the plugin has set on the plugin instance
+     *
+     * Ideally plugin packages should be deactivated via deactivatePackage, but if you use Composer
+     * programmatically and want to deregister a plugin class directly this is a valid way
+     * to do it.
+     *
+     * @param PluginInterface $plugin plugin instance
+     */
+    public function removePlugin(PluginInterface $plugin)
+    {
+        $index = array_search($plugin, $this->plugins, true);
+        if ($index === false) {
+            return;
+        }
+
+        $this->io->writeError('Unloading plugin '.get_class($plugin), true, IOInterface::DEBUG);
+        unset($this->plugins[$index]);
+        $plugin->deactivate($this->composer, $this->io);
+
+        $this->composer->getEventDispatcher()->removeListener($plugin);
+    }
+
+    /**
+     * Notifies a plugin it is being uninstalled and should clean up
+     *
+     * Ideally plugin packages should be uninstalled via uninstallPackage, but if you use Composer
+     * programmatically and want to deregister a plugin class directly this is a valid way
+     * to do it.
+     *
+     * @param PluginInterface $plugin plugin instance
+     */
+    public function uninstallPlugin(PluginInterface $plugin)
+    {
+        $this->io->writeError('Uninstalling plugin '.get_class($plugin), true, IOInterface::DEBUG);
+        $plugin->uninstall($this->composer, $this->io);
+    }
+
+    /**
      * Load all plugins and installers from a repository
      *
      * Note that plugins in the specified repository that rely on events that
@@ -272,13 +375,13 @@ class PluginManager
     /**
      * Recursively generates a map of package names to packages for all deps
      *
-     * @param RepositorySet    $repositorySet Repository set of installed packages
-     * @param array            $collected     Current state of the map for recursion
-     * @param PackageInterface $package       The package to analyze
+     * @param InstalledRepository $installedRepo Set of local repos
+     * @param array               $collected     Current state of the map for recursion
+     * @param PackageInterface    $package       The package to analyze
      *
      * @return array Map of package names to packages
      */
-    private function collectDependencies(RepositorySet $repositorySet, array $collected, PackageInterface $package)
+    private function collectDependencies(InstalledRepository $installedRepo, array $collected, PackageInterface $package)
     {
         $requires = array_merge(
             $package->getRequires(),
@@ -286,31 +389,15 @@ class PluginManager
         );
 
         foreach ($requires as $requireLink) {
-            $requiredPackage = $this->lookupInstalledPackage($repositorySet, $requireLink);
-            if ($requiredPackage && !isset($collected[$requiredPackage->getName()])) {
-                $collected[$requiredPackage->getName()] = $requiredPackage;
-                $collected = $this->collectDependencies($repositorySet, $collected, $requiredPackage);
+            foreach ($installedRepo->findPackagesWithReplacersAndProviders($requireLink->getTarget(), $requireLink->getConstraint()) as $requiredPackage) {
+                if (!isset($collected[$requiredPackage->getName()])) {
+                    $collected[$requiredPackage->getName()] = $requiredPackage;
+                    $collected = $this->collectDependencies($installedRepo, $collected, $requiredPackage);
+                }
             }
         }
 
         return $collected;
-    }
-
-    /**
-     * Resolves a package link to a package in the installed repo set
-     *
-     * Since dependencies are already installed this should always find one.
-     *
-     * @param RepositorySet $repositorySet Repository set of installed packages only
-     * @param Link $link Package link to look up
-     *
-     * @return PackageInterface|null The found package
-     */
-    private function lookupInstalledPackage(RepositorySet $repositorySet, Link $link)
-    {
-        $packages = $repositorySet->findPackages($link->getTarget(), $link->getConstraint(), false);
-
-        return !empty($packages) ? $packages[0] : null;
     }
 
     /**

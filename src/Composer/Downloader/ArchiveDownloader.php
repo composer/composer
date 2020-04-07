@@ -33,15 +33,21 @@ abstract class ArchiveDownloader extends FileDownloader
     public function install(PackageInterface $package, $path, $output = true)
     {
         if ($output) {
-            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>): Extracting archive");
+        } else {
+            $this->io->writeError('Extracting archive', false);
         }
 
-        $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
+        $this->filesystem->ensureDirectoryExists($path);
+        if (!$this->filesystem->isDirEmpty($path)) {
+            throw new \RuntimeException('Expected empty path to extract '.$package.' into but directory exists: '.$path);
+        }
+
+        do {
+            $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
+        } while (is_dir($temporaryDir));
+
         $fileName = $this->getFileName($package, $path);
-
-        if ($output) {
-            $this->io->writeError('    Extracting archive', true, IOInterface::VERBOSE);
-        }
 
         try {
             $this->filesystem->ensureDirectoryExists($temporaryDir);
@@ -85,30 +91,13 @@ abstract class ArchiveDownloader extends FileDownloader
             }
 
             $this->filesystem->removeDirectory($temporaryDir);
-            if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
-                $this->filesystem->removeDirectory($this->config->get('vendor-dir').'/composer/');
-            }
-            if ($this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
-                $this->filesystem->removeDirectory($this->config->get('vendor-dir'));
-            }
         } catch (\Exception $e) {
             // clean up
             $this->filesystem->removeDirectory($path);
             $this->filesystem->removeDirectory($temporaryDir);
-            if (file_exists($fileName)) {
-                $this->filesystem->unlink($fileName);
-            }
 
             throw $e;
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getFileName(PackageInterface $package, $path)
-    {
-        return rtrim($path.'_'.md5($path.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
     }
 
     /**

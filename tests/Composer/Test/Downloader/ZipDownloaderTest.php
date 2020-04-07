@@ -69,7 +69,7 @@ class ZipDownloaderTest extends TestCase
             $this->markTestSkipped('zip extension missing');
         }
 
-        $this->config->expects($this->at(0))
+        $this->config->expects($this->any())
             ->method('get')
             ->with('vendor-dir')
             ->will($this->returnValue($this->testDir));
@@ -179,7 +179,7 @@ class ZipDownloaderTest extends TestCase
 
     /**
      * @expectedException \Exception
-     * @expectedExceptionMessage Failed to execute unzip
+     * @expectedExceptionMessage Failed to execute (1) unzip
      */
     public function testSystemUnzipOnlyFailed()
     {
@@ -305,7 +305,7 @@ class ZipDownloaderTest extends TestCase
 
     /**
      * @expectedException \Exception
-     * @expectedExceptionMessage Failed to execute unzip
+     * @expectedExceptionMessage Failed to execute (1) unzip
      */
     public function testWindowsFallbackFailed()
     {
@@ -338,7 +338,7 @@ class ZipDownloaderTest extends TestCase
 
 class MockedZipDownloader extends ZipDownloader
 {
-    public function download(PackageInterface $package, $path, $output = true)
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
         return;
     }

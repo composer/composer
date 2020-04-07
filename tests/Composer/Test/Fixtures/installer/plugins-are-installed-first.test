@@ -6,26 +6,26 @@ Composer installers and their requirements are installed first
         {
             "type": "package",
             "package": [
-                { "name": "pkg", "version": "1.0.0" },
-                { "name": "pkg2", "version": "1.0.0" },
-                { "name": "inst", "version": "1.0.0", "type": "composer-plugin" },
-                { "name": "inst-with-req", "version": "1.0.0", "type": "composer-plugin", "require": { "php": ">=5", "ext-json": "*", "composer-plugin-api": "*" } },
-                { "name": "inst-with-req2", "version": "1.0.0", "type": "composer-plugin", "require": { "pkg2": "*" } }
+                { "name": "pkg/1", "version": "1.0.0" },
+                { "name": "pkg/2", "version": "1.0.0" },
+                { "name": "inst/pkg", "version": "1.0.0", "type": "composer-plugin" },
+                { "name": "inst/with-req", "version": "1.0.0", "type": "composer-plugin", "require": { "php": ">=5", "ext-json": "*", "composer-plugin-api": "*" } },
+                { "name": "inst/with-req2", "version": "1.0.0", "type": "composer-plugin", "require": { "pkg/2": "*" } }
             ]
         }
     ],
     "require": {
-        "pkg": "1.0.0",
-        "inst": "1.0.0",
-        "inst-with-req2": "1.0.0",
-        "inst-with-req": "1.0.0"
+        "pkg/1": "1.0.0",
+        "inst/pkg": "1.0.0",
+        "inst/with-req2": "1.0.0",
+        "inst/with-req": "1.0.0"
     }
 }
 --RUN--
 install
 --EXPECT--
-Installing inst (1.0.0)
-Installing inst-with-req (1.0.0)
-Installing pkg2 (1.0.0)
-Installing inst-with-req2 (1.0.0)
-Installing pkg (1.0.0)
+Installing inst/pkg (1.0.0)
+Installing inst/with-req (1.0.0)
+Installing pkg/2 (1.0.0)
+Installing inst/with-req2 (1.0.0)
+Installing pkg/1 (1.0.0)

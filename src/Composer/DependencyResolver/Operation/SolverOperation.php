@@ -43,8 +43,9 @@ abstract class SolverOperation implements OperationInterface
         return $this->reason;
     }
 
-    protected function formatVersion(PackageInterface $package)
-    {
-        return $package->getFullPrettyVersion();
-    }
+    /**
+     * @param $lock bool Whether this is an operation on the lock file
+    * @return string
+    */
+    abstract public function show($lock);
 }

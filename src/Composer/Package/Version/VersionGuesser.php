@@ -60,37 +60,49 @@ class VersionGuesser
      * @param array  $packageConfig
      * @param string $path          Path to guess into
      *
-     * @return null|array versionData, 'version', 'pretty_version' and 'commit' keys
+     * @return null|array versionData, 'version', 'pretty_version' and 'commit' keys, if the version is a feature branch, 'feature_version' and 'feature_pretty_version' keys may also be returned
      */
     public function guessVersion(array $packageConfig, $path)
     {
-        if (function_exists('proc_open')) {
-            $versionData = $this->guessGitVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
-
-            $versionData = $this->guessHgVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
-
-            $versionData = $this->guessFossilVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
-
-            $versionData = $this->guessSvnVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
+        if (!function_exists('proc_open')) {
+            return null;
         }
+
+        $versionData = $this->guessGitVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
+        }
+
+        $versionData = $this->guessHgVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
+        }
+
+        $versionData = $this->guessFossilVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
+        }
+
+        $versionData = $this->guessSvnVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
+        }
+        
+        return null;
     }
 
     private function postprocess(array $versionData)
     {
+        if (!empty($versionData['feature_version']) && $versionData['feature_version'] === $versionData['version'] && $versionData['feature_pretty_version'] === $versionData['feature_pretty_version']) {
+            unset($versionData['feature_version'], $versionData['feature_pretty_version']);
+        }
+
         if ('-dev' === substr($versionData['version'], -4) && preg_match('{\.9{7}}', $versionData['version'])) {
             $versionData['pretty_version'] = preg_replace('{(\.9{7})+}', '.x', $versionData['version']);
+        }
+
+        if (!empty($versionData['feature_version']) && '-dev' === substr($versionData['feature_version'], -4) && preg_match('{\.9{7}}', $versionData['feature_version'])) {
+            $versionData['feature_pretty_version'] = preg_replace('{(\.9{7})+}', '.x', $versionData['feature_version']);
         }
 
         return $versionData;
@@ -102,6 +114,8 @@ class VersionGuesser
         $commit = null;
         $version = null;
         $prettyVersion = null;
+        $featureVersion = null;
+        $featurePrettyVersion = null;
         $isDetached = false;
 
         // try to fetch current version from git branch
@@ -136,6 +150,8 @@ class VersionGuesser
             }
 
             if ($isFeatureBranch) {
+                $featureVersion = $version;
+                $featurePrettyVersion = $prettyVersion;
                 // try to find the best (nearest) version branch to assume this feature's version
                 $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path);
                 $version = $result['version'];
@@ -148,6 +164,8 @@ class VersionGuesser
             if ($result) {
                 $version = $result['version'];
                 $prettyVersion = $result['pretty_version'];
+                $featureVersion = null;
+                $featurePrettyVersion = null;
             }
         }
 
@@ -156,6 +174,10 @@ class VersionGuesser
             if (0 === $this->process->execute($command, $output, $path)) {
                 $commit = trim($output) ?: null;
             }
+        }
+
+        if ($featureVersion) {
+            return array('version' => $version, 'commit' => $commit, 'pretty_version' => $prettyVersion, 'feature_version' => $featureVersion, 'feature_pretty_version' => $featurePrettyVersion);
         }
 
         return array('version' => $version, 'commit' => $commit, 'pretty_version' => $prettyVersion);
@@ -200,6 +222,8 @@ class VersionGuesser
             // try to find the best (nearest) version branch to assume this feature's version
             $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path);
             $result['commit'] = '';
+            $result['feature_version'] = $version;
+            $result['feature_pretty_version'] = $version;
 
             return $result;
         }
@@ -211,7 +235,7 @@ class VersionGuesser
 
         // ignore feature branches if they have no branch-alias or self.version is used
         // and find the branch they came from to use as a version instead
-        if ((isset($packageConfig['extra']['branch-alias']) && !isset($packageConfig['extra']['branch-alias'][$version]))
+        if (!isset($packageConfig['extra']['branch-alias'][$version])
             || strpos(json_encode($packageConfig), '"self.version"')
         ) {
             $branch = preg_replace('{^dev-}', '', $version);

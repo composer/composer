@@ -98,7 +98,9 @@ class HgDownloaderTest extends TestCase
             ->will($this->returnValue(null));
 
         $downloader = $this->getDownloaderMock();
+        $downloader->prepare('update', $sourcePackageMock, '/path', $initialPackageMock);
         $downloader->update($initialPackageMock, $sourcePackageMock, '/path');
+        $downloader->cleanup('update', $sourcePackageMock, '/path', $initialPackageMock);
     }
 
     public function testUpdate()
@@ -129,7 +131,9 @@ class HgDownloaderTest extends TestCase
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, null, $processExecutor);
+        $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
         $downloader->update($packageMock, $packageMock, $this->workingDir);
+        $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
     }
 
     public function testRemove()
@@ -142,13 +146,15 @@ class HgDownloaderTest extends TestCase
             ->method('execute')
             ->with($this->equalTo($expectedResetCommand));
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
-        $filesystem->expects($this->any())
+        $filesystem->expects($this->once())
             ->method('removeDirectory')
             ->with($this->equalTo('composerPath'))
             ->will($this->returnValue(true));
 
         $downloader = $this->getDownloaderMock(null, null, $processExecutor, $filesystem);
+        $downloader->prepare('uninstall', $packageMock, 'composerPath');
         $downloader->remove($packageMock, 'composerPath');
+        $downloader->cleanup('uninstall', $packageMock, 'composerPath');
     }
 
     public function testGetInstallationSource()

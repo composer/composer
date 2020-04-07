@@ -51,6 +51,11 @@ class PlatformRepository extends ArrayRepository
         parent::__construct($packages);
     }
 
+    public function getRepoName()
+    {
+        return 'platform repo';
+    }
+
     protected function initialize()
     {
         parent::initialize();
@@ -125,7 +130,7 @@ class PlatformRepository extends ArrayRepository
             $this->addExtension($name, $prettyVersion);
         }
 
-        // Check for xdebug in a restarted process
+        // Check for Xdebug in a restarted process
         if (!in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = XdebugHandler::getSkippedVersion())) {
             $this->addExtension('xdebug', $prettyVersion);
         }
@@ -216,6 +221,13 @@ class PlatformRepository extends ArrayRepository
                     $prettyVersion = LIBXSLT_DOTTED_VERSION;
                     break;
 
+                case 'zip':
+                    if (defined('ZipArchive::LIBZIP_VERSION')) {
+                        $prettyVersion = \ZipArchive::LIBZIP_VERSION;
+                    } else {
+                        continue 2;
+                    }
+
                 default:
                     // None handled extensions have no special cases, skip
                     continue 2;
@@ -275,7 +287,7 @@ class PlatformRepository extends ArrayRepository
             } else {
                 $actualText = 'actual: '.$package->getPrettyVersion();
             }
-            $overrider->setDescription($overrider->getDescription().' ('.$actualText.')');
+            $overrider->setDescription($overrider->getDescription().', '.$actualText);
 
             return;
         }
@@ -288,7 +300,7 @@ class PlatformRepository extends ArrayRepository
             } else {
                 $actualText = 'actual: '.$package->getPrettyVersion();
             }
-            $overrider->setDescription($overrider->getDescription().' ('.$actualText.')');
+            $overrider->setDescription($overrider->getDescription().', '.$actualText);
 
             return;
         }

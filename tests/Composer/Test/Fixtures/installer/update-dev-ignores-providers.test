@@ -35,4 +35,4 @@ Updating a dev package selects its newest version but no providers
 --RUN--
 update
 --EXPECT--
-Updating a/installed (dev-master oldref) to a/installed (dev-master newref)
+Upgrading a/installed (dev-master oldref => dev-master newref)

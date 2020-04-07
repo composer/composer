@@ -47,11 +47,11 @@ class InstallOperation extends SolverOperation
     }
 
     /**
-     * Returns job type.
+     * Returns operation type.
      *
      * @return string
      */
-    public function getJobType()
+    public function getOperationType()
     {
         return 'install';
     }
@@ -59,8 +59,16 @@ class InstallOperation extends SolverOperation
     /**
      * {@inheritDoc}
      */
+    public function show($lock)
+    {
+        return ($lock ? 'Locking ' : 'Installing ').$this->package->getPrettyName().' ('.$this->package->getFullPrettyVersion().')';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function __toString()
     {
-        return 'Installing '.$this->package->getPrettyName().' ('.$this->formatVersion($this->package).')';
+        return $this->show(false);
     }
 }

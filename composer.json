@@ -24,25 +24,25 @@
     "require": {
         "php": "^5.3.2 || ^7.0",
         "composer/ca-bundle": "^1.0",
-        "composer/semver": "^1.0",
+        "composer/semver": "^2.0@dev",
         "composer/spdx-licenses": "^1.2",
         "composer/xdebug-handler": "^1.1",
         "justinrainbow/json-schema": "^3.0 || ^4.0 || ^5.0",
         "psr/log": "^1.0",
         "seld/jsonlint": "^1.4",
         "seld/phar-utils": "^1.0",
-        "symfony/console": "^2.7 || ^3.0 || ^4.0",
-        "symfony/filesystem": "^2.7 || ^3.0 || ^4.0",
-        "symfony/finder": "^2.7 || ^3.0 || ^4.0",
-        "symfony/process": "^2.7 || ^3.0 || ^4.0",
+        "symfony/console": "^2.7 || ^3.0 || ^4.0 || ^5.0",
+        "symfony/filesystem": "^2.7 || ^3.0 || ^4.0 || ^5.0",
+        "symfony/finder": "^2.7 || ^3.0 || ^4.0 || ^5.0",
+        "symfony/process": "^2.7 || ^3.0 || ^4.0 || ^5.0",
         "react/promise": "^1.2 || ^2.7"
     },
     "conflict": {
         "symfony/console": "2.8.38"
     },
     "require-dev": {
-        "phpunit/phpunit": "^4.8.35 || ^5.7",
-        "phpunit/phpunit-mock-objects": "^2.3 || ^3.0"
+        "symfony/phpunit-bridge": "^3.4",
+        "phpspec/prophecy": "^1.10"
     },
     "suggest": {
         "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages",
@@ -66,15 +66,20 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Composer\\Test\\": "tests/Composer/Test"
-        }
+            "Composer\\Test\\": "tests/Composer/Test",
+            "Composer\\PHPStanRules\\": "phpstan/Rules/src",
+            "Composer\\PHPStanRulesTests\\": "phpstan/Rules/tests"
+        },
+        "classmap": [
+            "phpstan/Rules/tests/data"
+        ]
     },
     "bin": [
         "bin/composer"
     ],
     "scripts": {
         "compile": "@php -dphar.readonly=0 bin/compile",
-        "test": "phpunit"
+        "test": "simple-phpunit"
     },
     "scripts-descriptions": {
         "compile": "Compile composer.phar",

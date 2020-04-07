@@ -53,7 +53,7 @@ class PackageDependencyParserTest extends TestCase
     {
         $data = json_decode(file_get_contents(__DIR__.'/Fixtures/DependencyParserTestData.json'), true);
         if (0 !== json_last_error()) {
-            throw new \PHPUnit_Framework_Exception('Invalid json file.');
+            throw new \PHPUnit\Framework\Exception('Invalid json file.');
         }
 
         return $data;

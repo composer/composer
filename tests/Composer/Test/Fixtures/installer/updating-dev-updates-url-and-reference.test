@@ -28,7 +28,7 @@ Updating a dev package for new reference updates the url and reference
             "dist": { "reference": "oldref", "url": "oldurl", "type": "zip", "shasum": "" }
         }
     ],
-    "packages-dev": null,
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {"a/a":20},
@@ -65,4 +65,4 @@ update
     "platform-dev": []
 }
 --EXPECT--
-Updating a/a (dev-master oldref) to a/a (dev-master newref)
+Upgrading a/a (dev-master oldref => dev-master newref)

@@ -12,18 +12,11 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
-use Composer\Repository\RepositorySet;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\EmptyConstraint;
-use Composer\Repository\RepositoryInterface;
-use Composer\Repository\CompositeRepository;
-use Composer\Repository\ComposerRepository;
-use Composer\Repository\InstalledRepositoryInterface;
-use Composer\Repository\PlatformRepository;
 use Composer\Package\PackageInterface;
 
 /**
@@ -34,49 +27,32 @@ use Composer\Package\PackageInterface;
  */
 class Pool implements \Countable
 {
-    const MATCH_NAME = -1;
-    const MATCH_NONE = 0;
-    const MATCH = 1;
-    const MATCH_PROVIDE = 2;
-    const MATCH_REPLACE = 3;
-    const MATCH_FILTERED = 4;
-
-    protected $providerRepos = array();
     protected $packages = array();
     protected $packageByName = array();
-    protected $packageByExactName = array();
-    protected $priorities = array();
     protected $versionParser;
     protected $providerCache = array();
-    protected $filterRequires;
+    protected $unacceptableFixedPackages;
 
-    public function __construct(array $filterRequires = array())
+    public function __construct(array $packages = array(), array $unacceptableFixedPackages = array())
     {
-        $this->filterRequires = $filterRequires;
         $this->versionParser = new VersionParser;
+        $this->setPackages($packages);
+        $this->unacceptableFixedPackages = $unacceptableFixedPackages;
     }
 
-    public function setPackages(array $packages, array $priorities = array())
+    private function setPackages(array $packages)
     {
         $id = 1;
 
-        foreach ($packages as $i => $package) {
+        foreach ($packages as $package) {
             $this->packages[] = $package;
-            $this->priorities[] = isset($priorities[$i]) ? $priorities[$i] : 0;
 
             $package->id = $id++;
-            $names = $package->getNames();
-            $this->packageByExactName[$package->getName()][$package->id] = $package;
 
-            foreach ($names as $provided) {
+            foreach ($package->getNames() as $provided) {
                 $this->packageByName[$provided][] = $package;
             }
         }
-    }
-
-    public function getPriority($id)
-    {
-        return $this->priorities[$id - 1];
     }
 
     /**
@@ -104,79 +80,36 @@ class Pool implements \Countable
      * @param  string              $name          The package name to be searched for
      * @param  ConstraintInterface $constraint    A constraint that all returned
      *                                            packages must match or null to return all
-     * @param  bool                $mustMatchName Whether the name of returned packages
-     *                                            must match the given name
-     * @param  bool                $bypassFilters If enabled, filterRequires and stability matching is ignored
      * @return PackageInterface[]  A set of packages
      */
-    public function whatProvides($name, ConstraintInterface $constraint = null, $mustMatchName = false, $bypassFilters = false)
+    public function whatProvides($name, ConstraintInterface $constraint = null)
     {
-        if ($bypassFilters) {
-            return $this->computeWhatProvides($name, $constraint, $mustMatchName, true);
-        }
-
-        $key = ((int) $mustMatchName).$constraint;
+        $key = (string) $constraint;
         if (isset($this->providerCache[$name][$key])) {
             return $this->providerCache[$name][$key];
         }
 
-        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint, $mustMatchName, $bypassFilters);
+        return $this->providerCache[$name][$key] = $this->computeWhatProvides($name, $constraint);
     }
 
     /**
      * @see whatProvides
      */
-    private function computeWhatProvides($name, $constraint, $mustMatchName = false, $bypassFilters = false)
+    private function computeWhatProvides($name, $constraint)
     {
-        $candidates = array();
-
-        if ($mustMatchName) {
-            if (isset($this->packageByExactName[$name])) {
-                $candidates = $this->packageByExactName[$name];
-            }
-        } elseif (isset($this->packageByName[$name])) {
-            $candidates = $this->packageByName[$name];
+        if (!isset($this->packageByName[$name])) {
+            return array();
         }
 
-        $matches = $provideMatches = array();
-        $nameMatch = false;
+        $matches = array();
 
-        foreach ($candidates as $candidate) {
-            switch ($this->match($candidate, $name, $constraint, $bypassFilters)) {
-                case self::MATCH_NONE:
-                    break;
-
-                case self::MATCH_NAME:
-                    $nameMatch = true;
-                    break;
-
-                case self::MATCH:
-                    $nameMatch = true;
-                    $matches[] = $candidate;
-                    break;
-
-                case self::MATCH_PROVIDE:
-                    $provideMatches[] = $candidate;
-                    break;
-
-                case self::MATCH_REPLACE:
-                    $matches[] = $candidate;
-                    break;
-
-                case self::MATCH_FILTERED:
-                    break;
-
-                default:
-                    throw new \UnexpectedValueException('Unexpected match type');
+        foreach ($this->packageByName[$name] as $candidate) {
+            if ($this->match($candidate, $name, $constraint)) {
+                $matches[] = $candidate;
             }
         }
 
-        // if a package with the required name exists, we ignore providers
-        if ($nameMatch) {
-            return $matches;
-        }
-
-        return array_merge($matches, $provideMatches);
+        return $matches;
     }
 
     public function literalToPackage($literal)
@@ -206,29 +139,21 @@ class Pool implements \Countable
      * @param  PackageInterface       $candidate
      * @param  string                 $name       Name of the package to be matched
      * @param  ConstraintInterface    $constraint The constraint to verify
-     * @return int                    One of the MATCH* constants of this class or 0 if there is no match
+     * @return bool
      */
-    public function match($candidate, $name, ConstraintInterface $constraint = null, $bypassFilters)
+    public function match($candidate, $name, ConstraintInterface $constraint = null)
     {
         $candidateName = $candidate->getName();
         $candidateVersion = $candidate->getVersion();
-        $isDev = $candidate->getStability() === 'dev';
-        $isAlias = $candidate instanceof AliasPackage;
-
-        if (!$bypassFilters && !$isDev && !$isAlias && isset($this->filterRequires[$name])) {
-            $requireFilter = $this->filterRequires[$name];
-        } else {
-            $requireFilter = new EmptyConstraint;
-        }
 
         if ($candidateName === $name) {
             $pkgConstraint = new Constraint('==', $candidateVersion);
 
             if ($constraint === null || $constraint->matches($pkgConstraint)) {
-                return $requireFilter->matches($pkgConstraint) ? self::MATCH : self::MATCH_FILTERED;
+                return true;
             }
 
-            return self::MATCH_NAME;
+            return false;
         }
 
         $provides = $candidate->getProvides();
@@ -238,27 +163,32 @@ class Pool implements \Countable
         if (isset($replaces[0]) || isset($provides[0])) {
             foreach ($provides as $link) {
                 if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
-                    return $requireFilter->matches($link->getConstraint()) ? self::MATCH_PROVIDE : self::MATCH_FILTERED;
+                    return true;
                 }
             }
 
             foreach ($replaces as $link) {
                 if ($link->getTarget() === $name && ($constraint === null || $constraint->matches($link->getConstraint()))) {
-                    return $requireFilter->matches($link->getConstraint()) ? self::MATCH_REPLACE : self::MATCH_FILTERED;
+                    return true;
                 }
             }
 
-            return self::MATCH_NONE;
+            return false;
         }
 
         if (isset($provides[$name]) && ($constraint === null || $constraint->matches($provides[$name]->getConstraint()))) {
-            return $requireFilter->matches($provides[$name]->getConstraint()) ? self::MATCH_PROVIDE : self::MATCH_FILTERED;
+            return true;
         }
 
         if (isset($replaces[$name]) && ($constraint === null || $constraint->matches($replaces[$name]->getConstraint()))) {
-            return $requireFilter->matches($replaces[$name]->getConstraint()) ? self::MATCH_REPLACE : self::MATCH_FILTERED;
+            return true;
         }
 
-        return self::MATCH_NONE;
+        return false;
+    }
+
+    public function isUnacceptableFixedPackage(PackageInterface $package)
+    {
+        return in_array($package, $this->unacceptableFixedPackages, true);
     }
 }
