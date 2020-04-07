@@ -269,7 +269,7 @@ interface PackageInterface
      * Returns a set of package names and reasons why they are useful in
      * combination with this package.
      *
-     * @return array An array of package suggestions with descriptions
+     * @return array<string, string> An array of package suggestions with descriptions
      */
     public function getSuggests();
 
