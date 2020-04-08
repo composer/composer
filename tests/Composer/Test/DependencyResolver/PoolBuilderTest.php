@@ -46,12 +46,9 @@ class PoolBuilderTest extends TestCase
         }, $stabilityFlags);
 
         $parser = new VersionParser();
-        $normalizedAliases = array();
-        foreach ($rootAliases as $alias) {
-            $normalizedAliases[$alias['package']][$parser->normalize($alias['version'])] = array(
-                'alias' => $alias['alias'],
-                'alias_normalized' => $parser->normalize($alias['alias']),
-            );
+        foreach ($rootAliases as $index => $alias) {
+            $rootAliases[$index]['version'] = $parser->normalize($alias['version']);
+            $rootAliases[$index]['alias_normalized'] = $parser->normalize($alias['alias']);
         }
 
         $loader = new ArrayLoader();
@@ -74,7 +71,7 @@ class PoolBuilderTest extends TestCase
             return $pkg;
         };
 
-        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $normalizedAliases);
+        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases);
         $repositorySet->addRepository($repo = new ArrayRepository());
         foreach ($packages as $package) {
             $repo->addPackage($loadPackage($package));

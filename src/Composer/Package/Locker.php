@@ -317,23 +317,12 @@ class Locker
             'content-hash' => $this->contentHash,
             'packages' => null,
             'packages-dev' => null,
-            'aliases' => array(),
+            'aliases' => $aliases,
             'minimum-stability' => $minimumStability,
             'stability-flags' => $stabilityFlags,
             'prefer-stable' => $preferStable,
             'prefer-lowest' => $preferLowest,
         );
-
-        foreach ($aliases as $package => $versions) {
-            foreach ($versions as $version => $alias) {
-                $lock['aliases'][] = array(
-                    'alias' => $alias['alias'],
-                    'alias_normalized' => $alias['alias_normalized'],
-                    'version' => $version,
-                    'package' => $package,
-                );
-            }
-        }
 
         $lock['packages'] = $this->lockPackages($packages);
         if (null !== $devPackages) {

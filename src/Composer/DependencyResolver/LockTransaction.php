@@ -122,8 +122,10 @@ class LockTransaction extends Transaction
 
         foreach ($this->resultPackages['all'] as $package) {
             if ($package instanceof AliasPackage) {
-                if (isset($aliases[$package->getName()])) {
-                    $usedAliases[$package->getName()] = $aliases[$package->getName()];
+                foreach ($aliases as $alias) {
+                    if ($alias['package'] === $package->getName()) {
+                        $usedAliases[] = $alias;
+                    }
                 }
             }
         }
