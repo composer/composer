@@ -507,7 +507,15 @@ class GitHubDriver extends VcsDriver
 
         $repoDataUrl = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository;
 
-        $this->repoData = $this->getContents($repoDataUrl, true)->decodeJson();
+        try {
+            $this->repoData = $this->getContents($repoDataUrl, true)->decodeJson();
+        } catch (TransportException $e) {
+            if ($e->getCode() === 499) {
+                $this->attemptCloneFallback();
+            } else {
+                throw $e;
+            }
+        }
         if (null === $this->repoData && null !== $this->gitDriver) {
             return;
         }

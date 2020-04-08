@@ -62,6 +62,9 @@ class GitDriver extends VcsDriver
 
             $gitUtil = new GitUtil($this->io, $this->config, $this->process, $fs);
             if (!$gitUtil->syncMirror($this->url, $this->repoDir)) {
+                if (!is_dir($this->repoDir)) {
+                    throw new \RuntimeException('Failed to clone '.$this->url.' to read package information from it');
+                }
                 $this->io->writeError('<error>Failed to update '.$this->url.', package information from this repository may be outdated</error>');
             }
 

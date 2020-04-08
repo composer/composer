@@ -248,7 +248,9 @@ class Git
 
     public function syncMirror($url, $dir)
     {
-        if (getenv('COMPOSER_DISABLE_NETWORK')) {
+        if (getenv('COMPOSER_DISABLE_NETWORK') && getenv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
+            $this->io->writeError('<warning>Aborting git mirror sync of '.$url.' as network is disabled</warning>');
+
             return false;
         }
 

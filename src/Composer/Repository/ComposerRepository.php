@@ -1065,8 +1065,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                 if ($cacheKey && ($contents = $this->cache->read($cacheKey))) {
                     if (!$this->degradedMode) {
-                        $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
-                        $this->io->writeError('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
+                        $this->io->writeError('<warning>'.$this->url.' could not be fully loaded ('.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
                     }
                     $this->degradedMode = true;
                     $data = JsonFile::parseJson($contents, $this->cache->getRoot().$cacheKey);
@@ -1133,8 +1132,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 if (!$this->degradedMode) {
-                    $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
-                    $this->io->writeError('<warning>'.$this->url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
+                    $this->io->writeError('<warning>'.$this->url.' could not be fully loaded ('.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
                 }
                 $this->degradedMode = true;
 
@@ -1209,8 +1207,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             if (!$degradedMode) {
-                $io->writeError('<warning>'.$e->getMessage().'</warning>');
-                $io->writeError('<warning>'.$url.' could not be fully loaded, package information was loaded from the local cache and may be out of date</warning>');
+                $io->writeError('<warning>'.$url.' could not be fully loaded ('.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
             }
             $degradedMode = true;
 

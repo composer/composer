@@ -958,4 +958,7 @@ can also set it to `*` to ignore the proxy for all HTTP requests.
 If set to `1`, disables network access (best effort). This can be used for debugging or
 to run Composer on a plane or a starship with poor connectivity.
 
+If set to `prime`, GitHub VCS repositories will prime the cache so it can then be used
+fully offline with `1`.
+
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
