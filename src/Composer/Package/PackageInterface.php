@@ -296,7 +296,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of dev autoloading rules
-     * @psalm-return array<string, array<string, string>>
+     * @psalm-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, file?: list<string>}
      */
     public function getDevAutoload();
 
