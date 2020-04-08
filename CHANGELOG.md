@@ -1,3 +1,24 @@
+### [2.0.0-?] 2020-??
+
+  * Breaking: This is a major release and while we tried to keep things compatible for most users, you might want to have a look at the [UPGRADE](UPGRADE-2.0.md) guides
+  * Many CPU and memory performance improvements
+  * The update command is now much more deterministic as it does not take the already installed packages into account
+  * Package installation now performs all network operations first before doing any changes on disk, to reduce the chances of ending up with a partially updated vendor dir
+  * Partial updates and require/remove are now much faster as they only load the metadata required for the updated packages
+  * Added support for parallel downloads of package metadata and zip files, this requires that the curl extension is present
+  * Added much clearer dependency resolution error reporting for common error cases
+  * Added support for TTY mode on Linux/OSX/WSL so that script handlers now run in interactive mode
+  * Added support for lib-zip platform package
+  * Added `pre-operations-exec` event to be fired before the packages get installed/upgraded/removed
+  * Added `pre-pool-create` event to be fired before the package pool for the dependency solver is created, which lets you modify the list of packages going in
+  * Added --dry-run flag to `require` and `remove` commands
+  * Added --with-dependencies and --with-all-dependencies flag aliases to `require` and `remove` commands for consistency with `update`
+  * Added more info to `vendor/composer/installed.json`, a dev key stores whether dev requirements were installed, and every package now has an install-path key with its install location
+  * Added COMPOSER_DISABLE_NETWORK which if set makes Composer do its best to run offline. This can be useful when you have poor connectivity or to do benchmarking without network jitter
+  * Added confirmation prompt when running Composer as superuser in interactive mode
+  * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
+  * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
+
 ### [1.10.1] 2020-03-13
 
   * Fixed path repository warning on empty path when using wildcards

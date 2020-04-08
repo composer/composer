@@ -81,9 +81,9 @@ interface DownloaderInterface
     /**
      * Do anything to cleanup changes applied in the prepare or install/update/uninstall steps
      *
-     * Note that cleanup will be called for all packages regardless if they failed an operation or not, to give
-     * all installers a change to cleanup things they did previously, so you need to keep track of changes
-     * applied in the installer/downloader themselves.
+     * Note that cleanup will be called for all packages, either after install/update/uninstall is complete,
+     * or if any package failed any operation. This is to give all installers a change to cleanup things
+     * they did previously, so you need to keep track of changes applied in the installer/downloader themselves.
      *
      * @param  string                $type        one of install/update/uninstall
      * @param  PackageInterface      $package     package instance
