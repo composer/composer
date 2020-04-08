@@ -375,14 +375,13 @@ class Installer
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
-        $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
-
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
         if ($this->updateMirrors) {
             foreach ($lockedRepository->getPackages() as $lockedPackage) {
                 $request->requireName($lockedPackage->getName(), new Constraint('==', $lockedPackage->getVersion()));
             }
         } else {
+            $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
             foreach ($links as $link) {
                 $request->requireName($link->getTarget(), $link->getConstraint());
             }
@@ -824,16 +823,7 @@ class Installer
             $aliases = $this->locker->getAliases();
         }
 
-        $normalizedAliases = array();
-
-        foreach ($aliases as $alias) {
-            $normalizedAliases[$alias['package']][$alias['version']] = array(
-                'alias' => $alias['alias'],
-                'alias_normalized' => $alias['alias_normalized'],
-            );
-        }
-
-        return $normalizedAliases;
+        return $aliases;
     }
 
     /**

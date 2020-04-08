@@ -42,16 +42,33 @@ class RepositorySet
      */
     const ALLOW_SHADOWED_REPOSITORIES = 2;
 
-    /** @var array */
+    /**
+     * @var array[]
+     * @psalm-var list<array{package: string, version: string, alias: string, alias_normalized: string}>
+     */
     private $rootAliases;
-    /** @var array */
+
+    /**
+     * @var string[]
+     * @psalm-var array<string, string>
+     */
     private $rootReferences;
 
     /** @var RepositoryInterface[] */
     private $repositories = array();
 
+    /**
+     * @var int[] array of stability => BasePackage::STABILITY_* value
+     * @psalm-var array<string, int>
+     */
     private $acceptableStabilities;
+
+    /**
+     * @var int[] array of package name => BasePackage::STABILITY_* value
+     * @psalm-var array<string, int>
+     */
     private $stabilityFlags;
+
     private $rootRequires;
 
     /** @var bool */
@@ -59,6 +76,19 @@ class RepositorySet
     /** @var bool */
     private $allowInstalledRepositories = false;
 
+    /**
+     * In most cases if you are looking to use this class as a way to find packages from repositories
+     * passing minimumStability is all you need to worry about. The rest is for advanced pool creation including
+     * aliases, pinned references and other special cases.
+     *
+     * @param string $minimumStability
+     * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
+     * @psalm-param array<string, int> $stabilityFlags
+     * @param array[] $rootAliases
+     * @psalm-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $rootAliases
+     * @param string[] $rootReferences an array of package name => source reference
+     * @psalm-param array<string, string> $rootReferences
+     */
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
     {
         $this->rootAliases = $rootAliases;

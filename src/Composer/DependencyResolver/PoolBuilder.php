@@ -34,6 +34,9 @@ class PoolBuilder
 {
     private $acceptableStabilities;
     private $stabilityFlags;
+    /**
+     * @psalm-var array<string, array<string, array{alias: string, alias_normalized: string}>>
+     */
     private $rootAliases;
     private $rootReferences;
     private $eventDispatcher;
@@ -48,11 +51,21 @@ class PoolBuilder
     private $skippedLoad = array();
     private $updateAllowWarned = array();
 
+    /**
+     * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
+     * @psalm-param array<string, int> $acceptableStabilities
+     * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
+     * @psalm-param array<string, int> $stabilityFlags
+     * @param array[] $rootAliases
+     * @psalm-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $rootAliases
+     * @param string[] $rootReferences an array of package name => source reference
+     * @psalm-param array<string, string> $rootReferences
+     */
     public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
-        $this->rootAliases = $rootAliases;
+        $this->rootAliases = $this->getRootAliasesPerPackage($rootAliases);
         $this->rootReferences = $rootReferences;
         $this->eventDispatcher = $eventDispatcher;
         $this->io = $io;
@@ -371,6 +384,20 @@ class PoolBuilder
 
         unset($this->skippedLoad[$name]);
         unset($this->loadedNames[$name]);
+    }
+
+    private function getRootAliasesPerPackage(array $aliases)
+    {
+        $normalizedAliases = array();
+
+        foreach ($aliases as $alias) {
+            $normalizedAliases[$alias['package']][$alias['version']] = array(
+                'alias' => $alias['alias'],
+                'alias_normalized' => $alias['alias_normalized'],
+            );
+        }
+
+        return $normalizedAliases;
     }
 }
 
