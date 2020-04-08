@@ -424,6 +424,13 @@ class RemoteFilesystem
             }
         }
 
+        // check for github 404 when downloading .zip over non-codeload url
+        if($statusCode === 404 && preg_match('/https:\/\/github.com\/([^\/]+)\/([^\/]+)\/archive\/([^\/]+)\.([^\/]+)/',$fileUrl,$matches)) {
+            list($match,$user,$repo,$version,$extension) = $matches;
+            $fileUrl = "https://codeload.github.com/$user/$repo/$extension/$version";
+            return $this->get($this->originUrl, $fileUrl, $additionalOptions, $this->fileName, $this->progress);
+        }
+        
         // handle 3xx redirects, 304 Not Modified is excluded
         $hasFollowedRedirect = false;
         if ($statusCode >= 300 && $statusCode <= 399 && $statusCode !== 304 && $this->redirects < $this->maxRedirects) {
