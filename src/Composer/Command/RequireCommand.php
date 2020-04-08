@@ -283,7 +283,6 @@ EOT
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
-            ->setDryRun($input->getOption('dry-run'))
         ;
 
         // if no lock is present, or the file is brand new, we do not do a
@@ -293,7 +292,7 @@ EOT
         }
 
         $status = $install->run();
-        if ($status !== 0 || $input->getOption('dry-run')) {
+        if ($status !== 0) {
             $this->revertComposerFile(false);
         }
 
