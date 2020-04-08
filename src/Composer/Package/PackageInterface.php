@@ -47,7 +47,7 @@ interface PackageInterface
      *
      * @param bool $provides Whether provided names should be included
      *
-     * @return array An array of strings referring to this package
+     * @return string[] An array of strings referring to this package
      */
     public function getNames($provides = true);
 
@@ -159,7 +159,7 @@ interface PackageInterface
     /**
      * Returns the urls of the distribution archive of this version, including mirrors
      *
-     * @return array
+     * @return string[]
      */
     public function getDistUrls();
 
@@ -270,6 +270,7 @@ interface PackageInterface
      * combination with this package.
      *
      * @return array An array of package suggestions with descriptions
+     * @psalm-return array<string, string>
      */
     public function getSuggests();
 
@@ -282,6 +283,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
+     * @psalm-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, file?: list<string>}
      */
     public function getAutoload();
 
@@ -294,6 +296,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of dev autoloading rules
+     * @psalm-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, file?: list<string>}
      */
     public function getDevAutoload();
 
@@ -301,7 +304,7 @@ interface PackageInterface
      * Returns a list of directories which should get added to PHP's
      * include path.
      *
-     * @return array
+     * @return string[]
      */
     public function getIncludePaths();
 
@@ -322,7 +325,7 @@ interface PackageInterface
     /**
      * Returns the package binaries
      *
-     * @return array
+     * @return string[]
      */
     public function getBinaries();
 

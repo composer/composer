@@ -69,7 +69,9 @@ interface RepositoryInterface extends \Countable
      * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
      * @param array $acceptableStabilities
      * @param array $stabilityFlags
+     * 
      * @return array [namesFound => string[], packages => PackageInterface[]]
+     * @psalm-return array{namesFound: string[], packages: PackageInterface[]}
      */
     public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags);
 
@@ -81,6 +83,7 @@ interface RepositoryInterface extends \Countable
      * @param string $type  The type of package to search for. Defaults to all types of packages
      *
      * @return array[] an array of array('name' => '...', 'description' => '...')
+     * @psalm-return list<array{name: string, description: string}>
      */
     public function search($query, $mode = 0, $type = null);
 
@@ -92,6 +95,7 @@ interface RepositoryInterface extends \Countable
      * @param string $packageName package name which must be provided
      *
      * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...')
+     * @psalm-return array<string, array{name: string, description: string, type: string}>
      */
     public function getProviders($packageName);
 
