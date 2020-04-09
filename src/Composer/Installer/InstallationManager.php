@@ -250,7 +250,7 @@ class InstallationManager
                     if (defined($event) && $runScripts && $dispatcher) {
                         $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
                     }
-                }, function ($e) use ($opType, $installer, $package, $initialPackage, $loop, $io) {
+                }, function ($e) use ($opType, $package, $io) {
                     $io->writeError('    <error>' . ucfirst($opType) .' of '.$package->getPrettyName().' failed</error>');
 
                     throw $e;
