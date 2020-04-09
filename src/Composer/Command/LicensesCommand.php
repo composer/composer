@@ -77,10 +77,10 @@ EOT
                 $table = new Table($output);
                 $table->setStyle('compact');
                 $tableStyle = $table->getStyle();
-                if (method_exists($rendererStyle, 'setVerticalBorderChars')) {
-                    $rendererStyle->setVerticalBorderChars('');
+                if (method_exists($tableStyle, 'setVerticalBorderChars')) {
+                    $tableStyle->setVerticalBorderChars('');
                 } else {
-                    $rendererStyle->setVerticalBorderChar('');
+                    $tableStyle->setVerticalBorderChar('');
                 }
                 $tableStyle->setCellRowContentFormat('%s  ');
                 $table->setHeaders(array('Name', 'Version', 'License'));
