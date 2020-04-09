@@ -277,7 +277,7 @@ class RemoteFilesystem
 
         if (isset($options['github-token'])) {
             // only add the access_token if it is actually a github URL (in case we were redirected to S3)
-            if (preg_match('{^https?://([a-z0-9-]+\.)*github\.com/}', $fileUrl)) {
+            if (preg_match('{^https?://api\.github\.com/}', $fileUrl)) {
                 $options['http']['header'][] = 'Authorization: token '.$options['github-token'];
             }
             unset($options['github-token']);
