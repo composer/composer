@@ -1,3 +1,12 @@
+### [1.10.2] 2020-04-09
+
+  * Added --1 flag to `self-update` command which can be added to automated self-update runs to make sure it won't automatically jump to 2.0 once that is released
+  * Fixed path repository symlinks being made relative when the repo url is defined as absolute paths
+  * Fixed potential issues when using "composer ..." in scripts and composer/composer was also required in the project
+  * Fixed 1.10.0 regression when downloading GitHub archives from non-API URLs
+  * Fixed handling of malformed info in fund command
+  * Fixed Symfony5 compatibility issues in a few commands
+
 ### [1.10.1] 2020-03-13
 
   * Fixed path repository warning on empty path when using wildcards
@@ -824,6 +833,7 @@
 
   * Initial release
 
+[1.10.2]: https://github.com/composer/composer/compare/1.10.1...1.10.2
 [1.10.1]: https://github.com/composer/composer/compare/1.10.0...1.10.1
 [1.10.0]: https://github.com/composer/composer/compare/1.10.0-RC...1.10.0
 [1.10.0-RC]: https://github.com/composer/composer/compare/1.9.3...1.10.0-RC
