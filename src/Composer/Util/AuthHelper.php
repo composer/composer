@@ -200,8 +200,11 @@ class AuthHelper
             if ($auth['password'] === 'bearer') {
                 $headers[] = 'Authorization: Bearer '.$auth['username'];
             } elseif ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
-                $headers[] = 'Authorization: token '.$auth['username'];
-                $authenticationDisplayMessage = 'Using GitHub token authentication';
+                // only add the access_token if it is actually a github API URL
+                if (preg_match('{^https?://api\.github\.com/}', $url)) {
+                    $headers[] = 'Authorization: token '.$auth['username'];
+                    $authenticationDisplayMessage = 'Using GitHub token authentication';
+                }
             } elseif (in_array($origin, $this->config->get('gitlab-domains'), true)) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];

@@ -21,6 +21,8 @@ use Composer\Json\JsonFile;
  */
 class Versions
 {
+    const CHANNELS = array('stable', 'preview', 'snapshot', '1', '2');
+
     private $httpDownloader;
     private $config;
     private $channel;
@@ -50,21 +52,21 @@ class Versions
 
     public function setChannel($channel)
     {
-        if (!in_array($channel, array('stable', 'preview', 'snapshot'), true)) {
-            throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: stable, preview, snapshot');
+        if (!in_array($channel, self::CHANNELS, true)) {
+            throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: ' . implode(', ', self::CHANNELS));
         }
 
         $channelFile = $this->config->get('home').'/update-channel';
         $this->channel = $channel;
-        file_put_contents($channelFile, $channel.PHP_EOL);
+        file_put_contents($channelFile, (is_numeric($channel) ? 'stable' : $channel).PHP_EOL);
     }
 
-    public function getLatest()
+    public function getLatest($channel = null)
     {
         $protocol = extension_loaded('openssl') ? 'https' : 'http';
         $versions = $this->httpDownloader->get($protocol . '://getcomposer.org/versions')->decodeJson();
 
-        foreach ($versions[$this->getChannel()] as $version) {
+        foreach ($versions[$channel ?: $this->getChannel()] as $version) {
             if ($version['min-php'] <= PHP_VERSION_ID) {
                 return $version;
             }

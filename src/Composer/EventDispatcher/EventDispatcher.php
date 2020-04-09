@@ -535,7 +535,10 @@ class EventDispatcher
         if (is_dir($binDir)) {
             $binDir = realpath($binDir);
             if (isset($_SERVER[$pathStr]) && !preg_match('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $_SERVER[$pathStr])) {
-                $_SERVER[$pathStr] = $binDir.PATH_SEPARATOR.getenv($pathStr);
+                // prepend the COMPOSER_BINARY dir to the path to make sure that scripts running "composer" will run the expected composer
+                // from current path resolution, even if bin-dir contains composer too because the project requires composer/composer
+                // see https://github.com/composer/composer/issues/8748
+                $_SERVER[$pathStr] = dirname(getenv('COMPOSER_BINARY')).PATH_SEPARATOR.$binDir.PATH_SEPARATOR.getenv($pathStr);
                 putenv($pathStr.'='.$_SERVER[$pathStr]);
             }
         }
