@@ -196,71 +196,93 @@ class InstallationManager
             $this->loop->wait($promises);
         }
 
-        foreach ($operations as $operation) {
-            $opType = $operation->getOperationType();
+        $cleanupPromises = array();
+        try {
+            foreach ($operations as $operation) {
+                $opType = $operation->getOperationType();
 
-            // ignoring alias ops as they don't need to execute anything
-            if (!in_array($opType, array('update', 'install', 'uninstall'))) {
-                // output alias ops in debug verbosity as they have no output otherwise
-                if ($this->io->isDebug()) {
-                    $this->io->writeError('  - ' . $operation->show(false));
-                }
-                $this->$opType($repo, $operation);
+                // ignoring alias ops as they don't need to execute anything
+                if (!in_array($opType, array('update', 'install', 'uninstall'))) {
+                    // output alias ops in debug verbosity as they have no output otherwise
+                    if ($this->io->isDebug()) {
+                        $this->io->writeError('  - ' . $operation->show(false));
+                    }
+                    $this->$opType($repo, $operation);
 
-                continue;
-            }
-
-            if ($opType === 'update') {
-                $package = $operation->getTargetPackage();
-                $initialPackage = $operation->getInitialPackage();
-            } else {
-                $package = $operation->getPackage();
-                $initialPackage = null;
-            }
-            $installer = $this->getInstaller($package->getType());
-
-            $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($opType);
-            if (defined($event) && $runScripts && $this->eventDispatcher) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
-            }
-
-            $dispatcher = $this->eventDispatcher;
-            $installManager = $this;
-            $loop = $this->loop;
-            $io = $this->io;
-
-            $promise = $installer->prepare($opType, $package, $initialPackage);
-            if (null === $promise) {
-                $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
-            }
-
-            $promise = $promise->then(function () use ($opType, $installManager, $repo, $operation) {
-                return $installManager->$opType($repo, $operation);
-            })->then(function () use ($opType, $installer, $package, $initialPackage) {
-                return $installer->cleanup($opType, $package, $initialPackage);
-            })->then(function () use ($opType, $runScripts, $dispatcher, $installManager, $devMode, $repo, $operations, $operation) {
-                $repo->write($devMode, $installManager);
-
-                $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($opType);
-                if (defined($event) && $runScripts && $dispatcher) {
-                    $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
-                }
-            }, function ($e) use ($opType, $installer, $package, $initialPackage, $loop, $io) {
-                $io->writeError('    <error>' . ucfirst($opType) .' of '.$package->getPrettyName().' failed</error>');
-
-                $promise = $installer->cleanup($opType, $package, $initialPackage);
-                if ($promise) {
-                    $loop->wait(array($promise));
+                    continue;
                 }
 
-                throw $e;
-            });
+                if ($opType === 'update') {
+                    $package = $operation->getTargetPackage();
+                    $initialPackage = $operation->getInitialPackage();
+                } else {
+                    $package = $operation->getPackage();
+                    $initialPackage = null;
+                }
+                $installer = $this->getInstaller($package->getType());
 
-            $promises[] = $promise;
-        }
+                $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($opType);
+                if (defined($event) && $runScripts && $this->eventDispatcher) {
+                    $this->eventDispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
+                }
 
-        if (!empty($promises)) {
-            $this->loop->wait($promises);
+                $dispatcher = $this->eventDispatcher;
+                $installManager = $this;
+                $loop = $this->loop;
+                $io = $this->io;
+
+                $promise = $installer->prepare($opType, $package, $initialPackage);
+                if (null === $promise) {
+                    $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
+                }
+
+                $cleanupPromise = function () use ($opType, $installer, $package, $initialPackage) {
+                    return $installer->cleanup($opType, $package, $initialPackage);
+                };
+
+                $promise = $promise->then(function () use ($opType, $installManager, $repo, $operation) {
+                    return $installManager->$opType($repo, $operation);
+                })->then($cleanupPromise)
+                ->then(function () use ($opType, $runScripts, $dispatcher, $installManager, $devMode, $repo, $operations, $operation) {
+                    $repo->write($devMode, $installManager);
+
+                    $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($opType);
+                    if (defined($event) && $runScripts && $dispatcher) {
+                        $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
+                    }
+                }, function ($e) use ($opType, $installer, $package, $initialPackage, $loop, $io) {
+                    $io->writeError('    <error>' . ucfirst($opType) .' of '.$package->getPrettyName().' failed</error>');
+
+                    throw $e;
+                });
+
+                $cleanupPromises[] = $cleanupPromise;
+                $promises[] = $promise;
+            }
+
+            if (!empty($promises)) {
+                $this->loop->wait($promises);
+            }
+        } catch (\Exception $e) {
+            $promises = array();
+            foreach ($cleanupPromises as $cleanup) {
+                $promises[] = new \React\Promise\Promise(function ($resolve, $reject) use ($cleanup) {
+                    $promise = $cleanup();
+                    if (null === $promise) {
+                        $resolve();
+                    } else {
+                        $promise->then(function () use ($resolve) {
+                            $resolve();
+                        });
+                    }
+                });
+            }
+
+            if (!empty($promises)) {
+                $this->loop->wait($promises);
+            }
+
+            throw $e;
         }
     }
 
