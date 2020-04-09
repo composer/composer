@@ -125,7 +125,18 @@ class RepositoryManager
 
         $class = $this->repositoryClasses[$type];
 
-        return new $class($config, $this->io, $this->config, $this->httpDownloader, $this->eventDispatcher);
+        if (isset($config['only']) || isset($config['exclude']) || isset($config['canonical'])) {
+            $filterConfig = $config;
+            unset($config['only'], $config['exclude'], $config['canonical']);
+        }
+
+        $repository = new $class($config, $this->io, $this->config, $this->httpDownloader, $this->eventDispatcher);
+
+        if (isset($filterConfig)) {
+            $repository = new FilterRepository($repository, $filterConfig);
+        }
+
+        return $repository;
     }
 
     /**

@@ -41,13 +41,19 @@ be preferred.
 A repository is a package source. It's a list of packages/versions. Composer
 will look in all your repositories to find the packages your project requires.
 
-By default only the Packagist repository is registered in Composer. You can
+By default only the Packagist.org repository is registered in Composer. You can
 add more repositories to your project by declaring them in `composer.json`.
 
 Repositories are only available to the root package and the repositories
 defined in your dependencies will not be loaded. Read the
 [FAQ entry](faqs/why-can't-composer-load-repositories-recursively.md) if you
 want to learn why.
+
+When resolving dependencies, packages are looked up from repositories from
+top to bottom, and by default, as soon as a package is found in one, Composer
+stops looking in other repositories. Read the
+[repository priorities](articles/repository-priorities.md) article for more
+details and to see how to change this behavior.
 
 ## Types
 
@@ -61,6 +67,17 @@ This is also the repository type that packagist uses. To reference a
 In the case of packagist, that file is located at `/packages.json`, so the URL of
 the repository would be `repo.packagist.org`. For `example.org/packages.json` the
 repository URL would be `example.org`.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org"
+        }
+    ]
+}
+```
 
 #### packages
 

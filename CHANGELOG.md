@@ -8,6 +8,7 @@
   * Added support for parallel downloads of package metadata and zip files, this requires that the curl extension is present
   * Added much clearer dependency resolution error reporting for common error cases
   * Added support for TTY mode on Linux/OSX/WSL so that script handlers now run in interactive mode
+  * Added `only`, `exclude` and `canonical` options to all repositories, see [repository priorities](https://getcomposer.org/repoprio) for details
   * Added support for lib-zip platform package
   * Added `pre-operations-exec` event to be fired before the packages get installed/upgraded/removed
   * Added `pre-pool-create` event to be fired before the package pool for the dependency solver is created, which lets you modify the list of packages going in
