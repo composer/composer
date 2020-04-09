@@ -184,7 +184,11 @@ class BaseDependencyCommand extends BaseCommand
         $renderer = new Table($output);
         $renderer->setStyle('compact');
         $rendererStyle = $renderer->getStyle();
-        $rendererStyle->setVerticalBorderChar('');
+        if (method_exists($rendererStyle, 'setVerticalBorderChars')) {
+            $rendererStyle->setVerticalBorderChars('');
+        } else {
+            $rendererStyle->setVerticalBorderChar('');
+        }
         $rendererStyle->setCellRowContentFormat('%s  ');
         $renderer->setRows($table)->render();
     }
