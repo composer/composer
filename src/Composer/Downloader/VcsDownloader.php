@@ -35,6 +35,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     protected $process;
     /** @var Filesystem */
     protected $filesystem;
+    /** @var array */
+    protected $hasCleanedChanges = array();
 
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
     {
@@ -90,6 +92,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     {
         if ($type === 'update') {
             $this->cleanChanges($prevPackage, $path, true);
+            $this->hasCleanedChanges[$prevPackage->getUniqueName()] = true;
         } elseif ($type === 'install') {
             $this->filesystem->emptyDirectory($path);
         } elseif ($type === 'uninstall') {
@@ -102,9 +105,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      */
     public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
-        if ($type === 'update') {
-            // TODO keep track of whether prepare was called for this package
+        if ($type === 'update' && isset($this->hasCleanedChanges[$prevPackage->getUniqueName()])) {
             $this->reapplyChanges($path);
+            unset($this->hasCleanedChanges[$prevPackage->getUniqueName()]);
         }
     }
 

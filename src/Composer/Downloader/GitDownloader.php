@@ -27,8 +27,8 @@ use Composer\Cache;
  */
 class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 {
-    private $hasStashedChanges = false;
-    private $hasDiscardedChanges = false;
+    private $hasStashedChanges = array();
+    private $hasDiscardedChanges = array();
     private $gitUtil;
     private $cachedPackages = array();
 
@@ -356,15 +356,15 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     protected function reapplyChanges($path)
     {
         $path = $this->normalizePath($path);
-        if ($this->hasStashedChanges) {
-            $this->hasStashedChanges = false;
+        if (!empty($this->hasStashedChanges[$path])) {
+            unset($this->hasStashedChanges[$path]);
             $this->io->writeError('    <info>Re-applying stashed changes</info>');
             if (0 !== $this->process->execute('git stash pop', $output, $path)) {
                 throw new \RuntimeException("Failed to apply stashed changes:\n\n".$this->process->getErrorOutput());
             }
         }
 
-        $this->hasDiscardedChanges = false;
+        unset($this->hasDiscardedChanges[$path]);
     }
 
     /**
@@ -379,7 +379,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      */
     protected function updateToCommit($path, $reference, $branch, $date)
     {
-        $force = $this->hasDiscardedChanges || $this->hasStashedChanges ? '-f ' : '';
+        $force = !empty($this->hasDiscardedChanges[$path]) || !empty($this->hasStashedChanges[$path]) ? '-f ' : '';
 
         // This uses the "--" sequence to separate branch from file parameters.
         //
@@ -484,7 +484,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
         }
 
-        $this->hasDiscardedChanges = true;
+        $this->hasDiscardedChanges[$path] = true;
     }
 
     /**
@@ -498,7 +498,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             throw new \RuntimeException("Could not stash changes\n\n:".$this->process->getErrorOutput());
         }
 
-        $this->hasStashedChanges = true;
+        $this->hasStashedChanges[$path] = true;
     }
 
     /**
