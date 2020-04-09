@@ -27,9 +27,21 @@ use Composer\Cache;
  */
 class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 {
+    /**
+     * @var array<string, bool>
+     */
     private $hasStashedChanges = array();
+    /**
+     * @var array<string, bool>
+     */
     private $hasDiscardedChanges = array();
+    /**
+     * @var GitUtil
+     */
     private $gitUtil;
+    /**
+     * @var array<int, array<string, bool>>
+     */
     private $cachedPackages = array();
 
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
