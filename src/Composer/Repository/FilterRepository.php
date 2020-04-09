@@ -116,6 +116,10 @@ class FilterRepository implements RepositoryInterface
             }
         }
 
+        if (!$packageMap) {
+            return array('namesFound' => array(), 'packages' => array());
+        }
+
         $result = $this->repo->loadPackages($packageMap, $acceptableStabilities, $stabilityFlags);
         if (!$this->canonical) {
             $result['namesFound'] = array();
