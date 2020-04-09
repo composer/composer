@@ -66,10 +66,13 @@ interface RepositoryInterface extends \Countable
     /**
      * Returns list of registered packages with the supplied name
      *
+     * - The packages returned are the packages found which match the constraints, acceptable stability and stability flags provided
+     * - The namesFound returned are names which should be considered as canonically found in this repository, that should not be looked up in any further lower priority repositories
+     *
      * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
      * @param array $acceptableStabilities
      * @param array $stabilityFlags
-     * 
+     *
      * @return array [namesFound => string[], packages => PackageInterface[]]
      * @psalm-return array{namesFound: string[], packages: PackageInterface[]}
      */
