@@ -6,7 +6,7 @@
 
 ## Canonical repositories
 
-When Composer resolves dependencies it will look up a given package in the
+When Composer resolves dependencies, it will look up a given package in the
 topmost repository. If that repository does not contain the package, it
 goes on to the next one, until one repository contains it and the process ends.
 
@@ -15,12 +15,13 @@ Canonical repositories are better for a few reasons:
 - Performance wise, it is more efficient to stop looking for a package once it
 has been found somewhere. It also avoids loading duplicate packages in case
 the same package is present in several of your repositories.
-- Security wise, it is safer to treat them canonically as it means that your most
-important repositories will return the packages you expect them to always. Let's
+- Security wise, it is safer to treat them canonically as it means that packages you
+expect to come from your most important repositories will never be loaded from 
+another repository instad. Let's
 say you have a private repository which is not canonical, and you require your
 private package `foo/bar ^2.0` for example. Now if someone publishes
 `foo/bar 2.999` to packagist.org, suddenly Composer will pick that package as it
-has a higher version than your latest release (say 2.4.3), and you end up install
+has a higher version than your latest release (say 2.4.3), and you end up installing
 something you may not have meant to. If the private repository is canonical
 however, that 2.999 version from packagist.org will not be considered at all.
 
@@ -58,9 +59,9 @@ contains a given package.
 ## Filtering packages
 
 You can also filter packages which a repository will be able to load, either by
-selecting which you want, or by excluding those you do not want.
+selecting which ones you want, or by excluding those you do not want.
 
-For example here we want to pick only the `foo/bar` and all the packages from
+For example here we want to pick only the package `foo/bar` and all the packages from
 `some-vendor/` from this composer repository.
 
 ```json
@@ -90,5 +91,5 @@ we may not want to load in this project.
 }
 ```
 
-Both `only` and `exclude` should be array of package names, which can also
+Both `only` and `exclude` should be arrays of package names, which can also
 contain wildcards (`*`) which will match any characters.

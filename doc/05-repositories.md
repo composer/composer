@@ -50,7 +50,7 @@ defined in your dependencies will not be loaded. Read the
 want to learn why.
 
 When resolving dependencies, packages are looked up from repositories from
-top to bottom, and by default as soon as a package is found in one Composer
+top to bottom, and by default, as soon as a package is found in one, Composer
 stops looking in other repositories. Read the
 [repository priorities](articles/repository-priorities.md) article for more
 details and to see how to change this behavior.
