@@ -84,8 +84,10 @@ EOT
         $versionsUtil = new Versions($config, $httpDownloader);
 
         // switch channel if requested
+        $requestedChannel = null;
         foreach (Versions::CHANNELS as $channel) {
             if ($input->getOption($channel)) {
+                $requestedChannel = $channel;
                 $versionsUtil->setChannel($channel);
                 break;
             }
@@ -130,8 +132,8 @@ EOT
         $latestVersion = $latest['version'];
         $updateVersion = $input->getArgument('version') ?: $latestVersion;
 
-        if (is_numeric($channel) && substr($latestStable['version'], 0, 1) !== $channel) {
-            $io->writeError('<warning>Warning: You forced the install of '.$latestVersion.' via --'.$channel.', but '.$latestStable['version'].' is the latest stable version. Updating to it via composer self-update --stable is recommended.</warning>');
+        if ($requestedChannel && is_numeric($requestedChannel) && substr($latestStable['version'], 0, 1) !== $requestedChannel) {
+            $io->writeError('<warning>Warning: You forced the install of '.$latestVersion.' via --'.$requestedChannel.', but '.$latestStable['version'].' is the latest stable version. Updating to it via composer self-update --stable is recommended.</warning>');
         }
 
         if (preg_match('{^[0-9a-f]{40}$}', $updateVersion) && $updateVersion !== $latestVersion) {

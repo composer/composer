@@ -144,7 +144,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     if ($transportOptions['relative']) {
                         $fileSystem->symlink($shortestPath, $path);
                     } else {
-                        $fileSystem->symlink($absolutePath, $path);
+                        $fileSystem->symlink($realUrl, $path);
                     }
                 }
             } catch (IOException $e) {
