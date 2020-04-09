@@ -1,3 +1,7 @@
+### [1.10.4] 2020-04-09
+
+  * Fixed 1.10.2 regression in path symlinking with absolute path repos
+
 ### [1.10.3] 2020-04-09
 
   * Fixed invalid --2 flag warning in `self-update` when no channel is requested
@@ -837,6 +841,7 @@
 
   * Initial release
 
+[1.10.4]: https://github.com/composer/composer/compare/1.10.3...1.10.4
 [1.10.3]: https://github.com/composer/composer/compare/1.10.2...1.10.3
 [1.10.2]: https://github.com/composer/composer/compare/1.10.1...1.10.2
 [1.10.1]: https://github.com/composer/composer/compare/1.10.0...1.10.1
