@@ -108,4 +108,20 @@ class RepositoryManagerTest extends TestCase
 
         return $cases;
     }
+
+    public function testFilterRepoWrapping()
+    {
+        $rm = new RepositoryManager(
+            $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
+            $config = $this->getMockBuilder('Composer\Config')->setMethods(array('get'))->getMock(),
+            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
+            $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
+        );
+
+        $rm->setRepositoryClass('path', 'Composer\Repository\PathRepository');
+        $repo = $rm->createRepository('path', array('type' => 'path', 'url' => __DIR__, 'only' => array('foo/bar')));
+
+        $this->assertInstanceOf('Composer\Repository\FilterRepository', $repo);
+        $this->assertInstanceOf('Composer\Repository\PathRepository', $repo->getRepository());
+    }
 }

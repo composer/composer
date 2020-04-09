@@ -2,7 +2,7 @@
 
 ## For composer CLI users
 
-- If a packages exists in a higher priority repository, it will now be entirely ignored in lower priority repositories.
+- If a packages exists in a higher priority repository, it will now be entirely ignored in lower priority repositories. See [repository priorities](https://getcomposer.org/repoprio) for details.
 - Invalid PSR-0 / PSR-4 class configurations will not autoload anymore in optimized-autoloader mode, as per the warnings introduced in 1.10
 - Package names now must comply to our naming guidelines or Composer will abort, as per the warnings introduced in 1.8.1
 - Removed --no-suggest flag as it is not needed anymore

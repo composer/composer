@@ -257,7 +257,7 @@ class Problem
                     }
                 }
 
-                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your constraint and are therefore not installable.');
+                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your constraint and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');
             }
 
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match your constraint.');

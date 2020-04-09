@@ -28,7 +28,7 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - Root composer.json requires foo/a 2.*, it is satisfiable by foo/a[2.0.0] from package repo (defining 1 package) but foo/a[1.0.0] from package repo (defining 1 package) has higher repository priority. The packages with higher priority do not match your constraint and are therefore not installable.
+    - Root composer.json requires foo/a 2.*, it is satisfiable by foo/a[2.0.0] from package repo (defining 1 package) but foo/a[1.0.0] from package repo (defining 1 package) has higher repository priority. The packages with higher priority do not match your constraint and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.
 
 --EXPECT--
 --EXPECT-EXIT-CODE--

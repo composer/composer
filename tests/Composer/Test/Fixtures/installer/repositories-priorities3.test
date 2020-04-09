@@ -1,0 +1,49 @@
+--TEST--
+Test that filter repositories apply correctly
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "foo/a", "version": "1.0.0" }
+            ],
+            "canonical": false
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "foo/a", "version": "1.0.0" },
+                { "name": "foo/b", "version": "1.0.0" }
+            ],
+            "only": ["foo/b"]
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "foo/a", "version": "1.2.0" },
+                { "name": "foo/c", "version": "1.2.0" }
+            ],
+            "exclude": ["foo/c"]
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "foo/a", "version": "1.1.0" },
+                { "name": "foo/b", "version": "1.1.0" },
+                { "name": "foo/c", "version": "1.1.0" }
+            ]
+        }
+    ],
+    "require": {
+        "foo/a": "1.*",
+        "foo/b": "1.*",
+        "foo/c": "1.*"
+    }
+}
+--RUN--
+update
+--EXPECT--
+Installing foo/a (1.2.0)
+Installing foo/b (1.0.0)
+Installing foo/c (1.1.0)
