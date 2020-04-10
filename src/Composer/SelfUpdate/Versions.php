@@ -21,7 +21,7 @@ use Composer\Json\JsonFile;
  */
 class Versions
 {
-    const CHANNELS = array('stable', 'preview', 'snapshot', '1', '2');
+    const CHANNELS = 'stable,preview,snapshot,1,2';
 
     private $httpDownloader;
     private $config;
@@ -31,6 +31,11 @@ class Versions
     {
         $this->httpDownloader = $httpDownloader;
         $this->config = $config;
+    }
+
+    public static function getAllowedChannels()
+    {
+        return explode(',', self::CHANNELS);
     }
 
     public function getChannel()
@@ -52,8 +57,8 @@ class Versions
 
     public function setChannel($channel)
     {
-        if (!in_array($channel, self::CHANNELS, true)) {
-            throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: ' . implode(', ', self::CHANNELS));
+        if (!in_array($channel, self::getAllowedChannels(), true)) {
+            throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: ' . implode(', ', self::getAllowedChannels()));
         }
 
         $channelFile = $this->config->get('home').'/update-channel';
