@@ -247,6 +247,13 @@ class EventDispatcher
                     }
                 }
 
+                // if composer is being executed, make sure it runs the expected composer from current path
+                // resolution, even if bin-dir contains composer too because the project requires composer/composer
+                // see https://github.com/composer/composer/issues/8748
+                if (substr($exec, 0, 9) === 'composer ') {
+                    $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . substr($exec, 8);
+                }
+
                 if (0 !== ($exitCode = $this->process->execute($exec))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
@@ -547,10 +554,7 @@ class EventDispatcher
         if (is_dir($binDir)) {
             $binDir = realpath($binDir);
             if (isset($_SERVER[$pathStr]) && !preg_match('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $_SERVER[$pathStr])) {
-                // prepend the COMPOSER_BINARY dir to the path to make sure that scripts running "composer" will run the expected composer
-                // from current path resolution, even if bin-dir contains composer too because the project requires composer/composer
-                // see https://github.com/composer/composer/issues/8748
-                $_SERVER[$pathStr] = dirname(getenv('COMPOSER_BINARY')).PATH_SEPARATOR.$binDir.PATH_SEPARATOR.getenv($pathStr);
+                $_SERVER[$pathStr] = $binDir.PATH_SEPARATOR.getenv($pathStr);
                 putenv($pathStr.'='.$_SERVER[$pathStr]);
             }
         }
