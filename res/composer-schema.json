@@ -650,6 +650,19 @@
             "properties": {
                 "type": { "type": "string", "enum": ["composer"] },
                 "url": { "type": "string" },
+                "canonical": { "type": "boolean" },
+                "only": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "options": {
                     "type": "object",
                     "additionalProperties": true
@@ -664,6 +677,19 @@
             "properties": {
                 "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "git-bitbucket", "hg", "hg-bitbucket", "fossil", "perforce", "svn"] },
                 "url": { "type": "string" },
+                "canonical": { "type": "boolean" },
+                "only": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "no-api": { "type": "boolean" },
                 "secure-http": { "type": "boolean" },
                 "svn-cache-credentials": { "type": "boolean" },
@@ -684,6 +710,19 @@
             "properties": {
                 "type": { "type": "string", "enum": ["path"] },
                 "url": { "type": "string" },
+                "canonical": { "type": "boolean" },
+                "only": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "options": {
                     "type": "object",
                     "properties": {
@@ -698,7 +737,20 @@
             "required": ["type", "url"],
             "properties": {
                 "type": { "type": "string", "enum": ["artifact"] },
-                "url": { "type": "string" }
+                "url": { "type": "string" },
+                "canonical": { "type": "boolean" },
+                "only": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
             }
         },
         "pear-repository": {
@@ -707,6 +759,19 @@
             "properties": {
                 "type": { "type": "string", "enum": ["pear"] },
                 "url": { "type": "string" },
+                "canonical": { "type": "boolean" },
+                "only": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "vendor-alias": { "type": "string" }
             }
         },
@@ -715,6 +780,19 @@
             "required": ["type", "package"],
             "properties": {
                 "type": { "type": "string", "enum": ["package"] },
+                "canonical": { "type": "boolean" },
+                "only": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "package": {
                     "oneOf": [
                         { "$ref": "#/definitions/inline-package" },
