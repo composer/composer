@@ -129,6 +129,8 @@ class HttpDownloader
 
     private function addJob($request, $sync = false)
     {
+        $request['options'] = array_replace_recursive($this->options, $request['options']);
+
         $job = array(
             'id' => $this->idGen++,
             'status' => self::STATUS_QUEUED,
@@ -155,7 +157,6 @@ class HttpDownloader
                 // start job
                 $url = $job['request']['url'];
                 $options = $job['request']['options'];
-                $options = array_replace_recursive($this->options, $options);
 
                 $job['status'] = HttpDownloader::STATUS_STARTED;
 
@@ -236,8 +237,6 @@ class HttpDownloader
             }
             return;
         }
-
-        $options = array_replace_recursive($this->options, $options);
 
         if ($job['request']['copyTo']) {
             $this->curl->download($resolve, $reject, $origin, $url, $options, $job['request']['copyTo']);
