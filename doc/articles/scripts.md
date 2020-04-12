@@ -29,6 +29,7 @@ Composer fires the following named events during its execution process:
   the `install` command is executed without a lock file present.
 - **post-update-cmd**: occurs after the `update` command has been executed, or
   after the `install` command has been executed without a lock file present.
+- **pre-status-cmd**: occurs before the `status` command is executed.
 - **post-status-cmd**: occurs after the `status` command has been executed.
 - **pre-archive-cmd**: occurs before the `archive` command is executed.
 - **post-archive-cmd**: occurs after the `archive` command has been executed.
