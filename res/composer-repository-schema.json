@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "https://json-schema.org/draft-04/schema#",
     "description": "A representation of packages metadata.",
     "type": "object",
     "oneOf": [

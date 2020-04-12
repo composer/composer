@@ -2,7 +2,7 @@ Contributing to Composer
 ========================
 
 Please note that this project is released with a
-[Contributor Code of Conduct](http://contributor-covenant.org/version/1/4/).
+[Contributor Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/).
 By participating in this project you agree to abide by its terms.
 
 Reporting Issues

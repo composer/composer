@@ -13,12 +13,12 @@
         {
             "name": "Nils Adermann",
             "email": "naderman@naderman.de",
-            "homepage": "http://www.naderman.de"
+            "homepage": "https://www.naderman.de"
         },
         {
             "name": "Jordi Boggiano",
             "email": "j.boggiano@seld.be",
-            "homepage": "http://seld.be"
+            "homepage": "https://seld.be"
         }
     ],
     "require": {
