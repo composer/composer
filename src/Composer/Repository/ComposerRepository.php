@@ -498,7 +498,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @param string $name package name
      * @return array|mixed
      */
-    private function whatProvides($name, array $acceptableStabilities = array(), array $stabilityFlags = array())
+    private function whatProvides($name, array $acceptableStabilities = null, array $stabilityFlags = null)
     {
         if (!$this->hasPartialPackages() || !isset($this->partialPackagesByName[$name])) {
             // skip platform packages, root package and composer-plugin-api
@@ -590,7 +590,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                     }
 
-                    if ($this->isVersionAcceptable($acceptableStabilities, $stabilityFlags, null, $normalizedName, $version)) {
+                    if ($this->isVersionAcceptable(null, $normalizedName, $version, $acceptableStabilities, $stabilityFlags)) {
                         $versionsToLoad[$version['uid']] = $version;
                     }
                 }
@@ -711,7 +711,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                             $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
                         }
 
-                        if ($repo->isVersionAcceptable($acceptableStabilities, $stabilityFlags, $constraint, $realName, $version)) {
+                        if ($repo->isVersionAcceptable($constraint, $realName, $version, $acceptableStabilities, $stabilityFlags)) {
                             $versionsToLoad[] = $version;
                         }
                     }
@@ -741,7 +741,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @param string $name package name (must be lowercased already)
      * @private
      */
-    public function isVersionAcceptable(array $acceptableStabilities, array $stabilityFlags, $constraint, $name, $versionData)
+    public function isVersionAcceptable($constraint, $name, $versionData, array $acceptableStabilities = null, array $stabilityFlags = null)
     {
         $versions = array($versionData['version_normalized']);
 
