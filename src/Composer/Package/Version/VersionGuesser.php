@@ -89,7 +89,7 @@ class VersionGuesser
         if (null !== $versionData && null !== $versionData['version']) {
             return $this->postprocess($versionData);
         }
-        
+
         return null;
     }
 
@@ -321,7 +321,11 @@ class VersionGuesser
                 }
 
                 $prettyVersion = trim($matches[1]);
-                $version = $this->versionParser->normalize($prettyVersion);
+                if ($prettyVersion === 'trunk') {
+                    $version = 'dev-trunk';
+                } else {
+                    $version = $this->versionParser->normalize($prettyVersion);
+                }
 
                 return array('version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion);
             }
