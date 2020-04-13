@@ -233,7 +233,7 @@ You can even add your own code to the autoloader by adding an
 }
 ```
 
-Composer will register a [PSR-4](http://www.php-fig.org/psr/psr-4/) autoloader
+Composer will register a [PSR-4](https://www.php-fig.org/psr/psr-4/) autoloader
 for the `Acme` namespace.
 
 You define a mapping from namespaces to directories. The `src` directory would

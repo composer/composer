@@ -98,7 +98,7 @@ final class TlsHelper
      * By Kevin McArthur of StormTide Digital Studios Inc.
      * @KevinSMcArthur / https://github.com/StormTide
      *
-     * See http://tools.ietf.org/html/draft-ietf-websec-key-pinning-02
+     * See https://tools.ietf.org/html/draft-ietf-websec-key-pinning-02
      *
      * This method was adapted from Sslurp.
      * https://github.com/EvanDotPro/Sslurp

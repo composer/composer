@@ -4,7 +4,7 @@ This chapter will explain all of the fields available in `composer.json`.
 
 ## JSON schema
 
-We have a [JSON schema](http://json-schema.org) that documents the format and
+We have a [JSON schema](https://json-schema.org) that documents the format and
 can also be used to validate your `composer.json`. In fact, it is used by the
 `validate` command. You can find it at: https://getcomposer.org/schema.json
 
@@ -214,7 +214,7 @@ An example:
         {
             "name": "Nils Adermann",
             "email": "naderman@naderman.de",
-            "homepage": "http://www.naderman.de",
+            "homepage": "https://www.naderman.de",
             "role": "Developer"
         },
         {
@@ -471,7 +471,7 @@ Example:
 
 Autoload mapping for a PHP autoloader.
 
-[`PSR-4`](http://www.php-fig.org/psr/psr-4/) and [`PSR-0`](http://www.php-fig.org/psr/psr-0/)
+[`PSR-4`](https://www.php-fig.org/psr/psr-4/) and [`PSR-0`](http://www.php-fig.org/psr/psr-0/)
 autoloading, `classmap` generation and `files` includes are supported.
 
 PSR-4 is the recommended way since it offers greater ease of use (no need

@@ -710,7 +710,7 @@ variables are parsed in both Windows and Linux/Mac notations. For example
 `%USERPROFILE%/git/mypackage`.
 
 > **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
-> For details, see the [PHP glob function](http://php.net/glob).
+> For details, see the [PHP glob function](https://php.net/glob).
 
 ## Disabling Packagist.org
 
