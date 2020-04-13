@@ -17,7 +17,7 @@ has been found somewhere. It also avoids loading duplicate packages in case
 the same package is present in several of your repositories.
 - Security wise, it is safer to treat them canonically as it means that packages you
 expect to come from your most important repositories will never be loaded from 
-another repository instad. Let's
+another repository instead. Let's
 say you have a private repository which is not canonical, and you require your
 private package `foo/bar ^2.0` for example. Now if someone publishes
 `foo/bar 2.999` to packagist.org, suddenly Composer will pick that package as it
@@ -76,7 +76,7 @@ For example here we want to pick only the package `foo/bar` and all the packages
 }
 ```
 
-And in this other example we exclude `toy/package` from a path repository, which
+And in this other example we exclude `toy/package` from a repository, which
 we may not want to load in this project.
 
 ```json
