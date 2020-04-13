@@ -4,7 +4,7 @@
 
 - If a packages exists in a higher priority repository, it will now be entirely ignored in lower priority repositories. See [repository priorities](https://getcomposer.org/repoprio) for details.
 - Invalid PSR-0 / PSR-4 class configurations will not autoload anymore in optimized-autoloader mode, as per the warnings introduced in 1.10
-- Package names now must comply to our naming guidelines or Composer will abort, as per the warnings introduced in 1.8.1
+- Package names now must comply to our [naming guidelines](doc/04-schema.md#name) or Composer will abort, as per the warnings introduced in 1.8.1
 - Removed --no-suggest flag as it is not needed anymore
 - `update` now lists changes to the lock file first, and then the changes applied when installing the lock file to the vendor dir
 - `HTTPS_PROXY_REQUEST_FULLURI` if not specified will now default to false as this seems to work better in most environments
