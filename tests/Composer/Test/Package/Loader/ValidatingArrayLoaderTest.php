@@ -173,6 +173,26 @@ class ValidatingArrayLoaderTest extends TestCase
                     'bin' => 'bin1',
                 ),
             ),
+            array( // package name with dashes
+                array(
+                    'name' => 'foo/bar-baz',
+                ),
+            ),
+            array( // package name with dashes
+                array(
+                    'name' => 'foo/bar--baz',
+                ),
+            ),
+            array( // package name with dashes
+                array(
+                    'name' => 'foo/b-ar--ba-z',
+                ),
+            ),
+            array( // package name with dashes
+                array(
+                    'name' => 'npm-asset/angular--core',
+                ),
+            ),
         );
     }
 
@@ -232,15 +252,24 @@ class ValidatingArrayLoaderTest extends TestCase
 
     public function errorProvider()
     {
-        return array(
-            array(
+        $invalidNames = array(
+            'foo',
+            'foo/-bar-',
+            'foo/-bar',
+        );
+        $invalidNaming = array();
+        foreach($invalidNames as $invalidName) {
+            $invalidNaming[] = array(
                 array(
-                    'name' => 'foo',
+                    'name' => $invalidName,
                 ),
                 array(
-                    'name : invalid value (foo), must match [A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*',
+                    "name : invalid value ($invalidName), must match [A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*",
                 ),
-            ),
+            );
+        }
+
+        return array_merge($invalidNaming, array(
             array(
                 array(
                     'name' => 'foo/bar',
@@ -292,12 +321,31 @@ class ValidatingArrayLoaderTest extends TestCase
                     'transport-options : should be an array, string given',
                 ),
             ),
-        );
+        ));
     }
 
     public function warningProvider()
     {
-        return array(
+        $invalidNames = array(
+            'fo--oo/bar',
+            'fo-oo/bar__baz',
+            'fo-oo/bar_.baz',
+            'foo/bar---baz',
+        );
+        $invalidNaming = array();
+        foreach($invalidNames as $invalidName) {
+            $invalidNaming[] = array(
+                array(
+                    'name' => $invalidName,
+                ),
+                array(
+                    "Deprecation warning: Your package name $invalidName is invalid, it should have a vendor name, a forward slash, and a package name. The vendor and package name can be words separated by -, . or _. The complete name should match \"^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$\". Make sure you fix this as Composer 2.0 will error.",
+                ),
+                false,
+            );
+        }
+
+        return array_merge($invalidNaming, array(
             array(
                 array(
                     'name' => 'foo/bar',
@@ -420,6 +468,6 @@ class ValidatingArrayLoaderTest extends TestCase
                 ),
                 false,
             ),
-        );
+        ));
     }
 }
