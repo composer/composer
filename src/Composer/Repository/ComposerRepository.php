@@ -742,7 +742,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @param string $name package name (must be lowercased already)
      * @private
      */
-    public function isVersionAcceptable(array $acceptableStabilities = null, array $stabilityFlags = null, $constraint = null, $name, $versionData)
+    public function isVersionAcceptable(array $acceptableStabilities, array $stabilityFlags, $constraint, $name, $versionData)
     {
         $versions = array($versionData['version_normalized']);
 
