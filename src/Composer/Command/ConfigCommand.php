@@ -73,6 +73,8 @@ class ConfigCommand extends BaseCommand
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
                 new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
+                new InputOption('json', 'j', InputOption::VALUE_NONE, 'JSON decode the setting value'),
+                new InputOption('merge', 'm', InputOption::VALUE_NONE, 'Merge the setting value with the current value'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
@@ -621,7 +623,21 @@ EOT
                 return 0;
             }
 
-            $this->configSource->addProperty($settingKey, $values[0]);
+            $value = $values[0];
+            if ($input->getOption('json')) {
+              $value = JsonFile::parseJson($value);
+              if ($input->getOption('merge')) {
+                $current_value = $this->configFile->read();
+                $bits = explode('.', $settingKey);
+                foreach ($bits as $bit) {
+                  $current_value = isset($current_value[$bit]) ? $current_value[$bit] : NULL;
+                }
+                if (is_array($current_value)) {
+                  $value = array_merge($current_value, $value);
+                }
+              }
+            }
+            $this->configSource->addProperty($settingKey, $value);
 
             return 0;
         }
