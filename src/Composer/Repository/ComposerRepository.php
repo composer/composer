@@ -496,10 +496,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     /**
      * @param string $name package name
-     * @param callable $isPackageAcceptableCallable
      * @return array|mixed
      */
-    private function whatProvides($name, array $acceptableStabilities = null, array $stabilityFlags = null)
+    private function whatProvides($name, array $acceptableStabilities = array(), array $stabilityFlags = array())
     {
         if (!$this->hasPartialPackages() || !isset($this->partialPackagesByName[$name])) {
             // skip platform packages, root package and composer-plugin-api
