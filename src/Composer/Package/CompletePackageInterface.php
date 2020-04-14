@@ -22,7 +22,7 @@ interface CompletePackageInterface extends PackageInterface
     /**
      * Returns the scripts of this package
      *
-     * @return array array('script name' => array('listeners'))
+     * @return array[] array('script name' => array('listeners'))
      * @psalm-return array<string, string[]>
      */
     public function getScripts();
