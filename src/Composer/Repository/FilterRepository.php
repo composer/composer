@@ -133,7 +133,15 @@ class FilterRepository implements RepositoryInterface
      */
     public function search($query, $mode = 0, $type = null)
     {
-        return $this->repo->search($query, $mode, $type);
+        $result = array();
+
+        foreach ($this->repo->search($query, $mode, $type) as $package) {
+            if ($this->isAllowed($package['name'])) {
+                $result[] = $package;
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -179,7 +187,11 @@ class FilterRepository implements RepositoryInterface
      */
     public function count()
     {
-        return $this->repo->count();
+        if ($this->repo->count() > 0) {
+            return count($this->getPackages());
+        }
+
+        return 0;
     }
 
     private function isAllowed($name)
