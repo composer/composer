@@ -23,6 +23,7 @@ interface CompletePackageInterface extends PackageInterface
      * Returns the scripts of this package
      *
      * @return array array('script name' => array('listeners'))
+     * @psalm-return array<string, string[]>
      */
     public function getScripts();
 
@@ -32,6 +33,7 @@ interface CompletePackageInterface extends PackageInterface
      * {"<type>": {<config key/values>}}
      *
      * @return array Repositories
+     * @psalm-return array<string, array{type: string, url: string, allow_ssl_downgrade: bool}>
      */
     public function getRepositories();
 
@@ -39,6 +41,7 @@ interface CompletePackageInterface extends PackageInterface
      * Returns the package license, e.g. MIT, BSD, GPL
      *
      * @return array The package licenses
+     * @psalm-return string[]
      */
     public function getLicense();
 
@@ -46,6 +49,7 @@ interface CompletePackageInterface extends PackageInterface
      * Returns an array of keywords relating to the package
      *
      * @return array
+     * @psalm-return string[]
      */
     public function getKeywords();
 
@@ -69,6 +73,7 @@ interface CompletePackageInterface extends PackageInterface
      * Each item can contain name/homepage/email keys
      *
      * @return array
+     * @psalm-return array<array{?name: string, ?homepage: string, ?email: string}>
      */
     public function getAuthors();
 
@@ -76,6 +81,7 @@ interface CompletePackageInterface extends PackageInterface
      * Returns the support information
      *
      * @return array
+     * @psalm-return array<string, string>
      */
     public function getSupport();
 
@@ -85,6 +91,7 @@ interface CompletePackageInterface extends PackageInterface
      * Each item will contain type and url keys
      *
      * @return array
+     * @psalm-return array<array{type: string, url: string}>
      */
     public function getFunding();
 
