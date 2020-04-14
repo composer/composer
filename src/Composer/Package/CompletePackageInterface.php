@@ -40,16 +40,14 @@ interface CompletePackageInterface extends PackageInterface
     /**
      * Returns the package license, e.g. MIT, BSD, GPL
      *
-     * @return array The package licenses
-     * @psalm-return string[]
+     * @return string[] The package licenses
      */
     public function getLicense();
 
     /**
      * Returns an array of keywords relating to the package
      *
-     * @return array
-     * @psalm-return string[]
+     * @return string[]
      */
     public function getKeywords();
 
@@ -90,7 +88,7 @@ interface CompletePackageInterface extends PackageInterface
      *
      * Each item will contain type and url keys
      *
-     * @return array
+     * @return array[]
      * @psalm-return array<array{type: string, url: string}>
      */
     public function getFunding();
