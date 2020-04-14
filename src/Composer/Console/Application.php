@@ -514,7 +514,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * Get the working directoy at startup time
+     * Get the working directory at startup time
      *
      * @return string
      */
