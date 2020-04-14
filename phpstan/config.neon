@@ -9,10 +9,8 @@ parameters:
     ignoreErrors:
         # unused parameters
         - '~^Constructor of class Composer\\Repository\\VcsRepository has an unused parameter \$dispatcher\.$~'
-        - '~^Constructor of class Composer\\Repository\\PearRepository has an unused parameter \$dispatcher\.$~'
         - '~^Constructor of class Composer\\Util\\Http\\CurlDownloader has an unused parameter \$disableTls\.$~'
         - '~^Constructor of class Composer\\Util\\Http\\CurlDownloader has an unused parameter \$options\.$~'
-        - '~^Constructor of class Composer\\Repository\\PearRepository has an unused parameter \$config\.$~'
 
         # ion cube is not installed
         - '~^Function ioncube_loader_\w+ not found\.$~'
