@@ -29,7 +29,7 @@ class PostFileDownloadEvent extends Event
     private $fileName;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $checksum;
 
