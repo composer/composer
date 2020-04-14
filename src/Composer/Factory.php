@@ -545,7 +545,6 @@ class Factory
     protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io)
     {
         $im->addInstaller(new Installer\LibraryInstaller($io, $composer, null));
-        $im->addInstaller(new Installer\PearInstaller($io, $composer, 'pear-library'));
         $im->addInstaller(new Installer\PluginInstaller($io, $composer));
         $im->addInstaller(new Installer\MetapackageInstaller($io));
     }

@@ -310,7 +310,7 @@ Example:
 All links are optional fields.
 
 `require` and `require-dev` additionally support _stability flags_ ([root-only](04-schema.md#root-package)).
-They take the form "_constraint_@_stability flag_". 
+They take the form "_constraint_@_stability flag_".
 These allow you to further restrict or expand the stability of a package beyond
 the scope of the [minimum-stability](#minimum-stability) setting. You can apply
 them to a constraint, or apply them to an empty _constraint_ if you want to
@@ -770,8 +770,6 @@ The following repository types are supported:
   using the `options` parameter.
 * **vcs:** The version control system repository can fetch packages from git,
   svn, fossil and hg repositories.
-* **pear:** With this you can import any pear repository into your Composer
-  project.
 * **package:** If you depend on a project that does not have any support for
   composer whatsoever you can define the package inline using a `package`
   repository. You basically inline the `composer.json` object.
@@ -799,10 +797,6 @@ Example:
         {
             "type": "vcs",
             "url": "https://github.com/Seldaek/monolog"
-        },
-        {
-            "type": "pear",
-            "url": "https://pear2.php.net"
         },
         {
             "type": "package",
