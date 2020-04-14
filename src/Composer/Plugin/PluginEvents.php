@@ -50,7 +50,7 @@ class PluginEvents
     const PRE_FILE_DOWNLOAD = 'pre-file-download';
 
     /**
-     * The POST_FILE_DOWNLOAD event occurs after downloading a file
+     * The POST_FILE_DOWNLOAD event occurs after downloading a package dist file
      *
      * The event listener method receives a
      * Composer\Plugin\PostFileDownloadEvent instance.
