@@ -48,6 +48,7 @@ class RemoveCommand extends BaseCommand
                 new InputOption('update-with-all-dependencies', null, InputOption::VALUE_NONE, 'Allows all inherited dependencies to be updated, including those that are root requirements.'),
                 new InputOption('with-all-dependencies', null, InputOption::VALUE_NONE, 'Alias for --update-with-all-dependencies'),
                 new InputOption('no-update-with-dependencies', null, InputOption::VALUE_NONE, 'Does not allow inherited dependencies to be updated with explicit dependencies.'),
+                new InputOption('unused', null, InputOption::VALUE_NONE, 'Remove all packages which are locked but not required by any other package.'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
@@ -64,6 +65,53 @@ Read more at https://getcomposer.org/doc/03-cli.md#remove
 EOT
             )
         ;
+    }
+
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
+        if ($input->getOption('unused')) {
+            $composer = $this->getComposer();
+            $locker = $composer->getLocker();
+            if (!$locker->isLocked()) {
+                throw new \UnexpectedValueException('A valid composer.lock file is required to run this command with --unused');
+            }
+
+            $lockedPackages = $locker->getLockedRepository()->getPackages();
+
+            $required = array();
+            foreach (array_merge($composer->getPackage()->getRequires(), $composer->getPackage()->getDevRequires()) as $link) {
+                $required[$link->getTarget()] = true;
+            }
+
+            do {
+                $found = false;
+                foreach ($lockedPackages as $index => $package) {
+                    foreach ($package->getNames() as $name) {
+                        if (isset($required[$name])) {
+                            foreach ($package->getRequires() as $link) {
+                                $required[$link->getTarget()] = true;
+                            }
+                            $found = true;
+                            unset($lockedPackages[$index]);
+                            break;
+                        }
+                    }
+                }
+            } while ($found);
+
+            $unused = array();
+            foreach ($lockedPackages as $package) {
+                $unused[] = $package->getName();
+            }
+            $input->setArgument('packages', array_merge($input->getArgument('packages'), $unused));
+
+            if (!$input->getArgument('packages')) {
+                $this->getIO()->writeError('<info>No unused packages to remove</info>');
+                $this->setCode(function () {
+                    return 0;
+                });
+            }
+        }
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
