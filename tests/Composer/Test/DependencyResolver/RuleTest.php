@@ -104,6 +104,6 @@ class RuleTest extends TestCase
 
         $rule = new GenericRule(array($p1->getId(), -$p2->getId()), Rule::RULE_PACKAGE_REQUIRES, new Link('baz', 'foo'));
 
-        $this->assertEquals('baz 1.1 relates to foo -> satisfiable by foo[2.1].', $rule->getPrettyString($repositorySetMock, $requestMock, $pool));
+        $this->assertEquals('baz 1.1 relates to foo -> satisfiable by foo[2.1].', $rule->getPrettyString($repositorySetMock, $requestMock, $pool, false));
     }
 }
