@@ -34,7 +34,7 @@ class PostFileDownloadEvent extends Event
     private $checksum;
 
     /**
-     * @var array
+     * @var string
      */
     private $url;
 
@@ -43,8 +43,8 @@ class PostFileDownloadEvent extends Event
      *
      * @param string           $name         The event name
      * @param string           $fileName     The file name
-     * @param string           $checksum     The checksum
-     * @param array            $url          The url
+     * @param string|null      $checksum     The checksum
+     * @param string           $url          The processed url
      */
     public function __construct($name, $fileName, $checksum, $url)
     {
@@ -67,18 +67,16 @@ class PostFileDownloadEvent extends Event
     /**
      * Gets the checksum.
      *
-     * @return string
+     * @return string|null
      */
     public function getChecksum() {
         return $this->checksum;
     }
 
     /**
-     * Gets the URL.
+     * Gets the processed URL.
      *
-     * The URL array has keys of base, processed and cacheKey.
-     *
-     * @return array
+     * @return string
      */
     public function getUrl() {
         return $this->url;
