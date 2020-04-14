@@ -33,7 +33,7 @@ interface CompletePackageInterface extends PackageInterface
      * {"<type>": {<config key/values>}}
      *
      * @return array Repositories
-     * @psalm-return array<string, array{type: string, url: string, allow_ssl_downgrade: bool}>
+     * @psalm-return array<string, array{type: string, ?url: string, ?allow_ssl_downgrade: bool}>
      */
     public function getRepositories();
 
@@ -73,7 +73,7 @@ interface CompletePackageInterface extends PackageInterface
      * Each item can contain name/homepage/email keys
      *
      * @return array
-     * @psalm-return array<array{?name: string, ?homepage: string, ?email: string}>
+     * @psalm-return array<array{?name: string, ?homepage: string, ?email: string, ?role: string}>
      */
     public function getAuthors();
 
