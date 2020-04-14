@@ -70,7 +70,7 @@ interface CompletePackageInterface extends PackageInterface
      *
      * Each item can contain name/homepage/email keys
      *
-     * @return array
+     * @return array[]
      * @psalm-return array<array{?name: string, homepage?: string, email?: string, role?: string}>
      */
     public function getAuthors();
