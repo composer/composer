@@ -11,7 +11,7 @@
 
 ## For integrators and plugin authors
 
-- composer-plugin-api has been bumped to 2.0.0 - you can detect which version of Composer you run via `PluginInterface::PLUGIN_API_VERSION`, or use `version_compare` with `Composer\Composer::getVersion()` (available since Composer 1.8.5)
+- composer-plugin-api has been bumped to 2.0.0 - you can detect which version of Composer you run via `PluginInterface::PLUGIN_API_VERSION`
 - `PluginInterface` added a deactivate (so plugin can stop whatever it is doing) and an uninstall (so the plugin can remove any files it created or do general cleanup) method.
 - Plugins implementing `EventSubscriberInterface` will be deregistered from the EventDispatcher automatically when being deactivated, nothing to do there.
 - `Pool` objects are now created via the `RepositorySet` class, you should use that in case you were using the `Pool` class directly.
