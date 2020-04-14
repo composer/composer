@@ -124,7 +124,7 @@ interface PackageInterface
     /**
      * Returns the repository urls of this package including mirrors, e.g. git://github.com/naderman/composer.git
      *
-     * @return array
+     * @return string[]
      */
     public function getSourceUrls();
 
