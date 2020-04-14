@@ -30,10 +30,8 @@ interface CompletePackageInterface extends PackageInterface
     /**
      * Returns an array of repositories
      *
-     * {"<type>": {<config key/values>}}
-     *
-     * @return array Repositories
-     * @psalm-return array<string, array{type: string, url?: string, allow_ssl_downgrade?: bool}>
+     * @return array[] Repositories
+     * @psalm-return array<array{type: string, url?: string}>
      */
     public function getRepositories();
 
