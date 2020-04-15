@@ -36,6 +36,11 @@ matrix:
       env:
         - deps=high
         - SYMFONY_PHPUNIT_VERSION=7.5
+    # PHP CS Fixer checks
+    - php: 7.4
+      env:
+        - deps=high
+        - PHP_CS_FIXER=1
     # PHPStan checks
     - php: 7.4
       env:
@@ -71,7 +76,10 @@ before_script:
   - git config --global user.email travis@example.com
 
 script:
-  - if [[ $PHPSTAN == "1" ]]; then
+  - if [[ $PHP_CS_FIXER == "1" ]]; then
+      bin/composer require --dev friendsofphp/php-cs-fixer:^2.16 --update-with-all-dependencies &&
+      vendor/bin/php-cs-fixer fix --diff --dry-run --verbose;
+    elif [[ $PHPSTAN == "1" ]]; then
       bin/composer require --dev phpstan/phpstan:^0.12 phpunit/phpunit:^7.5 --no-update &&
       bin/composer update phpstan/* phpunit/* sebastian/* --with-all-dependencies &&
       vendor/bin/phpstan analyse --configuration=phpstan/config.neon;
