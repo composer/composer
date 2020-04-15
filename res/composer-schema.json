@@ -640,6 +640,7 @@
                 { "$ref": "#/definitions/vcs-repository" },
                 { "$ref": "#/definitions/path-repository" },
                 { "$ref": "#/definitions/artifact-repository" },
+                { "$ref": "#/definitions/pear-repository" },
                 { "$ref": "#/definitions/package-repository" }
             ]
         },
@@ -750,6 +751,28 @@
                         "type": "string"
                     }
                 }
+            }
+        },
+        "pear-repository": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": { "type": "string", "enum": ["pear"] },
+                "url": { "type": "string" },
+                "canonical": { "type": "boolean" },
+                "only": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "vendor-alias": { "type": "string" }
             }
         },
         "package-repository": {
