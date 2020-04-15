@@ -20,6 +20,23 @@ use Composer\Test\TestCase;
  */
 class ComposerSchemaTest extends TestCase
 {
+    public function testNamePattern()
+    {
+        $expectedError = array(
+            array(
+                'property' => 'name',
+                'message' => 'Does not match the regex pattern ^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$',
+                'constraint' => 'pattern',
+                'pattern' => '^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$'
+            ),
+        );
+
+        $json = '{"name": "vendor/-pack__age", "description": "description"}';
+        $this->assertEquals($expectedError, $this->check($json));
+        $json = '{"name": "Vendor/Package", "description": "description"}';
+        $this->assertEquals($expectedError, $this->check($json));
+    }
+
     public function testRequiredProperties()
     {
         $json = '{ }';
@@ -41,13 +58,13 @@ class ComposerSchemaTest extends TestCase
 
     public function testOptionalAbandonedProperty()
     {
-        $json = '{"name": "name", "description": "description", "abandoned": true}';
+        $json = '{"name": "vendor/package", "description": "description", "abandoned": true}';
         $this->assertTrue($this->check($json));
     }
 
     public function testRequireTypes()
     {
-        $json = '{"name": "name", "description": "description", "require": {"a": ["b"]} }';
+        $json = '{"name": "vendor/package", "description": "description", "require": {"a": ["b"]} }';
         $this->assertEquals(array(
             array('property' => 'require.a', 'message' => 'Array value found, but a string is required', 'constraint' => 'type'),
         ), $this->check($json));
