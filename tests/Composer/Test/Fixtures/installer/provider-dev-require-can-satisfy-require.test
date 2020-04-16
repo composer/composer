@@ -1,0 +1,52 @@
+--TEST--
+Test that a requirement can be satisfied by a providing package required in require-dev.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {"name": "provider/requirer", "version": "1.0.0", "type": "metapackage", "require": {"b/b": "1.0.0"}},
+                {"name": "b/b", "version": "1.0.0", "type": "metapackage", "provide": {"provided/pkg": "1.0.0"}}
+            ]
+        }
+    ],
+    "require": {
+        "provided/pkg": "1.0.0"
+    },
+    "require-dev": {
+        "provider/requirer": "1.0.0"
+    }
+}
+
+--RUN--
+update --no-dev
+
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "b/b",
+            "version": "1.0.0",
+            "type": "metapackage",
+            "provide": {"provided/pkg": "1.0.0"}
+        }
+    ],
+    "packages-dev": [
+        {
+            "name": "provider/requirer",
+            "version": "1.0.0",
+            "type": "metapackage",
+            "require": {"b/b": "1.0.0"}
+        }
+    ],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Installing b/b (1.0.0)

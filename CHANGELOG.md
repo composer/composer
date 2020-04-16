@@ -1,20 +1,87 @@
-### [1.10.0] 2020-01-XX
+### [2.0.0-?] 2020-??
+
+  * Breaking: This is a major release and while we tried to keep things compatible for most users, you might want to have a look at the [UPGRADE](UPGRADE-2.0.md) guides
+  * Many CPU and memory performance improvements
+  * The update command is now much more deterministic as it does not take the already installed packages into account
+  * Package installation now performs all network operations first before doing any changes on disk, to reduce the chances of ending up with a partially updated vendor dir
+  * Partial updates and require/remove are now much faster as they only load the metadata required for the updated packages
+  * Added support for parallel downloads of package metadata and zip files, this requires that the curl extension is present
+  * Added much clearer dependency resolution error reporting for common error cases
+  * Added support for TTY mode on Linux/OSX/WSL so that script handlers now run in interactive mode
+  * Added `only`, `exclude` and `canonical` options to all repositories, see [repository priorities](https://getcomposer.org/repoprio) for details
+  * Added support for lib-zip platform package
+  * Added `pre-operations-exec` event to be fired before the packages get installed/upgraded/removed
+  * Added `pre-pool-create` event to be fired before the package pool for the dependency solver is created, which lets you modify the list of packages going in
+  * Added --dry-run flag to `require` and `remove` commands
+  * Added --with-dependencies and --with-all-dependencies flag aliases to `require` and `remove` commands for consistency with `update`
+  * Added more info to `vendor/composer/installed.json`, a dev key stores whether dev requirements were installed, and every package now has an install-path key with its install location
+  * Added COMPOSER_DISABLE_NETWORK which if set makes Composer do its best to run offline. This can be useful when you have poor connectivity or to do benchmarking without network jitter
+  * Added confirmation prompt when running Composer as superuser in interactive mode
+  * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
+  * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
+
+### [1.10.5] 2020-04-10
+
+  * Fixed self-update on PHP <5.6, seriously please upgrade people, it's time
+  * Fixed 1.10.2 regression with PATH resolution in scripts
+
+### [1.10.4] 2020-04-09
+
+  * Fixed 1.10.2 regression in path symlinking with absolute path repos
+
+### [1.10.3] 2020-04-09
+
+  * Fixed invalid --2 flag warning in `self-update` when no channel is requested
+
+### [1.10.2] 2020-04-09
+
+  * Added --1 flag to `self-update` command which can be added to automated self-update runs to make sure it won't automatically jump to 2.0 once that is released
+  * Fixed path repository symlinks being made relative when the repo url is defined as absolute paths
+  * Fixed potential issues when using "composer ..." in scripts and composer/composer was also required in the project
+  * Fixed 1.10.0 regression when downloading GitHub archives from non-API URLs
+  * Fixed handling of malformed info in fund command
+  * Fixed Symfony5 compatibility issues in a few commands
+
+### [1.10.1] 2020-03-13
+
+  * Fixed path repository warning on empty path when using wildcards
+  * Fixed superfluous warnings when generating optimized autoloaders
+
+### [1.10.0] 2020-03-10
+
+  * Added `bearer` auth config to authenticate using `Authorization: Bearer <token>` headers
+  * Added `plugin-api-version` in composer.lock so third-party tools can know which Composer version was used to generate a lock file
+  * Fixed composer fund command and funding info parsing to be more useful
+  * Fixed issue where --no-dev autoload generation was excluding some packages which should not have been excluded
+  * Fixed 1.10-RC regression in create project's handling of absolute paths
+
+### [1.10.0-RC] 2020-02-14
 
   * Breaking: `composer global exec ...` now executes the process in the current working directory instead of executing it in the global directory.
-  * Warning: Added a warning when class names are being loaded by a PSR-4 or PSR-0 rule only due to classmap optimization, but would not otherwise be autoloadable. The next minor version will stop autoloading these classes so make sure you fix your autoload configs.
+  * Warning: Added a warning when class names are being loaded by a PSR-4 or PSR-0 rule only due to classmap optimization, but would not otherwise be autoloadable. Composer 2.0 will stop autoloading these classes so make sure you fix your autoload configs.
+  * Added new funding key to composer.json to describe ways your package's maintenance can be funded. This reads info from GitHub's FUNDING.yml by default so better configure it there so it shows on GitHub and Composer/Packagist
+  * Added `composer fund` command to show funding info of your dependencies
+  * Added support for --format=json output for show command when showing a single package
   * Added support for configuring suggestions using config command, e.g. `composer config suggest.foo/bar some text`
   * Added support for configuring fine-grained preferred-install using config command, e.g. `composer config preferred-install.foo/* dist`
   * Added `@putenv` script handler to set environment variables from composer.json for following scripts
   * Added `lock` option that can be set to false, in which case no composer.lock file will be generated
+  * Added --add-repository flag to create-project command which will persist the repo given in --repository into the composer.json of the package being installed
   * Added support for IPv6 addresses in NO_PROXY
   * Added package homepage display in the show command
   * Added debug info about HTTP authentications
   * Added Symfony 5 compatibility
   * Added --fixed flag to require command to make it use a fixed constraint instead of a ^x.y constraint when adding the requirement
-  * Fixed GitHub deprecation of access_token query parameter, now using Authorization header
+  * Fixed exclude-from-classmap matching subsets of directories e.g. foo/ was excluding foobar/
   * Fixed archive command to persist file permissions inside the zip files
   * Fixed init/require command to avoid suggesting packages which are already selected in the search results
   * Fixed create-project UX issues
+  * Fixed filemtime for vendor/composer/* files is now only changing when the files actually change
+  * Fixed issues detecting docker environment with an active open_basedir
+
+### [1.9.3] 2020-02-04
+
+  * Fixed GitHub deprecation of access_token query parameter, now using Authorization header
 
 ### [1.9.2] 2020-01-14
 
@@ -692,7 +759,7 @@
 ### [1.0.0-alpha6] - 2012-10-23
 
   * Schema: Added ability to pass additional options to repositories (i.e. ssh keys/client certificates to secure private repos)
-  * Schema: Added a new `~` operator that should be preferred over `>=`, see http://getcomposer.org/doc/01-basic-usage.md#package-versions
+  * Schema: Added a new `~` operator that should be preferred over `>=`, see https://getcomposer.org/doc/01-basic-usage.md#package-versions
   * Schema: Version constraints `<x.y` are assumed to be `<x.y-dev` unless specified as `<x.y-stable` to reduce confusion
   * Added `config` command to edit/list config values, including --global switch for system config
   * Added OAuth token support for the GitHub API
@@ -801,7 +868,14 @@
 
   * Initial release
 
-[1.10.0]: https://github.com/composer/composer/compare/1.9.2...1.10.0
+[1.10.5]: https://github.com/composer/composer/compare/1.10.4...1.10.5
+[1.10.4]: https://github.com/composer/composer/compare/1.10.3...1.10.4
+[1.10.3]: https://github.com/composer/composer/compare/1.10.2...1.10.3
+[1.10.2]: https://github.com/composer/composer/compare/1.10.1...1.10.2
+[1.10.1]: https://github.com/composer/composer/compare/1.10.0...1.10.1
+[1.10.0]: https://github.com/composer/composer/compare/1.10.0-RC...1.10.0
+[1.10.0-RC]: https://github.com/composer/composer/compare/1.9.3...1.10.0-RC
+[1.9.3]: https://github.com/composer/composer/compare/1.9.2...1.9.3
 [1.9.2]: https://github.com/composer/composer/compare/1.9.1...1.9.2
 [1.9.1]: https://github.com/composer/composer/compare/1.9.0...1.9.1
 [1.9.0]: https://github.com/composer/composer/compare/1.8.6...1.9.0

@@ -43,6 +43,11 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         $this->repoConfig = $repoConfig;
     }
 
+    public function getRepoName()
+    {
+        return 'artifact repo ('.$this->lookup.')';
+    }
+
     public function getRepoConfig()
     {
         return $this->repoConfig;

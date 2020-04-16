@@ -106,7 +106,6 @@ resolution.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--no-suggest:** Skips suggested packages in the output.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -156,9 +155,8 @@ php composer.phar update "vendor/*"
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--no-suggest:** Skips suggested packages in the output.
-* **--with-dependencies:** Add also dependencies of whitelisted packages to the whitelist, except those that are root requirements.
-* **--with-all-dependencies:** Add also all dependencies of whitelisted packages to the whitelist, including those that are root requirements.
+* **--with-dependencies:** Update also dependencies of packages in the argument list, except those which are root requirements.
+* **--with-all-dependencies:** Update also dependencies of packages in the argument list, including those which are root requirements.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -190,7 +188,7 @@ If you do not want to choose requirements interactively, you can pass them
 to the command.
 
 ```sh
-php composer.phar require vendor/package:2.* vendor/package2:dev-master
+php composer.phar require "vendor/package:2.*" vendor/package2:dev-master
 ```
 
 If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of  matches to require.
@@ -198,11 +196,11 @@ If you do not specify a package, composer will prompt you to search for a packag
 ### Options
 
 * **--dev:** Add packages to `require-dev`.
+* **--dry-run:** Simulate the command without actually doing anything.
 * **--prefer-source:** Install packages from `source` when available.
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--no-suggest:** Skips suggested packages in the output.
 * **--no-update:** Disables the automatic update of the dependencies.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
@@ -236,6 +234,7 @@ uninstalled.
 
 ### Options
 * **--dev:** Remove packages from `require-dev`.
+* **--dry-run:** Simulate the command without actually doing anything.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies.
@@ -408,17 +407,24 @@ Lists all packages suggested by currently installed set of packages. You can
 optionally pass one or multiple package names in the format of `vendor/package`
 to limit output to suggestions made by those packages only.
 
-Use the `--by-package` or `--by-suggestion` flags to group the output by
+Use the `--by-package` (default) or `--by-suggestion` flags to group the output by
 the package offering the suggestions or the suggested packages respectively.
 
-Use the `--verbose (-v)` flag to display the suggesting package and the suggestion reason.
-This implies `--by-package --by-suggestion`, showing both lists.
+If you only want a list of suggested package names, use `--list`.
 
 ### Options
 
-* **--by-package:** Groups output by suggesting package.
+* **--by-package:** Groups output by suggesting package (default).
 * **--by-suggestion:** Groups output by suggested package.
+* **--all:** Show suggestions from all dependencies, including transitive ones (by
+  default only direct dependencies' suggestions are shown).
+* **--list:** Show only list of suggested package names.
 * **--no-dev:** Excludes suggestions from `require-dev` packages.
+
+## fund
+
+Discover how to help fund the maintenance of your dependencies. This lists
+all funding links from the installed dependencies.
 
 ## depends (why)
 
@@ -647,7 +653,7 @@ provide a version as third argument, otherwise the latest version is used.
 If the directory does not currently exist, it will be created during installation.
 
 ```sh
-php composer.phar create-project doctrine/orm path 2.2.*
+php composer.phar create-project doctrine/orm path "2.2.*"
 ```
 
 It is also possible to run the command without params in a directory with an
@@ -665,6 +671,7 @@ By default the command checks for the packages on packagist.org.
   to a `composer` repository, a path to a local `packages.json` file, or a
   JSON string which similar to what the [repositories](04-schema.md#repositories)
   key accepts.
+* **--add-repository:** Add the repository option to the composer.json.
 * **--dev:** Install packages listed in `require-dev`.
 * **--no-dev:** Disables installation of require-dev packages.
 * **--no-scripts:** Disables the execution of the scripts defined in the root
@@ -945,5 +952,13 @@ domains the proxy should *not* be used for.
 The env var accepts domains, IP addresses, and IP address blocks in CIDR
 notation. You can restrict the filter to a particular port (e.g. `:80`). You
 can also set it to `*` to ignore the proxy for all HTTP requests.
+
+### COMPOSER_DISABLE_NETWORK
+
+If set to `1`, disables network access (best effort). This can be used for debugging or
+to run Composer on a plane or a starship with poor connectivity.
+
+If set to `prime`, GitHub VCS repositories will prime the cache so it can then be used
+fully offline with `1`.
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

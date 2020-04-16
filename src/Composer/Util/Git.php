@@ -79,7 +79,7 @@ class Git
                     return;
                 }
                 $messages[] = '- ' . $protoUrl . "\n" . preg_replace('#^#m', '  ', $this->process->getErrorOutput());
-                if ($initialClone) {
+                if ($initialClone && isset($origCwd)) {
                     $this->filesystem->removeDirectory($origCwd);
                 }
             }
@@ -97,6 +97,7 @@ class Git
 
         $auth = null;
         if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
+            $errorMsg = $this->process->getErrorOutput();
             // private github repository without ssh key access, try https with auth
             if (preg_match('{^git@' . self::getGitHubDomainsRegex($this->config) . ':(.+?)\.git$}i', $url, $match)
                 || preg_match('{^https?://' . self::getGitHubDomainsRegex($this->config) . '/(.*)}', $url, $match)
@@ -117,6 +118,8 @@ class Git
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
                     }
+
+                    $errorMsg = $this->process->getErrorOutput();
                 }
             } elseif (preg_match('{^https://(bitbucket\.org)/(.*)(\.git)?$}U', $url, $match)) { //bitbucket oauth
                 $bitbucketUtil = new Bitbucket($this->io, $this->config, $this->process);
@@ -149,6 +152,8 @@ class Git
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
                     }
+
+                    $errorMsg = $this->process->getErrorOutput();
                 } else { // Falling back to ssh
                     $sshUrl = 'git@bitbucket.org:' . $match[2] . '.git';
                     $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
@@ -156,6 +161,8 @@ class Git
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
                     }
+
+                    $errorMsg = $this->process->getErrorOutput();
                 }
             } elseif (
                 preg_match('{^(git)@' . self::getGitLabDomainsRegex($this->config) . ':(.+?)\.git$}i', $url, $match)
@@ -186,6 +193,8 @@ class Git
                     if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
                         return;
                     }
+
+                    $errorMsg = $this->process->getErrorOutput();
                 }
             } elseif ($this->isAuthenticationFailure($url, $match)) { // private non-github/gitlab/bitbucket repo that failed to authenticate
                 if (strpos($match[2], '@')) {
@@ -224,11 +233,12 @@ class Git
 
                         return;
                     }
+
+                    $errorMsg = $this->process->getErrorOutput();
                 }
             }
 
-            $errorMsg = $this->process->getErrorOutput();
-            if ($initialClone) {
+            if ($initialClone && isset($origCwd)) {
                 $this->filesystem->removeDirectory($origCwd);
             }
 
@@ -238,6 +248,12 @@ class Git
 
     public function syncMirror($url, $dir)
     {
+        if (getenv('COMPOSER_DISABLE_NETWORK') && getenv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
+            $this->io->writeError('<warning>Aborting git mirror sync of '.$url.' as network is disabled</warning>');
+
+            return false;
+        }
+
         // update the repo if it is a valid git repository
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             try {
@@ -248,6 +264,8 @@ class Git
                 };
                 $this->runCommand($commandCallable, $url, $dir);
             } catch (\Exception $e) {
+                $this->io->writeError('<error>Sync mirror failed: ' . $e->getMessage() . '</error>', true, IOInterface::DEBUG);
+
                 return false;
             }
 
@@ -358,27 +376,16 @@ class Git
         return '(' . implode('|', array_map('preg_quote', $config->get('gitlab-domains'))) . ')';
     }
 
-    public static function sanitizeUrl($message)
-    {
-        return preg_replace_callback('{://(?P<user>[^@]+?):(?P<password>.+?)@}', function ($m) {
-            if (preg_match('{^[a-f0-9]{12,}$}', $m[1])) {
-                return '://***:***@';
-            }
-
-            return '://' . $m[1] . ':***@';
-        }, $message);
-    }
-
     private function throwException($message, $url)
     {
         // git might delete a directory when it fails and php will not know
         clearstatcache();
 
         if (0 !== $this->process->execute('git --version', $ignoredOutput)) {
-            throw new \RuntimeException(self::sanitizeUrl('Failed to clone ' . $url . ', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
+            throw new \RuntimeException(Url::sanitize('Failed to clone ' . $url . ', git was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
         }
 
-        throw new \RuntimeException(self::sanitizeUrl($message));
+        throw new \RuntimeException(Url::sanitize($message));
     }
 
     /**

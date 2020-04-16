@@ -14,7 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\Util\IniHelper;
 use Composer\XdebugHandler\XdebugHandler;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * @author John Stevenson <john-stevenson@blueyonder.co.uk>

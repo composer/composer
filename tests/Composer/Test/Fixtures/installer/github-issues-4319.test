@@ -28,16 +28,16 @@ Present a clear error message when config.platform.php version results in a conf
 }
 
 --RUN--
-install
+update
 
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-Updating dependencies (including require-dev)
+Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - Installation request for a/a ~1.0 -> satisfiable by a/a[1.0.0].
-    - a/a 1.0.0 requires php 5.5 -> your PHP version (%s) overridden by "config.platform.php" version (5.3) does not satisfy that requirement.
+    - Root composer.json requires a/a ~1.0 -> satisfiable by a/a[1.0.0].
+    - a/a 1.0.0 requires php 5.5 -> your php version (5.3; overridden via config.platform, actual: %s) does not satisfy that requirement.
 
 --EXPECT--
 

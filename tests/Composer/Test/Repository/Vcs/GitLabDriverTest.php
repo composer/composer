@@ -17,6 +17,7 @@ use Composer\Config;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Prophecy\Argument;
+use Composer\Util\Http\Response;
 
 /**
  * @author Jérôme Tamarelle <jerome@tamarelle.net>
@@ -27,7 +28,7 @@ class GitLabDriverTest extends TestCase
     private $config;
     private $io;
     private $process;
-    private $remoteFilesystem;
+    private $httpDownloader;
 
     public function setUp()
     {
@@ -47,7 +48,7 @@ class GitLabDriverTest extends TestCase
 
         $this->io = $this->prophesize('Composer\IO\IOInterface');
         $this->process = $this->prophesize('Composer\Util\ProcessExecutor');
-        $this->remoteFilesystem = $this->prophesize('Composer\Util\RemoteFilesystem');
+        $this->httpDownloader = $this->prophesize('Composer\Util\HttpDownloader');
     }
 
     public function tearDown()
@@ -87,13 +88,11 @@ class GitLabDriverTest extends TestCase
 }
 JSON;
 
-        $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false, array())
-            ->willReturn($projectData)
+        $this->mockResponse($apiUrl, array(), $projectData)
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -126,13 +125,11 @@ JSON;
 }
 JSON;
 
-        $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false, array())
-            ->willReturn($projectData)
+        $this->mockResponse($apiUrl, array(), $projectData)
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -164,13 +161,11 @@ JSON;
 }
 JSON;
 
-        $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false, array())
-            ->willReturn($projectData)
+        $this->mockResponse($apiUrl, array(), $projectData)
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -206,12 +201,10 @@ JSON;
 }
 JSON;
 
-        $this->remoteFilesystem
-            ->getContents($domain.':'.$port, $apiUrl, false, array())
-            ->willReturn(sprintf($projectData, $domain, $port, $namespace))
+        $this->mockResponse($apiUrl, array(), sprintf($projectData, $domain, $port, $namespace))
             ->shouldBeCalledTimes(1);
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -289,15 +282,11 @@ JSON;
 ]
 JSON;
 
-        $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false, array())
-            ->willReturn($tagData)
+        $this->mockResponse($apiUrl, array(), $tagData)
             ->shouldBeCalledTimes(1)
         ;
-        $this->remoteFilesystem->getLastHeaders()
-            ->willReturn(array());
 
-        $driver->setRemoteFilesystem($this->remoteFilesystem->reveal());
+        $driver->setHttpDownloader($this->httpDownloader->reveal());
 
         $expected = array(
             'v1.0.0' => '092ed2c762bbae331e3f51d4a17f67310bf99a81',
@@ -344,26 +333,20 @@ JSON;
 
         $branchData = json_encode($branchData);
 
-        $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false, array())
-            ->willReturn($branchData)
-            ->shouldBeCalledTimes(1)
-        ;
+        $headers = array('Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="next", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"');
+        $this->httpDownloader
+            ->get($apiUrl, array())
+            ->willReturn(new Response(array('url' => $apiUrl), 200, $headers, $branchData))
+            ->shouldBeCalledTimes(1);
 
-        $this->remoteFilesystem
-            ->getContents('gitlab.com', "http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20", false, array())
-            ->willReturn($branchData)
-            ->shouldBeCalledTimes(1)
-        ;
+        $apiUrl = "http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20";
+        $headers = array('Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="prev", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"');
+        $this->httpDownloader
+            ->get($apiUrl, array())
+            ->willReturn(new Response(array('url' => $apiUrl), 200, $headers, $branchData))
+            ->shouldBeCalledTimes(1);
 
-        $this->remoteFilesystem->getLastHeaders()
-            ->willReturn(
-                array('Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="next", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"'),
-                array('Link: <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=2&per_page=20>; rel="prev", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=1&per_page=20>; rel="first", <http://gitlab.com/api/v4/projects/mygroup%2Fmyproject/repository/tags?id=mygroup%2Fmyproject&page=3&per_page=20>; rel="last"')
-            )
-            ->shouldBeCalledTimes(2);
-
-        $driver->setRemoteFilesystem($this->remoteFilesystem->reveal());
+        $driver->setHttpDownloader($this->httpDownloader->reveal());
 
         $expected = array(
             'mymaster' => '97eda36b5c1dd953a3792865c222d4e85e5f302e',
@@ -401,15 +384,11 @@ JSON;
 ]
 JSON;
 
-        $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false, array())
-            ->willReturn($branchData)
+        $this->mockResponse($apiUrl, array(), $branchData)
             ->shouldBeCalledTimes(1)
         ;
-        $this->remoteFilesystem->getLastHeaders()
-            ->willReturn(array());
 
-        $driver->setRemoteFilesystem($this->remoteFilesystem->reveal());
+        $driver->setHttpDownloader($this->httpDownloader->reveal());
 
         $expected = array(
             'mymaster' => '97eda36b5c1dd953a3792865c222d4e85e5f302e',
@@ -474,13 +453,11 @@ JSON;
 }
 JSON;
 
-        $this->remoteFilesystem
-            ->getContents('mycompany.com/gitlab', $apiUrl, false, array())
-            ->willReturn($projectData)
+        $this->mockResponse($apiUrl, array(), $projectData)
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -507,13 +484,11 @@ JSON;
 }
 JSON;
 
-        $this->remoteFilesystem
-            ->getContents('gitlab.com', $apiUrl, false, array())
-            ->willReturn($projectData)
+        $this->mockResponse($apiUrl, array(), $projectData)
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -540,13 +515,11 @@ JSON;
 }
 JSON;
 
-        $this->remoteFilesystem
-            ->getContents('mycompany.com/gitlab', $apiUrl, false, array())
-            ->willReturn($projectData)
+        $this->mockResponse($apiUrl, array(), $projectData)
             ->shouldBeCalledTimes(1)
         ;
 
-        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->process->reveal(), $this->remoteFilesystem->reveal());
+        $driver = new GitLabDriver(array('url' => $url), $this->io->reveal(), $this->config, $this->httpDownloader->reveal(), $this->process->reveal());
         $driver->initialize();
 
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
@@ -575,18 +548,23 @@ JSON;
 }
 JSON;
 
-        $this->remoteFilesystem
-            ->getContents(Argument::cetera(), $options)
-            ->willReturn($projectData)
+        $this->mockResponse(Argument::cetera(), $options, $projectData)
             ->shouldBeCalled();
 
         $driver = new GitLabDriver(
             array('url' => 'https://gitlab.mycompany.local/mygroup/myproject', 'options' => $options),
             $this->io->reveal(),
             $this->config,
-            $this->process->reveal(),
-            $this->remoteFilesystem->reveal()
+            $this->httpDownloader->reveal(),
+            $this->process->reveal()
         );
         $driver->initialize();
+    }
+
+    private function mockResponse($url, $options, $return)
+    {
+        return $this->httpDownloader
+            ->get($url, $options)
+            ->willReturn(new Response(array('url' => $url), 200, array(), $return));
     }
 }

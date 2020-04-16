@@ -159,7 +159,7 @@ php composer.phar update
 > if the `composer.lock` has not been updated since changes were made to the
 > `composer.json` that might affect dependency resolution.
 
-If you only want to install or update one dependency, you can whitelist them:
+If you only want to install, upgrade or remove one dependency, you can explicitly list it as an argument:
 
 ```sh
 php composer.phar update monolog/monolog [...]
@@ -233,7 +233,7 @@ You can even add your own code to the autoloader by adding an
 }
 ```
 
-Composer will register a [PSR-4](http://www.php-fig.org/psr/psr-4/) autoloader
+Composer will register a [PSR-4](https://www.php-fig.org/psr/psr-4/) autoloader
 for the `Acme` namespace.
 
 You define a mapping from namespaces to directories. The `src` directory would
@@ -241,14 +241,15 @@ be in your project root, on the same level as `vendor` directory is. An example
 filename would be `src/Foo.php` containing an `Acme\Foo` class.
 
 After adding the [`autoload`](04-schema.md#autoload) field, you have to re-run
-this command :
+this command:
 
 ```sh
 php composer.phar dump-autoload
 ```
 
 This command will re-generate the `vendor/autoload.php` file.
-See the [`dump-autoload`](03-cli.md#dump-autoload) section for more information.
+See the [`dump-autoload`](03-cli.md#dump-autoload-dumpautoload-) section for
+more information.
 
 Including that file will also return the autoloader instance, so you can store
 the return value of the include call in a variable and add more namespaces.

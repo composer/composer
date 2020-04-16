@@ -38,7 +38,7 @@ interface VcsDriverInterface
      *
      * @param  string $file
      * @param  string $identifier
-     * @return string
+     * @return string|null
      */
     public function getFileContent($file, $identifier);
 
@@ -46,7 +46,7 @@ interface VcsDriverInterface
      * Get the changedate for $identifier.
      *
      * @param  string    $identifier
-     * @return \DateTime
+     * @return \DateTime|null
      */
     public function getChangeDate($identifier);
 
@@ -73,7 +73,7 @@ interface VcsDriverInterface
 
     /**
      * @param  string $identifier Any identifier to a specific branch/tag/commit
-     * @return array  With type, url reference and shasum keys.
+     * @return array|null  With type, url reference and shasum keys.
      */
     public function getDist($identifier);
 

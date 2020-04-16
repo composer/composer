@@ -13,7 +13,7 @@
 namespace Composer\Test\Console;
 
 use Composer\Console\HtmlOutputFormatter;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
 class HtmlOutputFormatterTest extends TestCase
@@ -24,7 +24,7 @@ class HtmlOutputFormatterTest extends TestCase
             'warning' => new OutputFormatterStyle('black', 'yellow'),
         ));
 
-        return $this->assertEquals(
+        $this->assertEquals(
             'text <span style="color:green;">green</span> <span style="color:yellow;">yellow</span> <span style="color:black;background-color:yellow;">black w/ yello bg</span>',
             $formatter->format('text <info>green</info> <comment>yellow</comment> <warning>black w/ yello bg</warning>')
         );

@@ -20,7 +20,6 @@ use Composer\Installer\InstallationManager;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
@@ -28,6 +27,7 @@ use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\InputArgument;
@@ -38,6 +38,7 @@ use Symfony\Component\Finder\Finder;
 use Composer\Json\JsonFile;
 use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
+use Composer\Util\Loop;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -69,6 +70,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED, 'Pick a different repository (as url or json config) to look for the package.'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'DEPRECATED: Use --repository instead.'),
+                new InputOption('add-repository', null, InputOption::VALUE_NONE, 'Add the repository option to the composer.json.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
@@ -142,11 +144,12 @@ EOT
             $input->getOption('no-progress'),
             $input->getOption('no-install'),
             $input->getOption('ignore-platform-reqs'),
-            !$input->getOption('no-secure-http')
+            !$input->getOption('no-secure-http'),
+            $input->getOption('add-repository')
         );
     }
 
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true)
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true, $addRepository = false)
     {
         $oldCwd = getcwd();
 
@@ -162,7 +165,23 @@ EOT
         }
 
         $composer = Factory::create($io, null, $disablePlugins);
-        $composer->getDownloadManager()->setOutputProgress(!$noProgress);
+
+        // add the repository to the composer.json and use it for the install run later
+        if ($repository !== null && $addRepository) {
+            if ($composer->getLocker()->isLocked()) {
+                $io->writeError('<error>Adding a repository when creating a project that provides a composer.lock file is not supported</error>');
+
+                return false;
+            }
+
+            $repoConfig = RepositoryFactory::configFromString($io, $composer->getConfig(), $repository, true);
+            $composerJsonRepositoriesConfig = $composer->getConfig()->getRepositories();
+            $name = RepositoryFactory::generateRepositoryName(0, $repoConfig, $composerJsonRepositoriesConfig);
+            $configSource = new JsonConfigSource(new JsonFile('composer.json'));
+            $configSource->addRepository($name, $repoConfig);
+
+            $composer = Factory::create($io, null, $disablePlugins);
+        }
 
         $fs = new Filesystem();
 
@@ -282,13 +301,16 @@ EOT
         // if no directory was specified, use the 2nd part of the package name
         if (null === $directory) {
             $parts = explode("/", $name, 2);
-            $directory = array_pop($parts);
+            $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
-        $directory = getcwd() . DIRECTORY_SEPARATOR . $directory;
-        $io->writeError('<info>Creating a "' . $packageName . '" project at "' . $directory . '"</info>');
-
         $fs = new Filesystem();
+        if (!$fs->isAbsolutePath($directory)) {
+            $directory = getcwd() . DIRECTORY_SEPARATOR . $directory;
+        }
+
+        $io->writeError('<info>Creating a "' . $packageName . '" project at "' . $fs->findShortestPath(getcwd(), $directory, true) . '"</info>');
+
         if (file_exists($directory)) {
             if (!is_dir($directory)) {
                 throw new \InvalidArgumentException('Cannot create project directory at "'.$directory.'", it exists as a file.');
@@ -311,8 +333,8 @@ EOT
             throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
-        $pool = new Pool($stability);
-        $pool->addRepository($sourceRepo);
+        $repositorySet = new RepositorySet($stability);
+        $repositorySet->addRepository($sourceRepo);
 
         $phpVersion = null;
         $prettyPhpVersion = null;
@@ -326,7 +348,7 @@ EOT
         }
 
         // find the latest version if there are multiple
-        $versionSelector = new VersionSelector($pool);
+        $versionSelector = new VersionSelector($repositorySet);
         $package = $versionSelector->findBestCandidate($name, $packageVersion, $phpVersion, $stability);
 
         if (!$package) {
@@ -361,15 +383,17 @@ EOT
             $package = $package->getAliasOf();
         }
 
-        $dm = $this->createDownloadManager($io, $config);
+        $factory = new Factory();
+
+        $httpDownloader = $factory->createHttpDownloader($io, $config);
+        $dm = $factory->createDownloadManager($io, $config, $httpDownloader);
         $dm->setPreferSource($preferSource)
-            ->setPreferDist($preferDist)
-            ->setOutputProgress(!$noProgress);
+            ->setPreferDist($preferDist);
 
         $projectInstaller = new ProjectInstaller($directory, $dm);
-        $im = $this->createInstallationManager();
+        $im = $factory->createInstallationManager(new Loop($httpDownloader), $io);
         $im->addInstaller($projectInstaller);
-        $im->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
+        $im->execute(new InstalledFilesystemRepository(new JsonFile('php://memory')), array(new InstallOperation($package)));
         $im->notifyInstalls($io);
 
         // collect suggestions
@@ -384,17 +408,5 @@ EOT
         putenv('COMPOSER_ROOT_VERSION='.$_SERVER['COMPOSER_ROOT_VERSION']);
 
         return $installedFromVcs;
-    }
-
-    protected function createDownloadManager(IOInterface $io, Config $config)
-    {
-        $factory = new Factory();
-
-        return $factory->createDownloadManager($io, $config);
-    }
-
-    protected function createInstallationManager()
-    {
-        return new InstallationManager();
     }
 }

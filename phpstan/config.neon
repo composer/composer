@@ -1,0 +1,44 @@
+parameters:
+    level: 1
+    autoload_files:
+        - autoload.php
+    excludes_analyse:
+       - '../tests/Composer/Test/Fixtures/*'
+       - '../tests/Composer/Test/Autoload/Fixtures/*'
+       - '../tests/Composer/Test/Plugin/Fixtures/*'
+    ignoreErrors:
+        # unused parameters
+        - '~^Constructor of class Composer\\Repository\\VcsRepository has an unused parameter \$dispatcher\.$~'
+        - '~^Constructor of class Composer\\Util\\Http\\CurlDownloader has an unused parameter \$disableTls\.$~'
+        - '~^Constructor of class Composer\\Util\\Http\\CurlDownloader has an unused parameter \$options\.$~'
+
+        # ion cube is not installed
+        - '~^Function ioncube_loader_\w+ not found\.$~'
+
+        # variables from global scope
+        - '~^Undefined variable: \$vendorDir$~'
+        - '~^Undefined variable: \$baseDir$~'
+
+        # variable defined in eval
+        - '~^Undefined variable: \$res$~'
+
+        # erroneous detection of missing const, see https://github.com/phpstan/phpstan/issues/2960
+        - '~^Access to undefined constant ZipArchive::LIBZIP_VERSION.$~'
+
+        # we don't have different constructors for parent/child
+        - '~^Unsafe usage of new static\(\)\.$~'
+
+        # BC with older PHPUnit
+        - '~^Call to an undefined static method PHPUnit\\Framework\\TestCase::setExpectedException\(\)\.$~'
+
+        # hhvm should have support for $this in closures
+        -
+            count: 1
+            message: '~^Using \$this inside anonymous function is prohibited because of PHP 5\.3 support\.$~'
+            path: '../tests/Composer/Test/Repository/PlatformRepositoryTest.php'
+    paths:
+        - ../src
+        - ../tests
+
+rules:
+    - Composer\PHPStanRules\AnonymousFunctionWithThisRule

@@ -19,16 +19,16 @@ Broken dependencies should not lead to a replacer being installed which is not m
     }
 }
 --RUN--
-install
+update
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-Updating dependencies (including require-dev)
+Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - c/c 1.0.0 requires x/x 1.0 -> no matching package found.
+    - c/c 1.0.0 requires x/x 1.0 -> could not be found in any version, there may be a typo in the package name.
     - b/b 1.0.0 requires c/c 1.* -> satisfiable by c/c[1.0.0].
-    - Installation request for b/b 1.* -> satisfiable by b/b[1.0.0].
+    - Root composer.json requires b/b 1.* -> satisfiable by b/b[1.0.0].
 
 Potential causes:
  - A typo in the package name

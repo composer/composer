@@ -36,5 +36,5 @@ Updates updateable packages
 --RUN--
 update
 --EXPECT--
-Updating a/a (1.0.0) to a/a (1.0.1)
-Updating a/b (1.0.0) to a/b (2.0.0)
+Upgrading a/a (1.0.0 => 1.0.1)
+Upgrading a/b (1.0.0 => 2.0.0)

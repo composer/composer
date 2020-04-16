@@ -193,7 +193,33 @@ class ValidatingArrayLoader implements LoaderInterface
             }
         }
 
-        $unboundConstraint = new Constraint('=', $this->versionParser->normalize('dev-master'));
+        if ($this->validateArray('funding') && !empty($this->config['funding'])) {
+            foreach ($this->config['funding'] as $key => $fundingOption) {
+                if (!is_array($fundingOption)) {
+                    $this->errors[] = 'funding.'.$key.' : should be an array, '.gettype($fundingOption).' given';
+                    unset($this->config['funding'][$key]);
+                    continue;
+                }
+                foreach (array('type', 'url') as $fundingData) {
+                    if (isset($fundingOption[$fundingData]) && !is_string($fundingOption[$fundingData])) {
+                        $this->errors[] = 'funding.'.$key.'.'.$fundingData.' : invalid value, must be a string';
+                        unset($this->config['funding'][$key][$fundingData]);
+                    }
+                }
+                if (isset($fundingOption['url']) && !$this->filterUrl($fundingOption['url'])) {
+                    $this->warnings[] = 'funding.'.$key.'.url : invalid value ('.$fundingOption['url'].'), must be an http/https URL';
+                    unset($this->config['funding'][$key]['url']);
+                }
+                if (empty($this->config['funding'][$key])) {
+                    unset($this->config['funding'][$key]);
+                }
+            }
+            if (empty($this->config['funding'])) {
+                unset($this->config['funding']);
+            }
+        }
+
+        $unboundConstraint = new Constraint('=', '10000000-dev');
         $stableConstraint = new Constraint('=', '1.0.0');
 
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
@@ -348,8 +374,8 @@ class ValidatingArrayLoader implements LoaderInterface
             return;
         }
 
-        if (!preg_match('{^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9]([_.-]?[a-z0-9]+)*$}iD', $name)) {
-            return $name.' is invalid, it should have a vendor name, a forward slash, and a package name. The vendor and package name can be words separated by -, . or _. The complete name should match "[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9]([_.-]?[a-z0-9]+)*".';
+        if (!preg_match('{^[a-z0-9](?:[_.-]?[a-z0-9]+)*/[a-z0-9](?:(?:[_.]?|-{0,2})[a-z0-9]+)*$}iD', $name)) {
+            return $name.' is invalid, it should have a vendor name, a forward slash, and a package name. The vendor and package name can be words separated by -, . or _. The complete name should match "^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$".';
         }
 
         $reservedNames = array('nul', 'con', 'prn', 'aux', 'com1', 'com2', 'com3', 'com4', 'com5', 'com6', 'com7', 'com8', 'com9', 'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9');

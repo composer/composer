@@ -6,22 +6,22 @@ Requirements from the composer file are not installed if the lock file is presen
         {
             "type": "package",
             "package": [
-                { "name": "required", "version": "1.0.0" },
-                { "name": "newly-required", "version": "1.0.0" }
+                { "name": "required/pkg", "version": "1.0.0" },
+                { "name": "newly-required/pkg", "version": "1.0.0" }
             ]
         }
     ],
     "require": {
-        "required": "1.0.0",
-        "newly-required": "1.0.0"
+        "required/pkg": "1.0.0",
+        "newly-required/pkg": "1.0.0"
     }
 }
 --LOCK--
 {
     "packages": [
-        { "name": "required", "version": "1.0.0" }
+        { "name": "required/pkg", "version": "1.0.0" }
     ],
-    "packages-dev": null,
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": [],
@@ -31,4 +31,4 @@ Requirements from the composer file are not installed if the lock file is presen
 --RUN--
 install
 --EXPECT--
-Installing required (1.0.0)
+Installing required/pkg (1.0.0)

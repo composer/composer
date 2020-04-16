@@ -16,7 +16,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\Json\JsonFile;
 
 /**
@@ -36,7 +36,7 @@ class RepositoryFactory
         if (0 === strpos($repository, 'http')) {
             $repoConfig = array('type' => 'composer', 'url' => $repository);
         } elseif ("json" === pathinfo($repository, PATHINFO_EXTENSION)) {
-            $json = new JsonFile($repository, Factory::createRemoteFilesystem($io, $config));
+            $json = new JsonFile($repository, Factory::createHttpDownloader($io, $config));
             $data = $json->read();
             if (!empty($data['packages']) || !empty($data['includes']) || !empty($data['provider-includes'])) {
                 $repoConfig = array('type' => 'composer', 'url' => 'file://' . strtr(realpath($repository), '\\', '/'));
@@ -77,7 +77,7 @@ class RepositoryFactory
      */
     public static function createRepo(IOInterface $io, Config $config, array $repoConfig)
     {
-        $rm = static::manager($io, $config, null, Factory::createRemoteFilesystem($io, $config));
+        $rm = static::manager($io, $config, Factory::createHttpDownloader($io, $config));
         $repos = static::createRepos($rm, array($repoConfig));
 
         return reset($repos);
@@ -101,7 +101,7 @@ class RepositoryFactory
             if (!$io) {
                 throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
             }
-            $rm = static::manager($io, $config, null, Factory::createRemoteFilesystem($io, $config));
+            $rm = static::manager($io, $config, Factory::createHttpDownloader($io, $config));
         }
 
         return static::createRepos($rm, $config->getRepositories());
@@ -111,12 +111,12 @@ class RepositoryFactory
      * @param  IOInterface       $io
      * @param  Config            $config
      * @param  EventDispatcher   $eventDispatcher
-     * @param  RemoteFilesystem  $rfs
+     * @param  HttpDownloader    $httpDownloader
      * @return RepositoryManager
      */
-    public static function manager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, RemoteFilesystem $rfs = null)
+    public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
     {
-        $rm = new RepositoryManager($io, $config, $eventDispatcher, $rfs);
+        $rm = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
@@ -153,10 +153,8 @@ class RepositoryFactory
             if (!isset($repo['type'])) {
                 throw new \UnexpectedValueException('Repository "'.$index.'" ('.json_encode($repo).') must have a type defined');
             }
-            $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
-            while (isset($repos[$name])) {
-                $name .= '2';
-            }
+
+            $name = self::generateRepositoryName($index, $repo, $repos);
             if ($repo['type'] === 'filesystem') {
                 $repos[$name] = new FilesystemRepository($repo['json']);
             } else {
@@ -165,5 +163,15 @@ class RepositoryFactory
         }
 
         return $repos;
+    }
+
+    public static function generateRepositoryName($index, array $repo, array $existingRepos)
+    {
+        $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
+        while (isset($existingRepos[$name])) {
+            $name .= '2';
+        }
+
+        return $name;
     }
 }

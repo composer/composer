@@ -22,6 +22,7 @@ use Composer\Script\ScriptEvents;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\Filesystem;
+use Composer\Util\Loop;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -64,13 +65,19 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $config = Factory::createConfig();
         $composer = $this->getComposer(false);
+        $config = null;
+
         if ($composer) {
+            $config = $composer->getConfig();
             $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'archive', $input, $output);
             $eventDispatcher = $composer->getEventDispatcher();
             $eventDispatcher->dispatch($commandEvent->getName(), $commandEvent);
             $eventDispatcher->dispatchScript(ScriptEvents::PRE_ARCHIVE_CMD);
+        }
+
+        if (!$config) {
+            $config = Factory::createConfig();
         }
 
         if (null === $input->getOption('format')) {
@@ -105,8 +112,9 @@ EOT
             $archiveManager = $composer->getArchiveManager();
         } else {
             $factory = new Factory;
-            $downloadManager = $factory->createDownloadManager($io, $config);
-            $archiveManager = $factory->createArchiveManager($config, $downloadManager);
+            $httpDownloader = $factory->createHttpDownloader($io, $config);
+            $downloadManager = $factory->createDownloadManager($io, $config, $httpDownloader);
+            $archiveManager = $factory->createArchiveManager($config, $downloadManager, new Loop($httpDownloader));
         }
 
         if ($packageName) {

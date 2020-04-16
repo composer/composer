@@ -15,6 +15,8 @@ namespace Composer\Repository;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Installer\InstallationManager;
+use Composer\Util\Filesystem;
 
 /**
  * Filesystem repository.
@@ -49,7 +51,12 @@ class FilesystemRepository extends WritableArrayRepository
         }
 
         try {
-            $packages = $this->file->read();
+            $data = $this->file->read();
+            if (isset($data['packages'])) {
+                $packages = $data['packages'];
+            } else {
+                $packages = $data;
+            }
 
             // forward compatibility for composer v2 installed.json
             if (isset($packages['packages'])) {
@@ -79,16 +86,21 @@ class FilesystemRepository extends WritableArrayRepository
     /**
      * Writes writable repository.
      */
-    public function write()
+    public function write($devMode, InstallationManager $installationManager)
     {
-        $data = array();
+        $data = array('packages' => array(), 'dev' => $devMode);
         $dumper = new ArrayDumper();
+        $fs = new Filesystem();
+        $repoDir = dirname($fs->normalizePath($this->file->getPath()));
 
         foreach ($this->getCanonicalPackages() as $package) {
-            $data[] = $dumper->dump($package);
+            $pkgArray = $dumper->dump($package);
+            $path = $installationManager->getInstallPath($package);
+            $pkgArray['install-path'] = ('' !== $path && null !== $path) ? $fs->findShortestPath($repoDir, $fs->isAbsolutePath($path) ? $path : getcwd() . '/' . $path, true) : null;
+            $data['packages'][] = $pkgArray;
         }
 
-        usort($data, function ($a, $b) {
+        usort($data['packages'], function ($a, $b) {
             return strcmp($a['name'], $b['name']);
         });
 

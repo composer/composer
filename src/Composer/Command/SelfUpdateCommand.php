@@ -51,6 +51,8 @@ class SelfUpdateCommand extends BaseCommand
                 new InputOption('stable', null, InputOption::VALUE_NONE, 'Force an update to the stable channel'),
                 new InputOption('preview', null, InputOption::VALUE_NONE, 'Force an update to the preview channel'),
                 new InputOption('snapshot', null, InputOption::VALUE_NONE, 'Force an update to the snapshot channel'),
+                new InputOption('1', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 1.x versions'),
+                new InputOption('2', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 2.x versions'),
                 new InputOption('set-channel-only', null, InputOption::VALUE_NONE, 'Only store the channel as the default one and then exit'),
             ))
             ->setHelp(
@@ -77,14 +79,17 @@ EOT
         }
 
         $io = $this->getIO();
-        $remoteFilesystem = Factory::createRemoteFilesystem($io, $config);
+        $httpDownloader = Factory::createHttpDownloader($io, $config);
 
-        $versionsUtil = new Versions($config, $remoteFilesystem);
+        $versionsUtil = new Versions($config, $httpDownloader);
 
         // switch channel if requested
-        foreach (array('stable', 'preview', 'snapshot') as $channel) {
+        $requestedChannel = null;
+        foreach (Versions::$channels as $channel) {
             if ($input->getOption($channel)) {
+                $requestedChannel = $channel;
                 $versionsUtil->setChannel($channel);
+                break;
             }
         }
 
@@ -123,8 +128,13 @@ EOT
         }
 
         $latest = $versionsUtil->getLatest();
+        $latestStable = $versionsUtil->getLatest('stable');
         $latestVersion = $latest['version'];
         $updateVersion = $input->getArgument('version') ?: $latestVersion;
+
+        if ($requestedChannel && is_numeric($requestedChannel) && substr($latestStable['version'], 0, 1) !== $requestedChannel) {
+            $io->writeError('<warning>Warning: You forced the install of '.$latestVersion.' via --'.$requestedChannel.', but '.$latestStable['version'].' is the latest stable version. Updating to it via composer self-update --stable is recommended.</warning>');
+        }
 
         if (preg_match('{^[0-9a-f]{40}$}', $updateVersion) && $updateVersion !== $latestVersion) {
             $io->writeError('<error>You can not update to a specific SHA-1 as those phars are not available for download</error>');
@@ -154,11 +164,11 @@ EOT
 
         $updatingToTag = !preg_match('{^[0-9a-f]{40}$}', $updateVersion);
 
-        $io->write(sprintf("Updating to version <info>%s</info> (%s channel).", $updateVersion, $versionsUtil->getChannel()));
+        $io->write(sprintf("Upgrading to version <info>%s</info> (%s channel).", $updateVersion, $versionsUtil->getChannel()));
         $remoteFilename = $baseUrl . ($updatingToTag ? "/download/{$updateVersion}/composer.phar" : '/composer.phar');
-        $signature = $remoteFilesystem->getContents(self::HOMEPAGE, $remoteFilename.'.sig', false);
+        $signature = $httpDownloader->get($remoteFilename.'.sig')->getBody();
         $io->writeError('   ', false);
-        $remoteFilesystem->copy(self::HOMEPAGE, $remoteFilename, $tempFilename, !$input->getOption('no-progress'));
+        $httpDownloader->copy($remoteFilename, $tempFilename);
         $io->writeError('');
 
         if (!file_exists($tempFilename) || !$signature) {

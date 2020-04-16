@@ -43,6 +43,27 @@ class NoopInstaller implements InstallerInterface
     /**
      * {@inheritDoc}
      */
+    public function download(PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
+    {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if (!$repo->hasPackage($package)) {

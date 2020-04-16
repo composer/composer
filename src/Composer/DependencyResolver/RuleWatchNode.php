@@ -55,7 +55,7 @@ class RuleWatchNode
         $literals = $this->rule->getLiterals();
 
         // if there are only 2 elements, both are being watched anyway
-        if (count($literals) < 3) {
+        if (count($literals) < 3 || $this->rule instanceof MultiConflictRule) {
             return;
         }
 

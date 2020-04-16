@@ -6,19 +6,19 @@ Disjunctive multi constraints work
         {
             "type": "package",
             "package": [
-                { "name": "foo", "version": "1.1.0" },
-                { "name": "foo", "version": "1.0.0" },
-                { "name": "bar", "version": "1.1.0", "require": { "foo": "1.0.*" } }
+                { "name": "foo/pkg", "version": "1.1.0" },
+                { "name": "foo/pkg", "version": "1.0.0" },
+                { "name": "bar/pkg", "version": "1.1.0", "require": { "foo/pkg": "1.0.*" } }
             ]
         }
     ],
     "require": {
-        "bar": "1.*",
-        "foo": "1.0.*|1.1.*"
+        "bar/pkg": "1.*",
+        "foo/pkg": "1.0.*|1.1.*"
     }
 }
 --RUN--
 install
 --EXPECT--
-Installing foo (1.0.0)
-Installing bar (1.1.0)
+Installing foo/pkg (1.0.0)
+Installing bar/pkg (1.1.0)

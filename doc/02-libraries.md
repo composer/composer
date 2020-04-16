@@ -54,7 +54,7 @@ file:
 ### VCS Versioning
 
 Composer uses your VCS's branch and tag features to resolve the version
-constraints you specify in your `require` field to specific sets of files.
+constraints you specify in your [`require`](04-schema.md#require) field to specific sets of files.
 When determining valid available versions, Composer looks at all of your tags
 and branches and translates their names into an internal list of options that
 it then matches against the version constraint you provided.

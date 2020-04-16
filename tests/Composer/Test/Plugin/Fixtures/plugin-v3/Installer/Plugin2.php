@@ -12,5 +12,16 @@ class Plugin2 implements PluginInterface
 
     public function activate(Composer $composer, IOInterface $io)
     {
+        $io->write('activate v3');
+    }
+
+    public function deactivate(Composer $composer, IOInterface $io)
+    {
+        $io->write('deactivate v3');
+    }
+
+    public function uninstall(Composer $composer, IOInterface $io)
+    {
+        $io->write('uninstall v3');
     }
 }

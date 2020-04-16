@@ -27,4 +27,4 @@ Updates a dev package forcing it's reference
 --RUN--
 install
 --EXPECT--
-Updating a/a (dev-master abc123) to a/a (dev-master def000)
+Upgrading a/a (dev-master abc123 => dev-master def000)

@@ -13,7 +13,7 @@
 namespace Composer\Test\Installer;
 
 use Composer\Installer\MetapackageInstaller;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class MetapackageInstallerTest extends TestCase
 {

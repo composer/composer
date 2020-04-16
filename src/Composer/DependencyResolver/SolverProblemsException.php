@@ -13,6 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Util\IniHelper;
+use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -20,34 +21,58 @@ use Composer\Util\IniHelper;
 class SolverProblemsException extends \RuntimeException
 {
     protected $problems;
-    protected $installedMap;
+    protected $learnedPool;
 
-    public function __construct(array $problems, array $installedMap)
+    public function __construct(array $problems, array $learnedPool)
     {
         $this->problems = $problems;
-        $this->installedMap = $installedMap;
+        $this->learnedPool = $learnedPool;
 
-        parent::__construct($this->createMessage(), 2);
+        parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', 2);
     }
 
-    protected function createMessage()
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
     {
-        $text = "\n";
+        $installedMap = $request->getPresentMap(true);
         $hasExtensionProblems = false;
-        foreach ($this->problems as $i => $problem) {
-            $text .= "  Problem ".($i + 1).$problem->getPrettyString($this->installedMap)."\n";
+        $isCausedByLock = false;
+
+        $problems = array();
+        foreach ($this->problems as $problem) {
+            $problems[] = $problem->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $this->learnedPool)."\n";
 
             if (!$hasExtensionProblems && $this->hasExtensionProblems($problem->getReasons())) {
                 $hasExtensionProblems = true;
             }
+
+            $isCausedByLock |= $problem->isCausedByLock();
         }
 
-        if (strpos($text, 'could not be found') || strpos($text, 'no matching package found')) {
+        $i = 1;
+        $text = "\n";
+        foreach (array_unique($problems) as $problem) {
+            $text .= "  Problem ".($i++).$problem;
+        }
+
+        if (!$isDevExtraction && (strpos($text, 'could not be found') || strpos($text, 'no matching package found'))) {
             $text .= "\nPotential causes:\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n - It's a private package and you forgot to add a custom repository to find it\n\nRead <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
         }
 
         if ($hasExtensionProblems) {
             $text .= $this->createExtensionHint();
+        }
+
+        if ($isCausedByLock && !$isDevExtraction) {
+            $text .= "\nUse the option --with-all-dependencies to allow updates and removals for packages currently locked to specific versions.";
+        }
+
+        // TODO remove before 2.0 final
+        if (!class_exists('PHPUnit\Framework\TestCase', false)) {
+            if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match')) {
+                $text .= "\nYou are using a snapshot build of Composer 2, which some of your plugins seem to be incompatible with. Make sure you update your plugins or report an issue to them to ask them to support Composer 2. To work around this you can run Composer with --ignore-platform-reqs, but this will also ignore your PHP version and may result in bigger problems down the line.";
+            } else {
+                $text .= "\nYou are using a snapshot build of Composer 2, which may be the cause of the problem. Run `composer self-update --stable` and then try again. In case it solves the problem, please report an issue mentioning Composer 2.";
+            }
         }
 
         return $text;
@@ -76,8 +101,8 @@ class SolverProblemsException extends \RuntimeException
     private function hasExtensionProblems(array $reasonSets)
     {
         foreach ($reasonSets as $reasonSet) {
-            foreach ($reasonSet as $reason) {
-                if (isset($reason["rule"]) && 0 === strpos($reason["rule"]->getRequiredPackage(), 'ext-')) {
+            foreach ($reasonSet as $rule) {
+                if (0 === strpos($rule->getRequiredPackage(), 'ext-')) {
                     return true;
                 }
             }

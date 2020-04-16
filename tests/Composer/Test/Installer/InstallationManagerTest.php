@@ -13,18 +13,23 @@
 namespace Composer\Test\Installer;
 
 use Composer\Installer\InstallationManager;
+use Composer\Installer\NoopInstaller;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class InstallationManagerTest extends TestCase
 {
     protected $repository;
+    protected $loop;
+    protected $io;
 
     public function setUp()
     {
+        $this->loop = $this->getMockBuilder('Composer\Util\Loop')->disableOriginalConstructor()->getMock();
         $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
+        $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
     public function testAddGetInstaller()
@@ -38,7 +43,7 @@ class InstallationManagerTest extends TestCase
                 return $arg === 'vendor';
             }));
 
-        $manager = new InstallationManager();
+        $manager = new InstallationManager($this->loop, $this->io);
 
         $manager->addInstaller($installer);
         $this->assertSame($installer, $manager->getInstaller('vendor'));
@@ -67,7 +72,7 @@ class InstallationManagerTest extends TestCase
                 return $arg === 'vendor';
             }));
 
-        $manager = new InstallationManager();
+        $manager = new InstallationManager($this->loop, $this->io);
 
         $manager->addInstaller($installer);
         $this->assertSame($installer, $manager->getInstaller('vendor'));
@@ -80,15 +85,20 @@ class InstallationManagerTest extends TestCase
     public function testExecute()
     {
         $manager = $this->getMockBuilder('Composer\Installer\InstallationManager')
+            ->setConstructorArgs(array($this->loop, $this->io))
             ->setMethods(array('install', 'update', 'uninstall'))
             ->getMock();
 
-        $installOperation = new InstallOperation($this->createPackageMock());
-        $removeOperation = new UninstallOperation($this->createPackageMock());
+        $installOperation = new InstallOperation($package = $this->createPackageMock());
+        $removeOperation = new UninstallOperation($package);
         $updateOperation = new UpdateOperation(
-            $this->createPackageMock(),
-            $this->createPackageMock()
+            $package,
+            $package
         );
+
+        $package->expects($this->any())
+            ->method('getType')
+            ->will($this->returnValue('library'));
 
         $manager
             ->expects($this->once())
@@ -103,15 +113,14 @@ class InstallationManagerTest extends TestCase
             ->method('update')
             ->with($this->repository, $updateOperation);
 
-        $manager->execute($this->repository, $installOperation);
-        $manager->execute($this->repository, $removeOperation);
-        $manager->execute($this->repository, $updateOperation);
+        $manager->addInstaller(new NoopInstaller());
+        $manager->execute($this->repository, array($installOperation, $removeOperation, $updateOperation));
     }
 
     public function testInstall()
     {
         $installer = $this->createInstallerMock();
-        $manager = new InstallationManager();
+        $manager = new InstallationManager($this->loop, $this->io);
         $manager->addInstaller($installer);
 
         $package = $this->createPackageMock();
@@ -139,7 +148,7 @@ class InstallationManagerTest extends TestCase
     public function testUpdateWithEqualTypes()
     {
         $installer = $this->createInstallerMock();
-        $manager = new InstallationManager();
+        $manager = new InstallationManager($this->loop, $this->io);
         $manager->addInstaller($installer);
 
         $initial = $this->createPackageMock();
@@ -173,18 +182,17 @@ class InstallationManagerTest extends TestCase
     {
         $libInstaller = $this->createInstallerMock();
         $bundleInstaller = $this->createInstallerMock();
-        $manager = new InstallationManager();
+        $manager = new InstallationManager($this->loop, $this->io);
         $manager->addInstaller($libInstaller);
         $manager->addInstaller($bundleInstaller);
 
         $initial = $this->createPackageMock();
-        $target = $this->createPackageMock();
-        $operation = new UpdateOperation($initial, $target, 'test');
-
         $initial
             ->expects($this->once())
             ->method('getType')
             ->will($this->returnValue('library'));
+
+        $target = $this->createPackageMock();
         $target
             ->expects($this->once())
             ->method('getType')
@@ -213,13 +221,14 @@ class InstallationManagerTest extends TestCase
             ->method('install')
             ->with($this->repository, $target);
 
+        $operation = new UpdateOperation($initial, $target, 'test');
         $manager->update($this->repository, $operation);
     }
 
     public function testUninstall()
     {
         $installer = $this->createInstallerMock();
-        $manager = new InstallationManager();
+        $manager = new InstallationManager($this->loop, $this->io);
         $manager->addInstaller($installer);
 
         $package = $this->createPackageMock();
@@ -249,7 +258,7 @@ class InstallationManagerTest extends TestCase
         $installer = $this->getMockBuilder('Composer\Installer\LibraryInstaller')
             ->disableOriginalConstructor()
             ->getMock();
-        $manager = new InstallationManager();
+        $manager = new InstallationManager($this->loop, $this->io);
         $manager->addInstaller($installer);
 
         $package = $this->createPackageMock();
@@ -281,7 +290,9 @@ class InstallationManagerTest extends TestCase
 
     private function createPackageMock()
     {
-        return $this->getMockBuilder('Composer\Package\PackageInterface')
+        $mock = $this->getMockBuilder('Composer\Package\PackageInterface')
             ->getMock();
+
+        return $mock;
     }
 }

@@ -1,5 +1,5 @@
 --TEST--
-Suggestions are not displayed in non-dev mode
+Suggestions are not displayed for when not updating the lock file
 --COMPOSER--
 {
     "repositories": [
@@ -14,13 +14,26 @@ Suggestions are not displayed in non-dev mode
         "a/a": "1.0.0"
     }
 }
+--LOCK--
+{
+    "packages": [
+        { "name": "a/a", "version": "1.0.0", "suggest": { "b/b": "an obscure reason" } }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --RUN--
-install --no-dev
+install
 --EXPECT-OUTPUT--
-Loading composer repositories with package information
-Updating dependencies
+Installing dependencies from lock file (including require-dev)
+Verifying lock file contents can be installed on current platform.
 Package operations: 1 install, 0 updates, 0 removals
-Writing lock file
 Generating autoload files
 
 --EXPECT--

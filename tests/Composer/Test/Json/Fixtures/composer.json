@@ -9,18 +9,24 @@
         {
             "name": "Nils Adermann",
             "email": "naderman@naderman.de",
-            "homepage": "http://www.naderman.de"
+            "homepage": "https://www.naderman.de"
         },
         {
             "name": "Jordi Boggiano",
             "email": "j.boggiano@seld.be",
-            "homepage": "http://seld.be"
+            "homepage": "https://seld.be"
         }
     ],
     "support": {
         "irc": "irc://irc.freenode.org/composer",
         "issues": "https://github.com/composer/composer/issues"
     },
+    "funding": [
+        {
+            "type": "service-subscription",
+            "url": "https://packagist.com"
+        }
+    ],
     "require": {
         "php": ">=5.3.2",
         "justinrainbow/json-schema": "~1.4",

@@ -29,7 +29,7 @@ Installing an old alias that doesn't exist anymore from a lock is possible
             "type": "library"
         }
     ],
-    "packages-dev": null,
+    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": [],

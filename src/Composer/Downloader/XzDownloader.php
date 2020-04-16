@@ -17,7 +17,7 @@ use Composer\Cache;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\RemoteFilesystem;
+use Composer\Util\HttpDownloader;
 use Composer\IO\IOInterface;
 
 /**
@@ -28,16 +28,17 @@ use Composer\IO\IOInterface;
  */
 class XzDownloader extends ArchiveDownloader
 {
+    /** @var ProcessExecutor */
     protected $process;
 
-    public function __construct(IOInterface $io, Config $config, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null, RemoteFilesystem $rfs = null)
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $downloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null)
     {
         $this->process = $process ?: new ProcessExecutor($io);
 
-        parent::__construct($io, $config, $eventDispatcher, $cache, $rfs);
+        parent::__construct($io, $config, $downloader, $eventDispatcher, $cache);
     }
 
-    protected function extract($file, $path)
+    protected function extract(PackageInterface $package, $file, $path)
     {
         $command = 'tar -xJf ' . ProcessExecutor::escape($file) . ' -C ' . ProcessExecutor::escape($path);
 
@@ -48,13 +49,5 @@ class XzDownloader extends ArchiveDownloader
         $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
 
         throw new \RuntimeException($processError);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getFileName(PackageInterface $package, $path)
-    {
-        return $path.'/'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME);
     }
 }

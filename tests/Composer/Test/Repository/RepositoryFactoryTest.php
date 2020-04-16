@@ -21,7 +21,9 @@ class RepositoryFactoryTest extends TestCase
     {
         $manager = RepositoryFactory::manager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            $this->getMockBuilder('Composer\Config')->getMock()
+            $this->getMockBuilder('Composer\Config')->getMock(),
+            $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
+            $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
 
         $ref = new \ReflectionProperty($manager, 'repositoryClasses');
@@ -45,5 +47,25 @@ class RepositoryFactoryTest extends TestCase
             'artifact',
             'path',
         ), array_keys($repositoryClasses));
+    }
+
+    /**
+     * @dataProvider generateRepositoryNameProvider
+     */
+    public function testGenerateRepositoryName($index, array $config, array $existingRepos, $expected)
+    {
+        $this->assertSame($expected, RepositoryFactory::generateRepositoryName($index, $config, $existingRepos));
+    }
+
+    public function generateRepositoryNameProvider()
+    {
+        return array(
+            array(0, array(), array(), 0),
+            array(0, array(), array(array()), '02'),
+            array(0, array('url' => 'https://example.org'), array(), 'example.org'),
+            array(0, array('url' => 'https://example.org'), array('example.org' => array()), 'example.org2'),
+            array('example.org', array('url' => 'https://example.org/repository'), array(), 'example.org'),
+            array('example.org', array('url' => 'https://example.org/repository'), array('example.org' => array()), 'example.org2'),
+        );
     }
 }

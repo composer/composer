@@ -1,0 +1,40 @@
+--TEST--
+Test conflicts between a dependency's requirements and the root requirements
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "requirer/pkg", "version": "1.0.0", "require": {
+                    "dependency/pkg": "1.0.0",
+                    "dependency/unstable-pkg": "1.0.0-dev"
+                } },
+                { "name": "dependency/pkg", "version": "2.0.0" },
+                { "name": "dependency/pkg", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "requirer/pkg": "1.*",
+        "dependency/pkg": "2.*"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires requirer/pkg 1.* -> satisfiable by requirer/pkg[1.0.0].
+    - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> found dependency/pkg[1.0.0] but it conflicts with your root composer.json require (2.*).
+
+--EXPECT--
+

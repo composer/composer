@@ -28,3 +28,4 @@ Updating a dev package forcing it's reference should not do anything if the refe
 --RUN--
 update
 --EXPECT--
+Upgrading a/a (dev-master def000 => dev-master )

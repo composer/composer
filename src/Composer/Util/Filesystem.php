@@ -23,6 +23,7 @@ use Symfony\Component\Finder\Finder;
  */
 class Filesystem
 {
+    /** @var ProcessExecutor */
     private $processExecutor;
 
     public function __construct(ProcessExecutor $executor = null)
@@ -206,7 +207,7 @@ class Filesystem
                 usleep(350000);
                 $unlinked = @$this->unlinkImplementation($path);
             }
-            
+
             if (!$unlinked) {
                 $error = error_get_last();
                 $message = 'Could not delete '.$path.': ' . @$error['message'];
@@ -237,7 +238,7 @@ class Filesystem
                 usleep(350000);
                 $deleted = @rmdir($path);
             }
-            
+
             if (!$deleted) {
                 $error = error_get_last();
                 $message = 'Could not delete '.$path.': ' . @$error['message'];
@@ -291,6 +292,7 @@ class Filesystem
         $this->ensureDirectoryExists($target);
 
         $result = true;
+        /** @var RecursiveDirectoryIterator $ri */
         foreach ($ri as $file) {
             $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
             if ($file->isDir()) {
@@ -310,7 +312,9 @@ class Filesystem
         }
 
         if (!function_exists('proc_open')) {
-            return $this->copyThenRemove($source, $target);
+            $this->copyThenRemove($source, $target);
+            
+            return;
         }
 
         if (Platform::isWindows()) {
@@ -340,7 +344,7 @@ class Filesystem
             }
         }
 
-        return $this->copyThenRemove($source, $target);
+        $this->copyThenRemove($source, $target);
     }
 
     /**
@@ -537,6 +541,9 @@ class Filesystem
         return $size;
     }
 
+    /**
+     * @return ProcessExecutor
+     */
     protected function getProcess()
     {
         return $this->processExecutor;

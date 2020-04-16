@@ -13,6 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Test\TestCase;
+use Composer\Cache;
 use Composer\Util\Filesystem;
 
 class CacheTest extends TestCase
@@ -20,6 +21,7 @@ class CacheTest extends TestCase
     private $files;
     private $root;
     private $finder;
+    private $filesystem;
     private $cache;
 
     public function setUp()
@@ -34,6 +36,7 @@ class CacheTest extends TestCase
         }
 
         $this->finder = $this->getMockBuilder('Symfony\Component\Finder\Finder')->disableOriginalConstructor()->getMock();
+        $this->filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
 
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->cache = $this->getMockBuilder('Composer\Cache')
@@ -105,15 +108,8 @@ class CacheTest extends TestCase
 
     public function testClearCache()
     {
-        $this->finder
-            ->method('removeDirectory')
-            ->with($this->root)
-            ->willReturn(true);
-
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $this->cache = new Cache($io, $this->root, 'a-z0-9.', $this->filesystem);
         $this->assertTrue($this->cache->clear());
-
-        for ($i = 0; $i < 3; $i++) {
-            $this->assertFileNotExists("{$this->root}/cached.file{$i}.zip");
-        }
     }
 }

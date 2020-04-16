@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\StreamContextFactory;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class StreamContextFactoryTest extends TestCase
 {
@@ -142,7 +142,6 @@ class StreamContextFactoryTest extends TestCase
         $expected = array(
             'http' => array(
                 'proxy' => 'tcp://proxyserver.net:80',
-                'request_fulluri' => true,
                 'method' => 'GET',
                 'header' => array('User-Agent: foo', "Proxy-Authorization: Basic " . base64_encode('username:password')),
                 'max_redirects' => 20,
@@ -173,7 +172,6 @@ class StreamContextFactoryTest extends TestCase
         $expected = array(
             'http' => array(
                 'proxy' => 'ssl://woopproxy.net:443',
-                'request_fulluri' => true,
                 'method' => 'GET',
                 'max_redirects' => 20,
                 'follow_location' => 1,

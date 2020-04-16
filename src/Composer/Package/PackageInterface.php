@@ -21,6 +21,10 @@ use Composer\Repository\RepositoryInterface;
  */
 interface PackageInterface
 {
+    const DISPLAY_SOURCE_REF_IF_DEV = 0;
+    const DISPLAY_SOURCE_REF = 1;
+    const DISPLAY_DIST_REF = 2;
+
     /**
      * Returns the package's name without version info, thus not a unique identifier
      *
@@ -41,9 +45,11 @@ interface PackageInterface
      * No version or release type information should be included in any of the
      * names. Provided or replaced package names need to be returned as well.
      *
-     * @return array An array of strings referring to this package
+     * @param bool $provides Whether provided names should be included
+     *
+     * @return string[] An array of strings referring to this package
      */
-    public function getNames();
+    public function getNames($provides = true);
 
     /**
      * Allows the solver to set an id for this package to refer to it.
@@ -76,7 +82,7 @@ interface PackageInterface
     /**
      * Returns the package targetDir property
      *
-     * @return string The package targetDir
+     * @return string|null The package targetDir
      */
     public function getTargetDir();
 
@@ -118,7 +124,7 @@ interface PackageInterface
     /**
      * Returns the repository urls of this package including mirrors, e.g. git://github.com/naderman/composer.git
      *
-     * @return array
+     * @return string[]
      */
     public function getSourceUrls();
 
@@ -153,7 +159,7 @@ interface PackageInterface
     /**
      * Returns the urls of the distribution archive of this version, including mirrors
      *
-     * @return array
+     * @return string[]
      */
     public function getDistUrls();
 
@@ -198,9 +204,12 @@ interface PackageInterface
      * @see getPrettyVersion
      *
      * @param  bool   $truncate If the source reference is a sha1 hash, truncate it
+     * @param  int    $displayMode One of the DISPLAY_ constants on this interface determining display of references
      * @return string version
+     *
+     * @psalm-param self::DISPLAY_SOURCE_REF_IF_DEV|self::DISPLAY_SOURCE_REF|self::DISPLAY_DIST_REF $displayMode
      */
-    public function getFullPrettyVersion($truncate = true);
+    public function getFullPrettyVersion($truncate = true, $displayMode = self::DISPLAY_SOURCE_REF_IF_DEV);
 
     /**
      * Returns the release date of the package
@@ -261,6 +270,7 @@ interface PackageInterface
      * combination with this package.
      *
      * @return array An array of package suggestions with descriptions
+     * @psalm-return array<string, string>
      */
     public function getSuggests();
 
@@ -273,6 +283,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
+     * @psalm-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, file?: list<string>}
      */
     public function getAutoload();
 
@@ -285,6 +296,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of dev autoloading rules
+     * @psalm-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, file?: list<string>}
      */
     public function getDevAutoload();
 
@@ -292,7 +304,7 @@ interface PackageInterface
      * Returns a list of directories which should get added to PHP's
      * include path.
      *
-     * @return array
+     * @return string[]
      */
     public function getIncludePaths();
 
@@ -313,7 +325,7 @@ interface PackageInterface
     /**
      * Returns the package binaries
      *
-     * @return array
+     * @return string[]
      */
     public function getBinaries();
 
@@ -386,4 +398,13 @@ interface PackageInterface
      * @return void
      */
     public function setDistReference($reference);
+
+    /**
+     * Set dist and source references and update dist URL for ones that contain a reference
+     *
+     * @param string $reference
+     *
+     * @return void
+     */
+    public function setSourceDistReferences($reference);
 }

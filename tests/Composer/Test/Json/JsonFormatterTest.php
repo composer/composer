@@ -13,7 +13,7 @@
 namespace Composer\Test\Json;
 
 use Composer\Json\JsonFormatter;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class JsonFormatterTest extends TestCase
 {

@@ -17,8 +17,11 @@ use Composer\Repository\Vcs\HgDriver;
 use Composer\IO\NullIO;
 use Composer\Semver\VersionParser as SemverVersionParser;
 use Composer\Util\Git as GitUtil;
+use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
+use Composer\Package\Version\VersionParser;
+
 
 /**
  * Try to guess the current version number based on different VCS configuration.
@@ -63,27 +66,31 @@ class VersionGuesser
      */
     public function guessVersion(array $packageConfig, $path)
     {
-        if (function_exists('proc_open')) {
-            $versionData = $this->guessGitVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
-
-            $versionData = $this->guessHgVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
-
-            $versionData = $this->guessFossilVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
-
-            $versionData = $this->guessSvnVersion($packageConfig, $path);
-            if (null !== $versionData && null !== $versionData['version']) {
-                return $this->postprocess($versionData);
-            }
+        if (!function_exists('proc_open')) {
+            return null;
         }
+
+        $versionData = $this->guessGitVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
+        }
+
+        $versionData = $this->guessHgVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
+        }
+
+        $versionData = $this->guessFossilVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
+        }
+
+        $versionData = $this->guessSvnVersion($packageConfig, $path);
+        if (null !== $versionData && null !== $versionData['version']) {
+            return $this->postprocess($versionData);
+        }
+
+        return null;
     }
 
     private function postprocess(array $versionData)
@@ -201,7 +208,7 @@ class VersionGuesser
             $version = $this->versionParser->normalizeBranch($branch);
             $isFeatureBranch = 0 === strpos($version, 'dev-');
 
-            if ('9999999-dev' === $version) {
+            if (VersionParser::DEV_MASTER_ALIAS === $version) {
                 return array('version' => $version, 'commit' => null, 'pretty_version' => 'dev-'.$branch);
             }
 
@@ -210,7 +217,8 @@ class VersionGuesser
             }
 
             // re-use the HgDriver to fetch branches (this properly includes bookmarks)
-            $driver = new HgDriver(array('url' => $path), new NullIO(), $this->config, $this->process);
+            $io = new NullIO();
+            $driver = new HgDriver(array('url' => $path), $io, $this->config, new HttpDownloader($io, $this->config), $this->process);
             $branches = array_keys($driver->getBranches());
 
             // try to find the best (nearest) version branch to assume this feature's version
@@ -229,7 +237,7 @@ class VersionGuesser
 
         // ignore feature branches if they have no branch-alias or self.version is used
         // and find the branch they came from to use as a version instead
-        if ((isset($packageConfig['extra']['branch-alias']) && !isset($packageConfig['extra']['branch-alias'][$version]))
+        if (!isset($packageConfig['extra']['branch-alias'][$version])
             || strpos(json_encode($packageConfig), '"self.version"')
         ) {
             $branch = preg_replace('{^dev-}', '', $version);
@@ -313,7 +321,11 @@ class VersionGuesser
                 }
 
                 $prettyVersion = trim($matches[1]);
-                $version = $this->versionParser->normalize($prettyVersion);
+                if ($prettyVersion === 'trunk') {
+                    $version = 'dev-trunk';
+                } else {
+                    $version = $this->versionParser->normalize($prettyVersion);
+                }
 
                 return array('version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion);
             }

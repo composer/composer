@@ -29,7 +29,7 @@ For support, Stack Overflow also offers a good collection of
 [Composer related questions](https://stackoverflow.com/questions/tagged/composer-php).
 
 Please note that this project is released with a
-[Contributor Code of Conduct](http://contributor-covenant.org/version/1/4/).
+[Contributor Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/).
 By participating in this project and its community you agree to abide by those terms.
 
 Requirements
@@ -40,8 +40,8 @@ PHP 5.3.2 or above (at least 5.3.4 recommended to avoid potential bugs)
 Authors
 -------
 
-- Nils Adermann  | [GitHub](https://github.com/naderman)  | [Twitter](https://twitter.com/naderman) | <naderman@naderman.de> | [naderman.de](http://naderman.de)
-- Jordi Boggiano | [GitHub](https://github.com/Seldaek) | [Twitter](https://twitter.com/seldaek) | <j.boggiano@seld.be> | [seld.be](http://seld.be)
+- Nils Adermann  | [GitHub](https://github.com/naderman)  | [Twitter](https://twitter.com/naderman) | <naderman@naderman.de> | [naderman.de](https://naderman.de)
+- Jordi Boggiano | [GitHub](https://github.com/Seldaek) | [Twitter](https://twitter.com/seldaek) | <j.boggiano@seld.be> | [seld.be](https://seld.be)
 
 See also the list of [contributors](https://github.com/composer/composer/contributors) who participated in this project.
 

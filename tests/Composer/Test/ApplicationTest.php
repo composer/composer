@@ -53,7 +53,7 @@ class ApplicationTest extends TestCase
 
         $index = 0;
         $outputMock->expects($this->at($index++))
-            ->method("writeError");
+            ->method("write");
 
         if (extension_loaded('xdebug')) {
             $outputMock->expects($this->at($index++))

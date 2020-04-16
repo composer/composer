@@ -41,13 +41,19 @@ be preferred.
 A repository is a package source. It's a list of packages/versions. Composer
 will look in all your repositories to find the packages your project requires.
 
-By default only the Packagist repository is registered in Composer. You can
+By default only the Packagist.org repository is registered in Composer. You can
 add more repositories to your project by declaring them in `composer.json`.
 
 Repositories are only available to the root package and the repositories
 defined in your dependencies will not be loaded. Read the
 [FAQ entry](faqs/why-can't-composer-load-repositories-recursively.md) if you
 want to learn why.
+
+When resolving dependencies, packages are looked up from repositories from
+top to bottom, and by default, as soon as a package is found in one, Composer
+stops looking in other repositories. Read the
+[repository priorities](articles/repository-priorities.md) article for more
+details and to see how to change this behavior.
 
 ## Types
 
@@ -61,6 +67,17 @@ This is also the repository type that packagist uses. To reference a
 In the case of packagist, that file is located at `/packages.json`, so the URL of
 the repository would be `repo.packagist.org`. For `example.org/packages.json` the
 repository URL would be `example.org`.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org"
+        }
+    ]
+}
+```
 
 #### packages
 
@@ -378,92 +395,6 @@ for this server will be overwritten. To change this behavior by setting the
 }
 ```
 
-### PEAR
-
-It is possible to install packages from any PEAR channel by using the `pear`
-repository. Composer will prefix all package names with `pear-{channelName}/`
-to avoid conflicts. All packages are also aliased with prefix
-`pear-{channelAlias}/`.
-
-Example using `pear2.php.net`:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "pear",
-            "url": "https://pear2.php.net"
-        }
-    ],
-    "require": {
-        "pear-pear2.php.net/PEAR2_Text_Markdown": "*",
-        "pear-pear2/PEAR2_HTTP_Request": "*"
-    }
-}
-```
-
-In this case the short name of the channel is `pear2`, so the
-`PEAR2_HTTP_Request` package name becomes `pear-pear2/PEAR2_HTTP_Request`.
-
-> **Note:** The `pear` repository requires doing quite a few requests per
-> package, so this may considerably slow down the installation process.
-
-#### Custom vendor alias
-
-It is possible to alias PEAR channel packages with a custom vendor name.
-
-Example:
-
-Suppose you have a private PEAR repository and wish to use Composer to
-incorporate dependencies from a VCS. Your PEAR repository contains the
-following packages:
-
- * `BasePackage`
- * `IntermediatePackage`, which depends on `BasePackage`
- * `TopLevelPackage1` and `TopLevelPackage2` which both depend
-    on `IntermediatePackage`
-
-Without a vendor alias, Composer will use the PEAR channel name as the
-vendor portion of the package name:
-
- * `pear-pear.foobar.repo/BasePackage`
- * `pear-pear.foobar.repo/IntermediatePackage`
- * `pear-pear.foobar.repo/TopLevelPackage1`
- * `pear-pear.foobar.repo/TopLevelPackage2`
-
-Suppose at a later time you wish to migrate your PEAR packages to a
-Composer repository and naming scheme, and adopt the vendor name of `foobar`.
-Projects using your PEAR packages would not see the updated packages, since
-they have a different vendor name (`foobar/IntermediatePackage` vs
-`pear-pear.foobar.repo/IntermediatePackage`).
-
-By specifying `vendor-alias` for the PEAR repository from the start, you can
-avoid this scenario and future-proof your package names.
-
-To illustrate, the following example would get the `BasePackage`,
-`TopLevelPackage1`, and `TopLevelPackage2` packages from your PEAR repository
-and `IntermediatePackage` from a Github repository:
-
-```json
-{
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/foobar/intermediate.git"
-        },
-        {
-            "type": "pear",
-            "url": "http://pear.foobar.repo",
-            "vendor-alias": "foobar"
-        }
-    ],
-    "require": {
-        "foobar/TopLevelPackage1": "*",
-        "foobar/TopLevelPackage2": "*"
-    }
-}
-```
-
 ### Package
 
 If you want to use a project that does not support Composer through any of the
@@ -626,12 +557,14 @@ especially useful when dealing with monolithic repositories.
 
 For instance, if you have the following directory structure in your repository:
 ```
-- apps
-\_ my-app
-  \_ composer.json
-- packages
-\_ my-package
-  \_ composer.json
+...
+├── apps
+│   └── my-app
+│       └── composer.json
+├── packages
+│   └── my-package
+│       └── composer.json
+...
 ```
 
 Then, to add the package `my/package` as a dependency, in your
@@ -691,7 +624,7 @@ variables are parsed in both Windows and Linux/Mac notations. For example
 `%USERPROFILE%/git/mypackage`.
 
 > **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
-> For details, see the [PHP glob function](http://php.net/glob).
+> For details, see the [PHP glob function](https://php.net/glob).
 
 ## Disabling Packagist.org
 

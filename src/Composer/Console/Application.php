@@ -131,7 +131,8 @@ class Application extends BaseApplication
 
         if ($input->hasParameterOption('--no-cache')) {
             $io->writeError('Disabling cache usage', true, IOInterface::DEBUG);
-            putenv('COMPOSER_CACHE_DIR='.(Platform::isWindows() ? 'nul' : '/dev/null'));
+            $_SERVER['COMPOSER_CACHE_DIR'] = Platform::isWindows() ? 'nul' : '/dev/null';
+            putenv('COMPOSER_CACHE_DIR='.$_SERVER['COMPOSER_CACHE_DIR']);
         }
 
         // switch working dir
@@ -220,10 +221,21 @@ class Application extends BaseApplication
                 $io->writeError(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
             }
 
-            if (!Platform::isWindows() && function_exists('exec') && !getenv('COMPOSER_ALLOW_SUPERUSER') && !file_exists('/.dockerenv')) {
+            if (
+                !Platform::isWindows()
+                && function_exists('exec')
+                && !getenv('COMPOSER_ALLOW_SUPERUSER')
+                && (ini_get('open_basedir') || !file_exists('/.dockerenv'))
+            ) {
                 if (function_exists('posix_getuid') && posix_getuid() === 0) {
                     if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                         $io->writeError('<warning>Do not run Composer as root/super user! See https://getcomposer.org/root for details</warning>');
+                        
+                        if ($io->isInteractive()) {
+                            if (!$io->askConfirmation('<info>Continue as root/super user</info> [<comment>yes</comment>]? ', true)) {
+                                return 1;
+                            }
+                        }
                     }
                     if ($uid = (int) getenv('SUDO_UID')) {
                         // Silently clobber any sudo credentials on the invoking user to avoid privilege escalations later on
@@ -286,7 +298,7 @@ class Application extends BaseApplication
 
             return $result;
         } catch (ScriptExecutionException $e) {
-            return $e->getCode();
+            return (int) $e->getCode();
         } catch (\Exception $e) {
             $this->hintCommonErrors($e);
             restore_error_handler();
@@ -431,6 +443,7 @@ class Application extends BaseApplication
             new Command\ExecCommand(),
             new Command\OutdatedCommand(),
             new Command\CheckPlatformReqsCommand(),
+            new Command\FundCommand(),
         ));
 
         if ('phar:' === substr(__FILE__, 0, 5)) {
@@ -501,7 +514,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * Get the working directoy at startup time
+     * Get the working directory at startup time
      *
      * @return string
      */

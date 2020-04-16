@@ -12,10 +12,12 @@
 
 namespace Composer\Test\Downloader;
 
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 class ArchiveDownloaderTest extends TestCase
 {
+    protected $config;
+
     public function testGetFileName()
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -28,8 +30,13 @@ class ArchiveDownloaderTest extends TestCase
         $method = new \ReflectionMethod($downloader, 'getFileName');
         $method->setAccessible(true);
 
+        $this->config->expects($this->any())
+            ->method('get')
+            ->with('vendor-dir')
+            ->will($this->returnValue('/vendor'));
+
         $first = $method->invoke($downloader, $packageMock, '/path');
-        $this->assertRegExp('#/path/[a-z0-9]+\.js#', $first);
+        $this->assertRegExp('#/vendor/composer/[a-z0-9]+\.js#', $first);
         $this->assertSame($first, $method->invoke($downloader, $packageMock, '/path'));
     }
 
@@ -156,7 +163,11 @@ class ArchiveDownloaderTest extends TestCase
     {
         return $this->getMockForAbstractClass(
             'Composer\Downloader\ArchiveDownloader',
-            array($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getMockBuilder('Composer\Config')->getMock())
+            array(
+                $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
+                $this->config = $this->getMockBuilder('Composer\Config')->getMock(),
+                new \Composer\Util\HttpDownloader($io, $this->config),
+            )
         );
     }
 }

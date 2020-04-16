@@ -1,0 +1,48 @@
+--TEST--
+Update to a state without dependency works well from locked with dependency
+--COMPOSER--
+{
+    "minimum-stability": "dev"
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-master",
+        "source": { "reference": "1234", "type": "git", "url": "" }
+    }
+]
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "source": { "reference": "1234", "type": "git", "url": "" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update
+--EXPECT-LOCK--
+{
+    "packages": [],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Removing a/a (dev-master 1234)
+Marking a/a (9999999-dev 1234) as uninstalled, alias of a/a (dev-master 1234)

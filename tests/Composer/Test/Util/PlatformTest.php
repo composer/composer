@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Platform;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * PlatformTest

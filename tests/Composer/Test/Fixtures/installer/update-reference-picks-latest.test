@@ -1,0 +1,31 @@
+--TEST--
+Updating a dev package should update to the latest available reference
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "source": { "reference": "abc123", "url": "", "type": "git" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "dev-master"
+    }
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-master",
+        "source": { "reference": "def000", "url": "", "type": "git" },
+        "dist": { "reference": "def000", "url": "", "type": "zip", "shasum": "" }
+    }
+]
+--RUN--
+update
+--EXPECT--
+Upgrading a/a (dev-master def000 => dev-master abc123)

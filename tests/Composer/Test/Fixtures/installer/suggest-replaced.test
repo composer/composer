@@ -17,12 +17,16 @@ Suggestions are not displayed for packages if they are replaced
     }
 }
 --RUN--
-install
+update
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-Updating dependencies (including require-dev)
-Package operations: 2 installs, 0 updates, 0 removals
+Updating dependencies
+Lock file operations: 2 installs, 0 updates, 0 removals
+  - Locking a/a (1.0.0)
+  - Locking c/c (1.0.0)
 Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 2 installs, 0 updates, 0 removals
 Generating autoload files
 
 --EXPECT--

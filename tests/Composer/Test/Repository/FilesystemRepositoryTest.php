@@ -82,11 +82,21 @@ class FilesystemRepositoryTest extends TestCase
         $json = $this->createJsonFileMock();
 
         $repository = new FilesystemRepository($json);
+        $im = $this->getMockBuilder('Composer\Installer\InstallationManager')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $im->expects($this->once())
+            ->method('getInstallPath')
+            ->will($this->returnValue('/foo/bar/vendor/woop/woop'));
 
         $json
             ->expects($this->once())
             ->method('read')
             ->will($this->returnValue(array()));
+        $json
+            ->expects($this->once())
+            ->method('getPath')
+            ->will($this->returnValue('/foo/bar/vendor/composer/installed.json'));
         $json
             ->expects($this->once())
             ->method('exists')
@@ -95,11 +105,12 @@ class FilesystemRepositoryTest extends TestCase
             ->expects($this->once())
             ->method('write')
             ->with(array(
-                array('name' => 'mypkg', 'type' => 'library', 'version' => '0.1.10', 'version_normalized' => '0.1.10.0'),
+                'packages' => array(array('name' => 'mypkg', 'type' => 'library', 'version' => '0.1.10', 'version_normalized' => '0.1.10.0', 'install-path' => '../woop/woop')),
+                'dev' => true,
             ));
 
         $repository->addPackage($this->getPackage('mypkg', '0.1.10'));
-        $repository->write();
+        $repository->write(true, $im);
     }
 
     private function createJsonFileMock()

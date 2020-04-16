@@ -13,7 +13,7 @@
 namespace Composer\Test\Util;
 
 use Composer\Util\Zip;
-use PHPUnit\Framework\TestCase;
+use Composer\Test\TestCase;
 
 /**
  * @author Andreas Schempp <andreas.schempp@terminal42.ch>

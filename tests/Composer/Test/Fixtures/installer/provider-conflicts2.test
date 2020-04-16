@@ -1,0 +1,33 @@
+--TEST--
+Providers of a replaced name should be installable
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "provider/pkg",
+                    "version": "1.0.0",
+                    "provide": { "third/pkg": "2.*" }
+                },
+                {
+                    "name": "replacer/pkg",
+                    "version": "1.0.0",
+                    "replace": { "third/pkg": "2.*" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "provider/pkg": "*",
+        "replacer/pkg": "*"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT--
+Installing provider/pkg (1.0.0)
+Installing replacer/pkg (1.0.0)

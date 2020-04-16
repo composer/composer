@@ -35,7 +35,7 @@ class LibraryInstallerTest extends TestCase
         $this->fs = new Filesystem;
 
         $this->composer = new Composer();
-        $this->config = new Config();
+        $this->config = new Config(false);
         $this->composer->setConfig($this->config);
 
         $this->rootDir = $this->getUniqueTmpDirectory();
@@ -113,7 +113,7 @@ class LibraryInstallerTest extends TestCase
 
         $this->dm
             ->expects($this->once())
-            ->method('download')
+            ->method('install')
             ->with($package, $this->vendorDir.'/some/package');
 
         $this->repository

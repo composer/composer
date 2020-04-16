@@ -50,6 +50,16 @@ class PluginEvents
     const PRE_FILE_DOWNLOAD = 'pre-file-download';
 
     /**
+     * The POST_FILE_DOWNLOAD event occurs after downloading a package dist file
+     *
+     * The event listener method receives a
+     * Composer\Plugin\PostFileDownloadEvent instance.
+     *
+     * @var string
+     */
+    const POST_FILE_DOWNLOAD = 'post-file-download';
+
+    /**
      * The PRE_COMMAND_RUN event occurs before a command is executed and lets you modify the input arguments/options
      *
      * The event listener method receives a
@@ -58,4 +68,15 @@ class PluginEvents
      * @var string
      */
     const PRE_COMMAND_RUN = 'pre-command-run';
+
+    /**
+     * The PRE_POOL_CREATE event occurs before the Pool of packages is created, and lets
+     * you filter the list of packages which is going to enter the Solver
+     *
+     * The event listener method receives a
+     * Composer\Plugin\PrePoolCreateEvent instance.
+     *
+     * @var string
+     */
+    const PRE_POOL_CREATE = 'pre-pool-create';
 }

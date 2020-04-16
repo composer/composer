@@ -82,7 +82,7 @@ EOT
         } elseif ($optimize) {
             $this->getIO()->write('<info>Generated optimized autoload files containing '. $numberOfClasses .' classes</info>');
         } else {
-            $this->getIO()->write('<info>Generated autoload files containing '. $numberOfClasses .' classes</info>');
+            $this->getIO()->write('<info>Generated autoload files</info>');
         }
 
         return 0;
