@@ -172,4 +172,12 @@ abstract class VcsDriver implements VcsDriverInterface
     {
         return;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function normalizeTag( $tag )
+    {
+	return $tag;
+    }
 }

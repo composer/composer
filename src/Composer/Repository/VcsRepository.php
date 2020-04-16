@@ -56,6 +56,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             'gitlab' => 'Composer\Repository\Vcs\GitLabDriver',
             'git-bitbucket' => 'Composer\Repository\Vcs\GitBitbucketDriver',
             'git' => 'Composer\Repository\Vcs\GitDriver',
+            'gitmono' => 'Composer\Repository\Vcs\GitMonoDriver',
             'hg-bitbucket' => 'Composer\Repository\Vcs\HgBitbucketDriver',
             'hg' => 'Composer\Repository\Vcs\HgDriver',
             'perforce' => 'Composer\Repository\Vcs\PerforceDriver',
@@ -168,7 +169,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $this->io->overwriteError($msg, false);
             }
 
-            // strip the release- prefix from tags if present
+	    // strip the release- prefix from tags if present
+	    $tag = $driver->normalizeTag( $tag );
             $tag = str_replace('release-', '', $tag);
 
             $cachedPackage = $this->getCachedPackageVersion($tag, $identifier, $isVerbose, $isVeryVerbose);
