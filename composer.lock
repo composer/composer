@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "225d8ea2db1c6910a4eecb2f28430ce3",
+    "content-hash": "a0a9399315ac0b612d4296b8df745112",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -64,16 +64,16 @@
         },
         {
             "name": "composer/semver",
-            "version": "dev-feature/constraint-bounds",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/Toflar/semver.git",
-                "reference": "68340f89106a64d91672f7a600e5123bd8957497"
+                "url": "https://github.com/composer/semver.git",
+                "reference": "2fbee6b82f09aeaa3905444eb6652c554411fe55"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Toflar/semver/zipball/68340f89106a64d91672f7a600e5123bd8957497",
-                "reference": "68340f89106a64d91672f7a600e5123bd8957497",
+                "url": "https://api.github.com/repos/composer/semver/zipball/2fbee6b82f09aeaa3905444eb6652c554411fe55",
+                "reference": "2fbee6b82f09aeaa3905444eb6652c554411fe55",
                 "shasum": ""
             },
             "require": {
@@ -85,7 +85,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.x-dev"
+                    "dev-master": "2.x-dev"
                 }
             },
             "autoload": {
@@ -93,16 +93,7 @@
                     "Composer\\Semver\\": "src"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Composer\\Semver\\": "tests"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "phpunit"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -130,12 +121,7 @@
                 "validation",
                 "versioning"
             ],
-            "support": {
-                "irc": "irc://irc.freenode.org/composer",
-                "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/Toflar/semver/tree/feature/constraint-bounds"
-            },
-            "time": "2020-04-16T09:12:45+00:00"
+            "time": "2020-04-16T13:02:51+00:00"
         },
         {
             "name": "composer/spdx-licenses",
@@ -195,11 +181,6 @@
                 "spdx",
                 "validator"
             ],
-            "support": {
-                "irc": "irc://irc.freenode.org/composer",
-                "issues": "https://github.com/composer/spdx-licenses/issues",
-                "source": "https://github.com/composer/spdx-licenses/tree/1.5.3"
-            },
             "time": "2020-02-14T07:44:31+00:00"
         },
         {
@@ -244,11 +225,6 @@
                 "Xdebug",
                 "performance"
             ],
-            "support": {
-                "irc": "irc://irc.freenode.org/composer",
-                "issues": "https://github.com/composer/xdebug-handler/issues",
-                "source": "https://github.com/composer/xdebug-handler/tree/master"
-            },
             "time": "2020-03-01T12:26:26+00:00"
         },
         {
@@ -315,10 +291,6 @@
                 "json",
                 "schema"
             ],
-            "support": {
-                "issues": "https://github.com/justinrainbow/json-schema/issues",
-                "source": "https://github.com/justinrainbow/json-schema/tree/5.2.9"
-            },
             "time": "2019-09-25T14:49:45+00:00"
         },
         {
@@ -403,6 +375,12 @@
             "license": [
                 "MIT"
             ],
+            "authors": [
+                {
+                    "name": "Jan Sorgalla",
+                    "email": "jsorgalla@gmail.com"
+                }
+            ],
             "description": "A lightweight implementation of CommonJS Promises/A for PHP",
             "time": "2016-03-07T13:46:50+00:00"
         },
@@ -453,10 +431,6 @@
                 "parser",
                 "validator"
             ],
-            "support": {
-                "issues": "https://github.com/Seldaek/jsonlint/issues",
-                "source": "https://github.com/Seldaek/jsonlint/tree/1.7.2"
-            },
             "time": "2019-10-24T14:27:39+00:00"
         },
         {
@@ -501,10 +475,6 @@
             "keywords": [
                 "phar"
             ],
-            "support": {
-                "issues": "https://github.com/Seldaek/phar-utils/issues",
-                "source": "https://github.com/Seldaek/phar-utils/tree/1.1.0"
-            },
             "time": "2020-02-14T15:25:33+00:00"
         },
         {
@@ -566,9 +536,6 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/console/tree/v2.8.52"
-            },
             "time": "2018-11-20T15:55:20+00:00"
         },
         {
@@ -676,9 +643,6 @@
             ],
             "description": "Symfony Filesystem Component",
             "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v2.8.52"
-            },
             "time": "2018-11-11T11:18:13+00:00"
         },
         {
@@ -728,9 +692,6 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/finder/tree/v2.8.50"
-            },
             "time": "2018-11-11T11:18:13+00:00"
         },
         {
@@ -897,9 +858,6 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
-            "support": {
-                "source": "https://github.com/symfony/process/tree/v2.8.50"
-            },
             "time": "2018-11-11T11:18:13+00:00"
         }
     ],
@@ -1068,10 +1026,6 @@
                 "spy",
                 "stub"
             ],
-            "support": {
-                "issues": "https://github.com/phpspec/prophecy/issues",
-                "source": "https://github.com/phpspec/prophecy/tree/v1.10.3"
-            },
             "time": "2020-03-05T15:02:03+00:00"
         },
         {
@@ -1255,10 +1209,6 @@
                 "export",
                 "exporter"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/exporter/issues",
-                "source": "https://github.com/sebastianbergmann/exporter/tree/master"
-            },
             "time": "2016-11-19T08:54:04+00:00"
         },
         {
@@ -1312,10 +1262,6 @@
             ],
             "description": "Provides functionality to recursively process PHP variables",
             "homepage": "http://www.github.com/sebastianbergmann/recursion-context",
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/recursion-context/issues",
-                "source": "https://github.com/sebastianbergmann/recursion-context/tree/master"
-            },
             "time": "2016-11-19T07:33:16+00:00"
         },
         {

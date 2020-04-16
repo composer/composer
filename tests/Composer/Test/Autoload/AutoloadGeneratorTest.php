@@ -14,6 +14,7 @@ namespace Composer\Test\Autoload;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Link;
+use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Util\Filesystem;
 use Composer\Package\AliasPackage;
@@ -1625,7 +1626,7 @@ EOF;
         $this->assertAutoloadFiles('classmap', $this->vendorDir.'/composer', 'classmap');
     }
 
-    public function testGeneratesPhpVersionCheck()
+    public function testGeneratesPlatformCheck()
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array(
@@ -1634,8 +1635,13 @@ EOF;
                 'Acme\Cake\\' => array('src-cake/', 'lib-cake/'),
             ),
         ));
+
+        $versionParser = new VersionParser();
+
         $package->setRequires(array(
-            new Link('a', 'php', new Constraint('>=', '7.3.0.0'))
+            new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
+            new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+            new Link('a', 'ext-json', $versionParser->parseConstraints('*'))
         ));
 
         $this->repository->expects($this->once())
@@ -1644,8 +1650,7 @@ EOF;
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
 
-        $this->assertFileExists($this->vendorDir . '/composer/php_version_check.php');
-        $this->assertContains('$version = PHP_VERSION;', file_get_contents($this->vendorDir . '/composer/php_version_check.php'));
+        $this->assertFileContentEquals(__DIR__.'/Fixtures/platform_check.php', $this->vendorDir . '/composer/platform_check.php');
     }
 
     private function assertAutoloadFiles($name, $dir, $type = 'namespaces')
