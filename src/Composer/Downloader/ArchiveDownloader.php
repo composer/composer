@@ -14,7 +14,6 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Symfony\Component\Finder\Finder;
-use Composer\IO\IOInterface;
 
 /**
  * Base downloader for archives

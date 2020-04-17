@@ -82,9 +82,8 @@ interface InstallerInterface
      * @param  InstalledRepositoryInterface $repo    repository in which to check
      * @param  PackageInterface             $initial already installed package version
      * @param  PackageInterface             $target  updated version
+     * @throws InvalidArgumentException     if $initial package is not installed
      * @return PromiseInterface|null
-     *
-     * @throws InvalidArgumentException if $initial package is not installed
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target);
 

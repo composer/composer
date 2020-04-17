@@ -59,7 +59,7 @@ class GitHubDriver extends VcsDriver
         }
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
 
-        if ( $this->config->get('use-github-api') === false || (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api'] ) ){
+        if ($this->config->get('use-github-api') === false || (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api'])) {
             $this->setupGitDriver($this->url);
 
             return;
@@ -194,7 +194,6 @@ class GitHubDriver extends VcsDriver
         }
 
         foreach (array($this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/.github/FUNDING.yml', $this->getApiUrl() . '/repos/'.$this->owner.'/.github/contents/FUNDING.yml') as $file) {
-
             try {
                 $response = $this->httpDownloader->get($file, array(
                     'retry-auth-failure' => false,

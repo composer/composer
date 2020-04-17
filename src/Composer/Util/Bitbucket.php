@@ -40,11 +40,11 @@ class Bitbucket
     /**
      * Constructor.
      *
-     * @param IOInterface      $io               The IO instance
-     * @param Config           $config           The composer configuration
-     * @param ProcessExecutor  $process          Process instance, injectable for mocking
-     * @param HttpDownloader $httpDownloader Remote Filesystem, injectable for mocking
-     * @param int              $time             Timestamp, injectable for mocking
+     * @param IOInterface     $io             The IO instance
+     * @param Config          $config         The composer configuration
+     * @param ProcessExecutor $process        Process instance, injectable for mocking
+     * @param HttpDownloader  $httpDownloader Remote Filesystem, injectable for mocking
+     * @param int             $time           Timestamp, injectable for mocking
      */
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null, $time = null)
     {

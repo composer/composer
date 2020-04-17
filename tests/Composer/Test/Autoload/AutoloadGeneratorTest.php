@@ -490,7 +490,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a')
+            new Link('a', 'a/a'),
         ));
 
         $packages = array();
@@ -501,18 +501,18 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $e = new Package('e/e', '1.0', '1.0');
         $a->setAutoload(array('classmap' => array('src/A.php')));
         $a->setRequires(array(
-            new Link('a/a', 'b/b')
+            new Link('a/a', 'b/b'),
         ));
         $b->setAutoload(array('classmap' => array('src/B.php')));
         $b->setRequires(array(
-            new Link('b/b', 'e/e')
+            new Link('b/b', 'e/e'),
         ));
         $c->setAutoload(array('classmap' => array('src/C.php')));
         $c->setReplaces(array(
-            new Link('c/c', 'b/b')
+            new Link('c/c', 'b/b'),
         ));
         $c->setRequires(array(
-            new Link('c/c', 'd/d')
+            new Link('c/c', 'd/d'),
         ));
         $d->setAutoload(array('classmap' => array('src/D.php')));
         $e->setAutoload(array('classmap' => array('src/E.php')));

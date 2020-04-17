@@ -12,11 +12,9 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Package\PackageInterface;
 
 /**
@@ -77,9 +75,9 @@ class Pool implements \Countable
     /**
      * Searches all packages providing the given package name and match the constraint
      *
-     * @param  string              $name          The package name to be searched for
-     * @param  ConstraintInterface $constraint    A constraint that all returned
-     *                                            packages must match or null to return all
+     * @param  string              $name       The package name to be searched for
+     * @param  ConstraintInterface $constraint A constraint that all returned
+     *                                         packages must match or null to return all
      * @return PackageInterface[]  A set of packages
      */
     public function whatProvides($name, ConstraintInterface $constraint = null)
@@ -136,9 +134,9 @@ class Pool implements \Countable
      * Checks if the package matches the given constraint directly or through
      * provided or replaced packages
      *
-     * @param  PackageInterface       $candidate
-     * @param  string                 $name       Name of the package to be matched
-     * @param  ConstraintInterface    $constraint The constraint to verify
+     * @param  PackageInterface    $candidate
+     * @param  string              $name       Name of the package to be matched
+     * @param  ConstraintInterface $constraint The constraint to verify
      * @return bool
      */
     public function match($candidate, $name, ConstraintInterface $constraint = null)

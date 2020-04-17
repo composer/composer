@@ -54,9 +54,9 @@ final class StreamContextFactory
     }
 
     /**
-     * @param string $url
-     * @param array $options
-     * @return array ['http' => ['header' => [...], 'proxy' => '..', 'request_fulluri' => bool]] formatted as a stream context array
+     * @param  string $url
+     * @param  array  $options
+     * @return array  ['http' => ['header' => [...], 'proxy' => '..', 'request_fulluri' => bool]] formatted as a stream context array
      */
     public static function initOptions($url, array $options)
     {
@@ -286,7 +286,7 @@ final class StreamContextFactory
      * This method fixes the array by moving the content-type header to the end
      *
      * @link https://bugs.php.net/bug.php?id=61548
-     * @param string|array $header
+     * @param  string|array $header
      * @return array
      */
     private static function fixHttpHeaderField($header)

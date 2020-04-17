@@ -247,7 +247,7 @@ class PoolBuilder
             $aliasPackage->setRootPackageAlias(true);
 
             $this->packages[] = $aliasPackage;
-            $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$index+1] = $aliasPackage;
+            $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$index + 1] = $aliasPackage;
         }
 
         $loadNames = array();
@@ -311,6 +311,7 @@ class PoolBuilder
     private function isRootRequire(Request $request, $name)
     {
         $rootRequires = $request->getRequires();
+
         return isset($rootRequires[$name]);
     }
 
@@ -400,4 +401,3 @@ class PoolBuilder
         return $normalizedAliases;
     }
 }
-

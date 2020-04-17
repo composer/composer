@@ -58,7 +58,6 @@ class GitLabTest extends TestCase
                 $this->anything()
             )
             ->willReturn(new Response(array('url' => $url), 200, array(), sprintf('{"access_token": "%s", "token_type": "bearer", "expires_in": 7200}', $this->token)));
-        ;
 
         $config = $this->getConfigMock();
         $config

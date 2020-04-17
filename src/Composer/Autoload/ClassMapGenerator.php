@@ -147,13 +147,13 @@ class ClassMapGenerator
     /**
      * Remove classes which could not have been loaded by namespace autoloaders
      *
-     * @param array       $classes       found classes in given file
-     * @param string      $filePath      current file
-     * @param string      $baseNamespace prefix of given autoload mapping
-     * @param string      $namespaceType psr-0|psr-4
-     * @param string      $basePath      root directory of given autoload mapping
-     * @param IOInterface $io            IO object
-     * @return array      valid classes
+     * @param  array       $classes       found classes in given file
+     * @param  string      $filePath      current file
+     * @param  string      $baseNamespace prefix of given autoload mapping
+     * @param  string      $namespaceType psr-0|psr-4
+     * @param  string      $basePath      root directory of given autoload mapping
+     * @param  IOInterface $io            IO object
+     * @return array       valid classes
      */
     private static function filterByNamespace($classes, $filePath, $baseNamespace, $namespaceType, $basePath, $io)
     {
@@ -176,8 +176,7 @@ class ClassMapGenerator
                     $className = substr($class, $namespaceLength + 1);
                     $subPath = str_replace('\\', DIRECTORY_SEPARATOR, $namespace)
                         . str_replace('_', DIRECTORY_SEPARATOR, $className);
-                }
-                else {
+                } else {
                     $subPath = str_replace('_', DIRECTORY_SEPARATOR, $class);
                 }
             } elseif ('psr-4' === $namespaceType) {

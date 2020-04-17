@@ -12,8 +12,6 @@
 
 namespace Composer\DependencyResolver\Operation;
 
-use Composer\Package\PackageInterface;
-
 /**
  * Abstract solver operation class.
  *
@@ -45,7 +43,7 @@ abstract class SolverOperation implements OperationInterface
 
     /**
      * @param $lock bool Whether this is an operation on the lock file
-    * @return string
-    */
+     * @return string
+     */
     abstract public function show($lock);
 }

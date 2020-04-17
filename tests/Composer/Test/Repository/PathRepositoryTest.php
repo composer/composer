@@ -12,14 +12,11 @@
 
 namespace Composer\Test\Repository;
 
-use Composer\Package\Loader\ArrayLoader;
 use Composer\Repository\PathRepository;
 use Composer\Test\TestCase;
-use Composer\Package\Version\VersionParser;
 
 class PathRepositoryTest extends TestCase
 {
-
     /**
      * @expectedException RuntimeException
      */

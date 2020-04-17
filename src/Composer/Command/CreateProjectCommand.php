@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
-use Composer\Installer\InstallationManager;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;

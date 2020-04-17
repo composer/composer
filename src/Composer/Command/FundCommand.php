@@ -16,7 +16,6 @@ use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Repository\CompositeRepository;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**

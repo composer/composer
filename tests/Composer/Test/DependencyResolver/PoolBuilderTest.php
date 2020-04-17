@@ -14,22 +14,14 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
-use Composer\Repository\LockArrayRepository;
-use Composer\DependencyResolver\DefaultPolicy;
-use Composer\DependencyResolver\Pool;
-use Composer\DependencyResolver\PoolBuilder;
 use Composer\DependencyResolver\Request;
-use Composer\DependencyResolver\Solver;
-use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionParser;
-use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
-use Composer\Semver\Constraint\MultiConstraint;
 
 class PoolBuilderTest extends TestCase
 {

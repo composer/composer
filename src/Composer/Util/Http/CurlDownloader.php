@@ -15,7 +15,6 @@ namespace Composer\Util\Http;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
-use Composer\CaBundle\CaBundle;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
@@ -40,10 +39,10 @@ class CurlDownloader
     private $selectTimeout = 5.0;
     private $maxRedirects = 20;
     protected $multiErrors = array(
-        CURLM_BAD_HANDLE      => array('CURLM_BAD_HANDLE', 'The passed-in handle is not a valid CURLM handle.'),
+        CURLM_BAD_HANDLE => array('CURLM_BAD_HANDLE', 'The passed-in handle is not a valid CURLM handle.'),
         CURLM_BAD_EASY_HANDLE => array('CURLM_BAD_EASY_HANDLE', "An easy handle was not good/valid. It could mean that it isn't an easy handle at all, or possibly that the handle already is in used by this or another multi handle."),
-        CURLM_OUT_OF_MEMORY   => array('CURLM_OUT_OF_MEMORY', 'You are doomed.'),
-        CURLM_INTERNAL_ERROR  => array('CURLM_INTERNAL_ERROR', 'This can only be returned if libcurl bugs. Please report it to us!')
+        CURLM_OUT_OF_MEMORY => array('CURLM_OUT_OF_MEMORY', 'You are doomed.'),
+        CURLM_INTERNAL_ERROR => array('CURLM_INTERNAL_ERROR', 'This can only be returned if libcurl bugs. Please report it to us!'),
     );
 
     private static $options = array(
@@ -144,7 +143,7 @@ class CurlDownloader
         curl_setopt($curlHandle, CURLOPT_WRITEHEADER, $headerHandle);
         curl_setopt($curlHandle, CURLOPT_FILE, $bodyHandle);
         curl_setopt($curlHandle, CURLOPT_ENCODING, "gzip");
-        curl_setopt($curlHandle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
+        curl_setopt($curlHandle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
         if (defined('CURLOPT_SSL_FALSESTART')) {
             curl_setopt($curlHandle, CURLOPT_SSL_FALSESTART, true);
         }
@@ -199,7 +198,7 @@ class CurlDownloader
         }
 
         $this->checkCurlResult(curl_multi_add_handle($this->multiHandle, $curlHandle));
-// TODO progress
+        // TODO progress
         //$params['notification'](STREAM_NOTIFY_RESOLVE, STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, 0, false);
     }
 
@@ -235,7 +234,7 @@ class CurlDownloader
             $statusCode = null;
             $response = null;
             try {
-// TODO progress
+                // TODO progress
                 //$this->onProgress($curlHandle, $job['callback'], $progress, $job['progress']);
                 if (CURLE_OK !== $errno || $error) {
                     throw new TransportException($error);
@@ -285,7 +284,7 @@ class CurlDownloader
                 // fail 4xx and 5xx responses and capture the response
                 if ($statusCode >= 400 && $statusCode <= 599) {
                     throw $this->failResponse($job, $response, $response->getStatusMessage());
-// TODO progress
+                    // TODO progress
 //                        $this->io->overwriteError("Downloading (<error>failed</error>)", false);
                 }
 
@@ -455,7 +454,8 @@ class CurlDownloader
     private function checkCurlResult($code)
     {
         if ($code != CURLM_OK && $code != CURLM_CALL_MULTI_PERFORM) {
-            throw new \RuntimeException(isset($this->multiErrors[$code])
+            throw new \RuntimeException(
+                isset($this->multiErrors[$code])
                 ? "cURL error: {$code} ({$this->multiErrors[$code][0]}): cURL message: {$this->multiErrors[$code][1]}"
                 : 'Unexpected cURL error: ' . $code
             );

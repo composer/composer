@@ -63,6 +63,7 @@ class Transaction
             if ($a->getName() == $b->getName() && $a instanceof AliasPackage != $b instanceof AliasPackage) {
                 return $a instanceof AliasPackage ? -1 : 1;
             }
+
             return strcmp($b->getName(), $a->getName());
         };
 
@@ -225,6 +226,7 @@ class Transaction
         if (!isset($this->resultPackagesByName[$link->getTarget()])) {
             return array();
         }
+
         return $this->resultPackagesByName[$link->getTarget()];
     }
 

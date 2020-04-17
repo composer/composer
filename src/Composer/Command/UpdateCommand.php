@@ -129,6 +129,7 @@ EOT
 
         if ($updateMirrors && !empty($packages)) {
             $io->writeError('<error>You cannot simultaneously update only a selection of packages and regenerate the lock file metadata.</error>');
+
             return -1;
         }
 

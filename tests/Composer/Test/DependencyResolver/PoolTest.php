@@ -13,8 +13,6 @@
 namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\Pool;
-use Composer\Repository\ArrayRepository;
-use Composer\Package\BasePackage;
 use Composer\Test\TestCase;
 
 class PoolTest extends TestCase
@@ -31,7 +29,6 @@ class PoolTest extends TestCase
 
     public function testWhatProvidesPackageWithConstraint()
     {
-
         $firstPackage = $this->getPackage('foo', '1');
         $secondPackage = $this->getPackage('foo', '2');
 

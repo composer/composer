@@ -117,7 +117,7 @@ class Problem
      * Store a reason descriptor but ignore duplicates
      *
      * @param string $id     A canonical identifier for the reason
-     * @param Rule $reason The reason descriptor
+     * @param Rule   $reason The reason descriptor
      */
     protected function addReason($id, Rule $reason)
     {
@@ -273,11 +273,13 @@ class Problem
             $maxProviders = 20;
             $providersStr = implode(array_map(function ($p) {
                 $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
+
                 return "      - ${p['name']}".$description."\n";
-            }, count($providers) > $maxProviders+1 ? array_slice($providers, 0, $maxProviders) : $providers));
-            if (count($providers) > $maxProviders+1) {
-                $providersStr .= '      ... and '.(count($providers)-$maxProviders).' more.'."\n";
+            }, count($providers) > $maxProviders + 1 ? array_slice($providers, 0, $maxProviders) : $providers));
+            if (count($providers) > $maxProviders + 1) {
+                $providersStr .= '      ... and '.(count($providers) - $maxProviders).' more.'."\n";
             }
+
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint).", it ", "could not be found in any version, but the following packages provide it:\n".$providersStr."      Consider requiring one of these to satisfy the $packageName requirement.");
         }
 

@@ -14,7 +14,6 @@ namespace Composer\Downloader;
 
 use Composer\Config;
 use Composer\Cache;
-use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\Comparer\Comparer;
@@ -27,7 +26,6 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Url as UrlUtil;
-use Composer\Downloader\TransportException;
 
 /**
  * Base downloader for files
@@ -53,12 +51,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * Constructor.
      *
-     * @param IOInterface      $io              The IO instance
-     * @param Config           $config          The config
-     * @param HttpDownloader   $httpDownloader  The remote filesystem
-     * @param EventDispatcher  $eventDispatcher The event dispatcher
-     * @param Cache            $cache           Cache instance
-     * @param Filesystem       $filesystem      The filesystem
+     * @param IOInterface     $io              The IO instance
+     * @param Config          $config          The config
+     * @param HttpDownloader  $httpDownloader  The remote filesystem
+     * @param EventDispatcher $eventDispatcher The event dispatcher
+     * @param Cache           $cache           Cache instance
+     * @param Filesystem      $filesystem      The filesystem
      */
     public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, Filesystem $filesystem = null)
     {
@@ -98,7 +96,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $urls[$index] = array(
                 'base' => $url,
                 'processed' => $processedUrl,
-                'cacheKey' => $this->getCacheKey($package, $processedUrl)
+                'cacheKey' => $this->getCacheKey($package, $processedUrl),
             );
         }
 

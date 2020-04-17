@@ -116,22 +116,22 @@ class GitBitbucketDriverTest extends TestCase
             ->method('get')
             ->withConsecutive(
                 array(
-                    $urls[0], array()
+                    $urls[0], array(),
                 ),
                 array(
-                    $urls[1], array()
+                    $urls[1], array(),
                 ),
                 array(
-                    $urls[2], array()
+                    $urls[2], array(),
                 ),
                 array(
-                    $urls[3], array()
+                    $urls[3], array(),
                 ),
                 array(
-                    $urls[4], array()
+                    $urls[4], array(),
                 ),
                 array(
-                    $urls[5], array()
+                    $urls[5], array(),
                 )
             )
             ->willReturnOnConsecutiveCalls(

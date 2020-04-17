@@ -59,9 +59,9 @@ class Solver
     protected $io;
 
     /**
-     * @param PolicyInterface     $policy
-     * @param Pool                $pool
-     * @param IOInterface         $io
+     * @param PolicyInterface $policy
+     * @param Pool            $pool
+     * @param IOInterface     $io
      */
     public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io)
     {
@@ -164,8 +164,8 @@ class Solver
     }
 
     /**
-     * @param  Request $request
-     * @param bool $ignorePlatformReqs
+     * @param Request $request
+     * @param bool    $ignorePlatformReqs
      */
     protected function checkForRootRequireProblems($request, $ignorePlatformReqs)
     {
@@ -183,8 +183,8 @@ class Solver
     }
 
     /**
-     * @param  Request $request
-     * @param  bool    $ignorePlatformReqs
+     * @param  Request         $request
+     * @param  bool            $ignorePlatformReqs
      * @return LockTransaction
      */
     public function solve(Request $request, $ignorePlatformReqs = false)

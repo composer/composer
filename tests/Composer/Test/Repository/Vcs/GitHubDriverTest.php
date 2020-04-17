@@ -205,7 +205,7 @@ class GitHubDriverTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config,$httpDownloader, $process);
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $process);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 

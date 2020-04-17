@@ -228,6 +228,7 @@ class PlatformRepository extends ArrayRepository
                         continue 2;
                     }
 
+                    // no break
                 default:
                     // None handled extensions have no special cases, skip
                     continue 2;
@@ -348,7 +349,7 @@ class PlatformRepository extends ArrayRepository
     }
 
     /**
-     * @param string $name
+     * @param  string $name
      * @return string
      */
     private function buildPackageName($name)

@@ -416,8 +416,8 @@ class Factory
     }
 
     /**
-     * @param  IOInterface $io             IO instance
-     * @param  bool        $disablePlugins Whether plugins should not be loaded
+     * @param  IOInterface   $io             IO instance
+     * @param  bool          $disablePlugins Whether plugins should not be loaded
      * @return Composer|null
      */
     public static function createGlobal(IOInterface $io, $disablePlugins = false)
@@ -577,9 +577,9 @@ class Factory
     }
 
     /**
-     * @param  IOInterface      $io      IO instance
-     * @param  Config           $config  Config instance
-     * @param  array            $options Array of options passed directly to HttpDownloader constructor
+     * @param  IOInterface    $io      IO instance
+     * @param  Config         $config  Config instance
+     * @param  array          $options Array of options passed directly to HttpDownloader constructor
      * @return HttpDownloader
      */
     public static function createHttpDownloader(IOInterface $io, Config $config = null, $options = array())

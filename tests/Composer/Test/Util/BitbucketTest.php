@@ -257,7 +257,6 @@ class BitbucketTest extends TestCase
                     )
                 )
             );
-        ;
 
         $this->setExpectationsForStoringAccessToken(true);
 

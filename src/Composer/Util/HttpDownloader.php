@@ -15,7 +15,6 @@ namespace Composer\Util;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
-use Composer\CaBundle\CaBundle;
 use Composer\Util\Http\Response;
 use Composer\Composer;
 use Composer\Package\Version\VersionParser;
@@ -180,7 +179,8 @@ class HttpDownloader
         $downloader = $this;
         $io = $this->io;
 
-        $canceler = function () {};
+        $canceler = function () {
+        };
 
         $promise = new Promise($resolver, $canceler);
         $promise->then(function ($response) use (&$job, $downloader) {
@@ -201,7 +201,7 @@ class HttpDownloader
 
             throw $e;
         });
-        $this->jobs[$job['id']] =& $job;
+        $this->jobs[$job['id']] = &$job;
 
         if ($this->runningJobs < $this->maxJobs) {
             $this->startJob($job['id']);
@@ -212,7 +212,7 @@ class HttpDownloader
 
     private function startJob($id)
     {
-        $job =& $this->jobs[$id];
+        $job = &$this->jobs[$id];
         if ($job['status'] !== self::STATUS_QUEUED) {
             return;
         }
@@ -235,6 +235,7 @@ class HttpDownloader
                 $e->setStatusCode(499);
                 $reject($e);
             }
+
             return;
         }
 

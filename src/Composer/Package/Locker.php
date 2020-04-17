@@ -15,7 +15,6 @@ namespace Composer\Package;
 use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
 use Composer\Repository\LockArrayRepository;
-use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;

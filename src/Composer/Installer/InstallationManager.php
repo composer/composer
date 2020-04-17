@@ -233,7 +233,9 @@ class InstallationManager
 
                 $promise = $installer->prepare($opType, $package, $initialPackage);
                 if (null === $promise) {
-                    $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
+                    $promise = new \React\Promise\Promise(function ($resolve, $reject) {
+                        $resolve();
+                    });
                 }
 
                 $cleanupPromise = function () use ($opType, $installer, $package, $initialPackage) {

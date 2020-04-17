@@ -761,7 +761,7 @@ EOT
             'keywords' => $package->getKeywords() ?: array(),
             'type' => $package->getType(),
             'homepage' => $package->getHomepage(),
-            'names' => $package->getNames()
+            'names' => $package->getNames(),
         );
 
         $json = $this->appendVersions($json, $versions);
@@ -777,7 +777,7 @@ EOT
             $json['source'] = array(
                 'type' => $package->getSourceType(),
                 'url' => $package->getSourceUrl(),
-                'reference' => $package->getSourceReference()
+                'reference' => $package->getSourceReference(),
             );
         }
 
@@ -785,7 +785,7 @@ EOT
             $json['dist'] = array(
                 'type' => $package->getDistType(),
                 'url' => $package->getDistUrl(),
-                'reference' => $package->getDistReference()
+                'reference' => $package->getDistReference(),
             );
         }
 
@@ -843,7 +843,7 @@ EOT
                 return array(
                     'name' => $license[0],
                     'osi' => $licenseId,
-                    'url' => $license[2]
+                    'url' => $license[2],
                 );
             }, $licenses);
         }

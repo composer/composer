@@ -16,7 +16,6 @@ use Composer\Repository\Vcs\FossilDriver;
 use Composer\Config;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
-use Composer\Util\Platform;
 
 class FossilDriverTest extends TestCase
 {

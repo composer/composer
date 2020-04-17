@@ -142,7 +142,7 @@ abstract class BitbucketDriver extends VcsDriver
                         $hash = $branches[$label];
                     }
 
-                    if (! isset($hash)) {
+                    if (!isset($hash)) {
                         $composer['support']['source'] = sprintf(
                             'https://%s/%s/%s/src',
                             $this->originUrl,

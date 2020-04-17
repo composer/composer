@@ -12,17 +12,12 @@
 
 namespace Composer\EventDispatcher;
 
-use Composer\DependencyResolver\PolicyInterface;
-use Composer\DependencyResolver\Request;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
-use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryInterface;
-use Composer\Repository\RepositorySet;
 use Composer\Script;
 use Composer\Installer\PackageEvent;
 use Composer\Installer\BinaryInstaller;
@@ -119,10 +114,10 @@ class EventDispatcher
     /**
      * Dispatch a installer event.
      *
-     * @param string              $eventName         The constant in InstallerEvents
-     * @param bool                $devMode           Whether or not we are in dev mode
-     * @param bool                $executeOperations True if operations will be executed, false in --dry-run
-     * @param Transaction         $transaction       The transaction contains the list of operations
+     * @param string      $eventName         The constant in InstallerEvents
+     * @param bool        $devMode           Whether or not we are in dev mode
+     * @param bool        $executeOperations True if operations will be executed, false in --dry-run
+     * @param Transaction $transaction       The transaction contains the list of operations
      *
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
@@ -148,7 +143,6 @@ class EventDispatcher
 
         $return = 0;
         foreach ($listeners as $callable) {
-
             $this->ensureBinDirIsInPath();
 
             if (!is_string($callable)) {
@@ -158,7 +152,7 @@ class EventDispatcher
                     throw new \RuntimeException('Subscriber '.$className.'::'.$callable[1].' for event '.$event->getName().' is not callable, make sure the function is defined and public');
                 }
                 if (is_array($callable) && (is_string($callable[0]) || is_object($callable[0])) && is_string($callable[1])) {
-                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1] ), true, IOInterface::VERBOSE);
+                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1]), true, IOInterface::VERBOSE);
                 }
                 $event = $this->checkListenerExpectedEvent($callable, $event);
                 $return = false === call_user_func($callable, $event) ? 1 : 0;

@@ -16,7 +16,6 @@ use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Factory;
 use Composer\Downloader\TransportException;
-use Composer\Json\JsonFile;
 
 /**
  * @author Roshan Gautam <roshan.gautam@hotmail.com>
@@ -35,10 +34,10 @@ class GitLab
     /**
      * Constructor.
      *
-     * @param IOInterface      $io               The IO instance
-     * @param Config           $config           The composer configuration
-     * @param ProcessExecutor  $process          Process instance, injectable for mocking
-     * @param HttpDownloader $httpDownloader Remote Filesystem, injectable for mocking
+     * @param IOInterface     $io             The IO instance
+     * @param Config          $config         The composer configuration
+     * @param ProcessExecutor $process        Process instance, injectable for mocking
+     * @param HttpDownloader  $httpDownloader Remote Filesystem, injectable for mocking
      */
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null)
     {

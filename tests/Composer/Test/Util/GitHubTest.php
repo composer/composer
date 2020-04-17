@@ -52,7 +52,6 @@ class GitHubTest extends TestCase
                 $this->anything()
             )
             ->willReturn(new Response(array('url' => $url), 200, array(), '{}'));
-        ;
 
         $config = $this->getConfigMock();
         $config

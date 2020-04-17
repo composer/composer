@@ -14,7 +14,6 @@ namespace Composer\Test\EventDispatcher;
 
 use Composer\EventDispatcher\Event;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Installer\InstallerEvents;
 use Composer\Config;
 use Composer\Composer;
@@ -283,11 +282,11 @@ class EventDispatcherTest extends TestCase
     public function testDispatcherAppendsDirBinOnPathForEveryListener()
     {
         $currentDirectoryBkp = getcwd();
-        $composerBinDirBkp   = getenv('COMPOSER_BIN_DIR');
+        $composerBinDirBkp = getenv('COMPOSER_BIN_DIR');
         chdir(__DIR__);
         putenv('COMPOSER_BIN_DIR=' . __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
 
-        $process    = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->setConstructorArgs(array(
                 $this->createComposerInstance(),
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
@@ -311,7 +310,7 @@ class EventDispatcherTest extends TestCase
         putenv('COMPOSER_BIN_DIR' . ($composerBinDirBkp === false ? '' : '=' . $composerBinDirBkp));
     }
 
-    static public function createsVendorBinFolderChecksEnvDoesNotContainsBin()
+    public static function createsVendorBinFolderChecksEnvDoesNotContainsBin()
     {
         mkdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR), 0700, true);
         $val = getenv('PATH');
@@ -323,7 +322,7 @@ class EventDispatcherTest extends TestCase
         self::assertFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
     }
 
-    static public function createsVendorBinFolderChecksEnvContainsBin()
+    public static function createsVendorBinFolderChecksEnvContainsBin()
     {
         $val = getenv('PATH');
 
@@ -334,7 +333,8 @@ class EventDispatcherTest extends TestCase
         self::assertNotFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
     }
 
-    static public function getTestEnv() {
+    public static function getTestEnv()
+    {
         $val = getenv('ABC');
         if ($val !== '123') {
             throw new \Exception('getenv() did not return the expected value. expected 123 got '. var_export($val, true));
@@ -393,10 +393,10 @@ class EventDispatcherTest extends TestCase
             ->setConstructorArgs(array(
                 $composer = $this->createComposerInstance(),
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
-                $process
+                $process,
             ))
             ->setMethods(array(
-                'getListeners'
+                'getListeners',
             ))
             ->getMock();
 
@@ -407,11 +407,11 @@ class EventDispatcherTest extends TestCase
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
             ->will($this->returnCallback(function (Event $event) {
-                if($event->getName() === 'hello') {
+                if ($event->getName() === 'hello') {
                     return array('echo Hello');
                 }
 
-                if($event->getName() === 'helloWorld') {
+                if ($event->getName() === 'helloWorld') {
                     return array('@hello World');
                 }
 

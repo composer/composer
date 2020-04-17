@@ -31,8 +31,8 @@ class ArrayRepository implements RepositoryInterface
     protected $packages;
 
     /**
-      * @var PackageInterface[] indexed by package unique name and used to cache hasPackage calls
-      */
+     * @var PackageInterface[] indexed by package unique name and used to cache hasPackage calls
+     */
     protected $packageMap;
 
     public function __construct(array $packages = array())

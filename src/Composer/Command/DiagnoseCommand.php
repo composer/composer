@@ -716,7 +716,6 @@ EOT
         return !$warnings && !$errors ? true : $output;
     }
 
-
     /**
      * Check if allow_url_fopen is ON
      *
@@ -726,6 +725,7 @@ EOT
     {
         if (!ini_get('allow_url_fopen')) {
             $result = '<info>Skipped because allow_url_fopen is missing.</info>';
+
             return $result;
         }
 

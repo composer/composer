@@ -149,8 +149,8 @@ class Application extends BaseApplication
             try {
                 $commandName = $this->find($name)->getName();
             } catch (CommandNotFoundException $e) {
-              // we'll check command validity again later after plugins are loaded
-              $commandName = false;
+                // we'll check command validity again later after plugins are loaded
+                $commandName = false;
             } catch (\InvalidArgumentException $e) {
             }
         }
@@ -230,7 +230,7 @@ class Application extends BaseApplication
                 if (function_exists('posix_getuid') && posix_getuid() === 0) {
                     if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                         $io->writeError('<warning>Do not run Composer as root/super user! See https://getcomposer.org/root for details</warning>');
-                        
+
                         if ($io->isInteractive()) {
                             if (!$io->askConfirmation('<info>Continue as root/super user</info> [<comment>yes</comment>]? ', true)) {
                                 return 1;

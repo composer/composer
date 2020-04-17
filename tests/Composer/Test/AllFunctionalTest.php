@@ -12,7 +12,6 @@
 
 namespace Composer\Test;
 
-use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
@@ -196,8 +195,8 @@ class AllFunctionalTest extends TestCase
                     throw new \RuntimeException(sprintf(
                         'Unknown section "%s". Allowed sections: "RUN", "EXPECT", "EXPECT-ERROR", "EXPECT-EXIT-CODE", "EXPECT-REGEX", "EXPECT-ERROR-REGEX". '
                        .'Section headers must be written as "--HEADER_NAME--".',
-                       $section
-                   ));
+                        $section
+                    ));
             }
 
             $data[$section] = $sectionData;

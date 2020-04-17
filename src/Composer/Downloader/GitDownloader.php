@@ -489,7 +489,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * @param string $path
+     * @param  string            $path
      * @throws \RuntimeException
      */
     protected function discardChanges($path)
@@ -503,7 +503,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * @param string $path
+     * @param  string            $path
      * @throws \RuntimeException
      */
     protected function stashChanges($path)
@@ -517,7 +517,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * @param string $path
+     * @param  string            $path
      * @throws \RuntimeException
      */
     protected function viewDiff($path)

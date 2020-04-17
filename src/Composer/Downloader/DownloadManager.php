@@ -34,9 +34,9 @@ class DownloadManager
     /**
      * Initializes download manager.
      *
-     * @param IOInterface     $io             The Input Output Interface
-     * @param bool            $preferSource   prefer downloading from source
-     * @param Filesystem|null $filesystem     custom Filesystem object
+     * @param IOInterface     $io           The Input Output Interface
+     * @param bool            $preferSource prefer downloading from source
+     * @param Filesystem|null $filesystem   custom Filesystem object
      */
     public function __construct(IOInterface $io, $preferSource = false, Filesystem $filesystem = null)
     {
@@ -164,13 +164,13 @@ class DownloadManager
     /**
      * Downloads package into target dir.
      *
-     * @param PackageInterface      $package      package instance
-     * @param string                $targetDir    target dir
-     * @param PackageInterface|null $prevPackage  previous package instance in case of updates
+     * @param PackageInterface      $package     package instance
+     * @param string                $targetDir   target dir
+     * @param PackageInterface|null $prevPackage previous package instance in case of updates
      *
-     * @return PromiseInterface
      * @throws \InvalidArgumentException if package have no urls to download from
      * @throws \RuntimeException
+     * @return PromiseInterface
      */
     public function download(PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
     {
@@ -235,10 +235,10 @@ class DownloadManager
     /**
      * Prepares an operation execution
      *
-     * @param string                $type         one of install/update/uninstall
-     * @param PackageInterface      $package      package instance
-     * @param string                $targetDir    target dir
-     * @param PackageInterface|null $prevPackage  previous package instance in case of updates
+     * @param string                $type        one of install/update/uninstall
+     * @param PackageInterface      $package     package instance
+     * @param string                $targetDir   target dir
+     * @param PackageInterface|null $prevPackage previous package instance in case of updates
      *
      * @return PromiseInterface|null
      */
@@ -254,12 +254,12 @@ class DownloadManager
     /**
      * Installs package into target dir.
      *
-     * @param PackageInterface $package      package instance
-     * @param string           $targetDir    target dir
+     * @param PackageInterface $package   package instance
+     * @param string           $targetDir target dir
      *
-     * @return PromiseInterface|null
      * @throws \InvalidArgumentException if package have no urls to download from
      * @throws \RuntimeException
+     * @return PromiseInterface|null
      */
     public function install(PackageInterface $package, $targetDir)
     {
@@ -277,8 +277,8 @@ class DownloadManager
      * @param PackageInterface $target    target package version
      * @param string           $targetDir target dir
      *
-     * @return PromiseInterface|null
      * @throws \InvalidArgumentException if initial package is not installed
+     * @return PromiseInterface|null
      */
     public function update(PackageInterface $initial, PackageInterface $target, $targetDir)
     {
@@ -317,6 +317,7 @@ class DownloadManager
         $promise = $initialDownloader->remove($initial, $targetDir);
         if ($promise) {
             $self = $this;
+
             return $promise->then(function ($res) use ($self, $target, $targetDir) {
                 return $self->install($target, $targetDir);
             });
@@ -345,10 +346,10 @@ class DownloadManager
     /**
      * Cleans up a failed operation
      *
-     * @param string                $type         one of install/update/uninstall
-     * @param PackageInterface      $package      package instance
-     * @param string                $targetDir    target dir
-     * @param PackageInterface|null $prevPackage  previous package instance in case of updates
+     * @param string                $type        one of install/update/uninstall
+     * @param PackageInterface      $package     package instance
+     * @param string                $targetDir   target dir
+     * @param PackageInterface|null $prevPackage previous package instance in case of updates
      *
      * @return PromiseInterface|null
      */

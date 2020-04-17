@@ -238,6 +238,7 @@ class Config
                 if (false === $value) {
                     $value = $this->config[$key];
                 }
+
                 return $value !== 'false' && (bool) $value;
 
             case 'cache-ttl':

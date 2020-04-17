@@ -15,10 +15,8 @@ namespace Composer\Repository;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Package\AliasPackage;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\Link;
-
 
 /**
  * Installed repository is a composite of all installed repo types.
@@ -219,7 +217,9 @@ class InstalledRepository extends CompositeRepository
 
     public function getRepoName()
     {
-        return 'installed repo ('.implode(', ', array_map(function ($repo) { return $repo->getRepoName(); }, $this->getRepositories())).')';
+        return 'installed repo ('.implode(', ', array_map(function ($repo) {
+            return $repo->getRepoName();
+        }, $this->getRepositories())).')';
     }
 
     /**

@@ -13,7 +13,6 @@
 namespace Composer\Plugin;
 
 use Composer\EventDispatcher\Event;
-use Composer\Util\RemoteFilesystem;
 
 /**
  * The post file download event.
@@ -22,7 +21,6 @@ use Composer\Util\RemoteFilesystem;
  */
 class PostFileDownloadEvent extends Event
 {
-
     /**
      * @var string
      */
@@ -41,10 +39,10 @@ class PostFileDownloadEvent extends Event
     /**
      * Constructor.
      *
-     * @param string           $name         The event name
-     * @param string           $fileName     The file name
-     * @param string|null      $checksum     The checksum
-     * @param string           $url          The processed url
+     * @param string      $name     The event name
+     * @param string      $fileName The file name
+     * @param string|null $checksum The checksum
+     * @param string      $url      The processed url
      */
     public function __construct($name, $fileName, $checksum, $url)
     {
@@ -69,7 +67,8 @@ class PostFileDownloadEvent extends Event
      *
      * @return string|null
      */
-    public function getChecksum() {
+    public function getChecksum()
+    {
         return $this->checksum;
     }
 
@@ -78,8 +77,8 @@ class PostFileDownloadEvent extends Event
      *
      * @return string
      */
-    public function getUrl() {
+    public function getUrl()
+    {
         return $this->url;
     }
-
 }

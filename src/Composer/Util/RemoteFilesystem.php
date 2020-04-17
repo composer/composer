@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
-use Composer\Util\HttpDownloader;
 use Composer\Util\Http\Response;
 
 /**

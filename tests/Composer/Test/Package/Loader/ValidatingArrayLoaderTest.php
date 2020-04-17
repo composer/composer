@@ -76,10 +76,10 @@ class ValidatingArrayLoaderTest extends TestCase
                     'funding' => array(
                         array(
                             'type' => 'example',
-                            'url' => 'https://example.org/fund'
+                            'url' => 'https://example.org/fund',
                         ),
                         array(
-                            'url' => 'https://example.org/fund'
+                            'url' => 'https://example.org/fund',
                         ),
                     ),
                     'require' => array(
@@ -258,7 +258,7 @@ class ValidatingArrayLoaderTest extends TestCase
             'foo/-bar',
         );
         $invalidNaming = array();
-        foreach($invalidNames as $invalidName) {
+        foreach ($invalidNames as $invalidName) {
             $invalidNaming[] = array(
                 array(
                     'name' => $invalidName,
@@ -333,7 +333,7 @@ class ValidatingArrayLoaderTest extends TestCase
             'foo/bar---baz',
         );
         $invalidNaming = array();
-        foreach($invalidNames as $invalidName) {
+        foreach ($invalidNames as $invalidName) {
             $invalidNaming[] = array(
                 array(
                     'name' => $invalidName,

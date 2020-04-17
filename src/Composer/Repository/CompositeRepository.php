@@ -41,7 +41,9 @@ class CompositeRepository implements RepositoryInterface
 
     public function getRepoName()
     {
-        return 'composite repo ('.implode(', ', array_map(function ($repo) { return $repo->getRepoName(); }, $this->repositories)).')';
+        return 'composite repo ('.implode(', ', array_map(function ($repo) {
+            return $repo->getRepoName();
+        }, $this->repositories)).')';
     }
 
     /**
