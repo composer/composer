@@ -42,7 +42,7 @@ class ValidateCommand extends BaseCommand
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not validate requires for overly strict/loose constraints'),
                 new InputOption('no-check-lock', null, InputOption::VALUE_NONE, 'Do not check if lock file is up to date'),
                 new InputOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors'),
-                new InputOption('no-check-version', null, InputOption::VALUE_NONE, 'Do not check if version field is present'),
+                new InputOption('no-check-version', null, InputOption::VALUE_NONE, 'Do not report a warning if the version field is present'),
                 new InputOption('with-dependencies', 'A', InputOption::VALUE_NONE, 'Also validate the composer.json of all installed dependencies'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code for warnings as well as errors'),
                 new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file'),
