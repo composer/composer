@@ -87,7 +87,7 @@ EOT
         $checkAll = $input->getOption('no-check-all') ? 0 : ValidatingArrayLoader::CHECK_ALL;
         $checkPublish = !$input->getOption('no-check-publish');
         $checkLock = !$input->getOption('no-check-lock');
-        $checkVersion = !$input->getOption('no-check-version');
+        $checkVersion = $input->getOption('no-check-version') ? 0 : ConfigValidator::CHECK_VERSION;
         $isStrict = $input->getOption('strict');
         list($errors, $publishErrors, $warnings) = $validator->validate($file, $checkAll, $checkVersion);
 

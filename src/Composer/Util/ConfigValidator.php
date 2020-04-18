@@ -28,6 +28,8 @@ use Composer\Spdx\SpdxLicenses;
  */
 class ConfigValidator
 {
+    const CHECK_VERSION = 1;
+
     private $io;
 
     public function __construct(IOInterface $io)
@@ -40,11 +42,11 @@ class ConfigValidator
      *
      * @param string $file                       The path to the file
      * @param int    $arrayLoaderValidationFlags Flags for ArrayLoader validation
-     * @param bool   $checkVersion               Whether or not check if version field is present
+     * @param int    $flags                      Flags for validation
      *
      * @return array a triple containing the errors, publishable errors, and warnings
      */
-    public function validate($file, $arrayLoaderValidationFlags = ValidatingArrayLoader::CHECK_ALL, $checkVersion = true)
+    public function validate($file, $arrayLoaderValidationFlags = ValidatingArrayLoader::CHECK_ALL, $flags = self::CHECK_VERSION)
     {
         $errors = array();
         $publishErrors = array();
@@ -110,7 +112,7 @@ class ConfigValidator
             }
         }
 
-        if ($checkVersion && isset($manifest['version'])) {
+        if (($flags & self::CHECK_VERSION) && isset($manifest['version'])) {
             $warnings[] = 'The version field is present, it is recommended to leave it out if the package is published on Packagist.';
         }
 
