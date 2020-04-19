@@ -300,6 +300,7 @@ class Problem
                 unset($package['versions'][VersionParser::DEV_MASTER_ALIAS]);
             }
             if (!$isVerbose && count($package['versions']) > 4) {
+                uksort($package['versions'], 'version_compare');
                 $filtered = array();
                 $byMajor = array();
                 foreach ($package['versions'] as $version => $pretty) {
