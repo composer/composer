@@ -452,6 +452,7 @@ class AutoloadGeneratorTest extends TestCase
         $this->assertEquals(
             array(
                 'B\\C\\C' => $this->vendorDir.'/b/b/src/C/C.php',
+                'Composer\\InstalledVersions' => $this->vendorDir . '/composer/InstalledVersions.php',
             ),
             include $this->vendorDir.'/composer/autoload_classmap.php'
         );
@@ -599,7 +600,9 @@ class AutoloadGeneratorTest extends TestCase
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_8');
         $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated.");
         $this->assertEquals(
-            array(),
+            array(
+                'Composer\\InstalledVersions' => $this->vendorDir.'/composer/InstalledVersions.php',
+            ),
             include $this->vendorDir.'/composer/autoload_classmap.php'
         );
     }
@@ -636,6 +639,7 @@ class AutoloadGeneratorTest extends TestCase
 \$baseDir = dirname(\$vendorDir);
 
 return array(
+    'Composer\\\\InstalledVersions' => \$vendorDir . '/composer/InstalledVersions.php',
     'psr0_match' => \$baseDir . '/psr0/psr0/match.php',
     'psr4\\\\match' => \$baseDir . '/psr4/match.php',
 );
@@ -677,6 +681,7 @@ EOF;
                 'ClassMapBar' => $this->vendorDir.'/b/b/src/b.php',
                 'ClassMapBaz' => $this->vendorDir.'/b/b/lib/c.php',
                 'ClassMapFoo' => $this->vendorDir.'/a/a/src/a.php',
+                'Composer\\InstalledVersions' => $this->vendorDir.'/composer/InstalledVersions.php',
             ),
             include $this->vendorDir.'/composer/autoload_classmap.php'
         );
@@ -717,6 +722,7 @@ EOF;
                 'ClassMapBar' => $this->vendorDir.'/a/a/target/lib/b.php',
                 'ClassMapBaz' => $this->vendorDir.'/b/b/src/c.php',
                 'ClassMapFoo' => $this->vendorDir.'/a/a/target/src/a.php',
+                'Composer\\InstalledVersions' => $this->vendorDir.'/composer/InstalledVersions.php',
             ),
             include $this->vendorDir.'/composer/autoload_classmap.php'
         );
@@ -758,6 +764,7 @@ EOF;
                 'ClassMapBar' => $this->vendorDir.'/b/b/test.php',
                 'ClassMapBaz' => $this->vendorDir.'/c/c/foo/test.php',
                 'ClassMapFoo' => $this->vendorDir.'/a/a/src/a.php',
+                'Composer\\InstalledVersions' => $this->vendorDir.'/composer/InstalledVersions.php',
             ),
             include $this->vendorDir.'/composer/autoload_classmap.php'
         );
@@ -805,6 +812,7 @@ EOF;
                 'ClassMapBar' => $this->vendorDir.'/b/b/ClassMapBar.php',
                 'ClassMapBaz' => $this->vendorDir.'/c/c/foo/ClassMapBaz.php',
                 'ClassMapFoo' => $this->vendorDir.'/a/a/src/ClassMapFoo.php',
+                'Composer\\InstalledVersions' => $this->vendorDir.'/composer/InstalledVersions.php',
             ),
             include $this->vendorDir.'/composer/autoload_classmap.php'
         );
@@ -852,7 +860,8 @@ EOF;
         $this->assertFileContentEquals(__DIR__.'/Fixtures/autoload_static_functions.php', $this->vendorDir.'/composer/autoload_static.php');
         $this->assertFileContentEquals(__DIR__.'/Fixtures/autoload_files_functions.php', $this->vendorDir.'/composer/autoload_files.php');
 
-        include $this->vendorDir . '/autoload.php';
+        $loader = require $this->vendorDir . '/autoload.php';
+        $loader->unregister();
         $this->assertTrue(function_exists('testFilesAutoloadGeneration1'));
         $this->assertTrue(function_exists('testFilesAutoloadGeneration2'));
         $this->assertTrue(function_exists('testFilesAutoloadGeneration3'));
@@ -988,7 +997,8 @@ EOF;
         $this->assertFileContentEquals(__DIR__ . '/Fixtures/autoload_real_files_by_dependency.php', $this->vendorDir . '/composer/autoload_real.php');
         $this->assertFileContentEquals(__DIR__ . '/Fixtures/autoload_static_files_by_dependency.php', $this->vendorDir . '/composer/autoload_static.php');
 
-        require $this->vendorDir . '/autoload.php';
+        $loader = require $this->vendorDir . '/autoload.php';
+        $loader->unregister();
 
         $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency1'));
         $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency2'));
@@ -1087,6 +1097,7 @@ EOF;
 
 return array(
     'A\\\\B\\\\C' => \$baseDir . '/lib/A/B/C.php',
+    'Composer\\\\InstalledVersions' => \$vendorDir . '/composer/InstalledVersions.php',
     'Foo\\\\Bar' => \$baseDir . '/src/classes.php',
 );
 
@@ -1155,7 +1166,8 @@ EOF;
 
         $oldIncludePath = get_include_path();
 
-        require $this->vendorDir."/autoload.php";
+        $loader = require $this->vendorDir."/autoload.php";
+        $loader->unregister();
 
         $this->assertEquals(
             $this->vendorDir."/a/a/lib".PATH_SEPARATOR.$oldIncludePath,
@@ -1183,7 +1195,8 @@ EOF;
 
         $oldIncludePath = get_include_path();
 
-        require $this->vendorDir."/autoload.php";
+        $loader = require $this->vendorDir."/autoload.php";
+        $loader->unregister();
 
         $this->assertEquals(
             $this->workingDir."/lib".PATH_SEPARATOR.$this->workingDir."/src".PATH_SEPARATOR.$this->vendorDir."/a/a/lib".PATH_SEPARATOR.$oldIncludePath,
@@ -1356,6 +1369,7 @@ $baseDir = dirname($vendorDir).'/working-dir';
 return array(
     'Bar\\Bar' => $vendorDir . '/b/b/classmaps/classes.php',
     'Bar\\Foo' => $vendorDir . '/b/b/lib/Bar/Foo.php',
+    'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'Foo\\Bar' => $baseDir . '/src/Foo/Bar.php',
     'Foo\\Foo' => $baseDir . '/classmap/classes.php',
 );
@@ -1434,6 +1448,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir).'/working-dir';
 
 return array(
+    'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'Foo\\Bar' => $baseDir . '/../src/Foo/Bar.php',
     'Foo\\Foo' => $baseDir . '/../classmap/classes.php',
 );
@@ -1503,6 +1518,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Classmap\\Foo' => $baseDir . '/class.php',
+    'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'Foo\\Bar' => $baseDir . '/Foo/Bar.php',
 );
 

@@ -15,9 +15,14 @@ class ComposerStaticInitFilesAutoloadOrder
         '334307692417e52db5a08c3271700a7e' => __DIR__ . '/../..' . '/root2.php',
     );
 
+    public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
+            $loader->classMap = ComposerStaticInitFilesAutoloadOrder::$classMap;
 
         }, null, ClassLoader::class);
     }
