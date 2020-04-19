@@ -662,7 +662,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         // load ~dev versions of the packages as well if needed
         foreach ($packageNames as $name => $constraint) {
-            if ($acceptableStabilities && $stabilityFlags && StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), 'dev')) {
+            if ($acceptableStabilities === null || $stabilityFlags === null || StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), 'dev')) {
                 $packageNames[$name.'~dev'] = $constraint;
             }
         }
