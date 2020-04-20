@@ -1629,13 +1629,6 @@ EOF;
     public function testGeneratesPlatformCheck()
     {
         $package = new Package('a', '1.0', '1.0');
-        $package->setAutoload(array(
-            'psr-4' => array(
-                'Acme\Fruit\\' => 'src-fruit/',
-                'Acme\Cake\\' => array('src-cake/', 'lib-cake/'),
-            ),
-        ));
-
         $versionParser = new VersionParser();
 
         $package->setRequires(array(
