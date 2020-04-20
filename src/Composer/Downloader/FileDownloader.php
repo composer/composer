@@ -159,7 +159,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 }
 
                 if ($eventDispatcher) {
-                    $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, $fileName, $checksum, $url['processed']);
+                    $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, $fileName, $checksum, $url['processed'], $package);
                     $eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
                 }
 
