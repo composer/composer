@@ -5,7 +5,7 @@
 $issues = array();
 
 if (!(PHP_VERSION_ID >= 70200 && PHP_VERSION_ID < 80000)) {
-    $issues[] = 'Your Composer dependencies require a PHP version ">= 7.2.0.0-dev" and "< 8.0.0.0-dev". You are running ' . PHP_VERSION  .  '.';
+    $issues[] = 'Your Composer dependencies require a PHP version ">= 7.2.0" and "< 8.0.0". You are running ' . PHP_VERSION  .  '.';
 }
 
 $missingExtensions = array_diff(array (

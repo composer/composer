@@ -613,12 +613,27 @@ EOF;
             return $chunks[0] * 10000 + $chunks[1] * 100 + $chunks[2];
         };
 
+        $formatToHumanReadable = function (Bound $bound) {
+            if ($bound->isZero()) {
+                return 0;
+            }
+
+            if ($bound->isPositiveInfinity()) {
+                return 99999;
+            }
+
+            $version = str_replace('-', '.', $bound->getVersion());
+            $chunks = explode('.', $version);
+            $chunks = array_slice($chunks, 0, 3);
+            return implode('.', $chunks);
+        };
+
         $lowestOperator = $lowestPhpVersion->isInclusive() ? '>=' : '>';
         $highestOperator = $highestPhpVersion->isInclusive() ? '<=' : '<';
         $lowestPhpVersionId = $formatToPhpVersionId($lowestPhpVersion);
         $highestPhpVersionId = $formatToPhpVersionId($highestPhpVersion);
-        $lowestPhpVersion = $lowestPhpVersion->getVersion();
-        $highestPhpVersion = $highestPhpVersion->getVersion();
+        $lowestPhpVersion = $formatToHumanReadable($lowestPhpVersion);
+        $highestPhpVersion = $formatToHumanReadable($highestPhpVersion);
         $requiredExtensions = var_export($requiredExtensions, true);
 
         return <<<PLATFORM_CHECK
