@@ -610,7 +610,7 @@ EOF;
 
             $version = str_replace('-', '.', $bound->getVersion());
             $chunks = array_map('intval', explode('.', $version));
-            return $chunks[0] * 10000 + $chunks[1] * 100 + $chunks[3];
+            return $chunks[0] * 10000 + $chunks[1] * 100 + $chunks[2];
         };
 
         $lowestOperator = $lowestPhpVersion->isInclusive() ? '>=' : '>';
