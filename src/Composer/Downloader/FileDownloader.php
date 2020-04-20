@@ -141,7 +141,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                     ->then($accept, $reject);
             }
 
-            return $result->then(function ($result) use ($fileName, $checksum, $url, $eventDispatcher) {
+            return $result->then(function ($result) use ($fileName, $checksum, $url, $package, $eventDispatcher) {
                 // in case of retry, the first call's Promise chain finally calls this twice at the end,
                 // once with $result being the returned $fileName from $accept, and then once for every
                 // failed request with a null result, which can be skipped.
