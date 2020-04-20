@@ -22,7 +22,7 @@ class ComposerAutoloaderInitFilesAutoload
             return self::$loader;
         }
 
-        require_once __DIR__ . '/platform_check.php';
+        require __DIR__ . '/platform_check.php';
 
         spl_autoload_register(array('ComposerAutoloaderInitFilesAutoload', 'loadClassLoader'), true, true);
         self::$loader = $loader = new \Composer\Autoload\ClassLoader();
