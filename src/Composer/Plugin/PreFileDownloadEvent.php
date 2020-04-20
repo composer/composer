@@ -55,6 +55,16 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
+     * Sets the http downloader
+     *
+     * @param HttpDownloader $httpDownloader
+     */
+    public function setHttpDownloader(HttpDownloader $httpDownloader)
+    {
+        $this->httpDownloader = $httpDownloader;
+    }
+
+    /**
      * Retrieves the processed URL this remote filesystem will be used for
      *
      * @return string
