@@ -5,6 +5,7 @@ Composer helps you declare, manage, and install dependencies of PHP projects.
 
 See [https://getcomposer.org/](https://getcomposer.org/) for more information and documentation.
 
+[![Continuous Integration](https://github.com/composer/composer.svg/workflows/Continuous%20Integration/badge.svg?branch=master)](https://github.com/composer/composer.svg/actions)
 [![Build Status](https://travis-ci.org/composer/composer.svg?branch=master)](https://travis-ci.org/composer/composer)
 
 Installation / Usage
