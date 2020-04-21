@@ -122,7 +122,7 @@ class PoolBuilder
             }
 
             $loadNames[$packageName] = $constraint;
-            $this->nameConstraints[$packageName] = $constraint ? new MultiConstraint(array($constraint), false) : null;
+            $this->nameConstraints[$packageName] = $constraint && !($constraint instanceof EmptyConstraint) ? array($constraint) : null;
         }
 
         // clean up loadNames for anything we manually marked loaded above
@@ -159,11 +159,17 @@ class PoolBuilder
         }
 
         // filter packages according to all the require statements collected for each package
+        $nameConstraints = array();
+        foreach ($this->nameConstraints as $name => $constraints) {
+            if (is_array($constraints)) {
+                $nameConstraints[$name] = MultiConstraint::create(array_values(array_unique($constraints)), false);
+            }
+        }
         foreach ($this->packages as $i => $package) {
             // we check all alias related packages at once, so no need to check individual aliases
             // isset also checks non-null value
-            if (!$package instanceof AliasPackage && isset($this->nameConstraints[$package->getName()])) {
-                $constraint = $this->nameConstraints[$package->getName()];
+            if (!$package instanceof AliasPackage && isset($nameConstraints[$package->getName()])) {
+                $constraint = $nameConstraints[$package->getName()];
 
                 $aliasedPackages = array($i => $package);
                 if (isset($this->aliasMap[spl_object_hash($package)])) {
@@ -270,10 +276,9 @@ class PoolBuilder
             $linkConstraint = $link->getConstraint();
             if ($linkConstraint && !($linkConstraint instanceof EmptyConstraint)) {
                 if (!array_key_exists($require, $this->nameConstraints)) {
-                    $this->nameConstraints[$require] = new MultiConstraint(array($linkConstraint), false);
-                } elseif ($this->nameConstraints[$require]) {
-                    // TODO addConstraint function?
-                    $this->nameConstraints[$require] = new MultiConstraint(array_merge(array($linkConstraint), $this->nameConstraints[$require]->getConstraints()), false);
+                    $this->nameConstraints[$require] = array($linkConstraint);
+                } elseif (is_array($this->nameConstraints[$require])) {
+                    $this->nameConstraints[$require][] = $linkConstraint;
                 }
                 // else it is null and should stay null
             } else {
