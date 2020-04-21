@@ -14,6 +14,7 @@ namespace Composer\Test\Autoload;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Link;
+use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Util\Filesystem;
 use Composer\Package\AliasPackage;
@@ -1623,6 +1624,70 @@ EOF;
 
         // Assert that autoload_classmap.php was correctly generated.
         $this->assertAutoloadFiles('classmap', $this->vendorDir.'/composer', 'classmap');
+    }
+
+    /**
+     * @dataProvider platformCheckProvider
+     */
+    public function testGeneratesPlatformCheck(array $requires, $expectedFixture)
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setRequires($requires);
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue(array()));
+
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
+
+        $this->assertFileContentEquals(__DIR__ . '/Fixtures/platform/' . $expectedFixture . '.php', $this->vendorDir . '/composer/platform_check.php');
+    }
+
+    public function platformCheckProvider()
+    {
+        $versionParser = new VersionParser();
+
+        return array(
+            'Typical project requirements' => array(
+                array(
+                    new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
+                    new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+                    new Link('a', 'ext-json', $versionParser->parseConstraints('*'))
+                ),
+                'typical'
+            ),
+            'No PHP lower bound' => array(
+                array(
+                    new Link('a', 'php', $versionParser->parseConstraints('< 8')),
+                ),
+                'no_php_lower_bound'
+            ),
+            'No PHP upper bound' => array(
+                array(
+                    new Link('a', 'php', $versionParser->parseConstraints('>= 7.2')),
+                ),
+                'no_php_upper_bound'
+            ),
+            'Specific PHP release version' => array(
+                array(
+                    new Link('a', 'php', $versionParser->parseConstraints('^7.2.8')),
+                ),
+                'specific_php_release'
+            ),
+            'No PHP required' => array(
+                array(
+                    new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+                    new Link('a', 'ext-json', $versionParser->parseConstraints('*'))
+                ),
+                'no_php_required'
+            ),
+            'No extensions required' => array(
+                array(
+                    new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
+                ),
+                'no_extensions_required'
+            )
+        );
     }
 
     private function assertAutoloadFiles($name, $dir, $type = 'namespaces')
