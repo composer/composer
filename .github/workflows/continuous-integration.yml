@@ -3,7 +3,8 @@
 name: "Continuous Integration"
 
 on:
-  push:
+  - "push"
+  - "pull_request"
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist --optimize-autoloader"
