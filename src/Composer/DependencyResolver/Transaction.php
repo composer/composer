@@ -295,7 +295,7 @@ class Transaction
     {
         $uninstOps = array();
         foreach ($operations as $idx => $op) {
-            if ($op instanceof Operation\UninstallOperation) {
+            if ($op instanceof Operation\UninstallOperation || $op instanceof Operation\MarkAliasUninstalledOperation) {
                 $uninstOps[] = $op;
                 unset($operations[$idx]);
             }

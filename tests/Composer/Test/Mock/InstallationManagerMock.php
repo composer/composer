@@ -66,7 +66,9 @@ class InstallationManagerMock extends InstallationManager
         $this->updated[] = array($operation->getInitialPackage(), $operation->getTargetPackage());
         $this->trace[] = strip_tags((string) $operation);
         $repo->removePackage($operation->getInitialPackage());
-        $repo->addPackage(clone $operation->getTargetPackage());
+        if (!$repo->hasPackage($operation->getTargetPackage())) {
+            $repo->addPackage(clone $operation->getTargetPackage());
+        }
     }
 
     public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)

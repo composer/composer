@@ -184,7 +184,7 @@ class InstallerTest extends TestCase
     /**
      * @dataProvider getIntegrationTests
      */
-    public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectOutput, $expect, $expectResult)
+    public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult)
     {
         if ($condition) {
             eval('$res = '.$condition.';');
@@ -327,6 +327,23 @@ class InstallerTest extends TestCase
             $this->assertEquals($expectLock, $actualLock);
         }
 
+        if ($expectInstalled !== null) {
+            $actualInstalled = array();
+            $dumper = new ArrayDumper();
+
+            foreach ($repositoryManager->getLocalRepository()->getCanonicalPackages() as $package) {
+                $package = $dumper->dump($package);
+                unset($package['version_normalized']);
+                $actualInstalled[] = $package;
+            }
+
+            usort($actualInstalled, function ($a, $b) {
+                return strcmp($a['name'], $b['name']);
+            });
+
+            $this->assertSame($expectInstalled, $actualInstalled);
+        }
+
         $installationManager = $composer->getInstallationManager();
         $this->assertSame(rtrim($expect), implode("\n", $installationManager->getTrace()));
 
@@ -355,6 +372,7 @@ class InstallerTest extends TestCase
                 $installedDev = array();
                 $lock = array();
                 $expectLock = array();
+                $expectInstalled = null;
                 $expectResult = 0;
 
                 $message = $testData['TEST'];
@@ -393,6 +411,9 @@ class InstallerTest extends TestCase
                         $expectLock = JsonFile::parseJson($testData['EXPECT-LOCK']);
                     }
                 }
+                if (!empty($testData['EXPECT-INSTALLED'])) {
+                    $expectInstalled = JsonFile::parseJson($testData['EXPECT-INSTALLED']);
+                }
                 $expectOutput = isset($testData['EXPECT-OUTPUT']) ? $testData['EXPECT-OUTPUT'] : null;
                 $expect = $testData['EXPECT'];
                 if (!empty($testData['EXPECT-EXCEPTION'])) {
@@ -409,7 +430,7 @@ class InstallerTest extends TestCase
                 die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
             }
 
-            $tests[basename($file)] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $run, $expectLock, $expectOutput, $expect, $expectResult);
+            $tests[basename($file)] = array(str_replace($fixturesDir.'/', '', $file), $message, $condition, $composer, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult);
         }
 
         return $tests;
@@ -427,6 +448,7 @@ class InstallerTest extends TestCase
             'INSTALLED' => false,
             'RUN' => true,
             'EXPECT-LOCK' => false,
+            'EXPECT-INSTALLED' => false,
             'EXPECT-OUTPUT' => false,
             'EXPECT-EXIT-CODE' => false,
             'EXPECT-EXCEPTION' => false,
