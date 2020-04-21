@@ -13,6 +13,8 @@ matrix:
   include:
     - php: 5.3
       dist: precise
+      env:
+        - PHP_LINT=1
     - php: 5.4
       dist: trusty
     - php: 5.5
@@ -71,6 +73,7 @@ before_script:
   - git config --global user.email travis@example.com
 
 script:
+  - if [[ "$PHP_LINT" == "1" ]]; then find src/ -type f -name '*.php' -print0 | xargs -0 -L1 -P4 -- php -l -f; fi
   - if [[ $PHPSTAN == "1" ]]; then
       bin/composer require --dev phpstan/phpstan:^0.12 phpunit/phpunit:^7.5 --no-update &&
       bin/composer update phpstan/* phpunit/* sebastian/* --with-all-dependencies &&
