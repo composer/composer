@@ -502,7 +502,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         if (!$this->hasPartialPackages() || !isset($this->partialPackagesByName[$name])) {
             // skip platform packages, root package and composer-plugin-api
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
                 return array();
             }
 
@@ -672,7 +672,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $realName = preg_replace('{~dev$}', '', $name);
             // skip platform packages, root package and composer-plugin-api
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $realName) || '__root__' === $realName || 'composer-plugin-api' === $realName) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $realName) || '__root__' === $realName) {
                 continue;
             }
 
