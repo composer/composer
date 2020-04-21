@@ -4,11 +4,6 @@ name: "Continuous Integration"
 
 on:
   push:
-    branches:
-    - master
-  pull_request:
-    branches:
-    - '*'
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist --optimize-autoloader"
