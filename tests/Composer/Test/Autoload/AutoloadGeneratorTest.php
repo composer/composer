@@ -101,6 +101,9 @@ class AutoloadGeneratorTest extends TestCase
             'vendor-dir' => function () use ($that) {
                 return $that->vendorDir;
             },
+            'platform-check' => function () {
+                return true;
+            },
         );
 
         $this->config->expects($this->atLeastOnce())

@@ -312,9 +312,14 @@ EOF;
             unlink($includeFilesFilePath);
         }
         $this->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
-        $this->filePutContentsIfModified($targetDir.'/platform_check.php', $this->getPlatformCheck($packageMap));
+        $checkPlatform = $config->get('platform-check');
+        if ($checkPlatform) {
+            $this->filePutContentsIfModified($targetDir.'/platform_check.php', $this->getPlatformCheck($packageMap));
+        } elseif (file_exists($targetDir.'/platform_check.php')) {
+            unlink($targetDir.'/platform_check.php');
+        }
         $this->filePutContentsIfModified($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        $this->filePutContentsIfModified($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion));
+        $this->filePutContentsIfModified($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion, $checkPlatform));
 
         $this->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
         $this->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
@@ -687,7 +692,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion = 70000)
+    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion, $checkPlatform)
     {
         $file = <<<HEADER
 <?php
@@ -714,14 +719,24 @@ class ComposerAutoloaderInit$suffix
             return self::\$loader;
         }
 
+
+HEADER;
+
+        if ($checkPlatform) {
+            $file .= <<<'PLATFORM_CHECK'
         require __DIR__ . '/platform_check.php';
 
+
+PLATFORM_CHECK;
+        }
+
+        $file .= <<<CLASSLOADER_INIT
         spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prependAutoloader);
         self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
 
 
-HEADER;
+CLASSLOADER_INIT;
 
         if ($useIncludePath) {
             $file .= <<<'INCLUDE_PATH'

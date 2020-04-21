@@ -139,7 +139,9 @@ class Compiler
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_files.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_real.php'));
         $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/autoload_static.php'));
-        $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/platform_check.php'));
+        if (file_exists(__DIR__.'/../../vendor/composer/platform_check.php')) {
+            $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/platform_check.php'));
+        }
         if (file_exists(__DIR__.'/../../vendor/composer/include_paths.php')) {
             $this->addFile($phar, new \SplFileInfo(__DIR__.'/../../vendor/composer/include_paths.php'));
         }

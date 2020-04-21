@@ -306,6 +306,10 @@
                 "lock": {
                     "type": "boolean",
                     "description": "Defaults to true. If set to false, Composer will not create a composer.lock file."
+                },
+                "platform-check": {
+                    "type": "boolean",
+                    "description": "Defaults to true. If set to false, Composer will not create and require a platform_check.php file as part of the autoloader bootstrap."
                 }
             }
         },
