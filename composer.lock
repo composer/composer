@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a0a9399315ac0b612d4296b8df745112",
+    "content-hash": "0a043906e568eec0b2608c6684018480",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -79,16 +79,16 @@
         },
         {
             "name": "composer/semver",
-            "version": "dev-master",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "03c921a6ef6ac36ca3aa0113a726e1b473f0f528"
+                "reference": "0ec124f57c7e23925c006cbad0de853e3aec3ba2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/03c921a6ef6ac36ca3aa0113a726e1b473f0f528",
-                "reference": "03c921a6ef6ac36ca3aa0113a726e1b473f0f528",
+                "url": "https://api.github.com/repos/composer/semver/zipball/0ec124f57c7e23925c006cbad0de853e3aec3ba2",
+                "reference": "0ec124f57c7e23925c006cbad0de853e3aec3ba2",
                 "shasum": ""
             },
             "require": {
@@ -140,9 +140,9 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/composer/semver/tree/master"
+                "source": "https://github.com/composer/semver/tree/2.0.0"
             },
-            "time": "2020-04-21T12:22:29+00:00"
+            "time": "2020-04-21T13:19:12+00:00"
         },
         {
             "name": "composer/spdx-licenses",
@@ -1458,9 +1458,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "composer/semver": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
