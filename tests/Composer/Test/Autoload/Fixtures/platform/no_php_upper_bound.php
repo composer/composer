@@ -8,13 +8,6 @@ if (!(PHP_VERSION_ID >= 70200 && PHP_VERSION_ID < 99999)) {
     $issues[] = 'Your Composer dependencies require a PHP version ">= 7.2.0" and "< 99999". You are running ' . PHP_VERSION  .  '.';
 }
 
-$missingExtensions = array_diff(array (
-), array_map('strtolower', get_loaded_extensions()));
-
-if (0 !== count($missingExtensions)) {
-    $issues[] = 'Your Composer dependencies require the following PHP extensions to be installed: ' . implode(', ', $missingExtensions);
-}
-
-if (0 !== count($issues)) {
+if ($issues) {
     die('Composer detected issues in your platform:' . "\n\n" . implode("\n", $issues));
 }

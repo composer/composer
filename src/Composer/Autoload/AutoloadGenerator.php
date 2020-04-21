@@ -591,13 +591,13 @@ EOF;
                 }
 
                 if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
-                    $requiredExtensions[] = $match[1];
+                    $extension = var_export($match[1], true);
+                    $requiredExtensions[$extension] = "extension_loaded($extension) || \$missingExtensions[] = $extension;\n";
                 }
             }
         }
 
-        $requiredExtensions = array_values(array_unique($requiredExtensions));
-        sort($requiredExtensions);
+        ksort($requiredExtensions);
 
         $formatToPhpVersionId = function (Bound $bound) {
             if ($bound->isZero()) {
@@ -634,7 +634,19 @@ EOF;
         $highestPhpVersionId = $formatToPhpVersionId($highestPhpVersion);
         $lowestPhpVersion = $formatToHumanReadable($lowestPhpVersion);
         $highestPhpVersion = $formatToHumanReadable($highestPhpVersion);
-        $requiredExtensions = var_export($requiredExtensions, true);
+        $requiredExtensions = implode('', $requiredExtensions);
+
+        if ('' !== $requiredExtensions) {
+            $requiredExtensions = <<<EXT_CHECKS
+
+\$missingExtensions = array();
+$requiredExtensions
+if (\$missingExtensions) {
+    \$issues[] = 'Your Composer dependencies require the following PHP extensions to be installed: ' . implode(', ', \$missingExtensions);
+}
+
+EXT_CHECKS;
+        }
 
         return <<<PLATFORM_CHECK
 <?php
@@ -646,14 +658,8 @@ EOF;
 if (!(PHP_VERSION_ID $lowestOperator $lowestPhpVersionId && PHP_VERSION_ID $highestOperator $highestPhpVersionId)) {
     \$issues[] = 'Your Composer dependencies require a PHP version "$lowestOperator $lowestPhpVersion" and "$highestOperator $highestPhpVersion". You are running ' . PHP_VERSION  .  '.';
 }
-
-\$missingExtensions = array_diff($requiredExtensions, array_map('strtolower', get_loaded_extensions()));
-
-if (0 !== count(\$missingExtensions)) {
-    \$issues[] = 'Your Composer dependencies require the following PHP extensions to be installed: ' . implode(', ', \$missingExtensions);
-}
-
-if (0 !== count(\$issues)) {
+$requiredExtensions
+if (\$issues) {
     die('Composer detected issues in your platform:' . "\\n\\n" . implode("\\n", \$issues));
 }
 
