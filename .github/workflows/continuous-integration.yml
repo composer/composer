@@ -1,19 +1,23 @@
-# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
-
 name: "Continuous Integration"
 
 on:
-  - "pull_request"
+  push:
+    paths-ignore:
+      - 'doc/**'
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
 
 env:
-  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist --optimize-autoloader"
+  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
   SYMFONY_PHPUNIT_VERSION: ""
 
 jobs:
   tests:
-    name: "Tests"
+    name: "CI"
 
-    runs-on: "ubuntu-latest"
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
 
     strategy:
       matrix:
@@ -27,10 +31,34 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
-
-        dependencies:
-          - "locked"
-          - "highest"
+        dependencies: [locked]
+        os: [ubuntu-latest]
+        experimental: [false]
+        include:
+          - php-version: 5.3
+            dependencies: highest
+            os: ubuntu-latest
+            experimental: false
+          - php-version: 5.3
+            dependencies: lowest
+            os: ubuntu-latest
+            experimental: false
+          - php-version: 7.4
+            dependencies: highest
+            os: ubuntu-latest
+            experimental: true # TODO fix build errors there if possible
+          - php-version: 7.4
+            os: windows-latest
+            dependencies: locked
+            experimental: false
+          - php-version: 7.4
+            os: macos-latest
+            dependencies: locked
+            experimental: false
+          - php-version: 8.0
+            dependencies: highest
+            os: ubuntu-latest
+            experimental: true
 
     steps:
       - name: "Checkout"
@@ -40,6 +68,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
+          extensions: "intl"
           ini-values: "memory_limit=-1"
           php-version: "${{ matrix.php-version }}"
 
@@ -56,15 +85,21 @@ jobs:
 
       - name: "Install highest dependencies from composer.json using composer binary provided by system"
         if: "matrix.dependencies == 'highest'"
-        run: "composer update ${{ env.COMPOSER_FLAGS }}"
+        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
+
+      - name: "Install lowest dependencies from composer.json using composer binary provided by system"
+        if: "matrix.dependencies == 'lowest'"
+        run: "composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest"
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'locked'"
         run: "composer install ${{ env.COMPOSER_FLAGS }}"
 
-      - name: "Install dependencies from composer.lock using composer binary from source"
-        if: "matrix.dependencies == 'locked'"
+      - name: "Run install again using composer binary from source"
         run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+
+      - name: "Validate composer.json"
+        run: "bin/composer validate"
 
       - name: "Prepare git environment"
         run: "git config --global user.name composer && git config --global user.email composer@example.com"

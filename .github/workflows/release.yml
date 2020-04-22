@@ -1,0 +1,58 @@
+name: "Release"
+
+on:
+  push:
+    tags:
+      - "*"
+
+env:
+  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
+
+jobs:
+  build:
+    name: Upload Release Asset
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          extensions: "intl"
+          ini-values: "memory_limit=-1"
+          php-version: "7.4"
+
+      - name: "Install dependencies from composer.lock using composer binary provided by system"
+        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+
+      - name: "Run install again using composer binary from source"
+        run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+
+      - name: "Validate composer.json"
+        run: "bin/composer validate"
+
+      - name: Build phar file
+        run: "php -d phar.readonly=0 bin/compile"
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: true
+          body: TODO
+
+      - name: Upload phar
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./composer.phar
+          asset_name: composer.phar
+          asset_content_type: application/octet-stream

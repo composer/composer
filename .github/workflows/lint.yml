@@ -1,0 +1,36 @@
+name: "PHP Lint"
+
+on:
+  push:
+    paths-ignore:
+      - 'doc/**'
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
+
+jobs:
+  tests:
+    name: "Lint"
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-version:
+          - "5.3"
+          - "7.4"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          extensions: "intl"
+          ini-values: "memory_limit=-1"
+          php-version: "${{ matrix.php-version }}"
+
+      - name: "Lint PHP files"
+        run: "find src/ -type f -name '*.php' -print0 | xargs -0 -L1 -P4 -- php -l -f"
