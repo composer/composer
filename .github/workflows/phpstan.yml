@@ -51,6 +51,7 @@ jobs:
 
       - name: Run PHPStan
         run: |
+          bin/composer config platform --unset
           bin/composer require --dev phpstan/phpstan:^0.12 phpunit/phpunit:^7.5 --no-update
           bin/composer update phpstan/* phpunit/* sebastian/* --with-all-dependencies
           vendor/bin/phpstan analyse --configuration=phpstan/config.neon
