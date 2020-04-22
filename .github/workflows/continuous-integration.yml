@@ -76,7 +76,7 @@ jobs:
 
       - name: "Install lowest dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'lowest'"
-        run: "composer install ${{ env.COMPOSER_FLAGS }} --prefer-lowest"
+        run: "composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest"
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'locked'"
