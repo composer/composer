@@ -818,7 +818,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->hasPartialPackages = !empty($data['packages']) && is_array($data['packages']);
         }
 
-        // metadata-url indiates V2 repo protocol so it takes over from all the V1 types
+        // metadata-url indicates V2 repo protocol so it takes over from all the V1 types
         // V2 only has lazyProviders and possibly partial packages, but no ability to process anything else,
         // V2 also supports async loading
         if (!empty($data['metadata-url'])) {
