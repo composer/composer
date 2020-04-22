@@ -742,7 +742,7 @@ INCLUDE_PATH;
         $file .= <<<STATIC_INIT
         \$useStaticLoader = PHP_VERSION_ID >= $staticPhpVersion && !defined('HHVM_VERSION') && (!function_exists('zend_loader_file_encoded') || !zend_loader_file_encoded());
         if (\$useStaticLoader) {
-            require_once __DIR__ . '/autoload_static.php';
+            require __DIR__ . '/autoload_static.php';
 
             call_user_func(\Composer\Autoload\ComposerStaticInit$suffix::getInitializer(\$loader));
         } else {
