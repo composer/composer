@@ -2,7 +2,8 @@ name: "Release"
 
 on:
   push:
-    - tags
+    tags:
+      - *
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
