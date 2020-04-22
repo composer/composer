@@ -7,17 +7,19 @@ on:
   - "pull_request"
 
 env:
-  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist --optimize-autoloader"
+  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
   SYMFONY_PHPUNIT_VERSION: ""
 
 jobs:
   tests:
     name: "Tests"
 
-    runs-on: "ubuntu-latest"
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: [ubuntu-latest]
+        dependencies: [locked]
         php-version:
           - "5.3"
           - "5.4"
@@ -28,10 +30,22 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
-
-        dependencies:
-          - "locked"
-          - "highest"
+        include:
+          - php-version: 5.3
+            os: ubuntu-latest
+            dependencies: highest
+          - php-version: 5.3
+            os: ubuntu-latest
+            dependencies: lowest
+          - php-version: 7.4
+            os: ubuntu-latest
+            dependencies: highest
+          - php-version: 7.4
+            os: windows-latest
+            dependencies: locked
+          - php-version: 7.4
+            os: macos-latest
+            dependencies: locked
 
     steps:
       - name: "Checkout"
@@ -60,12 +74,15 @@ jobs:
         if: "matrix.dependencies == 'highest'"
         run: "composer update ${{ env.COMPOSER_FLAGS }}"
 
+      - name: "Install lowest dependencies from composer.lock using composer binary provided by system"
+        if: "matrix.dependencies == 'lowest'"
+        run: "composer install ${{ env.COMPOSER_FLAGS }} --prefer-lowest"
+
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'locked'"
         run: "composer install ${{ env.COMPOSER_FLAGS }}"
 
-      - name: "Install dependencies from composer.lock using composer binary from source"
-        if: "matrix.dependencies == 'locked'"
+      - name: "Run install again using composer binary from source"
         run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
 
       - name: "Prepare git environment"
