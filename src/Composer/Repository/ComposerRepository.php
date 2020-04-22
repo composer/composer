@@ -363,9 +363,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if ($this->lazyProvidersUrl && count($packageNameMap)) {
             if (is_array($this->availablePackages)) {
                 $availPackages = $this->availablePackages;
-                $packageNameMap = array_filter($packageNameMap, function ($name) use ($availPackages) {
-                    return isset($availPackages[strtolower($name)]);
-                }, ARRAY_FILTER_USE_KEY);
+                foreach ($packageNameMap as $name => $constraint) {
+                    if (!isset($availPackages[strtolower($name)])) {
+                        unset($packageNameMap[$name]);
+                    }
+                }
             }
 
             $result = $this->loadAsyncPackages($packageNameMap, $acceptableStabilities, $stabilityFlags);
