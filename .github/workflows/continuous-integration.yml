@@ -40,6 +40,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
+          extensions: intl, xml
           ini-values: "memory_limit=-1"
           php-version: "${{ matrix.php-version }}"
 
