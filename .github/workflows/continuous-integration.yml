@@ -1,10 +1,14 @@
-# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
-
 name: "Continuous Integration"
 
 on:
-  - "push"
-  - "pull_request"
+  push:
+    paths-ignore:
+      - '.github/**'
+      - 'doc/**'
+  pull_request:
+    paths-ignore:
+      - '.github/**'
+      - 'doc/**'
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
@@ -12,14 +16,13 @@ env:
 
 jobs:
   tests:
-    name: "Tests"
+    name: "CI"
 
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
 
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        dependencies: [locked]
         php-version:
           - "5.3"
           - "5.4"
@@ -30,22 +33,28 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+        dependencies: [locked]
+        os: [ubuntu-latest]
         include:
           - php-version: 5.3
-            os: ubuntu-latest
             dependencies: highest
+            os: ubuntu-latest
           - php-version: 5.3
-            os: ubuntu-latest
             dependencies: lowest
-          - php-version: 7.4
             os: ubuntu-latest
+          - php-version: 7.4
             dependencies: highest
+            os: ubuntu-latest
           - php-version: 7.4
             os: windows-latest
             dependencies: locked
           - php-version: 7.4
             os: macos-latest
             dependencies: locked
+          - php-version: 8.0
+            dependencies: highest
+            os: ubuntu-latest
+            experimental: true
 
     steps:
       - name: "Checkout"
@@ -72,9 +81,9 @@ jobs:
 
       - name: "Install highest dependencies from composer.json using composer binary provided by system"
         if: "matrix.dependencies == 'highest'"
-        run: "composer update ${{ env.COMPOSER_FLAGS }}"
+        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
 
-      - name: "Install lowest dependencies from composer.lock using composer binary provided by system"
+      - name: "Install lowest dependencies from composer.json using composer binary provided by system"
         if: "matrix.dependencies == 'lowest'"
         run: "composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest"
 
@@ -84,6 +93,9 @@ jobs:
 
       - name: "Run install again using composer binary from source"
         run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+
+      - name: "Validate composer.json"
+        run: "bin/composer validate"
 
       - name: "Prepare git environment"
         run: "git config --global user.name composer && git config --global user.email composer@example.com"
