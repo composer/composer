@@ -43,6 +43,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Package\Version\VersionParser;
 use Composer\Package\Package;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositorySet;
@@ -740,6 +741,8 @@ class Installer
         $this->fixedRootPackage = clone $this->package;
         $this->fixedRootPackage->setRequires(array());
         $this->fixedRootPackage->setDevRequires(array());
+
+        $stabilityFlags[$this->package->getName()] = BasePackage::$stabilities[VersionParser::parseStability($this->package->getVersion())];
 
         $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $this->package->getReferences(), $rootRequires);
         $repositorySet->addRepository(new RootPackageRepository($this->fixedRootPackage));
