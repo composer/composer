@@ -14,6 +14,8 @@ namespace Composer\Repository;
 
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\RootPackageInterface;
+use Composer\Package\AliasPackage;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Installer\InstallationManager;
 use Composer\Util\Filesystem;
@@ -27,16 +29,25 @@ use Composer\Util\Filesystem;
 class FilesystemRepository extends WritableArrayRepository
 {
     private $file;
+    private $dumpVersions;
+    private $rootPackage;
 
     /**
      * Initializes filesystem repository.
      *
      * @param JsonFile $repositoryFile repository json file
+     * @param bool $dumpVersions
+     * @param ?RootPackageInterface $rootPackage Must be provided if $dumpVersions is true
      */
-    public function __construct(JsonFile $repositoryFile)
+    public function __construct(JsonFile $repositoryFile, $dumpVersions = false, RootPackageInterface $rootPackage = null)
     {
         parent::__construct();
         $this->file = $repositoryFile;
+        $this->dumpVersions = $dumpVersions;
+        $this->rootPackage = $rootPackage;
+        if ($dumpVersions && !$rootPackage) {
+            throw new \InvalidArgumentException('Expected a root package instance if $dumpVersions is true');
+        }
     }
 
     /**
@@ -105,5 +116,82 @@ class FilesystemRepository extends WritableArrayRepository
         });
 
         $this->file->write($data);
+
+        if ($this->dumpVersions) {
+            $versions = array('versions' => array());
+            $packages = $this->getPackages();
+            $packages[] = $rootPackage = $this->rootPackage;
+            while ($rootPackage instanceof AliasPackage) {
+                $rootPackage = $rootPackage->getAliasOf();
+                $packages[] = $rootPackage;
+            }
+
+            // add real installed packages
+            foreach ($packages as $package) {
+                if ($package instanceof AliasPackage) {
+                    continue;
+                }
+
+                $reference = null;
+                if ($package->getInstallationSource()) {
+                    $reference = $package->getInstallationSource() === 'source' ? $package->getSourceReference() : $package->getDistReference();
+                }
+                if (null === $reference) {
+                    $reference = ($package->getSourceReference() ?: $package->getDistReference()) ?: null;
+                }
+
+                $versions['versions'][$package->getName()] = array(
+                    'pretty_version' => $package->getPrettyVersion(),
+                    'version' => $package->getVersion(),
+                    'aliases' => array(),
+                    'reference' => $reference,
+                );
+                if ($package instanceof RootPackageInterface) {
+                    $versions['root'] = $versions['versions'][$package->getName()];
+                    $versions['root']['name'] = $package->getName();
+                }
+            }
+
+            // add provided/replaced packages
+            foreach ($packages as $package) {
+                foreach ($package->getReplaces() as $replace) {
+                    $replaced = $replace->getPrettyConstraint();
+                    if ($replaced === 'self.version') {
+                        $replaced = $package->getPrettyVersion();
+                    }
+                    if (!isset($versions['versions'][$replace->getTarget()]['replaced']) || !in_array($replaced, $versions['versions'][$replace->getTarget()]['replaced'], true)) {
+                        $versions['versions'][$replace->getTarget()]['replaced'][] = $replaced;
+                    }
+                }
+                foreach ($package->getProvides() as $provide) {
+                    $provided = $provide->getPrettyConstraint();
+                    if ($provided === 'self.version') {
+                        $provided = $package->getPrettyVersion();
+                    }
+                    if (!isset($versions['versions'][$provide->getTarget()]['provided']) || !in_array($provided, $versions['versions'][$provide->getTarget()]['provided'], true)) {
+                        $versions['versions'][$provide->getTarget()]['provided'][] = $provided;
+                    }
+                }
+            }
+
+            // add aliases
+            foreach ($packages as $package) {
+                if (!$package instanceof AliasPackage) {
+                    continue;
+                }
+                $versions['versions'][$package->getName()]['aliases'][] = $package->getPrettyVersion();
+                if ($package instanceof RootPackageInterface) {
+                    $versions['root']['aliases'][] = $package->getPrettyVersion();
+                }
+            }
+
+            ksort($versions['versions']);
+            ksort($versions);
+
+            $fs->filePutContentsIfModified($repoDir.'/installed.php', '<?php return '.var_export($versions, true).';'."\n");
+            $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
+            $installedVersionsClass = str_replace('private static $installed;', 'private static $installed = '.var_export($versions, true).';', $installedVersionsClass);
+            $fs->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
+        }
     }
 }

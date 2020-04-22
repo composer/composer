@@ -75,12 +75,17 @@ class ComposerStaticInitPhar
         ),
     );
 
+    public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitPhar::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitPhar::$prefixDirsPsr4;
             $loader->prefixesPsr0 = ComposerStaticInitPhar::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitPhar::$classMap;
 
         }, null, ClassLoader::class);
     }

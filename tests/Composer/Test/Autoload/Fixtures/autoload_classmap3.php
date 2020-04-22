@@ -7,5 +7,6 @@ $baseDir = $vendorDir;
 
 return array(
     'ClassMapFoo' => $vendorDir . '/composersrc/foo.php',
+    'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'Main\\Foo' => $vendorDir . '/src/Main/Foo.php',
 );

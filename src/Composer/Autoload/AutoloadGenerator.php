@@ -277,6 +277,7 @@ EOF;
             );
         }
 
+        $classMap['Composer\\InstalledVersions'] = "\$vendorDir . '/composer/InstalledVersions.php',\n";
         ksort($classMap);
         foreach ($classMap as $class => $code) {
             $classmapFile .= '    '.var_export($class, true).' => '.$code;
@@ -296,33 +297,33 @@ EOF;
             }
         }
 
-        $this->filePutContentsIfModified($targetDir.'/autoload_namespaces.php', $namespacesFile);
-        $this->filePutContentsIfModified($targetDir.'/autoload_psr4.php', $psr4File);
-        $this->filePutContentsIfModified($targetDir.'/autoload_classmap.php', $classmapFile);
+        $filesystem->filePutContentsIfModified($targetDir.'/autoload_namespaces.php', $namespacesFile);
+        $filesystem->filePutContentsIfModified($targetDir.'/autoload_psr4.php', $psr4File);
+        $filesystem->filePutContentsIfModified($targetDir.'/autoload_classmap.php', $classmapFile);
         $includePathFilePath = $targetDir.'/include_paths.php';
         if ($includePathFileContents = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
-            $this->filePutContentsIfModified($includePathFilePath, $includePathFileContents);
+            $filesystem->filePutContentsIfModified($includePathFilePath, $includePathFileContents);
         } elseif (file_exists($includePathFilePath)) {
             unlink($includePathFilePath);
         }
         $includeFilesFilePath = $targetDir.'/autoload_files.php';
         if ($includeFilesFileContents = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
-            $this->filePutContentsIfModified($includeFilesFilePath, $includeFilesFileContents);
+            $filesystem->filePutContentsIfModified($includeFilesFilePath, $includeFilesFileContents);
         } elseif (file_exists($includeFilesFilePath)) {
             unlink($includeFilesFilePath);
         }
-        $this->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
+        $filesystem->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
         $checkPlatform = $config->get('platform-check');
         if ($checkPlatform) {
-            $this->filePutContentsIfModified($targetDir.'/platform_check.php', $this->getPlatformCheck($packageMap));
+            $filesystem->filePutContentsIfModified($targetDir.'/platform_check.php', $this->getPlatformCheck($packageMap));
         } elseif (file_exists($targetDir.'/platform_check.php')) {
             unlink($targetDir.'/platform_check.php');
         }
-        $this->filePutContentsIfModified($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        $this->filePutContentsIfModified($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion, $checkPlatform));
+        $filesystem->filePutContentsIfModified($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
+        $filesystem->filePutContentsIfModified($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion, $checkPlatform));
 
-        $this->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
-        $this->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
+        $filesystem->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+        $filesystem->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
 
         if ($this->runScripts) {
             $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
@@ -331,16 +332,6 @@ EOF;
         }
 
         return count($classMap);
-    }
-
-    private function filePutContentsIfModified($path, $content)
-    {
-        $currentContent = @file_get_contents($path);
-        if (!$currentContent || ($currentContent != $content)) {
-            return file_put_contents($path, $content);
-        }
-
-        return 0;
     }
 
     private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespaceFilter, $autoloadType, array $classMap, array &$ambiguousClasses, array &$scannedFiles)
@@ -1132,52 +1123,5 @@ INITIALIZER;
         }
 
         return $sortedPackageMap;
-    }
-
-    /**
-     * Copy file using stream_copy_to_stream to work around https://bugs.php.net/bug.php?id=6463
-     *
-     * @param string $source
-     * @param string $target
-     */
-    protected function safeCopy($source, $target)
-    {
-        if (!file_exists($target) || !file_exists($source) || !$this->filesAreEqual($source, $target)) {
-            $source = fopen($source, 'r');
-            $target = fopen($target, 'w+');
-
-            stream_copy_to_stream($source, $target);
-            fclose($source);
-            fclose($target);
-        }
-    }
-
-    /**
-     * compare 2 files
-     * https://stackoverflow.com/questions/3060125/can-i-use-file-get-contents-to-compare-two-files
-     */
-    private function filesAreEqual($a, $b)
-    {
-        // Check if filesize is different
-        if (filesize($a) !== filesize($b)) {
-            return false;
-        }
-
-        // Check if content is different
-        $ah = fopen($a, 'rb');
-        $bh = fopen($b, 'rb');
-
-        $result = true;
-        while (!feof($ah)) {
-            if (fread($ah, 8192) != fread($bh, 8192)) {
-                $result = false;
-                break;
-            }
-        }
-
-        fclose($ah);
-        fclose($bh);
-
-        return $result;
     }
 }

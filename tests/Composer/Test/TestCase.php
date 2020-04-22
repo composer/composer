@@ -14,11 +14,15 @@ namespace Composer\Test;
 
 use Composer\Semver\VersionParser;
 use Composer\Package\AliasPackage;
+use Composer\Package\RootPackageInterface;
+use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Component\Process\ExecutableFinder;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\BasePackage;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -73,7 +77,31 @@ abstract class TestCase extends BaseTestCase
     {
         $normVersion = self::getVersionParser()->normalize($version);
 
-        return new AliasPackage($package, $normVersion, $version);
+        $class = 'Composer\Package\AliasPackage';
+        if ($package instanceof RootPackageInterface) {
+            $class = 'Composer\Package\RootAliasPackage';
+        }
+
+        return new $class($package, $normVersion, $version);
+    }
+
+    protected function configureLinks(PackageInterface $package, array $config)
+    {
+        $arrayLoader = new ArrayLoader();
+
+        foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
+            if (isset($config[$type])) {
+                $method = 'set'.ucfirst($opts['method']);
+                $package->{$method}(
+                    $arrayLoader->parseLinks(
+                        $package->getName(),
+                        $package->getPrettyVersion(),
+                        $opts['description'],
+                        $config[$type]
+                    )
+                );
+            }
+        }
     }
 
     protected static function ensureDirectoryExistsAndClear($directory)

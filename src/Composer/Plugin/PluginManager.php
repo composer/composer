@@ -134,8 +134,8 @@ class PluginManager
             $currentPluginApiVersion = $this->getPluginApiVersion();
             $currentPluginApiConstraint = new Constraint('==', $this->versionParser->normalize($currentPluginApiVersion));
 
-            if ($requiresComposer->getPrettyString() === '1.0.0' && $this->getPluginApiVersion() === '1.0.0') {
-                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin requires composer-plugin-api 1.0.0, this *WILL* break in the future and it should be fixed ASAP (require ^1.0 for example).</warning>');
+            if ($requiresComposer->getPrettyString() === $this->getPluginApiVersion()) {
+                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin requires composer-plugin-api '.$this->getPluginApiVersion().', this *WILL* break in the future and it should be fixed ASAP (require ^'.$this->getPluginApiVersion().' instead for example).</warning>');
             } elseif (!$requiresComposer->matches($currentPluginApiConstraint)) {
                 $this->io->writeError('<warning>The "' . $package->getName() . '" plugin was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
 
