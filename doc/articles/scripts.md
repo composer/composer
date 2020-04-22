@@ -375,4 +375,6 @@ You can set custom script descriptions with the following in your `composer.json
 }
 ```
 
+The descriptions are seen in `composer run -l` command output.
+
 > **Note:** You can only set custom descriptions of custom commands.
