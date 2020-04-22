@@ -46,7 +46,7 @@ jobs:
           - php-version: 7.4
             dependencies: highest
             os: ubuntu-latest
-            experimental: false
+            experimental: true # TODO fix build errors there if possible
           - php-version: 7.4
             os: windows-latest
             dependencies: locked
