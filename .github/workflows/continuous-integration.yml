@@ -3,11 +3,9 @@ name: "Continuous Integration"
 on:
   push:
     paths-ignore:
-      - '.github/**'
       - 'doc/**'
   pull_request:
     paths-ignore:
-      - '.github/**'
       - 'doc/**'
 
 env:

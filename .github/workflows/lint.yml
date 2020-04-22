@@ -3,11 +3,9 @@ name: "PHP Lint"
 on:
   push:
     paths-ignore:
-      - '.github/**'
       - 'doc/**'
   pull_request:
     paths-ignore:
-      - '.github/**'
       - 'doc/**'
 
 jobs:
