@@ -14,7 +14,7 @@ namespace Composer\Installer;
 
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
-use Composer\Repository\RepositoryInterface;
+use Composer\Repository\InstalledRepository;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 
 /**
@@ -98,12 +98,14 @@ class SuggestedPackagesReporter
      *
      * Do not list the ones already installed if installed repository provided.
      *
-     * @param  int                       $mode One of the MODE_* constants from this class
+     * @param  int                       $mode             One of the MODE_* constants from this class
+     * @param  InstalledRepository       $installedRepo    If passed in, suggested packages which are installed already will be skipped
+     * @param  PackageInterface          $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package will be shown
      * @return SuggestedPackagesReporter
      */
-    public function output($mode, RepositoryInterface $installedRepo = null)
+    public function output($mode, InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
     {
-        $suggestedPackages = $this->getFilteredSuggestions($installedRepo);
+        $suggestedPackages = $this->getFilteredSuggestions($installedRepo, $onlyDependentsOf);
 
         $suggesters = array();
         $suggested = array();
@@ -151,19 +153,27 @@ class SuggestedPackagesReporter
             }
         }
 
+        if ($onlyDependentsOf) {
+            $allSuggestedPackages = $this->getFilteredSuggestions($installedRepo);
+            $diff = count($allSuggestedPackages) - count($suggestedPackages);
+            if ($diff) {
+                $this->io->write('<info>'.$diff.' additional suggestions</info> by transitive dependencies can be shown with <info>--all</info>');
+            }
+        }
+
         return $this;
     }
 
     /**
      * Output number of new suggested packages and a hint to use suggest command.
-     **
-     * Do not list the ones already installed if installed repository provided.
      *
+     * @param  InstalledRepository       $installedRepo    If passed in, suggested packages which are installed already will be skipped
+     * @param  PackageInterface          $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package will be shown
      * @return SuggestedPackagesReporter
      */
-    public function outputMinimalistic(RepositoryInterface $installedRepo = null)
+    public function outputMinimalistic(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
     {
-        $suggestedPackages = $this->getFilteredSuggestions($installedRepo);
+        $suggestedPackages = $this->getFilteredSuggestions($installedRepo, $onlyDependentsOf);
         if ($suggestedPackages) {
             $this->io->writeError('<info>'.count($suggestedPackages).' package suggestions were added by new dependencies, use `composer suggest` to see details.</info>');
         }
@@ -171,7 +181,12 @@ class SuggestedPackagesReporter
         return $this;
     }
 
-    private function getFilteredSuggestions(RepositoryInterface $installedRepo = null)
+    /**
+     * @param  InstalledRepository       $installedRepo    If passed in, suggested packages which are installed already will be skipped
+     * @param  PackageInterface          $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package will be shown
+     * @return array[]
+     */
+    private function getFilteredSuggestions(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
     {
         $suggestedPackages = $this->getPackages();
         $installedNames = array();
@@ -184,9 +199,16 @@ class SuggestedPackagesReporter
             }
         }
 
+        $sourceFilter = array();
+        if ($onlyDependentsOf) {
+            $sourceFilter = array_map(function ($link) {
+                return $link->getTarget();
+            }, array_merge($onlyDependentsOf->getRequires(), $onlyDependentsOf->getDevRequires()));
+        }
+
         $suggestions = array();
         foreach ($suggestedPackages as $suggestion) {
-            if (in_array($suggestion['target'], $installedNames)) {
+            if (in_array($suggestion['target'], $installedNames) || ($sourceFilter && !in_array($suggestion['source'], $sourceFilter))) {
                 continue;
             }
 
