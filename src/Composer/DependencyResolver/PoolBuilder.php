@@ -124,12 +124,12 @@ class PoolBuilder
         $loadNames = array();
         foreach ($request->getFixedPackages() as $package) {
             $this->nameConstraints[$package->getName()] = null;
-            $this->loadedNames[$package->getName()] = true;
+            $this->loadedNames[$package->getName()] = new Constraint('==', $package->getVersion());
 
             // replace means conflict, so if a fixed package replaces a name, no need to load that one, packages would conflict anyways
             foreach ($package->getReplaces() as $link) {
                 $this->nameConstraints[$package->getName()] = null;
-                $this->loadedNames[$link->getTarget()] = true;
+                $this->loadedNames[$link->getTarget()] = $link->getConstraint();
             }
 
             // TODO in how far can we do the above for conflicts? It's more tricky cause conflicts can be limited to
@@ -164,8 +164,8 @@ class PoolBuilder
         }
 
         while (!empty($loadNames)) {
-            foreach ($loadNames as $name => $void) {
-                $this->loadedNames[$name] = true;
+            foreach ($loadNames as $name => $constraint) {
+                $this->loadedNames[$name] = $constraint;
             }
 
             $newLoadNames = array();
@@ -290,8 +290,10 @@ class PoolBuilder
         $loadNames = array();
         foreach ($package->getRequires() as $link) {
             $require = $link->getTarget();
+            $linkConstraint = $link->getConstraint();
+
             if (!isset($this->loadedNames[$require])) {
-                $loadNames[$require] = null;
+                $loadNames[$require] = $linkConstraint;
             // if this is a partial update with transitive dependencies we need to unfix the package we now know is a
             // dependency of another package which we are trying to update, and then attempt to load it again
             } elseif ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies() && isset($this->skippedLoad[$require])) {
@@ -302,9 +304,17 @@ class PoolBuilder
                     $this->updateAllowWarned[$require] = true;
                     $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
                 }
+            } else {
+                if (null === $this->loadedNames[$require] || null === $linkConstraint) {
+                    unset($this->loadedNames[$require]);
+                }
+
+                if (!$this->loadedNames[$require]->matches($linkConstraint)) {
+                    $loadNames[$require] = MultiConstraint::create(array($this->loadedNames[$require], $linkConstraint), false);
+                    unset($this->loadedNames[$require]);
+                }
             }
 
-            $linkConstraint = $link->getConstraint();
             if ($linkConstraint && !($linkConstraint instanceof MatchAllConstraint)) {
                 if (!\array_key_exists($require, $this->nameConstraints)) {
                     $this->nameConstraints[$require] = array($linkConstraint);
