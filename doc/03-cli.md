@@ -605,6 +605,8 @@ See the [Config](06-config.md) chapter for valid configuration options.
   that this cannot be used in conjunction with the `--global` option.
 * **--absolute:** Returns absolute paths when fetching *-dir config values
   instead of relative.
+* **--json:** JSON decode the setting value, to be used with `extra.*` keys.
+* **--merge:** Merge the setting value with the current value, to be used with `extra.*` keys in combination with `--json`.
 
 ### Modifying Repositories
 
@@ -632,6 +634,13 @@ php composer.phar config extra.foo.bar value
 
 The dots indicate array nesting, a max depth of 3 levels is allowed though. The above
 would set `"extra": { "foo": { "bar": "value" } }`.
+
+If you have a complex value to add/modify, you can use the `--json` and `--merge` flags
+to edit extra fields as json:
+
+```sh
+php composer.phar config --json extra.foo.bar '{"baz": true, "qux": []}'
+```
 
 ## create-project
 
