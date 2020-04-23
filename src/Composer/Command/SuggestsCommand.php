@@ -71,7 +71,9 @@ EOT
         $reporter = new SuggestedPackagesReporter($this->getIO());
 
         $filter = $input->getArgument('packages');
-        foreach ($installedRepo->getPackages() as $package) {
+        $packages = $installedRepo->getPackages();
+        $packages[] = $composer->getPackage();
+        foreach ($packages as $package) {
             if (!empty($filter) && !in_array($package->getName(), $filter)) {
                 continue;
             }

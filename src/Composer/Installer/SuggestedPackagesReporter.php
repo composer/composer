@@ -100,7 +100,7 @@ class SuggestedPackagesReporter
      *
      * @param  int                       $mode             One of the MODE_* constants from this class
      * @param  InstalledRepository       $installedRepo    If passed in, suggested packages which are installed already will be skipped
-     * @param  PackageInterface          $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package will be shown
+     * @param  PackageInterface          $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
      * @return SuggestedPackagesReporter
      */
     public function output($mode, InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
@@ -168,7 +168,7 @@ class SuggestedPackagesReporter
      * Output number of new suggested packages and a hint to use suggest command.
      *
      * @param  InstalledRepository       $installedRepo    If passed in, suggested packages which are installed already will be skipped
-     * @param  PackageInterface          $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package will be shown
+     * @param  PackageInterface          $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
      * @return SuggestedPackagesReporter
      */
     public function outputMinimalistic(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
@@ -183,7 +183,7 @@ class SuggestedPackagesReporter
 
     /**
      * @param  InstalledRepository       $installedRepo    If passed in, suggested packages which are installed already will be skipped
-     * @param  PackageInterface          $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package will be shown
+     * @param  PackageInterface          $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
      * @return array[]
      */
     private function getFilteredSuggestions(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
@@ -204,6 +204,7 @@ class SuggestedPackagesReporter
             $sourceFilter = array_map(function ($link) {
                 return $link->getTarget();
             }, array_merge($onlyDependentsOf->getRequires(), $onlyDependentsOf->getDevRequires()));
+            $sourceFilter[] = $onlyDependentsOf->getName();
         }
 
         $suggestions = array();

@@ -203,6 +203,8 @@ class Installer
             throw new \RuntimeException("The installer options updateMirrors and updateAllowList are mutually exclusive.");
         }
 
+        $isFreshInstall = $this->repositoryManager->getLocalRepository()->isFresh();
+
         // Force update if there is no lock file present
         if (!$this->update && !$this->locker->isLocked()) {
             $this->io->writeError('<warning>No lock file found. Updating dependencies instead of installing from lock file. Use composer update over composer install if you do not have a lock file.</warning>');
@@ -264,6 +266,9 @@ class Installer
                 $this->createPlatformRepo(false),
                 new RootPackageRepository(clone $this->package),
             ));
+            if ($isFreshInstall) {
+                $this->suggestedPackagesReporter->addSuggestionsFromPackage($this->package);
+            }
             $this->suggestedPackagesReporter->outputMinimalistic($installedRepo);
         }
 
