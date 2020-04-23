@@ -28,7 +28,7 @@ use Composer\Util\Filesystem;
  */
 class FilesystemRepository extends WritableArrayRepository
 {
-    private $file;
+    protected $file;
     private $dumpVersions;
     private $rootPackage;
 
