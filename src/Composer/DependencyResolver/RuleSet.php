@@ -157,13 +157,13 @@ class RuleSet implements \IteratorAggregate, \Countable
         return array_keys($types);
     }
 
-    public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null)
+    public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null, $isVerbose = false)
     {
         $string = "\n";
         foreach ($this->rules as $type => $rules) {
             $string .= str_pad(self::$types[$type], 8, ' ') . ": ";
             foreach ($rules as $rule) {
-                $string .= ($repositorySet && $request && $pool ? $rule->getPrettyString($repositorySet, $request, $pool) : $rule)."\n";
+                $string .= ($repositorySet && $request && $pool ? $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose) : $rule)."\n";
             }
             $string .= "\n\n";
         }

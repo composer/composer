@@ -29,6 +29,7 @@ Composer fires the following named events during its execution process:
   the `install` command is executed without a lock file present.
 - **post-update-cmd**: occurs after the `update` command has been executed, or
   after the `install` command has been executed without a lock file present.
+- **pre-status-cmd**: occurs before the `status` command is executed.
 - **post-status-cmd**: occurs after the `status` command has been executed.
 - **pre-archive-cmd**: occurs before the `archive` command is executed.
 - **post-archive-cmd**: occurs after the `archive` command has been executed.
@@ -63,6 +64,8 @@ Composer fires the following named events during its execution process:
 - **pre-file-download**: occurs before files are downloaded and allows
   you to manipulate the `HttpDownloader` object prior to downloading files
   based on the URL to be downloaded.
+- **post-file-download**: occurs after package dist files are downloaded and
+  allows you to perform additional checks on the file if required.
 - **pre-command-run**: occurs before a command is executed and allows you to
   manipulate the `InputInterface` object's options and arguments to tweak
   a command's behavior.
@@ -181,6 +184,7 @@ objects:
   - init: [`Composer\EventDispatcher\Event`](https://getcomposer.org/apidoc/master/Composer/EventDispatcher/Event.html)
   - command: [`Composer\Plugin\CommandEvent`](https://getcomposer.org/apidoc/master/Composer/Plugin/CommandEvent.html)
   - pre-file-download: [`Composer\Plugin\PreFileDownloadEvent`](https://getcomposer.org/apidoc/master/Composer/Plugin/PreFileDownloadEvent.html)
+  - post-file-download: [`Composer\Plugin\PostFileDownloadEvent`](https://getcomposer.org/apidoc/master/Composer/Plugin/PostFileDownloadEvent.html)
 
 ## Running scripts manually
 
@@ -370,5 +374,8 @@ You can set custom script descriptions with the following in your `composer.json
     }
 }
 ```
+
+The descriptions are used in `composer list` or `composer run -l` commands to
+describe what the scripts do when the command is run.
 
 > **Note:** You can only set custom descriptions of custom commands.

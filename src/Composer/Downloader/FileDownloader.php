@@ -21,6 +21,7 @@ use Composer\Package\Comparer\Comparer;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
+use Composer\Plugin\PostFileDownloadEvent;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
@@ -140,7 +141,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                     ->then($accept, $reject);
             }
 
-            return $result->then(function ($result) use ($fileName, $checksum, $url) {
+            return $result->then(function ($result) use ($fileName, $checksum, $url, $package, $eventDispatcher) {
                 // in case of retry, the first call's Promise chain finally calls this twice at the end,
                 // once with $result being the returned $fileName from $accept, and then once for every
                 // failed request with a null result, which can be skipped.
@@ -155,6 +156,11 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
                 if ($checksum && hash_file('sha1', $fileName) !== $checksum) {
                     throw new \UnexpectedValueException('The checksum verification of the file failed (downloaded from '.$url['base'].')');
+                }
+
+                if ($eventDispatcher) {
+                    $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, $fileName, $checksum, $url['processed'], $package);
+                    $eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
                 }
 
                 return $fileName;
@@ -239,14 +245,17 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         if (file_exists($fileName)) {
             $this->filesystem->unlink($fileName);
         }
-        if (is_dir($path) && $this->filesystem->isDirEmpty($this->config->get('vendor-dir').'/composer/')) {
-            $this->filesystem->removeDirectory($this->config->get('vendor-dir').'/composer/');
-        }
-        if (is_dir($path) && $this->filesystem->isDirEmpty($this->config->get('vendor-dir'))) {
-            $this->filesystem->removeDirectory($this->config->get('vendor-dir'));
-        }
-        if (is_dir($path) && $this->filesystem->isDirEmpty($path)) {
-            $this->filesystem->removeDirectory($path);
+
+        $dirsToCleanUp = array(
+            $this->config->get('vendor-dir').'/composer/',
+            $this->config->get('vendor-dir'),
+            $path,
+        );
+
+        foreach ($dirsToCleanUp as $dir) {
+            if (is_dir($dir) && $this->filesystem->isDirEmpty($dir)) {
+                $this->filesystem->removeDirectory($dir);
+            }
         }
     }
 

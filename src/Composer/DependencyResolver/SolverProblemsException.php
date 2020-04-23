@@ -31,7 +31,7 @@ class SolverProblemsException extends \RuntimeException
         parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', 2);
     }
 
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isDevExtraction = false)
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
     {
         $installedMap = $request->getPresentMap(true);
         $hasExtensionProblems = false;
@@ -39,7 +39,7 @@ class SolverProblemsException extends \RuntimeException
 
         $problems = array();
         foreach ($this->problems as $problem) {
-            $problems[] = $problem->getPrettyString($repositorySet, $request, $pool, $installedMap, $this->learnedPool)."\n";
+            $problems[] = $problem->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $this->learnedPool)."\n";
 
             if (!$hasExtensionProblems && $this->hasExtensionProblems($problem->getReasons())) {
                 $hasExtensionProblems = true;

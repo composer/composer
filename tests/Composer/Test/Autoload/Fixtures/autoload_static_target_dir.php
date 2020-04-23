@@ -28,6 +28,7 @@ class ComposerStaticInitTargetDir
     public static $classMap = array (
         'ClassMapBar' => __DIR__ . '/../..' . '/lib/rootbar.php',
         'ClassMapFoo' => __DIR__ . '/../..' . '/src/rootfoo.php',
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

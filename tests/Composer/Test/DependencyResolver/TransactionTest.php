@@ -53,6 +53,7 @@ class TransactionTest extends TestCase
         $expectedOperations = array(
             array('job' => 'uninstall', 'package' => $packageC),
             array('job' => 'uninstall', 'package' => $packageE),
+            array('job' => 'markAliasUninstalled', 'package' => $packageEalias),
             array('job' => 'install', 'package' => $packageA0first),
             array('job' => 'update', 'from' => $packageB, 'to' => $packageBnew),
             array('job' => 'install', 'package' => $packageG),
@@ -60,7 +61,6 @@ class TransactionTest extends TestCase
             array('job' => 'markAliasInstalled', 'package' => $packageFalias1),
             array('job' => 'markAliasInstalled', 'package' => $packageFalias2),
             array('job' => 'install', 'package' => $packageD),
-            array('job' => 'markAliasUninstalled', 'package' => $packageEalias),
         );
 
         $transaction = new Transaction($presentPackages, $resultPackages);

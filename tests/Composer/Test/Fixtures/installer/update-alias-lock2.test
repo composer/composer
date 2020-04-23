@@ -1,0 +1,84 @@
+--TEST--
+Updating an aliased package where the old alias matches the new package should not fail
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/a", "version": "1.10.x-dev",
+                    "extra": { "branch-alias": { "dev-master": "1.10.x-dev" } },
+                    "source": { "type": "git", "url": "", "reference": "downgradedref" }
+                },
+                {
+                    "name": "a/a", "version": "dev-master",
+                    "extra": { "branch-alias": { "dev-master": "2.x-dev" } },
+                    "source": { "type": "git", "url": "", "reference": "newref" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "^1.0"
+    },
+    "minimum-stability": "dev"
+}
+--LOCK--
+{
+    "_": "outdated lock file, should not have to be loaded in an update",
+    "packages": [
+        {
+            "name": "a/a", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "1.10.x-dev" } },
+            "source": { "type": "git", "url": "", "reference": "installedref" }
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false
+}
+--INSTALLED--
+[
+    {
+        "name": "a/a", "version": "dev-master",
+        "extra": { "branch-alias": { "dev-master": "1.10.x-dev" } },
+        "source": { "type": "git", "url": "", "reference": "installedref" }
+    }
+]
+--RUN--
+update
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/a", "version": "1.10.x-dev",
+            "extra": { "branch-alias": { "dev-master": "1.10.x-dev" } },
+            "source": { "type": "git", "url": "", "reference": "downgradedref" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT-INSTALLED--
+[
+    {
+        "name": "a/a", "version": "1.10.x-dev",
+        "source": { "type": "git", "url": "", "reference": "downgradedref" },
+        "type": "library",
+        "extra": { "branch-alias": { "dev-master": "1.10.x-dev" } }
+    }
+]
+--EXPECT--
+Marking a/a (1.10.x-dev installedref) as uninstalled, alias of a/a (dev-master installedref)
+Downgrading a/a (dev-master installedref => 1.10.x-dev downgradedref)

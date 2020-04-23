@@ -23,4 +23,12 @@ class InstalledFilesystemRepository extends FilesystemRepository implements Inst
     {
         return 'installed '.parent::getRepoName();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isFresh()
+    {
+        return !$this->file->exists();
+    }
 }

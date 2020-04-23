@@ -363,9 +363,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if ($this->lazyProvidersUrl && count($packageNameMap)) {
             if (is_array($this->availablePackages)) {
                 $availPackages = $this->availablePackages;
-                $packageNameMap = array_filter($packageNameMap, function ($name) use ($availPackages) {
-                    return isset($availPackages[strtolower($name)]);
-                }, ARRAY_FILTER_USE_KEY);
+                foreach ($packageNameMap as $name => $constraint) {
+                    if (!isset($availPackages[strtolower($name)])) {
+                        unset($packageNameMap[$name]);
+                    }
+                }
             }
 
             $result = $this->loadAsyncPackages($packageNameMap, $acceptableStabilities, $stabilityFlags);
@@ -496,14 +498,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     /**
      * @param string $name package name
-     * @param callable $isPackageAcceptableCallable
      * @return array|mixed
      */
     private function whatProvides($name, array $acceptableStabilities = null, array $stabilityFlags = null)
     {
         if (!$this->hasPartialPackages() || !isset($this->partialPackagesByName[$name])) {
             // skip platform packages, root package and composer-plugin-api
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
                 return array();
             }
 
@@ -591,7 +592,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                     }
 
-                    if ($this->isVersionAcceptable($acceptableStabilities, $stabilityFlags, null, $normalizedName, $version)) {
+                    if ($this->isVersionAcceptable(null, $normalizedName, $version, $acceptableStabilities, $stabilityFlags)) {
                         $versionsToLoad[$version['uid']] = $version;
                     }
                 }
@@ -663,7 +664,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         // load ~dev versions of the packages as well if needed
         foreach ($packageNames as $name => $constraint) {
-            if ($acceptableStabilities && $stabilityFlags && StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), 'dev')) {
+            if ($acceptableStabilities === null || $stabilityFlags === null || StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), 'dev')) {
                 $packageNames[$name.'~dev'] = $constraint;
             }
         }
@@ -673,7 +674,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $realName = preg_replace('{~dev$}', '', $name);
             // skip platform packages, root package and composer-plugin-api
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $realName) || '__root__' === $realName || 'composer-plugin-api' === $realName) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $realName) || '__root__' === $realName) {
                 continue;
             }
 
@@ -712,7 +713,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                             $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
                         }
 
-                        if ($repo->isVersionAcceptable($acceptableStabilities, $stabilityFlags, $constraint, $realName, $version)) {
+                        if ($repo->isVersionAcceptable($constraint, $realName, $version, $acceptableStabilities, $stabilityFlags)) {
                             $versionsToLoad[] = $version;
                         }
                     }
@@ -742,7 +743,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @param string $name package name (must be lowercased already)
      * @private
      */
-    public function isVersionAcceptable(array $acceptableStabilities = null, array $stabilityFlags = null, $constraint = null, $name, $versionData)
+    public function isVersionAcceptable($constraint, $name, $versionData, array $acceptableStabilities = null, array $stabilityFlags = null)
     {
         $versions = array($versionData['version_normalized']);
 
@@ -819,7 +820,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->hasPartialPackages = !empty($data['packages']) && is_array($data['packages']);
         }
 
-        // metadata-url indiates V2 repo protocol so it takes over from all the V1 types
+        // metadata-url indicates V2 repo protocol so it takes over from all the V1 types
         // V2 only has lazyProviders and possibly partial packages, but no ability to process anything else,
         // V2 also supports async loading
         if (!empty($data['metadata-url'])) {

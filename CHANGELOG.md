@@ -20,6 +20,11 @@
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
 
+### [1.10.5] 2020-04-10
+
+  * Fixed self-update on PHP <5.6, seriously please upgrade people, it's time
+  * Fixed 1.10.2 regression with PATH resolution in scripts
+
 ### [1.10.4] 2020-04-09
 
   * Fixed 1.10.2 regression in path symlinking with absolute path repos
@@ -754,7 +759,7 @@
 ### [1.0.0-alpha6] - 2012-10-23
 
   * Schema: Added ability to pass additional options to repositories (i.e. ssh keys/client certificates to secure private repos)
-  * Schema: Added a new `~` operator that should be preferred over `>=`, see http://getcomposer.org/doc/01-basic-usage.md#package-versions
+  * Schema: Added a new `~` operator that should be preferred over `>=`, see https://getcomposer.org/doc/01-basic-usage.md#package-versions
   * Schema: Version constraints `<x.y` are assumed to be `<x.y-dev` unless specified as `<x.y-stable` to reduce confusion
   * Added `config` command to edit/list config values, including --global switch for system config
   * Added OAuth token support for the GitHub API
@@ -863,6 +868,7 @@
 
   * Initial release
 
+[1.10.5]: https://github.com/composer/composer/compare/1.10.4...1.10.5
 [1.10.4]: https://github.com/composer/composer/compare/1.10.3...1.10.4
 [1.10.3]: https://github.com/composer/composer/compare/1.10.2...1.10.3
 [1.10.2]: https://github.com/composer/composer/compare/1.10.1...1.10.2

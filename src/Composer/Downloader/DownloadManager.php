@@ -25,7 +25,6 @@ use React\Promise\PromiseInterface;
 class DownloadManager
 {
     private $io;
-    private $httpDownloader;
     private $preferDist = false;
     private $preferSource = false;
     private $packagePreferences = array();

@@ -5,13 +5,13 @@
 - If a packages exists in a higher priority repository, it will now be entirely ignored in lower priority repositories. See [repository priorities](https://getcomposer.org/repoprio) for details.
 - Invalid PSR-0 / PSR-4 class configurations will not autoload anymore in optimized-autoloader mode, as per the warnings introduced in 1.10
 - Package names now must comply to our [naming guidelines](doc/04-schema.md#name) or Composer will abort, as per the warnings introduced in 1.8.1
-- Removed --no-suggest flag as it is not needed anymore
+- Deprecated --no-suggest flag as it is not needed anymore
 - `update` now lists changes to the lock file first, and then the changes applied when installing the lock file to the vendor dir
 - `HTTPS_PROXY_REQUEST_FULLURI` if not specified will now default to false as this seems to work better in most environments
 
 ## For integrators and plugin authors
 
-- composer-plugin-api has been bumped to 2.0.0 - you can detect which version of Composer you run via `PluginInterface::PLUGIN_API_VERSION`, or use `version_compare` with `Composer\Composer::getVersion()` (available since Composer 1.8.5)
+- composer-plugin-api has been bumped to 2.0.0 - you can detect which version of Composer you run via `PluginInterface::PLUGIN_API_VERSION`
 - `PluginInterface` added a deactivate (so plugin can stop whatever it is doing) and an uninstall (so the plugin can remove any files it created or do general cleanup) method.
 - Plugins implementing `EventSubscriberInterface` will be deregistered from the EventDispatcher automatically when being deactivated, nothing to do there.
 - `Pool` objects are now created via the `RepositorySet` class, you should use that in case you were using the `Pool` class directly.
@@ -24,7 +24,7 @@
   - packages are now wrapped into a `"packages"` top level key instead of the whole file being the package array
   - packages now contain an `"installed-path"` key which lists where they were installed
   - there is a top level `"dev"` key which stores whether dev requirements were installed or not
-- `PreFileDownloadEvent` now receives an `HttpDownloader` instance instead of `RemoteFilesystem`, and that instance can not be overriden by listeners anymore
+- `PreFileDownloadEvent` now receives an `HttpDownloader` instance instead of `RemoteFilesystem`, and that instance can not be overridden by listeners anymore
 - `IOInterface` now extends PSR-3's `LoggerInterface`, and has new `writeRaw` + `writeErrorRaw` methods
 - `RepositoryInterface` changes:
   - A new `loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags)` function was added for use during pool building

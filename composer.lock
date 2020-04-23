@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a0a9399315ac0b612d4296b8df745112",
+    "content-hash": "0a043906e568eec0b2608c6684018480",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -79,23 +79,24 @@
         },
         {
             "name": "composer/semver",
-            "version": "2.0.x-dev",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "4df5ff3249f01018504939d66040d8d2b783d820"
+                "reference": "0ec124f57c7e23925c006cbad0de853e3aec3ba2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/4df5ff3249f01018504939d66040d8d2b783d820",
-                "reference": "4df5ff3249f01018504939d66040d8d2b783d820",
+                "url": "https://api.github.com/repos/composer/semver/zipball/0ec124f57c7e23925c006cbad0de853e3aec3ba2",
+                "reference": "0ec124f57c7e23925c006cbad0de853e3aec3ba2",
                 "shasum": ""
             },
             "require": {
                 "php": "^5.3.2 || ^7.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.5 || ^5.0.5"
+                "phpstan/phpstan": "^0.12.19",
+                "phpunit/phpunit": "^4.5 || ^5.0.5 || ^7"
             },
             "type": "library",
             "extra": {
@@ -139,19 +140,9 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/composer/semver/tree/2.0"
+                "source": "https://github.com/composer/semver/tree/2.0.0"
             },
-            "funding": [
-                {
-                    "url": "https://packagist.com",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/composer/composer",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2020-03-11T13:41:23+00:00"
+            "time": "2020-04-21T13:19:12+00:00"
         },
         {
             "name": "composer/spdx-licenses",
@@ -1462,28 +1453,12 @@
             "support": {
                 "source": "https://github.com/symfony/phpunit-bridge/tree/v3.4.38"
             },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
             "time": "2020-02-21T08:01:47+00:00"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "composer/semver": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

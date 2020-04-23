@@ -9,4 +9,5 @@ return array(
     'ClassMapBar' => $vendorDir . '/b/b/ClassMapBar.php',
     'ClassMapBaz' => $vendorDir . '/c/c/foo/ClassMapBaz.php',
     'ClassMapFoo' => $vendorDir . '/a/a/src/ClassMapFoo.php',
+    'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
 );

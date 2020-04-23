@@ -13,18 +13,18 @@
         {
             "name": "Nils Adermann",
             "email": "naderman@naderman.de",
-            "homepage": "http://www.naderman.de"
+            "homepage": "https://www.naderman.de"
         },
         {
             "name": "Jordi Boggiano",
             "email": "j.boggiano@seld.be",
-            "homepage": "http://seld.be"
+            "homepage": "https://seld.be"
         }
     ],
     "require": {
         "php": "^5.3.2 || ^7.0",
         "composer/ca-bundle": "^1.0",
-        "composer/semver": "^2.0@dev",
+        "composer/semver": "^2.0",
         "composer/spdx-licenses": "^1.2",
         "composer/xdebug-handler": "^1.1",
         "justinrainbow/json-schema": "^3.0 || ^4.0 || ^5.0",
@@ -52,7 +52,8 @@
     "config": {
         "platform": {
             "php": "5.3.9"
-        }
+        },
+        "platform-check": false
     },
     "extra": {
         "branch-alias": {

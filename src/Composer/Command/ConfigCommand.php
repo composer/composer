@@ -421,6 +421,7 @@ EOT
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
             'htaccess-protect' => array($booleanValidator, $booleanNormalizer),
             'lock' => array($booleanValidator, $booleanNormalizer),
+            'platform-check' => array($booleanValidator, $booleanNormalizer),
         );
         $multiConfigValues = array(
             'github-protocols' => array(

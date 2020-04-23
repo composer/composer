@@ -1,0 +1,112 @@
+name: "Continuous Integration"
+
+on:
+  push:
+    paths-ignore:
+      - 'doc/**'
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
+
+env:
+  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
+  SYMFONY_PHPUNIT_VERSION: ""
+
+jobs:
+  tests:
+    name: "CI"
+
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+
+    strategy:
+      matrix:
+        php-version:
+          - "5.3"
+          - "5.4"
+          - "5.5"
+          - "5.6"
+          - "7.0"
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+        dependencies: [locked]
+        os: [ubuntu-latest]
+        experimental: [false]
+        include:
+          - php-version: 5.3
+            dependencies: highest
+            os: ubuntu-latest
+            experimental: false
+          - php-version: 5.3
+            dependencies: lowest
+            os: ubuntu-latest
+            experimental: false
+          - php-version: 7.4
+            dependencies: highest
+            os: ubuntu-latest
+            experimental: false
+          - php-version: 7.4
+            os: windows-latest
+            dependencies: locked
+            experimental: false
+          - php-version: 7.4
+            os: macos-latest
+            dependencies: locked
+            experimental: false
+          - php-version: 8.0
+            dependencies: highest
+            os: ubuntu-latest
+            experimental: true
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          extensions: "intl"
+          ini-values: "memory_limit=-1"
+          php-version: "${{ matrix.php-version }}"
+
+      - name: "Determine composer cache directory"
+        id: "determine-composer-cache-directory"
+        run: "echo \"::set-output name=directory::$(composer config cache-dir)\""
+
+      - name: "Cache dependencies installed with composer"
+        uses: "actions/cache@v1"
+        with:
+          path: "${{ steps.determine-composer-cache-directory.outputs.directory }}"
+          key: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}-${{ hashFiles('**/composer.lock') }}"
+          restore-keys: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}"
+
+      - name: "Install highest dependencies from composer.json using composer binary provided by system"
+        if: "matrix.dependencies == 'highest'"
+        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
+
+      - name: "Install lowest dependencies from composer.json using composer binary provided by system"
+        if: "matrix.dependencies == 'lowest'"
+        run: "composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest"
+
+      - name: "Install dependencies from composer.lock using composer binary provided by system"
+        if: "matrix.dependencies == 'locked'"
+        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+
+      - name: "Run install again using composer binary from source"
+        run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
+
+      - name: "Validate composer.json"
+        run: "bin/composer validate"
+
+      - name: "Prepare git environment"
+        run: "git config --global user.name composer && git config --global user.email composer@example.com"
+
+      - name: "Set SYMFONY_PHPUNIT_VERSION environment variable"
+        if: "matrix.php-version == '7.4'"
+        run: "echo \"::set-env name=SYMFONY_PHPUNIT_VERSION::7.5\""
+
+      - name: "Run tests"
+        run: "vendor/bin/simple-phpunit"

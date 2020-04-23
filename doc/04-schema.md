@@ -4,7 +4,7 @@ This chapter will explain all of the fields available in `composer.json`.
 
 ## JSON schema
 
-We have a [JSON schema](http://json-schema.org) that documents the format and
+We have a [JSON schema](https://json-schema.org) that documents the format and
 can also be used to validate your `composer.json`. In fact, it is used by the
 `validate` command. You can find it at: https://getcomposer.org/schema.json
 
@@ -214,7 +214,7 @@ An example:
         {
             "name": "Nils Adermann",
             "email": "naderman@naderman.de",
-            "homepage": "http://www.naderman.de",
+            "homepage": "https://www.naderman.de",
             "role": "Developer"
         },
         {
@@ -310,7 +310,7 @@ Example:
 All links are optional fields.
 
 `require` and `require-dev` additionally support _stability flags_ ([root-only](04-schema.md#root-package)).
-They take the form "_constraint_@_stability flag_". 
+They take the form "_constraint_@_stability flag_".
 These allow you to further restrict or expand the stability of a package beyond
 the scope of the [minimum-stability](#minimum-stability) setting. You can apply
 them to a constraint, or apply them to an empty _constraint_ if you want to
@@ -471,7 +471,7 @@ Example:
 
 Autoload mapping for a PHP autoloader.
 
-[`PSR-4`](http://www.php-fig.org/psr/psr-4/) and [`PSR-0`](http://www.php-fig.org/psr/psr-0/)
+[`PSR-4`](https://www.php-fig.org/psr/psr-4/) and [`PSR-0`](http://www.php-fig.org/psr/psr-0/)
 autoloading, `classmap` generation and `files` includes are supported.
 
 PSR-4 is the recommended way since it offers greater ease of use (no need
@@ -770,8 +770,6 @@ The following repository types are supported:
   using the `options` parameter.
 * **vcs:** The version control system repository can fetch packages from git,
   svn, fossil and hg repositories.
-* **pear:** With this you can import any pear repository into your Composer
-  project.
 * **package:** If you depend on a project that does not have any support for
   composer whatsoever you can define the package inline using a `package`
   repository. You basically inline the `composer.json` object.
@@ -799,10 +797,6 @@ Example:
         {
             "type": "vcs",
             "url": "https://github.com/Seldaek/monolog"
-        },
-        {
-            "type": "pear",
-            "url": "https://pear2.php.net"
         },
         {
             "type": "package",

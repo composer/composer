@@ -85,7 +85,7 @@ EOT
 
         // switch channel if requested
         $requestedChannel = null;
-        foreach (Versions::CHANNELS as $channel) {
+        foreach (Versions::$channels as $channel) {
             if ($input->getOption($channel)) {
                 $requestedChannel = $channel;
                 $versionsUtil->setChannel($channel);

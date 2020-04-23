@@ -64,6 +64,7 @@ class Config
         'htaccess-protect' => true,
         'use-github-api' => true,
         'lock' => true,
+        'platform-check' => true,
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth

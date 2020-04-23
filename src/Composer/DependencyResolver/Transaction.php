@@ -261,9 +261,9 @@ class Transaction
 
             // is this a plugin or a dependency of a plugin?
             if ($isPlugin || count(array_intersect($package->getNames(), $pluginRequires))) {
-                // get the package's requires, but filter out any platform requirements or 'composer-plugin-api'
+                // get the package's requires, but filter out any platform requirements
                 $requires = array_filter(array_keys($package->getRequires()), function ($req) {
-                    return $req !== 'composer-plugin-api' && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+                    return !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
                 });
 
                 // is this a plugin with no meaningful dependencies?
@@ -295,7 +295,7 @@ class Transaction
     {
         $uninstOps = array();
         foreach ($operations as $idx => $op) {
-            if ($op instanceof Operation\UninstallOperation) {
+            if ($op instanceof Operation\UninstallOperation || $op instanceof Operation\MarkAliasUninstalledOperation) {
                 $uninstOps[] = $op;
                 unset($operations[$idx]);
             }

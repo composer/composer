@@ -20,6 +20,7 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\Silencer;
 use Composer\Util\Platform;
 use Composer\XdebugHandler\XdebugHandler;
+use Composer\Composer;
 use Symfony\Component\Process\ExecutableFinder;
 
 /**
@@ -27,7 +28,7 @@ use Symfony\Component\Process\ExecutableFinder;
  */
 class PlatformRepository extends ArrayRepository
 {
-    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-plugin-api)$}iD';
+    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-(?:plugin|runtime)-api)$}iD';
 
     private $versionParser;
 
@@ -78,6 +79,12 @@ class PlatformRepository extends ArrayRepository
         $composerPluginApi = new CompletePackage('composer-plugin-api', $version, $prettyVersion);
         $composerPluginApi->setDescription('The Composer Plugin API');
         $this->addPackage($composerPluginApi);
+
+        $prettyVersion = Composer::RUNTIME_API_VERSION;
+        $version = $this->versionParser->normalize($prettyVersion);
+        $composerRuntimeApi = new CompletePackage('composer-runtime-api', $version, $prettyVersion);
+        $composerRuntimeApi->setDescription('The Composer Runtime API');
+        $this->addPackage($composerRuntimeApi);
 
         try {
             $prettyVersion = PHP_VERSION;

@@ -91,9 +91,9 @@ update new/pkg --with-all-dependencies
     "platform-dev": []
 }
 --EXPECT--
+Marking current/dep2 (1.0.x-dev) as uninstalled, alias of current/dep2 (dev-foo)
 Marking current/dep (1.1.0) as installed, alias of current/dep (dev-master)
 Upgrading current/dep2 (dev-foo => dev-master)
 Marking current/dep2 (1.1.2) as installed, alias of current/dep2 (dev-master)
 Marking current/dep2 (2.x-dev) as installed, alias of current/dep2 (dev-master)
 Installing new/pkg (1.0.0)
-Marking current/dep2 (1.0.x-dev) as uninstalled, alias of current/dep2 (dev-foo)

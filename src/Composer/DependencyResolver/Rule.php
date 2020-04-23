@@ -127,7 +127,7 @@ abstract class Rule
         return $this->getReason() === self::RULE_FIXED && $this->reasonData['lockable'];
     }
 
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, array $installedMap = array(), array $learnedPool = array())
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
     {
         $literals = $this->getLiterals();
 
@@ -152,7 +152,7 @@ abstract class Rule
                     return 'No package found to satisfy root composer.json require '.$packageName.($constraint ? ' '.$constraint->getPrettyString() : '');
                 }
 
-                return 'Root composer.json requires '.$packageName.($constraint ? ' '.$constraint->getPrettyString() : '').' -> satisfiable by '.$this->formatPackagesUnique($pool, $packages).'.';
+                return 'Root composer.json requires '.$packageName.($constraint ? ' '.$constraint->getPrettyString() : '').' -> satisfiable by '.$this->formatPackagesUnique($pool, $packages, $isVerbose).'.';
 
             case self::RULE_FIXED:
                 $package = $this->deduplicateMasterAlias($this->reasonData['package']);
@@ -179,11 +179,11 @@ abstract class Rule
 
                 $text = $this->reasonData->getPrettyString($sourcePackage);
                 if ($requires) {
-                    $text .= ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $requires) . '.';
+                    $text .= ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $requires, $isVerbose) . '.';
                 } else {
                     $targetName = $this->reasonData->getTarget();
 
-                    $reason = Problem::getMissingPackageReason($repositorySet, $request, $pool, $targetName, $this->reasonData->getConstraint());
+                    $reason = Problem::getMissingPackageReason($repositorySet, $request, $pool, $isVerbose, $targetName, $this->reasonData->getConstraint());
 
                     return $text . ' -> ' . $reason[1];
                 }
@@ -227,13 +227,13 @@ abstract class Rule
                     }
 
                     if ($installedPackages && $removablePackages) {
-                        return $this->formatPackagesUnique($pool, $removablePackages).' cannot be installed as that would require removing '.$this->formatPackagesUnique($pool, $installedPackages).'. '.$reason;
+                        return $this->formatPackagesUnique($pool, $removablePackages, $isVerbose).' cannot be installed as that would require removing '.$this->formatPackagesUnique($pool, $installedPackages, $isVerbose).'. '.$reason;
                     }
 
-                    return 'Only one of these can be installed: '.$this->formatPackagesUnique($pool, $literals).'. '.$reason;
+                    return 'Only one of these can be installed: '.$this->formatPackagesUnique($pool, $literals, $isVerbose).'. '.$reason;
                 }
 
-                return 'You can only install one version of a package, so only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals) . '.';
+                return 'You can only install one version of a package, so only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals, $isVerbose) . '.';
             case self::RULE_LEARNED:
                 if (isset($learnedPool[$this->reasonData])) {
                     $learnedString = ', learned rules:'."\n        - ";
@@ -260,7 +260,7 @@ abstract class Rule
      *
      * @return string
      */
-    protected function formatPackagesUnique($pool, array $packages)
+    protected function formatPackagesUnique($pool, array $packages, $isVerbose)
     {
         $prepared = array();
         foreach ($packages as $index => $package) {
@@ -269,7 +269,7 @@ abstract class Rule
             }
         }
 
-        return Problem::getPackageList($packages);
+        return Problem::getPackageList($packages, $isVerbose);
     }
 
     private function getReplacedNames(PackageInterface $package)

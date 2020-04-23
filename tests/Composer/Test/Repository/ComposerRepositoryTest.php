@@ -154,7 +154,7 @@ class ComposerRepositoryTest extends TestCase
         $versionParser = new VersionParser();
         $reflMethod = new \ReflectionMethod($repo, 'whatProvides');
         $reflMethod->setAccessible(true);
-        $packages = $reflMethod->invoke($repo, 'a', array($this, 'isPackageAcceptableReturnTrue'));
+        $packages = $reflMethod->invoke($repo, 'a');
 
         $this->assertCount(5, $packages);
         $this->assertEquals(array('1', '1-alias', '2', '2-alias', '3'), array_keys($packages));

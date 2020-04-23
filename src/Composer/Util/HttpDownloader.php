@@ -129,6 +129,8 @@ class HttpDownloader
 
     private function addJob($request, $sync = false)
     {
+        $request['options'] = array_replace_recursive($this->options, $request['options']);
+
         $job = array(
             'id' => $this->idGen++,
             'status' => self::STATUS_QUEUED,
