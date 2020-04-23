@@ -34,13 +34,12 @@ separated by `/`. Examples:
 * monolog/monolog
 * igorw/event-source
 
-The name must consist of words separated by `-`, `.` or `_`.
+The name must be lowercased and consist of words separated by `-`, `.` or `_`.
 The complete name should match `^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$`.
 
 The `name` property is required for published packages (libraries).
 
-> **Note:** Before Composer version 2.0, a name could contain any character, including white spaces, and it was case
-> insensitive (`foo/bar` and `Foo/Bar` are considered the same package).
+> **Note:** Before Composer version 2.0, a name could contain any character, including white spaces.
 
 ### description
 
