@@ -66,6 +66,10 @@ class SolverProblemsException extends \RuntimeException
             $text .= "\nUse the option --with-all-dependencies to allow updates and removals for packages currently locked to specific versions.";
         }
 
+        if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match') && strpos($text, '- ocramius/package-versions')) {
+            $text .= "\n<warning>ocramius/package-versions only provides support for Composer 2 in 1.8+, which requires PHP 7.4.</warning>\nIf you can not upgrade PHP you can require <info>composer/package-versions-deprecated</info> to resolve this with PHP 7.0+.\n";
+        }
+
         // TODO remove before 2.0 final
         if (!class_exists('PHPUnit\Framework\TestCase', false)) {
             if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match')) {
