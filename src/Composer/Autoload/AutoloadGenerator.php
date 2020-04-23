@@ -588,7 +588,11 @@ EOF;
 
                 if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
                     $extension = var_export($match[1], true);
-                    $requiredExtensions[$extension] = "extension_loaded($extension) || \$missingExtensions[] = $extension;\n";
+                    if ($match[1] === 'pcntl') {
+                        $requiredExtensions[$extension] = "PHP_SAPI !== 'cli' || extension_loaded($extension) || \$missingExtensions[] = $extension;\n";
+                    } else {
+                        $requiredExtensions[$extension] = "extension_loaded($extension) || \$missingExtensions[] = $extension;\n";
+                    }
                 }
             }
         }
