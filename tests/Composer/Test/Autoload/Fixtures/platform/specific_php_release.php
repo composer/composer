@@ -9,5 +9,6 @@ if (!(PHP_VERSION_ID >= 70208 && PHP_VERSION_ID < 80000)) {
 }
 
 if ($issues) {
-    die('Composer detected issues in your platform:' . "\n\n" . implode("\n", $issues));
+    echo 'Composer detected issues in your platform:' . "\n\n" . implode("\n", $issues);
+    exit(104);
 }

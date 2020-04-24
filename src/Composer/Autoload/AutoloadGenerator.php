@@ -660,7 +660,8 @@ if (!(PHP_VERSION_ID $lowestOperator $lowestPhpVersionId && PHP_VERSION_ID $high
 }
 $requiredExtensions
 if (\$issues) {
-    die('Composer detected issues in your platform:' . "\\n\\n" . implode("\\n", \$issues));
+    echo 'Composer detected issues in your platform:' . "\\n\\n" . implode("\\n", \$issues);
+    exit(104);
 }
 
 PLATFORM_CHECK;

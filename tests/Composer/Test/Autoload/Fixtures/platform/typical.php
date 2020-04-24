@@ -17,5 +17,6 @@ if ($missingExtensions) {
 }
 
 if ($issues) {
-    die('Composer detected issues in your platform:' . "\n\n" . implode("\n", $issues));
+    echo 'Composer detected issues in your platform:' . "\n\n" . implode("\n", $issues);
+    exit(104);
 }
