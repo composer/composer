@@ -20,6 +20,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RootPackageRepository;
 use Composer\Repository\InstalledRepository;
 
 class CheckPlatformReqsCommand extends BaseCommand
@@ -47,7 +48,7 @@ EOT
     {
         $composer = $this->getComposer();
 
-        $requires = $composer->getPackage()->getRequires();
+        $requires = array();
         if ($input->getOption('no-dev')) {
             $installedRepo = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'));
             $dependencies = $installedRepo->getPackages();
@@ -63,7 +64,7 @@ EOT
             $requires[$require] = array($link);
         }
 
-        $installedRepo = new InstalledRepository(array($installedRepo));
+        $installedRepo = new InstalledRepository(array($installedRepo, new RootPackageRepository($composer->getPackage())));
         foreach ($installedRepo->getPackages() as $package) {
             foreach ($package->getRequires() as $require => $link) {
                 $requires[$require][] = $link;
