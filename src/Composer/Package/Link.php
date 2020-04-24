@@ -13,6 +13,7 @@
 namespace Composer\Package;
 
 use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\EmptyConstraint;
 
 /**
  * Represents a link between two packages, represented by their names
@@ -59,7 +60,7 @@ class Link
     {
         $this->source = strtolower($source);
         $this->target = strtolower($target);
-        $this->constraint = $constraint;
+        $this->constraint = $constraint ? $constraint : new EmptyConstraint();
         $this->description = $description;
         $this->prettyConstraint = $prettyConstraint;
     }
@@ -89,7 +90,7 @@ class Link
     }
 
     /**
-     * @return ConstraintInterface|null
+     * @return ConstraintInterface
      */
     public function getConstraint()
     {

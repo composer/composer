@@ -294,10 +294,6 @@ class PoolBuilder
                     $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
                 }
             } else {
-                if (null === $this->loadedNames[$require] || null === $linkConstraint) {
-                    unset($this->loadedNames[$require]);
-                }
-
                 if (!$this->loadedNames[$require]->matches($linkConstraint)) {
                     $loadNames[$require] = MultiConstraint::create(array($this->loadedNames[$require], $linkConstraint), false);
                     unset($this->loadedNames[$require]);
@@ -313,7 +309,7 @@ class PoolBuilder
                 if (isset($this->loadedNames[$replace]) && isset($this->skippedLoad[$replace])) {
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$replace])) {
                         $this->unfixPackage($request, $replace);
-                        $loadNames[$replace] = null;
+                        $loadNames[$replace] = $link->getConstraint();
                     } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$replace])) {
                         $this->updateAllowWarned[$replace] = true;
                         $this->io->writeError('<warning>Dependency "'.$replace.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
