@@ -62,11 +62,12 @@ class PoolBuilder
      * @psalm-var array<string, AliasPackage>
      */
     private $aliasMap = array();
+
     /**
-     * @psalm-var array<string, ConstraintInterface[]|null>
+     * @psalm-var array<string, ConstraintInterface[]>
      */
-    private $nameConstraints = array();
     private $loadedNames = array();
+
     /**
      * @psalm-var Package[]
      */
@@ -123,12 +124,10 @@ class PoolBuilder
 
         $loadNames = array();
         foreach ($request->getFixedPackages() as $package) {
-            $this->nameConstraints[$package->getName()] = null;
             $this->loadedNames[$package->getName()] = new Constraint('==', $package->getVersion());
 
             // replace means conflict, so if a fixed package replaces a name, no need to load that one, packages would conflict anyways
             foreach ($package->getReplaces() as $link) {
-                $this->nameConstraints[$package->getName()] = null;
                 $this->loadedNames[$link->getTarget()] = $link->getConstraint();
             }
 
@@ -153,7 +152,6 @@ class PoolBuilder
             }
 
             $loadNames[$packageName] = $constraint;
-            $this->nameConstraints[$packageName] = $constraint && !($constraint instanceof MatchAllConstraint) ? array($constraint) : null;
         }
 
         // clean up loadNames for anything we manually marked loaded above
@@ -189,19 +187,11 @@ class PoolBuilder
             $loadNames = $newLoadNames;
         }
 
-        // filter packages according to all the require statements collected for each package
-        $nameConstraints = array();
-        foreach ($this->nameConstraints as $name => $constraints) {
-            if (\is_array($constraints)) {
-                $nameConstraints[$name] = MultiConstraint::create(array_values(array_unique($constraints)), false);
-            }
-        }
         foreach ($this->packages as $i => $package) {
             // we check all alias related packages at once, so no need to check individual aliases
             // isset also checks non-null value
-            if (!$package instanceof AliasPackage && isset($nameConstraints[$package->getName()])) {
-                $constraint = $nameConstraints[$package->getName()];
-
+            if (!$package instanceof AliasPackage) {
+                $constraint = new Constraint('==', $package->getVersion());
                 $aliasedPackages = array($i => $package);
                 if (isset($this->aliasMap[spl_object_hash($package)])) {
                     $aliasedPackages += $this->aliasMap[spl_object_hash($package)];
@@ -241,7 +231,6 @@ class PoolBuilder
         $pool = new Pool($this->packages, $this->unacceptableFixedPackages);
 
         $this->aliasMap = array();
-        $this->nameConstraints = array();
         $this->loadedNames = array();
         $this->packages = array();
         $this->unacceptableFixedPackages = array();
@@ -314,17 +303,6 @@ class PoolBuilder
                     unset($this->loadedNames[$require]);
                 }
             }
-
-            if ($linkConstraint && !($linkConstraint instanceof MatchAllConstraint)) {
-                if (!\array_key_exists($require, $this->nameConstraints)) {
-                    $this->nameConstraints[$require] = array($linkConstraint);
-                } elseif (\is_array($this->nameConstraints[$require])) {
-                    $this->nameConstraints[$require][] = $linkConstraint;
-                }
-                // else it is null and should stay null
-            } else {
-                $this->nameConstraints[$require] = null;
-            }
         }
 
         // if we're doing a partial update with deps we also need to unfix packages which are being replaced in case they
@@ -336,8 +314,6 @@ class PoolBuilder
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$replace])) {
                         $this->unfixPackage($request, $replace);
                         $loadNames[$replace] = null;
-                        // TODO should we try to merge constraints here?
-                        $this->nameConstraints[$replace] = null;
                     } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$replace])) {
                         $this->updateAllowWarned[$replace] = true;
                         $this->io->writeError('<warning>Dependency "'.$replace.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
