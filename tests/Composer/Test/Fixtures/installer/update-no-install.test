@@ -56,9 +56,9 @@ update --no-install
 
 --EXPECT-INSTALLED--
 [
-    { "name": "a/a", "version": "1.0.0" },
-    { "name": "a/c", "version": "1.0.0" },
-    { "name": "a/b", "version": "1.0.0" }
+    { "name": "a/a", "version": "1.0.0", "type": "library" },
+    { "name": "a/b", "version": "1.0.0", "type": "library" },
+    { "name": "a/c", "version": "1.0.0", "type": "library" }
 ]
 
 --EXPECT--

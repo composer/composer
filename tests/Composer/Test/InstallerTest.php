@@ -290,6 +290,7 @@ class InstallerTest extends TestCase
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setUpdate(true)
+                ->setInstall(!$input->getOption('no-install'))
                 ->setDryRun($input->getOption('dry-run'))
                 ->setUpdateMirrors($updateMirrors)
                 ->setUpdateAllowList($packages)
