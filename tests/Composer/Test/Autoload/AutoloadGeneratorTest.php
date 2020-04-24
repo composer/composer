@@ -1648,10 +1648,18 @@ EOF;
     /**
      * @dataProvider platformCheckProvider
      */
-    public function testGeneratesPlatformCheck(array $requires, $expectedFixture)
+    public function testGeneratesPlatformCheck(array $requires, $expectedFixture, array $provides = array(), array $replaces = array())
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires($requires);
+
+        if ($provides) {
+            $package->setProvides($provides);
+        }
+
+        if ($replaces) {
+            $package->setReplaces($replaces);
+        }
 
         $this->repository->expects($this->once())
             ->method('getCanonicalPackages')
@@ -1705,7 +1713,25 @@ EOF;
                     new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
                 ),
                 'no_extensions_required'
-            )
+            ),
+            'Replaced/provided extensions are not checked for + checking case insensitivity' => array(
+                array(
+                    new Link('a', 'ext-xml', $versionParser->parseConstraints('^7.2')),
+                    new Link('a', 'ext-Pdo', $versionParser->parseConstraints('^7.2')),
+                    new Link('a', 'ext-bcMath', $versionParser->parseConstraints('^7.2')),
+                ),
+                'replaced_provided_exts',
+                array(
+                    // constraint does not satisfy all the ^7.2 requirement so we do not accept it as being replaced
+                    new Link('a', 'ext-PDO', $versionParser->parseConstraints('7.1.*')),
+                    // valid replace of bcmath so no need to check for it
+                    new Link('a', 'ext-BCMath', $versionParser->parseConstraints('^7.1')),
+                ),
+                array(
+                    // valid provide of ext-xml so no need to check for it
+                    new Link('a', 'ext-XML', $versionParser->parseConstraints('*')),
+                ),
+            ),
         );
     }
 

@@ -20,6 +20,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Semver\Constraint\Bound;
+use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Util\Filesystem;
 use Composer\Script\ScriptEvents;
 use Composer\Util\PackageSorter;
@@ -573,6 +574,16 @@ EOF;
         $lowestPhpVersion = Bound::zero();
         $highestPhpVersion = Bound::positiveInfinity();
         $requiredExtensions = array();
+        $extensionProviders = array();
+
+        foreach ($packageMap as $item) {
+            list($package, $installPath) = $item;
+            foreach (array_merge($package->getReplaces(), $package->getProvides()) as $link) {
+                if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
+                    $extensionProviders[$match[1]][] = $link->getConstraint() ?: new EmptyConstraint();
+                }
+            }
+        }
 
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
@@ -587,6 +598,15 @@ EOF;
                 }
 
                 if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
+                    // skip extension checks if they have a valid provider/replacer
+                    if (isset($extensionProviders[$match[1]])) {
+                        foreach ($extensionProviders[$match[1]] as $provided) {
+                            if (!$link->getConstraint() || $provided->matches($link->getConstraint())) {
+                                continue 2;
+                            }
+                        }
+                    }
+
                     $extension = var_export($match[1], true);
                     if ($match[1] === 'pcntl') {
                         $requiredExtensions[$extension] = "PHP_SAPI !== 'cli' || extension_loaded($extension) || \$missingExtensions[] = $extension;\n";
