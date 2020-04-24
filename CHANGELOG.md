@@ -5,18 +5,26 @@
   * The update command is now much more deterministic as it does not take the already installed packages into account
   * Package installation now performs all network operations first before doing any changes on disk, to reduce the chances of ending up with a partially updated vendor dir
   * Partial updates and require/remove are now much faster as they only load the metadata required for the updated packages
-  * Added support for parallel downloads of package metadata and zip files, this requires that the curl extension is present
+  * Added a platform-check step when vendor/autoload.php gets initialized which checks the current PHP version/extensions match what is expected and fails hard otherwise. Can be disabled with the platform-check config option
+  * Added a [`Composer\InstalledVersions`](https://github.com/composer/composer/blob/d89342dc434d52c88e0e06ce3982da739a467f13/src/Composer/InstalledVersions.php) class which is autoloaded in every project and lets you check which packages/versions are present at runtime
+  * Added a `composer-runtime-api` virtual package which you can require (as e.g. `^2.0`) to ensure things like the InstalledVersions class above are present. It will effectively force people to use Composer 2.x to install your project
+  * Added support for parallel downloads of package metadata and zip files, this requires that the curl extension is present and we thus strongly recommend enabling curl
   * Added much clearer dependency resolution error reporting for common error cases
   * Added support for TTY mode on Linux/OSX/WSL so that script handlers now run in interactive mode
   * Added `only`, `exclude` and `canonical` options to all repositories, see [repository priorities](https://getcomposer.org/repoprio) for details
   * Added support for lib-zip platform package
   * Added `pre-operations-exec` event to be fired before the packages get installed/upgraded/removed
   * Added `pre-pool-create` event to be fired before the package pool for the dependency solver is created, which lets you modify the list of packages going in
+  * Added `post-file-download` event to be fired after package dist files are downloaded, which lets you do additional checks on the files
+  * Added --unused flag to `remove` command to make sure any packages which are not needed anymore get removed
   * Added --dry-run flag to `require` and `remove` commands
+  * Added --no-install flag to `update`, `require` and `remove` commands to disable the install step and only do the update step (composer.lock file update)
   * Added --with-dependencies and --with-all-dependencies flag aliases to `require` and `remove` commands for consistency with `update`
   * Added more info to `vendor/composer/installed.json`, a dev key stores whether dev requirements were installed, and every package now has an install-path key with its install location
   * Added COMPOSER_DISABLE_NETWORK which if set makes Composer do its best to run offline. This can be useful when you have poor connectivity or to do benchmarking without network jitter
+  * Added --json and --merge flags to `config` command to allow editing complex `extra.*` values by using json as input
   * Added confirmation prompt when running Composer as superuser in interactive mode
+  * Added --no-check-version to `validate` command to remove the warning in case the version is defined
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
 

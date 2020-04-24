@@ -2,11 +2,13 @@
 
 ## For composer CLI users
 
+- The new platform-check feature means that Composer checks the runtime PHP version and available extensions to ensure they match the project dependencies. If a mismatch is found, it exits with error details to make sure problems are not overlooked. To avoid issues when deploying to production it is recommended to run `composer check-platform-reqs` with the production PHP process as part of your build or deployment process.
 - If a packages exists in a higher priority repository, it will now be entirely ignored in lower priority repositories. See [repository priorities](https://getcomposer.org/repoprio) for details.
 - Invalid PSR-0 / PSR-4 class configurations will not autoload anymore in optimized-autoloader mode, as per the warnings introduced in 1.10
 - Package names now must comply to our [naming guidelines](doc/04-schema.md#name) or Composer will abort, as per the warnings introduced in 1.8.1
 - Deprecated --no-suggest flag as it is not needed anymore
-- `update` now lists changes to the lock file first, and then the changes applied when installing the lock file to the vendor dir
+- PEAR support (repository, downloader, etc.) has been removed
+- `update` now lists changes to the lock file first (update step), and then the changes applied when installing the lock file to the vendor dir (install step)
 - `HTTPS_PROXY_REQUEST_FULLURI` if not specified will now default to false as this seems to work better in most environments
 
 ## For integrators and plugin authors
