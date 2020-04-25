@@ -333,6 +333,74 @@ class BitbucketTest extends TestCase
         $this->assertTrue($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
+    public function testAuthorizeOAuthInteractivelyWithEmptyUsername()
+    {
+        $authConfigSourceMock = $this->getMockBuilder('Composer\Config\ConfigSourceInterface')->getMock();
+        $this->config->expects($this->atLeastOnce())
+            ->method('getAuthConfigSource')
+            ->willReturn($authConfigSourceMock);
+
+        $this->io->expects($this->once())
+            ->method('askAndHideAnswer')
+            ->with('Consumer Key (hidden): ')
+            ->willReturnOnConsecutiveCalls(null);
+
+        $this->assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
+    }
+
+    public function testAuthorizeOAuthInteractivelyWithEmptyPassword()
+    {
+        $authConfigSourceMock = $this->getMockBuilder('Composer\Config\ConfigSourceInterface')->getMock();
+        $this->config->expects($this->atLeastOnce())
+            ->method('getAuthConfigSource')
+            ->willReturn($authConfigSourceMock);
+
+        $this->io->expects($this->exactly(2))
+            ->method('askAndHideAnswer')
+            ->withConsecutive(
+                array('Consumer Key (hidden): '),
+                array('Consumer Secret (hidden): ')
+            )
+            ->willReturnOnConsecutiveCalls($this->consumer_key, null);
+
+        $this->assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
+    }
+
+    public function testAuthorizeOAuthInteractivelyWithRequestAccessTokenFailure()
+    {
+        $authConfigSourceMock = $this->getMockBuilder('Composer\Config\ConfigSourceInterface')->getMock();
+        $this->config->expects($this->atLeastOnce())
+            ->method('getAuthConfigSource')
+            ->willReturn($authConfigSourceMock);
+
+        $this->io->expects($this->exactly(2))
+            ->method('askAndHideAnswer')
+            ->withConsecutive(
+                array('Consumer Key (hidden): '),
+                array('Consumer Secret (hidden): ')
+            )
+            ->willReturnOnConsecutiveCalls($this->consumer_key, $this->consumer_secret);
+
+        $this->httpDownloader
+            ->expects($this->once())
+            ->method('get')
+            ->with(
+                $this->equalTo($url = sprintf('https://%s/site/oauth2/access_token', $this->origin)),
+                $this->anything()
+            )
+            ->willThrowException(
+                new \Composer\Downloader\TransportException(
+                    sprintf(
+                        'The \'%s\' URL could not be accessed: HTTP/1.1 400 BAD REQUEST',
+                        Bitbucket::OAUTH2_ACCESS_TOKEN_URL
+                    ),
+                    400
+                )
+            );
+
+        $this->assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
+    }
+
     private function setExpectationsForStoringAccessToken($removeBasicAuth = false)
     {
         $configSourceMock = $this->getMockBuilder('Composer\Config\ConfigSourceInterface')->getMock();
