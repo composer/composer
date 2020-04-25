@@ -124,6 +124,8 @@ class BitbucketTest extends TestCase
             $this->token,
             $this->bitbucket->requestToken($this->origin, $this->consumer_key, $this->consumer_secret)
         );
+
+        return $this->bitbucket;
     }
 
     public function testRequestAccessTokenWithValidOAuthConsumerAndExpiredAccessToken()
@@ -297,5 +299,20 @@ class BitbucketTest extends TestCase
                 ->method('removeConfigSetting')
                 ->with('http-basic.' . $this->origin);
         }
+    }
+
+    public function testGetTokenWithAccessToken()
+    {
+        $this->assertSame('', $this->bitbucket->getToken());
+    }
+
+    /**
+     * @depends testRequestAccessTokenWithValidOAuthConsumerAndValidStoredAccessToken
+     *
+     * @param Bitbucket $bitbucket
+     */
+    public function testGetTokenWithoutAccessToken(Bitbucket $bitbucket)
+    {
+        $this->assertSame($this->token, $bitbucket->getToken());
     }
 }
