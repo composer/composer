@@ -45,7 +45,10 @@ abstract class SolverOperation implements OperationInterface
 
     /**
      * @param $lock bool Whether this is an operation on the lock file
-    * @return string
-    */
-    abstract public function show($lock);
+     * @return string
+     */
+    public function show($lock)
+    {
+        throw new \RuntimeException('abstract method needs to be implemented in subclass, not marked abstract for compatibility with PHP <= 5.3.8');
+    }
 }
