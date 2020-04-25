@@ -315,4 +315,33 @@ class BitbucketTest extends TestCase
     {
         $this->assertSame($this->token, $bitbucket->getToken());
     }
+
+    public function testAuthorizeOAuthWithWrongOriginUrl()
+    {
+       $this->assertFalse($this->bitbucket->authorizeOAuth('non-' . $this->origin));
+    }
+
+    public function testAuthorizeOAuthWithoutAvailableGitConfigToken()
+    {
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $process->expects($this->once())
+            ->method('execute')
+            ->willReturn(-1);
+
+        $bitbucket = new Bitbucket($this->io, $this->config, $process, $this->httpDownloader, $this->time);
+
+        $this->assertFalse($bitbucket->authorizeOAuth($this->origin));
+    }
+
+    public function testAuthorizeOAuthWithAvailableGitConfigToken()
+    {
+        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $process->expects($this->once())
+            ->method('execute')
+            ->willReturn(0);
+
+        $bitbucket = new Bitbucket($this->io, $this->config, $process, $this->httpDownloader, $this->time);
+
+        $this->assertTrue($bitbucket->authorizeOAuth($this->origin));
+    }
 }
