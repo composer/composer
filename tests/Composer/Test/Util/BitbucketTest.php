@@ -437,7 +437,7 @@ class BitbucketTest extends TestCase
         }
     }
 
-    public function testGetTokenWithAccessToken()
+    public function testGetTokenWithoutAccessToken()
     {
         $this->assertSame('', $this->bitbucket->getToken());
     }
@@ -447,7 +447,7 @@ class BitbucketTest extends TestCase
      *
      * @param Bitbucket $bitbucket
      */
-    public function testGetTokenWithoutAccessToken(Bitbucket $bitbucket)
+    public function testGetTokenWithAccessToken(Bitbucket $bitbucket)
     {
         $this->assertSame($this->token, $bitbucket->getToken());
     }
