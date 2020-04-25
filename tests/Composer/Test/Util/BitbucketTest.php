@@ -225,6 +225,73 @@ class BitbucketTest extends TestCase
         $this->assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
     }
 
+    public function testRequestAccessTokenWithUsernameAndPasswordWithUnauthorizedResponse()
+    {
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('bitbucket-oauth')
+            ->willReturn(null);
+
+        $this->io->expects($this->once())
+            ->method('setAuthentication')
+            ->with($this->origin, $this->username, $this->password);
+
+        $this->io->expects($this->any())
+            ->method('writeError')
+            ->withConsecutive(
+                array('<error>Invalid OAuth consumer provided.</error>'),
+                array(
+                    'You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"')
+            );
+
+        $this->httpDownloader->expects($this->once())
+            ->method('get')
+            ->with(
+                Bitbucket::OAUTH2_ACCESS_TOKEN_URL,
+                array(
+                    'retry-auth-failure' => false,
+                    'http' => array(
+                        'method' => 'POST',
+                        'content' => 'grant_type=client_credentials',
+                    ),
+                )
+            )
+            ->willThrowException(new \Composer\Downloader\TransportException('HTTP/1.1 401 UNAUTHORIZED',401));
+
+        $this->assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
+    }
+
+    public function testRequestAccessTokenWithUsernameAndPasswordWithNotFoundResponse()
+    {
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('bitbucket-oauth')
+            ->willReturn(null);
+
+        $this->io->expects($this->once())
+            ->method('setAuthentication')
+            ->with($this->origin, $this->username, $this->password);
+
+        $exception = new \RuntimeException();
+        $this->httpDownloader->expects($this->once())
+            ->method('get')
+            ->with(
+                Bitbucket::OAUTH2_ACCESS_TOKEN_URL,
+                array(
+                    'retry-auth-failure' => false,
+                    'http' => array(
+                        'method' => 'POST',
+                        'content' => 'grant_type=client_credentials',
+                    ),
+                )
+            )
+            ->willThrowException(new \Composer\Downloader\TransportException('HTTP/1.1 404 NOT FOUND',404));
+
+        $this->expectException(get_class($exception));
+
+        $this->bitbucket->requestToken($this->origin, $this->username, $this->password);
+    }
+
     public function testUsernamePasswordAuthenticationFlow()
     {
         $this->io
