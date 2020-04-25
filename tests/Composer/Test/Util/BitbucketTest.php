@@ -261,6 +261,9 @@ class BitbucketTest extends TestCase
         $this->assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
     }
 
+    /**
+     * @expectedException \Composer\Downloader\TransportException
+     */
     public function testRequestAccessTokenWithUsernameAndPasswordWithNotFoundResponse()
     {
         $this->config->expects($this->once())
@@ -272,7 +275,7 @@ class BitbucketTest extends TestCase
             ->method('setAuthentication')
             ->with($this->origin, $this->username, $this->password);
 
-        $exception = new \RuntimeException();
+        $exception = new \Composer\Downloader\TransportException('HTTP/1.1 404 NOT FOUND',404);
         $this->httpDownloader->expects($this->once())
             ->method('get')
             ->with(
@@ -285,9 +288,7 @@ class BitbucketTest extends TestCase
                     ),
                 )
             )
-            ->willThrowException(new \Composer\Downloader\TransportException('HTTP/1.1 404 NOT FOUND',404));
-
-        $this->expectException(get_class($exception));
+            ->willThrowException($exception);
 
         $this->bitbucket->requestToken($this->origin, $this->username, $this->password);
     }
