@@ -294,6 +294,9 @@ class PoolBuilder
                     $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
                 }
             } else {
+                // Check if packages we already loaded match the constraint and if they don't
+                // extend the constraint and mark that package as not being loaded yet
+                // so we get the required package versions
                 if (!$this->loadedNames[$require]->matches($linkConstraint)) {
                     $loadNames[$require] = MultiConstraint::create(array($this->loadedNames[$require], $linkConstraint), false);
                     unset($this->loadedNames[$require]);
