@@ -23,6 +23,7 @@ use Composer\Config;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\IO\IOInterface;
+use Composer\Semver\CompilingMatcher;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Loop;
 use Composer\Plugin\PluginEvents;
@@ -764,7 +765,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 continue;
             }
 
-            if ($constraint && !$constraint->matches(new Constraint('==', $version))) {
+            if ($constraint && !CompilingMatcher::match($constraint, Constraint::OP_EQ, $version)) {
                 continue;
             }
 
