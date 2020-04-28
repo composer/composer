@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
+use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\PackageInterface;
@@ -146,9 +147,7 @@ class Pool implements \Countable
         $candidateVersion = $candidate->getVersion();
 
         if ($candidateName === $name) {
-            $pkgConstraint = new Constraint('==', $candidateVersion);
-
-            if ($constraint === null || $constraint->matches($pkgConstraint)) {
+            if ($constraint === null || CompilingMatcher::match($constraint, Constraint::OP_EQ, $candidateVersion)) {
                 return true;
             }
 
