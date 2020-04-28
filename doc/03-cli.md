@@ -360,6 +360,7 @@ php composer.phar show monolog/monolog 1.0.2
 
 * **--all :** List all packages available in all your repositories.
 * **--installed (-i):** List the packages that are installed (this is enabled by default, and deprecated).
+* **--locked:** List the locked packages from composer.lock.
 * **--platform (-p):** List only platform packages (php & extensions).
 * **--available (-a):** List available packages only.
 * **--self (-s):** List the root package info.
