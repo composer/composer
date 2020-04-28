@@ -86,6 +86,7 @@ class ValidatingArrayLoaderTest extends TestCase
                         'a/b' => '1.*',
                         'b/c' => '~2',
                         'example' => '>2.0-dev,<2.4-dev',
+                        'composer-runtime-api' => '*',
                     ),
                     'require-dev' => array(
                         'a/b' => '1.*',
