@@ -70,6 +70,9 @@ class ArrayDumper
             }
         }
 
+        if ($package->getArchiveName()) {
+            $data['archive']['name'] = $package->getArchiveName();
+        }
         if ($package->getArchiveExcludes()) {
             $data['archive']['exclude'] = $package->getArchiveExcludes();
         }

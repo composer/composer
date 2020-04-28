@@ -159,6 +159,9 @@ class ArrayLoader implements LoaderInterface
             $package->setNotificationUrl($config['notification-url']);
         }
 
+        if (!empty($config['archive']['name'])) {
+            $package->setArchiveName($config['archive']['name']);
+        }
         if (!empty($config['archive']['exclude'])) {
             $package->setArchiveExcludes($config['archive']['exclude']);
         }

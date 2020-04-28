@@ -346,6 +346,13 @@ interface PackageInterface
     public function getPrettyString();
 
     /**
+     * Returns default base filename for archive
+     *
+     * @return array
+     */
+    public function getArchiveName();
+
+    /**
      * Returns a list of patterns to exclude from package archives
      *
      * @return array
