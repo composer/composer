@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\Composer;
 use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -73,6 +74,12 @@ class PlatformRepository extends ArrayRepository
         $composerPluginApi = new CompletePackage('composer-plugin-api', $version, $prettyVersion);
         $composerPluginApi->setDescription('The Composer Plugin API');
         $this->addPackage($composerPluginApi);
+
+        $prettyVersion = Composer::RUNTIME_API_VERSION;
+        $version = $this->versionParser->normalize($prettyVersion);
+        $composerRuntimeApi = new CompletePackage('composer-runtime-api', $version, $prettyVersion);
+        $composerRuntimeApi->setDescription('The Composer Runtime API');
+        $this->addPackage($composerRuntimeApi);
 
         try {
             $prettyVersion = PHP_VERSION;

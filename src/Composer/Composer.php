@@ -55,6 +55,17 @@ class Composer
     const RELEASE_DATE = '@release_date@';
     const SOURCE_VERSION = '1.10-dev+source';
 
+    /**
+     * Version number of the internal composer-runtime-api package
+     *
+     * This is used to version features available to projects at runtime
+     * like the platform-check file, the Composer\InstalledVersions class
+     * and possibly others in the future.
+     *
+     * @var string
+     */
+    const RUNTIME_API_VERSION = '1.0.0';
+
     public static function getVersion()
     {
         // no replacement done, this must be a source checkout
