@@ -128,7 +128,7 @@ class PoolBuilder
 
             // replace means conflict, so if a fixed package replaces a name, no need to load that one, packages would conflict anyways
             foreach ($package->getReplaces() as $link) {
-                $this->loadedNames[$link->getTarget()] = $link->getConstraint();
+                $this->loadedNames[$link->getTarget()] = new EmptyConstraint();
             }
 
             // TODO in how far can we do the above for conflicts? It's more tricky cause conflicts can be limited to
