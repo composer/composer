@@ -3,8 +3,10 @@ Packages replaced by fixed packages do not get loaded from the repos
 
 --REQUEST--
 {
-    "some/pkg": "*",
-    "root/req": "*"
+    "require": {
+        "some/pkg": "*",
+        "root/req": "*"
+    }
 }
 
 --FIXED--

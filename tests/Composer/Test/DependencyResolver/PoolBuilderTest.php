@@ -73,13 +73,29 @@ class PoolBuilderTest extends TestCase
 
         $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases);
         $repositorySet->addRepository($repo = new ArrayRepository());
+        $repositorySet->addRepository($lockedRepo = new LockArrayRepository());
         foreach ($packages as $package) {
             $repo->addPackage($loadPackage($package));
         }
 
-        $request = new Request();
-        foreach ($requestData as $package => $constraint) {
+        if (isset($requestData['locked'])) {
+            foreach ($requestData['locked'] as $package) {
+                $lockedRepo->addPackage($loadPackage($package));
+            }
+        }
+        $request = new Request($lockedRepo);
+        foreach ($requestData['require'] as $package => $constraint) {
             $request->requireName($package, $parser->parseConstraints($constraint));
+        }
+        if (isset($requestData['allowList'])) {
+            $transitiveDeps = Request::UPDATE_ONLY_LISTED;
+            if (isset($requestData['allowTransitiveDepsNoRootRequire']) && $requestData['allowTransitiveDepsNoRootRequire']) {
+                $transitiveDeps = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
+            }
+            if (isset($requestData['allowTransitiveDeps']) && $requestData['allowTransitiveDeps']) {
+                $transitiveDeps = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
+            }
+            $request->setUpdateAllowList(array_flip($requestData['allowList']), $transitiveDeps);
         }
 
         foreach ($fixed as $fixedPackage) {

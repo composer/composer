@@ -18,8 +18,10 @@ Stability flags apply
 
 --REQUEST--
 {
-    "flagged/pkg": "*",
-    "default/pkg": "*"
+    "require": {
+        "flagged/pkg": "*",
+        "default/pkg": "*"
+    }
 }
 
 --PACKAGES--
