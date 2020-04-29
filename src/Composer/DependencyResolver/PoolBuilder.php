@@ -124,7 +124,7 @@ class PoolBuilder
 
         $loadNames = array();
         foreach ($request->getFixedPackages() as $package) {
-            $this->loadedNames[$package->getName()] = new Constraint('==', $package->getVersion());
+            $this->loadedNames[$package->getName()] = new EmptyConstraint();
 
             // replace means conflict, so if a fixed package replaces a name, no need to load that one, packages would conflict anyways
             foreach ($package->getReplaces() as $link) {
