@@ -1,5 +1,5 @@
 --TEST--
-Test irrelevant package versions are not loaded
+Test package is not found
 
 --REQUEST--
 {

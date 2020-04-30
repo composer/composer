@@ -1,5 +1,5 @@
 --TEST--
-Test irrelevant package versions are not loaded
+Tests if version constraint is expanded. If not, dep/dep 3.0.0 would not be loaded here.
 
 --REQUEST--
 {
