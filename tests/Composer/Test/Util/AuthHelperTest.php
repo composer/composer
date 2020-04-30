@@ -167,4 +167,57 @@ class AuthHelperTest extends TestCase
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
     }
+
+    public function gitlabPrivateTokenProvider()
+    {
+        return array(
+          array('private-token'),
+          array('gitlab-ci-token'),
+        );
+    }
+
+    /**
+     * @dataProvider gitlabPrivateTokenProvider
+     *
+     * @param $password
+     */
+    public function testAddAuthenticationHeaderWithGitlabPrivateToken($password)
+    {
+        $headers = array(
+            'Accept-Encoding: gzip',
+            'Connection: close'
+        );
+        $origin = 'gitlab.com';
+        $url = 'https://api.gitlab.com/';
+        $credentials = array(
+            'username' => 'my_username',
+            'password' => $password
+        );
+
+        $this->io->expects($this->once())
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $this->io->expects($this->once())
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn($credentials);
+
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('gitlab-domains')
+            ->willReturn(array($origin));
+
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('Using GitLab private token authentication', true, IOInterface::DEBUG);
+
+        $expectedHeaders = array_merge($headers, array('PRIVATE-TOKEN: ' . $credentials['username']));
+
+        $this->assertSame(
+            $expectedHeaders,
+            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
+        );
+    }
 }
