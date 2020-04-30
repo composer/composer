@@ -21,7 +21,6 @@ use Composer\Util\ProcessExecutor;
 use Composer\Util\Silencer;
 use Composer\Util\Platform;
 use Composer\XdebugHandler\XdebugHandler;
-use Composer\Composer;
 use Symfony\Component\Process\ExecutableFinder;
 
 /**
