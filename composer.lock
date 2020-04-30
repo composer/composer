@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0a043906e568eec0b2608c6684018480",
+    "content-hash": "ded9d158cb184fe1c92fa05610786bb5",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -142,6 +142,16 @@
                 "issues": "https://github.com/composer/semver/issues",
                 "source": "https://github.com/composer/semver/tree/2.0.0"
             },
+            "funding": [
+                {
+                    "url": "https://packagist.com",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/composer/composer",
+                    "type": "tidelift"
+                }
+            ],
             "time": "2020-04-21T13:19:12+00:00"
         },
         {
@@ -419,7 +429,17 @@
             "license": [
                 "MIT"
             ],
+            "authors": [
+                {
+                    "name": "Jan Sorgalla",
+                    "email": "jsorgalla@gmail.com"
+                }
+            ],
             "description": "A lightweight implementation of CommonJS Promises/A for PHP",
+            "support": {
+                "issues": "https://github.com/reactphp/promise/issues",
+                "source": "https://github.com/reactphp/promise/tree/1.0"
+            },
             "time": "2016-03-07T13:46:50+00:00"
         },
         {
@@ -1453,6 +1473,20 @@
             "support": {
                 "source": "https://github.com/symfony/phpunit-bridge/tree/v3.4.38"
             },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
             "time": "2020-02-21T08:01:47+00:00"
         }
     ],
