@@ -652,9 +652,9 @@ class SolverTest extends TestCase
 
             $msg = "\n";
             $msg .= "  Problem 1\n";
-            $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
+            $msg .= "    - Root composer.json requires a [] -> satisfiable by A[1.0].\n";
             $msg .= "    - A 1.0 conflicts with B 1.0.\n";
-            $msg .= "    - Root composer.json requires b -> satisfiable by B[1.0].\n";
+            $msg .= "    - Root composer.json requires b [] -> satisfiable by B[1.0].\n";
             $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
     }
@@ -683,7 +683,7 @@ class SolverTest extends TestCase
 
             $msg = "\n";
             $msg .= "  Problem 1\n";
-            $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
+            $msg .= "    - Root composer.json requires a [] -> satisfiable by A[1.0].\n";
             $msg .= "    - A 1.0 requires b >= 2.0 -> found B[1.0] but it does not match the constraint.\n";
             $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
