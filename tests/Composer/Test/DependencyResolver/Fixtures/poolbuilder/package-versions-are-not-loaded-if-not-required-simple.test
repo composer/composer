@@ -1,0 +1,26 @@
+--TEST--
+Test irrelevant package versions are not loaded
+
+--REQUEST--
+{
+    "require": {
+        "root/req": "*"
+    }
+}
+
+--FIXED--
+[
+]
+
+--PACKAGES--
+[
+    {"name": "root/req", "version": "1.0.0", "require": {"dep/dep": "2.*"}},
+    {"name": "dep/dep", "version": "2.3.4"},
+    {"name": "dep/dep", "version": "3.0.1"}
+]
+
+--EXPECT--
+[
+    "root/req-1.0.0.0",
+    "dep/dep-2.3.4.0"
+]

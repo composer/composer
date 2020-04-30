@@ -272,7 +272,8 @@ class PoolBuilder
 
         // Make sure we empty the packagesToLoad here as it would result
         // in an endless loop with non-existent packages for example
-        $this->packagesToLoad = array();
+        // TODO: fixme, this should only happen if it's not a new package
+        // $this->packagesToLoad = array();
     }
 
     private function loadPackage(Request $request, PackageInterface $package, $propagateUpdate = true)
