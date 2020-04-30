@@ -33,7 +33,7 @@ class MultiConflictRule extends Rule
     {
         parent::__construct($reason, $reasonData);
 
-        if (count($literals) < 3) {
+        if (\count($literals) < 3) {
             throw new \RuntimeException("multi conflict rule requires at least 3 literals");
         }
 

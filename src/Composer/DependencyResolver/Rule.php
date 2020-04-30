@@ -264,7 +264,7 @@ abstract class Rule
     {
         $prepared = array();
         foreach ($packages as $index => $package) {
-            if (!is_object($package)) {
+            if (!\is_object($package)) {
                 $packages[$index] = $pool->literalToPackage($package);
             }
         }

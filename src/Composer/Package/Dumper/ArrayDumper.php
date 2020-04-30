@@ -109,7 +109,7 @@ class ArrayDumper
 
             $data = $this->dumpValues($package, $keys, $data);
 
-            if (isset($data['keywords']) && is_array($data['keywords'])) {
+            if (isset($data['keywords']) && \is_array($data['keywords'])) {
                 sort($data['keywords']);
             }
 
@@ -125,7 +125,7 @@ class ArrayDumper
             }
         }
 
-        if (count($package->getTransportOptions()) > 0) {
+        if (\count($package->getTransportOptions()) > 0) {
             $data['transport-options'] = $package->getTransportOptions();
         }
 
@@ -142,7 +142,7 @@ class ArrayDumper
             $getter = 'get'.ucfirst($method);
             $value = $package->$getter();
 
-            if (null !== $value && !(is_array($value) && 0 === count($value))) {
+            if (null !== $value && !(\is_array($value) && 0 === \count($value))) {
                 $data[$key] = $value;
             }
         }

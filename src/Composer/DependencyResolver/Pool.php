@@ -71,7 +71,7 @@ class Pool implements \Countable
      */
     public function count()
     {
-        return count($this->packages);
+        return \count($this->packages);
     }
 
     /**
@@ -189,6 +189,6 @@ class Pool implements \Countable
 
     public function isUnacceptableFixedPackage(PackageInterface $package)
     {
-        return in_array($package, $this->unacceptableFixedPackages, true);
+        return \in_array($package, $this->unacceptableFixedPackages, true);
     }
 }

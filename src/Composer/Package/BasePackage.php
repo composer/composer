@@ -215,7 +215,7 @@ abstract class BasePackage implements PackageInterface
     public function getFullPrettyVersion($truncate = true, $displayMode = PackageInterface::DISPLAY_SOURCE_REF_IF_DEV)
     {
         if ($displayMode === PackageInterface::DISPLAY_SOURCE_REF_IF_DEV &&
-            (!$this->isDev() || !in_array($this->getSourceType(), array('hg', 'git')))
+            (!$this->isDev() || !\in_array($this->getSourceType(), array('hg', 'git')))
         ) {
             return $this->getPrettyVersion();
         }
@@ -233,7 +233,7 @@ abstract class BasePackage implements PackageInterface
         }
 
         // if source reference is a sha1 hash -- truncate
-        if ($truncate && strlen($reference) === 40) {
+        if ($truncate && \strlen($reference) === 40) {
             return $this->getPrettyVersion() . ' ' . substr($reference, 0, 7);
         }
 

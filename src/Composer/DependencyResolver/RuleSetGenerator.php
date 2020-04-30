@@ -120,7 +120,7 @@ class RuleSetGenerator
             $literals[] = -$package->id;
         }
 
-        if (count($literals) == 2) {
+        if (\count($literals) == 2) {
             return new Rule2Literals($literals[0], $literals[1], $reason, $reasonData);
         }
 
@@ -207,7 +207,7 @@ class RuleSetGenerator
         }
 
         foreach ($this->addedPackagesByNames as $name => $packages) {
-            if (count($packages) > 1) {
+            if (\count($packages) > 1) {
                 $reason = Rule::RULE_PACKAGE_SAME_NAME;
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createMultiConflictRule($packages, $reason, $name));
             }

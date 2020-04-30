@@ -619,7 +619,7 @@ class Package extends BasePackage
                 } else {
                     continue;
                 }
-                if (!in_array($mirrorUrl, $urls)) {
+                if (!\in_array($mirrorUrl, $urls)) {
                     $func = $mirror['preferred'] ? 'array_unshift' : 'array_push';
                     $func($urls, $mirrorUrl);
                 }

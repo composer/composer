@@ -161,7 +161,7 @@ class PoolBuilder
         // filter packages according to all the require statements collected for each package
         $nameConstraints = array();
         foreach ($this->nameConstraints as $name => $constraints) {
-            if (is_array($constraints)) {
+            if (\is_array($constraints)) {
                 $nameConstraints[$name] = MultiConstraint::create(array_values(array_unique($constraints)), false);
             }
         }
@@ -275,9 +275,9 @@ class PoolBuilder
 
             $linkConstraint = $link->getConstraint();
             if ($linkConstraint && !($linkConstraint instanceof EmptyConstraint)) {
-                if (!array_key_exists($require, $this->nameConstraints)) {
+                if (!\array_key_exists($require, $this->nameConstraints)) {
                     $this->nameConstraints[$require] = array($linkConstraint);
-                } elseif (is_array($this->nameConstraints[$require])) {
+                } elseif (\is_array($this->nameConstraints[$require])) {
                     $this->nameConstraints[$require][] = $linkConstraint;
                 }
                 // else it is null and should stay null
