@@ -66,6 +66,11 @@ class PoolBuilder
     /**
      * @psalm-var array<string, ConstraintInterface[]>
      */
+    private $packagesToLoad = array();
+
+    /**
+     * @psalm-var array<string, ConstraintInterface[]>
+     */
     private $loadedNames = array();
 
     /**
@@ -122,7 +127,6 @@ class PoolBuilder
             }
         }
 
-        $loadNames = array();
         foreach ($request->getFixedPackages() as $package) {
             $this->loadedNames[$package->getName()] = new EmptyConstraint();
 
@@ -139,52 +143,25 @@ class PoolBuilder
                 || $package->getRepository() instanceof PlatformRepository
                 || StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $package->getNames(), $package->getStability())
             ) {
-                $loadNames += $this->loadPackage($request, $package, false);
+                $this->loadPackage($request, $package, false);
             } else {
                 $this->unacceptableFixedPackages[] = $package;
             }
         }
 
         foreach ($request->getRequires() as $packageName => $constraint) {
-            // fixed packages have already been added, so if a root require needs one of them, no need to do anything
-            if (isset($this->loadedNames[$packageName])) {
-                continue;
-            }
-
-            $loadNames[$packageName] = $constraint;
+            $this->markPackageNameForLoading($packageName, $constraint);
         }
 
-        // clean up loadNames for anything we manually marked loaded above
-        foreach ($loadNames as $name => $void) {
+        // clean up packagesToLoad for anything we manually marked loaded above
+        foreach ($this->packagesToLoad as $name => $constraint) {
             if (isset($this->loadedNames[$name])) {
-                unset($loadNames[$name]);
+                unset($this->packagesToLoad[$name]);
             }
         }
 
-        while (!empty($loadNames)) {
-            foreach ($loadNames as $name => $constraint) {
-                $this->loadedNames[$name] = $constraint;
-            }
-
-            $newLoadNames = array();
-            foreach ($repositories as $repository) {
-                // these repos have their packages fixed if they need to be loaded so we
-                // never need to load anything else from them
-                if ($repository instanceof PlatformRepository || $repository === $request->getLockedRepository()) {
-                    continue;
-                }
-                $result = $repository->loadPackages($loadNames, $this->acceptableStabilities, $this->stabilityFlags);
-
-                foreach ($result['namesFound'] as $name) {
-                    // avoid loading the same package again from other repositories once it has been found
-                    unset($loadNames[$name]);
-                }
-                foreach ($result['packages'] as $package) {
-                    $newLoadNames += $this->loadPackage($request, $package);
-                }
-            }
-
-            $loadNames = $newLoadNames;
+        while (!empty($this->packagesToLoad)) {
+            $this->loadPackagesMarkedForLoading($request, $repositories);
         }
 
         foreach ($this->packages as $i => $package) {
@@ -231,11 +208,71 @@ class PoolBuilder
         $pool = new Pool($this->packages, $this->unacceptableFixedPackages);
 
         $this->aliasMap = array();
+        $this->packagesToLoad = array();
         $this->loadedNames = array();
         $this->packages = array();
         $this->unacceptableFixedPackages = array();
 
         return $pool;
+    }
+
+    private function markPackageNameForLoading($name, ConstraintInterface $constraint)
+    {
+        if (!isset($this->loadedNames[$name])) {
+            $this->packagesToLoad[$name] = $constraint;
+            return;
+        }
+
+        // No need to load this package with this constraint because it was
+        // already loaded in one that matches
+        if ($this->loadedNames[$name]->matches($constraint)) {
+            return;
+        }
+
+        // Maybe it was already marked before but not loaded yet. In that case
+        // we have to extend the constraint (we don't check if the match because
+        // MultiConstraint::create() will optimize anyway
+        if (isset($this->packagesToLoad[$name])) {
+            $constraint = MultiConstraint::create(array($this->packagesToLoad[$name], $constraint), false);
+        }
+
+        // We have already loaded that package but not in the constraint that's
+        // required. We extend the constraint and mark that package as not being loaded
+        // yet so we get the required package versions
+        $this->packagesToLoad[$name] = MultiConstraint::create(array($this->loadedNames[$name], $constraint), false);
+        unset($this->loadedNames[$name]);
+    }
+
+    private function loadPackagesMarkedForLoading(Request $request, $repositories)
+    {
+        foreach ($this->packagesToLoad as $name => $constraint) {
+            $this->loadedNames[$name] = $constraint;
+        }
+
+        foreach ($repositories as $repository) {
+            if (empty($this->packagesToLoad)) {
+                break;
+            }
+
+            // these repos have their packages fixed if they need to be loaded so we
+            // never need to load anything else from them
+            if ($repository instanceof PlatformRepository || $repository === $request->getLockedRepository()) {
+                continue;
+            }
+            $result = $repository->loadPackages($this->packagesToLoad, $this->acceptableStabilities, $this->stabilityFlags);
+
+            foreach ($result['namesFound'] as $name) {
+                // avoid loading the same package again from other repositories once it has been found
+                unset($this->packagesToLoad[$name]);
+            }
+            foreach ($result['packages'] as $package) {
+                $this->loadPackage($request, $package);
+            }
+        }
+
+        // Make sure we empty the packagesToLoad here as it would result
+        // in an endless loop with non-existent packages for example
+        $this->packagesToLoad = array();
     }
 
     private function loadPackage(Request $request, PackageInterface $package, $propagateUpdate = true)
@@ -276,32 +313,23 @@ class PoolBuilder
             $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$index+1] = $aliasPackage;
         }
 
-        $loadNames = array();
         foreach ($package->getRequires() as $link) {
             $require = $link->getTarget();
             $linkConstraint = $link->getConstraint();
 
-            if (!isset($this->loadedNames[$require])) {
-                $loadNames[$require] = $linkConstraint;
             // if this is a partial update with transitive dependencies we need to unfix the package we now know is a
             // dependency of another package which we are trying to update, and then attempt to load it again
-            } elseif ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies() && isset($this->skippedLoad[$require])) {
+            if ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies() && isset($this->skippedLoad[$require])) {
                 if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$require])) {
                     $this->unfixPackage($request, $require);
-                    $loadNames[$require] = null;
+                    $this->markPackageNameForLoading($require, $linkConstraint);
                 } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $require) && !isset($this->updateAllowWarned[$require])) {
                     $this->updateAllowWarned[$require] = true;
                     $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
                 }
-            } else {
-                // Check if packages we already loaded match the constraint and if they don't
-                // extend the constraint and mark that package as not being loaded yet
-                // so we get the required package versions
-                if (!$this->loadedNames[$require]->matches($linkConstraint)) {
-                    $loadNames[$require] = MultiConstraint::create(array($this->loadedNames[$require], $linkConstraint), false);
-                    unset($this->loadedNames[$require]);
-                }
             }
+
+            $this->markPackageNameForLoading($require, $linkConstraint);
         }
 
         // if we're doing a partial update with deps we also need to unfix packages which are being replaced in case they
@@ -312,7 +340,7 @@ class PoolBuilder
                 if (isset($this->loadedNames[$replace]) && isset($this->skippedLoad[$replace])) {
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$replace])) {
                         $this->unfixPackage($request, $replace);
-                        $loadNames[$replace] = $link->getConstraint();
+                        $this->markPackageNameForLoading($replace, $link->getConstraint());
                     } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$replace])) {
                         $this->updateAllowWarned[$replace] = true;
                         $this->io->writeError('<warning>Dependency "'.$replace.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
@@ -320,8 +348,6 @@ class PoolBuilder
                 }
             }
         }
-
-        return $loadNames;
     }
 
     /**
