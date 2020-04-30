@@ -84,7 +84,38 @@ class AuthHelperTest extends TestCase
             ->with($origin)
             ->willReturn($credentials);
 
-        $expectedHeaders = array_merge($headers, array('Authorization: Bearer my_username'));
+        $expectedHeaders = array_merge($headers, array('Authorization: Bearer ' . $credentials['username']));
+
+        $this->assertSame(
+            $expectedHeaders,
+            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
+        );
+    }
+
+    public function testAddAuthenticationHeaderWithGithubToken()
+    {
+        $headers = array(
+            'Accept-Encoding: gzip',
+            'Connection: close'
+        );
+        $origin = 'github.com';
+        $url = 'https://api.github.com/';
+        $credentials = array(
+            'username' => 'my_username',
+            'password' => 'x-oauth-basic'
+        );
+
+        $this->io->expects($this->once())
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $this->io->expects($this->once())
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn($credentials);
+
+        $expectedHeaders = array_merge($headers, array('Authorization: token ' . $credentials['username']));
 
         $this->assertSame(
             $expectedHeaders,
