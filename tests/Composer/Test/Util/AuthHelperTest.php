@@ -122,4 +122,40 @@ class AuthHelperTest extends TestCase
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
     }
+
+    public function testAddAuthenticationHeaderWithGitlabOathToken()
+    {
+        $headers = array(
+            'Accept-Encoding: gzip',
+            'Connection: close'
+        );
+        $origin = 'gitlab.com';
+        $url = 'https://api.gitlab.com/';
+        $credentials = array(
+            'username' => 'my_username',
+            'password' => 'oauth2'
+        );
+
+        $this->io->expects($this->once())
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $this->io->expects($this->once())
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn($credentials);
+
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('gitlab-domains')
+            ->willReturn(array($origin));
+
+        $expectedHeaders = array_merge($headers, array('Authorization: Bearer ' . $credentials['username']));
+
+        $this->assertSame(
+            $expectedHeaders,
+            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
+        );
+    }
 }
