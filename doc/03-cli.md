@@ -174,6 +174,8 @@ php composer.phar update "vendor/*"
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
 
+Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has the same effect as specifying the option `--lock`, for example `composer update mirrors` is exactly the same as `composer update --lock`.
+
 ## require
 
 The `require` command adds new packages to the `composer.json` file from
