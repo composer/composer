@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\Composer;
 use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
