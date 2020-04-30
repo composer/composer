@@ -249,6 +249,8 @@ class PoolBuilder
             $this->loadedNames[$name] = $constraint;
         }
 
+        $preLoad = $this->packagesToLoad;
+
         foreach ($repositories as $repository) {
             if (empty($this->packagesToLoad)) {
                 break;
@@ -271,9 +273,11 @@ class PoolBuilder
         }
 
         // Make sure we empty the packagesToLoad here as it would result
-        // in an endless loop with non-existent packages for example
-        // TODO: fixme, this should only happen if it's not a new package
-        // $this->packagesToLoad = array();
+        // in an endless loop if the array remains unchanged.
+        // This could happen with non-existent packages for example.
+        if ($preLoad == $this->packagesToLoad) {
+            $this->packagesToLoad = array();
+        }
     }
 
     private function loadPackage(Request $request, PackageInterface $package, $propagateUpdate = true)
