@@ -60,4 +60,35 @@ class AuthHelperTest extends TestCase
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
     }
+
+    public function testAddAuthenticationHeaderWithBearerPassword()
+    {
+        $headers = array(
+            'Accept-Encoding: gzip',
+            'Connection: close'
+        );
+        $origin = 'http://example.org';
+        $url = 'file://' . __FILE__;
+        $credentials = array(
+            'username' => 'my_username',
+            'password' => 'bearer'
+        );
+
+        $this->io->expects($this->once())
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $this->io->expects($this->once())
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn($credentials);
+
+        $expectedHeaders = array_merge($headers, array('Authorization: Bearer my_username'));
+
+        $this->assertSame(
+            $expectedHeaders,
+            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
+        );
+    }
 }
