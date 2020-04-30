@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Util\AuthHelper;
 
@@ -115,6 +116,10 @@ class AuthHelperTest extends TestCase
             ->with($origin)
             ->willReturn($credentials);
 
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('Using GitHub token authentication', true, IOInterface::DEBUG);
+
         $expectedHeaders = array_merge($headers, array('Authorization: token ' . $credentials['username']));
 
         $this->assertSame(
@@ -150,6 +155,10 @@ class AuthHelperTest extends TestCase
             ->method('get')
             ->with('gitlab-domains')
             ->willReturn(array($origin));
+
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('Using GitLab OAuth token authentication', true, IOInterface::DEBUG);
 
         $expectedHeaders = array_merge($headers, array('Authorization: Bearer ' . $credentials['username']));
 
