@@ -220,4 +220,44 @@ class AuthHelperTest extends TestCase
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
     }
+
+    public function testAddAuthenticationHeaderWithBitbucketOathToken()
+    {
+        $headers = array(
+            'Accept-Encoding: gzip',
+            'Connection: close'
+        );
+        $origin = 'bitbucket.org';
+        $url = 'https://bitbucket.org/site/oauth2/authorize';
+        $credentials = array(
+            'username' => 'x-token-auth',
+            'password' => 'my_password'
+        );
+
+        $this->io->expects($this->once())
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $this->io->expects($this->once())
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn($credentials);
+
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('gitlab-domains')
+            ->willReturn(array());
+
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with('Using Bitbucket OAuth token authentication', true, IOInterface::DEBUG);
+
+        $expectedHeaders = array_merge($headers, array('Authorization: Bearer ' . $credentials['password']));
+
+        $this->assertSame(
+            $expectedHeaders,
+            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
+        );
+    }
 }
