@@ -155,6 +155,10 @@ class FilesystemRepository extends WritableArrayRepository
             // add provided/replaced packages
             foreach ($packages as $package) {
                 foreach ($package->getReplaces() as $replace) {
+                    // exclude platform replaces as when they are really there we can not check for their presence
+                    if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $replace->getTarget())) {
+                        continue;
+                    }
                     $replaced = $replace->getPrettyConstraint();
                     if ($replaced === 'self.version') {
                         $replaced = $package->getPrettyVersion();
@@ -164,6 +168,10 @@ class FilesystemRepository extends WritableArrayRepository
                     }
                 }
                 foreach ($package->getProvides() as $provide) {
+                    // exclude platform provides as when they are really there we can not check for their presence
+                    if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $provide->getTarget())) {
+                        continue;
+                    }
                     $provided = $provide->getPrettyConstraint();
                     if ($provided === 'self.version') {
                         $provided = $package->getPrettyVersion();
