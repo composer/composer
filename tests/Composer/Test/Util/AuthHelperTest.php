@@ -400,29 +400,82 @@ class AuthHelperTest extends TestCase
         $origin = 'github.com';
         $storeAuth = true;
         $auth = array(
-            'username' => 'x-token-auth',
+            'username' => 'my_username',
             'password' => 'my_password'
         );
 
-        /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $authConfigSource */
-        $authConfigSource = $this
+        /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $configSource */
+        $configSource = $this
             ->getMockBuilder('Composer\Config\ConfigSourceInterface')
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->config->expects($this->once())
             ->method('getAuthConfigSource')
-            ->willReturn($authConfigSource);
+            ->willReturn($configSource);
 
         $this->io->expects($this->once())
             ->method('getAuthentication')
             ->with($origin)
             ->willReturn($auth);
 
-        $authConfigSource->expects($this->once())
+        $configSource->expects($this->once())
             ->method('addConfigSetting')
             ->with('http-basic.'.$origin, $auth)
-            ->willReturn($authConfigSource);
+            ->willReturn($configSource);
+
+        $this->authHelper->storeAuth($origin, $storeAuth);
+    }
+
+    public function testStoreAuthWithPromptYesAnswer()
+    {
+        $origin = 'github.com';
+        $storeAuth = 'prompt';
+        $auth = array(
+            'username' => 'my_username',
+            'password' => 'my_password'
+        );
+        $answer = 'y';
+        $configSourceName = 'https://api.gitlab.com/source';
+
+        /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $configSource */
+        $configSource = $this
+            ->getMockBuilder('Composer\Config\ConfigSourceInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->config->expects($this->once())
+            ->method('getAuthConfigSource')
+            ->willReturn($configSource);
+
+        $this->io->expects($this->once())
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn($auth);
+
+        $configSource->expects($this->once())
+            ->method('getName')
+            ->willReturn($configSourceName);
+
+        $this->io->expects($this->once())
+            ->method('askAndValidate')
+            ->with(
+                'Do you want to store credentials for '.$origin.' in '.$configSourceName.' ? [Yn] ',
+                $this->anything(),
+                null,
+                $answer
+            )
+            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
+
+                $validator($answer);
+
+                return $answer;
+            });
+
+        $configSource->expects($this->once())
+            ->method('addConfigSetting')
+            ->with('http-basic.'.$origin, $auth)
+            ->willReturn($configSource);
 
         $this->authHelper->storeAuth($origin, $storeAuth);
     }
