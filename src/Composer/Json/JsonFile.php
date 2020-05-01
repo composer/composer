@@ -112,11 +112,17 @@ class JsonFile
      */
     public function write(array $hash, $options = 448)
     {
+        if ($this->path === 'php://memory') {
+            file_put_contents($this->path, static::encode($hash, $options));
+
+            return;
+        }
+
         $dir = dirname($this->path);
         if (!is_dir($dir)) {
             if (file_exists($dir)) {
                 throw new \UnexpectedValueException(
-                    $dir.' exists and is not a directory.'
+                    realpath($dir).' exists and is not a directory.'
                 );
             }
             if (!@mkdir($dir, 0777, true)) {
