@@ -155,6 +155,10 @@ EOT
 
         if ($input->getOption('self')) {
             $package = $this->getComposer()->getPackage();
+            if ($input->getOption('name-only')) {
+                $io->write($package->getName());
+                return 0;
+            }
             $repos = $installedRepo = new InstalledRepository(array(new RootPackageRepository($package)));
         } elseif ($input->getOption('platform')) {
             $repos = $installedRepo = new InstalledRepository(array($platformRepo));
