@@ -19,6 +19,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Plugin\PreCommandRunEvent;
+use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -179,5 +180,26 @@ abstract class BaseCommand extends Command
         }
 
         return array($preferSource, $preferDist);
+    }
+
+    protected function formatRequirements(array $requirements)
+    {
+        $requires = array();
+        $requirements = $this->normalizeRequirements($requirements);
+        foreach ($requirements as $requirement) {
+            if (!isset($requirement['version'])) {
+                throw new \UnexpectedValueException('Option '.$requirement['name'] .' is missing a version constraint, use e.g. '.$requirement['name'].':^1.0');
+            }
+            $requires[$requirement['name']] = $requirement['version'];
+        }
+
+        return $requires;
+    }
+
+    protected function normalizeRequirements(array $requirements)
+    {
+        $parser = new VersionParser();
+
+        return $parser->parseNameVersionPairs($requirements);
     }
 }

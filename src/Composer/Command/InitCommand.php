@@ -577,17 +577,6 @@ EOT
         return array($this->parseAuthorString($author));
     }
 
-    protected function formatRequirements(array $requirements)
-    {
-        $requires = array();
-        $requirements = $this->normalizeRequirements($requirements);
-        foreach ($requirements as $requirement) {
-            $requires[$requirement['name']] = $requirement['version'];
-        }
-
-        return $requires;
-    }
-
     protected function getGitConfig()
     {
         if (null !== $this->gitConfig) {
@@ -650,13 +639,6 @@ EOT
         }
 
         return false;
-    }
-
-    protected function normalizeRequirements(array $requirements)
-    {
-        $parser = new VersionParser();
-
-        return $parser->parseNameVersionPairs($requirements);
     }
 
     protected function addVendorIgnore($ignoreFile, $vendor = '/vendor/')
