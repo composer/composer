@@ -5,8 +5,8 @@
   * The update command is now much more deterministic as it does not take the already installed packages into account
   * Package installation now performs all network operations first before doing any changes on disk, to reduce the chances of ending up with a partially updated vendor dir
   * Partial updates and require/remove are now much faster as they only load the metadata required for the updated packages
-  * Added a platform-check step when vendor/autoload.php gets initialized which checks the current PHP version/extensions match what is expected and fails hard otherwise. Can be disabled with the platform-check config option
-  * Added a [`Composer\InstalledVersions`](https://github.com/composer/composer/blob/d89342dc434d52c88e0e06ce3982da739a467f13/src/Composer/InstalledVersions.php) class which is autoloaded in every project and lets you check which packages/versions are present at runtime
+  * Added a [platform-check step](doc/07-runtime.md#platform-check) when vendor/autoload.php gets initialized which checks the current PHP version/extensions match what is expected and fails hard otherwise. Can be disabled with the platform-check config option
+  * Added a [`Composer\InstalledVersions`](doc/07-runtime.md#installed-versions) class which is autoloaded in every project and lets you check which packages/versions are present at runtime
   * Added a `composer-runtime-api` virtual package which you can require (as e.g. `^2.0`) to ensure things like the InstalledVersions class above are present. It will effectively force people to use Composer 2.x to install your project
   * Added support for parallel downloads of package metadata and zip files, this requires that the curl extension is present and we thus strongly recommend enabling curl
   * Added much clearer dependency resolution error reporting for common error cases

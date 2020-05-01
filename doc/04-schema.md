@@ -1,4 +1,4 @@
-# The composer.json Schema
+# The composer.json schema
 
 This chapter will explain all of the fields available in `composer.json`.
 

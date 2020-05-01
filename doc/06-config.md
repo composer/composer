@@ -312,4 +312,4 @@ file.
 Defaults to `true`. If set to `false`, Composer will not create and require a
 `platform_check.php` file as part of the autoloader bootstrap.
 
-&larr; [Repositories](05-repositories.md)  |  [Community](07-community.md) &rarr;
+&larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;
