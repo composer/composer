@@ -448,10 +448,54 @@ class AuthHelperTest extends TestCase
             ->method('getAuthConfigSource')
             ->willReturn($configSource);
 
+        $configSource->expects($this->once())
+            ->method('getName')
+            ->willReturn($configSourceName);
+
+        $this->io->expects($this->once())
+            ->method('askAndValidate')
+            ->with(
+                'Do you want to store credentials for '.$origin.' in '.$configSourceName.' ? [Yn] ',
+                $this->anything(),
+                null,
+                'y'
+            )
+            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
+
+                $validator($answer);
+
+                return $answer;
+            });
+
         $this->io->expects($this->once())
             ->method('getAuthentication')
             ->with($origin)
             ->willReturn($auth);
+
+        $configSource->expects($this->once())
+            ->method('addConfigSetting')
+            ->with('http-basic.'.$origin, $auth)
+            ->willReturn($configSource);
+
+        $this->authHelper->storeAuth($origin, $storeAuth);
+    }
+
+    public function testStoreAuthWithPromptNoAnswer()
+    {
+        $origin = 'github.com';
+        $storeAuth = 'prompt';
+        $answer = 'n';
+        $configSourceName = 'https://api.gitlab.com/source';
+
+        /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $configSource */
+        $configSource = $this
+            ->getMockBuilder('Composer\Config\ConfigSourceInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->config->expects($this->once())
+            ->method('getAuthConfigSource')
+            ->willReturn($configSource);
 
         $configSource->expects($this->once())
             ->method('getName')
@@ -463,7 +507,7 @@ class AuthHelperTest extends TestCase
                 'Do you want to store credentials for '.$origin.' in '.$configSourceName.' ? [Yn] ',
                 $this->anything(),
                 null,
-                $answer
+                'y'
             )
             ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
 
@@ -471,11 +515,6 @@ class AuthHelperTest extends TestCase
 
                 return $answer;
             });
-
-        $configSource->expects($this->once())
-            ->method('addConfigSetting')
-            ->with('http-basic.'.$origin, $auth)
-            ->willReturn($configSource);
 
         $this->authHelper->storeAuth($origin, $storeAuth);
     }
