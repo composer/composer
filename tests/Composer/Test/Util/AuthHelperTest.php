@@ -15,6 +15,7 @@ namespace Composer\Test\Util;
 use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Util\AuthHelper;
+use Composer\Util\Bitbucket;
 
 /**
  * @author Michael Chekin <mchekin@gmail.com>
@@ -179,7 +180,7 @@ class AuthHelperTest extends TestCase
     /**
      * @dataProvider gitlabPrivateTokenProvider
      *
-     * @param $password
+     * @param string $password
      */
     public function testAddAuthenticationHeaderWithGitlabPrivateToken($password)
     {
@@ -272,7 +273,7 @@ class AuthHelperTest extends TestCase
     /**
      * @dataProvider bitbucketPublicUrlProvider
      *
-     * @param $url
+     * @param string $url
      */
     public function testAddAuthenticationHeaderWithBitbucketPublicUrl($url)
     {
@@ -303,6 +304,76 @@ class AuthHelperTest extends TestCase
 
         $this->assertSame(
             $headers,
+            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
+        );
+    }
+
+    public function basicHttpAuthenticationProvider()
+    {
+        return array(
+            array(
+                Bitbucket::OAUTH2_ACCESS_TOKEN_URL,
+                'bitbucket.org',
+                array(
+                    'username' => 'x-token-auth',
+                    'password' => 'my_password'
+                )
+            ),
+            array(
+                'https://some-api.url.com',
+                'some-api.url.com',
+                array(
+                    'username' => 'my_username',
+                    'password' => 'my_password'
+                )
+            ),
+        );
+    }
+
+    /**
+     * @dataProvider basicHttpAuthenticationProvider
+     *
+     * @param string $url
+     * @param string $origin
+     * @param array $credentials
+     */
+    public function testAddAuthenticationHeaderWithBasicHttpAuthentication($url, $origin, $credentials)
+    {
+        $headers = array(
+            'Accept-Encoding: gzip',
+            'Connection: close'
+        );
+
+        $this->io->expects($this->once())
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $this->io->expects($this->once())
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn($credentials);
+
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('gitlab-domains')
+            ->willReturn(array());
+
+        $this->io->expects($this->once())
+            ->method('writeError')
+            ->with(
+                'Using HTTP basic authentication with username "' . $credentials['username'] . '"',
+                true,
+                IOInterface::DEBUG
+            );
+
+        $expectedHeaders = array_merge(
+            $headers,
+            array('Authorization: Basic ' . base64_encode($credentials['username'] . ':' . $credentials['password']))
+        );
+
+        $this->assertSame(
+            $expectedHeaders,
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
     }
