@@ -377,4 +377,21 @@ class AuthHelperTest extends TestCase
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
     }
+
+    /**
+     * @dataProvider bitbucketPublicUrlProvider
+     *
+     * @param string $url
+     */
+    public function testIsPublicBitBucketDownloadWithBitbucketPublicUrl($url)
+    {
+        $this->assertTrue($this->authHelper->isPublicBitBucketDownload($url));
+    }
+
+    public function testIsPublicBitBucketDownloadWithNonBitbucketPublicUrl()
+    {
+        $this->assertFalse($this->authHelper->isPublicBitBucketDownload(
+            'https://bitbucket.org/site/oauth2/authorize')
+        );
+    }
 }
