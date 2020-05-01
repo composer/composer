@@ -230,7 +230,7 @@ class PoolBuilder
         }
 
         // Maybe it was already marked before but not loaded yet. In that case
-        // we have to extend the constraint (we don't check if the match because
+        // we have to extend the constraint (we don't check if they match because
         // MultiConstraint::create() will optimize anyway
         if (isset($this->packagesToLoad[$name])) {
             $constraint = MultiConstraint::create(array($this->packagesToLoad[$name], $constraint), false);
