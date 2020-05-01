@@ -113,6 +113,7 @@ class Problem
         foreach (array_unique($messages) as $message) {
             if (isset($templates[$message])) {
                 foreach ($templates[$message] as $package => $versions) {
+                    uksort($versions, 'version_compare');
                     if (!$isVerbose) {
                         $versions = self::condenseVersionList($versions, 1);
                     }
@@ -329,6 +330,9 @@ class Problem
             if (isset($package['versions'][VersionParser::DEV_MASTER_ALIAS]) && isset($package['versions']['dev-master'])) {
                 unset($package['versions'][VersionParser::DEV_MASTER_ALIAS]);
             }
+
+            uksort($package['versions'], 'version_compare');
+
             if (!$isVerbose) {
                 $package['versions'] = self::condenseVersionList($package['versions'], 4);
             }
@@ -348,7 +352,6 @@ class Problem
             return $versions;
         }
 
-        uksort($versions, 'version_compare');
         $filtered = array();
         $byMajor = array();
         foreach ($versions as $version => $pretty) {
