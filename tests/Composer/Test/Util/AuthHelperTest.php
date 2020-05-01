@@ -71,7 +71,7 @@ class AuthHelperTest extends TestCase
         );
         $origin = 'http://example.org';
         $url = 'file://' . __FILE__;
-        $credentials = array(
+        $auth = array(
             'username' => 'my_username',
             'password' => 'bearer'
         );
@@ -84,9 +84,9 @@ class AuthHelperTest extends TestCase
         $this->io->expects($this->once())
             ->method('getAuthentication')
             ->with($origin)
-            ->willReturn($credentials);
+            ->willReturn($auth);
 
-        $expectedHeaders = array_merge($headers, array('Authorization: Bearer ' . $credentials['username']));
+        $expectedHeaders = array_merge($headers, array('Authorization: Bearer ' . $auth['username']));
 
         $this->assertSame(
             $expectedHeaders,
@@ -102,7 +102,7 @@ class AuthHelperTest extends TestCase
         );
         $origin = 'github.com';
         $url = 'https://api.github.com/';
-        $credentials = array(
+        $auth = array(
             'username' => 'my_username',
             'password' => 'x-oauth-basic'
         );
@@ -115,13 +115,13 @@ class AuthHelperTest extends TestCase
         $this->io->expects($this->once())
             ->method('getAuthentication')
             ->with($origin)
-            ->willReturn($credentials);
+            ->willReturn($auth);
 
         $this->io->expects($this->once())
             ->method('writeError')
             ->with('Using GitHub token authentication', true, IOInterface::DEBUG);
 
-        $expectedHeaders = array_merge($headers, array('Authorization: token ' . $credentials['username']));
+        $expectedHeaders = array_merge($headers, array('Authorization: token ' . $auth['username']));
 
         $this->assertSame(
             $expectedHeaders,
@@ -137,7 +137,7 @@ class AuthHelperTest extends TestCase
         );
         $origin = 'gitlab.com';
         $url = 'https://api.gitlab.com/';
-        $credentials = array(
+        $auth = array(
             'username' => 'my_username',
             'password' => 'oauth2'
         );
@@ -150,7 +150,7 @@ class AuthHelperTest extends TestCase
         $this->io->expects($this->once())
             ->method('getAuthentication')
             ->with($origin)
-            ->willReturn($credentials);
+            ->willReturn($auth);
 
         $this->config->expects($this->once())
             ->method('get')
@@ -161,7 +161,7 @@ class AuthHelperTest extends TestCase
             ->method('writeError')
             ->with('Using GitLab OAuth token authentication', true, IOInterface::DEBUG);
 
-        $expectedHeaders = array_merge($headers, array('Authorization: Bearer ' . $credentials['username']));
+        $expectedHeaders = array_merge($headers, array('Authorization: Bearer ' . $auth['username']));
 
         $this->assertSame(
             $expectedHeaders,
@@ -190,7 +190,7 @@ class AuthHelperTest extends TestCase
         );
         $origin = 'gitlab.com';
         $url = 'https://api.gitlab.com/';
-        $credentials = array(
+        $auth = array(
             'username' => 'my_username',
             'password' => $password
         );
@@ -203,7 +203,7 @@ class AuthHelperTest extends TestCase
         $this->io->expects($this->once())
             ->method('getAuthentication')
             ->with($origin)
-            ->willReturn($credentials);
+            ->willReturn($auth);
 
         $this->config->expects($this->once())
             ->method('get')
@@ -214,7 +214,7 @@ class AuthHelperTest extends TestCase
             ->method('writeError')
             ->with('Using GitLab private token authentication', true, IOInterface::DEBUG);
 
-        $expectedHeaders = array_merge($headers, array('PRIVATE-TOKEN: ' . $credentials['username']));
+        $expectedHeaders = array_merge($headers, array('PRIVATE-TOKEN: ' . $auth['username']));
 
         $this->assertSame(
             $expectedHeaders,
@@ -230,7 +230,7 @@ class AuthHelperTest extends TestCase
         );
         $origin = 'bitbucket.org';
         $url = 'https://bitbucket.org/site/oauth2/authorize';
-        $credentials = array(
+        $auth = array(
             'username' => 'x-token-auth',
             'password' => 'my_password'
         );
@@ -243,7 +243,7 @@ class AuthHelperTest extends TestCase
         $this->io->expects($this->once())
             ->method('getAuthentication')
             ->with($origin)
-            ->willReturn($credentials);
+            ->willReturn($auth);
 
         $this->config->expects($this->once())
             ->method('get')
@@ -254,7 +254,7 @@ class AuthHelperTest extends TestCase
             ->method('writeError')
             ->with('Using Bitbucket OAuth token authentication', true, IOInterface::DEBUG);
 
-        $expectedHeaders = array_merge($headers, array('Authorization: Bearer ' . $credentials['password']));
+        $expectedHeaders = array_merge($headers, array('Authorization: Bearer ' . $auth['password']));
 
         $this->assertSame(
             $expectedHeaders,
@@ -282,7 +282,7 @@ class AuthHelperTest extends TestCase
             'Connection: close'
         );
         $origin = 'bitbucket.org';
-        $credentials = array(
+        $auth = array(
             'username' => 'x-token-auth',
             'password' => 'my_password'
         );
@@ -295,7 +295,7 @@ class AuthHelperTest extends TestCase
         $this->io->expects($this->once())
             ->method('getAuthentication')
             ->with($origin)
-            ->willReturn($credentials);
+            ->willReturn($auth);
 
         $this->config->expects($this->once())
             ->method('get')
@@ -335,9 +335,9 @@ class AuthHelperTest extends TestCase
      *
      * @param string $url
      * @param string $origin
-     * @param array $credentials
+     * @param array $auth
      */
-    public function testAddAuthenticationHeaderWithBasicHttpAuthentication($url, $origin, $credentials)
+    public function testAddAuthenticationHeaderWithBasicHttpAuthentication($url, $origin, $auth)
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -352,7 +352,7 @@ class AuthHelperTest extends TestCase
         $this->io->expects($this->once())
             ->method('getAuthentication')
             ->with($origin)
-            ->willReturn($credentials);
+            ->willReturn($auth);
 
         $this->config->expects($this->once())
             ->method('get')
@@ -362,14 +362,14 @@ class AuthHelperTest extends TestCase
         $this->io->expects($this->once())
             ->method('writeError')
             ->with(
-                'Using HTTP basic authentication with username "' . $credentials['username'] . '"',
+                'Using HTTP basic authentication with username "' . $auth['username'] . '"',
                 true,
                 IOInterface::DEBUG
             );
 
         $expectedHeaders = array_merge(
             $headers,
-            array('Authorization: Basic ' . base64_encode($credentials['username'] . ':' . $credentials['password']))
+            array('Authorization: Basic ' . base64_encode($auth['username'] . ':' . $auth['password']))
         );
 
         $this->assertSame(
