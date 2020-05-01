@@ -56,11 +56,11 @@ class Link
      * @param string                   $description      Used to create a descriptive string representation
      * @param string|null              $prettyConstraint
      */
-    public function __construct($source, $target, ConstraintInterface $constraint = null, $description = 'relates to', $prettyConstraint = null)
+    public function __construct($source, $target, ConstraintInterface $constraint, $description = 'relates to', $prettyConstraint = null)
     {
         $this->source = strtolower($source);
         $this->target = strtolower($target);
-        $this->constraint = $constraint ? $constraint : new EmptyConstraint();
+        $this->constraint = $constraint;
         $this->description = $description;
         $this->prettyConstraint = $prettyConstraint;
     }

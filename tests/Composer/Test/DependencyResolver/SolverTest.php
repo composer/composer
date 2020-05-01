@@ -235,8 +235,8 @@ class SolverTest extends TestCase
         $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.1'));
         $this->repo->addPackage($newPackageB = $this->getPackage('B', '1.1'));
 
-        $packageA->setRequires(array('b' => new Link('A', 'B', null, 'requires')));
-        $newPackageA->setRequires(array('b' => new Link('A', 'B', null, 'requires')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', new EmptyConstraint(), 'requires')));
+        $newPackageA->setRequires(array('b' => new Link('A', 'B', new EmptyConstraint(), 'requires')));
 
         $this->reposComplete();
 
