@@ -260,4 +260,50 @@ class AuthHelperTest extends TestCase
             $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
         );
     }
+
+    public function bitbucketPublicUrlProvider()
+    {
+        return array(
+            array('https://bitbucket.org/user/repo/downloads/whatever'),
+            array('https://bbuseruploads.s3.amazonaws.com/9421ee72-638e-43a9-82ea-39cfaae2bfaa/downloads/b87c59d9-54f3-4922-b711-d89059ec3bcf'),
+        );
+    }
+
+    /**
+     * @dataProvider bitbucketPublicUrlProvider
+     *
+     * @param $url
+     */
+    public function testAddAuthenticationHeaderWithBitbucketPublicUrl($url)
+    {
+        $headers = array(
+            'Accept-Encoding: gzip',
+            'Connection: close'
+        );
+        $origin = 'bitbucket.org';
+        $credentials = array(
+            'username' => 'x-token-auth',
+            'password' => 'my_password'
+        );
+
+        $this->io->expects($this->once())
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $this->io->expects($this->once())
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn($credentials);
+
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('gitlab-domains')
+            ->willReturn(array());
+
+        $this->assertSame(
+            $headers,
+            $this->authHelper->addAuthenticationHeader($headers, $origin, $url)
+        );
+    }
 }
