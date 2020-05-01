@@ -639,8 +639,11 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->requireName('A');
-        $this->request->requireName('B');
+        $emptyConstraint = new EmptyConstraint();
+        $emptyConstraint->setPrettyString('*');
+
+        $this->request->requireName('A', $emptyConstraint);
+        $this->request->requireName('B', $emptyConstraint);
 
         $this->createSolver();
         try {
@@ -652,9 +655,9 @@ class SolverTest extends TestCase
 
             $msg = "\n";
             $msg .= "  Problem 1\n";
-            $msg .= "    - Root composer.json requires a [] -> satisfiable by A[1.0].\n";
+            $msg .= "    - Root composer.json requires a * -> satisfiable by A[1.0].\n";
             $msg .= "    - A 1.0 conflicts with B 1.0.\n";
-            $msg .= "    - Root composer.json requires b [] -> satisfiable by B[1.0].\n";
+            $msg .= "    - Root composer.json requires b * -> satisfiable by B[1.0].\n";
             $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
     }
@@ -712,7 +715,10 @@ class SolverTest extends TestCase
 
         $this->reposComplete();
 
-        $this->request->requireName('A');
+        $emptyConstraint = new EmptyConstraint();
+        $emptyConstraint->setPrettyString('*');
+
+        $this->request->requireName('A', $emptyConstraint);
 
         $this->createSolver();
         try {
@@ -729,7 +735,7 @@ class SolverTest extends TestCase
             $msg .= "    - B 1.0 requires c >= 1.0 -> satisfiable by C[1.0].\n";
             $msg .= "    - You can only install one version of a package, so only one of these can be installed: B[0.9, 1.0].\n";
             $msg .= "    - A 1.0 requires b >= 1.0 -> satisfiable by B[1.0].\n";
-            $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
+            $msg .= "    - Root composer.json requires a * -> satisfiable by A[1.0].\n";
             $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
     }

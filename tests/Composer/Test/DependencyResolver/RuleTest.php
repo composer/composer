@@ -102,8 +102,8 @@ class RuleTest extends TestCase
         $repositorySetMock = $this->getMockBuilder('Composer\Repository\RepositorySet')->disableOriginalConstructor()->getMock();
         $requestMock = $this->getMockBuilder('Composer\DependencyResolver\Request')->disableOriginalConstructor()->getMock();
 
-        $rule = new GenericRule(array($p1->getId(), -$p2->getId()), Rule::RULE_PACKAGE_REQUIRES, new Link('baz', 'foo'));
+        $rule = new GenericRule(array($p1->getId(), -$p2->getId()), Rule::RULE_PACKAGE_REQUIRES, new Link('baz', 'foo', 'relates to', '*'));
 
-        $this->assertEquals('baz 1.1 relates to foo [] -> satisfiable by foo[2.1].', $rule->getPrettyString($repositorySetMock, $requestMock, $pool, false));
+        $this->assertEquals('baz 1.1 relates to foo * -> satisfiable by foo[2.1].', $rule->getPrettyString($repositorySetMock, $requestMock, $pool, false));
     }
 }
