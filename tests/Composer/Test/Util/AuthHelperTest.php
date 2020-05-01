@@ -394,4 +394,36 @@ class AuthHelperTest extends TestCase
             'https://bitbucket.org/site/oauth2/authorize')
         );
     }
+
+    public function testStoreAuthAutomatically()
+    {
+        $origin = 'github.com';
+        $storeAuth = true;
+        $auth = array(
+            'username' => 'x-token-auth',
+            'password' => 'my_password'
+        );
+
+        /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $authConfigSource */
+        $authConfigSource = $this
+            ->getMockBuilder('Composer\Config\ConfigSourceInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->config->expects($this->once())
+            ->method('getAuthConfigSource')
+            ->willReturn($authConfigSource);
+
+        $this->io->expects($this->once())
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn($auth);
+
+        $authConfigSource->expects($this->once())
+            ->method('addConfigSetting')
+            ->with('http-basic.'.$origin, $auth)
+            ->willReturn($authConfigSource);
+
+        $this->authHelper->storeAuth($origin, $storeAuth);
+    }
 }
