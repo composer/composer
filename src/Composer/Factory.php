@@ -336,6 +336,7 @@ class Factory
 
         $httpDownloader = self::createHttpDownloader($io, $config);
         $loop = new Loop($httpDownloader);
+        $composer->setLoop($loop);
 
         // initialize event dispatcher
         $dispatcher = new EventDispatcher($composer, $io);
