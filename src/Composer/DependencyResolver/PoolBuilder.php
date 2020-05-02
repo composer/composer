@@ -21,6 +21,7 @@ use Composer\Package\Version\StabilityFilter;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\EventDispatcher\EventDispatcher;
@@ -42,10 +43,22 @@ class PoolBuilder
     private $eventDispatcher;
     private $io;
 
+    /**
+     * @psalm-var array<string, AliasPackage>
+     */
     private $aliasMap = array();
+    /**
+     * @psalm-var array<string, ConstraintInterface[]|null>
+     */
     private $nameConstraints = array();
     private $loadedNames = array();
+    /**
+     * @psalm-var Package[]
+     */
     private $packages = array();
+    /**
+     * @psalm-var list<Package>
+     */
     private $unacceptableFixedPackages = array();
     private $updateAllowList = array();
     private $skippedLoad = array();
