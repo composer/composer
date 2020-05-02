@@ -33,7 +33,13 @@ use Composer\Plugin\PluginEvents;
  */
 class PoolBuilder
 {
+    /**
+     * @var int[]
+     */
     private $acceptableStabilities;
+    /**
+     * @var int[]
+     */
     private $stabilityFlags;
     /**
      * @psalm-var array<string, array<string, array{alias: string, alias_normalized: string}>>
