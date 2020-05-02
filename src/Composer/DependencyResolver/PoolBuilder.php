@@ -39,8 +39,17 @@ class PoolBuilder
      * @psalm-var array<string, array<string, array{alias: string, alias_normalized: string}>>
      */
     private $rootAliases;
+    /**
+     * @psalm-var array<string, string>
+     */
     private $rootReferences;
+    /**
+     * @var EventDispatcher
+     */
     private $eventDispatcher;
+    /**
+     * @var IOInterface
+     */
     private $io;
 
     /**
@@ -62,6 +71,9 @@ class PoolBuilder
     private $unacceptableFixedPackages = array();
     private $updateAllowList = array();
     private $skippedLoad = array();
+    /**
+     * @psalm-var array<string, bool>
+     */
     private $updateAllowWarned = array();
 
     /**
