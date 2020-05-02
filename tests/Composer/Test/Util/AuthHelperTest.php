@@ -16,6 +16,7 @@ use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Util\AuthHelper;
 use Composer\Util\Bitbucket;
+use RuntimeException;
 
 /**
  * @author Michael Chekin <mchekin@gmail.com>
@@ -485,6 +486,48 @@ class AuthHelperTest extends TestCase
         $origin = 'github.com';
         $storeAuth = 'prompt';
         $answer = 'n';
+        $configSourceName = 'https://api.gitlab.com/source';
+
+        /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $configSource */
+        $configSource = $this
+            ->getMockBuilder('Composer\Config\ConfigSourceInterface')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->config->expects($this->once())
+            ->method('getAuthConfigSource')
+            ->willReturn($configSource);
+
+        $configSource->expects($this->once())
+            ->method('getName')
+            ->willReturn($configSourceName);
+
+        $this->io->expects($this->once())
+            ->method('askAndValidate')
+            ->with(
+                'Do you want to store credentials for '.$origin.' in '.$configSourceName.' ? [Yn] ',
+                $this->anything(),
+                null,
+                'y'
+            )
+            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
+
+                $validator($answer);
+
+                return $answer;
+            });
+
+        $this->authHelper->storeAuth($origin, $storeAuth);
+    }
+
+    /**
+     * @expectedException  RuntimeException
+     */
+    public function testStoreAuthWithPromptInvalidAnswer()
+    {
+        $origin = 'github.com';
+        $storeAuth = 'prompt';
+        $answer = 'invalid';
         $configSourceName = 'https://api.gitlab.com/source';
 
         /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $configSource */
