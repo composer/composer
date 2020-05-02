@@ -14,6 +14,7 @@ namespace Composer\Test\Util;
 
 use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
+use Composer\Test\Util\Mocks\GitHubMock;
 use Composer\Util\AuthHelper;
 use Composer\Util\Bitbucket;
 use RuntimeException;
@@ -560,5 +561,61 @@ class AuthHelperTest extends TestCase
             });
 
         $this->authHelper->storeAuth($origin, $storeAuth);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     *
+     * @expectedException \Composer\Downloader\TransportException
+     * @expectedExceptionMessage  Could not authenticate against github.com
+     */
+    public function testPromptAuthIfNeededFailsForGithubAuthentication()
+    {
+        class_alias(
+            '\Composer\Test\Util\Mocks\GitHubMock',
+            '\Composer\Util\GitHub',
+            true
+        );
+
+        GitHubMock::setIsRateLimitedResponse(false);
+        GitHubMock::setAuthorizeOathResponse(false);
+        GitHubMock::setAuthorizeOathInteractivelyResponse(false);
+
+        $origin = 'github.com';
+        $url = 'https://api.github.com/';
+        $auth = array(
+            'username' => 'my_username',
+            'password' => 'x-oauth-basic'
+        );
+        $statusCode = 200;
+        $reason = null;
+        $headers = array(
+            'Accept-Encoding: gzip',
+            'Connection: close'
+        );
+        $result = array(
+            'retry' => null,
+            'storeAuth' => $auth,
+        );
+
+        $this->config->expects($this->once())
+            ->method('get')
+            ->with('github-domains')
+            ->willReturn(array($origin));
+
+        $this->io->expects($this->once())
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(false);
+
+        $this->io->expects($this->once())
+            ->method('isInteractive')
+            ->willReturn(true);
+
+        $this->assertSame(
+            $result,
+            $this->authHelper->promptAuthIfNeeded($url, $origin, $statusCode, $reason, $headers)
+        );
     }
 }
