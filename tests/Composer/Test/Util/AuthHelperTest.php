@@ -564,7 +564,7 @@ class AuthHelperTest extends TestCase
     }
 
     /**
-     * @requires PHP > 5.3
+     * @requires PHP >= 5.4
      *
      * @runInSeparateProcess
      * @preserveGlobalState disabled
