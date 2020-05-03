@@ -77,15 +77,7 @@ class AuthHelperTest extends TestCase
             'password' => 'bearer'
         );
 
-        $this->io->expects($this->once())
-            ->method('hasAuthentication')
-            ->with($origin)
-            ->willReturn(true);
-
-        $this->io->expects($this->once())
-            ->method('getAuthentication')
-            ->with($origin)
-            ->willReturn($auth);
+        $this->expectsAuthentication($origin, $auth);
 
         $expectedHeaders = array_merge($headers, array('Authorization: Bearer ' . $auth['username']));
 
@@ -108,15 +100,7 @@ class AuthHelperTest extends TestCase
             'password' => 'x-oauth-basic'
         );
 
-        $this->io->expects($this->once())
-            ->method('hasAuthentication')
-            ->with($origin)
-            ->willReturn(true);
-
-        $this->io->expects($this->once())
-            ->method('getAuthentication')
-            ->with($origin)
-            ->willReturn($auth);
+        $this->expectsAuthentication($origin, $auth);
 
         $this->io->expects($this->once())
             ->method('writeError')
@@ -143,15 +127,7 @@ class AuthHelperTest extends TestCase
             'password' => 'oauth2'
         );
 
-        $this->io->expects($this->once())
-            ->method('hasAuthentication')
-            ->with($origin)
-            ->willReturn(true);
-
-        $this->io->expects($this->once())
-            ->method('getAuthentication')
-            ->with($origin)
-            ->willReturn($auth);
+        $this->expectsAuthentication($origin, $auth);
 
         $this->config->expects($this->once())
             ->method('get')
@@ -196,15 +172,7 @@ class AuthHelperTest extends TestCase
             'password' => $password
         );
 
-        $this->io->expects($this->once())
-            ->method('hasAuthentication')
-            ->with($origin)
-            ->willReturn(true);
-
-        $this->io->expects($this->once())
-            ->method('getAuthentication')
-            ->with($origin)
-            ->willReturn($auth);
+        $this->expectsAuthentication($origin, $auth);
 
         $this->config->expects($this->once())
             ->method('get')
@@ -236,15 +204,7 @@ class AuthHelperTest extends TestCase
             'password' => 'my_password'
         );
 
-        $this->io->expects($this->once())
-            ->method('hasAuthentication')
-            ->with($origin)
-            ->willReturn(true);
-
-        $this->io->expects($this->once())
-            ->method('getAuthentication')
-            ->with($origin)
-            ->willReturn($auth);
+        $this->expectsAuthentication($origin, $auth);
 
         $this->config->expects($this->once())
             ->method('get')
@@ -288,15 +248,7 @@ class AuthHelperTest extends TestCase
             'password' => 'my_password'
         );
 
-        $this->io->expects($this->once())
-            ->method('hasAuthentication')
-            ->with($origin)
-            ->willReturn(true);
-
-        $this->io->expects($this->once())
-            ->method('getAuthentication')
-            ->with($origin)
-            ->willReturn($auth);
+        $this->expectsAuthentication($origin, $auth);
 
         $this->config->expects($this->once())
             ->method('get')
@@ -345,15 +297,7 @@ class AuthHelperTest extends TestCase
             'Connection: close'
         );
 
-        $this->io->expects($this->once())
-            ->method('hasAuthentication')
-            ->with($origin)
-            ->willReturn(true);
-
-        $this->io->expects($this->once())
-            ->method('getAuthentication')
-            ->with($origin)
-            ->willReturn($auth);
+        $this->expectsAuthentication($origin, $auth);
 
         $this->config->expects($this->once())
             ->method('get')
@@ -560,5 +504,22 @@ class AuthHelperTest extends TestCase
             });
 
         $this->authHelper->storeAuth($origin, $storeAuth);
+    }
+
+    /**
+     * @param $origin
+     * @param $auth
+     */
+    private function expectsAuthentication($origin, $auth)
+    {
+        $this->io->expects($this->once())
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $this->io->expects($this->once())
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn($auth);
     }
 }
