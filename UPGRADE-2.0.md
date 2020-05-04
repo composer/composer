@@ -27,6 +27,7 @@
   - packages now contain an `"installed-path"` key which lists where they were installed
   - there is a top level `"dev"` key which stores whether dev requirements were installed or not
 - `PreFileDownloadEvent` now receives an `HttpDownloader` instance instead of `RemoteFilesystem`, and that instance can not be overridden by listeners anymore
+- `VersionSelector::findBestCandidate`'s third argument (phpVersion) was removed in favor of passing in a complete PlatformRepository instance into the constructor
 - `IOInterface` now extends PSR-3's `LoggerInterface`, and has new `writeRaw` + `writeErrorRaw` methods
 - `RepositoryInterface` changes:
   - A new `loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags)` function was added for use during pool building
