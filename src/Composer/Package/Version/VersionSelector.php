@@ -15,6 +15,8 @@ namespace Composer\Package\Version;
 use Composer\DependencyResolver\Pool;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
+use Composer\Plugin\PluginInterface;
+use Composer\Composer;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Semver\Constraint\Constraint;
@@ -53,10 +55,14 @@ class VersionSelector
 
         if ($targetPhpVersion) {
             $phpConstraint = new Constraint('==', $this->getParser()->normalize($targetPhpVersion));
-            $candidates = array_filter($candidates, function ($pkg) use ($phpConstraint) {
+            $composerRuntimeConstraint = new Constraint('==', $this->getParser()->normalize(Composer::RUNTIME_API_VERSION));
+            $composerPluginConstraint = new Constraint('==', $this->getParser()->normalize(PluginInterface::PLUGIN_API_VERSION));
+            $candidates = array_filter($candidates, function ($pkg) use ($phpConstraint, $composerPluginConstraint, $composerRuntimeConstraint) {
                 $reqs = $pkg->getRequires();
 
-                return !isset($reqs['php']) || $reqs['php']->getConstraint()->matches($phpConstraint);
+                return (!isset($reqs['php']) || $reqs['php']->getConstraint()->matches($phpConstraint))
+                    && (!isset($reqs['composer-plugin-api']) || $reqs['composer-plugin-api']->getConstraint()->matches($composerPluginConstraint))
+                    && (!isset($reqs['composer-runtime-api']) || $reqs['composer-runtime-api']->getConstraint()->matches($composerRuntimeConstraint));
             });
         }
 
