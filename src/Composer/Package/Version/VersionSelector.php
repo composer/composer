@@ -20,6 +20,7 @@ use Composer\Composer;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\RepositorySet;
+use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -32,11 +33,22 @@ class VersionSelector
 {
     private $repositorySet;
 
+    private $platformConstraints;
+
     private $parser;
 
-    public function __construct(RepositorySet $repositorySet)
+    /**
+     * @param PlatformRepository $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
+     */
+    public function __construct(RepositorySet $repositorySet, PlatformRepository $platformRepo = null)
     {
         $this->repositorySet = $repositorySet;
+        if ($platformRepo) {
+            $this->platformConstraints = array();
+            foreach ($platformRepo->getPackages() as $package) {
+                $this->platformConstraints[$package->getName()][] = new Constraint('==', $package->getVersion());
+            }
+        }
     }
 
     /**
@@ -45,25 +57,38 @@ class VersionSelector
      *
      * @param  string                $packageName
      * @param  string                $targetPackageVersion
-     * @param  string                $targetPhpVersion
      * @param  string                $preferredStability
+     * @param  bool                  $ignorePlatformReqs
      * @return PackageInterface|false
      */
-    public function findBestCandidate($packageName, $targetPackageVersion = null, $targetPhpVersion = null, $preferredStability = 'stable')
+    public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $ignorePlatformReqs = false)
     {
+        if (!isset(BasePackage::$stabilities[$preferredStability])) {
+            // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
+            throw new \UnexpectedValueException('Expected a valid stability name as 3rd argument, got '.$preferredStability);
+        }
+
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
         $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint);
 
-        if ($targetPhpVersion) {
-            $phpConstraint = new Constraint('==', $this->getParser()->normalize($targetPhpVersion));
-            $composerRuntimeConstraint = new Constraint('==', $this->getParser()->normalize(Composer::RUNTIME_API_VERSION));
-            $composerPluginConstraint = new Constraint('==', $this->getParser()->normalize(PluginInterface::PLUGIN_API_VERSION));
-            $candidates = array_filter($candidates, function ($pkg) use ($phpConstraint, $composerPluginConstraint, $composerRuntimeConstraint) {
+        if ($this->platformConstraints && !$ignorePlatformReqs) {
+            $platformConstraints = $this->platformConstraints;
+            $candidates = array_filter($candidates, function ($pkg) use ($platformConstraints) {
                 $reqs = $pkg->getRequires();
 
-                return (!isset($reqs['php']) || $reqs['php']->getConstraint()->matches($phpConstraint))
-                    && (!isset($reqs['composer-plugin-api']) || $reqs['composer-plugin-api']->getConstraint()->matches($composerPluginConstraint))
-                    && (!isset($reqs['composer-runtime-api']) || $reqs['composer-runtime-api']->getConstraint()->matches($composerRuntimeConstraint));
+                foreach ($reqs as $name => $link) {
+                    if (isset($platformConstraints[$name])) {
+                        foreach ($platformConstraints[$name] as $constraint) {
+                            if ($link->getConstraint()->matches($constraint)) {
+                                continue 2;
+                            }
+                        }
+
+                        return false;
+                    }
+                }
+
+                return true;
             });
         }
 

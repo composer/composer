@@ -151,7 +151,6 @@ EOT
         }
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
         $lockedRepo = null;
-        $phpVersion = $platformRepo->findPackage('php', '*')->getVersion();
 
         if ($input->getOption('self')) {
             $package = $this->getComposer()->getPackage();
@@ -249,7 +248,7 @@ EOT
             } else {
                 $latestPackage = null;
                 if ($input->getOption('latest')) {
-                    $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion);
+                    $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo);
                 }
                 if ($input->getOption('outdated') && $input->getOption('strict') && $latestPackage && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion() && !$latestPackage->isAbandoned()) {
                     $exitCode = 1;
@@ -382,7 +381,7 @@ EOT
                 if ($showLatest && $showVersion) {
                     foreach ($packages[$type] as $package) {
                         if (is_object($package)) {
-                            $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly);
+                            $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMinorOnly);
                             if ($latestPackage === false) {
                                 continue;
                             }
@@ -1180,18 +1179,18 @@ EOT
     /**
      * Given a package, this finds the latest package matching it
      *
-     * @param PackageInterface $package
-     * @param Composer         $composer
-     * @param string           $phpVersion
-     * @param bool             $minorOnly
+     * @param PackageInterface   $package
+     * @param Composer           $composer
+     * @param PlatformRepository $platformRepo
+     * @param bool               $minorOnly
      *
      * @return PackageInterface|false
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false)
+    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, $minorOnly = false)
     {
         // find the latest version allowed in this repo set
         $name = $package->getName();
-        $versionSelector = new VersionSelector($this->getRepositorySet($composer));
+        $versionSelector = new VersionSelector($this->getRepositorySet($composer), $platformRepo);
         $stability = $composer->getPackage()->getMinimumStability();
         $flags = $composer->getPackage()->getStabilityFlags();
         if (isset($flags[$name])) {
@@ -1212,7 +1211,7 @@ EOT
             $targetVersion = '^' . $package->getVersion();
         }
 
-        return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability);
+        return $versionSelector->findBestCandidate($name, $targetVersion, $bestStability);
     }
 
     private function getRepositorySet(Composer $composer)

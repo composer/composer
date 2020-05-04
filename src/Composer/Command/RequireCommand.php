@@ -166,7 +166,7 @@ EOT
         $platformOverrides = $composer->getConfig()->get('platform') ?: array();
         // initialize $this->repos as it is used by the parent InitCommand
         $this->repos = new CompositeRepository(array_merge(
-            array(new PlatformRepository(array(), $platformOverrides)),
+            array($platformRepo = new PlatformRepository(array(), $platformOverrides)),
             $repos
         ));
 
@@ -176,9 +176,16 @@ EOT
             $preferredStability = $composer->getPackage()->getMinimumStability();
         }
 
-        $phpVersion = $this->repos->findPackage('php', '*')->getPrettyVersion();
         try {
-            $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion, $preferredStability, !$input->getOption('no-update'), $input->getOption('fixed'));
+            $requirements = $this->determineRequirements(
+                $input,
+                $output,
+                $input->getArgument('packages'),
+                $input->getOption('ignore-platform-reqs') ? null : $platformRepo,
+                $preferredStability,
+                !$input->getOption('no-update'),
+                $input->getOption('fixed')
+            );
         } catch (\Exception $e) {
             if ($this->newlyCreated) {
                 throw new \RuntimeException('No composer.json present in the current directory, this may be the cause of the following exception.', 0, $e);

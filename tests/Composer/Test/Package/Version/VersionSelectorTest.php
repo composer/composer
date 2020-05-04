@@ -15,6 +15,7 @@ namespace Composer\Test\Package\Version;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\Package;
 use Composer\Package\Link;
+use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
 
@@ -46,27 +47,82 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be 1.2.2');
     }
 
-    public function testLatestVersionIsReturnedThatMatchesPhpRequirement()
+    public function testLatestVersionIsReturnedThatMatchesPhpRequirements()
     {
         $packageName = 'foobar';
 
+        $platform = new PlatformRepository(array(), array('php' => '5.5.0'));
+        $repositorySet = $this->createMockRepositorySet();
+        $versionSelector = new VersionSelector($repositorySet, $platform);
+
         $parser = new VersionParser;
         $package1 = $this->createPackage('1.0.0');
-        $package2 = $this->createPackage('2.0.0');
         $package1->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.4'), 'requires', '>=5.4')));
+        $package2 = $this->createPackage('2.0.0');
         $package2->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), 'requires', '>=5.6')));
         $packages = array($package1, $package2);
 
-        $repositorySet = $this->createMockRepositorySet();
-        $repositorySet->expects($this->once())
+        $repositorySet->expects($this->any())
             ->method('findPackages')
             ->with($packageName, null)
             ->will($this->returnValue($packages));
 
-        $versionSelector = new VersionSelector($repositorySet);
-        $best = $versionSelector->findBestCandidate($packageName, null, '5.5.0');
-
+        $best = $versionSelector->findBestCandidate($packageName);
         $this->assertSame($package1, $best, 'Latest version supporting php 5.5 should be returned (1.0.0)');
+        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', true);
+        $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
+    }
+
+    public function testLatestVersionIsReturnedThatMatchesExtRequirements()
+    {
+        $packageName = 'foobar';
+
+        $platform = new PlatformRepository(array(), array('ext-zip' => '5.3.0'));
+        $repositorySet = $this->createMockRepositorySet();
+        $versionSelector = new VersionSelector($repositorySet, $platform);
+
+        $parser = new VersionParser;
+        $package1 = $this->createPackage('1.0.0');
+        $package1->setRequires(array('ext-zip' => new Link($packageName, 'ext-zip', $parser->parseConstraints('^5.2'), 'requires', '^5.2')));
+        $package2 = $this->createPackage('2.0.0');
+        $package2->setRequires(array('ext-zip' => new Link($packageName, 'ext-zip', $parser->parseConstraints('^5.4'), 'requires', '^5.4')));
+        $packages = array($package1, $package2);
+
+        $repositorySet->expects($this->any())
+            ->method('findPackages')
+            ->with($packageName, null)
+            ->will($this->returnValue($packages));
+
+        $best = $versionSelector->findBestCandidate($packageName);
+        $this->assertSame($package1, $best, 'Latest version supporting ext-zip 5.3.0 should be returned (1.0.0)');
+        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', true);
+        $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
+    }
+
+    public function testLatestVersionIsReturnedThatMatchesComposerRequirements()
+    {
+        $packageName = 'foobar';
+
+        $platform = new PlatformRepository(array(), array('composer-runtime-api' => '1.0.0'));
+        $repositorySet = $this->createMockRepositorySet();
+        $versionSelector = new VersionSelector($repositorySet, $platform);
+
+        $parser = new VersionParser;
+        $package1 = $this->createPackage('1.0.0');
+        $package1->setRequires(array('composer-runtime-api' => new Link($packageName, 'composer-runtime-api', $parser->parseConstraints('^1.0'), 'requires', '^1.0')));
+        $package2 = $this->createPackage('1.1.0');
+        $package2->setRequires(array('composer-runtime-api' => new Link($packageName, 'composer-runtime-api', $parser->parseConstraints('^2.0'), 'requires', '^2.0')));
+        $packages = array($package1, $package2);
+
+        $repositorySet->expects($this->any())
+            ->method('findPackages')
+            ->with($packageName, null)
+            ->will($this->returnValue($packages));
+
+        $best = $versionSelector->findBestCandidate($packageName);
+        $this->assertSame($package1, $best, 'Latest version supporting composer 1 should be returned (1.0.0)');
+        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', true);
+        $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (1.1.0)');
     }
 
     public function testMostStableVersionIsReturned()
@@ -109,10 +165,10 @@ class VersionSelectorTest extends TestCase
             ->will($this->returnValue(array_reverse($packages)));
 
         $versionSelector = new VersionSelector($repositorySet);
-        $best = $versionSelector->findBestCandidate($packageName, null, null);
+        $best = $versionSelector->findBestCandidate($packageName);
         $this->assertSame($package2, $best, 'Expecting 2.0.0-beta3, cause beta is more stable than dev');
 
-        $best = $versionSelector->findBestCandidate($packageName, null, null);
+        $best = $versionSelector->findBestCandidate($packageName);
         $this->assertSame($package2, $best, 'Expecting 2.0.0-beta3, cause beta is more stable than dev');
     }
 
@@ -131,7 +187,7 @@ class VersionSelectorTest extends TestCase
             ->will($this->returnValue($packages));
 
         $versionSelector = new VersionSelector($repositorySet);
-        $best = $versionSelector->findBestCandidate($packageName, null, null, 'dev');
+        $best = $versionSelector->findBestCandidate($packageName, null, 'dev');
 
         $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }
@@ -152,7 +208,7 @@ class VersionSelectorTest extends TestCase
             ->will($this->returnValue($packages));
 
         $versionSelector = new VersionSelector($repositorySet);
-        $best = $versionSelector->findBestCandidate($packageName, null, null, 'beta');
+        $best = $versionSelector->findBestCandidate($packageName, null, 'beta');
 
         $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }
@@ -172,7 +228,7 @@ class VersionSelectorTest extends TestCase
             ->will($this->returnValue($packages));
 
         $versionSelector = new VersionSelector($repositorySet);
-        $best = $versionSelector->findBestCandidate($packageName, null, null, 'stable');
+        $best = $versionSelector->findBestCandidate($packageName, null, 'stable');
 
         $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }
