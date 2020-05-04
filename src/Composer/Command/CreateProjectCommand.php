@@ -344,7 +344,7 @@ EOT
 
         // find the latest version if there are multiple
         $versionSelector = new VersionSelector($repositorySet, $platformRepo);
-        $package = $versionSelector->findBestCandidate($name, $packageVersion, $phpVersion, $stability);
+        $package = $versionSelector->findBestCandidate($name, $packageVersion, $stability);
 
         if (!$package) {
             $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
