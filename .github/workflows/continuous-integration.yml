@@ -87,7 +87,7 @@ jobs:
         if: "matrix.dependencies == 'highest'"
         run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
 
-      - name: "Install highest dependencies from composer.json using composer binary provided by system"
+      - name: "Install highest dependencies from composer.json using composer binary provided by system, ignoring platform requirements"
         if: "matrix.dependencies == 'highest-ignore'"
         run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }} --ignore-platform-reqs"
 
@@ -100,6 +100,7 @@ jobs:
         run: "composer install ${{ env.COMPOSER_FLAGS }}"
 
       - name: "Run install again using composer binary from source"
+        if: "matrix.dependencies != 'highest-ignore'"
         run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
 
       - name: "Validate composer.json"
