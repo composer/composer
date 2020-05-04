@@ -336,25 +336,20 @@ EOT
         $repositorySet = new RepositorySet($stability);
         $repositorySet->addRepository($sourceRepo);
 
-        $phpVersion = null;
-        $prettyPhpVersion = null;
+        $platformRepo = null;
         if (!$ignorePlatformReqs) {
             $platformOverrides = $config->get('platform') ?: array();
-            // initialize $this->repos as it is used by the parent InitCommand
-            $platform = new PlatformRepository(array(), $platformOverrides);
-            $phpPackage = $platform->findPackage('php', '*');
-            $phpVersion = $phpPackage->getVersion();
-            $prettyPhpVersion = $phpPackage->getPrettyVersion();
+            $platformRepo = new PlatformRepository(array(), $platformOverrides);
         }
 
         // find the latest version if there are multiple
-        $versionSelector = new VersionSelector($repositorySet);
+        $versionSelector = new VersionSelector($repositorySet, $platformRepo);
         $package = $versionSelector->findBestCandidate($name, $packageVersion, $phpVersion, $stability);
 
         if (!$package) {
             $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
-            if ($phpVersion && $versionSelector->findBestCandidate($name, $packageVersion, null, $stability)) {
-                throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version '.$prettyPhpVersion.'.');
+            if ($platformRepo && $versionSelector->findBestCandidate($name, $packageVersion, $stability, true)) {
+                throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
             }
 
             throw new \InvalidArgumentException($errorMessage .'.');
