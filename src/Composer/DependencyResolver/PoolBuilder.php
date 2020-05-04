@@ -21,6 +21,7 @@ use Composer\Package\Version\StabilityFilter;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\EventDispatcher\EventDispatcher;
@@ -32,23 +33,53 @@ use Composer\Plugin\PluginEvents;
  */
 class PoolBuilder
 {
+    /**
+     * @var int[]
+     */
     private $acceptableStabilities;
+    /**
+     * @var int[]
+     */
     private $stabilityFlags;
     /**
      * @psalm-var array<string, array<string, array{alias: string, alias_normalized: string}>>
      */
     private $rootAliases;
+    /**
+     * @psalm-var array<string, string>
+     */
     private $rootReferences;
+    /**
+     * @var EventDispatcher
+     */
     private $eventDispatcher;
+    /**
+     * @var IOInterface
+     */
     private $io;
 
+    /**
+     * @psalm-var array<string, AliasPackage>
+     */
     private $aliasMap = array();
+    /**
+     * @psalm-var array<string, ConstraintInterface[]|null>
+     */
     private $nameConstraints = array();
     private $loadedNames = array();
+    /**
+     * @psalm-var Package[]
+     */
     private $packages = array();
+    /**
+     * @psalm-var list<Package>
+     */
     private $unacceptableFixedPackages = array();
     private $updateAllowList = array();
     private $skippedLoad = array();
+    /**
+     * @psalm-var array<string, bool>
+     */
     private $updateAllowWarned = array();
 
     /**
