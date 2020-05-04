@@ -73,6 +73,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @private
+     * @var array list of package names which are fresh and can be loaded from the cache directly in case loadPackage is called several times
+     *          useful for v2 metadata repositories with lazy providers
+     */
+    public $freshMetadataUrls = array();
+
+    /**
+     * TODO v3 should make this private once we can drop PHP 5.3 support
+     * @private
      * @var array list of package names which returned a 404 and should not be re-fetched in case loadPackage is called several times
      *          useful for v2 metadata repositories with lazy providers
      */
@@ -1150,6 +1158,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return new Promise(function ($resolve, $reject) { $resolve(array('packages' => array())); });
         }
 
+        if (isset($this->freshMetadataUrls[$filename]) && $lastModifiedTime) {
+            // make it look like we got a 304 response
+            return new Promise(function ($resolve, $reject) { $resolve(true); });
+        }
+
         $httpDownloader = $this->httpDownloader;
         if ($this->eventDispatcher) {
             $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
@@ -1173,6 +1186,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $json = $response->getBody();
             if ($json === '' && $response->getStatusCode() === 304) {
+                $repo->freshMetadataUrls[$filename] = true;
                 return true;
             }
 
@@ -1186,6 +1200,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $json = JsonFile::encode($data, JsonFile::JSON_UNESCAPED_SLASHES | JsonFile::JSON_UNESCAPED_UNICODE);
             }
             $cache->write($cacheKey, $json);
+            $repo->freshMetadataUrls[$filename] = true;
 
             return $data;
         };
