@@ -178,7 +178,7 @@ class SvnDownloader extends VcsDownloader
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
-        if (preg_match('{.*@(\d+)$}', $fromReference) && preg_match('{.*@(\d+)$}', $toReference)) {
+        if (preg_match('{@(\d+)$}', $fromReference) && preg_match('{@(\d+)$}', $toReference)) {
             // retrieve the svn base url from the checkout folder
             $command = sprintf('svn info --non-interactive --xml %s', ProcessExecutor::escape($path));
             if (0 !== $this->process->execute($command, $output, $path)) {
