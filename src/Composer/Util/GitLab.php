@@ -71,28 +71,17 @@ class GitLab
             return true;
         }
 
-        // if available use deploy token from git config
-        if (0 === $this->process->execute('git config gitlab.deploytoken.user', $tokenUser) && 0 === $this->process->execute('git config gitlab.deploytoken.token', $tokenPassword)) {
-            $this->io->setAuthentication($originUrl, trim($tokenUser), trim($tokenPassword));
+        // if available use token from composer config
+        $authTokens = $this->config->get('gitlab-token');
+
+        if (isset($authTokens[$originUrl])) {
+            $this->io->setAuthentication($originUrl, $authTokens[$originUrl], 'private-token');
 
             return true;
         }
 
-        // if available use token from composer config
-        $authTokens = $this->config->get('gitlab-token');
-        
-        if (isset($authTokens[$originUrl])) {
-            $token = $authTokens[$originUrl];
-        }
-
         if (isset($authTokens[$bcOriginUrl])) {
-            $token = $authTokens[$bcOriginUrl];
-        }
-        
-        if(isset($token)){
-            $username = is_array($token) && array_key_exists("username", $token) ? $token["username"] : $token;
-            $password = is_array($token) && array_key_exists("token", $token) ? $token["token"] : 'private-token';
-            $this->io->setAuthentication($originUrl, $username, $password);
+            $this->io->setAuthentication($originUrl, $authTokens[$bcOriginUrl], 'private-token');
 
             return true;
         }
@@ -179,9 +168,9 @@ class GitLab
         );
 
         $token = $this->httpDownloader->get($scheme.'://'.$apiUrl.'/oauth/token', $options)->decodeJson();
-        
-        $this->io->writeError('Token successfully created');	
-        
+
+        $this->io->writeError('Token successfully created');
+
         return $token;
     }
 }
