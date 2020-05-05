@@ -62,11 +62,11 @@ class PoolBuilder
      */
     private $aliasMap = array();
     /**
-     * @psalm-var array<string, ConstraintInterface[]>
+     * @psalm-var array<string, ConstraintInterface>
      */
     private $packagesToLoad = array();
     /**
-     * @psalm-var array<string, ConstraintInterface[]>
+     * @psalm-var array<string, ConstraintInterface>
      */
     private $loadedNames = array();
     /**
