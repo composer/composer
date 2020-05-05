@@ -205,6 +205,16 @@ class PoolBuilder
             $this->unacceptableFixedPackages = $prePoolCreateEvent->getUnacceptableFixedPackages();
         }
 
+        // Filter duplicate packages
+        $presentPackages = array();
+        foreach ($this->packages as $i => $package) {
+            if (isset($presentPackages[$package->getUniqueName()])) {
+                unset($this->packages[$i]);
+            } else {
+                $presentPackages[$package->getUniqueName()] = true;
+            }
+        }
+
         $pool = new Pool($this->packages, $this->unacceptableFixedPackages);
 
         $this->aliasMap = array();
