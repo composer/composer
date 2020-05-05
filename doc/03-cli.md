@@ -142,6 +142,26 @@ You can also use wildcards to update a bunch of packages at once:
 php composer.phar update "vendor/*"
 ```
 
+
+If you want to downgrade a package to a specific version without changing your
+composer.json you can use `--with` and provide a custom version constraint:
+
+```sh
+php composer.phar update --with vendor/package:2.0.1
+```
+
+The custom constraint has to be a subset of the existing constraint you have,
+and this feature is only available for your root package dependencies.
+
+If you only want to update the package(s) for which you provide custom constraints
+using `--with`, you can skip `--with` and just use constraints with the partial
+update syntax:
+
+```sh
+php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
+```
+
+
 ### Options
 
 * **--prefer-source:** Install packages from `source` when available.
@@ -152,6 +172,7 @@ php composer.phar update "vendor/*"
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
+* **--with:** Temporary version constraint to add, e.g. foo/bar:1.0.0 or foo/bar=1.0.0
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some

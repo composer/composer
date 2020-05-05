@@ -18,6 +18,9 @@ use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Package\Version\VersionParser;
+use Composer\Semver\Constraint\MultiConstraint;
+use Composer\Package\Link;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -39,6 +42,7 @@ class UpdateCommand extends BaseCommand
             ->setDescription('Upgrades your dependencies to the latest version according to composer.json, and updates the composer.lock file.')
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that should be updated, if not provided all packages are.'),
+                new InputOption('with', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Temporary version constraint to add, e.g. foo/bar:1.0.0 or foo/bar=1.0.0'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
@@ -80,6 +84,14 @@ from a specific vendor:
 
 <info>php composer.phar update vendor/package1 foo/* [...]</info>
 
+To run an update with more restrictive constraints you can use:
+
+<info>php composer.phar update --with vendor/package:1.0.*</info>
+
+To run a partial update with more restrictive constraints you can use the shorthand:
+
+<info>php composer.phar update vendor/package:1.0.*</info>
+
 To select packages names interactively with auto-completion use <info>-i</info>.
 
 Read more at https://getcomposer.org/doc/03-cli.md#update-u
@@ -101,22 +113,54 @@ EOT
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
 
         $packages = $input->getArgument('packages');
+        $reqs = $this->formatRequirements($input->getOption('with'));
+
+        // extract --with shorthands from the allowlist
+        if ($packages) {
+            $allowlistPackagesWithRequirements = array_filter($packages, function ($pkg) {
+                return preg_match('{\S+[ =:]\S+}', $pkg) > 0;
+            });
+            foreach ($this->formatRequirements($allowlistPackagesWithRequirements) as $package => $constraint) {
+                var_Dump($package, $constraint);
+                $reqs[$package] = $constraint;
+            }
+
+            // replace the foo/bar:req by foo/bar in the allowlist
+            foreach ($allowlistPackagesWithRequirements as $package) {
+                $packageName = preg_replace('{^([^ =:]+)[ =:].*$}', '$1', $package);
+                $index = array_search($package, $packages);
+                $packages[$index] = $packageName;
+            }
+        }
+
+        $rootRequires = $composer->getPackage()->getRequires();
+        $rootDevRequires = $composer->getPackage()->getDevRequires();
+        foreach ($reqs as $package => $constraint) {
+            if (isset($rootRequires[$package])) {
+                $rootRequires[$package] = $this->appendConstraintToLink($rootRequires[$package], $constraint);
+            } elseif (isset($rootDevRequires[$package])) {
+                $rootDevRequires[$package] = $this->appendConstraintToLink($rootDevRequires[$package], $constraint);
+            } else {
+                throw new \UnexpectedValueException('Only root package requirements can receive temporary constraints and '.$package.' is not one');
+            }
+        }
+        $composer->getPackage()->setRequires($rootRequires);
+        $composer->getPackage()->setDevRequires($rootDevRequires);
 
         if ($input->getOption('interactive')) {
             $packages = $this->getPackagesInteractively($io, $input, $output, $composer, $packages);
         }
 
         if ($input->getOption('root-reqs')) {
-            $require = array_keys($composer->getPackage()->getRequires());
+            $requires = array_keys($rootRequires);
             if (!$input->getOption('no-dev')) {
-                $requireDev = array_keys($composer->getPackage()->getDevRequires());
-                $require = array_merge($require, $requireDev);
+                $requires = array_merge($requires, array_keys($rootDevRequires));
             }
 
             if (!empty($packages)) {
-                $packages = array_intersect($packages, $require);
+                $packages = array_intersect($packages, $requires);
             } else {
-                $packages = $require;
+                $packages = $requires;
             }
         }
 
@@ -241,5 +285,20 @@ EOT
         }
 
         throw new \RuntimeException('Installation aborted.');
+    }
+
+    private function appendConstraintToLink(Link $link, $constraint)
+    {
+        $parser = new VersionParser;
+        $oldPrettyString = $link->getConstraint()->getPrettyString();
+        $newConstraint = MultiConstraint::create(array($link->getConstraint(), $parser->parseConstraints($constraint)));
+        $newConstraint->setPrettyString($oldPrettyString.' && '.$constraint);
+        return new Link(
+            $link->getSource(),
+            $link->getTarget(),
+            $newConstraint,
+            $link->getDescription(),
+            $link->getPrettyConstraint() . ' && ' . $constraint
+        );
     }
 }
