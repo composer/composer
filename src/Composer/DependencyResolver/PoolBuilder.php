@@ -57,22 +57,18 @@ class PoolBuilder
      * @var IOInterface
      */
     private $io;
-
     /**
      * @psalm-var array<string, AliasPackage>
      */
     private $aliasMap = array();
-
     /**
      * @psalm-var array<string, ConstraintInterface[]>
      */
     private $packagesToLoad = array();
-
     /**
      * @psalm-var array<string, ConstraintInterface[]>
      */
     private $loadedNames = array();
-
     /**
      * @psalm-var Package[]
      */
