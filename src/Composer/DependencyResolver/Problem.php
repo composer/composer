@@ -95,11 +95,42 @@ class Problem
         }
 
         $messages = array();
+        $templates = array();
+        $parser = new VersionParser;
+        $deduplicatableRuleTypes = array(Rule::RULE_PACKAGE_REQUIRES, Rule::RULE_PACKAGE_CONFLICT);
         foreach ($reasons as $rule) {
-            $messages[] = $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
+            $message = $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
+            if (in_array($rule->getReason(), $deduplicatableRuleTypes, true) && preg_match('{^(?P<package>\S+) (?P<version>\S+) (?P<type>requires|conflicts)}', $message, $m)) {
+                $template = preg_replace('{^\S+ \S+ }', '%s%s ', $message);
+                $messages[] = $template;
+                $templates[$template][$m[1]][$parser->normalize($m[2])] = $m[2];
+            } else {
+                $messages[] = $message;
+            }
         }
 
-        return "\n    - ".implode("\n    - ", array_unique($messages));
+        $result = array();
+        foreach (array_unique($messages) as $message) {
+            if (isset($templates[$message])) {
+                foreach ($templates[$message] as $package => $versions) {
+                    uksort($versions, 'version_compare');
+                    if (!$isVerbose) {
+                        $versions = self::condenseVersionList($versions, 1);
+                    }
+                    if (count($versions) > 1) {
+                        // remove the s from requires/conflicts to correct grammar
+                        $message = preg_replace('{^(%s%s (?:require|conflict))s}', '$1', $message);
+                        $result[] = sprintf($message, $package, '['.implode(', ', $versions).']');
+                    } else {
+                        $result[] = sprintf($message, $package, ' '.reset($versions));
+                    }
+                }
+            } else {
+                $result[] = $message;
+            }
+        }
+
+        return "\n    - ".implode("\n    - ", $result);
     }
 
     public function isCausedByLock()
@@ -299,30 +330,44 @@ class Problem
             if (isset($package['versions'][VersionParser::DEV_MASTER_ALIAS]) && isset($package['versions']['dev-master'])) {
                 unset($package['versions'][VersionParser::DEV_MASTER_ALIAS]);
             }
-            if (!$isVerbose && count($package['versions']) > 4) {
-                uksort($package['versions'], 'version_compare');
-                $filtered = array();
-                $byMajor = array();
-                foreach ($package['versions'] as $version => $pretty) {
-                    $byMajor[preg_replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
-                }
-                foreach ($byMajor as $versions) {
-                    if (count($versions) > 4) {
-                        $filtered[] = $versions[0];
-                        $filtered[] = '...';
-                        $filtered[] = $versions[count($versions) - 1];
-                    } else {
-                        $filtered = array_merge($filtered, $versions);
-                    }
-                }
 
-                $package['versions'] = $filtered;
+            uksort($package['versions'], 'version_compare');
+
+            if (!$isVerbose) {
+                $package['versions'] = self::condenseVersionList($package['versions'], 4);
             }
-
             $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
         }
 
         return implode(', ', $prepared);
+    }
+
+    /**
+     * @param string[] $versions an array of pretty versions, with normalized versions as keys
+     * @return list<string> a list of pretty versions and '...' where versions were removed
+     */
+    private static function condenseVersionList(array $versions, $max)
+    {
+        if (count($versions) <= $max) {
+            return $versions;
+        }
+
+        $filtered = array();
+        $byMajor = array();
+        foreach ($versions as $version => $pretty) {
+            $byMajor[preg_replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
+        }
+        foreach ($byMajor as $versionsForMajor) {
+            if (count($versionsForMajor) > $max) {
+                $filtered[] = $versionsForMajor[0];
+                $filtered[] = '...';
+                $filtered[] = $versionsForMajor[count($versionsForMajor) - 1];
+            } else {
+                $filtered = array_merge($filtered, $versionsForMajor);
+            }
+        }
+
+        return $filtered;
     }
 
     private static function hasMultipleNames(array $packages)
