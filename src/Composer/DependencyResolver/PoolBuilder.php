@@ -233,9 +233,9 @@ class PoolBuilder
             return;
         }
 
-        // No need to load this package with this constraint because it was
-        // already loaded in one that matches
-        if ($this->loadedNames[$name]->matches($constraint)) {
+        // No need to load this package with this constraint because it is
+        // a subset of the constraint with which we have already loaded packages
+        if ($constraint->isSubsetOf($this->loadedNames[$name])) {
             return;
         }
 

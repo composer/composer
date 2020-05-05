@@ -86,5 +86,11 @@
     "support": {
         "issues": "https://github.com/composer/composer/issues",
         "irc": "irc://irc.freenode.org/composer"
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:Seldaek/semver.git"
+        }
+    ]
 }

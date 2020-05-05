@@ -109,7 +109,16 @@
                     "Composer\\Semver\\": "src"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Composer\\Semver\\": "tests"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -441,17 +450,7 @@
             "license": [
                 "MIT"
             ],
-            "authors": [
-                {
-                    "name": "Jan Sorgalla",
-                    "email": "jsorgalla@gmail.com"
-                }
-            ],
             "description": "A lightweight implementation of CommonJS Promises/A for PHP",
-            "support": {
-                "issues": "https://github.com/reactphp/promise/issues",
-                "source": "https://github.com/reactphp/promise/tree/1.0"
-            },
             "time": "2016-03-07T13:46:50+00:00"
         },
         {
@@ -501,10 +500,6 @@
                 "parser",
                 "validator"
             ],
-            "support": {
-                "issues": "https://github.com/Seldaek/jsonlint/issues",
-                "source": "https://github.com/Seldaek/jsonlint/tree/master"
-            },
             "funding": [
                 {
                     "url": "https://github.com/Seldaek",
@@ -1051,10 +1046,6 @@
                 "constructor",
                 "instantiate"
             ],
-            "support": {
-                "issues": "https://github.com/doctrine/instantiator/issues",
-                "source": "https://github.com/doctrine/instantiator/tree/master"
-            },
             "time": "2015-06-14T21:17:01+00:00"
         },
         {
@@ -1104,10 +1095,6 @@
                     "email": "mike.vanriel@naenius.com"
                 }
             ],
-            "support": {
-                "issues": "https://github.com/phpDocumentor/ReflectionDocBlock/issues",
-                "source": "https://github.com/phpDocumentor/ReflectionDocBlock/tree/release/2.x"
-            },
             "time": "2016-01-25T08:17:30+00:00"
         },
         {
@@ -1239,10 +1226,6 @@
                 "compare",
                 "equality"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/comparator/issues",
-                "source": "https://github.com/sebastianbergmann/comparator/tree/1.2"
-            },
             "time": "2017-01-29T09:50:25+00:00"
         },
         {
@@ -1295,10 +1278,6 @@
             "keywords": [
                 "diff"
             ],
-            "support": {
-                "issues": "https://github.com/sebastianbergmann/diff/issues",
-                "source": "https://github.com/sebastianbergmann/diff/tree/1.4"
-            },
             "time": "2017-05-22T07:24:03+00:00"
         },
         {
@@ -1510,5 +1489,5 @@
     "platform-overrides": {
         "php": "5.3.9"
     },
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "1.1.0"
 }
