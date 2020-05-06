@@ -56,6 +56,10 @@ jobs:
             dependencies: locked
             experimental: false
           - php-version: 8.0
+            dependencies: lowest
+            os: ubuntu-latest
+            experimental: true
+          - php-version: 8.0
             dependencies: highest-ignore
             os: ubuntu-latest
             experimental: true
@@ -125,5 +129,5 @@ jobs:
         if: "matrix.php-version == '8.0'"
         run: |
           bin/composer remove --dev symfony/phpunit-bridge --ignore-platform-reqs
-          bin/composer require phpunit/phpunit:^7.5 --ignore-platform-reqs
+          bin/composer require phpunit/phpunit:^7.5 --ignore-platform-reqs --with-dependencies
           vendor/bin/phpunit
