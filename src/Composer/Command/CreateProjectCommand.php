@@ -368,6 +368,11 @@ EOT
             }
         }
 
+        // avoid displaying 9999999-dev as version if dev-master was selected
+        if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEV_MASTER_ALIAS) {
+            $package = $package->getAliasOf();
+        }
+
         $io->writeError('<info>Installing ' . $package->getName() . ' (' . $package->getFullPrettyVersion(false) . ')</info>');
 
         if ($disablePlugins) {
