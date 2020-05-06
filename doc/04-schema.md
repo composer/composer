@@ -877,6 +877,21 @@ A set of options for creating package archives.
 
 The following options are supported:
 
+* **name:** Allows configuring base name for archive.
+  By default (if not configured, and `--file` is not passed as command-line argument),
+  `preg_replace('#[^a-z0-9-_]#i', '-', name)` is used.
+
+Example:
+
+```json
+{
+    "name": "org/strangeName",
+    "archive": {
+        "name": "Strange_name"
+    }
+}
+```
+
 * **exclude:** Allows configuring a list of patterns for excluded paths. The
   pattern syntax matches .gitignore files. A leading exclamation mark (!) will
   result in any matching files to be included even if a previous pattern

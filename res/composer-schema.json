@@ -359,6 +359,10 @@
             "type": ["object"],
             "description": "Options for creating package archives for distribution.",
             "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "A base name for archive."
+                },
                 "exclude": {
                     "type": "array",
                     "description": "A list of patterns for paths to exclude or include if prefixed with an exclamation mark."

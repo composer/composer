@@ -395,6 +395,11 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         return $this->aliasOf->getNotificationUrl();
     }
 
+    public function getArchiveName()
+    {
+        return $this->aliasOf->getArchiveName();
+    }
+
     public function getArchiveExcludes()
     {
         return $this->aliasOf->getArchiveExcludes();

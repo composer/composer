@@ -78,7 +78,12 @@ class ArchiveManager
      */
     public function getPackageFilename(PackageInterface $package)
     {
-        $nameParts = array(preg_replace('#[^a-z0-9-_]#i', '-', $package->getName()));
+        if ($package->getArchiveName()) {
+            $baseName = $package->getArchiveName();
+        } else {
+            $baseName = preg_replace('#[^a-z0-9-_]#i', '-', $package->getName());
+        }
+        $nameParts = array($baseName);
 
         if (preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
             array_push($nameParts, $package->getDistReference(), $package->getDistType());
@@ -131,20 +136,6 @@ class ArchiveManager
         }
 
         $filesystem = new Filesystem();
-        if (null === $fileName) {
-            $packageName = $this->getPackageFilename($package);
-        } else {
-            $packageName = $fileName;
-        }
-
-        // Archive filename
-        $filesystem->ensureDirectoryExists($targetDir);
-        $target = realpath($targetDir).'/'.$packageName.'.'.$format;
-        $filesystem->ensureDirectoryExists(dirname($target));
-
-        if (!$this->overwriteFiles && file_exists($target)) {
-            return $target;
-        }
 
         if ($package instanceof RootPackageInterface) {
             $sourcePath = realpath('.');
@@ -167,10 +158,28 @@ class ArchiveManager
             if (file_exists($composerJsonPath = $sourcePath.'/composer.json')) {
                 $jsonFile = new JsonFile($composerJsonPath);
                 $jsonData = $jsonFile->read();
+                if (!empty($jsonData['archive']['name'])) {
+                    $package->setArchiveName($jsonData['archive']['name']);
+                }
                 if (!empty($jsonData['archive']['exclude'])) {
                     $package->setArchiveExcludes($jsonData['archive']['exclude']);
                 }
             }
+        }
+
+        if (null === $fileName) {
+            $packageName = $this->getPackageFilename($package);
+        } else {
+            $packageName = $fileName;
+        }
+
+        // Archive filename
+        $filesystem->ensureDirectoryExists($targetDir);
+        $target = realpath($targetDir).'/'.$packageName.'.'.$format;
+        $filesystem->ensureDirectoryExists(dirname($target));
+
+        if (!$this->overwriteFiles && file_exists($target)) {
+            return $target;
         }
 
         // Create the archive

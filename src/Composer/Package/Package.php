@@ -57,6 +57,7 @@ class Package extends BasePackage
     protected $autoload = array();
     protected $devAutoload = array();
     protected $includePaths = array();
+    protected $archiveName;
     protected $archiveExcludes = array();
 
     /**
@@ -549,6 +550,24 @@ class Package extends BasePackage
     public function getNotificationUrl()
     {
         return $this->notificationUrl;
+    }
+
+    /**
+     * Sets default base filename for archive
+     *
+     * @param string $name
+     */
+    public function setArchiveName($name)
+    {
+        $this->archiveName = $name;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getArchiveName()
+    {
+        return $this->archiveName;
     }
 
     /**
