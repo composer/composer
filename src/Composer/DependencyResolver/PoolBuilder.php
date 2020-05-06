@@ -255,10 +255,11 @@ class PoolBuilder
             $this->loadedNames[$name] = $constraint;
         }
 
-        $preLoad = $this->packagesToLoad;
+        $packageBatch = $this->packagesToLoad;
+        $this->packagesToLoad = array();
 
         foreach ($repositories as $repository) {
-            if (empty($this->packagesToLoad)) {
+            if (empty($packageBatch)) {
                 break;
             }
 
@@ -267,22 +268,15 @@ class PoolBuilder
             if ($repository instanceof PlatformRepository || $repository === $request->getLockedRepository()) {
                 continue;
             }
-            $result = $repository->loadPackages($this->packagesToLoad, $this->acceptableStabilities, $this->stabilityFlags);
+            $result = $repository->loadPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags);
 
             foreach ($result['namesFound'] as $name) {
                 // avoid loading the same package again from other repositories once it has been found
-                unset($this->packagesToLoad[$name]);
+                unset($packageBatch[$name]);
             }
             foreach ($result['packages'] as $package) {
                 $this->loadPackage($request, $package);
             }
-        }
-
-        // Make sure we empty the packagesToLoad here as it would result
-        // in an endless loop if the array remains unchanged.
-        // This could happen with non-existent packages for example.
-        if ($preLoad == $this->packagesToLoad) {
-            $this->packagesToLoad = array();
         }
     }
 
