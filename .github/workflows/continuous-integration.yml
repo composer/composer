@@ -69,7 +69,7 @@ jobs:
         with:
           coverage: "none"
           extensions: "intl"
-          ini-values: "memory_limit=-1"
+          ini-values: "memory_limit=-1, phar.readonly=0"
           php-version: "${{ matrix.php-version }}"
 
       - name: "Determine composer cache directory"
