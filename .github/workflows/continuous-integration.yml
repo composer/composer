@@ -114,4 +114,9 @@ jobs:
         run: "echo \"::set-env name=SYMFONY_PHPUNIT_VERSION::7.5\""
 
       - name: "Run tests"
+        if: "matrix.php-version != '8.0'"
         run: "vendor/bin/simple-phpunit"
+
+      - name: "Run tests for PHP 8"
+        if: "matrix.php-version == '8.0'"
+        run: "bin/composer remove --dev symfony/phpunit-bridge && bin/composer require phpunit/phpunit:^7.5 --ignore-platform-reqs"
