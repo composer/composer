@@ -68,7 +68,7 @@ class PoolBuilder
     /**
      * @psalm-var array<string, ConstraintInterface>
      */
-    private $loadedNames = array();
+    private $loadedPackages = array();
     /**
      * @psalm-var Package[]
      */
@@ -124,11 +124,11 @@ class PoolBuilder
         }
 
         foreach ($request->getFixedPackages() as $package) {
-            $this->loadedNames[$package->getName()] = new EmptyConstraint();
+            $this->loadedPackages[$package->getName()] = new EmptyConstraint();
 
             // replace means conflict, so if a fixed package replaces a name, no need to load that one, packages would conflict anyways
             foreach ($package->getReplaces() as $link) {
-                $this->loadedNames[$link->getTarget()] = new EmptyConstraint();
+                $this->loadedPackages[$link->getTarget()] = new EmptyConstraint();
             }
 
             // TODO in how far can we do the above for conflicts? It's more tricky cause conflicts can be limited to
@@ -151,7 +151,7 @@ class PoolBuilder
 
         // clean up packagesToLoad for anything we manually marked loaded above
         foreach ($this->packagesToLoad as $name => $constraint) {
-            if (isset($this->loadedNames[$name])) {
+            if (isset($this->loadedPackages[$name])) {
                 unset($this->packagesToLoad[$name]);
             }
         }
@@ -215,7 +215,7 @@ class PoolBuilder
 
         $this->aliasMap = array();
         $this->packagesToLoad = array();
-        $this->loadedNames = array();
+        $this->loadedPackages = array();
         $this->packages = array();
         $this->unacceptableFixedPackages = array();
 
@@ -224,14 +224,14 @@ class PoolBuilder
 
     private function markPackageNameForLoading($name, ConstraintInterface $constraint)
     {
-        if (!isset($this->loadedNames[$name])) {
+        if (!isset($this->loadedPackages[$name])) {
             $this->packagesToLoad[$name] = $constraint;
             return;
         }
 
         // No need to load this package with this constraint because it is
         // a subset of the constraint with which we have already loaded packages
-        if ($constraint->isSubsetOf($this->loadedNames[$name])) {
+        if ($constraint->isSubsetOf($this->loadedPackages[$name])) {
             return;
         }
 
@@ -245,14 +245,14 @@ class PoolBuilder
         // We have already loaded that package but not in the constraint that's
         // required. We extend the constraint and mark that package as not being loaded
         // yet so we get the required package versions
-        $this->packagesToLoad[$name] = MultiConstraint::create(array($this->loadedNames[$name], $constraint), false);
-        unset($this->loadedNames[$name]);
+        $this->packagesToLoad[$name] = MultiConstraint::create(array($this->loadedPackages[$name], $constraint), false);
+        unset($this->loadedPackages[$name]);
     }
 
     private function loadPackagesMarkedForLoading(Request $request, $repositories)
     {
         foreach ($this->packagesToLoad as $name => $constraint) {
-            $this->loadedNames[$name] = $constraint;
+            $this->loadedPackages[$name] = $constraint;
         }
 
         $packageBatch = $this->packagesToLoad;
@@ -342,7 +342,7 @@ class PoolBuilder
         if ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies()) {
             foreach ($package->getReplaces() as $link) {
                 $replace = $link->getTarget();
-                if (isset($this->loadedNames[$replace]) && isset($this->skippedLoad[$replace])) {
+                if (isset($this->loadedPackages[$replace]) && isset($this->skippedLoad[$replace])) {
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$replace])) {
                         $this->unfixPackage($request, $replace);
                         $this->markPackageNameForLoading($replace, $link->getConstraint());
@@ -439,7 +439,7 @@ class PoolBuilder
         }
 
         unset($this->skippedLoad[$name]);
-        unset($this->loadedNames[$name]);
+        unset($this->loadedPackages[$name]);
     }
 
     private function getRootAliasesPerPackage(array $aliases)
