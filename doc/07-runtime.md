@@ -72,6 +72,20 @@ package.
 \Composer\InstalledVersions::getReference('vendor/package');
 ```
 
+### Knowing a package's own installed version
+
+If you are only interested in getting a package's own version, e.g. in the source of acme/foo you want
+to know which version acme/foo is currently running to display that to the user, then it is
+acceptable to use getVersion/getPrettyVersion/getReference.
+
+The warning in the section above does not apply in this case as you are sure the package is present
+and not being replaced if your code is running.
+
+It is nonetheless a good idea to make sure you handle the `null` return value as gracefully as
+possible for safety.
+
+----
+
 A few other methods are available for more complex usages, please refer to the
 source/docblocks of the class itself.
 
