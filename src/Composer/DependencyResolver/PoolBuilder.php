@@ -341,6 +341,12 @@ class PoolBuilder
                 } else {
                     $this->markPackageNameForLoading($require, $linkConstraint);
                 }
+            } else {
+                // We also need to load the requirements of a fixed package
+                // unless it was skipped
+                if (!isset($this->skippedLoad[$require])) {
+                    $this->markPackageNameForLoading($require, $linkConstraint);
+                }
             }
         }
 
