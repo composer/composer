@@ -38,6 +38,7 @@
     },
     "conflict": {
         "symfony/console": "2.8.38"
+        "symfony/phpunit-bridge": "3.4.40"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^3.4",
