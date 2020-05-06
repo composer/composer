@@ -165,7 +165,7 @@ class Git
                     $errorMsg = $this->process->getErrorOutput();
                 }
             } elseif (
-                preg_match('{^(git)@' . self::getGitLabDomainsRegex($this->config) . ':(.+?)\.git$}i', $url, $match)
+                preg_match('{^(git)@' . self::getGitLabDomainsRegex($this->config) . ':(.+?\.git)$}i', $url, $match)
                 || preg_match('{^(https?)://' . self::getGitLabDomainsRegex($this->config) . '/(.*)}', $url, $match)
             ) {
                 if ($match[1] === 'git') {
