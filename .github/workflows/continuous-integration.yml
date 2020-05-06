@@ -124,8 +124,6 @@ jobs:
       - name: "Run tests for PHP 8"
         if: "matrix.php-version == '8.0'"
         run: |
-          # hack to workaround issue with react/promise, normally should just call bin/composer remove and skip the rm
-          rm -rf vendor/symfony/phpunit-bridge
-          composer remove --dev symfony/phpunit-bridge --ignore-platform-reqs
+          bin/composer remove --dev symfony/phpunit-bridge --ignore-platform-reqs
           bin/composer require phpunit/phpunit:^7.5 --ignore-platform-reqs
           vendor/bin/phpunit
