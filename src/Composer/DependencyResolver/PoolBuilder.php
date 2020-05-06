@@ -124,11 +124,11 @@ class PoolBuilder
         }
 
         foreach ($request->getFixedPackages() as $package) {
-            $this->loadedPackages[$package->getName()] = new EmptyConstraint();
+            $this->loadedPackages[$package->getName()] = new Constraint('==', $package->getVersion());
 
             // replace means conflict, so if a fixed package replaces a name, no need to load that one, packages would conflict anyways
             foreach ($package->getReplaces() as $link) {
-                $this->loadedPackages[$link->getTarget()] = new EmptyConstraint();
+                $this->loadedPackages[$link->getTarget()] = $link->getConstraint();
             }
 
             // TODO in how far can we do the above for conflicts? It's more tricky cause conflicts can be limited to
@@ -146,6 +146,11 @@ class PoolBuilder
         }
 
         foreach ($request->getRequires() as $packageName => $constraint) {
+            // fixed packages have already been added, so if a root require needs one of them, no need to do anything
+            if (isset($this->loadedPackages[$packageName])) {
+                continue;
+            }
+
             $this->markPackageNameForLoading($packageName, $constraint);
         }
 
@@ -224,6 +229,13 @@ class PoolBuilder
 
     private function markPackageNameForLoading($name, ConstraintInterface $constraint)
     {
+        // Maybe it was already marked before but not loaded yet. In that case
+        // we have to extend the constraint (we don't check if they match because
+        // MultiConstraint::create() will optimize anyway
+        if (isset($this->packagesToLoad[$name]) && !$constraint->isSubsetOf($this->packagesToLoad[$name])) {
+            $constraint = MultiConstraint::create(array($this->packagesToLoad[$name], $constraint), false);
+        }
+
         if (!isset($this->loadedPackages[$name])) {
             $this->packagesToLoad[$name] = $constraint;
             return;
@@ -233,13 +245,6 @@ class PoolBuilder
         // a subset of the constraint with which we have already loaded packages
         if ($constraint->isSubsetOf($this->loadedPackages[$name])) {
             return;
-        }
-
-        // Maybe it was already marked before but not loaded yet. In that case
-        // we have to extend the constraint (we don't check if they match because
-        // MultiConstraint::create() will optimize anyway
-        if (isset($this->packagesToLoad[$name])) {
-            $constraint = MultiConstraint::create(array($this->packagesToLoad[$name], $constraint), false);
         }
 
         // We have already loaded that package but not in the constraint that's
@@ -322,19 +327,21 @@ class PoolBuilder
             $require = $link->getTarget();
             $linkConstraint = $link->getConstraint();
 
-            // if this is a partial update with transitive dependencies we need to unfix the package we now know is a
-            // dependency of another package which we are trying to update, and then attempt to load it again
-            if ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies() && isset($this->skippedLoad[$require])) {
-                if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$require])) {
-                    $this->unfixPackage($request, $require);
+            if ($propagateUpdate) {
+                // if this is a partial update with transitive dependencies we need to unfix the package we now know is a
+                // dependency of another package which we are trying to update, and then attempt to load it again
+                if ($request->getUpdateAllowTransitiveDependencies() && isset($this->skippedLoad[$require])) {
+                    if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$require])) {
+                        $this->unfixPackage($request, $require);
+                        $this->markPackageNameForLoading($require, $linkConstraint);
+                    } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $require) && !isset($this->updateAllowWarned[$require])) {
+                        $this->updateAllowWarned[$require] = true;
+                        $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
+                    }
+                } else {
                     $this->markPackageNameForLoading($require, $linkConstraint);
-                } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $require) && !isset($this->updateAllowWarned[$require])) {
-                    $this->updateAllowWarned[$require] = true;
-                    $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
                 }
             }
-
-            $this->markPackageNameForLoading($require, $linkConstraint);
         }
 
         // if we're doing a partial update with deps we also need to unfix packages which are being replaced in case they
