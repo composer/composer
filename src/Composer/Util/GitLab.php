@@ -80,7 +80,7 @@ class GitLab
 
         // if available use token from composer config
         $authTokens = $this->config->get('gitlab-token');
-        
+
         if (isset($authTokens[$originUrl])) {
             $token = $authTokens[$originUrl];
         }
@@ -179,9 +179,9 @@ class GitLab
         );
 
         $token = $this->httpDownloader->get($scheme.'://'.$apiUrl.'/oauth/token', $options)->decodeJson();
-        
-        $this->io->writeError('Token successfully created');	
-        
+
+        $this->io->writeError('Token successfully created');
+
         return $token;
     }
 }
