@@ -124,12 +124,13 @@ class PoolBuilder
         }
 
         foreach ($request->getFixedPackages() as $package) {
-            $this->loadedPackages[$package->getName()] = new Constraint('==', $package->getVersion());
+            // using EmptyConstraint here because fixed packages do not need to retrigger
+            // loading any packages
+            $this->loadedPackages[$package->getName()] = new EmptyConstraint();
 
             // replace means conflict, so if a fixed package replaces a name, no need to load that one, packages would conflict anyways
             foreach ($package->getReplaces() as $link) {
-                $this->loadedPackages[$link->getTarget()] = $link->getConstraint();
-                $this->skippedLoad[$link->getTarget()] = $package->getName();
+                $this->loadedPackages[$link->getTarget()] = new EmptyConstraint();
             }
 
             // TODO in how far can we do the above for conflicts? It's more tricky cause conflicts can be limited to
