@@ -27,6 +27,7 @@ use Composer\Semver\Constraint\MultiConstraint;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Plugin\PrePoolCreateEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Semver\Intervals;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -235,7 +236,7 @@ class PoolBuilder
         // Maybe it was already marked before but not loaded yet. In that case
         // we have to extend the constraint (we don't check if they match because
         // MultiConstraint::create() will optimize anyway
-        if (isset($this->packagesToLoad[$name]) && !$constraint->isSubsetOf($this->packagesToLoad[$name])) {
+        if (isset($this->packagesToLoad[$name]) && !Intervals::isSubsetOf($constraint, $this->packagesToLoad[$name])) {
             $constraint = MultiConstraint::create(array($this->packagesToLoad[$name], $constraint), false);
         }
 
@@ -246,7 +247,7 @@ class PoolBuilder
 
         // No need to load this package with this constraint because it is
         // a subset of the constraint with which we have already loaded packages
-        if ($constraint->isSubsetOf($this->loadedPackages[$name])) {
+        if (Intervals::isSubsetOf($constraint, $this->loadedPackages[$name])) {
             return;
         }
 
