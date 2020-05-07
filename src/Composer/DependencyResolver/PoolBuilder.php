@@ -209,6 +209,7 @@ class PoolBuilder
         }
 
         // Filter duplicate packages
+        // TODO: can we optimize this so that we don't even end up having dupes here?
         $presentPackages = array();
         foreach ($this->packages as $i => $package) {
             if (isset($presentPackages[$package->getUniqueName()])) {
