@@ -184,9 +184,9 @@ class Git
                 if ($this->io->hasAuthentication($match[2])) {
                     $auth = $this->io->getAuthentication($match[2]);
                     if ($auth['password'] === 'private-token' || $auth['password'] === 'oauth2' || $auth['password'] === 'gitlab-ci-token') {
-                        $authUrl = $match[1] . '://' . rawurlencode($auth['password']) . ':' . rawurlencode($auth['username']) . '@' . $match[2] . '/' . $match[3] . '.git'; // swap username and password
+                        $authUrl = $match[1] . '://' . rawurlencode($auth['password']) . ':' . rawurlencode($auth['username']) . '@' . $match[2] . '/' . $match[3]; // swap username and password
                     } else {
-                        $authUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . '/' . $match[3] . '.git';
+                        $authUrl = $match[1] . '://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . '/' . $match[3];
                     }
 
                     $command = call_user_func($commandCallable, $authUrl);
