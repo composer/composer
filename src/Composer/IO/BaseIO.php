@@ -135,7 +135,9 @@ abstract class BaseIO implements IOInterface
         }
 
         foreach ($gitlabToken as $domain => $token) {
-            $this->checkAndSetAuthentication($domain, $token, 'private-token');
+            $username = is_array($token) && array_key_exists("username", $token) ? $token["username"] : $token;
+            $password = is_array($token) && array_key_exists("token", $token) ? $token["token"] : 'private-token';
+            $this->checkAndSetAuthentication($domain, $username, $password);
         }
 
         // reload http basic credentials from config if available

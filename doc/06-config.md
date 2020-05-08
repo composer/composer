@@ -85,9 +85,13 @@ gitlab.com the domain names must be also specified with the
 
 ## gitlab-token
 
-A list of domain names and private tokens. For example using `{"gitlab.com":
+A list of domain names and private tokens. Private token can be either simple 
+string, or array with username and token. For example using `{"gitlab.com": 
 "privatetoken"}` as the value of this option will use `privatetoken` to access
-private repositories on gitlab. Please note: If the package is not hosted at
+private repositories on gitlab. Using `{"gitlab.com": {"username": "gitlabuser",
+ "token": "privatetoken"}}` will use both username and token for gitlab deploy 
+token functionality (https://docs.gitlab.com/ee/user/project/deploy_tokens/)
+Please note: If the package is not hosted at
 gitlab.com the domain names must be also specified with the
 [`gitlab-domains`](06-config.md#gitlab-domains) option.
 
