@@ -56,7 +56,7 @@ jobs:
             dependencies: locked
             experimental: false
           - php-version: 8.0
-            dependencies: lowest
+            dependencies: lowest-ignore
             os: ubuntu-latest
             experimental: true
           - php-version: 8.0
@@ -98,6 +98,10 @@ jobs:
       - name: "Install lowest dependencies from composer.json using composer binary provided by system"
         if: "matrix.dependencies == 'lowest'"
         run: "composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest"
+
+      - name: "Install lowest dependencies from composer.json using composer binary provided by system, ignoring platform requirements"
+        if: "matrix.dependencies == 'lowest-ignore'"
+        run: "composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest --ignore-platform-reqs"
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'locked'"
