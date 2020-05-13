@@ -72,11 +72,16 @@ class ErrorHandler
      * Register error handler.
      *
      * @param IOInterface|null $io
+     * @param bool $overrideRuntimeErrorReporting
      */
-    public static function register(IOInterface $io = null)
+    public static function register(IOInterface $io = null, $overrideRuntimeErrorReporting = true)
     {
         set_error_handler(array(__CLASS__, 'handle'));
-        error_reporting(E_ALL | E_STRICT);
+
+        if ($overrideRuntimeErrorReporting) {
+            error_reporting(E_ALL | E_STRICT);
+        }
+
         self::$io = $io;
     }
 }

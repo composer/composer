@@ -24,6 +24,7 @@ The following options are available with every command:
 * **--no-plugins:** Disables plugins.
 * **--no-cache:** Disables the use of the cache directory. Same as setting the COMPOSER_CACHE_DIR
   env var to /dev/null (or NUL on Windows).
+* **--no-runtime-error-reporting-override:** Prevent the error handler changing the error_reporting configuration from the one set by the runtime.
 * **--working-dir (-d):** If specified, use the given directory as working directory.
 * **--profile:** Display timing and memory usage information
 * **--ansi:** Force ANSI output.

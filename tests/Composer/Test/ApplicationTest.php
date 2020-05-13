@@ -39,6 +39,11 @@ class ApplicationTest extends TestCase
 
         $inputMock->expects($this->at($index++))
             ->method('hasParameterOption')
+            ->with($this->equalTo('--no-runtime-error-reporting-override'))
+            ->will($this->returnValue(false));
+
+        $inputMock->expects($this->at($index++))
+            ->method('hasParameterOption')
             ->with($this->equalTo('--no-cache'))
             ->will($this->returnValue(false));
 
@@ -100,6 +105,11 @@ class ApplicationTest extends TestCase
         $inputMock->expects($this->at($index++))
             ->method('setInteractive')
             ->with($this->equalTo(false));
+
+        $inputMock->expects($this->at($index++))
+            ->method('hasParameterOption')
+            ->with($this->equalTo('--no-runtime-error-reporting-override'))
+            ->will($this->returnValue(false));
 
         $inputMock->expects($this->at($index++))
             ->method('hasParameterOption')

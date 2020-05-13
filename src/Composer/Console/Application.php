@@ -127,7 +127,14 @@ class Application extends BaseApplication
         $io = $this->io = new ConsoleIO($input, $output, new HelperSet(array(
             new QuestionHelper(),
         )));
-        ErrorHandler::register($io);
+
+        $overrideRuntimeErrorReporting = true;
+
+        if ($input->hasParameterOption('--no-runtime-error-reporting-override')) {
+            $overrideRuntimeErrorReporting = false;
+        }
+
+        ErrorHandler::register($io, $overrideRuntimeErrorReporting);
 
         if ($input->hasParameterOption('--no-cache')) {
             $io->writeError('Disabling cache usage', true, IOInterface::DEBUG);
@@ -230,7 +237,7 @@ class Application extends BaseApplication
                 if (function_exists('posix_getuid') && posix_getuid() === 0) {
                     if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                         $io->writeError('<warning>Do not run Composer as root/super user! See https://getcomposer.org/root for details</warning>');
-                        
+
                         if ($io->isInteractive()) {
                             if (!$io->askConfirmation('<info>Continue as root/super user</info> [<comment>yes</comment>]? ', true)) {
                                 return 1;
@@ -481,6 +488,7 @@ class Application extends BaseApplication
         $definition->addOption(new InputOption('--no-plugins', null, InputOption::VALUE_NONE, 'Whether to disable plugins.'));
         $definition->addOption(new InputOption('--working-dir', '-d', InputOption::VALUE_REQUIRED, 'If specified, use the given directory as working directory.'));
         $definition->addOption(new InputOption('--no-cache', null, InputOption::VALUE_NONE, 'Prevent use of the cache'));
+        $definition->addOption(new InputOption('--no-runtime-error-reporting-override', null, InputOption::VALUE_NONE, 'Prevent the error handler changing the error_reporting configuration from the one set by the runtime'));
 
         return $definition;
     }
