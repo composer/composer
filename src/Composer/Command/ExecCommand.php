@@ -99,7 +99,7 @@ EOT
             try {
                 chdir($this->getApplication()->getInitialWorkingDirectory());
             } catch (\Exception $e) {
-                throw new \RuntimeException('Could not switch back to working directory "'.$this->getApplication()->getWorkingDirectory().'"', 0, $e);
+                throw new \RuntimeException('Could not switch back to working directory "'.$this->getApplication()->getInitialWorkingDirectory().'"', 0, $e);
             }
         }
 
