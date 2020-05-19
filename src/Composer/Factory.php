@@ -584,7 +584,7 @@ class Factory
      * @param  array            $options Array of options passed directly to HttpDownloader constructor
      * @return HttpDownloader
      */
-    public static function createHttpDownloader(IOInterface $io, Config $config = null, $options = array())
+    public static function createHttpDownloader(IOInterface $io, Config $config, $options = array())
     {
         static $warned = false;
         $disableTls = false;
