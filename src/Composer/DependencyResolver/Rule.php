@@ -17,7 +17,9 @@ use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;
+use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
+use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -122,9 +124,47 @@ abstract class Rule
 
     abstract public function isAssertion();
 
-    public function isCausedByLock()
+    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
     {
-        return $this->getReason() === self::RULE_FIXED && $this->reasonData['lockable'];
+        if ($this->getReason() === self::RULE_FIXED && $this->reasonData['lockable']) {
+            return true;
+        }
+
+        if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $this->reasonData->getTarget())) {
+                return false;
+            }
+            foreach ($request->getFixedPackages() as $package) {
+                if ($package->getName() === $this->reasonData->getTarget()) {
+                    if ($pool->isUnacceptableFixedPackage($package)) {
+                        return true;
+                    }
+                    if (!$this->reasonData->getConstraint()->matches(new Constraint('=', $package->getVersion()))) {
+                        return true;
+                    }
+                    break;
+                }
+            }
+        }
+
+        if ($this->getReason() === self::RULE_ROOT_REQUIRE) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $this->reasonData['packageName'])) {
+                return false;
+            }
+            foreach ($request->getFixedPackages() as $package) {
+                if ($package->getName() === $this->reasonData['packageName']) {
+                    if ($pool->isUnacceptableFixedPackage($package)) {
+                        return true;
+                    }
+                    if (!$this->reasonData['constraint']->matches(new Constraint('=', $package->getVersion()))) {
+                        return true;
+                    }
+                    break;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())

@@ -133,11 +133,11 @@ class Problem
         return "\n    - ".implode("\n    - ", $result);
     }
 
-    public function isCausedByLock()
+    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
     {
         foreach ($this->reasons as $sectionRules) {
             foreach ($sectionRules as $rule) {
-                if ($rule->isCausedByLock()) {
+                if ($rule->isCausedByLock($repositorySet, $request, $pool)) {
                     return true;
                 }
             }

@@ -45,7 +45,7 @@ class SolverProblemsException extends \RuntimeException
                 $hasExtensionProblems = true;
             }
 
-            $isCausedByLock |= $problem->isCausedByLock();
+            $isCausedByLock |= $problem->isCausedByLock($repositorySet, $request, $pool);
         }
 
         $i = 1;
@@ -63,7 +63,7 @@ class SolverProblemsException extends \RuntimeException
         }
 
         if ($isCausedByLock && !$isDevExtraction) {
-            $text .= "\nUse the option --with-all-dependencies to allow updates and removals for packages currently locked to specific versions.";
+            $text .= "\nUse the option --with-all-dependencies to allow upgrades, downgrades and removals for packages currently locked to specific versions.";
         }
 
         if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match') && strpos($text, '- ocramius/package-versions')) {
