@@ -191,6 +191,8 @@ EOT
             }
         }
 
+        $io->writeError('<info>'.$file.' has been updated</info>');
+
         if ($input->getOption('no-update')) {
             return 0;
         }
@@ -225,11 +227,16 @@ EOT
         $apcu = $input->getOption('apcu-autoloader') || $composer->getConfig()->get('apcu-autoloader');
 
         $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
+        $flags = '';
         if ($input->getOption('update-with-all-dependencies') || $input->getOption('with-all-dependencies')) {
             $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
+            $flags .= ' --with-all-dependencies';
         } elseif ($input->getOption('no-update-with-dependencies')) {
             $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
+            $flags .= ' --with-dependencies';
         }
+
+        $io->writeError('<info>Running composer update '.implode(' ', $packages).$flags);
 
         $install
             ->setVerbose($input->getOption('verbose'))

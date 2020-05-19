@@ -264,17 +264,23 @@ EOT
             $rootPackage->setDevRequires($links['require-dev']);
         }
 
+
         $updateDevMode = !$input->getOption('update-no-dev');
         $optimize = $input->getOption('optimize-autoloader') || $composer->getConfig()->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
         $apcu = $input->getOption('apcu-autoloader') || $composer->getConfig()->get('apcu-autoloader');
 
         $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
+        $flags = '';
         if ($input->getOption('update-with-all-dependencies') || $input->getOption('with-all-dependencies')) {
             $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
+            $flags .= ' --with-all-dependencies';
         } elseif ($input->getOption('update-with-dependencies') || $input->getOption('with-dependencies')) {
             $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
+            $flags .= ' --with-dependencies';
         }
+
+        $io->writeError('<info>Running composer update '.implode(' ', array_keys($requirements)).$flags);
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
