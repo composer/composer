@@ -83,12 +83,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "e639bd3c21f90c8368e6c4a87fd4491f8b21eb2c"
+                "reference": "594e5242ff1ba3aac2f4b8401d3f1ca1d781fd89"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/e639bd3c21f90c8368e6c4a87fd4491f8b21eb2c",
-                "reference": "e639bd3c21f90c8368e6c4a87fd4491f8b21eb2c",
+                "url": "https://api.github.com/repos/composer/semver/zipball/594e5242ff1ba3aac2f4b8401d3f1ca1d781fd89",
+                "reference": "594e5242ff1ba3aac2f4b8401d3f1ca1d781fd89",
                 "shasum": ""
             },
             "require": {
@@ -156,7 +156,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-05-19T14:21:25+00:00"
+            "time": "2020-05-19T14:49:33+00:00"
         },
         {
             "name": "composer/spdx-licenses",

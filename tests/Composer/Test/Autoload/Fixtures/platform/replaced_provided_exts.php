@@ -4,10 +4,6 @@
 
 $issues = array();
 
-if (!(PHP_VERSION_ID >= 0 && PHP_VERSION_ID < 99999)) {
-    $issues[] = 'Your Composer dependencies require a PHP version ">= 0" and "< 99999". You are running ' . PHP_VERSION  .  '.';
-}
-
 $missingExtensions = array();
 extension_loaded('pdo') || $missingExtensions[] = 'pdo';
 
