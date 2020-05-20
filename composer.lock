@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a5f07d1ae8479fae25dd57b2d966cd22",
+    "content-hash": "4661f272e877e4aaaaf1cf0848b891b7",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -83,12 +83,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "594e5242ff1ba3aac2f4b8401d3f1ca1d781fd89"
+                "reference": "07a3e324e654298714fcecfbb4604e3ee0c6f3bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/594e5242ff1ba3aac2f4b8401d3f1ca1d781fd89",
-                "reference": "594e5242ff1ba3aac2f4b8401d3f1ca1d781fd89",
+                "url": "https://api.github.com/repos/composer/semver/zipball/07a3e324e654298714fcecfbb4604e3ee0c6f3bd",
+                "reference": "07a3e324e654298714fcecfbb4604e3ee0c6f3bd",
                 "shasum": ""
             },
             "require": {
@@ -96,7 +96,7 @@
             },
             "require-dev": {
                 "phpstan/phpstan": "^0.12.19",
-                "phpunit/phpunit": "^4.5 || ^5.0.5 || ^7"
+                "symfony/phpunit-bridge": "^4.2 || ^5"
             },
             "type": "library",
             "extra": {
@@ -156,7 +156,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-05-19T14:49:33+00:00"
+            "time": "2020-05-20T08:27:54+00:00"
         },
         {
             "name": "composer/spdx-licenses",

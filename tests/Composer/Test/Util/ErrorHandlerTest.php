@@ -46,7 +46,11 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerCaptureWarning()
     {
-        $this->setExpectedException('\ErrorException', 'array_merge');
+        if (PHP_VERSION_ID >= 80000) {
+            $this->setExpectedException('TypeError', 'array_merge');
+        } else {
+            $this->setExpectedException('ErrorException', 'array_merge');
+        }
 
         array_merge(array(), 'string');
     }

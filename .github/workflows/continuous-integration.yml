@@ -10,7 +10,9 @@ on:
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
-  SYMFONY_PHPUNIT_VERSION: ""
+  COMPOSER_UPDATE_FLAGS: ""
+  SYMFONY_PHPUNIT_VERSION: "8.3"
+  SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT: "1"
 
 jobs:
   tests:
@@ -68,6 +70,30 @@ jobs:
       - name: "Checkout"
         uses: "actions/checkout@v2"
 
+      - name: "Install PHP 7.4 to prepare nightly builds"
+        if: "matrix.php-version == '8.0'"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          extensions: "intl"
+          ini-values: "memory_limit=-1, phar.readonly=0"
+          php-version: "7.4"
+
+      - name: "Choose PHPUnit version"
+        if: "!startsWith(matrix.os, 'windows')"
+        run: |
+          if [ "${{ matrix.php-version }}" = "5.3" ] || [ "${{ matrix.php-version }}" = "5.4" ] || [ "${{ matrix.php-version }}" = "5.5" ]; then
+            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::4.8";
+          elif [ "${{ matrix.php-version }}" = "5.6" ]; then
+            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::5.7";
+          elif [ "${{ matrix.php-version }}" = "7.0" ]; then
+            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::6.5";
+          elif [ "${{ matrix.php-version }}" = "7.1" ]; then
+            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::7.5";
+          else
+            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::8.3";
+          fi
+
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
         with:
@@ -87,28 +113,29 @@ jobs:
           key: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}-${{ hashFiles('**/composer.lock') }}"
           restore-keys: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}"
 
-      - name: "Install highest dependencies from composer.json using composer binary provided by system"
-        if: "matrix.dependencies == 'highest'"
-        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
+      - name: "Handle lowest dependencies update"
+        if: "contains(matrix.dependencies, 'lowest')"
+        run: "echo \"::set-env name=COMPOSER_UPDATE_FLAGS::$COMPOSER_UPDATE_FLAGS --prefer-lowest\""
 
-      - name: "Install highest dependencies from composer.json using composer binary provided by system, ignoring platform requirements"
-        if: "matrix.dependencies == 'highest-ignore'"
-        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }} --ignore-platform-reqs"
+      - name: "Handle ignore-platform-reqs dependencies update"
+        if: "contains(matrix.dependencies, 'ignore')"
+        run: "echo \"::set-env name=COMPOSER_FLAGS::$COMPOSER_FLAGS --ignore-platform-reqs\""
 
-      - name: "Install lowest dependencies from composer.json using composer binary provided by system"
-        if: "matrix.dependencies == 'lowest'"
-        run: "composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest"
+      - name: "Remove platform config to get latest dependencies for current PHP version when build is not locked"
+        run: "composer config platform --unset"
 
-      - name: "Install lowest dependencies from composer.json using composer binary provided by system, ignoring platform requirements"
-        if: "matrix.dependencies == 'lowest-ignore'"
-        run: "composer update ${{ env.COMPOSER_FLAGS }} --prefer-lowest --ignore-platform-reqs"
+      - name: "Update dependencies from composer.json using composer binary provided by system"
+        if: "contains(matrix.dependencies, 'highest') || contains(matrix.dependencies, 'lowest')"
+        run: "composer update ${{ env.COMPOSER_UPDATE_FLAGS }} ${{ env.COMPOSER_FLAGS }}"
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'locked'"
         run: "composer install ${{ env.COMPOSER_FLAGS }}"
 
+      - name: "Update Symfony's PHPUnitBridge to latest available for the current PHP always as it is not really a dependency of the project"
+        run: "composer update ${{ env.COMPOSER_FLAGS }} symfony/phpunit-bridge"
+
       - name: "Run install again using composer binary from source"
-        if: "matrix.dependencies != 'highest-ignore'"
         run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
 
       - name: "Validate composer.json"
@@ -117,21 +144,15 @@ jobs:
       - name: "Prepare git environment"
         run: "git config --global user.name composer && git config --global user.email composer@example.com"
 
-      - name: "Set SYMFONY_PHPUNIT_VERSION environment variable"
-        if: "matrix.php-version == '7.4'"
-        run: "echo \"::set-env name=SYMFONY_PHPUNIT_VERSION::7.5\""
-
-      - name: "Run tests"
-        if: "matrix.php-version != '8.0' && matrix.php-version != '7.3'"
-        run: "vendor/bin/simple-phpunit"
-
-      - name: "Run Complete test suite"
-        if: "matrix.php-version == '7.3'"
-        run: "vendor/bin/simple-phpunit --configuration tests/complete.phpunit.xml"
-
-      - name: "Run tests for PHP 8"
+      - name: "Pre-install PHPUnit using PHP 7.4 for PHP 8"
         if: "matrix.php-version == '8.0'"
         run: |
-          bin/composer remove --dev symfony/phpunit-bridge --ignore-platform-reqs
-          bin/composer require phpunit/phpunit:^7.5 --ignore-platform-reqs --with-dependencies
-          vendor/bin/phpunit
+          php7.4 vendor/bin/simple-phpunit install
+
+      - name: "Run tests"
+        if: "matrix.php-version != '7.3'"
+        run: "vendor/bin/simple-phpunit"
+
+      - name: "Run complete test suite on 7.3"
+        if: "matrix.php-version == '7.3'"
+        run: "vendor/bin/simple-phpunit --configuration tests/complete.phpunit.xml"
