@@ -38,11 +38,10 @@
         "react/promise": "^1.2 || ^2.7"
     },
     "conflict": {
-        "symfony/console": "2.8.38",
-        "symfony/phpunit-bridge": "3.4.40"
+        "symfony/console": "2.8.38"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "^3.4",
+        "symfony/phpunit-bridge": "^4.2 || ^5",
         "phpspec/prophecy": "^1.10"
     },
     "suggest": {
