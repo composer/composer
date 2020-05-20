@@ -84,7 +84,7 @@ class ConsoleIOTest extends TestCase
             ->with(
                 $this->callback(function ($messages) {
                     $result = preg_match("[(.*)/(.*) First line]", $messages[0]) > 0;
-                    $result &= preg_match("[(.*)/(.*) Second line]", $messages[1]) > 0;
+                    $result = $result && preg_match("[(.*)/(.*) Second line]", $messages[1]) > 0;
 
                     return $result;
                 }),

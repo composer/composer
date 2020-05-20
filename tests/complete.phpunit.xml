@@ -10,7 +10,6 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          failOnRisky="true"
-         strict="false"
          processIsolation="false"
          stopOnFailure="false"
          bootstrap="./bootstrap.php"
