@@ -127,8 +127,20 @@ class RepositoryManager
 
         $reflMethod = new \ReflectionMethod($class, '__construct');
         $params = $reflMethod->getParameters();
-        if (isset($params[4]) && $params[4]->getClass() && $params[4]->getClass()->getName() === 'Composer\Util\RemoteFilesystem') {
-            return new $class($config, $this->io, $this->config, $this->eventDispatcher, $this->rfs);
+        if (isset($params[4])) {
+            $paramType = null;
+            if (\PHP_VERSION_ID >= 70000) {
+                $reflectionType = $params[4]->getType();
+                if ($reflectionType) {
+                    $paramType = $reflectionType instanceof \ReflectionNamedType ? $reflectionType->getName() : (string)$reflectionType;
+                }
+            } else {
+                $paramType = $params[4]->getClass() ? $params[4]->getClass()->getName() : null;
+            }
+
+            if ($paramType  === 'Composer\Util\RemoteFilesystem') {
+                return new $class($config, $this->io, $this->config, $this->eventDispatcher, $this->rfs);
+            }
         }
 
         return new $class($config, $this->io, $this->config, $this->eventDispatcher);

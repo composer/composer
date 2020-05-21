@@ -326,13 +326,22 @@ class EventDispatcher
             return $event;
         }
 
-        $typehint = $reflected->getClass();
-
-        if (!$typehint instanceof \ReflectionClass) {
-            return $event;
+        $expected = null;
+        $isClass = false;
+        if (\PHP_VERSION_ID >= 70000) {
+            $reflectionType = $reflected->getType();
+            if ($reflectionType) {
+                $expected = $reflectionType instanceof \ReflectionNamedType ? $reflectionType->getName() : (string)$reflectionType;
+                $isClass = !$reflectionType->isBuiltin();
+            }
+        } else {
+            $expected = $reflected->getClass() ? $reflected->getClass()->getName() : null;
+            $isClass = null !== $expected;
         }
 
-        $expected = $typehint->getName();
+        if (!$isClass) {
+            return $event;
+        }
 
         // BC support
         if (!$event instanceof $expected && $expected === 'Composer\Script\CommandEvent') {
