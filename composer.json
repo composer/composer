@@ -38,7 +38,7 @@
         "react/promise": "^1.2 || ^2.7"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "^4.4 || ^5.0",
+        "symfony/phpunit-bridge": "^4.2 || ^5.0",
         "phpspec/prophecy": "^1.10"
     },
     "suggest": {
