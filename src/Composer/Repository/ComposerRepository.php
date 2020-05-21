@@ -31,7 +31,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Downloader\TransportException;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Http\Response;
 use Composer\Util\MetadataMinifier;
 use Composer\Util\Url;
@@ -265,7 +265,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (is_array($this->availablePackages)) {
                 $packageMap = array();
                 foreach ($this->availablePackages as $name) {
-                    $packageMap[$name] = new EmptyConstraint();
+                    $packageMap[$name] = new MatchAllConstraint();
                 }
 
                 $result = $this->loadAsyncPackages($packageMap);

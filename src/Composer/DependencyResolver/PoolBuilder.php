@@ -22,7 +22,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
-use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Plugin\PrePoolCreateEvent;
@@ -153,7 +153,7 @@ class PoolBuilder
             }
 
             $loadNames[$packageName] = $constraint;
-            $this->nameConstraints[$packageName] = $constraint && !($constraint instanceof EmptyConstraint) ? array($constraint) : null;
+            $this->nameConstraints[$packageName] = $constraint && !($constraint instanceof MatchAllConstraint) ? array($constraint) : null;
         }
 
         // clean up loadNames for anything we manually marked loaded above
@@ -305,7 +305,7 @@ class PoolBuilder
             }
 
             $linkConstraint = $link->getConstraint();
-            if ($linkConstraint && !($linkConstraint instanceof EmptyConstraint)) {
+            if ($linkConstraint && !($linkConstraint instanceof MatchAllConstraint)) {
                 if (!\array_key_exists($require, $this->nameConstraints)) {
                     $this->nameConstraints[$require] = array($linkConstraint);
                 } elseif (\is_array($this->nameConstraints[$require])) {

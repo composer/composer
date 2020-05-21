@@ -20,7 +20,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Semver\Constraint\Bound;
-use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Filesystem;
 use Composer\Script\ScriptEvents;
 use Composer\Util\PackageSorter;
@@ -580,7 +580,7 @@ EOF;
             list($package, $installPath) = $item;
             foreach (array_merge($package->getReplaces(), $package->getProvides()) as $link) {
                 if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
-                    $extensionProviders[$match[1]][] = $link->getConstraint() ?: new EmptyConstraint();
+                    $extensionProviders[$match[1]][] = $link->getConstraint() ?: new MatchAllConstraint();
                 }
             }
         }
