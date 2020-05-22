@@ -325,7 +325,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return rtrim($this->config->get('vendor-dir').'/composer/'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
+        return rtrim($this->config->get('vendor-dir').'/composer/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
     }
 
     /**
