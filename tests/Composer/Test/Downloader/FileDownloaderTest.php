@@ -99,7 +99,7 @@ class FileDownloaderTest extends TestCase
             ->with('vendor-dir')
             ->will($this->returnValue('/vendor'));
 
-        $this->assertRegExp('#/vendor/composer/[a-z0-9]+\.js#', $method->invoke($downloader, $packageMock, '/path'));
+        $this->assertRegExp('#/vendor/composer/tmp-[a-z0-9]+\.js#', $method->invoke($downloader, $packageMock, '/path'));
     }
 
     public function testDownloadButFileIsUnsaved()
