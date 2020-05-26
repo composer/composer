@@ -15,7 +15,7 @@ namespace Composer\Test\Repository;
 use Composer\Test\TestCase;
 use Composer\Repository\FilterRepository;
 use Composer\Repository\ArrayRepository;
-use Composer\Semver\Constraint\MatchNoneConstraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Package\BasePackage;
 
 class FilterRepositoryTest extends TestCase
@@ -54,7 +54,7 @@ class FilterRepositoryTest extends TestCase
     public function testCanonicalDefaultTrue()
     {
         $repo = new FilterRepository($this->arrayRepo, array());
-        $result = $repo->loadPackages(array('foo/aaa' => new MatchNoneConstraint), BasePackage::$stabilities, array());
+        $result = $repo->loadPackages(array('foo/aaa' => new MatchAllConstraint), BasePackage::$stabilities, array());
         $this->assertCount(1, $result['packages']);
         $this->assertCount(1, $result['namesFound']);
     }
@@ -62,7 +62,7 @@ class FilterRepositoryTest extends TestCase
     public function testNonCanonical()
     {
         $repo = new FilterRepository($this->arrayRepo, array('canonical' => false));
-        $result = $repo->loadPackages(array('foo/aaa' => new MatchNoneConstraint), BasePackage::$stabilities, array());
+        $result = $repo->loadPackages(array('foo/aaa' => new MatchAllConstraint), BasePackage::$stabilities, array());
         $this->assertCount(1, $result['packages']);
         $this->assertCount(0, $result['namesFound']);
     }
