@@ -67,14 +67,6 @@ jobs:
             experimental: true
 
     steps:
-      - name: "Update to latest Composer snapshot"
-        if: "!startsWith(matrix.os, 'windows')"
-        run: "sudo composer self-update --snapshot"
-
-      - name: "Update to latest Composer snapshot on Windows"
-        if: "startsWith(matrix.os, 'windows')"
-        run: "composer self-update --snapshot"
-
       - name: "Checkout"
         uses: "actions/checkout@v2"
 
@@ -109,6 +101,14 @@ jobs:
           extensions: "intl"
           ini-values: "memory_limit=-1, phar.readonly=0"
           php-version: "${{ matrix.php-version }}"
+
+      - name: "Update to latest Composer snapshot"
+        if: "!startsWith(matrix.os, 'windows')"
+        run: "sudo composer self-update --snapshot"
+
+      - name: "Update to latest Composer snapshot on Windows"
+        if: "startsWith(matrix.os, 'windows')"
+        run: "composer self-update --snapshot"
 
       - name: "Determine composer cache directory"
         id: "determine-composer-cache-directory"
