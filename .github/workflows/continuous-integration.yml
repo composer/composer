@@ -67,6 +67,9 @@ jobs:
             experimental: true
 
     steps:
+      - name: "Update to latest Composer snapshot"
+        run: "composer self-update --snapshot"
+
       - name: "Checkout"
         uses: "actions/checkout@v2"
 
