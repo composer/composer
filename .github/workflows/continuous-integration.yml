@@ -104,7 +104,7 @@ jobs:
 
       - name: "Update to latest Composer snapshot"
         if: "!startsWith(matrix.os, 'windows')"
-        run: "sudo composer self-update --snapshot"
+        run: "sudo -i composer self-update --snapshot"
 
       - name: "Update to latest Composer snapshot on Windows"
         if: "startsWith(matrix.os, 'windows')"
