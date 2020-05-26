@@ -68,6 +68,11 @@ jobs:
 
     steps:
       - name: "Update to latest Composer snapshot"
+        if: "!startsWith(matrix.os, 'windows')"
+        run: "sudo composer self-update --snapshot"
+
+      - name: "Update to latest Composer snapshot on Windows"
+        if: "startsWith(matrix.os, 'windows')"
         run: "composer self-update --snapshot"
 
       - name: "Checkout"
