@@ -193,7 +193,7 @@ class PoolBuilder
         $nameConstraints = array();
         foreach ($this->nameConstraints as $name => $constraints) {
             if (\is_array($constraints)) {
-                $nameConstraints[$name] = MultiConstraint::create(array_values(array_unique($constraints)), false);
+                $nameConstraints[$name] = \Composer\Semver\Intervals::compactConstraint(MultiConstraint::create(array_values(array_unique($constraints)), false));
             }
         }
         foreach ($this->packages as $i => $package) {

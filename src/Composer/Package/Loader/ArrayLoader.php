@@ -319,7 +319,11 @@ class ArrayLoader implements LoaderInterface
             $parsedConstraint = $this->versionParser->parseConstraints($prettyConstraint);
         }
 
-        return new Link($source, $target, $parsedConstraint, $description, $prettyConstraint);
+        $parsedConstraint2 = \Composer\Semver\Intervals::compactConstraint($parsedConstraint);
+        //if ((string) $parsedConstraint2 !== (string) $parsedConstraint)
+        //    var_dump($parsedConstraint.' => '.$parsedConstraint2);
+
+        return new Link($source, $target, $parsedConstraint2, $description, $prettyConstraint);
     }
 
     /**
