@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "aaa28d3c716a6b5d973347f4046f4931",
+    "content-hash": "b596d49d8047528b59baeab735f1f98f",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -83,12 +83,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "7401fc3628694736b1cac8ec8d5c7dfdcfe54ea6"
+                "reference": "e28fa06aecbe17194fed4c58ee1de18190892677"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/7401fc3628694736b1cac8ec8d5c7dfdcfe54ea6",
-                "reference": "7401fc3628694736b1cac8ec8d5c7dfdcfe54ea6",
+                "url": "https://api.github.com/repos/composer/semver/zipball/e28fa06aecbe17194fed4c58ee1de18190892677",
+                "reference": "e28fa06aecbe17194fed4c58ee1de18190892677",
                 "shasum": ""
             },
             "require": {
@@ -101,7 +101,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.x-dev"
+                    "dev-master": "3.x-dev"
                 }
             },
             "autoload": {
@@ -156,7 +156,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-05-21T14:08:19+00:00"
+            "time": "2020-05-26T12:57:06+00:00"
         },
         {
             "name": "composer/spdx-licenses",

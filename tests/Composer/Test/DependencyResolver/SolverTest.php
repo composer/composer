@@ -25,7 +25,7 @@ use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
-use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Semver\Constraint\MatchNoneConstraint;
 
 class SolverTest extends TestCase
 {
@@ -379,7 +379,7 @@ class SolverTest extends TestCase
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
-        $packageB->setReplaces(array('a' => new Link('B', 'A', new EmptyConstraint())));
+        $packageB->setReplaces(array('a' => new Link('B', 'A', new MatchNoneConstraint())));
 
         $this->reposComplete();
 
