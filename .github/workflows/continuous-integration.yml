@@ -156,6 +156,7 @@ jobs:
         if: "matrix.php-version == '8.0'"
         run: |
           php7.4 vendor/bin/simple-phpunit install
+          composer config -g platform-check false
 
       - name: "Run tests"
         if: "matrix.php-version != '7.3'"
