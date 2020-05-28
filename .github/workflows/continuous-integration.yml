@@ -9,7 +9,7 @@ on:
       - 'doc/**'
 
 env:
-  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
+  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
   COMPOSER_UPDATE_FLAGS: ""
   SYMFONY_PHPUNIT_VERSION: "8.3"
   SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT: "1"
