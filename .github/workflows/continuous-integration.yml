@@ -70,15 +70,6 @@ jobs:
       - name: "Checkout"
         uses: "actions/checkout@v2"
 
-      - name: "Install PHP 7.4 to prepare nightly builds"
-        if: "matrix.php-version == '8.0'"
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "none"
-          extensions: "intl"
-          ini-values: "memory_limit=-1, phar.readonly=0"
-          php-version: "7.4"
-
       - name: "Choose PHPUnit version"
         if: "!startsWith(matrix.os, 'windows')"
         run: |
@@ -152,11 +143,10 @@ jobs:
       - name: "Prepare git environment"
         run: "git config --global user.name composer && git config --global user.email composer@example.com"
 
-      - name: "Pre-install PHPUnit using PHP 7.4 for PHP 8"
+      - name: "Require latest PHPUnitBridge for PHP 8"
         if: "matrix.php-version == '8.0'"
         run: |
-          php7.4 vendor/bin/simple-phpunit install
-          composer config -g platform-check false
+          composer require --dev symfony/phpunit-bridge:^5.1.0-RC2
 
       - name: "Run tests"
         if: "matrix.php-version != '7.3'"
