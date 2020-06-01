@@ -341,6 +341,7 @@ EOF;
         }
         $filesystem->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
         $checkPlatform = $config->get('platform-check') && $this->ignorePlatformReqs !== true;
+        $platformCheckContent = null;
         if ($checkPlatform) {
             $platformCheckContent = $this->getPlatformCheck($packageMap, $this->ignorePlatformReqs ?: array());
             if (null === $platformCheckContent) {
