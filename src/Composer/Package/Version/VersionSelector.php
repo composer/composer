@@ -33,7 +33,7 @@ class VersionSelector
 {
     private $repositorySet;
 
-    private $platformConstraints;
+    private $platformConstraints = array();
 
     private $parser;
 
@@ -44,7 +44,6 @@ class VersionSelector
     {
         $this->repositorySet = $repositorySet;
         if ($platformRepo) {
-            $this->platformConstraints = array();
             foreach ($platformRepo->getPackages() as $package) {
                 $this->platformConstraints[$package->getName()][] = new Constraint('==', $package->getVersion());
             }
@@ -58,7 +57,7 @@ class VersionSelector
      * @param  string                $packageName
      * @param  string                $targetPackageVersion
      * @param  string                $preferredStability
-     * @param  bool                  $ignorePlatformReqs
+     * @param  bool|array            $ignorePlatformReqs
      * @return PackageInterface|false
      */
     public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $ignorePlatformReqs = false)
@@ -71,13 +70,14 @@ class VersionSelector
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
         $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint);
 
-        if ($this->platformConstraints && !$ignorePlatformReqs) {
+        if ($this->platformConstraints && true !== $ignorePlatformReqs) {
             $platformConstraints = $this->platformConstraints;
-            $candidates = array_filter($candidates, function ($pkg) use ($platformConstraints) {
+            $ignorePlatformReqs = $ignorePlatformReqs ?: array();
+            $candidates = array_filter($candidates, function ($pkg) use ($platformConstraints, $ignorePlatformReqs) {
                 $reqs = $pkg->getRequires();
 
                 foreach ($reqs as $name => $link) {
-                    if (isset($platformConstraints[$name])) {
+                    if (!in_array($name, $ignorePlatformReqs, true) && isset($platformConstraints[$name])) {
                         foreach ($platformConstraints[$name] as $constraint) {
                             if ($link->getConstraint()->matches($constraint)) {
                                 continue 2;

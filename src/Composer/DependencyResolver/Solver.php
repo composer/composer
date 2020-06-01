@@ -164,13 +164,13 @@ class Solver
     }
 
     /**
-     * @param  Request $request
-     * @param bool $ignorePlatformReqs
+     * @param Request    $request
+     * @param bool|array $ignorePlatformReqs
      */
-    protected function checkForRootRequireProblems($request, $ignorePlatformReqs)
+    protected function checkForRootRequireProblems(Request $request, $ignorePlatformReqs)
     {
         foreach ($request->getRequires() as $packageName => $constraint) {
-            if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $packageName)) {
+            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($packageName, $ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $packageName)) {
                 continue;
             }
 
@@ -183,8 +183,8 @@ class Solver
     }
 
     /**
-     * @param  Request $request
-     * @param  bool    $ignorePlatformReqs
+     * @param  Request    $request
+     * @param  bool|array $ignorePlatformReqs
      * @return LockTransaction
      */
     public function solve(Request $request, $ignorePlatformReqs = false)

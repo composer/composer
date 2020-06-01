@@ -61,6 +61,11 @@ class AutoloadGenerator
      */
     private $runScripts = false;
 
+    /**
+     * @var bool|array
+     */
+    private $ignorePlatformReqs = false;
+
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
@@ -101,6 +106,26 @@ class AutoloadGenerator
     public function setRunScripts($runScripts = true)
     {
         $this->runScripts = (bool) $runScripts;
+    }
+
+    /**
+     * Sets whether platform requirements should be ignored
+     *
+     * If this is set to true, the platform check file will not be generated
+     * If this is set to false, the platform check file will be generated with all requirements
+     * If this is set to string[], those packages will be ignored from the platform check file
+     *
+     * @param array|bool $ignorePlatformReqs
+     */
+    public function setIgnorePlatformRequirements($ignorePlatformReqs)
+    {
+        if (is_array($ignorePlatformReqs)) {
+            $this->ignorePlatformReqs = array_filter($ignorePlatformReqs, function ($req) {
+                return (bool) preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+            });
+        } else {
+            $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;
+        }
     }
 
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsrPackages = false, $suffix = '')
@@ -314,9 +339,9 @@ EOF;
             unlink($includeFilesFilePath);
         }
         $filesystem->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
-        $checkPlatform = $config->get('platform-check');
+        $checkPlatform = $config->get('platform-check') && $this->ignorePlatformReqs !== true;
         if ($checkPlatform) {
-            $platformCheckContent = $this->getPlatformCheck($packageMap);
+            $platformCheckContent = $this->getPlatformCheck($packageMap, $this->ignorePlatformReqs ?: array());
             if (null === $platformCheckContent) {
                 $checkPlatform = false;
             }
@@ -575,7 +600,7 @@ EOF;
         return $baseDir . (($path !== false) ? var_export($path, true) : "");
     }
 
-    protected function getPlatformCheck($packageMap)
+    protected function getPlatformCheck($packageMap, array $ignorePlatformReqs)
     {
         $lowestPhpVersion = Bound::zero();
         $requiredExtensions = array();
@@ -593,6 +618,10 @@ EOF;
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
             foreach ($package->getRequires() as $link) {
+                if (in_array($link->getTarget(), $ignorePlatformReqs, true)) {
+                    continue;
+                }
+
                 if ('php' === $link->getTarget() && ($constraint = $link->getConstraint())) {
                     if ($constraint->getLowerBound()->compareTo($lowestPhpVersion, '>')) {
                         $lowestPhpVersion = $constraint->getLowerBound();

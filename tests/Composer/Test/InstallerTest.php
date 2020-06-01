@@ -264,10 +264,14 @@ class InstallerTest extends TestCase
 
         $application = new Application;
         $application->get('install')->setCode(function ($input, $output) use ($installer) {
+            $ignorePlatformReqs = $input->getOption('ignore-platform-reqs')
+                ? (array_filter($input->getOption('ignore-platform-reqs')) ? $input->getOption('ignore-platform-reqs') : true)
+                : false;
+
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setDryRun($input->getOption('dry-run'))
-                ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
+                ->setIgnorePlatformRequirements($ignorePlatformReqs);
 
             return $installer->run();
         });
@@ -287,6 +291,10 @@ class InstallerTest extends TestCase
                 $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
             }
 
+            $ignorePlatformReqs = $input->getOption('ignore-platform-reqs')
+                ? (array_filter($input->getOption('ignore-platform-reqs')) ? $input->getOption('ignore-platform-reqs') : true)
+                : false;
+
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setUpdate(true)
@@ -297,7 +305,7 @@ class InstallerTest extends TestCase
                 ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
                 ->setPreferStable($input->getOption('prefer-stable'))
                 ->setPreferLowest($input->getOption('prefer-lowest'))
-                ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));
+                ->setIgnorePlatformRequirements($ignorePlatformReqs);
 
             return $installer->run();
         });

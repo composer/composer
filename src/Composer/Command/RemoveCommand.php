@@ -50,7 +50,7 @@ class RemoveCommand extends BaseCommand
                 new InputOption('with-all-dependencies', null, InputOption::VALUE_NONE, 'Alias for --update-with-all-dependencies'),
                 new InputOption('no-update-with-dependencies', null, InputOption::VALUE_NONE, 'Does not allow inherited dependencies to be updated with explicit dependencies.'),
                 new InputOption('unused', null, InputOption::VALUE_NONE, 'Remove all packages which are locked but not required by any other package.'),
-                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Ignore platform requirements (php & ext- packages), optionally can take a package name to ignore specific package(s).'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
                 new InputOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
@@ -238,6 +238,10 @@ EOT
 
         $io->writeError('<info>Running composer update '.implode(' ', $packages).$flags);
 
+        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs')
+            ? (array_filter($input->getOption('ignore-platform-reqs')) ? $input->getOption('ignore-platform-reqs') : true)
+            : false;
+
         $install
             ->setVerbose($input->getOption('verbose'))
             ->setDevMode($updateDevMode)
@@ -248,7 +252,7 @@ EOT
             ->setInstall(!$input->getOption('no-install'))
             ->setUpdateAllowList($packages)
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
-            ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
+            ->setIgnorePlatformRequirements($ignorePlatformReqs)
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setDryRun($dryRun)
         ;

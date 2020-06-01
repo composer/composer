@@ -308,6 +308,7 @@ class Installer
             $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
             $this->autoloadGenerator->setApcu($this->apcuAutoloader);
             $this->autoloadGenerator->setRunScripts($this->runScripts);
+            $this->autoloadGenerator->setIgnorePlatformRequirements($this->ignorePlatformReqs);
             $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
         }
 
@@ -737,7 +738,7 @@ class Installer
         $rootRequires = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
-            if ($this->ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
+            if ((true === $this->ignorePlatformReqs || (is_array($this->ignorePlatformReqs) && in_array($req, $this->ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
                 continue;
             }
             if ($constraint instanceof Link) {
@@ -1117,12 +1118,22 @@ class Installer
     /**
      * set ignore Platform Package requirements
      *
-     * @param  bool      $ignorePlatformReqs
+     * If this is set to true, all platform requirements are ignored
+     * If this is set to false, no platform requirements are ignored
+     * If this is set to string[], those packages will be ignored
+     *
+     * @param  bool|array $ignorePlatformReqs
      * @return Installer
      */
     public function setIgnorePlatformRequirements($ignorePlatformReqs = false)
     {
-        $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;
+        if (is_array($ignorePlatformReqs)) {
+            $this->ignorePlatformReqs = array_filter($ignorePlatformReqs, function ($req) {
+                return (bool) preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+            });
+        } else {
+            $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;
+        }
 
         return $this;
     }

@@ -723,26 +723,28 @@ EOT
      */
     private function findBestVersionAndNameForPackage(InputInterface $input, $name, PlatformRepository $platformRepo = null, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null, $fixed = null)
     {
-        // ignore platform repo if platform requirements are ignored
-        $ignorePlatformReqs = $input->hasOption('ignore-platform-reqs') && $input->getOption('ignore-platform-reqs');
-        if ($ignorePlatformReqs) {
-            $platformRepo = null;
+        // handle ignore-platform-reqs flag if present
+        $ignorePlatformReqs = false;
+        if ($input->hasOption('ignore-platform-reqs')) {
+            $ignorePlatformReqs = $input->getOption('ignore-platform-reqs')
+                ? (array_filter($input->getOption('ignore-platform-reqs')) ? $input->getOption('ignore-platform-reqs') : true)
+                : false;
         }
 
         // find the latest version allowed in this repo set
         $versionSelector = new VersionSelector($this->getRepositorySet($input, $minimumStability), $platformRepo);
 
-        $package = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability);
+        $package = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $ignorePlatformReqs);
 
         if (!$package) {
             // platform packages can not be found in the pool in versions other than the local platform's has
             // so if platform reqs are ignored we just take the user's word for it
-            if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
+            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($name, $ignorePlatformReqs))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
                 return array($name, $requiredVersion ?: '*');
             }
 
             // Check whether the PHP version was the problem
-            if ($platformRepo && $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, true)) {
+            if (true !== $ignorePlatformReqs && $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, true)) {
                 throw new \InvalidArgumentException(sprintf(
                     'Package %s at version %s has a PHP requirement incompatible with your PHP version, PHP extensions and Composer version',
                     $name,
@@ -750,7 +752,7 @@ EOT
                 ));
             }
             // Check whether the required version was the problem
-            if ($requiredVersion && $versionSelector->findBestCandidate($name, null, $preferredStability)) {
+            if ($requiredVersion && $versionSelector->findBestCandidate($name, null, $preferredStability, $ignorePlatformReqs)) {
                 throw new \InvalidArgumentException(sprintf(
                     'Could not find package %s in a version matching %s',
                     $name,
@@ -758,7 +760,7 @@ EOT
                 ));
             }
             // Check whether the PHP version was the problem for all versions
-            if ($platformRepo && $versionSelector->findBestCandidate($name, null, $preferredStability, true)) {
+            if (true !== $ignorePlatformReqs && $versionSelector->findBestCandidate($name, null, $preferredStability, true)) {
                 throw new \InvalidArgumentException(sprintf(
                     'Could not find package %s in any version matching your PHP version, PHP extensions and Composer version',
                     $name

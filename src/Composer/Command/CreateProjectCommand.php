@@ -80,7 +80,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deleting the vcs folder.'),
                 new InputOption('remove-vcs', null, InputOption::VALUE_NONE, 'Whether to force deletion of the vcs folder without prompting.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
-                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Ignore platform requirements (php & ext- packages), optionally can take a package name to ignore specific package(s).'),
             ))
             ->setHelp(
                 <<<EOT
@@ -127,6 +127,10 @@ EOT
             $input->setOption('no-plugins', true);
         }
 
+        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs')
+            ? (array_filter($input->getOption('ignore-platform-reqs')) ? $input->getOption('ignore-platform-reqs') : true)
+            : false;
+
         return $this->installProject(
             $io,
             $config,
@@ -143,7 +147,7 @@ EOT
             $input->getOption('no-scripts'),
             $input->getOption('no-progress'),
             $input->getOption('no-install'),
-            $input->getOption('ignore-platform-reqs'),
+            $ignorePlatformReqs,
             !$input->getOption('no-secure-http'),
             $input->getOption('add-repository')
         );
@@ -336,19 +340,16 @@ EOT
         $repositorySet = new RepositorySet($stability);
         $repositorySet->addRepository($sourceRepo);
 
-        $platformRepo = null;
-        if (!$ignorePlatformReqs) {
-            $platformOverrides = $config->get('platform') ?: array();
-            $platformRepo = new PlatformRepository(array(), $platformOverrides);
-        }
+        $platformOverrides = $config->get('platform') ?: array();
+        $platformRepo = new PlatformRepository(array(), $platformOverrides);
 
         // find the latest version if there are multiple
         $versionSelector = new VersionSelector($repositorySet, $platformRepo);
-        $package = $versionSelector->findBestCandidate($name, $packageVersion, $stability);
+        $package = $versionSelector->findBestCandidate($name, $packageVersion, $stability, $ignorePlatformReqs);
 
         if (!$package) {
             $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
-            if ($platformRepo && $versionSelector->findBestCandidate($name, $packageVersion, $stability, true)) {
+            if (true !== $ignorePlatformReqs && $versionSelector->findBestCandidate($name, $packageVersion, $stability, true)) {
                 throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
             }
 

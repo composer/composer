@@ -114,7 +114,9 @@ resolution.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these. See also the [`platform`](06-config.md#platform) config option.
+  fulfill these. You can also ignore specific packages only using
+  `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
+  See also the [`platform`](06-config.md#platform) config option.
 
 ## update / u
 
@@ -187,7 +189,9 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these. See also the [`platform`](06-config.md#platform) config option.
+  fulfill these. You can also ignore specific packages only using
+  `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
+  See also the [`platform`](06-config.md#platform) config option.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
@@ -233,7 +237,9 @@ If you do not specify a package, composer will prompt you to search for a packag
 * **--update-with-all-dependencies:** Also update dependencies of the newly required packages, including those that are root requirements.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these. See also the [`platform`](06-config.md#platform) config option.
+  fulfill these. You can also ignore specific packages only using
+  `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
+  See also the [`platform`](06-config.md#platform) config option.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
@@ -269,7 +275,9 @@ uninstalled.
 * **--update-with-dependencies:** Also update dependencies of the removed packages.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these. See also the [`platform`](06-config.md#platform) config option.
+  fulfill these. You can also ignore specific packages only using
+  `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
+  See also the [`platform`](06-config.md#platform) config option.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
   get a faster autoloader. This is recommended especially for production, but
   can take a bit of time to run so it is currently not done by default.
@@ -724,7 +732,9 @@ By default the command checks for the packages on packagist.org.
 * **--no-install:** Disables installation of the vendors.
 * **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and force the installation even if the local machine does not
-  fulfill these.
+  fulfill these. You can also ignore specific packages only using
+  `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
+  See also the [`platform`](06-config.md#platform) config option.
 
 ## dump-autoload (dumpautoload)
 
@@ -748,6 +758,10 @@ performance.
   Implicitly enables `--optimize`.
 * **--apcu:** Use APCu to cache found/not-found classes.
 * **--no-dev:** Disables autoload-dev rules.
+* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
+  requirements and skip the [platform check](07-runtime.md#platform-check) for these.
+  You can also ignore specific packages only using `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
+  See also the [`platform`](06-config.md#platform) config option.
 
 ## clear-cache / clearcache / cc
 
