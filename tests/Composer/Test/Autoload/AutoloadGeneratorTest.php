@@ -1648,7 +1648,7 @@ EOF;
     /**
      * @dataProvider platformCheckProvider
      */
-    public function testGeneratesPlatformCheck(array $requires, $expectedFixture, array $provides = array(), array $replaces = array())
+    public function testGeneratesPlatformCheck(array $requires, $expectedFixture, array $provides = array(), array $replaces = array(), $ignorePlatformReqs = false)
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires($requires);
@@ -1665,6 +1665,7 @@ EOF;
             ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
+        $this->generator->setIgnorePlatformRequirements($ignorePlatformReqs);
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
 
         if (null === $expectedFixture) {
@@ -1713,6 +1714,29 @@ EOF;
                     new Link('a', 'ext-json', $versionParser->parseConstraints('*'))
                 ),
                 'no_php_required'
+            ),
+            'Ignoring all platform requirements skips check completely' => array(
+                array(
+                    new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
+                    new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+                    new Link('a', 'ext-json', $versionParser->parseConstraints('*'))
+                ),
+                null,
+                array(),
+                array(),
+                true
+            ),
+            'Ignored platform requirements are not checked for' => array(
+                array(
+                    new Link('a', 'php', $versionParser->parseConstraints('^7.2.8')),
+                    new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+                    new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
+                    new Link('a', 'ext-pdo', $versionParser->parseConstraints('*'))
+                ),
+                'no_php_required',
+                array(),
+                array(),
+                array('php', 'ext-pdo')
             ),
             'No extensions required' => array(
                 array(
