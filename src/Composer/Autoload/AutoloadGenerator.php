@@ -19,6 +19,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Bound;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Filesystem;
