@@ -316,7 +316,13 @@ EOF;
         $filesystem->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
         $checkPlatform = $config->get('platform-check');
         if ($checkPlatform) {
-            $filesystem->filePutContentsIfModified($targetDir.'/platform_check.php', $this->getPlatformCheck($packageMap));
+            $platformCheckContent = $this->getPlatformCheck($packageMap);
+            if (null === $platformCheckContent) {
+                $checkPlatform = false;
+            }
+        }
+        if ($checkPlatform) {
+            $filesystem->filePutContentsIfModified($targetDir.'/platform_check.php', $platformCheckContent);
         } elseif (file_exists($targetDir.'/platform_check.php')) {
             unlink($targetDir.'/platform_check.php');
         }
@@ -572,7 +578,6 @@ EOF;
     protected function getPlatformCheck($packageMap)
     {
         $lowestPhpVersion = Bound::zero();
-        $highestPhpVersion = Bound::positiveInfinity();
         $requiredExtensions = array();
         $extensionProviders = array();
 
@@ -591,9 +596,6 @@ EOF;
                 if ('php' === $link->getTarget() && ($constraint = $link->getConstraint())) {
                     if ($constraint->getLowerBound()->compareTo($lowestPhpVersion, '>')) {
                         $lowestPhpVersion = $constraint->getLowerBound();
-                    }
-                    if ($constraint->getUpperBound()->compareTo($highestPhpVersion, '<')) {
-                        $highestPhpVersion = $constraint->getUpperBound();
                     }
                 }
 
@@ -648,22 +650,15 @@ EOF;
             return implode('.', $chunks);
         };
 
-        $requiredPhp = array();
-        $requiredPhpError = array();
+        $requiredPhp = '';
+        $requiredPhpError = '';
         if (!$lowestPhpVersion->isZero()) {
             $operator = $lowestPhpVersion->isInclusive() ? '>=' : '>';
-            $requiredPhp[] = 'PHP_VERSION_ID '.$operator.' '.$formatToPhpVersionId($lowestPhpVersion);
-            $requiredPhpError[] = '"'.$operator.' '.$formatToHumanReadable($lowestPhpVersion).'"';
-        }
-        if (!$highestPhpVersion->isPositiveInfinity()) {
-            $operator = $highestPhpVersion->isInclusive() ? '<=' : '<';
-            $requiredPhp[] = 'PHP_VERSION_ID '.$operator.' '.$formatToPhpVersionId($highestPhpVersion);
-            $requiredPhpError[] = '"'.$operator.' '.$formatToHumanReadable($highestPhpVersion).'"';
+            $requiredPhp = 'PHP_VERSION_ID '.$operator.' '.$formatToPhpVersionId($lowestPhpVersion);
+            $requiredPhpError = '"'.$operator.' '.$formatToHumanReadable($lowestPhpVersion).'"';
         }
 
         if ($requiredPhp) {
-            $requiredPhp = implode(' && ', $requiredPhp);
-            $requiredPhpError = implode(' and ', $requiredPhpError);
             $requiredPhp = <<<PHP_CHECK
 
 if (!($requiredPhp)) {
@@ -671,8 +666,6 @@ if (!($requiredPhp)) {
 }
 
 PHP_CHECK;
-        } else {
-            $requiredPhp = '';
         }
 
         $requiredExtensions = implode('', $requiredExtensions);
@@ -686,6 +679,10 @@ if (\$missingExtensions) {
 }
 
 EXT_CHECKS;
+        }
+
+        if (!$requiredPhp && !$requiredExtensions) {
+            return null;
         }
 
         return <<<PLATFORM_CHECK

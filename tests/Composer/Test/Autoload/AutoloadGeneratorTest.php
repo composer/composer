@@ -1667,7 +1667,13 @@ EOF;
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
 
-        $this->assertFileContentEquals(__DIR__ . '/Fixtures/platform/' . $expectedFixture . '.php', $this->vendorDir . '/composer/platform_check.php');
+        if (null === $expectedFixture) {
+            $this->assertFalse(file_exists($this->vendorDir . '/composer/platform_check.php'));
+            $this->assertNotContains("require __DIR__ . '/platform_check.php';", file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        } else {
+            $this->assertFileContentEquals(__DIR__ . '/Fixtures/platform/' . $expectedFixture . '.php', $this->vendorDir . '/composer/platform_check.php');
+            $this->assertContains("require __DIR__ . '/platform_check.php';", file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        }
     }
 
     public function platformCheckProvider()
@@ -1687,7 +1693,7 @@ EOF;
                 array(
                     new Link('a', 'php', $versionParser->parseConstraints('< 8')),
                 ),
-                'no_php_lower_bound'
+                null
             ),
             'No PHP upper bound' => array(
                 array(
