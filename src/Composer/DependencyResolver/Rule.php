@@ -28,7 +28,6 @@ use Composer\Semver\Constraint\Constraint;
 abstract class Rule
 {
     // reason constants
-    const RULE_INTERNAL_ALLOW_UPDATE = 1;
     const RULE_ROOT_REQUIRE = 2;
     const RULE_FIXED = 3;
     const RULE_PACKAGE_CONFLICT = 6;
@@ -180,9 +179,6 @@ abstract class Rule
         }
 
         switch ($this->getReason()) {
-            case self::RULE_INTERNAL_ALLOW_UPDATE:
-                return $ruleText;
-
             case self::RULE_ROOT_REQUIRE:
                 $packageName = $this->reasonData['packageName'];
                 $constraint = $this->reasonData['constraint'];

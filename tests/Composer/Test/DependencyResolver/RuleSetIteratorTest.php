@@ -35,7 +35,7 @@ class RuleSetIteratorTest extends TestCase
                 new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null),
             ),
             RuleSet::TYPE_LEARNED => array(
-                new GenericRule(array(), Rule::RULE_INTERNAL_ALLOW_UPDATE, null),
+                new GenericRule(array(), Rule::RULE_FIXED, null),
             ),
             RuleSet::TYPE_PACKAGE => array(),
         );
