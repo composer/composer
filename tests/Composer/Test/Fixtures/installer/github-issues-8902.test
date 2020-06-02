@@ -1,0 +1,46 @@
+--TEST--
+
+See Github issue #8902 ( https://github.com/composer/composer/issues/8902 ).
+
+Avoid installing packages twice if they are required in different versions and one is matched by a dev package.
+
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "beyondcode/laravel-dump-server", "version": "1.4.0", "require": { "symfony/var-dumper": "^5.0" } },
+                { "name": "laravel/framework", "version": "6.8.14", "require": { "symfony/var-dumper": "^4.3.4" } },
+                { "name": "symfony/var-dumper", "version": "4.4.0" },
+                { "name": "symfony/var-dumper", "version": "dev-master", "extra": { "branch-alias": {"dev-master": "5.2-dev"} } }
+            ]
+        }
+    ],
+    "require": {
+        "beyondcode/laravel-dump-server": "^1.3",
+        "laravel/framework": "^6.8"
+    },
+    "minimum-stability": "dev"
+}
+
+--RUN--
+update
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires beyondcode/laravel-dump-server ^1.3 -> satisfiable by beyondcode/laravel-dump-server[1.4.0].
+    - You can only install one version of a package, so only one of these can be installed: symfony/var-dumper[dev-master, 4.4.0].
+    - symfony/var-dumper 5.2.x-dev is an alias of symfony/var-dumper dev-master and thus requires it to be installed too.
+    - laravel/framework 6.8.14 requires symfony/var-dumper ^4.3.4 -> satisfiable by symfony/var-dumper[4.4.0].
+    - beyondcode/laravel-dump-server 1.4.0 requires symfony/var-dumper ^5.0 -> satisfiable by symfony/var-dumper[5.2.x-dev (alias of dev-master)].
+    - Root composer.json requires laravel/framework ^6.8 -> satisfiable by laravel/framework[6.8.14].
+
+--EXPECT--
+
+--EXPECT-EXIT-CODE--
+2

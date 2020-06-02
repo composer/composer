@@ -165,6 +165,7 @@ class RuleSetGenerator
                     $this->addedPackagesByNames[$name][] = $package;
                 }
             } else {
+                $workQueue->enqueue($package->getAliasOf());
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($package->getAliasOf()), Rule::RULE_PACKAGE_ALIAS, $package));
             }
 
