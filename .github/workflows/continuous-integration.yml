@@ -118,7 +118,7 @@ jobs:
 
       - name: "Handle ignore-platform-reqs dependencies update"
         if: "contains(matrix.dependencies, 'ignore')"
-        run: "echo \"::set-env name=COMPOSER_FLAGS::$COMPOSER_FLAGS --ignore-platform-reqs\""
+        run: "echo \"::set-env name=COMPOSER_FLAGS::$COMPOSER_FLAGS --ignore-platform-req=php\""
 
       - name: "Remove platform config to get latest dependencies for current PHP version when build is not locked"
         run: "composer config platform --unset"
@@ -134,7 +134,7 @@ jobs:
       - name: "Require latest PHPUnitBridge for PHP 8"
         if: "matrix.php-version == '8.0'"
         run: |
-          composer require --no-update --dev symfony/phpunit-bridge:^5.1.0-RC2
+          composer require --no-update --dev symfony/phpunit-bridge:^5.1
           composer config -g platform-check false
 
       - name: "Update Symfony's PHPUnitBridge to latest available for the current PHP always as it is not really a dependency of the project"
