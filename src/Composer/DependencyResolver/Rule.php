@@ -288,7 +288,10 @@ abstract class Rule
 
                 return 'Conclusion: '.$ruleText.$learnedString;
             case self::RULE_PACKAGE_ALIAS:
-                return $ruleText;
+                $aliasPackage = $this->deduplicateMasterAlias($pool->literalToPackage($literals[0]));
+                $package = $this->deduplicateMasterAlias($pool->literalToPackage($literals[1]));
+
+                return $aliasPackage->getPrettyString() .' is an alias of '.$package->getPrettyString().' and thus requires it to be installed too.';
             default:
                 return '('.$ruleText.')';
         }
