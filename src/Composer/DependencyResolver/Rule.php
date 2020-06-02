@@ -275,7 +275,10 @@ abstract class Rule
                     $learnedString = ', learned rules:'."\n        - ";
                     $reasons = array();
                     foreach ($learnedPool[$this->reasonData] as $learnedRule) {
-                        $reasons[] = $learnedRule->getPrettyString($repositorySet, $request, $pool, $installedMap, $learnedPool);
+                        $reason = $learnedRule->getPrettyString($repositorySet, $request, $pool, $installedMap, $learnedPool);
+                        if ($reason !== '') {
+                            $reasons[] = $reason;
+                        }
                     }
                     $learnedString .= implode("\n        - ", array_unique($reasons));
                 } else {
@@ -284,7 +287,11 @@ abstract class Rule
 
                 return 'Conclusion: '.$ruleText.$learnedString;
             case self::RULE_PACKAGE_ALIAS:
-                $aliasPackage = $this->deduplicateMasterAlias($pool->literalToPackage($literals[0]));
+                $aliasPackage = $pool->literalToPackage($literals[0]);
+                // avoid returning content like "9999999-dev is an alias of dev-master" as it is useless
+                if ($aliasPackage->getVersion() === VersionParser::DEV_MASTER_ALIAS) {
+                    return '';
+                }
                 $package = $this->deduplicateMasterAlias($pool->literalToPackage($literals[1]));
 
                 return $aliasPackage->getPrettyString() .' is an alias of '.$package->getPrettyString().' and thus requires it to be installed too.';

@@ -104,7 +104,7 @@ class Problem
                 $template = preg_replace('{^\S+ \S+ }', '%s%s ', $message);
                 $messages[] = $template;
                 $templates[$template][$m[1]][$parser->normalize($m[2])] = $m[2];
-            } else {
+            } elseif ($message !== '') {
                 $messages[] = $message;
             }
         }
