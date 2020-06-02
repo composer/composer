@@ -31,8 +31,6 @@ class Solver
 
     /** @var RuleSet */
     protected $rules;
-    /** @var RuleSetGenerator */
-    protected $ruleSetGenerator;
 
     /** @var RuleWatchGraph */
     protected $watchGraph;
@@ -192,8 +190,9 @@ class Solver
         $this->setupFixedMap($request);
 
         $this->io->writeError('Generating rules', true, IOInterface::DEBUG);
-        $this->ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
-        $this->rules = $this->ruleSetGenerator->getRulesFor($request, $ignorePlatformReqs);
+        $ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
+        $this->rules = $ruleSetGenerator->getRulesFor($request, $ignorePlatformReqs);
+        unset($ruleSetGenerator);
         $this->checkForRootRequireProblems($request, $ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
