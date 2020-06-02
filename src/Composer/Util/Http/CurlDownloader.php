@@ -75,7 +75,7 @@ class CurlDownloader
         $this->multiHandle = $mh = curl_multi_init();
         if (function_exists('curl_multi_setopt')) {
             curl_multi_setopt($mh, CURLMOPT_PIPELINING, PHP_VERSION_ID >= 70400 ? /* CURLPIPE_MULTIPLEX */ 2 : /*CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX*/ 3);
-            if (defined('CURLMOPT_MAX_HOST_CONNECTIONS')) {
+            if (defined('CURLMOPT_MAX_HOST_CONNECTIONS') && !defined('HHVM_VERSION')) {
                 curl_multi_setopt($mh, CURLMOPT_MAX_HOST_CONNECTIONS, 8);
             }
         }
