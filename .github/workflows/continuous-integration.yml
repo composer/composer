@@ -118,7 +118,7 @@ jobs:
 
       - name: "Handle ignore-platform-reqs dependencies update"
         if: "contains(matrix.dependencies, 'ignore')"
-        run: "echo \"::set-env name=COMPOSER_FLAGS::$COMPOSER_FLAGS --ignore-platform-reqs\""
+        run: "echo \"::set-env name=COMPOSER_FLAGS::$COMPOSER_FLAGS --ignore-platform-reqs=php\""
 
       - name: "Remove platform config to get latest dependencies for current PHP version when build is not locked"
         run: "composer config platform --unset"
