@@ -113,7 +113,7 @@ class PoolBuilder
                     $request->fixPackage($lockedPackage);
                     $lockedName = $lockedPackage->getName();
                     // remember which packages we skipped loading remote content for in this partial update
-                    $this->skippedLoad[$lockedPackage->getName()] = $lockedName;
+                    $this->skippedLoad[$lockedName] = $lockedName;
                     foreach ($lockedPackage->getReplaces() as $link) {
                         $this->skippedLoad[$link->getTarget()] = $lockedName;
                     }
@@ -413,8 +413,12 @@ class PoolBuilder
             }
         }
 
-        // if we unfixed a replaced package name, we also need to unfix the replacer itself
-        if ($this->skippedLoad[$name] !== $name) {
+        if (
+            // if we unfixed a replaced package name, we also need to unfix the replacer itself
+            $this->skippedLoad[$name] !== $name
+            // as long as it was not unfixed yet
+            && isset($this->skippedLoad[$this->skippedLoad[$name]])
+        ) {
             $this->unfixPackage($request, $this->skippedLoad[$name]);
         }
 
