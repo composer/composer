@@ -189,7 +189,7 @@ class Composer
     /**
      * @param Loop $loop
      */
-    public function setLoop(loop $loop)
+    public function setLoop(Loop $loop)
     {
         $this->loop = $loop;
     }
