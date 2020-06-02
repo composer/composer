@@ -197,7 +197,7 @@ EOT
     private function removeReferences($name)
     {
         foreach ($this->composerDef['repositories'] as $repoName => $repo) {
-            if ($repo['type'] === 'package') {
+            if (is_array($repo) && $repo['type'] === 'package') {
                 foreach ($repo['package'] as $key => $version) {
                     $this->removeKeyUnsetOnEmpty($this->composerDef['repositories'][$repoName]['package'][$key], 'require', $name);
                     $this->removeKeyUnsetOnEmpty($this->composerDef['repositories'][$repoName]['package'][$key], 'provide', $name);
@@ -228,7 +228,7 @@ EOT
 
         $constraints = array();
         foreach ($requires as $name => $constraints) {
-            $constraints[$name] = new MultiConstraint($constraints, false);
+            $constraints[$name] = MultiConstraint::create($constraints, false);
         }
 
         $reduced = array();
@@ -280,7 +280,7 @@ EOT
         }
 
         foreach ($newRequires as $newName => $newConstraints) {
-            $newRequires[$newName] = new MultiConstraint($newConstraints, false);
+            $newRequires[$newName] = MultiConstraint::create($newConstraints, false);
         }
 
         if (count($newRequires)) {
