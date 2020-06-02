@@ -264,9 +264,7 @@ class InstallerTest extends TestCase
 
         $application = new Application;
         $application->get('install')->setCode(function ($input, $output) use ($installer) {
-            $ignorePlatformReqs = $input->getOption('ignore-platform-reqs')
-                ? (array_filter($input->getOption('ignore-platform-reqs')) ? $input->getOption('ignore-platform-reqs') : true)
-                : false;
+            $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
@@ -291,9 +289,7 @@ class InstallerTest extends TestCase
                 $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
             }
 
-            $ignorePlatformReqs = $input->getOption('ignore-platform-reqs')
-                ? (array_filter($input->getOption('ignore-platform-reqs')) ? $input->getOption('ignore-platform-reqs') : true)
-                : false;
+            $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))

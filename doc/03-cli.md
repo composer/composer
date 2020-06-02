@@ -112,11 +112,13 @@ resolution.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
-  requirements and force the installation even if the local machine does not
-  fulfill these. You can also ignore specific packages only using
-  `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these.
   See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it.
 
 ## update / u
 
@@ -187,11 +189,13 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
-  requirements and force the installation even if the local machine does not
-  fulfill these. You can also ignore specific packages only using
-  `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these.
   See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
@@ -235,11 +239,13 @@ If you do not specify a package, composer will prompt you to search for a packag
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
 * **--update-with-dependencies:** Also update dependencies of the newly required packages, except those that are root requirements.
 * **--update-with-all-dependencies:** Also update dependencies of the newly required packages, including those that are root requirements.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
-  requirements and force the installation even if the local machine does not
-  fulfill these. You can also ignore specific packages only using
-  `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these.
   See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
@@ -273,11 +279,13 @@ uninstalled.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies:** Also update dependencies of the removed packages.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
-  requirements and force the installation even if the local machine does not
-  fulfill these. You can also ignore specific packages only using
-  `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these.
   See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
   get a faster autoloader. This is recommended especially for production, but
   can take a bit of time to run so it is currently not done by default.
@@ -730,11 +738,13 @@ By default the command checks for the packages on packagist.org.
   mode.
 * **--remove-vcs:** Force-remove the VCS metadata without prompting.
 * **--no-install:** Disables installation of the vendors.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
-  requirements and force the installation even if the local machine does not
-  fulfill these. You can also ignore specific packages only using
-  `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these.
   See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it.
 
 ## dump-autoload (dumpautoload)
 
@@ -758,10 +768,11 @@ performance.
   Implicitly enables `--optimize`.
 * **--apcu:** Use APCu to cache found/not-found classes.
 * **--no-dev:** Disables autoload-dev rules.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
+* **--ignore-platform-reqs:** ignore all `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and skip the [platform check](07-runtime.md#platform-check) for these.
-  You can also ignore specific packages only using `--ignore-platform-reqs=ext-foo --ignore-platform-reqs=ext-bar`.
   See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and skip the [platform check](07-runtime.md#platform-check) for it.
 
 ## clear-cache / clearcache / cc
 

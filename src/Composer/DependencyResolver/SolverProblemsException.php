@@ -74,7 +74,7 @@ class SolverProblemsException extends \RuntimeException
         // TODO remove before 2.0 final
         if (!class_exists('PHPUnit\Framework\TestCase', false)) {
             if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match')) {
-                $hints[] = "You are using a snapshot build of Composer 2, which some of your plugins seem to be incompatible with. Make sure you update your plugins or report an issue to them to ask them to support Composer 2. To work around this you can run Composer with --ignore-platform-reqs=composer-plugin-api, but this may result in broken plugins and bigger problems down the line.";
+                $hints[] = "You are using a snapshot build of Composer 2, which some of your plugins seem to be incompatible with. Make sure you update your plugins or report an issue to them to ask them to support Composer 2. To work around this you can run Composer with --ignore-platform-req=composer-plugin-api, but this may result in broken plugins and bigger problems down the line.";
             } else {
                 $hints[] = "You are using a snapshot build of Composer 2, which may be the cause of the problem. Run `composer self-update --stable` and then try again. In case it solves the problem, please report an issue mentioning Composer 2.";
             }

@@ -725,10 +725,8 @@ EOT
     {
         // handle ignore-platform-reqs flag if present
         $ignorePlatformReqs = false;
-        if ($input->hasOption('ignore-platform-reqs')) {
-            $ignorePlatformReqs = $input->getOption('ignore-platform-reqs')
-                ? (array_filter($input->getOption('ignore-platform-reqs')) ? $input->getOption('ignore-platform-reqs') : true)
-                : false;
+        if ($input->hasOption('ignore-platform-reqs') && $input->hasOption('ignore-platform-req')) {
+            $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
         }
 
         // find the latest version allowed in this repo set

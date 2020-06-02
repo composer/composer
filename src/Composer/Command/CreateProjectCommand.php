@@ -80,7 +80,8 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deleting the vcs folder.'),
                 new InputOption('remove-vcs', null, InputOption::VALUE_NONE, 'Whether to force deletion of the vcs folder without prompting.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
-                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'Ignore platform requirements (php & ext- packages), optionally can take a package name to ignore specific package(s).'),
+                new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
+                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
             ))
             ->setHelp(
                 <<<EOT
@@ -127,9 +128,7 @@ EOT
             $input->setOption('no-plugins', true);
         }
 
-        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs')
-            ? (array_filter($input->getOption('ignore-platform-reqs')) ? $input->getOption('ignore-platform-reqs') : true)
-            : false;
+        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
         return $this->installProject(
             $io,
