@@ -170,14 +170,6 @@ abstract class Rule
     {
         $literals = $this->getLiterals();
 
-        $ruleText = '';
-        foreach ($literals as $i => $literal) {
-            if ($i != 0) {
-                $ruleText .= '|';
-            }
-            $ruleText .= $pool->literalToPrettyString($literal, $installedMap);
-        }
-
         switch ($this->getReason()) {
             case self::RULE_ROOT_REQUIRE:
                 $packageName = $this->reasonData['packageName'];
@@ -272,17 +264,31 @@ abstract class Rule
                 return 'You can only install one version of a package, so only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals, $isVerbose) . '.';
             case self::RULE_LEARNED:
                 if (isset($learnedPool[$this->reasonData])) {
-                    $learnedString = ', learned rules:'."\n        - ";
-                    $reasons = array();
-                    foreach ($learnedPool[$this->reasonData] as $learnedRule) {
-                        $reason = $learnedRule->getPrettyString($repositorySet, $request, $pool, $installedMap, $learnedPool);
-                        if ($reason !== '') {
-                            $reasons[] = $reason;
-                        }
-                    }
-                    $learnedString .= implode("\n        - ", array_unique($reasons));
+                    $learnedString = ', learned rules:' . Problem::formatDeduplicatedRules($learnedPool[$this->reasonData], '        ', $repositorySet, $request, $pool, $installedMap, $learnedPool);
                 } else {
                     $learnedString = ' (reasoning unavailable)';
+                }
+
+                if (count($literals) === 1) {
+                    $ruleText = $pool->literalToPrettyString($literals[0], $installedMap);
+                } else {
+                    $groups = array();
+                    foreach ($literals as $literal) {
+                        $package = $pool->literalToPackage($literal);
+                        if (isset($installedMap[$package->id])) {
+                            $group = $literal > 0 ? 'keep' : 'remove';
+                        } else {
+                            $group = $literal > 0 ? 'install' : 'don\'t install';
+                        }
+
+                        $groups[$group][] = $this->deduplicateMasterAlias($package);
+                    }
+                    $ruleTexts = array();
+                    foreach ($groups as $group => $packages) {
+                        $ruleTexts[] = $group . (count($packages) > 1 ? ' one of' : '').' ' . $this->formatPackagesUnique($pool, $packages, $isVerbose);
+                    }
+
+                    $ruleText = implode(' | ', $ruleTexts);
                 }
 
                 return 'Conclusion: '.$ruleText.$learnedString;
@@ -296,6 +302,14 @@ abstract class Rule
 
                 return $aliasPackage->getPrettyString() .' is an alias of '.$package->getPrettyString().' and thus requires it to be installed too.';
             default:
+                $ruleText = '';
+                foreach ($literals as $i => $literal) {
+                    if ($i != 0) {
+                        $ruleText .= '|';
+                    }
+                    $ruleText .= $pool->literalToPrettyString($literal, $installedMap);
+                }
+
                 return '('.$ruleText.')';
         }
     }

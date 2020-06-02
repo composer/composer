@@ -94,11 +94,19 @@ class Problem
             }
         }
 
+        return self::formatDeduplicatedRules($reasons, '    ', $repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
+    }
+
+    /**
+     * @internal
+     */
+    public static function formatDeduplicatedRules($rules, $indent, RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
+    {
         $messages = array();
         $templates = array();
         $parser = new VersionParser;
         $deduplicatableRuleTypes = array(Rule::RULE_PACKAGE_REQUIRES, Rule::RULE_PACKAGE_CONFLICT);
-        foreach ($reasons as $rule) {
+        foreach ($rules as $rule) {
             $message = $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
             if (in_array($rule->getReason(), $deduplicatableRuleTypes, true) && preg_match('{^(?P<package>\S+) (?P<version>\S+) (?P<type>requires|conflicts)}', $message, $m)) {
                 $template = preg_replace('{^\S+ \S+ }', '%s%s ', $message);
@@ -130,7 +138,7 @@ class Problem
             }
         }
 
-        return "\n    - ".implode("\n    - ", $result);
+        return "\n$indent- ".implode("\n$indent- ", $result);
     }
 
     public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
