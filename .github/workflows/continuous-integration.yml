@@ -10,7 +10,6 @@ on:
 
 env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
-  SYMFONY_PHPUNIT_VERSION: ""
 
 jobs:
   tests:
