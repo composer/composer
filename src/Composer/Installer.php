@@ -413,7 +413,7 @@ class Installer
             $solver = null;
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
-            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose()));
+            $this->io->writeError($e->getPrettyString($this->config, $repositorySet, $request, $pool, $this->io->isVerbose()));
             if (!$this->devMode) {
                 $this->io->writeError('<warning>Running update with --no-dev does not mean require-dev is ignored, it just means the packages will not be installed. If dev requirements are blocking the update you have to resolve those problems.</warning>', true, IOInterface::QUIET);
             }
@@ -574,7 +574,7 @@ class Installer
             $this->io->writeError('<error>Unable to find a compatible set of packages based on your non-dev requirements alone.</error>', true, IOInterface::QUIET);
             $this->io->writeError('Your requirements can be resolved successfully when require-dev packages are present.');
             $this->io->writeError('You may need to move packages from require-dev or some of their dependencies to require.');
-            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose(), true));
+            $this->io->writeError($e->getPrettyString($this->config, $repositorySet, $request, $pool, $this->io->isVerbose(), true));
 
             return max(1, $e->getCode());
         }
@@ -638,7 +638,7 @@ class Installer
                 }
             } catch (SolverProblemsException $e) {
                 $this->io->writeError('<error>Your lock file does not contain a compatible set of packages. Please run composer update.</error>', true, IOInterface::QUIET);
-                $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose()));
+                $this->io->writeError($e->getPrettyString($this->config, $repositorySet, $request, $pool, $this->io->isVerbose()));
 
                 return max(1, $e->getCode());
             }

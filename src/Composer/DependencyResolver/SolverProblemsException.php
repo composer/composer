@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Util\IniHelper;
 use Composer\Repository\RepositorySet;
+use Composer\Config;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -31,7 +32,7 @@ class SolverProblemsException extends \RuntimeException
         parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', 2);
     }
 
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
+    public function getPrettyString(Config $config, RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
     {
         $installedMap = $request->getPresentMap(true);
         $hasExtensionProblems = false;
@@ -56,7 +57,9 @@ class SolverProblemsException extends \RuntimeException
 
         $hints = array();
         if (!$isDevExtraction && (strpos($text, 'could not be found') || strpos($text, 'no matching package found'))) {
-            $hints[] = "Potential causes:\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n - It's a private package and you forgot to add a custom repository to find it\n\nRead <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
+            $repoConfigs = $config->getRepositories();
+            $packagistOrgSuggestion = isset($repoConfigs['packagist.org']) ? '' : "\n - It's a public package but you disabled the packagist.org repository";
+            $hints[] = "Potential causes:\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n - It's a private package and you forgot to add a custom repository to find it$packagistOrgSuggestion\n\nRead <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
         }
 
         if ($hasExtensionProblems) {
