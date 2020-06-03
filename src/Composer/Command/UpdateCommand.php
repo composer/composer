@@ -293,14 +293,14 @@ EOT
     {
         $parser = new VersionParser;
         $oldPrettyString = $link->getConstraint()->getPrettyString();
-        $newConstraint = MultiConstraint::create(array($link->getConstraint(), $parser->parseConstraints($constraint)));
-        $newConstraint->setPrettyString($oldPrettyString.' && '.$constraint);
+        $newConstraint = MultiConstraint::create(array($link->getConstraint(), $parser->parseConstraints($constraint)), true);
+        $newConstraint->setPrettyString($oldPrettyString.', '.$constraint);
         return new Link(
             $link->getSource(),
             $link->getTarget(),
             $newConstraint,
             $link->getDescription(),
-            $link->getPrettyConstraint() . ' && ' . $constraint
+            $link->getPrettyConstraint() . ', ' . $constraint
         );
     }
 }
