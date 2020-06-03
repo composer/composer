@@ -28,6 +28,7 @@
   * Added confirmation prompt when running Composer as superuser in interactive mode
   * Added --no-check-version to `validate` command to remove the warning in case the version is defined
   * Added --ignore-platform-req (without s) to all commands supporting --ignore-platform-reqs, which accepts a package name so you can ignore only specific     platform requirements
+  * Added support for wildcards (`*`) in classmap autoloader paths
   * Added support for configuring GitLab deploy tokens in addition to private tokens, see [gitlab-token](doc/06-config.md#gitlab-token)
   * Added support for package version guessing for require and init command to take all platform packages into account, not just php version
   * Fixed package ordering when autoloading and especially when loading plugins, to make sure dependencies are loaded before their dependents
