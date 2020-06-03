@@ -122,7 +122,6 @@ EOT
                 return preg_match('{\S+[ =:]\S+}', $pkg) > 0;
             });
             foreach ($this->formatRequirements($allowlistPackagesWithRequirements) as $package => $constraint) {
-                var_Dump($package, $constraint);
                 $reqs[$package] = $constraint;
             }
 
