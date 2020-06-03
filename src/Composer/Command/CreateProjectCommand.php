@@ -367,6 +367,17 @@ EOT
                 });
             }
         }
+        // handler Ctrl+C for Windows on PHP 7.4+
+        if (function_exists('sapi_windows_set_ctrl_handler')) {
+            @mkdir($directory, 0777, true);
+            if ($realDir = realpath($directory)) {
+                sapi_windows_set_ctrl_handler(function () use ($realDir) {
+                    $fs = new Filesystem();
+                    $fs->removeDirectory($realDir);
+                    exit(130);
+                });
+            }
+        }
 
         // avoid displaying 9999999-dev as version if dev-master was selected
         if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEV_MASTER_ALIAS) {

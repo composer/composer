@@ -195,10 +195,11 @@ class InstallationManager
             }
         };
 
-        // handler Ctrl+C for unix-like systems
-        $handleInterrupts = function_exists('pcntl_async_signals') && function_exists('pcntl_signal');
+        $handleInterruptsUnix = function_exists('pcntl_async_signals') && function_exists('pcntl_signal');
+        $handleInterruptsWindows = function_exists('sapi_windows_set_ctrl_handler');
         $prevHandler = null;
-        if ($handleInterrupts) {
+        $windowsHandler = null;
+        if ($handleInterruptsUnix) {
             pcntl_async_signals(true);
             $prevHandler = pcntl_signal_get_handler(SIGINT);
             pcntl_signal(SIGINT, function ($sig) use ($runCleanup, $prevHandler) {
@@ -210,6 +211,14 @@ class InstallationManager
 
                 exit(130);
             });
+        }
+        if ($handleInterruptsWindows) {
+            $windowsHandler = function () use ($runCleanup) {
+                $runCleanup();
+
+                exit(130);
+            };
+            sapi_windows_set_ctrl_handler($windowsHandler);
         }
 
         try {
@@ -317,15 +326,21 @@ class InstallationManager
         } catch (\Exception $e) {
             $runCleanup();
 
-            if ($handleInterrupts) {
+            if ($handleInterruptsUnix) {
                 pcntl_signal(SIGINT, $prevHandler);
+            }
+            if ($handleInterruptsWindows) {
+                sapi_windows_set_ctrl_handler($prevHandler, false);
             }
 
             throw $e;
         }
 
-        if ($handleInterrupts) {
+        if ($handleInterruptsUnix) {
             pcntl_signal(SIGINT, $prevHandler);
+        }
+        if ($handleInterruptsWindows) {
+            sapi_windows_set_ctrl_handler($prevHandler, false);
         }
 
         // do a last write so that we write the repository even if nothing changed
