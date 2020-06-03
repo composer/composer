@@ -15,6 +15,7 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use Composer\Exception\IrrecoverableDownloadException;
 use React\Promise\PromiseInterface;
 
 /**
@@ -195,7 +196,7 @@ class DownloadManager
             }
 
             $handleError = function ($e) use ($sources, $source, $package, $io, $download) {
-                if ($e instanceof \RuntimeException) {
+                if ($e instanceof \RuntimeException && !$e instanceof IrrecoverableDownloadException) {
                     if (!$sources) {
                         throw $e;
                     }

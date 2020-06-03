@@ -15,6 +15,7 @@ namespace Composer\Downloader;
 use Composer\Package\PackageInterface;
 use Symfony\Component\Finder\Finder;
 use Composer\IO\IOInterface;
+use Composer\Exception\IrrecoverableDownloadException;
 
 /**
  * Base downloader for archives
@@ -25,6 +26,16 @@ use Composer\IO\IOInterface;
  */
 abstract class ArchiveDownloader extends FileDownloader
 {
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
+    {
+        $res = parent::download($package, $path, $prevPackage, $output);
+        if (is_dir($path) && !$this->filesystem->isDirEmpty($path)) {
+            throw new IrrecoverableDownloadException('Expected empty path to extract '.$package.' into but directory exists: '.$path);
+        }
+
+        return $res;
+    }
+
     /**
      * {@inheritDoc}
      * @throws \RuntimeException
@@ -40,7 +51,7 @@ abstract class ArchiveDownloader extends FileDownloader
 
         $this->filesystem->ensureDirectoryExists($path);
         if (!$this->filesystem->isDirEmpty($path)) {
-            throw new \RuntimeException('Expected empty path to extract '.$package.' into but directory exists: '.$path);
+            throw new \UnexpectedValueException('Expected empty path to extract '.$package.' into but directory exists: '.$path);
         }
 
         do {
