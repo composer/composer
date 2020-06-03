@@ -610,7 +610,7 @@ Example:
 }
 ```
 
-Its also supported to use glob patterns in a classmap path:
+Wildcards (`*`) are also supported in a classmap paths, and expand to match any directory name:
 
 Example:
 
