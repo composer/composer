@@ -347,6 +347,8 @@ class PluginManager
     /**
      * Load all plugins and installers from a repository
      *
+     * If a plugin requires another plugin, the required one will be loaded first
+     *
      * Note that plugins in the specified repository that rely on events that
      * have fired prior to loading will be missed. This means you likely want to
      * call this method as early as possible.
@@ -358,7 +360,7 @@ class PluginManager
     private function loadRepository(RepositoryInterface $repo)
     {
         $packages = $repo->getPackages();
-        $sortedPackages = array_reverse(PackageSorter::sortPackages($packages));
+        $sortedPackages = PackageSorter::sortPackages($packages);
         foreach ($sortedPackages as $package) {
             if (!($package instanceof CompletePackage)) {
                 continue;
