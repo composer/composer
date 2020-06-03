@@ -1,3 +1,8 @@
+### [1.10.7] 2020-06-03
+
+  * Fix PHP 8 deprecations
+  * Fixed detection of pcntl_signal being in disabled_functions when pcntl_async_signal is allowed
+
 ### [1.10.6] 2020-05-06
 
   * Fixed version guessing to take composer-runtime-api and composer-plugin-api requirements into account to avoid selecting packages which require Composer 2
@@ -855,6 +860,7 @@
 
   * Initial release
 
+[1.10.7]: https://github.com/composer/composer/compare/1.10.6...1.10.7
 [1.10.6]: https://github.com/composer/composer/compare/1.10.5...1.10.6
 [1.10.5]: https://github.com/composer/composer/compare/1.10.4...1.10.5
 [1.10.4]: https://github.com/composer/composer/compare/1.10.3...1.10.4
