@@ -610,6 +610,18 @@ Example:
 }
 ```
 
+Wildcards (`*`) are also supported in a classmap paths, and expand to match any directory name:
+
+Example:
+
+```json
+{
+    "autoload": {
+        "classmap": ["src/addons/*/lib/", "3rd-party/*", "Something.php"]
+    }
+}
+```
+
 #### Files
 
 If you want to require certain files explicitly on every request then you can use
