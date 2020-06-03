@@ -167,6 +167,12 @@ class RuleSetGenerator
             } else {
                 $workQueue->enqueue($package->getAliasOf());
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($package->getAliasOf()), Rule::RULE_PACKAGE_ALIAS, $package));
+
+                // if alias package has no self.version requires, its requirements do not
+                // need to be added as the aliased package processing will take care of it
+                if (!$package->hasSelfVersionRequires()) {
+                    continue;
+                }
             }
 
             foreach ($package->getRequires() as $link) {
