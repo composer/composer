@@ -1,4 +1,4 @@
-### [2.0.0-?] 2020-??
+### [2.0.0-alpha1] 2020-06-03
 
   * Breaking: This is a major release and while we tried to keep things compatible for most users, you might want to have a look at the [UPGRADE](UPGRADE-2.0.md) guides
   * Many CPU and memory performance improvements
@@ -10,12 +10,14 @@
   * Added a `composer-runtime-api` virtual package which you can require (as e.g. `^2.0`) to ensure things like the InstalledVersions class above are present. It will effectively force people to use Composer 2.x to install your project
   * Added support for parallel downloads of package metadata and zip files, this requires that the curl extension is present and we thus strongly recommend enabling curl
   * Added much clearer dependency resolution error reporting for common error cases
+  * Added support for updating to a specific version with partial updates, as well as a [--with flag](doc/03-cli.md#update--u) to pass in temporary constraint overrides
   * Added support for TTY mode on Linux/OSX/WSL so that script handlers now run in interactive mode
   * Added `only`, `exclude` and `canonical` options to all repositories, see [repository priorities](https://getcomposer.org/repoprio) for details
   * Added support for lib-zip platform package
   * Added `pre-operations-exec` event to be fired before the packages get installed/upgraded/removed
   * Added `pre-pool-create` event to be fired before the package pool for the dependency solver is created, which lets you modify the list of packages going in
   * Added `post-file-download` event to be fired after package dist files are downloaded, which lets you do additional checks on the files
+  * Added --locked flag to `show` command to see the packages from the composer.lock file
   * Added --unused flag to `remove` command to make sure any packages which are not needed anymore get removed
   * Added --dry-run flag to `require` and `remove` commands
   * Added --no-install flag to `update`, `require` and `remove` commands to disable the install step and only do the update step (composer.lock file update)
@@ -25,6 +27,10 @@
   * Added --json and --merge flags to `config` command to allow editing complex `extra.*` values by using json as input
   * Added confirmation prompt when running Composer as superuser in interactive mode
   * Added --no-check-version to `validate` command to remove the warning in case the version is defined
+  * Added --ignore-platform-req (without s) to all commands supporting --ignore-platform-reqs, which accepts a package name so you can ignore only specific     platform requirements
+  * Added support for configuring GitLab deploy tokens in addition to private tokens, see [gitlab-token](doc/06-config.md#gitlab-token)
+  * Added support for package version guessing for require and init command to take all platform packages into account, not just php version
+  * Fixed package ordering when autoloading and especially when loading plugins, to make sure dependencies are loaded before their dependents
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
 
@@ -890,6 +896,7 @@
 
   * Initial release
 
+[2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
 [1.10.7]: https://github.com/composer/composer/compare/1.10.6...1.10.7
 [1.10.6]: https://github.com/composer/composer/compare/1.10.5...1.10.6
 [1.10.5]: https://github.com/composer/composer/compare/1.10.4...1.10.5

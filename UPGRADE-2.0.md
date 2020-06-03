@@ -43,6 +43,7 @@
   - All packages get first downloaded, then all together prepared, then all together installed/updated/uninstalled, then finally cleanup is called for all. Therefore for error recovery it is important to avoid failing during install/update/uninstall as much as possible, and risky things or user prompts should happen in the prepare step rather. In case of failure, cleanup() will be called so that changes can be undone as much as possible.
 - If you used `RemoteFilesystem` you probably should use `HttpDownloader` instead now
 - `PRE_DEPENDENCIES_SOLVING` and `POST_DEPENDENCIES_SOLVING` events have been removed, use the new `PRE_OPERATIONS_EXEC` or other existing events instead or talk to us if you think you really need this
+- The bundled composer/semver is now the 3.x range, see release notes for [2.0](https://github.com/composer/semver/releases/tag/2.0.0) and [3.0](https://github.com/composer/semver/releases/tag/3.0.0) for the minor breaking changes there
 
 ## For Composer repository implementors
 
