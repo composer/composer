@@ -610,6 +610,18 @@ Example:
 }
 ```
 
+Its also supported to use glob patterns in a classmap path:
+
+Example:
+
+```json
+{
+    "autoload": {
+        "classmap": ["src/addons/*/lib/", "3rd-party/*", "Something.php"]
+    }
+}
+```
+
 #### Files
 
 If you want to require certain files explicitly on every request then you can use
