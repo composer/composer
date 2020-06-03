@@ -10,7 +10,7 @@ Composer is **not** a package manager in the same sense as Yum or Apt are. Yes,
 it deals with "packages" or libraries, but it manages them on a per-project
 basis, installing them in a directory (e.g. `vendor`) inside your project. By
 default it does not install anything globally. Thus, it is a dependency
-manager. It does however support a "global" project for convenience via the 
+manager. It does however support a "global" project for convenience via the
 [global](03-cli.md#global) command.
 
 This idea is not new and Composer is strongly inspired by node's
@@ -58,7 +58,7 @@ project, or globally as a system wide executable.
 
 #### Locally
 
-To install Composer locally, run the installer in your project directory. See 
+To install Composer locally, run the installer in your project directory. See
 [the Download page](https://getcomposer.org/download/) for instructions.
 
 The installer will check a few PHP settings and then download `composer.phar`
@@ -134,8 +134,16 @@ to download `composer.phar`.
 
 Create a new `composer.bat` file alongside `composer.phar`:
 
+Using cmd.exe:
+
 ```sh
-C:\bin>echo @php "%~dp0composer.phar" %*>composer.bat
+C:\bin> echo @php "%~dp0composer.phar" %*>composer.bat
+```
+
+Using PowerShell:
+
+```sh
+PS C:\bin> Set-Content composer.bat '@php "%~dp0composer.phar" %*'
 ```
 
 Add the directory to your PATH environment variable if it isn't already.
