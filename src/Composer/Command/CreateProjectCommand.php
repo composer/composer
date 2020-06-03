@@ -375,7 +375,7 @@ EOT
                     $fs = new Filesystem();
                     $fs->removeDirectory($realDir);
                     exit(130);
-                });
+                }, true);
             }
         }
 

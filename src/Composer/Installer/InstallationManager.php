@@ -218,7 +218,7 @@ class InstallationManager
 
                 exit(130);
             };
-            sapi_windows_set_ctrl_handler($windowsHandler);
+            sapi_windows_set_ctrl_handler($windowsHandler, true);
         }
 
         try {
