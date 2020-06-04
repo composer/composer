@@ -310,7 +310,7 @@ EOT
         }
 
         $process = new ProcessExecutor($io);
-        $fs = new Filesystem($fs);
+        $fs = new Filesystem($process);
         if (!$fs->isAbsolutePath($directory)) {
             $directory = getcwd() . DIRECTORY_SEPARATOR . $directory;
         }

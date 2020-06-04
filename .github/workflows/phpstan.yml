@@ -53,4 +53,4 @@ jobs:
       - name: Run PHPStan
         run: |
           bin/composer require --dev phpstan/phpstan:^0.12 phpunit/phpunit:^7.5 --with-all-dependencies
-          vendor/bin/phpstan analyse --configuration=phpstan/config.neon --error-format=checkstyle | cs2pr
+          vendor/bin/phpstan analyse --configuration=phpstan/config.neon || vendor/bin/phpstan analyse --configuration=phpstan/config.neon --error-format=checkstyle | cs2pr
