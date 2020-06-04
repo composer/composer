@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\HttpDownloader;
+use Composer\Util\ProcessExecutor;
 use Composer\Json\JsonFile;
 
 /**
@@ -114,9 +115,9 @@ class RepositoryFactory
      * @param  HttpDownloader    $httpDownloader
      * @return RepositoryManager
      */
-    public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
+    public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, ProcessExecutor $process = null)
     {
-        $rm = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher);
+        $rm = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher, $process);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');

@@ -29,11 +29,11 @@ class ProjectInstaller implements InstallerInterface
     private $downloadManager;
     private $filesystem;
 
-    public function __construct($installPath, DownloadManager $dm)
+    public function __construct($installPath, DownloadManager $dm, Filesystem $fs)
     {
         $this->installPath = rtrim(strtr($installPath, '\\', '/'), '/').'/';
         $this->downloadManager = $dm;
-        $this->filesystem = new Filesystem;
+        $this->filesystem = $fs;
     }
 
     /**

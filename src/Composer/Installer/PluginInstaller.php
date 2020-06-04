@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\Util\Filesystem;
 use React\Promise\PromiseInterface;
 
 /**
@@ -34,9 +35,9 @@ class PluginInstaller extends LibraryInstaller
      * @param IOInterface $io
      * @param Composer    $composer
      */
-    public function __construct(IOInterface $io, Composer $composer)
+    public function __construct(IOInterface $io, Composer $composer, Filesystem $fs = null, BinaryInstaller $binaryInstaller = null)
     {
-        parent::__construct($io, $composer, 'composer-plugin');
+        parent::__construct($io, $composer, 'composer-plugin', $fs, $binaryInstaller);
         $this->installationManager = $composer->getInstallationManager();
     }
 

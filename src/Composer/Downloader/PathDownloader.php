@@ -18,10 +18,15 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\Platform;
+use Composer\IO\IOInterface;
+use Composer\Config;
+use Composer\Cache;
+use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem as ComposerFilesystem;
+use Composer\Util\Filesystem;
+use Composer\EventDispatcher\EventDispatcher;
 use Symfony\Component\Filesystem\Exception\IOException;
-use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 
 /**
  * Download a package from a local path.
@@ -33,6 +38,15 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 {
     const STRATEGY_SYMLINK = 10;
     const STRATEGY_MIRROR = 20;
+
+    /** @var ProcessExecutor */
+    private $process;
+
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $downloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, Filesystem $fs = null, ProcessExecutor $process = null)
+    {
+        $this->process = $process ?: new ProcessExecutor($io);
+        parent::__construct($io, $config, $downloader, $eventDispatcher, $cache, $fs);
+    }
 
     /**
      * {@inheritdoc}
@@ -115,7 +129,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             $allowedStrategies = array(self::STRATEGY_MIRROR);
         }
 
-        $fileSystem = new Filesystem();
+        $symfonyFilesystem = new SymfonyFilesystem();
         $this->filesystem->removeDirectory($path);
 
         if ($output) {
@@ -142,9 +156,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     $path = rtrim($path, "/");
                     $this->io->writeError(sprintf('Symlinking from %s', $url), false);
                     if ($transportOptions['relative']) {
-                        $fileSystem->symlink($shortestPath, $path);
+                        $symfonyFilesystem->symlink($shortestPath, $path);
                     } else {
-                        $fileSystem->symlink($realUrl, $path);
+                        $symfonyFilesystem->symlink($realUrl, $path);
                     }
                 }
             } catch (IOException $e) {
@@ -161,12 +175,11 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         // Fallback if symlink failed or if symlink is not allowed for the package
         if (self::STRATEGY_MIRROR == $currentStrategy) {
-            $fs = new ComposerFilesystem();
-            $realUrl = $fs->normalizePath($realUrl);
+            $realUrl = $this->filesystem->normalizePath($realUrl);
 
             $this->io->writeError(sprintf('%sMirroring from %s', $isFallback ? '    ' : '', $url), false);
             $iterator = new ArchivableFilesFinder($realUrl, array());
-            $fileSystem->mirror($realUrl, $path, $iterator);
+            $symfonyFilesystem->mirror($realUrl, $path, $iterator);
         }
 
         if ($output) {
@@ -213,7 +226,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     public function getVcsReference(PackageInterface $package, $path)
     {
         $parser = new VersionParser;
-        $guesser = new VersionGuesser($this->config, new ProcessExecutor($this->io), $parser);
+        $guesser = new VersionGuesser($this->config, $this->process, $parser);
         $dumper = new ArrayDumper;
 
         $packageConfig = $dumper->dump($package);

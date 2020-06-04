@@ -37,11 +37,17 @@ use React\Promise\PromiseInterface;
  */
 class InstallationManager
 {
+    /** @var array<InstallerInterface> */
     private $installers = array();
+    /** @var array<string, InstallerInterface> */
     private $cache = array();
+    /** @var array<string, array<PackageInterface>> */
     private $notifiablePackages = array();
+    /** @var Loop */
     private $loop;
+    /** @var IOInterface */
     private $io;
+    /** @var EventDispatcher */
     private $eventDispatcher;
 
     public function __construct(Loop $loop, IOInterface $io, EventDispatcher $eventDispatcher = null)
@@ -181,7 +187,7 @@ class InstallationManager
             foreach ($cleanupPromises as $cleanup) {
                 $promises[] = new \React\Promise\Promise(function ($resolve, $reject) use ($cleanup) {
                     $promise = $cleanup();
-                    if (null === $promise) {
+                    if (!$promise instanceof PromiseInterface) {
                         $resolve();
                     } else {
                         $promise->then(function () use ($resolve) {

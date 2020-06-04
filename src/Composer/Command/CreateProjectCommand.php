@@ -38,6 +38,7 @@ use Symfony\Component\Finder\Finder;
 use Composer\Json\JsonFile;
 use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
+use Composer\Util\ProcessExecutor;
 use Composer\Util\Loop;
 use Composer\Package\Version\VersionParser;
 
@@ -186,7 +187,8 @@ EOT
             $composer = Factory::create($io, null, $disablePlugins);
         }
 
-        $fs = new Filesystem();
+        $process = new ProcessExecutor($io);
+        $fs = new Filesystem($process);
 
         if ($noScripts === false) {
             // dispatch event
@@ -307,7 +309,8 @@ EOT
             $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
-        $fs = new Filesystem();
+        $process = new ProcessExecutor($io);
+        $fs = new Filesystem($fs);
         if (!$fs->isAbsolutePath($directory)) {
             $directory = getcwd() . DIRECTORY_SEPARATOR . $directory;
         }
@@ -397,11 +400,11 @@ EOT
         $factory = new Factory();
 
         $httpDownloader = $factory->createHttpDownloader($io, $config);
-        $dm = $factory->createDownloadManager($io, $config, $httpDownloader);
+        $dm = $factory->createDownloadManager($io, $config, $httpDownloader, $process);
         $dm->setPreferSource($preferSource)
             ->setPreferDist($preferDist);
 
-        $projectInstaller = new ProjectInstaller($directory, $dm);
+        $projectInstaller = new ProjectInstaller($directory, $dm, $fs);
         $im = $factory->createInstallationManager(new Loop($httpDownloader), $io);
         $im->addInstaller($projectInstaller);
         $im->execute(new InstalledFilesystemRepository(new JsonFile('php://memory')), array(new InstallOperation($package)));

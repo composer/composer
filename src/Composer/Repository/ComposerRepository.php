@@ -1155,12 +1155,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $retries = 3;
 
         if (isset($this->packagesNotFoundCache[$filename])) {
-            return new Promise(function ($resolve, $reject) { $resolve(array('packages' => array())); });
+            return \React\Promise\resolve(array('packages' => array()));
         }
 
         if (isset($this->freshMetadataUrls[$filename]) && $lastModifiedTime) {
             // make it look like we got a 304 response
-            return new Promise(function ($resolve, $reject) { $resolve(true); });
+            return \React\Promise\resolve(true);
         }
 
         $httpDownloader = $this->httpDownloader;

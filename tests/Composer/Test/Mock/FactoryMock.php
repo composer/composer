@@ -23,6 +23,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Util\Loop;
+use Composer\Util\ProcessExecutor;
 
 class FactoryMock extends Factory
 {
@@ -47,7 +48,7 @@ class FactoryMock extends Factory
         return new InstallationManagerMock();
     }
 
-    protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io)
+    protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io, ProcessExecutor $process = null)
     {
     }
 

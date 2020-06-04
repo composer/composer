@@ -194,7 +194,7 @@ class ZipDownloaderTest extends TestCase
             ->method('execute')
             ->will($this->returnValue(1));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
 
@@ -211,7 +211,7 @@ class ZipDownloaderTest extends TestCase
             ->method('execute')
             ->will($this->returnValue(0));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
 
@@ -238,7 +238,7 @@ class ZipDownloaderTest extends TestCase
             ->method('extractTo')
             ->will($this->returnValue(true));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
         $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
@@ -270,7 +270,7 @@ class ZipDownloaderTest extends TestCase
           ->method('extractTo')
           ->will($this->returnValue(false));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
         $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
@@ -298,7 +298,7 @@ class ZipDownloaderTest extends TestCase
             ->method('extractTo')
             ->will($this->returnValue(false));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
         $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
@@ -330,7 +330,7 @@ class ZipDownloaderTest extends TestCase
           ->method('extractTo')
           ->will($this->returnValue(false));
 
-        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, $processExecutor);
+        $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
         $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
     }
