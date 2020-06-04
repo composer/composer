@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
+use React\Promise\PromiseInterface;
 
 /**
  * Installer for plugin packages
@@ -65,15 +66,20 @@ class PluginInstaller extends LibraryInstaller
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        parent::install($repo, $package);
-        try {
-            $this->composer->getPluginManager()->registerPackage($package, true);
-        } catch (\Exception $e) {
-            // Rollback installation
-            $this->io->writeError('Plugin initialization failed ('.$e->getMessage().'), uninstalling plugin');
-            parent::uninstall($repo, $package);
-            throw $e;
+        $promise = parent::install($repo, $package);
+        if (!$promise instanceof PromiseInterface) {
+            $promise = \React\Promise\resolve();
         }
+
+        $pluginManager = $this->composer->getPluginManager();
+        $self = $this;
+        return $promise->then(function () use ($self, $pluginManager, $package, $repo) {
+            try {
+                $pluginManager->registerPackage($package, true);
+            } catch (\Exception $e) {
+                $self->rollbackInstall($e, $repo, $package);
+            }
+        });
     }
 
     /**
@@ -81,22 +87,38 @@ class PluginInstaller extends LibraryInstaller
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
-        parent::update($repo, $initial, $target);
-
-        try {
-            $this->composer->getPluginManager()->deactivatePackage($initial, true);
-            $this->composer->getPluginManager()->registerPackage($target, true);
-        } catch (\Exception $e) {
-            // Rollback installation
-            $this->io->writeError('Plugin initialization failed, uninstalling plugin');
-            parent::uninstall($repo, $target);
-            throw $e;
+        $promise = parent::update($repo, $initial, $target);
+        if (!$promise instanceof PromiseInterface) {
+            $promise = \React\Promise\resolve();
         }
+
+        $pluginManager = $this->composer->getPluginManager();
+        $self = $this;
+        return $promise->then(function () use ($self, $pluginManager, $initial, $target, $repo) {
+            try {
+                $pluginManager->deactivatePackage($initial, true);
+                $pluginManager->registerPackage($target, true);
+            } catch (\Exception $e) {
+                $self->rollbackInstall($e, $repo, $target);
+            }
+        });
     }
 
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $this->composer->getPluginManager()->uninstallPackage($package, true);
+
+        return parent::uninstall($repo, $package);
+    }
+
+    /**
+     * TODO v3 should make this private once we can drop PHP 5.3 support
+     * @private
+     */
+    public function rollbackInstall(\Exception $e, InstalledRepositoryInterface $repo, PackageInterface $package)
+    {
+        $this->io->writeError('Plugin initialization failed ('.$e->getMessage().'), uninstalling plugin');
         parent::uninstall($repo, $package);
+        throw $e;
     }
 }

@@ -76,7 +76,7 @@ class ProjectInstaller implements InstallerInterface
      */
     public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
-        $this->downloadManager->prepare($type, $package, $this->installPath, $prevPackage);
+        return $this->downloadManager->prepare($type, $package, $this->installPath, $prevPackage);
     }
 
     /**
@@ -84,7 +84,7 @@ class ProjectInstaller implements InstallerInterface
      */
     public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
-        $this->downloadManager->cleanup($type, $package, $this->installPath, $prevPackage);
+        return $this->downloadManager->cleanup($type, $package, $this->installPath, $prevPackage);
     }
 
     /**
@@ -92,7 +92,7 @@ class ProjectInstaller implements InstallerInterface
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $this->downloadManager->install($package, $this->installPath);
+        return $this->downloadManager->install($package, $this->installPath);
     }
 
     /**

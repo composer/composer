@@ -26,6 +26,7 @@ use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\Loop;
+use React\Promise\PromiseInterface;
 
 /**
  * Package operation manager.
@@ -296,8 +297,8 @@ class InstallationManager
                 $io = $this->io;
 
                 $promise = $installer->prepare($opType, $package, $initialPackage);
-                if (null === $promise) {
-                    $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
+                if (!$promise instanceof PromiseInterface) {
+                    $promise = \React\Promise\resolve();
                 }
 
                 $promise = $promise->then(function () use ($opType, $installManager, $repo, $operation) {
