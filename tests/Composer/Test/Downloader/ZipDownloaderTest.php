@@ -60,9 +60,6 @@ class ZipDownloaderTest extends TestCase
         }
     }
 
-    /**
-     * @group only
-     */
     public function testErrorMessages()
     {
         if (!class_exists('ZipArchive')) {
@@ -125,7 +122,8 @@ class ZipDownloaderTest extends TestCase
             ->will($this->returnValue(false));
 
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $this->wait($promise);
     }
 
     /**
@@ -150,12 +148,10 @@ class ZipDownloaderTest extends TestCase
             ->will($this->throwException(new \ErrorException('Not a directory')));
 
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $this->wait($promise);
     }
 
-    /**
-     * @group only
-     */
     public function testZipArchiveOnlyGood()
     {
         if (!class_exists('ZipArchive')) {
@@ -174,7 +170,8 @@ class ZipDownloaderTest extends TestCase
             ->will($this->returnValue(true));
 
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $this->wait($promise);
     }
 
     /**
@@ -205,16 +202,7 @@ class ZipDownloaderTest extends TestCase
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
-        $e = null;
-        $promise->then(function () {
-            // noop
-        }, function ($ex) use (&$e) {
-            $e = $ex;
-        });
-
-        if ($e) {
-            throw $e;
-        }
+        $this->wait($promise);
     }
 
     public function testSystemUnzipOnlyGood()
@@ -240,7 +228,8 @@ class ZipDownloaderTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve($procMock)));
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
-        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $this->wait($promise);
     }
 
     public function testNonWindowsFallbackGood()
@@ -279,7 +268,8 @@ class ZipDownloaderTest extends TestCase
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $this->wait($promise);
     }
 
     /**
@@ -296,10 +286,21 @@ class ZipDownloaderTest extends TestCase
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', true);
 
+        $procMock = $this->getMockBuilder('Symfony\Component\Process\Process')->disableOriginalConstructor()->getMock();
+        $procMock->expects($this->any())
+            ->method('getExitCode')
+            ->will($this->returnValue(1));
+        $procMock->expects($this->any())
+            ->method('isSuccessful')
+            ->will($this->returnValue(false));
+        $procMock->expects($this->any())
+            ->method('getErrorOutput')
+            ->will($this->returnValue('output'));
+
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->at(0))
-          ->method('execute')
-          ->will($this->returnValue(1));
+          ->method('executeAsync')
+          ->will($this->returnValue(\React\Promise\resolve($procMock)));
 
         $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
         $zipArchive->expects($this->at(0))
@@ -311,7 +312,8 @@ class ZipDownloaderTest extends TestCase
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $this->wait($promise);
     }
 
     public function testWindowsFallbackGood()
@@ -339,7 +341,8 @@ class ZipDownloaderTest extends TestCase
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $this->wait($promise);
     }
 
     /**
@@ -371,7 +374,26 @@ class ZipDownloaderTest extends TestCase
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $this->wait($promise);
+    }
+
+    private function wait($promise)
+    {
+        if (null === $promise) {
+            return;
+        }
+
+        $e = null;
+        $promise->then(function () {
+            // noop
+        }, function ($ex) use (&$e) {
+            $e = $ex;
+        });
+
+        if ($e) {
+            throw $e;
+        }
     }
 }
 
