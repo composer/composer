@@ -201,6 +201,8 @@ EOT
 
         // install dependencies of the created project
         if ($noInstall === false) {
+            $composer->getInstallationManager()->setOutputProgress(!$noProgress);
+
             $installer = Installer::create($io, $composer);
             $installer->setPreferSource($preferSource)
                 ->setPreferDist($preferDist)
@@ -211,6 +213,10 @@ EOT
                 ->setOptimizeAutoloader($config->get('optimize-autoloader'))
                 ->setClassMapAuthoritative($config->get('classmap-authoritative'))
                 ->setApcuAutoloader($config->get('apcu-autoloader'));
+
+            if (!$composer->getLocker()->isLocked()) {
+                $installer->setUpdate(true);
+            }
 
             if ($disablePlugins) {
                 $installer->disablePlugins();
@@ -405,7 +411,8 @@ EOT
             ->setPreferDist($preferDist);
 
         $projectInstaller = new ProjectInstaller($directory, $dm, $fs);
-        $im = $factory->createInstallationManager(new Loop($httpDownloader), $io);
+        $im = $factory->createInstallationManager(new Loop($httpDownloader, $process), $io);
+        $im->setOutputProgress(!$noProgress);
         $im->addInstaller($projectInstaller);
         $im->execute(new InstalledFilesystemRepository(new JsonFile('php://memory')), array(new InstallOperation($package)));
         $im->notifyInstalls($io);

@@ -106,6 +106,8 @@ EOT
 
         $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
+        $composer->getInstallationManager()->setOutputProgress(!$input->getOption('no-progress'));
+
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))

@@ -50,6 +50,8 @@ class InstallationManager
     private $io;
     /** @var EventDispatcher */
     private $eventDispatcher;
+    /** @var bool */
+    private $outputProgress;
 
     public function __construct(Loop $loop, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {
@@ -174,7 +176,7 @@ class InstallationManager
      * @param RepositoryInterface  $repo       repository in which to add/remove/update packages
      * @param OperationInterface[] $operations operations to execute
      * @param bool                 $devMode    whether the install is being run in dev mode
-     * @param bool                 $operation  whether to dispatch script events
+     * @param bool                 $runScripts whether to dispatch script events
      */
     public function execute(RepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true)
     {
@@ -269,7 +271,14 @@ class InstallationManager
 
             // execute all downloads first
             if (!empty($promises)) {
-                $this->loop->wait($promises);
+                $progress = null;
+                if ($this->outputProgress && $this->io instanceof ConsoleIO && !$this->io->isDebug() && count($promises) > 1) {
+                    $progress = $this->io->getProgressBar();
+                }
+                $this->loop->wait($promises, $progress);
+                if ($progress) {
+                    $progress->clear();
+                }
             }
 
             // execute operations in batches to make sure every plugin is installed in the
@@ -377,8 +386,8 @@ class InstallationManager
         // execute all prepare => installs/updates/removes => cleanup steps
         if (!empty($promises)) {
             $progress = null;
-            if ($io instanceof ConsoleIO && !$io->isDebug() && count($promises) > 1) {
-                $progress = $io->getProgressBar();
+            if ($this->outputProgress && $this->io instanceof ConsoleIO && !$this->io->isDebug() && count($promises) > 1) {
+                $progress = $this->io->getProgressBar();
             }
             $this->loop->wait($promises, $progress);
             if ($progress) {
@@ -483,6 +492,11 @@ class InstallationManager
         $installer = $this->getInstaller($package->getType());
 
         return $installer->getInstallPath($package);
+    }
+
+    public function setOutputProgress($outputProgress)
+    {
+        $this->outputProgress = $outputProgress;
     }
 
     public function notifyInstalls(IOInterface $io)
