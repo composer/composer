@@ -17,6 +17,7 @@
 - `PluginInterface` added a deactivate (so plugin can stop whatever it is doing) and an uninstall (so the plugin can remove any files it created or do general cleanup) method.
 - Plugins implementing `EventSubscriberInterface` will be deregistered from the EventDispatcher automatically when being deactivated, nothing to do there.
 - `Pool` objects are now created via the `RepositorySet` class, you should use that in case you were using the `Pool` class directly.
+- Custom installers extending from LibraryInstaller should be aware that in Composer 2 it MAY return PromiseInterface instances when calling parent::install/update/uninstall/installCode/removeCode. See [composer/installers](https://github.com/composer/installers/commit/5006d0c28730ade233a8f42ec31ac68fb1c5c9bb) for an example of how to handle this best.
 - The `Composer\Installer` class changed quite a bit internally, but the inputs are almost the same:
   - `setAdditionalInstalledRepository` is now `setAdditionalFixedRepository`
   - `setUpdateWhitelist` is now `setUpdateAllowList`

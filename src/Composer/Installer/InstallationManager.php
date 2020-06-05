@@ -26,6 +26,7 @@ use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\Loop;
+use React\Promise\PromiseInterface;
 
 /**
  * Package operation manager.
@@ -36,11 +37,17 @@ use Composer\Util\Loop;
  */
 class InstallationManager
 {
+    /** @var array<InstallerInterface> */
     private $installers = array();
+    /** @var array<string, InstallerInterface> */
     private $cache = array();
+    /** @var array<string, array<PackageInterface>> */
     private $notifiablePackages = array();
+    /** @var Loop */
     private $loop;
+    /** @var IOInterface */
     private $io;
+    /** @var EventDispatcher */
     private $eventDispatcher;
 
     public function __construct(Loop $loop, IOInterface $io, EventDispatcher $eventDispatcher = null)
@@ -180,7 +187,7 @@ class InstallationManager
             foreach ($cleanupPromises as $cleanup) {
                 $promises[] = new \React\Promise\Promise(function ($resolve, $reject) use ($cleanup) {
                     $promise = $cleanup();
-                    if (null === $promise) {
+                    if (!$promise instanceof PromiseInterface) {
                         $resolve();
                     } else {
                         $promise->then(function () use ($resolve) {
@@ -296,8 +303,8 @@ class InstallationManager
                 $io = $this->io;
 
                 $promise = $installer->prepare($opType, $package, $initialPackage);
-                if (null === $promise) {
-                    $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
+                if (!$promise instanceof PromiseInterface) {
+                    $promise = \React\Promise\resolve();
                 }
 
                 $promise = $promise->then(function () use ($opType, $installManager, $repo, $operation) {

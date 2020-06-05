@@ -27,12 +27,6 @@ parameters:
 
         # BC with older PHPUnit
         - '~^Call to an undefined static method PHPUnit\\Framework\\TestCase::setExpectedException\(\)\.$~'
-
-        # hhvm should have support for $this in closures
-        -
-            count: 1
-            message: '~^Using \$this inside anonymous function is prohibited because of PHP 5\.3 support\.$~'
-            path: '../tests/Composer/Test/Repository/PlatformRepositoryTest.php'
     paths:
         - ../src
         - ../tests

@@ -17,6 +17,7 @@ use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
 use Composer\Util\HttpDownloader;
+use Composer\Util\ProcessExecutor;
 
 /**
  * Repositories manager.
@@ -27,20 +28,30 @@ use Composer\Util\HttpDownloader;
  */
 class RepositoryManager
 {
+    /** @var InstalledRepositoryInterface */
     private $localRepository;
+    /** @var list<RepositoryInterface> */
     private $repositories = array();
+    /** @var array<string, string> */
     private $repositoryClasses = array();
+    /** @var IOInterface */
     private $io;
+    /** @var Config */
     private $config;
-    private $eventDispatcher;
+    /** @var HttpDownloader */
     private $httpDownloader;
+    /** @var ?EventDispatcher */
+    private $eventDispatcher;
+    /** @var ProcessExecutor */
+    private $process;
 
-    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, ProcessExecutor $process = null)
     {
         $this->io = $io;
         $this->config = $config;
         $this->httpDownloader = $httpDownloader;
         $this->eventDispatcher = $eventDispatcher;
+        $this->process = $process ?: new ProcessExecutor($io);
     }
 
     /**
@@ -130,7 +141,7 @@ class RepositoryManager
             unset($config['only'], $config['exclude'], $config['canonical']);
         }
 
-        $repository = new $class($config, $this->io, $this->config, $this->httpDownloader, $this->eventDispatcher);
+        $repository = new $class($config, $this->io, $this->config, $this->httpDownloader, $this->eventDispatcher, $this->process);
 
         if (isset($filterConfig)) {
             $repository = new FilterRepository($repository, $filterConfig);

@@ -30,6 +30,7 @@ class PlatformRepository extends ArrayRepository
 {
     const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-(?:plugin|runtime)-api)$}iD';
 
+    private static $hhvmVersion;
     private $versionParser;
 
     /**
@@ -45,7 +46,7 @@ class PlatformRepository extends ArrayRepository
 
     public function __construct(array $packages = array(), array $overrides = array(), ProcessExecutor $process = null)
     {
-        $this->process = $process === null ? (new ProcessExecutor()) : $process;
+        $this->process = $process;
         foreach ($overrides as $name => $version) {
             $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
         }
@@ -251,22 +252,7 @@ class PlatformRepository extends ArrayRepository
             $this->addPackage($lib);
         }
 
-        $hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;
-        if ($hhvmVersion === null && !Platform::isWindows()) {
-            $finder = new ExecutableFinder();
-            $hhvm = $finder->find('hhvm');
-            if ($hhvm !== null) {
-                $exitCode = $this->process->execute(
-                    ProcessExecutor::escape($hhvm).
-                    ' --php -d hhvm.jit=0 -r "echo HHVM_VERSION;" 2>/dev/null',
-                    $hhvmVersion
-                );
-                if ($exitCode !== 0) {
-                    $hhvmVersion = null;
-                }
-            }
-        }
-        if ($hhvmVersion) {
+        if ($hhvmVersion = self::getHHVMVersion($this->process)) {
             try {
                 $prettyVersion = $hhvmVersion;
                 $version = $this->versionParser->normalize($prettyVersion);
@@ -361,5 +347,30 @@ class PlatformRepository extends ArrayRepository
     private function buildPackageName($name)
     {
         return 'ext-' . str_replace(' ', '-', $name);
+    }
+
+    private static function getHHVMVersion(ProcessExecutor $process = null)
+    {
+        if (null !== self::$hhvmVersion) {
+            return self::$hhvmVersion ?: null;
+        }
+
+        self::$hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;
+        if (self::$hhvmVersion === null && !Platform::isWindows()) {
+            self::$hhvmVersion = false;
+            $finder = new ExecutableFinder();
+            $hhvmPath = $finder->find('hhvm');
+            if ($hhvmPath !== null) {
+                $process = $process ?: new ProcessExecutor();
+                $exitCode = $process->execute(
+                    ProcessExecutor::escape($hhvmPath).
+                    ' --php -d hhvm.jit=0 -r "echo HHVM_VERSION;" 2>/dev/null',
+                    self::$hhvmVersion
+                );
+                if ($exitCode !== 0) {
+                    self::$hhvmVersion = false;
+                }
+            }
+        }
     }
 }

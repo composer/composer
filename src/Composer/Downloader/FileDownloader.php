@@ -39,16 +39,22 @@ use Composer\Downloader\TransportException;
  */
 class FileDownloader implements DownloaderInterface, ChangeReportInterface
 {
+    /** @var IOInterface */
     protected $io;
+    /** @var Config */
     protected $config;
+    /** @var HttpDownloader */
     protected $httpDownloader;
+    /** @var Filesystem */
     protected $filesystem;
+    /** @var Cache */
     protected $cache;
+    /** @var EventDispatcher */
+    protected $eventDispatcher;
     /**
      * @private this is only public for php 5.3 support in closures
      */
     public $lastCacheWrites = array();
-    private $eventDispatcher;
 
     /**
      * Constructor.

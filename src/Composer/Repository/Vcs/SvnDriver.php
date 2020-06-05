@@ -307,9 +307,8 @@ class SvnDriver extends VcsDriver
             return false;
         }
 
-        $processExecutor = new ProcessExecutor($io);
-
-        $exit = $processExecutor->execute(
+        $process = new ProcessExecutor($io);
+        $exit = $process->execute(
             "svn info --non-interactive ".ProcessExecutor::escape($url),
             $ignoredOutput
         );
@@ -320,14 +319,14 @@ class SvnDriver extends VcsDriver
         }
 
         // Subversion client 1.7 and older
-        if (false !== stripos($processExecutor->getErrorOutput(), 'authorization failed:')) {
+        if (false !== stripos($process->getErrorOutput(), 'authorization failed:')) {
             // This is likely a remote Subversion repository that requires
             // authentication. We will handle actual authentication later.
             return true;
         }
 
         // Subversion client 1.8 and newer
-        if (false !== stripos($processExecutor->getErrorOutput(), 'Authentication failed')) {
+        if (false !== stripos($process->getErrorOutput(), 'Authentication failed')) {
             // This is likely a remote Subversion or newer repository that requires
             // authentication. We will handle actual authentication later.
             return true;

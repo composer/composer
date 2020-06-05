@@ -18,6 +18,7 @@ use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\PackageInterface;
 use Composer\Util\Loop;
 use Composer\Test\Mock\FactoryMock;
+use Composer\Util\ProcessExecutor;
 
 class ArchiveManagerTest extends ArchiverTest
 {
@@ -36,7 +37,8 @@ class ArchiveManagerTest extends ArchiverTest
         $dm = $factory->createDownloadManager(
             $io = new NullIO,
             $config = FactoryMock::createConfig(),
-            $httpDownloader = $factory->createHttpDownloader($io, $config)
+            $httpDownloader = $factory->createHttpDownloader($io, $config),
+            new ProcessExecutor($io)
         );
         $loop = new Loop($httpDownloader);
         $this->manager = $factory->createArchiveManager($factory->createConfig(), $dm, $loop);
