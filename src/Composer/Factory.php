@@ -336,7 +336,7 @@ class Factory
 
         $httpDownloader = self::createHttpDownloader($io, $config);
         $process = new ProcessExecutor($io);
-        $loop = new Loop($httpDownloader);
+        $loop = new Loop($httpDownloader, $process);
         $composer->setLoop($loop);
 
         // initialize event dispatcher

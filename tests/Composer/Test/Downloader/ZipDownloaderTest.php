@@ -92,8 +92,8 @@ class ZipDownloaderTest extends TestCase
         $this->setPrivateProperty('hasSystemUnzip', false);
 
         try {
-            $promise = $downloader->download($this->package, $path = sys_get_temp_dir().'/composer-zip-test');
             $loop = new Loop($this->httpDownloader);
+            $promise = $downloader->download($this->package, $path = sys_get_temp_dir().'/composer-zip-test');
             $loop->wait(array($promise));
             $downloader->install($this->package, $path);
 

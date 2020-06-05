@@ -44,6 +44,7 @@ class HttpDownloader
     private $rfs;
     private $idGen = 0;
     private $disabled;
+    private $allowAsync = false;
 
     /**
      * @param IOInterface $io         The IO instance
@@ -139,6 +140,10 @@ class HttpDownloader
             'origin' => Url::getOrigin($this->config, $request['url']),
         );
 
+        if (!$sync && !$this->allowAsync) {
+            throw new \LogicException('You must use the HttpDownloader instance which is part of a Composer\Loop instance to be able to run async http requests');
+        }
+
         // capture username/password from URL if there is one
         if (preg_match('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $request['url'], $match)) {
             $this->io->setAuthentication($job['origin'], rawurldecode($match[1]), rawurldecode($match[2]));
@@ -189,7 +194,6 @@ class HttpDownloader
 
             // TODO 3.0 this should be done directly on $this when PHP 5.3 is dropped
             $downloader->markJobDone();
-            $downloader->scheduleNextJob();
 
             return $response;
         }, function ($e) use (&$job, $downloader) {
@@ -197,7 +201,6 @@ class HttpDownloader
             $job['exception'] = $e;
 
             $downloader->markJobDone();
-            $downloader->scheduleNextJob();
 
             throw $e;
         });
@@ -251,13 +254,7 @@ class HttpDownloader
     public function markJobDone()
     {
         $this->runningJobs--;
-    }
 
-    /**
-     * @private
-     */
-    public function scheduleNextJob()
-    {
         foreach ($this->jobs as $job) {
             if ($job['status'] === self::STATUS_QUEUED) {
                 $this->startJob($job['id']);
@@ -268,34 +265,50 @@ class HttpDownloader
         }
     }
 
-    public function wait($index = null, $progress = false)
+    public function wait($index = null)
     {
         while (true) {
-            if ($this->curl) {
-                $this->curl->tick();
-            }
-
-            if (null !== $index) {
-                if ($this->jobs[$index]['status'] === self::STATUS_COMPLETED || $this->jobs[$index]['status'] === self::STATUS_FAILED) {
-                    return;
-                }
-            } else {
-                $done = true;
-                foreach ($this->jobs as $job) {
-                    if (!in_array($job['status'], array(self::STATUS_COMPLETED, self::STATUS_FAILED), true)) {
-                        $done = false;
-                        break;
-                    } elseif (!$job['sync']) {
-                        unset($this->jobs[$job['id']]);
-                    }
-                }
-                if ($done) {
-                    return;
-                }
+            if (!$this->hasActiveJob($index)) {
+                return;
             }
 
             usleep(1000);
         }
+    }
+
+    /**
+     * @internal
+     */
+    public function enableAsync()
+    {
+        $this->allowAsync = true;
+    }
+
+    /**
+     * @internal
+     */
+    public function hasActiveJob($index = null)
+    {
+        if ($this->curl) {
+            $this->curl->tick();
+        }
+
+        if (null !== $index) {
+            if ($this->jobs[$index]['status'] === self::STATUS_COMPLETED || $this->jobs[$index]['status'] === self::STATUS_FAILED) {
+                return false;
+            }
+            return true;
+        }
+
+        foreach ($this->jobs as $job) {
+            if (!in_array($job['status'], array(self::STATUS_COMPLETED, self::STATUS_FAILED), true)) {
+                return true;
+            } elseif (!$job['sync']) {
+                unset($this->jobs[$job['id']]);
+            }
+        }
+
+        return false;
     }
 
     private function getResponse($index)

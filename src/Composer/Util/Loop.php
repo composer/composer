@@ -21,10 +21,19 @@ use React\Promise\Promise;
 class Loop
 {
     private $httpDownloader;
+    private $processExecutor;
+    private $currentPromises;
 
-    public function __construct(HttpDownloader $httpDownloader)
+    public function __construct(HttpDownloader $httpDownloader = null, ProcessExecutor $processExecutor = null)
     {
         $this->httpDownloader = $httpDownloader;
+        if ($this->httpDownloader) {
+            $this->httpDownloader->enableAsync();
+        }
+        $this->processExecutor = $processExecutor;
+        if ($this->processExecutor) {
+            $this->processExecutor->enableAsync();
+        }
     }
 
     public function wait(array $promises)
@@ -39,8 +48,30 @@ class Loop
             }
         );
 
-        $this->httpDownloader->wait();
+        $this->currentPromises = $promises;
 
+        while (true) {
+            $hasActiveJob = false;
+
+            if ($this->httpDownloader) {
+                if ($this->httpDownloader->hasActiveJob()) {
+                    $hasActiveJob = true;
+                }
+            }
+            if ($this->processExecutor) {
+                if ($this->processExecutor->hasActiveJob()) {
+                    $hasActiveJob = true;
+                }
+            }
+
+            if (!$hasActiveJob) {
+                break;
+            }
+
+            usleep(5000);
+        }
+
+        $this->currentPromises = null;
         if ($uncaught) {
             throw $uncaught;
         }
