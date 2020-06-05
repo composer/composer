@@ -250,7 +250,7 @@ class ProcessExecutor
     public function wait($index = null)
     {
         while (true) {
-            if (!$this->hasActiveJob($index)) {
+            if (!$this->countActiveJobs($index)) {
                 return;
             }
 
@@ -268,8 +268,10 @@ class ProcessExecutor
 
     /**
      * @internal
+     *
+     * @return int number of active (queued or started) jobs
      */
-    public function hasActiveJob($index = null)
+    public function countActiveJobs($index = null)
     {
         // tick
         foreach ($this->jobs as $job) {
@@ -278,21 +280,28 @@ class ProcessExecutor
                     call_user_func($job['resolve'], $job['process']);
                 }
             }
+
+            if ($this->runningJobs < $this->maxJobs) {
+                if ($job['status'] === self::STATUS_QUEUED) {
+                    $this->startJob($job['id']);
+                }
+            }
         }
 
         if (null !== $index) {
-            return $this->jobs[$index]['status'] < self::STATUS_COMPLETED;
+            return $this->jobs[$index]['status'] < self::STATUS_COMPLETED ? 1 : 0;
         }
 
+        $active = 0;
         foreach ($this->jobs as $job) {
             if ($job['status'] < self::STATUS_COMPLETED) {
-                return true;
+                $active++;
             } else {
                 unset($this->jobs[$job['id']]);
             }
         }
 
-        return false;
+        return $active;
     }
 
     /**
@@ -301,15 +310,6 @@ class ProcessExecutor
     public function markJobDone()
     {
         $this->runningJobs--;
-
-        foreach ($this->jobs as $job) {
-            if ($job['status'] === self::STATUS_QUEUED) {
-                $this->startJob($job['id']);
-                if ($this->runningJobs >= $this->maxJobs) {
-                    return;
-                }
-            }
-        }
     }
 
     public function splitLines($output)

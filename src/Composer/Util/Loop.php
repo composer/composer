@@ -14,6 +14,7 @@ namespace Composer\Util;
 
 use Composer\Util\HttpDownloader;
 use React\Promise\Promise;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -36,7 +37,7 @@ class Loop
         }
     }
 
-    public function wait(array $promises)
+    public function wait(array $promises, ProgressBar $progress = null)
     {
         /** @var \Exception|null */
         $uncaught = null;
@@ -50,21 +51,32 @@ class Loop
 
         $this->currentPromises = $promises;
 
-        while (true) {
-            $hasActiveJob = false;
-
+        if ($progress) {
+            $totalJobs = 0;
             if ($this->httpDownloader) {
-                if ($this->httpDownloader->hasActiveJob()) {
-                    $hasActiveJob = true;
-                }
+                $totalJobs += $this->httpDownloader->countActiveJobs();
             }
             if ($this->processExecutor) {
-                if ($this->processExecutor->hasActiveJob()) {
-                    $hasActiveJob = true;
-                }
+                $totalJobs += $this->processExecutor->countActiveJobs();
+            }
+            $progress->start($totalJobs);
+        }
+
+        while (true) {
+            $activeJobs = 0;
+
+            if ($this->httpDownloader) {
+                $activeJobs += $this->httpDownloader->countActiveJobs();
+            }
+            if ($this->processExecutor) {
+                $activeJobs += $this->processExecutor->countActiveJobs();
             }
 
-            if (!$hasActiveJob) {
+            if ($progress) {
+                $progress->setProgress($progress->getMaxSteps() - $activeJobs);
+            }
+
+            if (!$activeJobs) {
                 break;
             }
 

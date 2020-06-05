@@ -267,21 +267,12 @@ class HttpDownloader
     public function markJobDone()
     {
         $this->runningJobs--;
-
-        foreach ($this->jobs as $job) {
-            if ($job['status'] === self::STATUS_QUEUED) {
-                $this->startJob($job['id']);
-                if ($this->runningJobs >= $this->maxJobs) {
-                    return;
-                }
-            }
-        }
     }
 
     public function wait($index = null)
     {
         while (true) {
-            if (!$this->hasActiveJob($index)) {
+            if (!$this->countActiveJobs($index)) {
                 return;
             }
 
@@ -299,26 +290,37 @@ class HttpDownloader
 
     /**
      * @internal
+     *
+     * @return int number of active (queued or started) jobs
      */
-    public function hasActiveJob($index = null)
+    public function countActiveJobs($index = null)
     {
+        if ($this->runningJobs < $this->maxJobs) {
+            foreach ($this->jobs as $job) {
+                if ($job['status'] === self::STATUS_QUEUED && $this->runningJobs < $this->maxJobs) {
+                    $this->startJob($job['id']);
+                }
+            }
+        }
+
         if ($this->curl) {
             $this->curl->tick();
         }
 
         if (null !== $index) {
-            return $this->jobs[$index]['status'] < self::STATUS_COMPLETED;
+            return $this->jobs[$index]['status'] < self::STATUS_COMPLETED ? 1 : 0;
         }
 
+        $active = 0;
         foreach ($this->jobs as $job) {
             if ($job['status'] < self::STATUS_COMPLETED) {
-                return true;
+                $active++;
             } elseif (!$job['sync']) {
                 unset($this->jobs[$job['id']]);
             }
         }
 
-        return false;
+        return $active;
     }
 
     private function getResponse($index)

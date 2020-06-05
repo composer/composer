@@ -13,6 +13,7 @@
 namespace Composer\Installer;
 
 use Composer\IO\IOInterface;
+use Composer\IO\ConsoleIO;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Repository\RepositoryInterface;
@@ -330,7 +331,14 @@ class InstallationManager
 
             // execute all prepare => installs/updates/removes => cleanup steps
             if (!empty($promises)) {
-                $this->loop->wait($promises);
+                $progress = null;
+                if ($io instanceof ConsoleIO && !$io->isDebug()) {
+                    $progress = $io->getProgressBar();
+                }
+                $this->loop->wait($promises, $progress);
+                if ($progress) {
+                    $progress->clear();
+                }
             }
         } catch (\Exception $e) {
             $runCleanup();
