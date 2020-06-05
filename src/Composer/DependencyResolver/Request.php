@@ -17,7 +17,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\RootAliasPackage;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
-use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -56,7 +56,7 @@ class Request
     public function requireName($packageName, ConstraintInterface $constraint = null)
     {
         $packageName = strtolower($packageName);
-        $this->requires[$packageName] = $constraint ? $constraint : new EmptyConstraint();
+        $this->requires[$packageName] = $constraint ? $constraint : new MatchAllConstraint();
     }
 
     /**

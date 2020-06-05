@@ -14,7 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\DependencyResolver\Request;
 use Composer\Repository\ArrayRepository;
-use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 
 class RequestTest extends TestCase
@@ -35,7 +35,7 @@ class RequestTest extends TestCase
 
         $this->assertEquals(
             array(
-                'foo' => new EmptyConstraint(),
+                'foo' => new MatchAllConstraint(),
             ),
             $request->getRequires()
         );

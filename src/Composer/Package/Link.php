@@ -13,7 +13,6 @@
 namespace Composer\Package;
 
 use Composer\Semver\Constraint\ConstraintInterface;
-use Composer\Semver\Constraint\EmptyConstraint;
 
 /**
  * Represents a link between two packages, represented by their names

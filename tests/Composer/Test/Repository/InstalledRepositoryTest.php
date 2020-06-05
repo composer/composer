@@ -16,7 +16,7 @@ use Composer\Repository\InstalledRepository;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Package\Link;
-use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 
 class InstalledRepositoryTest extends TestCase
@@ -31,8 +31,8 @@ class InstalledRepositoryTest extends TestCase
         $arrayRepoTwo->addPackage($bar = $this->getPackage('bar', '1'));
         $arrayRepoTwo->addPackage($bar2 = $this->getPackage('bar', '2'));
 
-        $foo->setReplaces(array(new Link('foo', 'provided', new EmptyConstraint())));
-        $bar2->setProvides(array(new Link('bar', 'provided', new EmptyConstraint())));
+        $foo->setReplaces(array(new Link('foo', 'provided', new MatchAllConstraint())));
+        $bar2->setProvides(array(new Link('bar', 'provided', new MatchAllConstraint())));
 
         $repo = new InstalledRepository(array($arrayRepoOne, $arrayRepoTwo));
 

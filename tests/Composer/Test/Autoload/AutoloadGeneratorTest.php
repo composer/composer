@@ -16,7 +16,7 @@ use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Link;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Filesystem;
 use Composer\Package\AliasPackage;
 use Composer\Package\Package;
@@ -367,8 +367,8 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new EmptyConstraint()),
-            new Link('a', 'b/b', new EmptyConstraint()),
+            new Link('a', 'a/a', new MatchAllConstraint()),
+            new Link('a', 'b/b', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -396,7 +396,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new EmptyConstraint()),
+            new Link('a', 'a/a', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -404,11 +404,11 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $b = new Package('b/b', '1.0', '1.0');
         $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
         $a->setRequires(array(
-            new Link('a/a', 'b/b', new EmptyConstraint()),
+            new Link('a/a', 'b/b', new MatchAllConstraint()),
         ));
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
         $b->setRequires(array(
-            new Link('b/b', 'a/a', new EmptyConstraint()),
+            new Link('b/b', 'a/a', new MatchAllConstraint()),
         ));
 
         $this->repository->expects($this->once())
@@ -428,13 +428,13 @@ class AutoloadGeneratorTest extends TestCase
     public function testNonDevAutoloadShouldIncludeReplacedPackages()
     {
         $package = new Package('a', '1.0', '1.0');
-        $package->setRequires(array(new Link('a', 'a/a', new EmptyConstraint())));
+        $package->setRequires(array(new Link('a', 'a/a', new MatchAllConstraint())));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
         $packages[] = $b = new Package('b/b', '1.0', '1.0');
 
-        $a->setRequires(array(new Link('a/a', 'b/c', new EmptyConstraint())));
+        $a->setRequires(array(new Link('a/a', 'b/c', new MatchAllConstraint())));
 
         $b->setAutoload(array('psr-4' => array('B\\' => 'src/')));
         $b->setReplaces(
@@ -463,7 +463,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new EmptyConstraint()),
+            new Link('a', 'a/a', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -471,11 +471,11 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $b = new Package('b/b', '1.0', '1.0');
         $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
         $a->setRequires(array(
-            new Link('a/a', 'c/c', new EmptyConstraint()),
+            new Link('a/a', 'c/c', new MatchAllConstraint()),
         ));
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
         $b->setReplaces(array(
-            new Link('b/b', 'c/c', new EmptyConstraint()),
+            new Link('b/b', 'c/c', new MatchAllConstraint()),
         ));
 
         $this->repository->expects($this->once())
@@ -496,7 +496,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new EmptyConstraint())
+            new Link('a', 'a/a', new MatchAllConstraint())
         ));
 
         $packages = array();
@@ -507,18 +507,18 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $e = new Package('e/e', '1.0', '1.0');
         $a->setAutoload(array('classmap' => array('src/A.php')));
         $a->setRequires(array(
-            new Link('a/a', 'b/b', new EmptyConstraint())
+            new Link('a/a', 'b/b', new MatchAllConstraint())
         ));
         $b->setAutoload(array('classmap' => array('src/B.php')));
         $b->setRequires(array(
-            new Link('b/b', 'e/e', new EmptyConstraint())
+            new Link('b/b', 'e/e', new MatchAllConstraint())
         ));
         $c->setAutoload(array('classmap' => array('src/C.php')));
         $c->setReplaces(array(
-            new Link('c/c', 'b/b', new EmptyConstraint())
+            new Link('c/c', 'b/b', new MatchAllConstraint())
         ));
         $c->setRequires(array(
-            new Link('c/c', 'd/d', new EmptyConstraint())
+            new Link('c/c', 'd/d', new MatchAllConstraint())
         ));
         $d->setAutoload(array('classmap' => array('src/D.php')));
         $e->setAutoload(array('classmap' => array('src/E.php')));
@@ -548,7 +548,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new EmptyConstraint()),
+            new Link('a', 'a/a', new MatchAllConstraint()),
         ));
 
         $package->setAutoload(array(
@@ -653,8 +653,8 @@ EOF;
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new EmptyConstraint()),
-            new Link('a', 'b/b', new EmptyConstraint()),
+            new Link('a', 'a/a', new MatchAllConstraint()),
+            new Link('a', 'b/b', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -693,8 +693,8 @@ EOF;
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new EmptyConstraint()),
-            new Link('a', 'b/b', new EmptyConstraint()),
+            new Link('a', 'a/a', new MatchAllConstraint()),
+            new Link('a', 'b/b', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -733,9 +733,9 @@ EOF;
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new EmptyConstraint()),
-            new Link('a', 'b/b', new EmptyConstraint()),
-            new Link('a', 'c/c', new EmptyConstraint()),
+            new Link('a', 'a/a', new MatchAllConstraint()),
+            new Link('a', 'b/b', new MatchAllConstraint()),
+            new Link('a', 'c/c', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -778,9 +778,9 @@ EOF;
     {
         $package = new Package('a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new EmptyConstraint()),
-            new Link('a', 'b/b', new EmptyConstraint()),
-            new Link('a', 'c/c', new EmptyConstraint()),
+            new Link('a', 'a/a', new MatchAllConstraint()),
+            new Link('a', 'b/b', new MatchAllConstraint()),
+            new Link('a', 'c/c', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -828,9 +828,9 @@ EOF;
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array('files' => array('root.php')));
         $package->setRequires(array(
-            new Link('a', 'a/a', new EmptyConstraint()),
-            new Link('a', 'b/b', new EmptyConstraint()),
-            new Link('a', 'c/c', new EmptyConstraint()),
+            new Link('a', 'a/a', new MatchAllConstraint()),
+            new Link('a', 'b/b', new MatchAllConstraint()),
+            new Link('a', 'c/c', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -879,9 +879,9 @@ EOF;
         $notAutoloadPackage = new Package('a', '1.0', '1.0');
 
         $requires = array(
-            new Link('a', 'a/a', new EmptyConstraint()),
-            new Link('a', 'b/b', new EmptyConstraint()),
-            new Link('a', 'c/c', new EmptyConstraint()),
+            new Link('a', 'a/a', new MatchAllConstraint()),
+            new Link('a', 'b/b', new MatchAllConstraint()),
+            new Link('a', 'c/c', new MatchAllConstraint()),
         );
         $autoloadPackage->setRequires($requires);
         $notAutoloadPackage->setRequires($requires);
@@ -950,10 +950,10 @@ EOF;
         $package = new Package('a', '1.0', '1.0');
         $package->setAutoload(array('files' => array('root2.php')));
         $package->setRequires(array(
-            new Link('a', 'z/foo', new EmptyConstraint()),
-            new Link('a', 'b/bar', new EmptyConstraint()),
-            new Link('a', 'd/d', new EmptyConstraint()),
-            new Link('a', 'e/e', new EmptyConstraint()),
+            new Link('a', 'z/foo', new MatchAllConstraint()),
+            new Link('a', 'b/bar', new MatchAllConstraint()),
+            new Link('a', 'd/d', new MatchAllConstraint()),
+            new Link('a', 'e/e', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -964,18 +964,18 @@ EOF;
         $packages[] = $e = new Package('e/e', '1.0', '1.0');
 
         $z->setAutoload(array('files' => array('testA.php')));
-        $z->setRequires(array(new Link('z/foo', 'c/lorem', new EmptyConstraint())));
+        $z->setRequires(array(new Link('z/foo', 'c/lorem', new MatchAllConstraint())));
 
         $b->setAutoload(array('files' => array('testB.php')));
-        $b->setRequires(array(new Link('b/bar', 'c/lorem', new EmptyConstraint()), new Link('b/bar', 'd/d', new EmptyConstraint())));
+        $b->setRequires(array(new Link('b/bar', 'c/lorem', new MatchAllConstraint()), new Link('b/bar', 'd/d', new MatchAllConstraint())));
 
         $c->setAutoload(array('files' => array('testC.php')));
 
         $d->setAutoload(array('files' => array('testD.php')));
-        $d->setRequires(array(new Link('d/d', 'c/lorem', new EmptyConstraint())));
+        $d->setRequires(array(new Link('d/d', 'c/lorem', new MatchAllConstraint())));
 
         $e->setAutoload(array('files' => array('testE.php')));
-        $e->setRequires(array(new Link('e/e', 'c/lorem', new EmptyConstraint())));
+        $e->setRequires(array(new Link('e/e', 'c/lorem', new MatchAllConstraint())));
 
         $this->repository->expects($this->once())
             ->method('getCanonicalPackages')
@@ -1023,8 +1023,8 @@ EOF;
             'classmap' => array($this->workingDir.'/src'),
         ));
         $mainPackage->setRequires(array(
-            new Link('z', 'a/a', new EmptyConstraint()),
-            new Link('z', 'b/b', new EmptyConstraint()),
+            new Link('z', 'a/a', new MatchAllConstraint()),
+            new Link('z', 'b/b', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -1286,7 +1286,7 @@ EOF;
             'files' => array('test.php'),
         ));
         $package->setRequires(array(
-            new Link('a', 'b/b', new EmptyConstraint()),
+            new Link('a', 'b/b', new MatchAllConstraint()),
         ));
 
         $vendorPackage = new Package('b/b', '1.0', '1.0');
