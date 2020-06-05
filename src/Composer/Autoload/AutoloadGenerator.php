@@ -640,6 +640,10 @@ EOF;
                         }
                     }
 
+                    if ($match[1] === 'zend-opcache') {
+                        $match[1] = 'zend opcache';
+                    }
+
                     $extension = var_export($match[1], true);
                     if ($match[1] === 'pcntl' || $match[1] === 'readline') {
                         $requiredExtensions[$extension] = "PHP_SAPI !== 'cli' || extension_loaded($extension) || \$missingExtensions[] = $extension;\n";
