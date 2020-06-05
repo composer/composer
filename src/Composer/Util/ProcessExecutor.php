@@ -187,12 +187,12 @@ class ProcessExecutor
             $self->markJobDone();
 
             return $job['process'];
-        }, function () use (&$job, $self) {
+        }, function ($e) use (&$job, $self) {
             $job['status'] = ProcessExecutor::STATUS_FAILED;
 
             $self->markJobDone();
 
-            return \React\Promise\reject($job['process']);
+            throw $e;
         });
         $this->jobs[$job['id']] =& $job;
 
@@ -272,7 +272,7 @@ class ProcessExecutor
     public function hasActiveJob($index = null)
     {
         // tick
-        foreach ($this->jobs as &$job) {
+        foreach ($this->jobs as $job) {
             if ($job['status'] === self::STATUS_STARTED) {
                 if (!$job['process']->isRunning()) {
                     call_user_func($job['resolve'], $job['process']);
