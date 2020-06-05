@@ -55,6 +55,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @private this is only public for php 5.3 support in closures
      */
     public $lastCacheWrites = array();
+    private $additionalCleanupPaths = array();
 
     /**
      * Constructor.
@@ -258,6 +259,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $path,
         );
 
+        if (isset($this->additionalCleanupPaths[$package->getName()])) {
+            foreach ($this->additionalCleanupPaths[$package->getName()] as $path) {
+                $this->filesystem->remove($path);
+            }
+        }
+
         foreach ($dirsToCleanUp as $dir) {
             if (is_dir($dir) && $this->filesystem->isDirEmpty($dir)) {
                 $this->filesystem->removeDirectory($dir);
@@ -288,6 +295,29 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         if ($this->cache && isset($this->lastCacheWrites[$package->getName()])) {
             $this->cache->remove($this->lastCacheWrites[$package->getName()]);
             unset($this->lastCacheWrites[$package->getName()]);
+        }
+    }
+
+    /**
+     * TODO mark private in v3
+     * @protected This is public due to PHP 5.3
+     */
+    public function addCleanupPath(PackageInterface $package, $path)
+    {
+        $this->additionalCleanupPaths[$package->getName()][] = $path;
+    }
+
+    /**
+     * TODO mark private in v3
+     * @protected This is public due to PHP 5.3
+     */
+    public function removeCleanupPath(PackageInterface $package, $path)
+    {
+        if (isset($this->additionalCleanupPaths[$package->getName()])) {
+            $idx = array_search($path, $this->additionalCleanupPaths[$package->getName()]);
+            if (false !== $idx) {
+                unset($this->additionalCleanupPaths[$package->getName()][$idx]);
+            }
         }
     }
 
