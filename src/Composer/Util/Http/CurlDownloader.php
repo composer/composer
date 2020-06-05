@@ -23,6 +23,7 @@ use Composer\Util\HttpDownloader;
 use React\Promise\Promise;
 
 /**
+ * @internal
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
  */
@@ -90,6 +91,9 @@ class CurlDownloader
         $this->authHelper = new AuthHelper($io, $config);
     }
 
+    /**
+     * @return int internal job id
+     */
     public function download($resolve, $reject, $origin, $url, $options, $copyTo = null)
     {
         $attributes = array();
@@ -101,6 +105,9 @@ class CurlDownloader
         return $this->initDownload($resolve, $reject, $origin, $url, $options, $copyTo, $attributes);
     }
 
+    /**
+     * @return int internal job id
+     */
     private function initDownload($resolve, $reject, $origin, $url, $options, $copyTo = null, array $attributes = array())
     {
         $attributes = array_merge(array(
@@ -199,8 +206,29 @@ class CurlDownloader
         }
 
         $this->checkCurlResult(curl_multi_add_handle($this->multiHandle, $curlHandle));
-// TODO progress
+        // TODO progress
         //$params['notification'](STREAM_NOTIFY_RESOLVE, STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, 0, false);
+
+        return (int) $curlHandle;
+    }
+
+    public function abortRequest($id)
+    {
+        if (isset($this->jobs[$id]) && isset($this->jobs[$id]['handle'])) {
+            $job = $this->jobs[$id];
+            curl_multi_remove_handle($this->multiHandle, $job['handle']);
+            curl_close($job['handle']);
+            if (is_resource($job['headerHandle'])) {
+                fclose($job['headerHandle']);
+            }
+            if (is_resource($job['bodyHandle'])) {
+                fclose($job['bodyHandle']);
+            }
+            if ($job['filename']) {
+                @unlink($job['filename'].'~');
+            }
+            unset($this->jobs[$id]);
+        }
     }
 
     public function tick()
@@ -235,7 +263,7 @@ class CurlDownloader
             $statusCode = null;
             $response = null;
             try {
-// TODO progress
+                // TODO progress
                 //$this->onProgress($curlHandle, $job['callback'], $progress, $job['progress']);
                 if (CURLE_OK !== $errno || $error) {
                     throw new TransportException($error);
@@ -285,8 +313,6 @@ class CurlDownloader
                 // fail 4xx and 5xx responses and capture the response
                 if ($statusCode >= 400 && $statusCode <= 599) {
                     throw $this->failResponse($job, $response, $response->getStatusMessage());
-// TODO progress
-//                        $this->io->overwriteError("Downloading (<error>failed</error>)", false);
                 }
 
                 if ($job['attributes']['storeAuth']) {

@@ -31,6 +31,7 @@ class HttpDownloader
     const STATUS_STARTED = 2;
     const STATUS_COMPLETED = 3;
     const STATUS_FAILED = 4;
+    const STATUS_ABORTED = 5;
 
     private $io;
     private $config;
@@ -184,8 +185,20 @@ class HttpDownloader
 
         $downloader = $this;
         $io = $this->io;
+        $curl = $this->curl;
 
-        $canceler = function () {};
+        $canceler = function () use (&$job, $curl) {
+            if ($job['status'] === self::STATUS_QUEUED) {
+                $job['status'] = self::STATUS_ABORTED;
+            }
+            if ($job['status'] !== self::STATUS_STARTED) {
+                return;
+            }
+            $job['status'] = self::STATUS_ABORTED;
+            if (isset($job['curl_id'])) {
+                $curl->abortRequest($job['curl_id']);
+            }
+        };
 
         $promise = new Promise($resolver, $canceler);
         $promise->then(function ($response) use (&$job, $downloader) {
@@ -242,9 +255,9 @@ class HttpDownloader
         }
 
         if ($job['request']['copyTo']) {
-            $this->curl->download($resolve, $reject, $origin, $url, $options, $job['request']['copyTo']);
+            $job['curl_id'] = $this->curl->download($resolve, $reject, $origin, $url, $options, $job['request']['copyTo']);
         } else {
-            $this->curl->download($resolve, $reject, $origin, $url, $options);
+            $job['curl_id'] = $this->curl->download($resolve, $reject, $origin, $url, $options);
         }
     }
 
@@ -294,14 +307,11 @@ class HttpDownloader
         }
 
         if (null !== $index) {
-            if ($this->jobs[$index]['status'] === self::STATUS_COMPLETED || $this->jobs[$index]['status'] === self::STATUS_FAILED) {
-                return false;
-            }
-            return true;
+            return $this->jobs[$index]['status'] < self::STATUS_COMPLETED;
         }
 
         foreach ($this->jobs as $job) {
-            if (!in_array($job['status'], array(self::STATUS_COMPLETED, self::STATUS_FAILED), true)) {
+            if ($job['status'] < self::STATUS_COMPLETED) {
                 return true;
             } elseif (!$job['sync']) {
                 unset($this->jobs[$job['id']]);

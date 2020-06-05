@@ -76,4 +76,13 @@ class Loop
             throw $uncaught;
         }
     }
+
+    public function abortJobs()
+    {
+        if ($this->currentPromises) {
+            foreach ($this->currentPromises as $promise) {
+                $promise->cancel();
+            }
+        }
+    }
 }

@@ -184,6 +184,8 @@ class InstallationManager
         $runCleanup = function () use (&$cleanupPromises, $loop) {
             $promises = array();
 
+            $loop->abortJobs();
+
             foreach ($cleanupPromises as $cleanup) {
                 $promises[] = new \React\Promise\Promise(function ($resolve, $reject) use ($cleanup) {
                     $promise = $cleanup();

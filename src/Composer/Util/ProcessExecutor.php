@@ -281,15 +281,11 @@ class ProcessExecutor
         }
 
         if (null !== $index) {
-            if ($this->jobs[$index]['status'] === self::STATUS_COMPLETED || $this->jobs[$index]['status'] === self::STATUS_FAILED || $this->jobs[$index]['status'] === self::STATUS_ABORTED) {
-                return false;
-            }
-
-            return true;
+            return $this->jobs[$index]['status'] < self::STATUS_COMPLETED;
         }
 
         foreach ($this->jobs as $job) {
-            if (!in_array($job['status'], array(self::STATUS_COMPLETED, self::STATUS_FAILED, self::STATUS_ABORTED), true)) {
+            if ($job['status'] < self::STATUS_COMPLETED) {
                 return true;
             } else {
                 unset($this->jobs[$job['id']]);
