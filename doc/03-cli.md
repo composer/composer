@@ -112,9 +112,13 @@ resolution.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
-  requirements and force the installation even if the local machine does not
-  fulfill these. See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these.
+  See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it.
 
 ## update / u
 
@@ -142,6 +146,26 @@ You can also use wildcards to update a bunch of packages at once:
 php composer.phar update "vendor/*"
 ```
 
+
+If you want to downgrade a package to a specific version without changing your
+composer.json you can use `--with` and provide a custom version constraint:
+
+```sh
+php composer.phar update --with vendor/package:2.0.1
+```
+
+The custom constraint has to be a subset of the existing constraint you have,
+and this feature is only available for your root package dependencies.
+
+If you only want to update the package(s) for which you provide custom constraints
+using `--with`, you can skip `--with` and just use constraints with the partial
+update syntax:
+
+```sh
+php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
+```
+
+
 ### Options
 
 * **--prefer-source:** Install packages from `source` when available.
@@ -149,8 +173,10 @@ php composer.phar update "vendor/*"
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
+* **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
+* **--with:** Temporary version constraint to add, e.g. foo/bar:1.0.0 or foo/bar=1.0.0
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
@@ -163,14 +189,20 @@ php composer.phar update "vendor/*"
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
-  requirements and force the installation even if the local machine does not
-  fulfill these. See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these.
+  See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
 * **--interactive:** Interactive interface with autocompletion to select the packages to update.
 * **--root-reqs:** Restricts the update to your first degree dependencies.
+
+Specifying one of the words `mirrors`, `lock`, or `nothing` as an argument has the same effect as specifying the option `--lock`, for example `composer update mirrors` is exactly the same as `composer update --lock`.
 
 ## require
 
@@ -201,14 +233,19 @@ If you do not specify a package, composer will prompt you to search for a packag
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--no-update:** Disables the automatic update of the dependencies.
+* **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
+* **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
 * **--update-with-dependencies:** Also update dependencies of the newly required packages, except those that are root requirements.
 * **--update-with-all-dependencies:** Also update dependencies of the newly required packages, including those that are root requirements.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
-  requirements and force the installation even if the local machine does not
-  fulfill these. See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these.
+  See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
@@ -237,13 +274,18 @@ uninstalled.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--no-update:** Disables the automatic update of the dependencies.
+* **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
+* **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies:** Also update dependencies of the removed packages.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
-  requirements and force the installation even if the local machine does not
-  fulfill these. See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these.
+  See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
   get a faster autoloader. This is recommended especially for production, but
   can take a bit of time to run so it is currently not done by default.
@@ -357,6 +399,7 @@ php composer.phar show monolog/monolog 1.0.2
 
 * **--all :** List all packages available in all your repositories.
 * **--installed (-i):** List the packages that are installed (this is enabled by default, and deprecated).
+* **--locked:** List the locked packages from composer.lock.
 * **--platform (-p):** List only platform packages (php & extensions).
 * **--available (-a):** List available packages only.
 * **--self (-s):** List the root package info.
@@ -605,6 +648,8 @@ See the [Config](06-config.md) chapter for valid configuration options.
   that this cannot be used in conjunction with the `--global` option.
 * **--absolute:** Returns absolute paths when fetching *-dir config values
   instead of relative.
+* **--json:** JSON decode the setting value, to be used with `extra.*` keys.
+* **--merge:** Merge the setting value with the current value, to be used with `extra.*` keys in combination with `--json`.
 
 ### Modifying Repositories
 
@@ -632,6 +677,13 @@ php composer.phar config extra.foo.bar value
 
 The dots indicate array nesting, a max depth of 3 levels is allowed though. The above
 would set `"extra": { "foo": { "bar": "value" } }`.
+
+If you have a complex value to add/modify, you can use the `--json` and `--merge` flags
+to edit extra fields as json:
+
+```sh
+php composer.phar config --json extra.foo.bar '{"baz": true, "qux": []}'
+```
 
 ## create-project
 
@@ -686,9 +738,13 @@ By default the command checks for the packages on packagist.org.
   mode.
 * **--remove-vcs:** Force-remove the VCS metadata without prompting.
 * **--no-install:** Disables installation of the vendors.
-* **--ignore-platform-reqs:** ignore `php`, `hhvm`, `lib-*` and `ext-*`
-  requirements and force the installation even if the local machine does not
-  fulfill these.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these.
+  See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it.
 
 ## dump-autoload (dumpautoload)
 
@@ -712,6 +768,11 @@ performance.
   Implicitly enables `--optimize`.
 * **--apcu:** Use APCu to cache found/not-found classes.
 * **--no-dev:** Disables autoload-dev rules.
+* **--ignore-platform-reqs:** ignore all `php`, `hhvm`, `lib-*` and `ext-*`
+  requirements and skip the [platform check](07-runtime.md#platform-check) for these.
+  See also the [`platform`](06-config.md#platform) config option.
+* **--ignore-platform-req:** ignore a specific platform requirement (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and skip the [platform check](07-runtime.md#platform-check) for it.
 
 ## clear-cache / clearcache / cc
 

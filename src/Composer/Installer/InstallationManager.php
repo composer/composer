@@ -171,34 +171,98 @@ class InstallationManager
     public function execute(RepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true)
     {
         $promises = array();
-
-        foreach ($operations as $operation) {
-            $opType = $operation->getOperationType();
-            $promise = null;
-
-            if ($opType === 'install') {
-                $package = $operation->getPackage();
-                $installer = $this->getInstaller($package->getType());
-                $promise = $installer->download($package);
-            } elseif ($opType === 'update') {
-                $target = $operation->getTargetPackage();
-                $targetType = $target->getType();
-                $installer = $this->getInstaller($targetType);
-                $promise = $installer->download($target, $operation->getInitialPackage());
-            }
-
-            if ($promise) {
-                $promises[] = $promise;
-            }
-        }
-
-        if (!empty($promises)) {
-            $this->loop->wait($promises);
-        }
-
         $cleanupPromises = array();
+
+        $loop = $this->loop;
+        $runCleanup = function () use (&$cleanupPromises, $loop) {
+            $promises = array();
+
+            foreach ($cleanupPromises as $cleanup) {
+                $promises[] = new \React\Promise\Promise(function ($resolve, $reject) use ($cleanup) {
+                    $promise = $cleanup();
+                    if (null === $promise) {
+                        $resolve();
+                    } else {
+                        $promise->then(function () use ($resolve) {
+                            $resolve();
+                        });
+                    }
+                });
+            }
+
+            if (!empty($promises)) {
+                $loop->wait($promises);
+            }
+        };
+
+        $handleInterruptsUnix = function_exists('pcntl_async_signals') && function_exists('pcntl_signal');
+        $handleInterruptsWindows = function_exists('sapi_windows_set_ctrl_handler');
+        $prevHandler = null;
+        $windowsHandler = null;
+        if ($handleInterruptsUnix) {
+            pcntl_async_signals(true);
+            $prevHandler = pcntl_signal_get_handler(SIGINT);
+            pcntl_signal(SIGINT, function ($sig) use ($runCleanup, $prevHandler) {
+                $runCleanup();
+
+                if (!in_array($prevHandler, array(SIG_DFL, SIG_IGN), true)) {
+                    call_user_func($prevHandler, $sig);
+                }
+
+                exit(130);
+            });
+        }
+        if ($handleInterruptsWindows) {
+            $windowsHandler = function () use ($runCleanup) {
+                $runCleanup();
+
+                exit(130);
+            };
+            sapi_windows_set_ctrl_handler($windowsHandler, true);
+        }
+
         try {
-            foreach ($operations as $operation) {
+            foreach ($operations as $index => $operation) {
+                $opType = $operation->getOperationType();
+
+                // ignoring alias ops as they don't need to execute anything at this stage
+                if (!in_array($opType, array('update', 'install', 'uninstall'))) {
+                    continue;
+                }
+
+                if ($opType === 'update') {
+                    $package = $operation->getTargetPackage();
+                    $initialPackage = $operation->getInitialPackage();
+                } else {
+                    $package = $operation->getPackage();
+                    $initialPackage = null;
+                }
+                $installer = $this->getInstaller($package->getType());
+
+                $cleanupPromises[$index] = function () use ($opType, $installer, $package, $initialPackage) {
+                    // avoid calling cleanup if the download was not even initialized for a package
+                    // as without installation source configured nothing will work
+                    if (!$package->getInstallationSource()) {
+                        return;
+                    }
+
+                    return $installer->cleanup($opType, $package, $initialPackage);
+                };
+
+                if ($opType !== 'uninstall') {
+                    $promise = $installer->download($package, $initialPackage);
+                    if ($promise) {
+                        $promises[] = $promise;
+                    }
+                }
+            }
+
+            // execute all downloads first
+            if (!empty($promises)) {
+                $this->loop->wait($promises);
+            }
+
+            foreach ($operations as $index => $operation) {
                 $opType = $operation->getOperationType();
 
                 // ignoring alias ops as they don't need to execute anything
@@ -236,13 +300,9 @@ class InstallationManager
                     $promise = new \React\Promise\Promise(function ($resolve, $reject) { $resolve(); });
                 }
 
-                $cleanupPromise = function () use ($opType, $installer, $package, $initialPackage) {
-                    return $installer->cleanup($opType, $package, $initialPackage);
-                };
-
                 $promise = $promise->then(function () use ($opType, $installManager, $repo, $operation) {
                     return $installManager->$opType($repo, $operation);
-                })->then($cleanupPromise)
+                })->then($cleanupPromises[$index])
                 ->then(function () use ($opType, $runScripts, $dispatcher, $installManager, $devMode, $repo, $operations, $operation) {
                     $repo->write($devMode, $installManager);
 
@@ -256,34 +316,37 @@ class InstallationManager
                     throw $e;
                 });
 
-                $cleanupPromises[] = $cleanupPromise;
                 $promises[] = $promise;
             }
 
+            // execute all prepare => installs/updates/removes => cleanup steps
             if (!empty($promises)) {
                 $this->loop->wait($promises);
             }
         } catch (\Exception $e) {
-            $promises = array();
-            foreach ($cleanupPromises as $cleanup) {
-                $promises[] = new \React\Promise\Promise(function ($resolve, $reject) use ($cleanup) {
-                    $promise = $cleanup();
-                    if (null === $promise) {
-                        $resolve();
-                    } else {
-                        $promise->then(function () use ($resolve) {
-                            $resolve();
-                        });
-                    }
-                });
-            }
+            $runCleanup();
 
-            if (!empty($promises)) {
-                $this->loop->wait($promises);
+            if ($handleInterruptsUnix) {
+                pcntl_signal(SIGINT, $prevHandler);
+            }
+            if ($handleInterruptsWindows) {
+                sapi_windows_set_ctrl_handler($prevHandler, false);
             }
 
             throw $e;
         }
+
+        if ($handleInterruptsUnix) {
+            pcntl_signal(SIGINT, $prevHandler);
+        }
+        if ($handleInterruptsWindows) {
+            sapi_windows_set_ctrl_handler($prevHandler, false);
+        }
+
+        // do a last write so that we write the repository even if nothing changed
+        // as that can trigger an update of some files like InstalledVersions.php if
+        // running a new composer version
+        $repo->write($devMode, $this);
     }
 
     /**

@@ -13,7 +13,7 @@
 namespace Composer\Plugin;
 
 use Composer\EventDispatcher\Event;
-use Composer\Util\RemoteFilesystem;
+use Composer\Package\PackageInterface;
 
 /**
  * The post file download event.
@@ -39,19 +39,26 @@ class PostFileDownloadEvent extends Event
     private $url;
 
     /**
+     * @var \Composer\Package\PackageInterface
+     */
+    private $package;
+
+    /**
      * Constructor.
      *
      * @param string           $name         The event name
      * @param string           $fileName     The file name
      * @param string|null      $checksum     The checksum
      * @param string           $url          The processed url
+     * @param PackageInterface $package      The package.
      */
-    public function __construct($name, $fileName, $checksum, $url)
+    public function __construct($name, $fileName, $checksum, $url, PackageInterface $package)
     {
         parent::__construct($name);
         $this->fileName = $fileName;
         $this->checksum = $checksum;
         $this->url = $url;
+        $this->package = $package;
     }
 
     /**
@@ -80,6 +87,16 @@ class PostFileDownloadEvent extends Event
      */
     public function getUrl() {
         return $this->url;
+    }
+
+    /**
+     * Get the package.
+     *
+     * @return \Composer\Package\PackageInterface
+     *   The package.
+     */
+    public function getPackage() {
+        return $this->package;
     }
 
 }

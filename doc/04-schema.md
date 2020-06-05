@@ -1,4 +1,4 @@
-# The composer.json Schema
+# The composer.json schema
 
 This chapter will explain all of the fields available in `composer.json`.
 
@@ -34,12 +34,12 @@ separated by `/`. Examples:
 * monolog/monolog
 * igorw/event-source
 
-The name can contain any character, including white spaces, and it's case
-insensitive (`foo/bar` and `Foo/Bar` are considered the same package). In order
-to simplify its installation, it's recommended to define a short and lowercase
-name that doesn't include non-alphanumeric characters or white spaces.
+The name must be lowercased and consist of words separated by `-`, `.` or `_`.
+The complete name should match `^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$`.
 
-Required for published packages (libraries).
+The `name` property is required for published packages (libraries).
+
+> **Note:** Before Composer version 2.0, a name could contain any character, including white spaces.
 
 ### description
 
@@ -610,6 +610,18 @@ Example:
 }
 ```
 
+Wildcards (`*`) are also supported in a classmap paths, and expand to match any directory name:
+
+Example:
+
+```json
+{
+    "autoload": {
+        "classmap": ["src/addons/*/lib/", "3rd-party/*", "Something.php"]
+    }
+}
+```
+
 #### Files
 
 If you want to require certain files explicitly on every request then you can use
@@ -876,6 +888,21 @@ Optional.
 A set of options for creating package archives.
 
 The following options are supported:
+
+* **name:** Allows configuring base name for archive.
+  By default (if not configured, and `--file` is not passed as command-line argument),
+  `preg_replace('#[^a-z0-9-_]#i', '-', name)` is used.
+
+Example:
+
+```json
+{
+    "name": "org/strangeName",
+    "archive": {
+        "name": "Strange_name"
+    }
+}
+```
 
 * **exclude:** Allows configuring a list of patterns for excluded paths. The
   pattern syntax matches .gitignore files. A leading exclamation mark (!) will

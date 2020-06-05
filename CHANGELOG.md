@@ -1,24 +1,53 @@
-### [2.0.0-?] 2020-??
+### [2.0.0-alpha1] 2020-06-03
 
   * Breaking: This is a major release and while we tried to keep things compatible for most users, you might want to have a look at the [UPGRADE](UPGRADE-2.0.md) guides
   * Many CPU and memory performance improvements
   * The update command is now much more deterministic as it does not take the already installed packages into account
   * Package installation now performs all network operations first before doing any changes on disk, to reduce the chances of ending up with a partially updated vendor dir
   * Partial updates and require/remove are now much faster as they only load the metadata required for the updated packages
-  * Added support for parallel downloads of package metadata and zip files, this requires that the curl extension is present
+  * Added a [platform-check step](doc/07-runtime.md#platform-check) when vendor/autoload.php gets initialized which checks the current PHP version/extensions match what is expected and fails hard otherwise. Can be disabled with the platform-check config option
+  * Added a [`Composer\InstalledVersions`](doc/07-runtime.md#installed-versions) class which is autoloaded in every project and lets you check which packages/versions are present at runtime
+  * Added a `composer-runtime-api` virtual package which you can require (as e.g. `^2.0`) to ensure things like the InstalledVersions class above are present. It will effectively force people to use Composer 2.x to install your project
+  * Added support for parallel downloads of package metadata and zip files, this requires that the curl extension is present and we thus strongly recommend enabling curl
   * Added much clearer dependency resolution error reporting for common error cases
+  * Added support for updating to a specific version with partial updates, as well as a [--with flag](doc/03-cli.md#update--u) to pass in temporary constraint overrides
   * Added support for TTY mode on Linux/OSX/WSL so that script handlers now run in interactive mode
   * Added `only`, `exclude` and `canonical` options to all repositories, see [repository priorities](https://getcomposer.org/repoprio) for details
   * Added support for lib-zip platform package
   * Added `pre-operations-exec` event to be fired before the packages get installed/upgraded/removed
   * Added `pre-pool-create` event to be fired before the package pool for the dependency solver is created, which lets you modify the list of packages going in
+  * Added `post-file-download` event to be fired after package dist files are downloaded, which lets you do additional checks on the files
+  * Added --locked flag to `show` command to see the packages from the composer.lock file
+  * Added --unused flag to `remove` command to make sure any packages which are not needed anymore get removed
   * Added --dry-run flag to `require` and `remove` commands
+  * Added --no-install flag to `update`, `require` and `remove` commands to disable the install step and only do the update step (composer.lock file update)
   * Added --with-dependencies and --with-all-dependencies flag aliases to `require` and `remove` commands for consistency with `update`
   * Added more info to `vendor/composer/installed.json`, a dev key stores whether dev requirements were installed, and every package now has an install-path key with its install location
   * Added COMPOSER_DISABLE_NETWORK which if set makes Composer do its best to run offline. This can be useful when you have poor connectivity or to do benchmarking without network jitter
+  * Added --json and --merge flags to `config` command to allow editing complex `extra.*` values by using json as input
   * Added confirmation prompt when running Composer as superuser in interactive mode
+  * Added --no-check-version to `validate` command to remove the warning in case the version is defined
+  * Added --ignore-platform-req (without s) to all commands supporting --ignore-platform-reqs, which accepts a package name so you can ignore only specific     platform requirements
+  * Added support for wildcards (`*`) in classmap autoloader paths
+  * Added support for configuring GitLab deploy tokens in addition to private tokens, see [gitlab-token](doc/06-config.md#gitlab-token)
+  * Added support for package version guessing for require and init command to take all platform packages into account, not just php version
+  * Fixed package ordering when autoloading and especially when loading plugins, to make sure dependencies are loaded before their dependents
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
+
+### [1.10.7] 2020-06-03
+
+  * Fix PHP 8 deprecations
+  * Fixed detection of pcntl_signal being in disabled_functions when pcntl_async_signal is allowed
+
+### [1.10.6] 2020-05-06
+
+  * Fixed version guessing to take composer-runtime-api and composer-plugin-api requirements into account to avoid selecting packages which require Composer 2
+  * Fixed package name validation to allow several dashes following each other
+  * Fixed post-status-cmd script not firing when there were no changes to be displayed
+  * Fixed composer-runtime-api support on Composer 1.x, the package is now present as 1.0.0
+  * Fixed support for composer show --name-only --self
+  * Fixed detection of GitLab URLs when handling authentication in some cases
 
 ### [1.10.5] 2020-04-10
 
@@ -868,6 +897,9 @@
 
   * Initial release
 
+[2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
+[1.10.7]: https://github.com/composer/composer/compare/1.10.6...1.10.7
+[1.10.6]: https://github.com/composer/composer/compare/1.10.5...1.10.6
 [1.10.5]: https://github.com/composer/composer/compare/1.10.4...1.10.5
 [1.10.4]: https://github.com/composer/composer/compare/1.10.3...1.10.4
 [1.10.3]: https://github.com/composer/composer/compare/1.10.2...1.10.3

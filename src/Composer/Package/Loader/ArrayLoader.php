@@ -109,7 +109,7 @@ class ArrayLoader implements LoaderInterface
             $package->setTargetDir($config['target-dir']);
         }
 
-        if (isset($config['extra']) && is_array($config['extra'])) {
+        if (isset($config['extra']) && \is_array($config['extra'])) {
             $package->setExtra($config['extra']);
         }
 
@@ -159,7 +159,7 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-        if (isset($config['suggest']) && is_array($config['suggest'])) {
+        if (isset($config['suggest']) && \is_array($config['suggest'])) {
             foreach ($config['suggest'] as $target => $reason) {
                 if ('self.version' === trim($reason)) {
                     $config['suggest'][$target] = $package->getPrettyVersion();
@@ -194,12 +194,15 @@ class ArrayLoader implements LoaderInterface
             $package->setNotificationUrl($config['notification-url']);
         }
 
+        if (!empty($config['archive']['name'])) {
+            $package->setArchiveName($config['archive']['name']);
+        }
         if (!empty($config['archive']['exclude'])) {
             $package->setArchiveExcludes($config['archive']['exclude']);
         }
 
         if ($package instanceof Package\CompletePackageInterface) {
-            if (isset($config['scripts']) && is_array($config['scripts'])) {
+            if (isset($config['scripts']) && \is_array($config['scripts'])) {
                 foreach ($config['scripts'] as $event => $listeners) {
                     $config['scripts'][$event] = (array) $listeners;
                 }
@@ -209,23 +212,23 @@ class ArrayLoader implements LoaderInterface
                 $package->setScripts($config['scripts']);
             }
 
-            if (!empty($config['description']) && is_string($config['description'])) {
+            if (!empty($config['description']) && \is_string($config['description'])) {
                 $package->setDescription($config['description']);
             }
 
-            if (!empty($config['homepage']) && is_string($config['homepage'])) {
+            if (!empty($config['homepage']) && \is_string($config['homepage'])) {
                 $package->setHomepage($config['homepage']);
             }
 
-            if (!empty($config['keywords']) && is_array($config['keywords'])) {
+            if (!empty($config['keywords']) && \is_array($config['keywords'])) {
                 $package->setKeywords($config['keywords']);
             }
 
             if (!empty($config['license'])) {
-                $package->setLicense(is_array($config['license']) ? $config['license'] : array($config['license']));
+                $package->setLicense(\is_array($config['license']) ? $config['license'] : array($config['license']));
             }
 
-            if (!empty($config['authors']) && is_array($config['authors'])) {
+            if (!empty($config['authors']) && \is_array($config['authors'])) {
                 $package->setAuthors($config['authors']);
             }
 
@@ -233,7 +236,7 @@ class ArrayLoader implements LoaderInterface
                 $package->setSupport($config['support']);
             }
 
-            if (!empty($config['funding']) && is_array($config['funding'])) {
+            if (!empty($config['funding']) && \is_array($config['funding'])) {
                 $package->setFunding($config['funding']);
             }
 
@@ -307,8 +310,8 @@ class ArrayLoader implements LoaderInterface
 
     private function createLink($source, $sourceVersion, $description, $target, $prettyConstraint)
     {
-        if (!is_string($prettyConstraint)) {
-            throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.gettype($prettyConstraint) . ' (' . var_export($prettyConstraint, true) . ')');
+        if (!\is_string($prettyConstraint)) {
+            throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.\gettype($prettyConstraint) . ' (' . var_export($prettyConstraint, true) . ')');
         }
         if ('self.version' === $prettyConstraint) {
             $parsedConstraint = $this->versionParser->parseConstraints($sourceVersion);
@@ -331,7 +334,7 @@ class ArrayLoader implements LoaderInterface
             return;
         }
 
-        if (isset($config['extra']['branch-alias']) && is_array($config['extra']['branch-alias'])) {
+        if (isset($config['extra']['branch-alias']) && \is_array($config['extra']['branch-alias'])) {
             foreach ($config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
                 // ensure it is an alias to a -dev package
                 if ('-dev' !== substr($targetBranch, -4)) {
@@ -361,7 +364,7 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-        if (in_array($config['version'], array('dev-master', 'dev-default', 'dev-trunk'), true)) {
+        if (\in_array($config['version'], array('dev-master', 'dev-default', 'dev-trunk'), true)) {
             return VersionParser::DEV_MASTER_ALIAS;
         }
     }

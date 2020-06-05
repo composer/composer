@@ -65,7 +65,7 @@ class RuleSet implements \IteratorAggregate, \Countable
         // Do not add if rule already exists
         if (isset($this->rulesByHash[$hash])) {
             $potentialDuplicates = $this->rulesByHash[$hash];
-            if (is_array($potentialDuplicates)) {
+            if (\is_array($potentialDuplicates)) {
                 foreach ($potentialDuplicates as $potentialDuplicate) {
                     if ($rule->equals($potentialDuplicate)) {
                         return;
@@ -90,7 +90,7 @@ class RuleSet implements \IteratorAggregate, \Countable
 
         if (!isset($this->rulesByHash[$hash])) {
             $this->rulesByHash[$hash] = $rule;
-        } elseif (is_array($this->rulesByHash[$hash])) {
+        } elseif (\is_array($this->rulesByHash[$hash])) {
             $this->rulesByHash[$hash][] = $rule;
         } else {
             $originalRule = $this->rulesByHash[$hash];
@@ -120,7 +120,7 @@ class RuleSet implements \IteratorAggregate, \Countable
 
     public function getIteratorFor($types)
     {
-        if (!is_array($types)) {
+        if (!\is_array($types)) {
             $types = array($types);
         }
 
@@ -136,7 +136,7 @@ class RuleSet implements \IteratorAggregate, \Countable
 
     public function getIteratorWithout($types)
     {
-        if (!is_array($types)) {
+        if (!\is_array($types)) {
             $types = array($types);
         }
 
@@ -157,13 +157,13 @@ class RuleSet implements \IteratorAggregate, \Countable
         return array_keys($types);
     }
 
-    public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null)
+    public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null, $isVerbose = false)
     {
         $string = "\n";
         foreach ($this->rules as $type => $rules) {
             $string .= str_pad(self::$types[$type], 8, ' ') . ": ";
             foreach ($rules as $rule) {
-                $string .= ($repositorySet && $request && $pool ? $rule->getPrettyString($repositorySet, $request, $pool) : $rule)."\n";
+                $string .= ($repositorySet && $request && $pool ? $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose) : $rule)."\n";
             }
             $string .= "\n\n";
         }

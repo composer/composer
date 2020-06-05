@@ -73,6 +73,8 @@ class ConfigCommand extends BaseCommand
                 new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
                 new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
                 new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
+                new InputOption('json', 'j', InputOption::VALUE_NONE, 'JSON decode the setting value, to be used with extra.* keys'),
+                new InputOption('merge', 'm', InputOption::VALUE_NONE, 'Merge the setting value with the current value, to be used with extra.* keys in combination with --json'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
@@ -118,6 +120,10 @@ To add or edit suggested packages you can use:
 To add or edit extra properties you can use:
 
     <comment>%command.full_name% extra.property value</comment>
+
+Or to add a complex value you can use json with:
+
+    <comment>%command.full_name% extra.property --json '{"foo":true, "bar": []}'</comment>
 
 To edit the file in an external editor:
 
@@ -421,6 +427,7 @@ EOT
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
             'htaccess-protect' => array($booleanValidator, $booleanNormalizer),
             'lock' => array($booleanValidator, $booleanNormalizer),
+            'platform-check' => array($booleanValidator, $booleanNormalizer),
         );
         $multiConfigValues = array(
             'github-protocols' => array(
@@ -621,7 +628,21 @@ EOT
                 return 0;
             }
 
-            $this->configSource->addProperty($settingKey, $values[0]);
+            $value = $values[0];
+            if ($input->getOption('json')) {
+                $value = JsonFile::parseJson($value);
+                if ($input->getOption('merge')) {
+                    $currentValue = $this->configFile->read();
+                    $bits = explode('.', $settingKey);
+                    foreach ($bits as $bit) {
+                        $currentValue = isset($currentValue[$bit]) ? $currentValue[$bit] : null;
+                    }
+                    if (is_array($currentValue)) {
+                        $value = array_merge($currentValue, $value);
+                    }
+                }
+            }
+            $this->configSource->addProperty($settingKey, $value);
 
             return 0;
         }

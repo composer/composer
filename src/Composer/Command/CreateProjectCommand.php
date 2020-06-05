@@ -80,7 +80,8 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deleting the vcs folder.'),
                 new InputOption('remove-vcs', null, InputOption::VALUE_NONE, 'Whether to force deletion of the vcs folder without prompting.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
-                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
+                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
             ))
             ->setHelp(
                 <<<EOT
@@ -127,6 +128,8 @@ EOT
             $input->setOption('no-plugins', true);
         }
 
+        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
+
         return $this->installProject(
             $io,
             $config,
@@ -143,7 +146,7 @@ EOT
             $input->getOption('no-scripts'),
             $input->getOption('no-progress'),
             $input->getOption('no-install'),
-            $input->getOption('ignore-platform-reqs'),
+            $ignorePlatformReqs,
             !$input->getOption('no-secure-http'),
             $input->getOption('add-repository')
         );
@@ -336,32 +339,24 @@ EOT
         $repositorySet = new RepositorySet($stability);
         $repositorySet->addRepository($sourceRepo);
 
-        $phpVersion = null;
-        $prettyPhpVersion = null;
-        if (!$ignorePlatformReqs) {
-            $platformOverrides = $config->get('platform') ?: array();
-            // initialize $this->repos as it is used by the parent InitCommand
-            $platform = new PlatformRepository(array(), $platformOverrides);
-            $phpPackage = $platform->findPackage('php', '*');
-            $phpVersion = $phpPackage->getVersion();
-            $prettyPhpVersion = $phpPackage->getPrettyVersion();
-        }
+        $platformOverrides = $config->get('platform') ?: array();
+        $platformRepo = new PlatformRepository(array(), $platformOverrides);
 
         // find the latest version if there are multiple
-        $versionSelector = new VersionSelector($repositorySet);
-        $package = $versionSelector->findBestCandidate($name, $packageVersion, $phpVersion, $stability);
+        $versionSelector = new VersionSelector($repositorySet, $platformRepo);
+        $package = $versionSelector->findBestCandidate($name, $packageVersion, $stability, $ignorePlatformReqs);
 
         if (!$package) {
             $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
-            if ($phpVersion && $versionSelector->findBestCandidate($name, $packageVersion, null, $stability)) {
-                throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version '.$prettyPhpVersion.'.');
+            if (true !== $ignorePlatformReqs && $versionSelector->findBestCandidate($name, $packageVersion, $stability, true)) {
+                throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
             }
 
             throw new \InvalidArgumentException($errorMessage .'.');
         }
 
         // handler Ctrl+C for unix-like systems
-        if (function_exists('pcntl_async_signals')) {
+        if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
             @mkdir($directory, 0777, true);
             if ($realDir = realpath($directory)) {
                 pcntl_async_signals(true);
@@ -371,6 +366,22 @@ EOT
                     exit(130);
                 });
             }
+        }
+        // handler Ctrl+C for Windows on PHP 7.4+
+        if (function_exists('sapi_windows_set_ctrl_handler')) {
+            @mkdir($directory, 0777, true);
+            if ($realDir = realpath($directory)) {
+                sapi_windows_set_ctrl_handler(function () use ($realDir) {
+                    $fs = new Filesystem();
+                    $fs->removeDirectory($realDir);
+                    exit(130);
+                }, true);
+            }
+        }
+
+        // avoid displaying 9999999-dev as version if dev-master was selected
+        if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEV_MASTER_ALIAS) {
+            $package = $package->getAliasOf();
         }
 
         $io->writeError('<info>Installing ' . $package->getName() . ' (' . $package->getFullPrettyVersion(false) . ')</info>');

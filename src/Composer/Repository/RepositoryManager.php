@@ -163,9 +163,9 @@ class RepositoryManager
     /**
      * Sets local repository for the project.
      *
-     * @param WritableRepositoryInterface $repository repository instance
+     * @param InstalledRepositoryInterface $repository repository instance
      */
-    public function setLocalRepository(WritableRepositoryInterface $repository)
+    public function setLocalRepository(InstalledRepositoryInterface $repository)
     {
         $this->localRepository = $repository;
     }
@@ -173,7 +173,7 @@ class RepositoryManager
     /**
      * Returns local repository for the project.
      *
-     * @return WritableRepositoryInterface
+     * @return InstalledRepositoryInterface
      */
     public function getLocalRepository()
     {

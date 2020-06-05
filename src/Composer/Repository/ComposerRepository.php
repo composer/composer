@@ -31,7 +31,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Downloader\TransportException;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Http\Response;
 use Composer\Util\MetadataMinifier;
 use Composer\Util\Url;
@@ -69,6 +69,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $rootData;
     private $hasPartialPackages;
     private $partialPackagesByName;
+
+    /**
+     * TODO v3 should make this private once we can drop PHP 5.3 support
+     * @private
+     * @var array list of package names which are fresh and can be loaded from the cache directly in case loadPackage is called several times
+     *          useful for v2 metadata repositories with lazy providers
+     */
+    public $freshMetadataUrls = array();
 
     /**
      * TODO v3 should make this private once we can drop PHP 5.3 support
@@ -257,7 +265,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (is_array($this->availablePackages)) {
                 $packageMap = array();
                 foreach ($this->availablePackages as $name) {
-                    $packageMap[$name] = new EmptyConstraint();
+                    $packageMap[$name] = new MatchAllConstraint();
                 }
 
                 $result = $this->loadAsyncPackages($packageMap);
@@ -363,9 +371,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if ($this->lazyProvidersUrl && count($packageNameMap)) {
             if (is_array($this->availablePackages)) {
                 $availPackages = $this->availablePackages;
-                $packageNameMap = array_filter($packageNameMap, function ($name) use ($availPackages) {
-                    return isset($availPackages[strtolower($name)]);
-                }, ARRAY_FILTER_USE_KEY);
+                foreach ($packageNameMap as $name => $constraint) {
+                    if (!isset($availPackages[strtolower($name)])) {
+                        unset($packageNameMap[$name]);
+                    }
+                }
             }
 
             $result = $this->loadAsyncPackages($packageNameMap, $acceptableStabilities, $stabilityFlags);
@@ -502,7 +512,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         if (!$this->hasPartialPackages() || !isset($this->partialPackagesByName[$name])) {
             // skip platform packages, root package and composer-plugin-api
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name || 'composer-plugin-api' === $name) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name) || '__root__' === $name) {
                 return array();
             }
 
@@ -662,7 +672,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         // load ~dev versions of the packages as well if needed
         foreach ($packageNames as $name => $constraint) {
-            if ($acceptableStabilities && $stabilityFlags && StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), 'dev')) {
+            if ($acceptableStabilities === null || $stabilityFlags === null || StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), 'dev')) {
                 $packageNames[$name.'~dev'] = $constraint;
             }
         }
@@ -672,7 +682,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $realName = preg_replace('{~dev$}', '', $name);
             // skip platform packages, root package and composer-plugin-api
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $realName) || '__root__' === $realName || 'composer-plugin-api' === $realName) {
+            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $realName) || '__root__' === $realName) {
                 continue;
             }
 
@@ -818,7 +828,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->hasPartialPackages = !empty($data['packages']) && is_array($data['packages']);
         }
 
-        // metadata-url indiates V2 repo protocol so it takes over from all the V1 types
+        // metadata-url indicates V2 repo protocol so it takes over from all the V1 types
         // V2 only has lazyProviders and possibly partial packages, but no ability to process anything else,
         // V2 also supports async loading
         if (!empty($data['metadata-url'])) {
@@ -995,7 +1005,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         // url-encode $ signs in URLs as bad proxies choke on them
-        if (($pos = strpos($filename, '$')) && preg_match('{^https?://.*}i', $filename)) {
+        if (($pos = strpos($filename, '$')) && preg_match('{^https?://}i', $filename)) {
             $filename = substr($filename, 0, $pos) . '%24' . substr($filename, $pos + 1);
         }
 
@@ -1148,6 +1158,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return new Promise(function ($resolve, $reject) { $resolve(array('packages' => array())); });
         }
 
+        if (isset($this->freshMetadataUrls[$filename]) && $lastModifiedTime) {
+            // make it look like we got a 304 response
+            return new Promise(function ($resolve, $reject) { $resolve(true); });
+        }
+
         $httpDownloader = $this->httpDownloader;
         if ($this->eventDispatcher) {
             $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
@@ -1171,6 +1186,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $json = $response->getBody();
             if ($json === '' && $response->getStatusCode() === 304) {
+                $repo->freshMetadataUrls[$filename] = true;
                 return true;
             }
 
@@ -1184,6 +1200,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $json = JsonFile::encode($data, JsonFile::JSON_UNESCAPED_SLASHES | JsonFile::JSON_UNESCAPED_UNICODE);
             }
             $cache->write($cacheKey, $json);
+            $repo->freshMetadataUrls[$filename] = true;
 
             return $data;
         };

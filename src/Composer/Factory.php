@@ -17,6 +17,7 @@ use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
 use Composer\Package\Version\VersionGuesser;
+use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\WritableRepositoryInterface;
@@ -335,6 +336,7 @@ class Factory
 
         $httpDownloader = self::createHttpDownloader($io, $config);
         $loop = new Loop($httpDownloader);
+        $composer->setLoop($loop);
 
         // initialize event dispatcher
         $dispatcher = new EventDispatcher($composer, $io);
@@ -343,9 +345,6 @@ class Factory
         // initialize repository manager
         $rm = RepositoryFactory::manager($io, $config, $httpDownloader, $dispatcher);
         $composer->setRepositoryManager($rm);
-
-        // load local repository
-        $this->addLocalRepository($io, $rm, $vendorDir);
 
         // force-set the version of the global package if not defined as
         // guessing it adds no value and only takes time
@@ -359,6 +358,9 @@ class Factory
         $loader = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser, $io);
         $package = $loader->load($localConfig, 'Composer\Package\RootPackage', $cwd);
         $composer->setPackage($package);
+
+        // load local repository
+        $this->addLocalRepository($io, $rm, $vendorDir, $package);
 
         // initialize installation manager
         $im = $this->createInstallationManager($loop, $io, $dispatcher);
@@ -431,9 +433,9 @@ class Factory
      * @param Repository\RepositoryManager $rm
      * @param string                       $vendorDir
      */
-    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir)
+    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage)
     {
-        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io)));
+        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io), true, $rootPackage));
     }
 
     /**
@@ -582,7 +584,7 @@ class Factory
      * @param  array            $options Array of options passed directly to HttpDownloader constructor
      * @return HttpDownloader
      */
-    public static function createHttpDownloader(IOInterface $io, Config $config = null, $options = array())
+    public static function createHttpDownloader(IOInterface $io, Config $config, $options = array())
     {
         static $warned = false;
         $disableTls = false;

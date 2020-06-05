@@ -144,6 +144,7 @@ class VcsRepositoryTest extends TestCase
             'dev-feature-b' => true,
             'dev-feature/a-1.0-B' => true,
             'dev-master' => true,
+            '9999999-dev' => true, // alias of dev-master
         );
 
         $config = new Config();

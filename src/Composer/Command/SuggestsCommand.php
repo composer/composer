@@ -14,7 +14,7 @@ namespace Composer\Command;
 
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
-use Composer\Repository\CompositeRepository;
+use Composer\Repository\InstalledRepository;
 use Composer\Installer\SuggestedPackagesReporter;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -67,16 +67,13 @@ EOT
             $installedRepos[] = $composer->getRepositoryManager()->getLocalRepository();
         }
 
-        $installedRepo = new CompositeRepository($installedRepos);
+        $installedRepo = new InstalledRepository($installedRepos);
         $reporter = new SuggestedPackagesReporter($this->getIO());
 
         $filter = $input->getArgument('packages');
-        if (empty($filter) && !$input->getOption('all')) {
-            $filter = array_map(function ($link) {
-                return $link->getTarget();
-            }, array_merge($composer->getPackage()->getRequires(), $composer->getPackage()->getDevRequires()));
-        }
-        foreach ($installedRepo->getPackages() as $package) {
+        $packages = $installedRepo->getPackages();
+        $packages[] = $composer->getPackage();
+        foreach ($packages as $package) {
             if (!empty($filter) && !in_array($package->getName(), $filter)) {
                 continue;
             }
@@ -100,7 +97,7 @@ EOT
             $mode = SuggestedPackagesReporter::MODE_LIST;
         }
 
-        $reporter->output($mode, $installedRepo);
+        $reporter->output($mode, $installedRepo, empty($filter) && !$input->getOption('all') ? $composer->getPackage() : null);
 
         return 0;
     }

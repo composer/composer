@@ -31,8 +31,6 @@ class Solver
 
     /** @var RuleSet */
     protected $rules;
-    /** @var RuleSetGenerator */
-    protected $ruleSetGenerator;
 
     /** @var RuleWatchGraph */
     protected $watchGraph;
@@ -75,7 +73,7 @@ class Solver
      */
     public function getRuleSetSize()
     {
-        return count($this->rules);
+        return \count($this->rules);
     }
 
     public function getPool()
@@ -87,9 +85,9 @@ class Solver
 
     private function makeAssertionRuleDecisions()
     {
-        $decisionStart = count($this->decisions) - 1;
+        $decisionStart = \count($this->decisions) - 1;
 
-        $rulesCount = count($this->rules);
+        $rulesCount = \count($this->rules);
         for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
             $rule = $this->rules->ruleById[$ruleIndex];
 
@@ -164,13 +162,13 @@ class Solver
     }
 
     /**
-     * @param  Request $request
-     * @param bool $ignorePlatformReqs
+     * @param Request    $request
+     * @param bool|array $ignorePlatformReqs
      */
-    protected function checkForRootRequireProblems($request, $ignorePlatformReqs)
+    protected function checkForRootRequireProblems(Request $request, $ignorePlatformReqs)
     {
         foreach ($request->getRequires() as $packageName => $constraint) {
-            if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $packageName)) {
+            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($packageName, $ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $packageName)) {
                 continue;
             }
 
@@ -183,8 +181,8 @@ class Solver
     }
 
     /**
-     * @param  Request $request
-     * @param  bool    $ignorePlatformReqs
+     * @param  Request    $request
+     * @param  bool|array $ignorePlatformReqs
      * @return LockTransaction
      */
     public function solve(Request $request, $ignorePlatformReqs = false)
@@ -192,8 +190,9 @@ class Solver
         $this->setupFixedMap($request);
 
         $this->io->writeError('Generating rules', true, IOInterface::DEBUG);
-        $this->ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
-        $this->rules = $this->ruleSetGenerator->getRulesFor($request, $ignorePlatformReqs);
+        $ruleSetGenerator = new RuleSetGenerator($this->policy, $this->pool);
+        $this->rules = $ruleSetGenerator->getRulesFor($request, $ignorePlatformReqs);
+        unset($ruleSetGenerator);
         $this->checkForRootRequireProblems($request, $ignorePlatformReqs);
         $this->decisions = new Decisions($this->pool);
         $this->watchGraph = new RuleWatchGraph;
@@ -269,10 +268,10 @@ class Solver
             }
 
             $this->decisions->revertLast();
-            $this->propagateIndex = count($this->decisions);
+            $this->propagateIndex = \count($this->decisions);
         }
 
-        while (!empty($this->branches) && $this->branches[count($this->branches) - 1][self::BRANCH_LEVEL] >= $level) {
+        while (!empty($this->branches) && $this->branches[\count($this->branches) - 1][self::BRANCH_LEVEL] >= $level) {
             array_pop($this->branches);
         }
     }
@@ -357,7 +356,7 @@ class Solver
         $selectedLiteral = array_shift($literals);
 
         // if there are multiple candidates, then branch
-        if (count($literals)) {
+        if (\count($literals)) {
             $this->branches[] = array($literals, $level);
         }
 
@@ -378,12 +377,12 @@ class Solver
         $seen = array();
         $learnedLiterals = array(null);
 
-        $decisionId = count($this->decisions);
+        $decisionId = \count($this->decisions);
 
         $this->learnedPool[] = array();
 
         while (true) {
-            $this->learnedPool[count($this->learnedPool) - 1][] = $rule;
+            $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
 
             foreach ($rule->getLiterals() as $literal) {
                 // skip the one true literal
@@ -466,7 +465,7 @@ class Solver
             $rule = $decision[Decisions::DECISION_REASON];
         }
 
-        $why = count($this->learnedPool) - 1;
+        $why = \count($this->learnedPool) - 1;
 
         if (!$learnedLiterals[0]) {
             throw new SolverBugException(
@@ -647,7 +646,7 @@ class Solver
                             }
                         }
 
-                        if ($noneSatisfied && count($decisionQueue)) {
+                        if ($noneSatisfied && \count($decisionQueue)) {
                             // if any of the options in the decision queue are fixed, only use those
                             $prunedQueue = array();
                             foreach ($decisionQueue as $literal) {
@@ -660,7 +659,7 @@ class Solver
                             }
                         }
 
-                        if ($noneSatisfied && count($decisionQueue)) {
+                        if ($noneSatisfied && \count($decisionQueue)) {
                             $oLevel = $level;
                             $level = $this->selectAndInstall($level, $decisionQueue, $rule);
 
@@ -687,7 +686,7 @@ class Solver
                 $systemLevel = $level;
             }
 
-            $rulesCount = count($this->rules);
+            $rulesCount = \count($this->rules);
             $pass = 1;
 
             $this->io->writeError('Looking at all rules.', true, IOInterface::DEBUG);
@@ -734,7 +733,7 @@ class Solver
                 }
 
                 // need to have at least 2 item to pick from
-                if (count($decisionQueue) < 2) {
+                if (\count($decisionQueue) < 2) {
                     continue;
                 }
 
@@ -745,7 +744,7 @@ class Solver
                 }
 
                 // something changed, so look at all rules again
-                $rulesCount = count($this->rules);
+                $rulesCount = \count($this->rules);
                 $n = -1;
             }
 
@@ -754,13 +753,13 @@ class Solver
             }
 
             // minimization step
-            if (count($this->branches)) {
+            if (\count($this->branches)) {
                 $lastLiteral = null;
                 $lastLevel = null;
                 $lastBranchIndex = 0;
                 $lastBranchOffset = 0;
 
-                for ($i = count($this->branches) - 1; $i >= 0; $i--) {
+                for ($i = \count($this->branches) - 1; $i >= 0; $i--) {
                     list($literals, $l) = $this->branches[$i];
 
                     foreach ($literals as $offset => $literal) {

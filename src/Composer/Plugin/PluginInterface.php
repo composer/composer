@@ -25,6 +25,11 @@ interface PluginInterface
     /**
      * Version number of the internal composer-plugin-api package
      *
+     * This is used to denote the API version of Plugin specific
+     * features, but is also bumped to a new major if Composer
+     * includes a major break in internal APIs which are susceptible
+     * to be used by plugins.
+     *
      * @var string
      */
     const PLUGIN_API_VERSION = '2.0.0';

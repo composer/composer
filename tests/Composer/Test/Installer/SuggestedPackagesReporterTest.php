@@ -222,7 +222,7 @@ class SuggestedPackagesReporterTest extends TestCase
      */
     public function testOutputSkipInstalledPackages()
     {
-        $repository = $this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock();
+        $repository = $this->getMockBuilder('Composer\Repository\InstalledRepository')->disableOriginalConstructor()->getMock();
         $package1 = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $package2 = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
 
@@ -260,7 +260,7 @@ class SuggestedPackagesReporterTest extends TestCase
      */
     public function testOutputNotGettingInstalledPackagesWhenNoSuggestions()
     {
-        $repository = $this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock();
+        $repository = $this->getMockBuilder('Composer\Repository\InstalledRepository')->disableOriginalConstructor()->getMock();
         $repository->expects($this->exactly(0))
             ->method('getPackages');
 

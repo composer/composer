@@ -17,6 +17,7 @@ use Composer\Config;
 use Composer\Factory;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Installer;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
@@ -37,7 +38,7 @@ class FactoryMock extends Factory
         return $config;
     }
 
-    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir)
+    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage)
     {
     }
 

@@ -35,6 +35,8 @@ class DumpAutoloadCommand extends BaseCommand
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.'),
                 new InputOption('apcu', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules.'),
+                new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
+                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
             ))
             ->setHelp(
                 <<<EOT
@@ -70,11 +72,14 @@ EOT
             $this->getIO()->write('<info>Generating autoload files</info>');
         }
 
+        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
+
         $generator = $composer->getAutoloadGenerator();
         $generator->setDevMode(!$input->getOption('no-dev'));
         $generator->setClassMapAuthoritative($authoritative);
         $generator->setApcu($apcu);
         $generator->setRunScripts(!$input->getOption('no-scripts'));
+        $generator->setIgnorePlatformRequirements($ignorePlatformReqs);
         $numberOfClasses = $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
 
         if ($authoritative) {

@@ -43,6 +43,7 @@ use Composer\Package\Link;
 use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Package\Version\VersionParser;
 use Composer\Package\Package;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositorySet;
@@ -128,6 +129,7 @@ class Installer
     protected $dryRun = false;
     protected $verbose = false;
     protected $update = false;
+    protected $install = true;
     protected $dumpAutoloader = true;
     protected $runScripts = true;
     protected $ignorePlatformReqs = false;
@@ -202,6 +204,8 @@ class Installer
             throw new \RuntimeException("The installer options updateMirrors and updateAllowList are mutually exclusive.");
         }
 
+        $isFreshInstall = $this->repositoryManager->getLocalRepository()->isFresh();
+
         // Force update if there is no lock file present
         if (!$this->update && !$this->locker->isLocked()) {
             $this->io->writeError('<warning>No lock file found. Updating dependencies instead of installing from lock file. Use composer update over composer install if you do not have a lock file.</warning>');
@@ -215,6 +219,10 @@ class Installer
             $this->writeLock = false;
             $this->dumpAutoloader = false;
             $this->mockLocalRepositories($this->repositoryManager);
+        }
+
+        if ($this->update && !$this->install) {
+            $this->dumpAutoloader = false;
         }
 
         if ($this->runScripts) {
@@ -238,8 +246,7 @@ class Installer
 
         try {
             if ($this->update) {
-                // TODO introduce option to set doInstall to false (update lock file without vendor install)
-                $res = $this->doUpdate($localRepo, true);
+                $res = $this->doUpdate($localRepo, $this->install);
             } else {
                 $res = $this->doInstall($localRepo);
             }
@@ -247,13 +254,13 @@ class Installer
                 return $res;
             }
         } catch (\Exception $e) {
-            if ($this->executeOperations && $this->config->get('notify-on-install')) {
+            if ($this->executeOperations && $this->install && $this->config->get('notify-on-install')) {
                 $this->installationManager->notifyInstalls($this->io);
             }
 
             throw $e;
         }
-        if ($this->executeOperations && $this->config->get('notify-on-install')) {
+        if ($this->executeOperations && $this->install && $this->config->get('notify-on-install')) {
             $this->installationManager->notifyInstalls($this->io);
         }
 
@@ -263,6 +270,9 @@ class Installer
                 $this->createPlatformRepo(false),
                 new RootPackageRepository(clone $this->package),
             ));
+            if ($isFreshInstall) {
+                $this->suggestedPackagesReporter->addSuggestionsFromPackage($this->package);
+            }
             $this->suggestedPackagesReporter->outputMinimalistic($installedRepo);
         }
 
@@ -298,10 +308,11 @@ class Installer
             $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
             $this->autoloadGenerator->setApcu($this->apcuAutoloader);
             $this->autoloadGenerator->setRunScripts($this->runScripts);
+            $this->autoloadGenerator->setIgnorePlatformRequirements($this->ignorePlatformReqs);
             $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
         }
 
-        if ($this->executeOperations) {
+        if ($this->install && $this->executeOperations) {
             // force binaries re-generation in case they are missing
             foreach ($localRepo->getPackages() as $package) {
                 $this->installationManager->ensureBinariesPresence($package);
@@ -402,7 +413,7 @@ class Installer
             $solver = null;
         } catch (SolverProblemsException $e) {
             $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
-            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool));
+            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose()));
             if (!$this->devMode) {
                 $this->io->writeError('<warning>Running update with --no-dev does not mean require-dev is ignored, it just means the packages will not be installed. If dev requirements are blocking the update you have to resolve those problems.</warning>', true, IOInterface::QUIET);
             }
@@ -563,7 +574,7 @@ class Installer
             $this->io->writeError('<error>Unable to find a compatible set of packages based on your non-dev requirements alone.</error>', true, IOInterface::QUIET);
             $this->io->writeError('Your requirements can be resolved successfully when require-dev packages are present.');
             $this->io->writeError('You may need to move packages from require-dev or some of their dependencies to require.');
-            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, true));
+            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose(), true));
 
             return max(1, $e->getCode());
         }
@@ -627,7 +638,7 @@ class Installer
                 }
             } catch (SolverProblemsException $e) {
                 $this->io->writeError('<error>Your lock file does not contain a compatible set of packages. Please run composer update.</error>', true, IOInterface::QUIET);
-                $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool));
+                $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose()));
 
                 return max(1, $e->getCode());
             }
@@ -727,7 +738,7 @@ class Installer
         $rootRequires = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
-            if ($this->ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
+            if ((true === $this->ignorePlatformReqs || (is_array($this->ignorePlatformReqs) && in_array($req, $this->ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
                 continue;
             }
             if ($constraint instanceof Link) {
@@ -740,6 +751,8 @@ class Installer
         $this->fixedRootPackage = clone $this->package;
         $this->fixedRootPackage->setRequires(array());
         $this->fixedRootPackage->setDevRequires(array());
+
+        $stabilityFlags[$this->package->getName()] = BasePackage::$stabilities[VersionParser::parseStability($this->package->getVersion())];
 
         $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $this->package->getReferences(), $rootRequires);
         $repositorySet->addRepository(new RootPackageRepository($this->fixedRootPackage));
@@ -1011,6 +1024,19 @@ class Installer
     }
 
     /**
+     * Allows disabling the install step after an update
+     *
+     * @param  bool      $install
+     * @return Installer
+     */
+    public function setInstall($install = true)
+    {
+        $this->install = (bool) $install;
+
+        return $this;
+    }
+
+    /**
      * enables dev packages
      *
      * @param  bool      $devMode
@@ -1092,12 +1118,22 @@ class Installer
     /**
      * set ignore Platform Package requirements
      *
-     * @param  bool      $ignorePlatformReqs
+     * If this is set to true, all platform requirements are ignored
+     * If this is set to false, no platform requirements are ignored
+     * If this is set to string[], those packages will be ignored
+     *
+     * @param  bool|array $ignorePlatformReqs
      * @return Installer
      */
     public function setIgnorePlatformRequirements($ignorePlatformReqs = false)
     {
-        $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;
+        if (is_array($ignorePlatformReqs)) {
+            $this->ignorePlatformReqs = array_filter($ignorePlatformReqs, function ($req) {
+                return (bool) preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+            });
+        } else {
+            $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;
+        }
 
         return $this;
     }

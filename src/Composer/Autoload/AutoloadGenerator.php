@@ -19,6 +19,9 @@ use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
+use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\Bound;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Filesystem;
 use Composer\Script\ScriptEvents;
 use Composer\Util\PackageSorter;
@@ -58,6 +61,11 @@ class AutoloadGenerator
      * @var bool
      */
     private $runScripts = false;
+
+    /**
+     * @var bool|array
+     */
+    private $ignorePlatformReqs = false;
 
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
@@ -99,6 +107,26 @@ class AutoloadGenerator
     public function setRunScripts($runScripts = true)
     {
         $this->runScripts = (bool) $runScripts;
+    }
+
+    /**
+     * Sets whether platform requirements should be ignored
+     *
+     * If this is set to true, the platform check file will not be generated
+     * If this is set to false, the platform check file will be generated with all requirements
+     * If this is set to string[], those packages will be ignored from the platform check file
+     *
+     * @param array|bool $ignorePlatformReqs
+     */
+    public function setIgnorePlatformRequirements($ignorePlatformReqs)
+    {
+        if (is_array($ignorePlatformReqs)) {
+            $this->ignorePlatformReqs = array_filter($ignorePlatformReqs, function ($req) {
+                return (bool) preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+            });
+        } else {
+            $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;
+        }
     }
 
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsrPackages = false, $suffix = '')
@@ -276,6 +304,7 @@ EOF;
             );
         }
 
+        $classMap['Composer\\InstalledVersions'] = "\$vendorDir . '/composer/InstalledVersions.php',\n";
         ksort($classMap);
         foreach ($classMap as $class => $code) {
             $classmapFile .= '    '.var_export($class, true).' => '.$code;
@@ -295,27 +324,40 @@ EOF;
             }
         }
 
-        $this->filePutContentsIfModified($targetDir.'/autoload_namespaces.php', $namespacesFile);
-        $this->filePutContentsIfModified($targetDir.'/autoload_psr4.php', $psr4File);
-        $this->filePutContentsIfModified($targetDir.'/autoload_classmap.php', $classmapFile);
+        $filesystem->filePutContentsIfModified($targetDir.'/autoload_namespaces.php', $namespacesFile);
+        $filesystem->filePutContentsIfModified($targetDir.'/autoload_psr4.php', $psr4File);
+        $filesystem->filePutContentsIfModified($targetDir.'/autoload_classmap.php', $classmapFile);
         $includePathFilePath = $targetDir.'/include_paths.php';
         if ($includePathFileContents = $this->getIncludePathsFile($packageMap, $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
-            $this->filePutContentsIfModified($includePathFilePath, $includePathFileContents);
+            $filesystem->filePutContentsIfModified($includePathFilePath, $includePathFileContents);
         } elseif (file_exists($includePathFilePath)) {
             unlink($includePathFilePath);
         }
         $includeFilesFilePath = $targetDir.'/autoload_files.php';
         if ($includeFilesFileContents = $this->getIncludeFilesFile($autoloads['files'], $filesystem, $basePath, $vendorPath, $vendorPathCode52, $appBaseDirCode)) {
-            $this->filePutContentsIfModified($includeFilesFilePath, $includeFilesFileContents);
+            $filesystem->filePutContentsIfModified($includeFilesFilePath, $includeFilesFileContents);
         } elseif (file_exists($includeFilesFilePath)) {
             unlink($includeFilesFilePath);
         }
-        $this->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
-        $this->filePutContentsIfModified($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
-        $this->filePutContentsIfModified($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion));
+        $filesystem->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
+        $checkPlatform = $config->get('platform-check') && $this->ignorePlatformReqs !== true;
+        $platformCheckContent = null;
+        if ($checkPlatform) {
+            $platformCheckContent = $this->getPlatformCheck($packageMap, $this->ignorePlatformReqs ?: array());
+            if (null === $platformCheckContent) {
+                $checkPlatform = false;
+            }
+        }
+        if ($checkPlatform) {
+            $filesystem->filePutContentsIfModified($targetDir.'/platform_check.php', $platformCheckContent);
+        } elseif (file_exists($targetDir.'/platform_check.php')) {
+            unlink($targetDir.'/platform_check.php');
+        }
+        $filesystem->filePutContentsIfModified($vendorPath.'/autoload.php', $this->getAutoloadFile($vendorPathToTargetDirCode, $suffix));
+        $filesystem->filePutContentsIfModified($targetDir.'/autoload_real.php', $this->getAutoloadRealFile(true, (bool) $includePathFileContents, $targetDirLoader, (bool) $includeFilesFileContents, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion, $checkPlatform));
 
-        $this->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
-        $this->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
+        $filesystem->safeCopy(__DIR__.'/ClassLoader.php', $targetDir.'/ClassLoader.php');
+        $filesystem->safeCopy(__DIR__.'/../../../LICENSE', $targetDir.'/LICENSE');
 
         if ($this->runScripts) {
             $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
@@ -324,16 +366,6 @@ EOF;
         }
 
         return count($classMap);
-    }
-
-    private function filePutContentsIfModified($path, $content)
-    {
-        $currentContent = @file_get_contents($path);
-        if (!$currentContent || ($currentContent != $content)) {
-            return file_put_contents($path, $content);
-        }
-
-        return 0;
     }
 
     private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespaceFilter, $autoloadType, array $classMap, array &$ambiguousClasses, array &$scannedFiles)
@@ -570,6 +602,135 @@ EOF;
         return $baseDir . (($path !== false) ? var_export($path, true) : "");
     }
 
+    protected function getPlatformCheck($packageMap, array $ignorePlatformReqs)
+    {
+        $lowestPhpVersion = Bound::zero();
+        $requiredExtensions = array();
+        $extensionProviders = array();
+
+        foreach ($packageMap as $item) {
+            list($package, $installPath) = $item;
+            foreach (array_merge($package->getReplaces(), $package->getProvides()) as $link) {
+                if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
+                    $extensionProviders[$match[1]][] = $link->getConstraint() ?: new MatchAllConstraint();
+                }
+            }
+        }
+
+        foreach ($packageMap as $item) {
+            list($package, $installPath) = $item;
+            foreach ($package->getRequires() as $link) {
+                if (in_array($link->getTarget(), $ignorePlatformReqs, true)) {
+                    continue;
+                }
+
+                if ('php' === $link->getTarget() && ($constraint = $link->getConstraint())) {
+                    if ($constraint->getLowerBound()->compareTo($lowestPhpVersion, '>')) {
+                        $lowestPhpVersion = $constraint->getLowerBound();
+                    }
+                }
+
+                if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
+                    // skip extension checks if they have a valid provider/replacer
+                    if (isset($extensionProviders[$match[1]])) {
+                        foreach ($extensionProviders[$match[1]] as $provided) {
+                            if (!$link->getConstraint() || $provided->matches($link->getConstraint())) {
+                                continue 2;
+                            }
+                        }
+                    }
+
+                    $extension = var_export($match[1], true);
+                    if ($match[1] === 'pcntl' || $match[1] === 'readline') {
+                        $requiredExtensions[$extension] = "PHP_SAPI !== 'cli' || extension_loaded($extension) || \$missingExtensions[] = $extension;\n";
+                    } else {
+                        $requiredExtensions[$extension] = "extension_loaded($extension) || \$missingExtensions[] = $extension;\n";
+                    }
+                }
+            }
+        }
+
+        ksort($requiredExtensions);
+
+        $formatToPhpVersionId = function (Bound $bound) {
+            if ($bound->isZero()) {
+                return 0;
+            }
+
+            if ($bound->isPositiveInfinity()) {
+                return 99999;
+            }
+
+            $version = str_replace('-', '.', $bound->getVersion());
+            $chunks = array_map('intval', explode('.', $version));
+            return $chunks[0] * 10000 + $chunks[1] * 100 + $chunks[2];
+        };
+
+        $formatToHumanReadable = function (Bound $bound) {
+            if ($bound->isZero()) {
+                return 0;
+            }
+
+            if ($bound->isPositiveInfinity()) {
+                return 99999;
+            }
+
+            $version = str_replace('-', '.', $bound->getVersion());
+            $chunks = explode('.', $version);
+            $chunks = array_slice($chunks, 0, 3);
+            return implode('.', $chunks);
+        };
+
+        $requiredPhp = '';
+        $requiredPhpError = '';
+        if (!$lowestPhpVersion->isZero()) {
+            $operator = $lowestPhpVersion->isInclusive() ? '>=' : '>';
+            $requiredPhp = 'PHP_VERSION_ID '.$operator.' '.$formatToPhpVersionId($lowestPhpVersion);
+            $requiredPhpError = '"'.$operator.' '.$formatToHumanReadable($lowestPhpVersion).'"';
+        }
+
+        if ($requiredPhp) {
+            $requiredPhp = <<<PHP_CHECK
+
+if (!($requiredPhp)) {
+    \$issues[] = 'Your Composer dependencies require a PHP version $requiredPhpError. You are running ' . PHP_VERSION  .  '.';
+}
+
+PHP_CHECK;
+        }
+
+        $requiredExtensions = implode('', $requiredExtensions);
+        if ('' !== $requiredExtensions) {
+            $requiredExtensions = <<<EXT_CHECKS
+
+\$missingExtensions = array();
+$requiredExtensions
+if (\$missingExtensions) {
+    \$issues[] = 'Your Composer dependencies require the following PHP extensions to be installed: ' . implode(', ', \$missingExtensions);
+}
+
+EXT_CHECKS;
+        }
+
+        if (!$requiredPhp && !$requiredExtensions) {
+            return null;
+        }
+
+        return <<<PLATFORM_CHECK
+<?php
+
+// platform_check.php @generated by Composer
+
+\$issues = array();
+${requiredPhp}${requiredExtensions}
+if (\$issues) {
+    echo 'Composer detected issues in your platform:' . "\\n\\n" . implode("\\n", \$issues);
+    exit(104);
+}
+
+PLATFORM_CHECK;
+    }
+
     protected function getAutoloadFile($vendorPathToTargetDirCode, $suffix)
     {
         $lastChar = $vendorPathToTargetDirCode[strlen($vendorPathToTargetDirCode) - 1];
@@ -591,7 +752,7 @@ return ComposerAutoloaderInit$suffix::getLoader();
 AUTOLOAD;
     }
 
-    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion = 70000)
+    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion, $checkPlatform)
     {
         $file = <<<HEADER
 <?php
@@ -618,12 +779,24 @@ class ComposerAutoloaderInit$suffix
             return self::\$loader;
         }
 
+
+HEADER;
+
+        if ($checkPlatform) {
+            $file .= <<<'PLATFORM_CHECK'
+        require __DIR__ . '/platform_check.php';
+
+
+PLATFORM_CHECK;
+        }
+
+        $file .= <<<CLASSLOADER_INIT
         spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prependAutoloader);
         self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
         spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
 
 
-HEADER;
+CLASSLOADER_INIT;
 
         if ($useIncludePath) {
             $file .= <<<'INCLUDE_PATH'
@@ -638,7 +811,7 @@ INCLUDE_PATH;
         $file .= <<<STATIC_INIT
         \$useStaticLoader = PHP_VERSION_ID >= $staticPhpVersion && !defined('HHVM_VERSION') && (!function_exists('zend_loader_file_encoded') || !zend_loader_file_encoded());
         if (\$useStaticLoader) {
-            require_once __DIR__ . '/autoload_static.php';
+            require __DIR__ . '/autoload_static.php';
 
             call_user_func(\Composer\Autoload\ComposerStaticInit$suffix::getInitializer(\$loader));
         } else {
@@ -1019,52 +1192,5 @@ INITIALIZER;
         }
 
         return $sortedPackageMap;
-    }
-
-    /**
-     * Copy file using stream_copy_to_stream to work around https://bugs.php.net/bug.php?id=6463
-     *
-     * @param string $source
-     * @param string $target
-     */
-    protected function safeCopy($source, $target)
-    {
-        if (!file_exists($target) || !file_exists($source) || !$this->filesAreEqual($source, $target)) {
-            $source = fopen($source, 'r');
-            $target = fopen($target, 'w+');
-
-            stream_copy_to_stream($source, $target);
-            fclose($source);
-            fclose($target);
-        }
-    }
-
-    /**
-     * compare 2 files
-     * https://stackoverflow.com/questions/3060125/can-i-use-file-get-contents-to-compare-two-files
-     */
-    private function filesAreEqual($a, $b)
-    {
-        // Check if filesize is different
-        if (filesize($a) !== filesize($b)) {
-            return false;
-        }
-
-        // Check if content is different
-        $ah = fopen($a, 'rb');
-        $bh = fopen($b, 'rb');
-
-        $result = true;
-        while (!feof($ah)) {
-            if (fread($ah, 8192) != fread($bh, 8192)) {
-                $result = false;
-                break;
-            }
-        }
-
-        fclose($ah);
-        fclose($bh);
-
-        return $result;
     }
 }

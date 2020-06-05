@@ -120,7 +120,7 @@ class RuleSetGenerator
             $literals[] = -$package->id;
         }
 
-        if (count($literals) == 2) {
+        if (\count($literals) == 2) {
             return new Rule2Literals($literals[0], $literals[1], $reason, $reasonData);
         }
 
@@ -165,11 +165,18 @@ class RuleSetGenerator
                     $this->addedPackagesByNames[$name][] = $package;
                 }
             } else {
+                $workQueue->enqueue($package->getAliasOf());
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($package->getAliasOf()), Rule::RULE_PACKAGE_ALIAS, $package));
+
+                // if alias package has no self.version requires, its requirements do not
+                // need to be added as the aliased package processing will take care of it
+                if (!$package->hasSelfVersionRequires()) {
+                    continue;
+                }
             }
 
             foreach ($package->getRequires() as $link) {
-                if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+                if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($link->getTarget(), $ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
                     continue;
                 }
 
@@ -193,7 +200,7 @@ class RuleSetGenerator
                     continue;
                 }
 
-                if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+                if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($link->getTarget(), $ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
                     continue;
                 }
 
@@ -207,25 +214,11 @@ class RuleSetGenerator
         }
 
         foreach ($this->addedPackagesByNames as $name => $packages) {
-            if (count($packages) > 1) {
+            if (\count($packages) > 1) {
                 $reason = Rule::RULE_PACKAGE_SAME_NAME;
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createMultiConflictRule($packages, $reason, $name));
             }
         }
-    }
-
-    protected function obsoleteImpossibleForAlias($package, $provider)
-    {
-        $packageIsAlias = $package instanceof AliasPackage;
-        $providerIsAlias = $provider instanceof AliasPackage;
-
-        $impossible = (
-            ($packageIsAlias && $package->getAliasOf() === $provider) ||
-            ($providerIsAlias && $provider->getAliasOf() === $package) ||
-            ($packageIsAlias && $providerIsAlias && $provider->getAliasOf() === $package->getAliasOf())
-        );
-
-        return $impossible;
     }
 
     protected function addRulesForRequest(Request $request, $ignorePlatformReqs)
@@ -253,7 +246,7 @@ class RuleSetGenerator
         }
 
         foreach ($request->getRequires() as $packageName => $constraint) {
-            if ($ignorePlatformReqs && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $packageName)) {
+            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($packageName, $ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $packageName)) {
                 continue;
             }
 
@@ -272,6 +265,9 @@ class RuleSetGenerator
         }
     }
 
+    /**
+     * @param bool|array $ignorePlatformReqs
+     */
     public function getRulesFor(Request $request, $ignorePlatformReqs = false)
     {
         $this->rules = new RuleSet;

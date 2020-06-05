@@ -66,6 +66,7 @@ class ShowCommand extends BaseCommand
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),
                 new InputOption('all', null, InputOption::VALUE_NONE, 'List all packages'),
+                new InputOption('locked', null, InputOption::VALUE_NONE, 'List all locked packages'),
                 new InputOption('installed', 'i', InputOption::VALUE_NONE, 'List installed packages only (enabled by default, only present for BC).'),
                 new InputOption('platform', 'p', InputOption::VALUE_NONE, 'List platform packages only'),
                 new InputOption('available', 'a', InputOption::VALUE_NONE, 'List available packages only'),
@@ -149,10 +150,14 @@ EOT
             $platformOverrides = $composer->getConfig()->get('platform') ?: array();
         }
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
-        $phpVersion = $platformRepo->findPackage('php', '*')->getVersion();
+        $lockedRepo = null;
 
         if ($input->getOption('self')) {
             $package = $this->getComposer()->getPackage();
+            if ($input->getOption('name-only')) {
+                $io->write($package->getName());
+                return 0;
+            }
             $repos = $installedRepo = new InstalledRepository(array(new RootPackageRepository($package)));
         } elseif ($input->getOption('platform')) {
             $repos = $installedRepo = new InstalledRepository(array($platformRepo));
@@ -168,13 +173,27 @@ EOT
             }
         } elseif ($input->getOption('all') && $composer) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-            $installedRepo = new InstalledRepository(array($localRepo, $platformRepo));
+            $locker = $composer->getLocker();
+            if ($locker->isLocked()) {
+                $lockedRepo = $locker->getLockedRepository();
+                $installedRepo = new InstalledRepository(array($lockedRepo, $localRepo, $platformRepo));
+            } else {
+                $installedRepo = new InstalledRepository(array($localRepo, $platformRepo));
+            }
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } elseif ($input->getOption('all')) {
             $defaultRepos = RepositoryFactory::defaultRepos($io);
             $io->writeError('No composer.json found in the current directory, showing available packages from ' . implode(', ', array_keys($defaultRepos)));
             $installedRepo = new InstalledRepository(array($platformRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $defaultRepos));
+        } elseif ($input->getOption('locked')) {
+            if (!$composer || !$composer->getLocker()->isLocked()) {
+                throw new \UnexpectedValueException('A valid composer.json and composer.lock files is required to run this command with --locked');
+            }
+            $locker = $composer->getLocker();
+            $lockedRepo = $locker->getLockedRepository();
+            $installedRepo = new InstalledRepository(array($lockedRepo));
+            $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
             $repos = $installedRepo = new InstalledRepository(array($this->getComposer()->getRepositoryManager()->getLocalRepository()));
             $rootPkg = $this->getComposer()->getPackage();
@@ -229,7 +248,7 @@ EOT
             } else {
                 $latestPackage = null;
                 if ($input->getOption('latest')) {
-                    $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion);
+                    $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo);
                 }
                 if ($input->getOption('outdated') && $input->getOption('strict') && $latestPackage && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion() && !$latestPackage->isAbandoned()) {
                     $exitCode = 1;
@@ -315,6 +334,8 @@ EOT
         foreach ($repos as $repo) {
             if ($repo === $platformRepo) {
                 $type = 'platform';
+            } elseif($lockedRepo !== null && $repo === $lockedRepo) {
+                $type = 'locked';
             } elseif ($repo === $installedRepo || in_array($repo, $installedRepo->getRepositories(), true)) {
                 $type = 'installed';
             } else {
@@ -351,7 +372,7 @@ EOT
         $exitCode = 0;
         $viewData = array();
         $viewMetaData = array();
-        foreach (array('platform' => true, 'available' => false, 'installed' => true) as $type => $showVersion) {
+        foreach (array('platform' => true, 'locked' => true, 'available' => false, 'installed' => true) as $type => $showVersion) {
             if (isset($packages[$type])) {
                 ksort($packages[$type]);
 
@@ -360,7 +381,7 @@ EOT
                 if ($showLatest && $showVersion) {
                     foreach ($packages[$type] as $package) {
                         if (is_object($package)) {
-                            $latestPackage = $this->findLatestPackage($package, $composer, $phpVersion, $showMinorOnly);
+                            $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMinorOnly);
                             if ($latestPackage === false) {
                                 continue;
                             }
@@ -1158,18 +1179,18 @@ EOT
     /**
      * Given a package, this finds the latest package matching it
      *
-     * @param PackageInterface $package
-     * @param Composer         $composer
-     * @param string           $phpVersion
-     * @param bool             $minorOnly
+     * @param PackageInterface   $package
+     * @param Composer           $composer
+     * @param PlatformRepository $platformRepo
+     * @param bool               $minorOnly
      *
      * @return PackageInterface|false
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, $phpVersion, $minorOnly = false)
+    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, $minorOnly = false)
     {
         // find the latest version allowed in this repo set
         $name = $package->getName();
-        $versionSelector = new VersionSelector($this->getRepositorySet($composer));
+        $versionSelector = new VersionSelector($this->getRepositorySet($composer), $platformRepo);
         $stability = $composer->getPackage()->getMinimumStability();
         $flags = $composer->getPackage()->getStabilityFlags();
         if (isset($flags[$name])) {
@@ -1190,7 +1211,7 @@ EOT
             $targetVersion = '^' . $package->getVersion();
         }
 
-        return $versionSelector->findBestCandidate($name, $targetVersion, $phpVersion, $bestStability);
+        return $versionSelector->findBestCandidate($name, $targetVersion, $bestStability);
     }
 
     private function getRepositorySet(Composer $composer)

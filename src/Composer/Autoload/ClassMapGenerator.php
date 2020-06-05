@@ -65,7 +65,7 @@ class ClassMapGenerator
         if (is_string($path)) {
             if (is_file($path)) {
                 $path = array(new \SplFileInfo($path));
-            } elseif (is_dir($path)) {
+            } elseif (is_dir($path) || strpos($path, '*') !== false) {
                 $path = Finder::create()->files()->followLinks()->name('/\.(php|inc|hh)$/')->in($path);
             } else {
                 throw new \RuntimeException(

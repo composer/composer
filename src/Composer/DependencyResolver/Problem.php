@@ -66,7 +66,7 @@ class Problem
      * @param  array  $installedMap A map of all present packages
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, array $installedMap = array(), array $learnedPool = array())
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
     {
         // TODO doesn't this entirely defeat the purpose of the problem sections? what's the point of sections?
         $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
@@ -90,23 +90,62 @@ class Problem
             }
 
             if (empty($packages)) {
-                return "\n    ".implode(self::getMissingPackageReason($repositorySet, $request, $pool, $packageName, $constraint));
+                return "\n    ".implode(self::getMissingPackageReason($repositorySet, $request, $pool, $isVerbose, $packageName, $constraint));
             }
         }
 
-        $messages = array();
-        foreach ($reasons as $rule) {
-            $messages[] = $rule->getPrettyString($repositorySet, $request, $pool, $installedMap, $learnedPool);
-        }
-
-        return "\n    - ".implode("\n    - ", array_unique($messages));
+        return self::formatDeduplicatedRules($reasons, '    ', $repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
     }
 
-    public function isCausedByLock()
+    /**
+     * @internal
+     */
+    public static function formatDeduplicatedRules($rules, $indent, RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
+    {
+        $messages = array();
+        $templates = array();
+        $parser = new VersionParser;
+        $deduplicatableRuleTypes = array(Rule::RULE_PACKAGE_REQUIRES, Rule::RULE_PACKAGE_CONFLICT);
+        foreach ($rules as $rule) {
+            $message = $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
+            if (in_array($rule->getReason(), $deduplicatableRuleTypes, true) && preg_match('{^(?P<package>\S+) (?P<version>\S+) (?P<type>requires|conflicts)}', $message, $m)) {
+                $template = preg_replace('{^\S+ \S+ }', '%s%s ', $message);
+                $messages[] = $template;
+                $templates[$template][$m[1]][$parser->normalize($m[2])] = $m[2];
+            } elseif ($message !== '') {
+                $messages[] = $message;
+            }
+        }
+
+        $result = array();
+        foreach (array_unique($messages) as $message) {
+            if (isset($templates[$message])) {
+                foreach ($templates[$message] as $package => $versions) {
+                    uksort($versions, 'version_compare');
+                    if (!$isVerbose) {
+                        $versions = self::condenseVersionList($versions, 1);
+                    }
+                    if (count($versions) > 1) {
+                        // remove the s from requires/conflicts to correct grammar
+                        $message = preg_replace('{^(%s%s (?:require|conflict))s}', '$1', $message);
+                        $result[] = sprintf($message, $package, '['.implode(', ', $versions).']');
+                    } else {
+                        $result[] = sprintf($message, $package, ' '.reset($versions));
+                    }
+                }
+            } else {
+                $result[] = $message;
+            }
+        }
+
+        return "\n$indent- ".implode("\n$indent- ", $result);
+    }
+
+    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
     {
         foreach ($this->reasons as $sectionRules) {
             foreach ($sectionRules as $rule) {
-                if ($rule->isCausedByLock()) {
+                if ($rule->isCausedByLock($repositorySet, $request, $pool)) {
                     return true;
                 }
             }
@@ -138,7 +177,7 @@ class Problem
     /**
      * @internal
      */
-    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $packageName, $constraint = null)
+    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, $constraint = null)
     {
         // handle php/hhvm
         if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
@@ -210,7 +249,7 @@ class Problem
                     return $rootReqs[$packageName]->matches(new Constraint('==', $p->getVersion()));
                 });
                 if (0 === count($filtered)) {
-                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with your root composer.json require ('.$rootReqs[$packageName]->getPrettyString().').');
+                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with your root composer.json require ('.$rootReqs[$packageName]->getPrettyString().').');
                 }
             }
 
@@ -220,7 +259,7 @@ class Problem
                     return $fixedConstraint->matches(new Constraint('==', $p->getVersion()));
                 });
                 if (0 === count($filtered)) {
-                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' but the package is fixed to '.$fixedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.');
+                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but the package is fixed to '.$fixedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.');
                 }
             }
 
@@ -229,15 +268,15 @@ class Problem
             });
 
             if (!$nonLockedPackages) {
-                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' in lock file but not in remote repositories, make sure you avoid updating this package to keep the one from lock file.');
+                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' in lock file but not in remote repositories, make sure you avoid updating this package to keep the one from lock file.');
             }
 
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with another require.');
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with another require.');
         }
 
         // check if the package is found when bypassing stability checks
         if ($packages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match your minimum-stability.');
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match your minimum-stability.');
         }
 
         // check if the package is found when bypassing the constraint check
@@ -257,10 +296,10 @@ class Problem
                     }
                 }
 
-                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your constraint and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');
+                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your constraint and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');
             }
 
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match your constraint.');
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.');
         }
 
         if (!preg_match('{^[A-Za-z0-9_./-]+$}', $packageName)) {
@@ -287,7 +326,7 @@ class Problem
     /**
      * @internal
      */
-    public static function getPackageList(array $packages)
+    public static function getPackageList(array $packages, $isVerbose)
     {
         $prepared = array();
         foreach ($packages as $package) {
@@ -299,10 +338,44 @@ class Problem
             if (isset($package['versions'][VersionParser::DEV_MASTER_ALIAS]) && isset($package['versions']['dev-master'])) {
                 unset($package['versions'][VersionParser::DEV_MASTER_ALIAS]);
             }
+
+            uksort($package['versions'], 'version_compare');
+
+            if (!$isVerbose) {
+                $package['versions'] = self::condenseVersionList($package['versions'], 4);
+            }
             $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
         }
 
         return implode(', ', $prepared);
+    }
+
+    /**
+     * @param string[] $versions an array of pretty versions, with normalized versions as keys
+     * @return list<string> a list of pretty versions and '...' where versions were removed
+     */
+    private static function condenseVersionList(array $versions, $max)
+    {
+        if (count($versions) <= $max) {
+            return $versions;
+        }
+
+        $filtered = array();
+        $byMajor = array();
+        foreach ($versions as $version => $pretty) {
+            $byMajor[preg_replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
+        }
+        foreach ($byMajor as $versionsForMajor) {
+            if (count($versionsForMajor) > $max) {
+                $filtered[] = $versionsForMajor[0];
+                $filtered[] = '...';
+                $filtered[] = $versionsForMajor[count($versionsForMajor) - 1];
+            } else {
+                $filtered = array_merge($filtered, $versionsForMajor);
+            }
+        }
+
+        return $filtered;
     }
 
     private static function hasMultipleNames(array $packages)

@@ -160,7 +160,6 @@ class EventDispatcher
                 if (is_array($callable) && (is_string($callable[0]) || is_object($callable[0])) && is_string($callable[1])) {
                     $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1] ), true, IOInterface::VERBOSE);
                 }
-                $event = $this->checkListenerExpectedEvent($callable, $event);
                 $return = false === call_user_func($callable, $event) ? 1 : 0;
             } elseif ($this->isComposerScript($callable)) {
                 $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable), true, IOInterface::VERBOSE);
@@ -304,8 +303,6 @@ class EventDispatcher
      */
     protected function executeEventPhpScript($className, $methodName, Event $event)
     {
-        $event = $this->checkListenerExpectedEvent(array($className, $methodName), $event);
-
         if ($this->io->isVerbose()) {
             $this->io->writeError(sprintf('> %s: %s::%s', $event->getName(), $className, $methodName));
         } else {
@@ -313,38 +310,6 @@ class EventDispatcher
         }
 
         return $className::$methodName($event);
-    }
-
-    /**
-     * @param  mixed $target
-     * @param  Event $event
-     * @return Event
-     */
-    protected function checkListenerExpectedEvent($target, Event $event)
-    {
-        if (in_array($event->getName(), array(
-            'init',
-            'command',
-            'pre-file-download',
-        ), true)) {
-            return $event;
-        }
-
-        try {
-            $reflected = new \ReflectionParameter($target, 0);
-        } catch (\Exception $e) {
-            return $event;
-        }
-
-        $typehint = $reflected->getClass();
-
-        if (!$typehint instanceof \ReflectionClass) {
-            return $event;
-        }
-
-        $expected = $typehint->getName();
-
-        return $event;
     }
 
     private function serializeCallback($cb)

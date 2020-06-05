@@ -21,7 +21,8 @@ use Composer\Package\Version\StabilityFilter;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\Constraint\EmptyConstraint;
+use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Plugin\PrePoolCreateEvent;
@@ -32,23 +33,53 @@ use Composer\Plugin\PluginEvents;
  */
 class PoolBuilder
 {
+    /**
+     * @var int[]
+     */
     private $acceptableStabilities;
+    /**
+     * @var int[]
+     */
     private $stabilityFlags;
     /**
      * @psalm-var array<string, array<string, array{alias: string, alias_normalized: string}>>
      */
     private $rootAliases;
+    /**
+     * @psalm-var array<string, string>
+     */
     private $rootReferences;
+    /**
+     * @var EventDispatcher
+     */
     private $eventDispatcher;
+    /**
+     * @var IOInterface
+     */
     private $io;
 
+    /**
+     * @psalm-var array<string, AliasPackage>
+     */
     private $aliasMap = array();
+    /**
+     * @psalm-var array<string, ConstraintInterface[]|null>
+     */
     private $nameConstraints = array();
     private $loadedNames = array();
+    /**
+     * @psalm-var Package[]
+     */
     private $packages = array();
+    /**
+     * @psalm-var list<Package>
+     */
     private $unacceptableFixedPackages = array();
     private $updateAllowList = array();
     private $skippedLoad = array();
+    /**
+     * @psalm-var array<string, bool>
+     */
     private $updateAllowWarned = array();
 
     /**
@@ -82,7 +113,7 @@ class PoolBuilder
                     $request->fixPackage($lockedPackage);
                     $lockedName = $lockedPackage->getName();
                     // remember which packages we skipped loading remote content for in this partial update
-                    $this->skippedLoad[$lockedPackage->getName()] = $lockedName;
+                    $this->skippedLoad[$lockedName] = $lockedName;
                     foreach ($lockedPackage->getReplaces() as $link) {
                         $this->skippedLoad[$link->getTarget()] = $lockedName;
                     }
@@ -122,7 +153,7 @@ class PoolBuilder
             }
 
             $loadNames[$packageName] = $constraint;
-            $this->nameConstraints[$packageName] = $constraint ? new MultiConstraint(array($constraint), false) : null;
+            $this->nameConstraints[$packageName] = $constraint && !($constraint instanceof MatchAllConstraint) ? array($constraint) : null;
         }
 
         // clean up loadNames for anything we manually marked loaded above
@@ -159,11 +190,17 @@ class PoolBuilder
         }
 
         // filter packages according to all the require statements collected for each package
+        $nameConstraints = array();
+        foreach ($this->nameConstraints as $name => $constraints) {
+            if (\is_array($constraints)) {
+                $nameConstraints[$name] = MultiConstraint::create(array_values(array_unique($constraints)), false);
+            }
+        }
         foreach ($this->packages as $i => $package) {
             // we check all alias related packages at once, so no need to check individual aliases
             // isset also checks non-null value
-            if (!$package instanceof AliasPackage && isset($this->nameConstraints[$package->getName()])) {
-                $constraint = $this->nameConstraints[$package->getName()];
+            if (!$package instanceof AliasPackage && isset($nameConstraints[$package->getName()])) {
+                $constraint = $nameConstraints[$package->getName()];
 
                 $aliasedPackages = array($i => $package);
                 if (isset($this->aliasMap[spl_object_hash($package)])) {
@@ -268,12 +305,11 @@ class PoolBuilder
             }
 
             $linkConstraint = $link->getConstraint();
-            if ($linkConstraint && !($linkConstraint instanceof EmptyConstraint)) {
-                if (!array_key_exists($require, $this->nameConstraints)) {
-                    $this->nameConstraints[$require] = new MultiConstraint(array($linkConstraint), false);
-                } elseif ($this->nameConstraints[$require]) {
-                    // TODO addConstraint function?
-                    $this->nameConstraints[$require] = new MultiConstraint(array_merge(array($linkConstraint), $this->nameConstraints[$require]->getConstraints()), false);
+            if ($linkConstraint && !($linkConstraint instanceof MatchAllConstraint)) {
+                if (!\array_key_exists($require, $this->nameConstraints)) {
+                    $this->nameConstraints[$require] = array($linkConstraint);
+                } elseif (\is_array($this->nameConstraints[$require])) {
+                    $this->nameConstraints[$require][] = $linkConstraint;
                 }
                 // else it is null and should stay null
             } else {
@@ -377,8 +413,12 @@ class PoolBuilder
             }
         }
 
-        // if we unfixed a replaced package name, we also need to unfix the replacer itself
-        if ($this->skippedLoad[$name] !== $name) {
+        if (
+            // if we unfixed a replaced package name, we also need to unfix the replacer itself
+            $this->skippedLoad[$name] !== $name
+            // as long as it was not unfixed yet
+            && isset($this->skippedLoad[$this->skippedLoad[$name]])
+        ) {
             $this->unfixPackage($request, $this->skippedLoad[$name]);
         }
 

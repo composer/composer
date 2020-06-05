@@ -1,0 +1,29 @@
+--TEST--
+Assert that prefer-lowest can not pick the lowest version of all packages when two branches are valid but conflict with each other
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {"name": "req/pkg", "version": "1.0.0", "require": {"req/pkg2": "^1.2"}},
+                {"name": "req/pkg2", "version": "1.0.0", "require": {"req/pkg": "^1.2"}},
+                {"name": "req/pkg", "version": "1.2.0", "require": {"req/pkg2": "^1.0"}},
+                {"name": "req/pkg2", "version": "1.2.0", "require": {"req/pkg": "^1.0"}},
+                {"name": "req/pkg", "version": "1.4.0", "require": {"req/pkg2": "^1.0"}},
+                {"name": "req/pkg2", "version": "1.4.0", "require": {"req/pkg": "^1.0"}}
+            ]
+        }
+    ],
+    "require": {
+        "req/pkg": "*",
+        "req/pkg2": "*"
+    }
+}
+
+--RUN--
+update --prefer-lowest
+
+--EXPECT--
+Installing req/pkg2 (1.2.0)
+Installing req/pkg (1.0.0)

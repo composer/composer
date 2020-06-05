@@ -2,7 +2,7 @@
     tagline: How to reduce the performance impact of the autoloader
 -->
 
-# Autoloader Optimization
+# Autoloader optimization
 
 By default, the Composer autoloader runs relatively fast. However, due to the way
 PSR-4 and PSR-0 autoloading rules are set up, it needs to check the filesystem

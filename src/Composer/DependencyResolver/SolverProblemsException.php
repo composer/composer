@@ -31,7 +31,7 @@ class SolverProblemsException extends \RuntimeException
         parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', 2);
     }
 
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isDevExtraction = false)
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
     {
         $installedMap = $request->getPresentMap(true);
         $hasExtensionProblems = false;
@@ -39,13 +39,13 @@ class SolverProblemsException extends \RuntimeException
 
         $problems = array();
         foreach ($this->problems as $problem) {
-            $problems[] = $problem->getPrettyString($repositorySet, $request, $pool, $installedMap, $this->learnedPool)."\n";
+            $problems[] = $problem->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $this->learnedPool)."\n";
 
             if (!$hasExtensionProblems && $this->hasExtensionProblems($problem->getReasons())) {
                 $hasExtensionProblems = true;
             }
 
-            $isCausedByLock |= $problem->isCausedByLock();
+            $isCausedByLock |= $problem->isCausedByLock($repositorySet, $request, $pool);
         }
 
         $i = 1;
@@ -54,25 +54,34 @@ class SolverProblemsException extends \RuntimeException
             $text .= "  Problem ".($i++).$problem;
         }
 
+        $hints = array();
         if (!$isDevExtraction && (strpos($text, 'could not be found') || strpos($text, 'no matching package found'))) {
-            $text .= "\nPotential causes:\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n - It's a private package and you forgot to add a custom repository to find it\n\nRead <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
+            $hints[] = "Potential causes:\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n - It's a private package and you forgot to add a custom repository to find it\n\nRead <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
         }
 
         if ($hasExtensionProblems) {
-            $text .= $this->createExtensionHint();
+            $hints[] = $this->createExtensionHint();
         }
 
         if ($isCausedByLock && !$isDevExtraction) {
-            $text .= "\nUse the option --with-all-dependencies to allow updates and removals for packages currently locked to specific versions.";
+            $hints[] = "Use the option --with-all-dependencies to allow upgrades, downgrades and removals for packages currently locked to specific versions.";
+        }
+
+        if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match') && strpos($text, '- ocramius/package-versions')) {
+            $hints[] = "<warning>ocramius/package-versions only provides support for Composer 2 in 1.8+, which requires PHP 7.4.</warning>\nIf you can not upgrade PHP you can require <info>composer/package-versions-deprecated</info> to resolve this with PHP 7.0+.";
         }
 
         // TODO remove before 2.0 final
         if (!class_exists('PHPUnit\Framework\TestCase', false)) {
             if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match')) {
-                $text .= "\nYou are using a snapshot build of Composer 2, which some of your plugins seem to be incompatible with. Make sure you update your plugins or report an issue to them to ask them to support Composer 2. To work around this you can run Composer with --ignore-platform-reqs, but this will also ignore your PHP version and may result in bigger problems down the line.";
+                $hints[] = "You are using a snapshot build of Composer 2, which some of your plugins seem to be incompatible with. Make sure you update your plugins or report an issue to them to ask them to support Composer 2. To work around this you can run Composer with --ignore-platform-req=composer-plugin-api, but this may result in broken plugins and bigger problems down the line.";
             } else {
-                $text .= "\nYou are using a snapshot build of Composer 2, which may be the cause of the problem. Run `composer self-update --stable` and then try again. In case it solves the problem, please report an issue mentioning Composer 2.";
+                $hints[] = "You are using a snapshot build of Composer 2, which may be the cause of the problem. Run `composer self-update --stable` and then try again. In case it solves the problem, please report an issue mentioning Composer 2.";
             }
+        }
+
+        if ($hints) {
+            $text .= "\n" . implode("\n\n", $hints);
         }
 
         return $text;
@@ -91,9 +100,9 @@ class SolverProblemsException extends \RuntimeException
             return '';
         }
 
-        $text = "\n  To enable extensions, verify that they are enabled in your .ini files:\n    - ";
+        $text = "To enable extensions, verify that they are enabled in your .ini files:\n    - ";
         $text .= implode("\n    - ", $paths);
-        $text .= "\n  You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.";
+        $text .= "\nYou can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.";
 
         return $text;
     }

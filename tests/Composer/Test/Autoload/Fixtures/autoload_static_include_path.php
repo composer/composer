@@ -20,10 +20,15 @@ class ComposerStaticInitIncludePath
         ),
     );
 
+    public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
             $loader->prefixesPsr0 = ComposerStaticInitIncludePath::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitIncludePath::$classMap;
 
         }, null, ClassLoader::class);
     }

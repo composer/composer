@@ -1,0 +1,30 @@
+--TEST--
+Verify replacing an unbound range and requiring a single version works as well as vice versa.
+
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.1", "replace": {"c/c": ">2.0" }},
+                { "name": "b/b", "version": "1.0.2", "require": {"c/c": "2.1.2" }},
+                { "name": "d/d", "version": "1.0.3", "replace": {"f/f": "2.1.2" }},
+                { "name": "e/e", "version": "1.0.4", "require": {"f/f": ">2.0" }}
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.1",
+        "b/b": "1.0.2",
+        "d/d": "1.0.3",
+        "e/e": "1.0.4"
+    }
+}
+--RUN--
+update
+--EXPECT--
+Installing a/a (1.0.1)
+Installing b/b (1.0.2)
+Installing d/d (1.0.3)
+Installing e/e (1.0.4)

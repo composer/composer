@@ -140,7 +140,7 @@ Your requirements could not be resolved to an installable set of packages.
     - package/found4 2.0.0 requires non-existent/pkg2 1.* -> could not be found in any version, there may be a typo in the package name.
   Problem 13
     - Root composer.json requires package/found6 2.* -> satisfiable by package/found6[2.0.0].
-    - package/found6 2.0.0 requires stable-requiree-excluded/pkg2 1.0.1 -> found stable-requiree-excluded/pkg2[1.0.0] but it does not match your constraint.
+    - package/found6 2.0.0 requires stable-requiree-excluded/pkg2 1.0.1 -> found stable-requiree-excluded/pkg2[1.0.0] but it does not match the constraint.
   Problem 14
     - Root composer.json requires package/found7 2.* -> satisfiable by package/found7[2.0.0].
     - package/found7 2.0.0 requires php-64bit 1.0.1 -> your php-64bit version (%s) does not satisfy that requirement.
@@ -159,9 +159,12 @@ Potential causes:
  - It's a private package and you forgot to add a custom repository to find it
 
 Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
-  To enable extensions, verify that they are enabled in your .ini files:
+
+To enable extensions, verify that they are enabled in your .ini files:
 __inilist__
-  You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.
+You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.
+
+Use the option --with-all-dependencies to allow upgrades, downgrades and removals for packages currently locked to specific versions.
 
 --EXPECT--
 

@@ -42,10 +42,4 @@ abstract class SolverOperation implements OperationInterface
     {
         return $this->reason;
     }
-
-    /**
-     * @param $lock bool Whether this is an operation on the lock file
-    * @return string
-    */
-    abstract public function show($lock);
 }

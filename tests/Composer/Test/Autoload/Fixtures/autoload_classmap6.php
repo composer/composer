@@ -8,4 +8,5 @@ $baseDir = dirname($vendorDir);
 return array(
     'ClassMapBar' => $baseDir . '/lib/rootbar.php',
     'ClassMapFoo' => $baseDir . '/src/rootfoo.php',
+    'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
 );

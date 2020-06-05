@@ -61,14 +61,16 @@ class RequireCommand extends InitCommand
                 new InputOption('fixed', null, InputOption::VALUE_NONE, 'Write fixed version to the composer.json.'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
-                new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies.'),
+                new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies (implies --no-install).'),
+                new InputOption('no-install', null, InputOption::VALUE_NONE, 'Skip the install step after updating the composer.lock file.'),
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', null, InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated, except those that are root requirements.'),
                 new InputOption('update-with-all-dependencies', null, InputOption::VALUE_NONE, 'Allows all inherited dependencies to be updated, including those that are root requirements.'),
                 new InputOption('with-dependencies', null, InputOption::VALUE_NONE, 'Alias for --update-with-dependencies'),
                 new InputOption('with-all-dependencies', null, InputOption::VALUE_NONE, 'Alias for --update-with-all-dependencies'),
-                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore platform requirements (php & ext- packages).'),
+                new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
+                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.'),
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
                 new InputOption('sort-packages', null, InputOption::VALUE_NONE, 'Sorts packages when adding/updating a new dependency'),
@@ -95,7 +97,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (function_exists('pcntl_async_signals')) {
+        if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
             pcntl_async_signals(true);
             pcntl_signal(SIGINT, array($this, 'revertComposerFile'));
             pcntl_signal(SIGTERM, array($this, 'revertComposerFile'));
@@ -165,7 +167,7 @@ EOT
         $platformOverrides = $composer->getConfig()->get('platform') ?: array();
         // initialize $this->repos as it is used by the parent InitCommand
         $this->repos = new CompositeRepository(array_merge(
-            array(new PlatformRepository(array(), $platformOverrides)),
+            array($platformRepo = new PlatformRepository(array(), $platformOverrides)),
             $repos
         ));
 
@@ -175,9 +177,16 @@ EOT
             $preferredStability = $composer->getPackage()->getMinimumStability();
         }
 
-        $phpVersion = $this->repos->findPackage('php', '*')->getPrettyVersion();
         try {
-            $requirements = $this->determineRequirements($input, $output, $input->getArgument('packages'), $phpVersion, $preferredStability, !$input->getOption('no-update'), $input->getOption('fixed'));
+            $requirements = $this->determineRequirements(
+                $input,
+                $output,
+                $input->getArgument('packages'),
+                $platformRepo,
+                $preferredStability,
+                !$input->getOption('no-update'),
+                $input->getOption('fixed')
+            );
         } catch (\Exception $e) {
             if ($this->newlyCreated) {
                 throw new \RuntimeException('No composer.json present in the current directory, this may be the cause of the following exception.', 0, $e);
@@ -256,22 +265,30 @@ EOT
             $rootPackage->setDevRequires($links['require-dev']);
         }
 
+
         $updateDevMode = !$input->getOption('update-no-dev');
         $optimize = $input->getOption('optimize-autoloader') || $composer->getConfig()->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');
         $apcu = $input->getOption('apcu-autoloader') || $composer->getConfig()->get('apcu-autoloader');
 
         $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
+        $flags = '';
         if ($input->getOption('update-with-all-dependencies') || $input->getOption('with-all-dependencies')) {
             $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
+            $flags .= ' --with-all-dependencies';
         } elseif ($input->getOption('update-with-dependencies') || $input->getOption('with-dependencies')) {
             $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
+            $flags .= ' --with-dependencies';
         }
+
+        $io->writeError('<info>Running composer update '.implode(' ', array_keys($requirements)).$flags);
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
         $install = Installer::create($io, $composer);
+
+        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
         $install
             ->setDryRun($input->getOption('dry-run'))
@@ -284,8 +301,9 @@ EOT
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
+            ->setInstall(!$input->getOption('no-install'))
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
-            ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
+            ->setIgnorePlatformRequirements($ignorePlatformReqs)
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
         ;

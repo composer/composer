@@ -283,7 +283,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
-     * @psalm-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, file?: list<string>}
+     * @psalm-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, files?: list<string>}
      */
     public function getAutoload();
 
@@ -296,7 +296,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of dev autoloading rules
-     * @psalm-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, file?: list<string>}
+     * @psalm-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, files?: list<string>}
      */
     public function getDevAutoload();
 
@@ -356,6 +356,13 @@ interface PackageInterface
      * @return string
      */
     public function getPrettyString();
+
+    /**
+     * Returns default base filename for archive
+     *
+     * @return array
+     */
+    public function getArchiveName();
 
     /**
      * Returns a list of patterns to exclude from package archives

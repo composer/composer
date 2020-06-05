@@ -25,6 +25,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     protected $dev;
     protected $rootPackageAlias = false;
     protected $stability;
+    protected $hasSelfVersionRequires = false;
 
     /** @var PackageInterface */
     protected $aliasOf;
@@ -179,7 +180,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
             $prettyVersion = $this->aliasOf->getPrettyVersion();
         }
 
-        if (in_array($linkType, array('conflicts', 'provides', 'replaces'), true)) {
+        if (\in_array($linkType, array('conflicts', 'provides', 'replaces'), true)) {
             $newLinks = array();
             foreach ($links as $link) {
                 // link is self.version, but must be replacing also the replaced version
@@ -192,6 +193,9 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         } else {
             foreach ($links as $index => $link) {
                 if ('self.version' === $link->getPrettyConstraint()) {
+                    if ($linkType === 'requires') {
+                        $this->hasSelfVersionRequires = true;
+                    }
                     $links[$index] = new Link($link->getSource(), $link->getTarget(), $constraint = new Constraint('=', $this->version), $linkType, $prettyVersion);
                     $constraint->setPrettyString($prettyVersion);
                 }
@@ -199,6 +203,11 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         }
 
         return $links;
+    }
+
+    public function hasSelfVersionRequires()
+    {
+        return $this->hasSelfVersionRequires;
     }
 
     /***************************************
@@ -393,6 +402,11 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     public function getNotificationUrl()
     {
         return $this->aliasOf->getNotificationUrl();
+    }
+
+    public function getArchiveName()
+    {
+        return $this->aliasOf->getArchiveName();
     }
 
     public function getArchiveExcludes()

@@ -16,7 +16,6 @@ use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\Constraint\EmptyConstraint;
 use Composer\Package\PackageInterface;
 
 /**
@@ -71,7 +70,7 @@ class Pool implements \Countable
      */
     public function count()
     {
-        return count($this->packages);
+        return \count($this->packages);
     }
 
     /**
@@ -189,6 +188,6 @@ class Pool implements \Countable
 
     public function isUnacceptableFixedPackage(PackageInterface $package)
     {
-        return in_array($package, $this->unacceptableFixedPackages, true);
+        return \in_array($package, $this->unacceptableFixedPackages, true);
     }
 }

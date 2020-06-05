@@ -25,6 +25,7 @@ use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
+use Composer\Semver\Constraint\MatchAllConstraint;
 
 class SolverTest extends TestCase
 {
@@ -83,7 +84,7 @@ class SolverTest extends TestCase
             $problems = $e->getProblems();
             $this->assertCount(1, $problems);
             $this->assertEquals(2, $e->getCode());
-            $this->assertEquals("\n    - Root composer.json requires b, it could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString($this->repoSet, $this->request, $this->pool));
+            $this->assertEquals("\n    - Root composer.json requires b, it could not be found in any version, there may be a typo in the package name.", $problems[0]->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
     }
 
@@ -378,7 +379,7 @@ class SolverTest extends TestCase
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
-        $packageB->setReplaces(array('a' => new Link('B', 'A', new MultiConstraint(array()))));
+        $packageB->setReplaces(array('a' => new Link('B', 'A', new MatchAllConstraint())));
 
         $this->reposComplete();
 
@@ -654,7 +655,7 @@ class SolverTest extends TestCase
             $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
             $msg .= "    - A 1.0 conflicts with B 1.0.\n";
             $msg .= "    - Root composer.json requires b -> satisfiable by B[1.0].\n";
-            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool));
+            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
     }
 
@@ -683,8 +684,8 @@ class SolverTest extends TestCase
             $msg = "\n";
             $msg .= "  Problem 1\n";
             $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
-            $msg .= "    - A 1.0 requires b >= 2.0 -> found B[1.0] but it does not match your constraint.\n";
-            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool));
+            $msg .= "    - A 1.0 requires b >= 2.0 -> found B[1.0] but it does not match the constraint.\n";
+            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
     }
 
@@ -729,7 +730,7 @@ class SolverTest extends TestCase
             $msg .= "    - You can only install one version of a package, so only one of these can be installed: B[0.9, 1.0].\n";
             $msg .= "    - A 1.0 requires b >= 1.0 -> satisfiable by B[1.0].\n";
             $msg .= "    - Root composer.json requires a -> satisfiable by A[1.0].\n";
-            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool));
+            $this->assertEquals($msg, $e->getPrettyString($this->repoSet, $this->request, $this->pool, false));
         }
     }
 

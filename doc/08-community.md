@@ -32,4 +32,4 @@ for users and [#composer-dev](irc://irc.freenode.org/composer-dev) for developme
 Stack Overflow has a growing collection of
 [Composer related questions](https://stackoverflow.com/questions/tagged/composer-php).
 
-&larr; [Config](06-config.md)
+&larr; [Config](07-runtime.md)

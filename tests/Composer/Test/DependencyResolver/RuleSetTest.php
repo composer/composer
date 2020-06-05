@@ -31,7 +31,7 @@ class RuleSetTest extends TestCase
                 new GenericRule(array(2), Rule::RULE_ROOT_REQUIRE, null),
             ),
             RuleSet::TYPE_LEARNED => array(
-                new GenericRule(array(), Rule::RULE_INTERNAL_ALLOW_UPDATE, null),
+                new GenericRule(array(), Rule::RULE_LEARNED, null),
             ),
         );
 

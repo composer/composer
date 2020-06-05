@@ -15,9 +15,12 @@ namespace Composer\Package\Version;
 use Composer\DependencyResolver\Pool;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
+use Composer\Plugin\PluginInterface;
+use Composer\Composer;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\RepositorySet;
+use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -30,11 +33,21 @@ class VersionSelector
 {
     private $repositorySet;
 
+    private $platformConstraints = array();
+
     private $parser;
 
-    public function __construct(RepositorySet $repositorySet)
+    /**
+     * @param PlatformRepository $platformRepo If passed in, the versions found will be filtered against their requirements to eliminate any not matching the current platform packages
+     */
+    public function __construct(RepositorySet $repositorySet, PlatformRepository $platformRepo = null)
     {
         $this->repositorySet = $repositorySet;
+        if ($platformRepo) {
+            foreach ($platformRepo->getPackages() as $package) {
+                $this->platformConstraints[$package->getName()][] = new Constraint('==', $package->getVersion());
+            }
+        }
     }
 
     /**
@@ -43,21 +56,39 @@ class VersionSelector
      *
      * @param  string                $packageName
      * @param  string                $targetPackageVersion
-     * @param  string                $targetPhpVersion
      * @param  string                $preferredStability
+     * @param  bool|array            $ignorePlatformReqs
      * @return PackageInterface|false
      */
-    public function findBestCandidate($packageName, $targetPackageVersion = null, $targetPhpVersion = null, $preferredStability = 'stable')
+    public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $ignorePlatformReqs = false)
     {
+        if (!isset(BasePackage::$stabilities[$preferredStability])) {
+            // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
+            throw new \UnexpectedValueException('Expected a valid stability name as 3rd argument, got '.$preferredStability);
+        }
+
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
         $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint);
 
-        if ($targetPhpVersion) {
-            $phpConstraint = new Constraint('==', $this->getParser()->normalize($targetPhpVersion));
-            $candidates = array_filter($candidates, function ($pkg) use ($phpConstraint) {
+        if ($this->platformConstraints && true !== $ignorePlatformReqs) {
+            $platformConstraints = $this->platformConstraints;
+            $ignorePlatformReqs = $ignorePlatformReqs ?: array();
+            $candidates = array_filter($candidates, function ($pkg) use ($platformConstraints, $ignorePlatformReqs) {
                 $reqs = $pkg->getRequires();
 
-                return !isset($reqs['php']) || $reqs['php']->getConstraint()->matches($phpConstraint);
+                foreach ($reqs as $name => $link) {
+                    if (!in_array($name, $ignorePlatformReqs, true) && isset($platformConstraints[$name])) {
+                        foreach ($platformConstraints[$name] as $constraint) {
+                            if ($link->getConstraint()->matches($constraint)) {
+                                continue 2;
+                            }
+                        }
+
+                        return false;
+                    }
+                }
+
+                return true;
             });
         }
 
