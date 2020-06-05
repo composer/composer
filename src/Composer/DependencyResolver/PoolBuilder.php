@@ -209,17 +209,6 @@ class PoolBuilder
             $this->unacceptableFixedPackages = $prePoolCreateEvent->getUnacceptableFixedPackages();
         }
 
-        // Filter duplicate packages
-        // TODO: can we optimize this so that we don't even end up having dupes here?
-        $presentPackages = array();
-        foreach ($this->packages as $i => $package) {
-            if (isset($presentPackages[$package->getUniqueName()])) {
-                unset($this->packages[$i]);
-            } else {
-                $presentPackages[$package->getUniqueName()] = true;
-            }
-        }
-
         $pool = new Pool($this->packages, $this->unacceptableFixedPackages);
 
         $this->aliasMap = array();
@@ -235,7 +224,7 @@ class PoolBuilder
     {
         // Maybe it was already marked before but not loaded yet. In that case
         // we have to extend the constraint (we don't check if they match because
-        // MultiConstraint::create() will optimize anyway
+        // MultiConstraint::create() will optimize anyway)
         if (isset($this->packagesToLoad[$name]) && !Intervals::isSubsetOf($constraint, $this->packagesToLoad[$name])) {
             $constraint = MultiConstraint::create(array($this->packagesToLoad[$name], $constraint), false);
         }
@@ -256,6 +245,13 @@ class PoolBuilder
         // yet so we get the required package versions
         $this->packagesToLoad[$name] = MultiConstraint::create(array($this->loadedPackages[$name], $constraint), false);
         unset($this->loadedPackages[$name]);
+
+        // remove all already-loaded packages matching those to be loaded to avoid duplicates
+        foreach ($this->packages as $index => $pkg) {
+            if ($pkg->getName() === $name) {
+                unset($this->packages[$index]);
+            }
+        }
     }
 
     private function loadPackagesMarkedForLoading(Request $request, $repositories)

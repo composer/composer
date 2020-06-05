@@ -25,8 +25,8 @@ Tests if version constraint is expanded. If not, dep/dep 3.0.0 would not be load
 --EXPECT--
 [
     "root/req-1.0.0.0",
+    "dep/dep2-2.3.4.0",
     "dep/dep-2.3.4.0",
     "dep/dep-2.3.5.0",
-    "dep/dep2-2.3.4.0",
     "dep/dep-3.0.0.0"
 ]
