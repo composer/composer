@@ -237,7 +237,7 @@ EOT
             $flags .= ' --with-dependencies';
         }
 
-        $io->writeError('<info>Running composer update '.implode(' ', $packages).$flags);
+        $io->writeError('<info>Running composer update '.implode(' ', $packages).$flags.'</info>');
 
         $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
