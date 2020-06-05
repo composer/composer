@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b39e04ca4a44810c96876dae02629707",
+    "content-hash": "9b94ece2895724239b36aec399e5321a",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -268,7 +268,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/xdebug-handler/issues",
-                "source": "https://github.com/composer/xdebug-handler/tree/master"
+                "source": "https://github.com/composer/xdebug-handler/tree/1.4.2"
             },
             "funding": [
                 {
@@ -1504,7 +1504,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": "^5.3.2 || ^7.0"
+        "php": "^5.3.2 || ^7.0 || ^8.0"
     },
     "platform-dev": [],
     "platform-overrides": {
