@@ -272,73 +272,23 @@ class InstallationManager
                 $this->loop->wait($promises);
             }
 
-            foreach ($operations as $index => $operation) {
-                $opType = $operation->getOperationType();
+            // execute operations in batches to make sure every plugin is installed in the
+            // right order and activated before the packages depending on it are installed
+            while ($operations) {
+                $batch = array();
 
-                // ignoring alias ops as they don't need to execute anything
-                if (!in_array($opType, array('update', 'install', 'uninstall'))) {
-                    // output alias ops in debug verbosity as they have no output otherwise
-                    if ($this->io->isDebug()) {
-                        $this->io->writeError('  - ' . $operation->show(false));
+                foreach ($operations as $index => $operation) {
+                    unset($operations[$index]);
+                    $batch[$index] = $operation;
+                    if (in_array($operation->getOperationType(), array('update', 'install'), true)) {
+                        $package = $operation->getOperationType() === 'update' ? $operation->getTargetPackage() : $operation->getPackage();
+                        if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
+                            break;
+                        }
                     }
-                    $this->$opType($repo, $operation);
-
-                    continue;
                 }
 
-                if ($opType === 'update') {
-                    $package = $operation->getTargetPackage();
-                    $initialPackage = $operation->getInitialPackage();
-                } else {
-                    $package = $operation->getPackage();
-                    $initialPackage = null;
-                }
-                $installer = $this->getInstaller($package->getType());
-
-                $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($opType);
-                if (defined($event) && $runScripts && $this->eventDispatcher) {
-                    $this->eventDispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
-                }
-
-                $dispatcher = $this->eventDispatcher;
-                $installManager = $this;
-                $loop = $this->loop;
-                $io = $this->io;
-
-                $promise = $installer->prepare($opType, $package, $initialPackage);
-                if (!$promise instanceof PromiseInterface) {
-                    $promise = \React\Promise\resolve();
-                }
-
-                $promise = $promise->then(function () use ($opType, $installManager, $repo, $operation) {
-                    return $installManager->$opType($repo, $operation);
-                })->then($cleanupPromises[$index])
-                ->then(function () use ($opType, $runScripts, $dispatcher, $installManager, $devMode, $repo, $operations, $operation) {
-                    $repo->write($devMode, $installManager);
-
-                    $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($opType);
-                    if (defined($event) && $runScripts && $dispatcher) {
-                        $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
-                    }
-                }, function ($e) use ($opType, $package, $io) {
-                    $io->writeError('    <error>' . ucfirst($opType) .' of '.$package->getPrettyName().' failed</error>');
-
-                    throw $e;
-                });
-
-                $promises[] = $promise;
-            }
-
-            // execute all prepare => installs/updates/removes => cleanup steps
-            if (!empty($promises)) {
-                $progress = null;
-                if ($io instanceof ConsoleIO && !$io->isDebug()) {
-                    $progress = $io->getProgressBar();
-                }
-                $this->loop->wait($promises, $progress);
-                if ($progress) {
-                    $progress->clear();
-                }
+                $this->executeBatch($repo, $batch, $cleanupPromises, $devMode, $runScripts);
             }
         } catch (\Exception $e) {
             $runCleanup();
@@ -364,6 +314,77 @@ class InstallationManager
         // as that can trigger an update of some files like InstalledVersions.php if
         // running a new composer version
         $repo->write($devMode, $this);
+    }
+
+    private function executeBatch(RepositoryInterface $repo, array $operations, array $cleanupPromises, $devMode, $runScripts)
+    {
+        foreach ($operations as $index => $operation) {
+            $opType = $operation->getOperationType();
+
+            // ignoring alias ops as they don't need to execute anything
+            if (!in_array($opType, array('update', 'install', 'uninstall'))) {
+                // output alias ops in debug verbosity as they have no output otherwise
+                if ($this->io->isDebug()) {
+                    $this->io->writeError('  - ' . $operation->show(false));
+                }
+                $this->$opType($repo, $operation);
+
+                continue;
+            }
+
+            if ($opType === 'update') {
+                $package = $operation->getTargetPackage();
+                $initialPackage = $operation->getInitialPackage();
+            } else {
+                $package = $operation->getPackage();
+                $initialPackage = null;
+            }
+            $installer = $this->getInstaller($package->getType());
+
+            $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($opType);
+            if (defined($event) && $runScripts && $this->eventDispatcher) {
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
+            }
+
+            $dispatcher = $this->eventDispatcher;
+            $installManager = $this;
+            $io = $this->io;
+
+            $promise = $installer->prepare($opType, $package, $initialPackage);
+            if (!$promise instanceof PromiseInterface) {
+                $promise = \React\Promise\resolve();
+            }
+
+            $promise = $promise->then(function () use ($opType, $installManager, $repo, $operation) {
+                return $installManager->$opType($repo, $operation);
+            })->then($cleanupPromises[$index])
+            ->then(function () use ($opType, $runScripts, $dispatcher, $installManager, $devMode, $repo, $operations, $operation) {
+                $repo->write($devMode, $installManager);
+
+                $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($opType);
+                if (defined($event) && $runScripts && $dispatcher) {
+                    $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
+                }
+            }, function ($e) use ($opType, $package, $io) {
+                $io->writeError('    <error>' . ucfirst($opType) .' of '.$package->getPrettyName().' failed</error>');
+
+                throw $e;
+            });
+
+            $promises[] = $promise;
+        }
+
+        // execute all prepare => installs/updates/removes => cleanup steps
+        if (!empty($promises)) {
+            $progress = null;
+            if ($io instanceof ConsoleIO && !$io->isDebug() && count($promises) > 1) {
+                $progress = $io->getProgressBar();
+            }
+            $this->loop->wait($promises, $progress);
+            if ($progress) {
+                $progress->clear();
+            }
+        }
     }
 
     /**

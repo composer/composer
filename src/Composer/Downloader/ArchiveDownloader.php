@@ -62,6 +62,7 @@ abstract class ArchiveDownloader extends FileDownloader
         } while (is_dir($temporaryDir));
 
         $this->addCleanupPath($package, $temporaryDir);
+        $this->addCleanupPath($package, $path);
 
         $this->filesystem->ensureDirectoryExists($temporaryDir);
         $fileName = $this->getFileName($package, $path);
@@ -77,6 +78,7 @@ abstract class ArchiveDownloader extends FileDownloader
             $filesystem->removeDirectory($path);
             $filesystem->removeDirectory($temporaryDir);
             $self->removeCleanupPath($package, $temporaryDir);
+            $self->removeCleanupPath($package, $path);
         };
 
         $promise = null;
@@ -142,6 +144,7 @@ abstract class ArchiveDownloader extends FileDownloader
 
             $filesystem->removeDirectory($temporaryDir);
             $self->removeCleanupPath($package, $temporaryDir);
+            $self->removeCleanupPath($package, $path);
         }, function ($e) use ($cleanup) {
             $cleanup();
 
