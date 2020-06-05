@@ -200,7 +200,7 @@ class Installer
         }
 
         if ($this->runScripts) {
-            $_SERVER['COMPOSER_DEV_MODE'] = (int) $this->devMode;
+            $_SERVER['COMPOSER_DEV_MODE'] = $this->devMode ? '1' : '0';
             putenv('COMPOSER_DEV_MODE='.$_SERVER['COMPOSER_DEV_MODE']);
 
             // dispatch pre event
