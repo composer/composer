@@ -33,15 +33,6 @@ use RarArchive;
  */
 class RarDownloader extends ArchiveDownloader
 {
-    /** @var ProcessExecutor */
-    protected $process;
-
-    public function __construct(IOInterface $io, Config $config, HttpDownloader $downloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, Filesystem $fs = null, ProcessExecutor $process = null)
-    {
-        $this->process = $process ?: new ProcessExecutor($io);
-        parent::__construct($io, $config, $downloader, $eventDispatcher, $cache, $fs);
-    }
-
     protected function extract(PackageInterface $package, $file, $path)
     {
         $processError = null;
