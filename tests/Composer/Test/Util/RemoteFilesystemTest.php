@@ -287,7 +287,7 @@ class RemoteFilesystemTest extends TestCase
         $this->assertEquals(array('bitbucket.org', 'bbuseruploads.s3.amazonaws.com'), $domains);
     }
 
-    protected function callGetOptionsForUrl($io, array $args = array(), array $options = array(), $fileUrl = '')
+    private function callGetOptionsForUrl($io, array $args = array(), array $options = array(), $fileUrl = '')
     {
         $fs = new RemoteFilesystem($io, $this->getConfigMock(), $options);
         $ref = new ReflectionMethod($fs, 'getOptionsForUrl');
@@ -300,14 +300,14 @@ class RemoteFilesystemTest extends TestCase
         return $ref->invokeArgs($fs, $args);
     }
 
-    protected function callCallbackGet(RemoteFilesystem $fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
+    private function callCallbackGet(RemoteFilesystem $fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
     {
         $ref = new ReflectionMethod($fs, 'callbackGet');
         $ref->setAccessible(true);
         $ref->invoke($fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax);
     }
 
-    protected function setAttribute($object, $attribute, $value)
+    private function setAttribute($object, $attribute, $value)
     {
         $attr = new ReflectionProperty($object, $attribute);
         $attr->setAccessible(true);
@@ -317,7 +317,7 @@ class RemoteFilesystemTest extends TestCase
     /**
      * @return MockObject|IOInterface
      */
-    protected function getIOInterfaceMock()
+    private function getIOInterfaceMock()
     {
         return $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
