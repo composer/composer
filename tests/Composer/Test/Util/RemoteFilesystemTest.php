@@ -165,6 +165,38 @@ class RemoteFilesystemTest extends TestCase
         unlink($file);
     }
 
+    public function testCopyWithRetryAuthFailureFalse()
+    {
+        /** @var RemoteFilesystem|MockObject $fs */
+        $fs = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+            ->setConstructorArgs(array($this->getIOInterfaceMock(), $this->getConfigMock()))
+            ->setMethods(array('getRemoteContents'))
+            ->getMock();
+
+        $fs->expects($this->once())->method('getRemoteContents')
+            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
+
+                $http_response_header = array('http/1.1 401 unauthorized');
+
+                return '<?php ';
+
+            });
+
+
+        $file = tempnam(sys_get_temp_dir(), 'z');
+        unlink($file);
+
+        $this->expectException('Composer\Downloader\TransportException');
+
+        $fs->copy(
+            'http://example.org',
+            'file://' . __FILE__,
+            $file,
+            true,
+            array('retry-auth-failure' => false)
+        );
+    }
+
     /**
      * @group TLS
      */
