@@ -23,25 +23,6 @@ use ReflectionProperty;
 
 class RemoteFilesystemTest extends TestCase
 {
-    /**
-     * @return MockObject|Config
-     */
-    private function getConfigMock()
-    {
-        $config = $this->getMockBuilder('Composer\Config')->getMock();
-        $config
-            ->method('get')
-            ->willReturnCallback(function ($key) {
-                if ($key === 'github-domains' || $key === 'gitlab-domains') {
-                    return array();
-                }
-
-                return null;
-            });
-
-        return $config;
-    }
-
     public function testGetOptionsForUrl()
     {
         $io = $this->getIOInterfaceMock();
@@ -298,6 +279,25 @@ class RemoteFilesystemTest extends TestCase
         $prop->setValue($fs, $fileUrl);
 
         return $ref->invokeArgs($fs, $args);
+    }
+
+    /**
+     * @return MockObject|Config
+     */
+    private function getConfigMock()
+    {
+        $config = $this->getMockBuilder('Composer\Config')->getMock();
+        $config
+            ->method('get')
+            ->willReturnCallback(function ($key) {
+                if ($key === 'github-domains' || $key === 'gitlab-domains') {
+                    return array();
+                }
+
+                return null;
+            });
+
+        return $config;
     }
 
     private function callCallbackGet(RemoteFilesystem $fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
