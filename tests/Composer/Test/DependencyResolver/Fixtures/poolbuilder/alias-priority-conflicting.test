@@ -1,0 +1,61 @@
+--TEST--
+Check root aliases are loaded
+
+--ROOT--
+{
+    "minimum-stability": "dev",
+    "aliases": [
+        {
+            "package": "req/pkg",
+            "version": "dev-feature-foo",
+            "alias": "dev-master"
+        }
+    ]
+}
+
+
+--REQUEST--
+{
+    "require": {
+        "package/a": "dev-master",
+        "req/pkg": "dev-feature-foo"
+    }
+}
+
+--FIXED--
+[
+]
+
+--PACKAGES--
+[
+    {
+        "name": "req/pkg", "version": "dev-feature-foo",
+        "source": { "reference": "feat.f", "type": "git", "url": "" }
+    },
+    {
+        "name": "req/pkg", "version": "dev-master",
+        "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+        "source": { "reference": "forked", "type": "git", "url": "" }
+    },
+    {
+        "name": "req/pkg", "version": "dev-master",
+        "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+        "source": { "reference": "master", "type": "git", "url": "" }
+    },
+    {
+        "name": "package/a", "version": "dev-master",
+        "require": { "req/pkg": "dev-master" }
+    }
+]
+
+--EXPECT--
+[
+    "package/a-dev-master",
+    "package/a-9999999-dev (alias of dev-master)",
+    "req/pkg-dev-feature-foo#feat.f",
+    "req/pkg-dev-master#feat.f (alias of dev-feature-foo)",
+    "req/pkg-dev-master#forked",
+    "req/pkg-dev-master#master",
+    "req/pkg-1.0.9999999.9999999-dev#forked (alias of dev-master)",
+    "req/pkg-1.0.9999999.9999999-dev#master (alias of dev-master)"
+]

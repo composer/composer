@@ -85,6 +85,8 @@ class PoolBuilder
      */
     private $updateAllowWarned = array();
 
+    private $indexCounter = 0;
+
     /**
      * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
      * @psalm-param array<string, int> $acceptableStabilities
@@ -154,7 +156,7 @@ class PoolBuilder
                 continue;
             }
 
-            $this->markPackageNameForLoading($packageName, $constraint);
+            $this->markPackageNameForLoading($request, $packageName, $constraint);
         }
 
         // clean up packagesToLoad for anything we manually marked loaded above
@@ -216,19 +218,28 @@ class PoolBuilder
         $this->loadedPackages = array();
         $this->packages = array();
         $this->unacceptableFixedPackages = array();
+        $this->indexCounter = 0;
 
         return $pool;
     }
 
-    private function markPackageNameForLoading($name, ConstraintInterface $constraint)
+    private function markPackageNameForLoading(Request $request, $name, ConstraintInterface $constraint)
     {
         // Maybe it was already marked before but not loaded yet. In that case
         // we have to extend the constraint (we don't check if they match because
         // MultiConstraint::create() will optimize anyway)
-        if (isset($this->packagesToLoad[$name]) && !Intervals::isSubsetOf($constraint, $this->packagesToLoad[$name])) {
+        if (isset($this->packagesToLoad[$name])) {
+            // Already marked for loading and this does not expand the constraint to be loaded, nothing to do
+            if (Intervals::isSubsetOf($constraint, $this->packagesToLoad[$name])) {
+                return;
+            }
+
+            // extend the constraint to be loaded
             $constraint = MultiConstraint::create(array($this->packagesToLoad[$name], $constraint), false);
         }
 
+        // Not yet loaded or already marked for a reload, override the existing constraint
+        // (either it's a new one to load, or it has already been extended above)
         if (!isset($this->loadedPackages[$name])) {
             $this->packagesToLoad[$name] = $constraint;
             return;
@@ -245,18 +256,18 @@ class PoolBuilder
         // yet so we get the required package versions
         $this->packagesToLoad[$name] = MultiConstraint::create(array($this->loadedPackages[$name], $constraint), false);
         unset($this->loadedPackages[$name]);
-
-        // remove all already-loaded packages matching those to be loaded to avoid duplicates
-        foreach ($this->packages as $index => $pkg) {
-            if ($pkg->getName() === $name) {
-                unset($this->packages[$index]);
-            }
-        }
     }
 
     private function loadPackagesMarkedForLoading(Request $request, $repositories)
     {
         foreach ($this->packagesToLoad as $name => $constraint) {
+            // remove all already-loaded packages matching those to be loaded to avoid duplicates
+            foreach ($this->packages as $index => $pkg) {
+                if ($pkg->getName() === $name) {
+                    $this->removeLoadedPackage($request, $pkg, $index);
+                }
+            }
+
             $this->loadedPackages[$name] = $constraint;
         }
 
@@ -287,9 +298,8 @@ class PoolBuilder
 
     private function loadPackage(Request $request, PackageInterface $package, $propagateUpdate = true)
     {
-        end($this->packages);
-        $index = key($this->packages) + 1;
-        $this->packages[] = $package;
+        $index = $this->indexCounter++;
+        $this->packages[$index] = $package;
 
         if ($package instanceof AliasPackage) {
             $this->aliasMap[spl_object_hash($package->getAliasOf())][$index] = $package;
@@ -319,8 +329,9 @@ class PoolBuilder
             $aliasPackage = new AliasPackage($basePackage, $alias['alias_normalized'], $alias['alias']);
             $aliasPackage->setRootPackageAlias(true);
 
-            $this->packages[] = $aliasPackage;
-            $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$index+1] = $aliasPackage;
+            $newIndex = $this->indexCounter++;
+            $this->packages[$newIndex] = $aliasPackage;
+            $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$newIndex] = $aliasPackage;
         }
 
         foreach ($package->getRequires() as $link) {
@@ -333,19 +344,19 @@ class PoolBuilder
                 if ($request->getUpdateAllowTransitiveDependencies() && isset($this->skippedLoad[$require])) {
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$require])) {
                         $this->unfixPackage($request, $require);
-                        $this->markPackageNameForLoading($require, $linkConstraint);
+                        $this->markPackageNameForLoading($request, $require, $linkConstraint);
                     } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $require) && !isset($this->updateAllowWarned[$require])) {
                         $this->updateAllowWarned[$require] = true;
                         $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
                     }
                 } else {
-                    $this->markPackageNameForLoading($require, $linkConstraint);
+                    $this->markPackageNameForLoading($request, $require, $linkConstraint);
                 }
             } else {
                 // We also need to load the requirements of a fixed package
                 // unless it was skipped
                 if (!isset($this->skippedLoad[$require])) {
-                    $this->markPackageNameForLoading($require, $linkConstraint);
+                    $this->markPackageNameForLoading($request, $require, $linkConstraint);
                 }
             }
         }
@@ -358,7 +369,7 @@ class PoolBuilder
                 if (isset($this->loadedPackages[$replace]) && isset($this->skippedLoad[$replace])) {
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$replace])) {
                         $this->unfixPackage($request, $replace);
-                        $this->markPackageNameForLoading($replace, $link->getConstraint());
+                        $this->markPackageNameForLoading($request, $replace, $link->getConstraint());
                     } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$replace])) {
                         $this->updateAllowWarned[$replace] = true;
                         $this->io->writeError('<warning>Dependency "'.$replace.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
@@ -430,14 +441,7 @@ class PoolBuilder
             if (!($lockedPackage instanceof AliasPackage) && $lockedPackage->getName() === $name) {
                 if (false !== $index = array_search($lockedPackage, $this->packages, true)) {
                     $request->unfixPackage($lockedPackage);
-                    unset($this->packages[$index]);
-                    if (isset($this->aliasMap[spl_object_hash($lockedPackage)])) {
-                        foreach ($this->aliasMap[spl_object_hash($lockedPackage)] as $aliasIndex => $aliasPackage) {
-                            $request->unfixPackage($aliasPackage);
-                            unset($this->packages[$aliasIndex]);
-                        }
-                        unset($this->aliasMap[spl_object_hash($lockedPackage)]);
-                    }
+                    $this->removeLoadedPackage($request, $lockedPackage, $index);
                 }
             }
         }
@@ -453,6 +457,18 @@ class PoolBuilder
 
         unset($this->skippedLoad[$name]);
         unset($this->loadedPackages[$name]);
+    }
+
+    private function removeLoadedPackage(Request $request, PackageInterface $package, $index)
+    {
+        unset($this->packages[$index]);
+        if (isset($this->aliasMap[spl_object_hash($package)])) {
+            foreach ($this->aliasMap[spl_object_hash($package)] as $aliasIndex => $aliasPackage) {
+                $request->unfixPackage($aliasPackage);
+                unset($this->packages[$aliasIndex]);
+            }
+            unset($this->aliasMap[spl_object_hash($package)]);
+        }
     }
 
     private function getRootAliasesPerPackage(array $aliases)

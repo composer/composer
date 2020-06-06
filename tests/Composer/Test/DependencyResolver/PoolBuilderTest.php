@@ -41,6 +41,7 @@ class PoolBuilderTest extends TestCase
         $rootAliases = !empty($root['aliases']) ? $root['aliases'] : array();
         $minimumStability = !empty($root['minimum-stability']) ? $root['minimum-stability'] : 'stable';
         $stabilityFlags = !empty($root['stability-flags']) ? $root['stability-flags'] : array();
+        $rootReferences = !empty($root['references']) ? $root['references'] : array();
         $stabilityFlags = array_map(function ($stability) {
             return BasePackage::$stabilities[$stability];
         }, $stabilityFlags);
@@ -71,7 +72,7 @@ class PoolBuilderTest extends TestCase
             return $pkg;
         };
 
-        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases);
+        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $rootReferences);
         $repositorySet->addRepository($repo = new ArrayRepository());
         $repositorySet->addRepository($lockedRepo = new LockArrayRepository());
         foreach ($packages as $package) {
@@ -114,15 +115,22 @@ class PoolBuilderTest extends TestCase
             }
 
             $suffix = '';
+            if ($package->getSourceReference()) {
+                $suffix = '#'.$package->getSourceReference();
+            }
             if ($package->getRepository() instanceof LockArrayRepository) {
-                $suffix = ' (locked)';
+                $suffix .= ' (locked)';
             }
 
-            if ($package instanceof AliasPackage && $id = array_search($package->getAliasOf(), $packageIds, true)) {
-                return (string) $package->getName().'-'.$package->getVersion() .' alias of '.$id . $suffix;
+            if ($package instanceof AliasPackage) {
+                if ($id = array_search($package->getAliasOf(), $packageIds, true)) {
+                    return (string) $package->getName().'-'.$package->getVersion() . $suffix . ' (alias of '.$id . ')';
+                }
+
+                return (string) $package->getName().'-'.$package->getVersion() . $suffix . ' (alias of '.$package->getAliasOf()->getVersion().')';
             }
 
-            return (string) $package . $suffix;
+            return (string) $package->getName().'-'.$package->getVersion() . $suffix;
         }, $result);
 
         $this->assertSame($expect, $result);
