@@ -49,9 +49,8 @@ Check root aliases get selected correctly
 
 --EXPECT--
 [
-    "b/requirer-1.0.0.0#1.0.0",
     "a/aliased-dev-master#abcd",
     "a/aliased-1.0.0.0#abcd (alias of dev-master)",
-    "a/aliased-1.0.0.0#abcd",
+    "b/requirer-1.0.0.0#1.0.0",
     "a/aliased-9999999-dev#abcd (alias of dev-master)"
 ]

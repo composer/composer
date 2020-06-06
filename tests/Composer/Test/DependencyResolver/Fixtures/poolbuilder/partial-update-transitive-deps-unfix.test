@@ -5,12 +5,14 @@ Partially updating one root requirement with transitive deps fully updates anoth
 {
     "require": {
         "root/update": "*",
-        "root/dep": "*"
+        "root/dep": "1.0.*",
+        "root/dep2": "*"
     },
     "locked": [
         {"name": "root/update", "version": "1.0.1", "require": {"dep/dep": "1.*"}},
-        {"name": "dep/dep", "version": "1.0.2", "require": {"root/dep": "1.*"}},
-        {"name": "root/dep", "version": "1.0.3"}
+        {"name": "dep/dep", "version": "1.0.2", "require": {"root/dep": "1.*", "root/dep2": "1.*"}},
+        {"name": "root/dep", "version": "1.0.3"},
+        {"name": "root/dep2", "version": "1.0.3"}
     ],
     "allowList": [
         "root/update"
@@ -28,8 +30,10 @@ Partially updating one root requirement with transitive deps fully updates anoth
     {"name": "root/update", "version": "1.0.5", "require": {"dep/dep": "2.*"}},
     {"name": "root/dep", "version": "1.0.6"},
     {"name": "root/dep", "version": "2.0.7"},
-    {"name": "dep/dep", "version": "1.0.8", "require": {"root/dep": "1.*"}},
-    {"name": "dep/dep", "version": "2.0.9", "require": {"root/dep": "2.*"}}
+    {"name": "root/dep2", "version": "1.0.6"},
+    {"name": "root/dep2", "version": "2.0.7"},
+    {"name": "dep/dep", "version": "1.0.8", "require": {"root/dep": "1.*", "root/dep2": "1.*"}},
+    {"name": "dep/dep", "version": "2.0.9", "require": {"root/dep": "2.*", "root/dep2": "2.*"}}
 ]
 
 --EXPECT--
@@ -39,5 +43,6 @@ Partially updating one root requirement with transitive deps fully updates anoth
    "dep/dep-1.0.8.0",
    "dep/dep-2.0.9.0",
    "root/dep-1.0.6.0",
-   "root/dep-2.0.7.0"
+   "root/dep2-1.0.6.0",
+   "root/dep2-2.0.7.0"
 ]

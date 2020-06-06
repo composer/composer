@@ -80,6 +80,16 @@ class PoolBuilder
     private $unacceptableFixedPackages = array();
     private $updateAllowList = array();
     private $skippedLoad = array();
+
+    /**
+     * Keeps a list of dependencies which are root requirements, and as such
+     * have already their maximum required range loaded and can not be
+     * extended by markPackageNameForLoading
+     *
+     * Packages get cleared from this list if they get unfixed as in that case
+     * we need to actually load them
+     */
+    private $maxExtendedReqs = array();
     /**
      * @psalm-var array<string, bool>
      */
@@ -156,7 +166,8 @@ class PoolBuilder
                 continue;
             }
 
-            $this->markPackageNameForLoading($request, $packageName, $constraint);
+            $this->packagesToLoad[$packageName] = $constraint;
+            $this->maxExtendedReqs[$packageName] = true;
         }
 
         // clean up packagesToLoad for anything we manually marked loaded above
@@ -225,6 +236,21 @@ class PoolBuilder
 
     private function markPackageNameForLoading(Request $request, $name, ConstraintInterface $constraint)
     {
+        // Root require (which was not unfixed) already loaded the maximum range so no
+        // need to check anything here
+        if (isset($this->maxExtendedReqs[$name])) {
+            return;
+        }
+
+        // Root requires can not be overruled by dependencies so there is no point in
+        // extending the loaded constraint for those.
+        // This is triggered when loading a root require which was fixed but got unfixed, then
+        // we make sure that we load at most the intervals covered by the root constraint.
+        $rootRequires = $request->getRequires();
+        if (isset($rootRequires[$name]) && !Intervals::isSubsetOf($constraint, $rootRequires[$name])) {
+            $constraint = $rootRequires[$name];
+        }
+
         // Maybe it was already marked before but not loaded yet. In that case
         // we have to extend the constraint (we don't check if they match because
         // MultiConstraint::create() will optimize anyway)
@@ -457,6 +483,7 @@ class PoolBuilder
 
         unset($this->skippedLoad[$name]);
         unset($this->loadedPackages[$name]);
+        unset($this->maxExtendedReqs[$name]);
     }
 
     private function removeLoadedPackage(Request $request, PackageInterface $package, $index)
