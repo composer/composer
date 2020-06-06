@@ -12,11 +12,20 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Config;
+use Composer\IO\ConsoleIO;
+use Composer\IO\IOInterface;
 use Composer\Util\RemoteFilesystem;
 use Composer\Test\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionMethod;
+use ReflectionProperty;
 
 class RemoteFilesystemTest extends TestCase
 {
+    /**
+     * @return MockObject|Config
+     */
     private function getConfigMock()
     {
         $config = $this->getMockBuilder('Composer\Config')->getMock();
@@ -26,6 +35,8 @@ class RemoteFilesystemTest extends TestCase
                 if ($key === 'github-domains' || $key === 'gitlab-domains') {
                     return array();
                 }
+
+                return null;
             });
 
         return $config;
@@ -33,7 +44,7 @@ class RemoteFilesystemTest extends TestCase
 
     public function testGetOptionsForUrl()
     {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io = $this->getIOInterfaceMock();
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
@@ -46,7 +57,7 @@ class RemoteFilesystemTest extends TestCase
 
     public function testGetOptionsForUrlWithAuthorization()
     {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io = $this->getIOInterfaceMock();
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
@@ -71,7 +82,7 @@ class RemoteFilesystemTest extends TestCase
 
     public function testGetOptionsForUrlWithStreamOptions()
     {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io = $this->getIOInterfaceMock();
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
@@ -94,7 +105,7 @@ class RemoteFilesystemTest extends TestCase
 
     public function testGetOptionsForUrlWithCallOptionsKeepsHeader()
     {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io = $this->getIOInterfaceMock();
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
@@ -127,14 +138,14 @@ class RemoteFilesystemTest extends TestCase
 
     public function testCallbackGetFileSize()
     {
-        $fs = new RemoteFilesystem($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getConfigMock());
+        $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
         $this->callCallbackGet($fs, STREAM_NOTIFY_FILE_SIZE_IS, 0, '', 0, 0, 20);
         $this->assertAttributeEquals(20, 'bytesMax', $fs);
     }
 
     public function testCallbackGetNotifyProgress()
     {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io = $this->getIOInterfaceMock();
         $io
             ->expects($this->once())
             ->method('overwriteError')
@@ -150,21 +161,21 @@ class RemoteFilesystemTest extends TestCase
 
     public function testCallbackGetPassesThrough404()
     {
-        $fs = new RemoteFilesystem($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getConfigMock());
+        $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
         $this->assertNull($this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0));
     }
 
     public function testGetContents()
     {
-        $fs = new RemoteFilesystem($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getConfigMock());
+        $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
         $this->assertContains('testGetContents', $fs->getContents('http://example.org', 'file://'.__FILE__));
     }
 
     public function testCopy()
     {
-        $fs = new RemoteFilesystem($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $this->getConfigMock());
+        $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
         $file = tempnam(sys_get_temp_dir(), 'c');
         $this->assertTrue($fs->copy('http://example.org', 'file://'.__FILE__, $file));
@@ -178,7 +189,7 @@ class RemoteFilesystemTest extends TestCase
      */
     public function testGetOptionsForUrlCreatesSecureTlsDefaults()
     {
-        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $io = $this->getIOInterfaceMock();
 
         $res = $this->callGetOptionsForUrl($io, array('example.org', array('ssl' => array('cafile' => '/some/path/file.crt'))), array(), 'http://www.example.org');
 
@@ -220,6 +231,7 @@ class RemoteFilesystemTest extends TestCase
      */
     public function testBitBucketPublicDownload($url, $contents)
     {
+        /** @var ConsoleIO $io */
         $io = $this
             ->getMockBuilder('Composer\IO\ConsoleIO')
             ->disableOriginalConstructor()
@@ -242,6 +254,7 @@ class RemoteFilesystemTest extends TestCase
      */
     public function testBitBucketPublicDownloadWithAuthConfigured($url, $contents)
     {
+        /** @var MockObject|ConsoleIO $io */
         $io = $this
             ->getMockBuilder('Composer\IO\ConsoleIO')
             ->disableOriginalConstructor()
@@ -249,7 +262,6 @@ class RemoteFilesystemTest extends TestCase
 
         $domains = array();
         $io
-            ->expects($this->any())
             ->method('hasAuthentication')
             ->willReturnCallback(function ($arg) use (&$domains) {
                 $domains[] = $arg;
@@ -278,8 +290,8 @@ class RemoteFilesystemTest extends TestCase
     protected function callGetOptionsForUrl($io, array $args = array(), array $options = array(), $fileUrl = '')
     {
         $fs = new RemoteFilesystem($io, $this->getConfigMock(), $options);
-        $ref = new \ReflectionMethod($fs, 'getOptionsForUrl');
-        $prop = new \ReflectionProperty($fs, 'fileUrl');
+        $ref = new ReflectionMethod($fs, 'getOptionsForUrl');
+        $prop = new ReflectionProperty($fs, 'fileUrl');
         $ref->setAccessible(true);
         $prop->setAccessible(true);
 
@@ -290,15 +302,23 @@ class RemoteFilesystemTest extends TestCase
 
     protected function callCallbackGet(RemoteFilesystem $fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
     {
-        $ref = new \ReflectionMethod($fs, 'callbackGet');
+        $ref = new ReflectionMethod($fs, 'callbackGet');
         $ref->setAccessible(true);
         $ref->invoke($fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax);
     }
 
     protected function setAttribute($object, $attribute, $value)
     {
-        $attr = new \ReflectionProperty($object, $attribute);
+        $attr = new ReflectionProperty($object, $attribute);
         $attr->setAccessible(true);
         $attr->setValue($object, $value);
+    }
+
+    /**
+     * @return MockObject|IOInterface
+     */
+    protected function getIOInterfaceMock()
+    {
+        return $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 }
