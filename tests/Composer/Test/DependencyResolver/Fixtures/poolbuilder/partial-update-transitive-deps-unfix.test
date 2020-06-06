@@ -8,9 +8,9 @@ Partially updating one root requirement with transitive deps fully updates anoth
         "root/dep": "*"
     },
     "locked": [
-        {"name": "root/update", "version": "1.0.1", "require": {"dep/dep": "1.*"}, "id": 1},
-        {"name": "dep/dep", "version": "1.0.2", "require": {"root/dep": "1.*"}, "id": 2},
-        {"name": "root/dep", "version": "1.0.3", "id": 3}
+        {"name": "root/update", "version": "1.0.1", "require": {"dep/dep": "1.*"}},
+        {"name": "dep/dep", "version": "1.0.2", "require": {"root/dep": "1.*"}},
+        {"name": "root/dep", "version": "1.0.3"}
     ],
     "allowList": [
         "root/update"

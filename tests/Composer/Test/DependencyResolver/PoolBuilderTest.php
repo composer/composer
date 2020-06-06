@@ -113,11 +113,16 @@ class PoolBuilderTest extends TestCase
                 return $id;
             }
 
-            if ($package instanceof AliasPackage && $id = array_search($package->getAliasOf(), $packageIds, true)) {
-                return (string) $package->getName().'-'.$package->getVersion() .' alias of '.$id;
+            $suffix = '';
+            if ($package->getRepository() instanceof LockArrayRepository) {
+                $suffix = ' (locked)';
             }
 
-            return (string) $package;
+            if ($package instanceof AliasPackage && $id = array_search($package->getAliasOf(), $packageIds, true)) {
+                return (string) $package->getName().'-'.$package->getVersion() .' alias of '.$id . $suffix;
+            }
+
+            return (string) $package . $suffix;
         }, $result);
 
         $this->assertSame($expect, $result);
