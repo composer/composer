@@ -20,13 +20,13 @@ class RemoteFilesystemTest extends TestCase
     private function getConfigMock()
     {
         $config = $this->getMockBuilder('Composer\Config')->getMock();
-        $config->expects($this->any())
+        $config
             ->method('get')
-            ->will($this->returnCallback(function ($key) {
+            ->willReturnCallback(function ($key) {
                 if ($key === 'github-domains' || $key === 'gitlab-domains') {
                     return array();
                 }
-            }));
+            });
 
         return $config;
     }
@@ -37,7 +37,7 @@ class RemoteFilesystemTest extends TestCase
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
-            ->will($this->returnValue(false))
+            ->willReturn(false)
         ;
 
         $res = $this->callGetOptionsForUrl($io, array('http://example.org', array()));
@@ -50,12 +50,12 @@ class RemoteFilesystemTest extends TestCase
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
-            ->will($this->returnValue(true))
+            ->willReturn(true)
         ;
         $io
             ->expects($this->once())
             ->method('getAuthentication')
-            ->will($this->returnValue(array('username' => 'login', 'password' => 'password')))
+            ->willReturn(array('username' => 'login', 'password' => 'password'))
         ;
 
         $options = $this->callGetOptionsForUrl($io, array('http://example.org', array()));
@@ -75,13 +75,13 @@ class RemoteFilesystemTest extends TestCase
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
-            ->will($this->returnValue(true))
+            ->willReturn(true)
         ;
 
         $io
             ->expects($this->once())
             ->method('getAuthentication')
-            ->will($this->returnValue(array('username' => null, 'password' => null)))
+            ->willReturn(array('username' => null, 'password' => null))
         ;
 
         $streamOptions = array('ssl' => array(
@@ -98,13 +98,13 @@ class RemoteFilesystemTest extends TestCase
         $io
             ->expects($this->once())
             ->method('hasAuthentication')
-            ->will($this->returnValue(true))
+            ->willReturn(true)
         ;
 
         $io
             ->expects($this->once())
             ->method('getAuthentication')
-            ->will($this->returnValue(array('username' => null, 'password' => null)))
+            ->willReturn(array('username' => null, 'password' => null))
         ;
 
         $streamOptions = array('http' => array(
@@ -183,7 +183,7 @@ class RemoteFilesystemTest extends TestCase
         $res = $this->callGetOptionsForUrl($io, array('example.org', array('ssl' => array('cafile' => '/some/path/file.crt'))), array(), 'http://www.example.org');
 
         $this->assertTrue(isset($res['ssl']['ciphers']));
-        $this->assertRegExp("|!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA|", $res['ssl']['ciphers']);
+        $this->assertRegExp('|!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA|', $res['ssl']['ciphers']);
         $this->assertTrue($res['ssl']['verify_peer']);
         $this->assertTrue($res['ssl']['SNI_enabled']);
         $this->assertEquals(7, $res['ssl']['verify_depth']);
@@ -251,11 +251,11 @@ class RemoteFilesystemTest extends TestCase
         $io
             ->expects($this->any())
             ->method('hasAuthentication')
-            ->will($this->returnCallback(function ($arg) use (&$domains) {
+            ->willReturnCallback(function ($arg) use (&$domains) {
                 $domains[] = $arg;
                 // first time is called with bitbucket.org, then it redirects to bbuseruploads.s3.amazonaws.com so next time we have no auth configured
                 return $arg === 'bitbucket.org';
-            }));
+            });
         $io
             ->expects($this->at(1))
             ->method('getAuthentication')
