@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
-use Composer\Util\HttpDownloader;
 use Composer\Util\Http\Response;
 
 /**
@@ -271,7 +270,7 @@ class RemoteFilesystem
         });
         $http_response_header = array();
         try {
-            $result = $this->getRemoteContents($originUrl, $fileUrl, $ctx, $http_response_header);
+            $result = $this->getRemoteContents($fileUrl, $ctx, $http_response_header);
 
             if (!empty($http_response_header[0])) {
                 $statusCode = $this->findStatusCode($http_response_header);
@@ -530,13 +529,14 @@ class RemoteFilesystem
     /**
      * Get contents of remote URL.
      *
-     * @param string   $originUrl The origin URL
-     * @param string   $fileUrl   The file URL
-     * @param resource $context   The stream context
+     * @param string   $fileUrl         The file URL
+     * @param resource $context         The stream context
+     * @param array    $responseHeaders The HTTP response headers
      *
      * @return string|false The response contents or false on failure
+     *
      */
-    protected function getRemoteContents($originUrl, $fileUrl, $context, array &$responseHeaders = null)
+    protected function getRemoteContents($fileUrl, $context, array &$responseHeaders)
     {
         $result = false;
 
