@@ -165,6 +165,9 @@ class RemoteFilesystemTest extends TestCase
         unlink($file);
     }
 
+    /**
+     * @expectedException \Composer\Downloader\TransportException
+     */
     public function testCopyWithNoRetryOnFailure()
     {
         /** @var RemoteFilesystem|MockObject $fs */
@@ -185,8 +188,6 @@ class RemoteFilesystemTest extends TestCase
 
         $file = tempnam(sys_get_temp_dir(), 'z');
         unlink($file);
-
-        $this->expectException('Composer\Downloader\TransportException');
 
         $fs->copy(
             'http://example.org',
