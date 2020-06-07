@@ -197,14 +197,8 @@ class RemoteFilesystemTest extends TestCase
 
     public function testCopyWithSuccessOnRetry()
     {
-        /** @var AuthHelper|MockObject $authHelper */
-        $authHelper = $this->getMockBuilder('Composer\Util\AuthHelper')
-            ->setConstructorArgs(array(
-                $this->getIOInterfaceMock(),
-                $this->getConfigMock()
-            ))
-            ->setMethods(array('promptAuthIfNeeded'))
-            ->getMock();
+        $authHelper = $this->getAuthHelperWithMockedMethods(array('promptAuthIfNeeded'));
+        $fs = $this->getRemoteFilesystemWithMockedMethods(array('getRemoteContents'), $authHelper);
 
         $authHelper->expects($this->once())
             ->method('promptAuthIfNeeded')
@@ -212,8 +206,6 @@ class RemoteFilesystemTest extends TestCase
                 'storeAuth' => true,
                 'retry' => true
             ));
-
-        $fs = $this->getRemoteFilesystemWithMockedMethods(array('getRemoteContents'), $authHelper);
 
         $fs->expects($this->at(0))
             ->method('getRemoteContents')
@@ -249,6 +241,7 @@ class RemoteFilesystemTest extends TestCase
         $this->assertTrue($copyResult);
         $this->assertFileExists($file);
         $this->assertContains('Copied', file_get_contents($file));
+
         unlink($file);
     }
 
@@ -415,7 +408,7 @@ class RemoteFilesystemTest extends TestCase
      *
      * @return RemoteFilesystem|MockObject
      */
-    protected function getRemoteFilesystemWithMockedMethods(array $mockedMethods, AuthHelper $authHelper = null)
+    private function getRemoteFilesystemWithMockedMethods(array $mockedMethods, AuthHelper $authHelper = null)
     {
         return $this->getMockBuilder('Composer\Util\RemoteFilesystem')
             ->setConstructorArgs(array(
@@ -424,6 +417,22 @@ class RemoteFilesystemTest extends TestCase
                 array(),
                 false,
                 $authHelper
+            ))
+            ->setMethods($mockedMethods)
+            ->getMock();
+    }
+
+    /**
+     * @param array $mockedMethods
+     *
+     * @return AuthHelper|MockObject
+     */
+    private function getAuthHelperWithMockedMethods(array $mockedMethods)
+    {
+        return $this->getMockBuilder('Composer\Util\AuthHelper')
+            ->setConstructorArgs(array(
+                $this->getIOInterfaceMock(),
+                $this->getConfigMock()
             ))
             ->setMethods($mockedMethods)
             ->getMock();
