@@ -165,7 +165,7 @@ class RemoteFilesystemTest extends TestCase
         unlink($file);
     }
 
-    public function testCopyWithRetryAuthFailureFalse()
+    public function testCopyWithNoRetryOnFailure()
     {
         /** @var RemoteFilesystem|MockObject $fs */
         $fs = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
@@ -178,7 +178,7 @@ class RemoteFilesystemTest extends TestCase
 
                 $http_response_header = array('http/1.1 401 unauthorized');
 
-                return '<?php ';
+                return '';
 
             });
 
@@ -195,6 +195,72 @@ class RemoteFilesystemTest extends TestCase
             true,
             array('retry-auth-failure' => false)
         );
+    }
+
+    public function testCopyWithSuccessOnRetry()
+    {
+        $authHelper = $this->getMockBuilder('Composer\Util\AuthHelper')
+            ->setConstructorArgs(array(
+                $this->getIOInterfaceMock(),
+                $this->getConfigMock()
+            ))
+            ->setMethods(array('promptAuthIfNeeded'))
+            ->getMock();
+
+        $authHelper->expects($this->once())
+            ->method('promptAuthIfNeeded')
+            ->willReturn(array(
+                'storeAuth' => true,
+                'retry' => true
+            ));
+
+        /** @var RemoteFilesystem|MockObject $fs */
+        $fs = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+            ->setConstructorArgs(array(
+                $this->getIOInterfaceMock(),
+                $this->getConfigMock(),
+                array(),
+                false,
+                $authHelper
+            ))
+            ->setMethods(array('getRemoteContents'))
+            ->getMock();
+
+        $fs->expects($this->at(0))
+            ->method('getRemoteContents')
+            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
+
+                $http_response_header = array('http/1.1 401 unauthorized');
+
+                return '';
+
+            });
+
+        $fs->expects($this->at(1))
+            ->method('getRemoteContents')
+            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
+
+                $http_response_header = array('http/1.1 200 OK');
+
+                return '<?php $copied = "Copied"; ';
+
+            });
+
+
+        $file = tempnam(sys_get_temp_dir(), 'z');
+
+        $copyResult = $fs->copy(
+            'http://example.org',
+            'file://' . __FILE__,
+            $file,
+            true,
+            array('retry-auth-failure' => true)
+        );
+
+        $this->assertTrue($copyResult);
+        $this->assertFileExists($file);
+        $this->assertContains('Copied', file_get_contents($file));
+        unlink($file);
     }
 
     /**
