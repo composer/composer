@@ -86,8 +86,8 @@ EOT
     {
         $io = $this->getIO();
 
-        $whitelist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license');
-        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($whitelist)));
+        $allowList = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license');
+        $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowList)));
 
         if (isset($options['author'])) {
             $options['authors'] = $this->formatAuthors($options['author']);

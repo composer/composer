@@ -1,5 +1,5 @@
 --TEST--
-Partial update without lock file should update everything whitelisted, remove overly unstable packages
+Partial update without lock file should update everything allowed, remove overly unstable packages
 --COMPOSER--
 {
     "repositories": [

@@ -146,8 +146,8 @@ EOT
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)
             ->setUpdate(true)
-            ->setUpdateWhitelist($packages)
-            ->setWhitelistTransitiveDependencies(!$input->getOption('no-update-with-dependencies'))
+            ->setUpdateAllowList($packages)
+            ->setAllowListTransitiveDependencies(!$input->getOption('no-update-with-dependencies'))
             ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'))
             ->setRunScripts(!$input->getOption('no-scripts'))
         ;

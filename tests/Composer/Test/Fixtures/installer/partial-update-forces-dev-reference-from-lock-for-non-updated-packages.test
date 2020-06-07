@@ -1,5 +1,5 @@
 --TEST--
-Partial update forces updates dev reference from lock file for non whitelisted packages
+Partial update forces updates dev reference from lock file for non allowed packages
 --COMPOSER--
 {
     "repositories": [

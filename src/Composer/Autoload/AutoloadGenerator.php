@@ -229,16 +229,16 @@ EOF;
 EOF;
         }
 
-        $blacklist = null;
+        $excluded = null;
         if (!empty($autoloads['exclude-from-classmap'])) {
-            $blacklist = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
+            $excluded = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
         }
 
         $classMap = array();
         $ambiguousClasses = array();
         $scannedFiles = array();
         foreach ($autoloads['classmap'] as $dir) {
-            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, null, null, $classMap, $ambiguousClasses, $scannedFiles);
+            $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $excluded, null, null, $classMap, $ambiguousClasses, $scannedFiles);
         }
 
         if ($scanPsrPackages) {
@@ -261,7 +261,7 @@ EOF;
                             continue;
                         }
 
-                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespace, $group['type'], $classMap, $ambiguousClasses, $scannedFiles);
+                        $classMap = $this->addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $excluded, $namespace, $group['type'], $classMap, $ambiguousClasses, $scannedFiles);
                     }
                 }
             }
@@ -336,9 +336,9 @@ EOF;
         return 0;
     }
 
-    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $blacklist, $namespaceFilter, $autoloadType, array $classMap, array &$ambiguousClasses, array &$scannedFiles)
+    private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $excluded, $namespaceFilter, $autoloadType, array $classMap, array &$ambiguousClasses, array &$scannedFiles)
     {
-        foreach ($this->generateClassMap($dir, $blacklist, $namespaceFilter, $autoloadType, true, $scannedFiles) as $class => $path) {
+        foreach ($this->generateClassMap($dir, $excluded, $namespaceFilter, $autoloadType, true, $scannedFiles) as $class => $path) {
             $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
             if (!isset($classMap[$class])) {
                 $classMap[$class] = $pathCode;
@@ -350,9 +350,9 @@ EOF;
         return $classMap;
     }
 
-    private function generateClassMap($dir, $blacklist, $namespaceFilter, $autoloadType, $showAmbiguousWarning, array &$scannedFiles)
+    private function generateClassMap($dir, $excluded, $namespaceFilter, $autoloadType, $showAmbiguousWarning, array &$scannedFiles)
     {
-        return ClassMapGenerator::createMap($dir, $blacklist, $showAmbiguousWarning ? $this->io : null, $namespaceFilter, $autoloadType, $scannedFiles);
+        return ClassMapGenerator::createMap($dir, $excluded, $showAmbiguousWarning ? $this->io : null, $namespaceFilter, $autoloadType, $scannedFiles);
     }
 
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
@@ -456,15 +456,15 @@ EOF;
         }
 
         if (isset($autoloads['classmap'])) {
-            $blacklist = null;
+            $excluded = null;
             if (!empty($autoloads['exclude-from-classmap'])) {
-                $blacklist = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
+                $excluded = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
             }
 
             $scannedFiles = array();
             foreach ($autoloads['classmap'] as $dir) {
                 try {
-                    $loader->addClassMap($this->generateClassMap($dir, $blacklist, null, null, false, $scannedFiles));
+                    $loader->addClassMap($this->generateClassMap($dir, $excluded, null, null, false, $scannedFiles));
                 } catch (\RuntimeException $e) {
                     $this->io->writeError('<warning>'.$e->getMessage().'</warning>');
                 }

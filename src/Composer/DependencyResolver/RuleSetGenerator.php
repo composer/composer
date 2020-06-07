@@ -26,7 +26,7 @@ class RuleSetGenerator
     protected $rules;
     protected $jobs;
     protected $installedMap;
-    protected $whitelistedMap;
+    protected $allowListedMap;
     protected $addedMap;
     protected $conflictAddedMap;
     protected $addedPackages;
@@ -147,6 +147,15 @@ class RuleSetGenerator
         $this->rules->add($newRule, $type);
     }
 
+    protected function allowListFromPackage(PackageInterface $package)
+    {
+        // call original method for BC
+        $this->whitelistFromPackage($package);
+    }
+
+    /**
+     * @deprecated use whitelistFromPackage instead
+     */
     protected function whitelistFromPackage(PackageInterface $package)
     {
         $workQueue = new \SplQueue;
@@ -154,11 +163,11 @@ class RuleSetGenerator
 
         while (!$workQueue->isEmpty()) {
             $package = $workQueue->dequeue();
-            if (isset($this->whitelistedMap[$package->id])) {
+            if (isset($this->allowListedMap[$package->id])) {
                 continue;
             }
 
-            $this->whitelistedMap[$package->id] = true;
+            $this->allowListedMap[$package->id] = true;
 
             foreach ($package->getRequires() as $link) {
                 $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint(), true);
@@ -294,6 +303,15 @@ class RuleSetGenerator
         return $impossible;
     }
 
+    protected function allowListFromJobs()
+    {
+        // call original method for BC
+        $this->whitelistFromJobs();
+    }
+
+    /**
+     * @deprecated use allowListFromJobs instead
+     */
     protected function whitelistFromJobs()
     {
         foreach ($this->jobs as $job) {
@@ -301,7 +319,7 @@ class RuleSetGenerator
                 case 'install':
                     $packages = $this->pool->whatProvides($job['packageName'], $job['constraint'], true);
                     foreach ($packages as $package) {
-                        $this->whitelistFromPackage($package);
+                        $this->allowListFromPackage($package);
                     }
                     break;
             }
@@ -348,13 +366,13 @@ class RuleSetGenerator
         $this->rules = new RuleSet;
         $this->installedMap = $installedMap;
 
-        $this->whitelistedMap = array();
+        $this->allowListedMap = array();
         foreach ($this->installedMap as $package) {
-            $this->whitelistFromPackage($package);
+            $this->allowListFromPackage($package);
         }
-        $this->whitelistFromJobs();
+        $this->allowListFromJobs();
 
-        $this->pool->setWhitelist($this->whitelistedMap);
+        $this->pool->setAllowList($this->allowListedMap);
 
         $this->addedMap = array();
         $this->conflictAddedMap = array();

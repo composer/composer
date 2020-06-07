@@ -1,5 +1,5 @@
 --TEST--
-Update with a package whitelist only updates those packages matching the pattern
+Update with a package allowed list only updates those packages matching the pattern
 --COMPOSER--
 {
     "repositories": [
@@ -8,10 +8,10 @@ Update with a package whitelist only updates those packages matching the pattern
             "package": [
                 { "name": "fixed", "version": "1.1.0" },
                 { "name": "fixed", "version": "1.0.0" },
-                { "name": "whitelisted-component1", "version": "1.1.0" },
-                { "name": "whitelisted-component1", "version": "1.0.0" },
-                { "name": "whitelisted-component2", "version": "1.1.0", "require": { "dependency": "1.*" } },
-                { "name": "whitelisted-component2", "version": "1.0.0", "require": { "dependency": "1.*" } },
+                { "name": "allowed-component1", "version": "1.1.0" },
+                { "name": "allowed-component1", "version": "1.0.0" },
+                { "name": "allowed-component2", "version": "1.1.0", "require": { "dependency": "1.*" } },
+                { "name": "allowed-component2", "version": "1.0.0", "require": { "dependency": "1.*" } },
                 { "name": "dependency", "version": "1.1.0" },
                 { "name": "dependency", "version": "1.0.0" },
                 { "name": "unrelated", "version": "1.1.0", "require": { "unrelated-dependency": "1.*" }  },
@@ -23,22 +23,22 @@ Update with a package whitelist only updates those packages matching the pattern
     ],
     "require": {
         "fixed": "1.*",
-        "whitelisted-component1": "1.*",
-        "whitelisted-component2": "1.*",
+        "allowed-component1": "1.*",
+        "allowed-component2": "1.*",
         "unrelated": "1.*"
     }
 }
 --INSTALLED--
 [
     { "name": "fixed", "version": "1.0.0" },
-    { "name": "whitelisted-component1", "version": "1.0.0" },
-    { "name": "whitelisted-component2", "version": "1.0.0", "require": { "dependency": "1.0.0" } },
+    { "name": "allowed-component1", "version": "1.0.0" },
+    { "name": "allowed-component2", "version": "1.0.0", "require": { "dependency": "1.0.0" } },
     { "name": "dependency", "version": "1.0.0" },
     { "name": "unrelated", "version": "1.0.0", "require": { "unrelated-dependency": "1.*" } },
     { "name": "unrelated-dependency", "version": "1.0.0" }
 ]
 --RUN--
-update whitelisted-*
+update allowed-*
 --EXPECT--
-Updating whitelisted-component1 (1.0.0) to whitelisted-component1 (1.1.0)
-Updating whitelisted-component2 (1.0.0) to whitelisted-component2 (1.1.0)
+Updating allowed-component1 (1.0.0) to allowed-component1 (1.1.0)
+Updating allowed-component2 (1.0.0) to allowed-component2 (1.1.0)
