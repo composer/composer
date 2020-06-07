@@ -15,6 +15,7 @@ namespace Composer\Test\Util;
 use Composer\Config;
 use Composer\IO\ConsoleIO;
 use Composer\IO\IOInterface;
+use Composer\Util\AuthHelper;
 use Composer\Util\RemoteFilesystem;
 use Composer\Test\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -170,11 +171,7 @@ class RemoteFilesystemTest extends TestCase
      */
     public function testCopyWithNoRetryOnFailure()
     {
-        /** @var RemoteFilesystem|MockObject $fs */
-        $fs = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
-            ->setConstructorArgs(array($this->getIOInterfaceMock(), $this->getConfigMock()))
-            ->setMethods(array('getRemoteContents'))
-            ->getMock();
+        $fs = $this->getRemoteFilesystemWithMockedMethods(array('getRemoteContents'));
 
         $fs->expects($this->once())->method('getRemoteContents')
             ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
@@ -200,6 +197,7 @@ class RemoteFilesystemTest extends TestCase
 
     public function testCopyWithSuccessOnRetry()
     {
+        /** @var AuthHelper|MockObject $authHelper */
         $authHelper = $this->getMockBuilder('Composer\Util\AuthHelper')
             ->setConstructorArgs(array(
                 $this->getIOInterfaceMock(),
@@ -215,17 +213,7 @@ class RemoteFilesystemTest extends TestCase
                 'retry' => true
             ));
 
-        /** @var RemoteFilesystem|MockObject $fs */
-        $fs = $this->getMockBuilder('Composer\Util\RemoteFilesystem')
-            ->setConstructorArgs(array(
-                $this->getIOInterfaceMock(),
-                $this->getConfigMock(),
-                array(),
-                false,
-                $authHelper
-            ))
-            ->setMethods(array('getRemoteContents'))
-            ->getMock();
+        $fs = $this->getRemoteFilesystemWithMockedMethods(array('getRemoteContents'), $authHelper);
 
         $fs->expects($this->at(0))
             ->method('getRemoteContents')
@@ -419,5 +407,25 @@ class RemoteFilesystemTest extends TestCase
     private function getIOInterfaceMock()
     {
         return $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+    }
+
+    /**
+     * @param array $mockedMethods
+     * @param AuthHelper $authHelper
+     *
+     * @return RemoteFilesystem|MockObject
+     */
+    protected function getRemoteFilesystemWithMockedMethods(array $mockedMethods, AuthHelper $authHelper = null)
+    {
+        return $this->getMockBuilder('Composer\Util\RemoteFilesystem')
+            ->setConstructorArgs(array(
+                $this->getIOInterfaceMock(),
+                $this->getConfigMock(),
+                array(),
+                false,
+                $authHelper
+            ))
+            ->setMethods($mockedMethods)
+            ->getMock();
     }
 }
