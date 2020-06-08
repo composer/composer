@@ -71,6 +71,10 @@ class PoolBuilder
      */
     private $loadedPackages = array();
     /**
+     * @psalm-var array<int, array<string, array<string, PackageInterface>>>
+     */
+    private $loadedPerRepo = array();
+    /**
      * @psalm-var Package[]
      */
     private $packages = array();
@@ -227,8 +231,11 @@ class PoolBuilder
         $this->aliasMap = array();
         $this->packagesToLoad = array();
         $this->loadedPackages = array();
+        $this->loadedPerRepo = array();
         $this->packages = array();
         $this->unacceptableFixedPackages = array();
+        $this->maxExtendedReqs = array();
+        $this->skippedLoad = array();
         $this->indexCounter = 0;
 
         return $pool;
@@ -287,20 +294,13 @@ class PoolBuilder
     private function loadPackagesMarkedForLoading(Request $request, $repositories)
     {
         foreach ($this->packagesToLoad as $name => $constraint) {
-            // remove all already-loaded packages matching those to be loaded to avoid duplicates
-            foreach ($this->packages as $index => $pkg) {
-                if ($pkg->getName() === $name) {
-                    $this->removeLoadedPackage($request, $pkg, $index);
-                }
-            }
-
             $this->loadedPackages[$name] = $constraint;
         }
 
         $packageBatch = $this->packagesToLoad;
         $this->packagesToLoad = array();
 
-        foreach ($repositories as $repository) {
+        foreach ($repositories as $repoIndex => $repository) {
             if (empty($packageBatch)) {
                 break;
             }
@@ -310,13 +310,14 @@ class PoolBuilder
             if ($repository instanceof PlatformRepository || $repository === $request->getLockedRepository()) {
                 continue;
             }
-            $result = $repository->loadPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags);
+            $result = $repository->loadPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags, isset($this->loadedPerRepo[$repoIndex]) ? $this->loadedPerRepo[$repoIndex] : array());
 
             foreach ($result['namesFound'] as $name) {
                 // avoid loading the same package again from other repositories once it has been found
                 unset($packageBatch[$name]);
             }
             foreach ($result['packages'] as $package) {
+                $this->loadedPerRepo[$repoIndex][$package->getName()][$package->getVersion()] = $package;
                 $this->loadPackage($request, $package);
             }
         }

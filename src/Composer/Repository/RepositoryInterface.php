@@ -75,11 +75,13 @@ interface RepositoryInterface extends \Countable
      * @psalm-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
      * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
      * @psalm-param array<string, BasePackage::STABILITY_*> $stabilityFlags
+     * @param array[] $alreadyLoaded an array of package name => package version => package
+     * @psalm-param array<string, array<string, PackageInterface>> $alreadyLoaded
      *
      * @return array [namesFound => string[], packages => PackageInterface[]]
      * @psalm-return array{namesFound: string[], packages: PackageInterface[]}
      */
-    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags);
+    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array());
 
     /**
      * Searches the repository for packages containing the query
