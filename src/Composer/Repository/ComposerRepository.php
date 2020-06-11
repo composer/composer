@@ -1015,6 +1015,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if ($this->eventDispatcher) {
                     $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                    $filename = $preFileDownloadEvent->getProcessedUrl();
                 }
 
                 $response = $this->httpDownloader->get($filename, $this->options);
@@ -1101,6 +1102,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if ($this->eventDispatcher) {
                     $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                    $filename = $preFileDownloadEvent->getProcessedUrl();
                 }
 
                 $options = $this->options;
@@ -1167,6 +1169,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if ($this->eventDispatcher) {
             $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
             $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+            $filename = $preFileDownloadEvent->getProcessedUrl();
         }
 
         $options = $lastModifiedTime ? array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime))) : array();

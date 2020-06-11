@@ -55,12 +55,22 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Retrieves the processed URL this remote filesystem will be used for
+     * Retrieves the processed URL that will be downloaded
      *
      * @return string
      */
     public function getProcessedUrl()
     {
         return $this->processedUrl;
+    }
+
+    /**
+     * Sets the processed URL that will be downloaded
+     *
+     * @return string
+     */
+    public function setProcessedUrl($processedUrl)
+    {
+        $this->processedUrl = $processedUrl;
     }
 }

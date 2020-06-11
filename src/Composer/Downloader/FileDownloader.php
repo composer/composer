@@ -127,6 +127,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             if ($eventDispatcher) {
                 $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $httpDownloader, $url['processed']);
                 $eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                $url['processed'] = $preFileDownloadEvent->getProcessedUrl();
             }
 
             $checksum = $package->getDistSha1Checksum();
