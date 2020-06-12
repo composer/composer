@@ -115,11 +115,12 @@ EOT
             case 'summary':
                 $dependencies = array();
                 foreach ($packages as $package) {
-                    $license = $package->getLicense()[0];
-                    if (!isset($dependencies[$license])) {
-                        $dependencies[$license] = 0;
+                    $license = $package->getLicense();
+                    $licenseName = $license[0];
+                    if (!isset($dependencies[$licenseName])) {
+                        $dependencies[$licenseName] = 0;
                     }
-                    $dependencies[$license]++;
+                    $dependencies[$licenseName]++;
                 }
 
                 $rows = array();
