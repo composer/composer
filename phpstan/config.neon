@@ -32,6 +32,10 @@ parameters:
                 - ../src/Composer/Command/CreateProjectCommand.php
                 - ../src/Composer/Installer/InstallationManager.php
 
+        - # ZipArchive::LIBZIP_VERSION Class constant is already checked before use.
+            message: '~^Access to undefined constant ZipArchive::LIBZIP_VERSION.$~'
+            path: ../src/Composer/Repository/PlatformRepository.php
+
     paths:
         - ../src
         - ../tests
