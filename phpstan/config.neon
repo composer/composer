@@ -25,6 +25,13 @@ parameters:
 
         # BC with older PHPUnit
         - '~^Call to an undefined static method PHPUnit\\Framework\\TestCase::setExpectedException\(\)\.$~'
+
+        - # Windows SAPI functions, already checked before using them.
+            message: '~^Function sapi_windows_set_ctrl_handler not found.$~'
+            paths:
+                - ../src/Composer/Command/CreateProjectCommand.php
+                - ../src/Composer/Installer/InstallationManager.php
+
     paths:
         - ../src
         - ../tests
