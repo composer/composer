@@ -67,7 +67,7 @@ class PreFileDownloadEvent extends Event
     /**
      * Sets the processed URL that will be downloaded
      *
-     * @return string
+     * @param string $processedUrl New processed URL
      */
     public function setProcessedUrl($processedUrl)
     {
