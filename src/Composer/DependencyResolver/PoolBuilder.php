@@ -268,7 +268,7 @@ class PoolBuilder
             }
 
             // extend the constraint to be loaded
-            $constraint = MultiConstraint::create(array($this->packagesToLoad[$name], $constraint), false);
+            $constraint = Intervals::compactConstraint(MultiConstraint::create(array($this->packagesToLoad[$name], $constraint), false));
         }
 
         // Not yet loaded or already marked for a reload, override the existing constraint
@@ -287,7 +287,7 @@ class PoolBuilder
         // We have already loaded that package but not in the constraint that's
         // required. We extend the constraint and mark that package as not being loaded
         // yet so we get the required package versions
-        $this->packagesToLoad[$name] = MultiConstraint::create(array($this->loadedPackages[$name], $constraint), false);
+        $this->packagesToLoad[$name] = Intervals::compactConstraint(MultiConstraint::create(array($this->loadedPackages[$name], $constraint), false));
         unset($this->loadedPackages[$name]);
     }
 
