@@ -451,7 +451,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     protected function discardChanges($path)
     {
         $path = $this->normalizePath($path);
-        if (0 !== $this->process->execute('git reset --hard', $output, $path)) {
+        if (0 !== $this->process->execute('git clean -df && git reset --hard', $output, $path)) {
             throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
         }
 
