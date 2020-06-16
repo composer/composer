@@ -230,9 +230,9 @@ class InstallerTest extends TestCase
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setUpdate(true)
                 ->setDryRun($input->getOption('dry-run'))
-                ->setUpdateWhitelist($input->getArgument('packages'))
-                ->setWhitelistTransitiveDependencies($input->getOption('with-dependencies'))
-                ->setWhitelistAllDependencies($input->getOption('with-all-dependencies'))
+                ->setUpdateAllowList($input->getArgument('packages'))
+                ->setAllowListTransitiveDependencies($input->getOption('with-dependencies'))
+                ->setAllowListAllDependencies($input->getOption('with-all-dependencies'))
                 ->setPreferStable($input->getOption('prefer-stable'))
                 ->setPreferLowest($input->getOption('prefer-lowest'))
                 ->setIgnorePlatformRequirements($input->getOption('ignore-platform-reqs'));

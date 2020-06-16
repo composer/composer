@@ -28,20 +28,20 @@ class Cache
     private $io;
     private $root;
     private $enabled = true;
-    private $whitelist;
+    private $allowList;
     private $filesystem;
 
     /**
      * @param IOInterface $io
      * @param string      $cacheDir   location of the cache
-     * @param string      $whitelist  List of characters that are allowed in path names (used in a regex character class)
+     * @param string      $allowList  List of characters that are allowed in path names (used in a regex character class)
      * @param Filesystem  $filesystem optional filesystem instance
      */
-    public function __construct(IOInterface $io, $cacheDir, $whitelist = 'a-z0-9.', Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, $cacheDir, $allowList = 'a-z0-9.', Filesystem $filesystem = null)
     {
         $this->io = $io;
         $this->root = rtrim($cacheDir, '/\\') . '/';
-        $this->whitelist = $whitelist;
+        $this->allowList = $allowList;
         $this->filesystem = $filesystem ?: new Filesystem();
 
         if (!self::isUsable($cacheDir)) {
@@ -77,7 +77,7 @@ class Cache
     public function read($file)
     {
         if ($this->enabled) {
-            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            $file = preg_replace('{[^'.$this->allowList.']}i', '-', $file);
             if (file_exists($this->root . $file)) {
                 $this->io->writeError('Reading '.$this->root . $file.' from cache', true, IOInterface::DEBUG);
 
@@ -91,7 +91,7 @@ class Cache
     public function write($file, $contents)
     {
         if ($this->enabled) {
-            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            $file = preg_replace('{[^'.$this->allowList.']}i', '-', $file);
 
             $this->io->writeError('Writing '.$this->root . $file.' into cache', true, IOInterface::DEBUG);
 
@@ -129,7 +129,7 @@ class Cache
     public function copyFrom($file, $source)
     {
         if ($this->enabled) {
-            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            $file = preg_replace('{[^'.$this->allowList.']}i', '-', $file);
             $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
 
             if (!file_exists($source)) {
@@ -150,7 +150,7 @@ class Cache
     public function copyTo($file, $target)
     {
         if ($this->enabled) {
-            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            $file = preg_replace('{[^'.$this->allowList.']}i', '-', $file);
             if (file_exists($this->root . $file)) {
                 try {
                     touch($this->root . $file, filemtime($this->root . $file), time());
@@ -177,7 +177,7 @@ class Cache
     public function remove($file)
     {
         if ($this->enabled) {
-            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            $file = preg_replace('{[^'.$this->allowList.']}i', '-', $file);
             if (file_exists($this->root . $file)) {
                 return $this->filesystem->unlink($this->root . $file);
             }
@@ -229,7 +229,7 @@ class Cache
     public function sha1($file)
     {
         if ($this->enabled) {
-            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            $file = preg_replace('{[^'.$this->allowList.']}i', '-', $file);
             if (file_exists($this->root . $file)) {
                 return sha1_file($this->root . $file);
             }
@@ -241,7 +241,7 @@ class Cache
     public function sha256($file)
     {
         if ($this->enabled) {
-            $file = preg_replace('{[^'.$this->whitelist.']}i', '-', $file);
+            $file = preg_replace('{[^'.$this->allowList.']}i', '-', $file);
             if (file_exists($this->root . $file)) {
                 return hash_file('sha256', $this->root . $file);
             }

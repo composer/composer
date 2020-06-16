@@ -159,7 +159,7 @@ php composer.phar update
 > if the `composer.lock` has not been updated since changes were made to the
 > `composer.json` that might affect dependency resolution.
 
-If you only want to install or update one dependency, you can whitelist them:
+If you only want to install or update one dependency, you can allow them:
 
 ```sh
 php composer.phar update monolog/monolog [...]

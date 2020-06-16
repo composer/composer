@@ -50,7 +50,7 @@ class Pool implements \Countable
     protected $versionParser;
     protected $providerCache = array();
     protected $filterRequires;
-    protected $whitelist = null;
+    protected $whitelist = null; // TODO 2.0 rename to allowList
     protected $id = 1;
 
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $filterRequires = array())
@@ -71,6 +71,15 @@ class Pool implements \Countable
         }
     }
 
+    public function setAllowList($allowList)
+    {
+        // call original method for BC
+        $this->setWhitelist($allowList);
+    }
+
+    /**
+     * @deprecated use setAllowList instead
+     */
     public function setWhitelist($whitelist)
     {
         $this->whitelist = $whitelist;

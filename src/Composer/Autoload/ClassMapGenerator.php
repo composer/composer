@@ -51,7 +51,7 @@ class ClassMapGenerator
      * Iterate over all files in the given directory searching for classes
      *
      * @param \Iterator|string $path         The path to search in or an iterator
-     * @param string           $blacklist    Regex that matches against the file path that exclude from the classmap.
+     * @param string           $excluded    Regex that matches against the file path that exclude from the classmap.
      * @param IOInterface      $io           IO object
      * @param string           $namespace    Optional namespace prefix to filter by
      * @param string           $autoloadType psr-0|psr-4 Optional autoload standard to use mapping rules
@@ -59,7 +59,7 @@ class ClassMapGenerator
      * @throws \RuntimeException When the path is neither an existing file nor directory
      * @return array             A class map array
      */
-    public static function createMap($path, $blacklist = null, IOInterface $io = null, $namespace = null, $autoloadType = null, &$scannedFiles = array())
+    public static function createMap($path, $excluded = null, IOInterface $io = null, $namespace = null, $autoloadType = null, &$scannedFiles = array())
     {
         if (is_string($path)) {
             $basePath = $path;
@@ -102,12 +102,12 @@ class ClassMapGenerator
                 continue;
             }
 
-            // check the realpath of the file against the blacklist as the path might be a symlink and the blacklist is realpath'd so symlink are resolved
-            if ($blacklist && preg_match($blacklist, strtr($realPath, '\\', '/'))) {
+            // check the realpath of the file against the excluded paths as the path might be a symlink and the excluded path is realpath'd so symlink are resolved
+            if ($excluded && preg_match($excluded, strtr($realPath, '\\', '/'))) {
                 continue;
             }
             // check non-realpath of file for directories symlink in project dir
-            if ($blacklist && preg_match($blacklist, strtr($filePath, '\\', '/'))) {
+            if ($excluded && preg_match($excluded, strtr($filePath, '\\', '/'))) {
                 continue;
             }
 

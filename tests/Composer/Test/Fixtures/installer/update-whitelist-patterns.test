@@ -1,5 +1,5 @@
 --TEST--
-Update with a package whitelist only updates those corresponding to the pattern
+Update with a package allowed list only updates those corresponding to the pattern
 --COMPOSER--
 {
     "repositories": [

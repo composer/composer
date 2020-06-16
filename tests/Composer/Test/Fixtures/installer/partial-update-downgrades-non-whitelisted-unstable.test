@@ -1,5 +1,5 @@
 --TEST--
-Partial update from lock file should apply lock file and downgrade unstable packages even if not whitelisted
+Partial update from lock file should apply lock file and downgrade unstable packages even if not allowed
 --COMPOSER--
 {
     "repositories": [
