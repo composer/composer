@@ -33,17 +33,31 @@ class PreFileDownloadEvent extends Event
     private $processedUrl;
 
     /**
+     * @var string
+     */
+    private $type;
+
+    /**
+     * @var mixed
+     */
+    private $context;
+
+    /**
      * Constructor.
      *
-     * @param string           $name         The event name
-     * @param HttpDownloader $httpDownloader
-     * @param string           $processedUrl
+     * @param string          $name            The event name
+     * @param HttpDownloader  $httpDownloader
+     * @param string          $processedUrl
+     * @param string          $type
+     * @param mixed           $context
      */
-    public function __construct($name, HttpDownloader $httpDownloader, $processedUrl)
+    public function __construct($name, HttpDownloader $httpDownloader, $processedUrl, $type, $context = null)
     {
         parent::__construct($name);
         $this->httpDownloader = $httpDownloader;
         $this->processedUrl = $processedUrl;
+        $this->type = $type;
+        $this->context = $context;
     }
 
     /**
@@ -55,12 +69,43 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Retrieves the processed URL this remote filesystem will be used for
+     * Retrieves the processed URL that will be downloaded
      *
      * @return string
      */
     public function getProcessedUrl()
     {
         return $this->processedUrl;
+    }
+
+    /**
+     * Sets the processed URL that will be downloaded
+     *
+     * @param string $processedUrl New processed URL
+     */
+    public function setProcessedUrl($processedUrl)
+    {
+        $this->processedUrl = $processedUrl;
+    }
+
+    /**
+     * Returns the type of this download (package, metadata)
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * Returns the context of this download, if any.
+     * If this download is of type package, the package object is returned.
+     *
+     * @return mixed
+     */
+    public function getContext()
+    {
+        return $this->context;
     }
 }
