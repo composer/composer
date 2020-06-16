@@ -19,6 +19,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\BasePackage;
+use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
@@ -44,7 +45,7 @@ class RepositorySet
 
     /**
      * @var array[]
-     * @psalm-var list<array{package: string, version: string, alias: string, alias_normalized: string}>
+     * @psalm-var array<string, array<string, array{alias: string, alias_normalized: string}>>
      */
     private $rootAliases;
 
@@ -91,7 +92,7 @@ class RepositorySet
      */
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
     {
-        $this->rootAliases = $rootAliases;
+        $this->rootAliases = $this->getRootAliasesPerPackage($rootAliases);
         $this->rootReferences = $rootReferences;
 
         $this->acceptableStabilities = array();
@@ -249,8 +250,22 @@ class RepositorySet
 
         $packages = array();
         foreach ($this->repositories as $repository) {
-            $packages = array_merge($packages, $repository->getPackages());
+            foreach ($repository->getPackages() as $package) {
+                $packages[] = $package;
+
+                if (isset($this->rootAliases[$package->getName()][$package->getVersion()])) {
+                    $alias = $this->rootAliases[$package->getName()][$package->getVersion()];
+                    while ($package instanceof AliasPackage) {
+                        $package = $package->getAliasOf();
+                    }
+                    $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
+                    $aliasPackage->setRootPackageAlias(true);
+                    $packages[] = $aliasPackage;
+                }
+
+            }
         }
+
         return new Pool($packages);
     }
 
@@ -269,5 +284,19 @@ class RepositorySet
         }
 
         return $this->createPool($request, new NullIO());
+    }
+
+    private function getRootAliasesPerPackage(array $aliases)
+    {
+        $normalizedAliases = array();
+
+        foreach ($aliases as $alias) {
+            $normalizedAliases[$alias['package']][$alias['version']] = array(
+                'alias' => $alias['alias'],
+                'alias_normalized' => $alias['alias_normalized'],
+            );
+        }
+
+        return $normalizedAliases;
     }
 }
