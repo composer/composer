@@ -29,7 +29,7 @@ abstract class ArchiveDownloader extends FileDownloader
 {
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
-        // if not downgrading and the dir already exists it seems we have an inconsistent state in the vendor dir and the user should fix it
+        // if not upgrading/downgrading and the dir already exists it seems we have an inconsistent state in the vendor dir and the user should fix it
         if (!$prevPackage && is_dir($path) && !$this->filesystem->isDirEmpty($path)) {
             throw new IrrecoverableDownloadException('Expected empty path to extract '.$package.' into but directory exists: '.$path);
         }

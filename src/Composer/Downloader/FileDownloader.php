@@ -425,6 +425,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $output = '';
 
         try {
+            if (is_dir($targetDir.'_compare')) {
+                $this->filesystem->removeDirectory($targetDir.'_compare');
+            }
+
             $this->download($package, $targetDir.'_compare', null, false);
             $this->httpDownloader->wait();
             $this->install($package, $targetDir.'_compare', false);
