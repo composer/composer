@@ -1,7 +1,5 @@
 parameters:
     level: 1
-    autoload_files:
-        - '../src/bootstrap.php'
     excludes_analyse:
        - '../tests/Composer/Test/Fixtures/*'
        - '../tests/Composer/Test/Autoload/Fixtures/*'
@@ -27,6 +25,10 @@ parameters:
 
         # BC with older PHPUnit
         - '~^Call to an undefined static method PHPUnit\\Framework\\TestCase::setExpectedException\(\)\.$~'
+
+        # ZipArchive::* Class constants are already checked before use.
+        - '~^Access to undefined constant ZipArchive::~'
+
     paths:
         - ../src
         - ../tests
