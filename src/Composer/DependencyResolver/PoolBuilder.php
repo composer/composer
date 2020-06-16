@@ -12,21 +12,21 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
-use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\StabilityFilter;
+use Composer\Plugin\PluginEvents;
+use Composer\Plugin\PrePoolCreateEvent;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
+use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
-use Composer\EventDispatcher\EventDispatcher;
-use Composer\Plugin\PrePoolCreateEvent;
-use Composer\Plugin\PluginEvents;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -209,7 +209,7 @@ class PoolBuilder
 
                 $found = false;
                 foreach ($aliasedPackages as $packageOrAlias) {
-                    if ($constraint->matches(new Constraint('==', $packageOrAlias->getVersion()))) {
+                    if (CompilingMatcher::match($constraint, Constraint::OP_EQ, $packageOrAlias->getVersion())) {
                         $found = true;
                     }
                 }
