@@ -1,0 +1,90 @@
+--TEST--
+Aliases are loaded when splitting require-dev from require (https://github.com/composer/composer/issues/8954)
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/aliased", "version": "dev-next", "replace": { "a/aliased-replaced": "self.version" }
+                },
+                {
+                    "name": "b/requirer", "version": "2.3.0",
+                    "require": { "a/aliased-replaced": "^4.0" }
+                },
+                {
+                    "name": "a/aliased2", "version": "dev-next", "replace": { "a/aliased-replaced2": "self.version" }
+                },
+                {
+                    "name": "b/requirer2", "version": "2.3.0",
+                    "require": { "a/aliased-replaced": "^4.0", "a/aliased-replaced2": "^4.0" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/aliased": "dev-next as 4.1.0-RC2",
+        "b/requirer": "2.3.0"
+    },
+    "require-dev": {
+        "a/aliased2": "dev-next as 4.1.0-RC2",
+        "b/requirer2": "2.3.0"
+    }
+}
+--RUN--
+update
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/aliased", "version": "dev-next",
+            "type": "library",
+            "replace": { "a/aliased-replaced": "self.version" }
+        },
+        {
+            "name": "b/requirer", "version": "2.3.0",
+            "require": { "a/aliased-replaced": "^4.0" },
+            "type": "library"
+        }
+    ],
+    "packages-dev": [
+        {
+            "name": "a/aliased2", "version": "dev-next",
+            "type": "library",
+            "replace": { "a/aliased-replaced2": "self.version" }
+        },
+        {
+            "name": "b/requirer2", "version": "2.3.0",
+            "require": { "a/aliased-replaced": "^4.0", "a/aliased-replaced2": "^4.0" },
+            "type": "library"
+        }
+    ],
+    "aliases": [{
+        "package": "a/aliased2",
+        "version": "dev-next",
+        "alias": "4.1.0-RC2",
+        "alias_normalized": "4.1.0.0-RC2"
+    }, {
+        "package": "a/aliased",
+        "version": "dev-next",
+        "alias": "4.1.0-RC2",
+        "alias_normalized": "4.1.0.0-RC2"
+    }],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "a/aliased": 20,
+        "a/aliased2": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Installing a/aliased (dev-next)
+Marking a/aliased (4.1.0-RC2) as installed, alias of a/aliased (dev-next)
+Installing b/requirer (2.3.0)
+Installing a/aliased2 (dev-next)
+Marking a/aliased2 (4.1.0-RC2) as installed, alias of a/aliased2 (dev-next)
+Installing b/requirer2 (2.3.0)
