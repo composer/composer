@@ -92,7 +92,7 @@ class RepositorySet
      */
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
     {
-        $this->rootAliases = $this->getRootAliasesPerPackage($rootAliases);
+        $this->rootAliases = self::getRootAliasesPerPackage($rootAliases);
         $this->rootReferences = $rootReferences;
 
         $this->acceptableStabilities = array();
@@ -286,7 +286,7 @@ class RepositorySet
         return $this->createPool($request, new NullIO());
     }
 
-    private function getRootAliasesPerPackage(array $aliases)
+    private static function getRootAliasesPerPackage(array $aliases)
     {
         $normalizedAliases = array();
 
