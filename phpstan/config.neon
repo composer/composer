@@ -26,15 +26,8 @@ parameters:
         # BC with older PHPUnit
         - '~^Call to an undefined static method PHPUnit\\Framework\\TestCase::setExpectedException\(\)\.$~'
 
-        - # Windows SAPI functions, already checked before using them.
-            message: '~^Function sapi_windows_set_ctrl_handler not found.$~'
-            paths:
-                - ../src/Composer/Command/CreateProjectCommand.php
-                - ../src/Composer/Installer/InstallationManager.php
-
-        - # ZipArchive::LIBZIP_VERSION Class constant is already checked before use.
-            message: '~^Access to undefined constant ZipArchive::LIBZIP_VERSION.$~'
-            path: ../src/Composer/Repository/PlatformRepository.php
+        # ZipArchive::* Class constants are already checked before use.
+        - '~^Access to undefined constant ZipArchive::~'
 
     paths:
         - ../src
