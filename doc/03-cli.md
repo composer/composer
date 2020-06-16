@@ -785,7 +785,7 @@ Lists the name, version and license of every package installed. Use
 
 ### Options
 
-* **--format:** Format of the output: text or json (default: "text")
+* **--format:** Format of the output: text, json or summary (default: "text")
 * **--no-dev:** Remove dev dependencies from the output
 
 ## run-script
