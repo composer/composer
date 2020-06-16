@@ -286,6 +286,8 @@ EOT
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
+        $composer->getInstallationManager()->setOutputProgress(!$input->getOption('no-progress'));
+
         $install = Installer::create($io, $composer);
 
         $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);

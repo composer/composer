@@ -139,8 +139,8 @@ class FileDownloaderTest extends TestCase
             ->will($this->returnValue($path.'/vendor'));
 
         try {
-            $promise = $downloader->download($packageMock, $path);
             $loop = new Loop($this->httpDownloader);
+            $promise = $downloader->download($packageMock, $path);
             $loop->wait(array($promise));
 
             $this->fail('Download was expected to throw');
@@ -225,8 +225,8 @@ class FileDownloaderTest extends TestCase
         touch($dlFile);
 
         try {
-            $promise = $downloader->download($packageMock, $path);
             $loop = new Loop($this->httpDownloader);
+            $promise = $downloader->download($packageMock, $path);
             $loop->wait(array($promise));
 
             $this->fail('Download was expected to throw');
@@ -296,8 +296,8 @@ class FileDownloaderTest extends TestCase
         mkdir(dirname($dlFile), 0777, true);
         touch($dlFile);
 
-        $promise = $downloader->download($newPackage, $path, $oldPackage);
         $loop = new Loop($this->httpDownloader);
+        $promise = $downloader->download($newPackage, $path, $oldPackage);
         $loop->wait(array($promise));
 
         $downloader->update($oldPackage, $newPackage, $path);

@@ -39,15 +39,6 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     const STRATEGY_SYMLINK = 10;
     const STRATEGY_MIRROR = 20;
 
-    /** @var ProcessExecutor */
-    private $process;
-
-    public function __construct(IOInterface $io, Config $config, HttpDownloader $downloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, Filesystem $fs = null, ProcessExecutor $process = null)
-    {
-        $this->process = $process ?: new ProcessExecutor($io);
-        parent::__construct($io, $config, $downloader, $eventDispatcher, $cache, $fs);
-    }
-
     /**
      * {@inheritdoc}
      */

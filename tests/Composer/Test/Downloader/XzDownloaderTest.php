@@ -70,8 +70,8 @@ class XzDownloaderTest extends TestCase
         $downloader = new XzDownloader($io, $config, $httpDownloader = new HttpDownloader($io, $this->getMockBuilder('Composer\Config')->getMock()), null, null, null);
 
         try {
-            $promise = $downloader->download($packageMock, $this->testDir.'/install-path');
             $loop = new Loop($httpDownloader);
+            $promise = $downloader->download($packageMock, $this->testDir.'/install-path');
             $loop->wait(array($promise));
             $downloader->install($packageMock, $this->testDir.'/install-path');
 

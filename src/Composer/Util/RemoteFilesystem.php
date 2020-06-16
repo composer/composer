@@ -20,6 +20,7 @@ use Composer\Util\HttpDownloader;
 use Composer\Util\Http\Response;
 
 /**
+ * @internal
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nils Adermann <naderman@naderman.de>

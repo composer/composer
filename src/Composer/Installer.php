@@ -685,7 +685,7 @@ class Installer
         }
 
         if ($this->executeOperations) {
-            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode);
+            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts);
         } else {
             foreach ($localRepoTransaction->getOperations() as $operation) {
                 // output op, but alias op only in debug verbosity

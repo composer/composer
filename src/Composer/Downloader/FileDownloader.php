@@ -27,7 +27,9 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Url as UrlUtil;
+use Composer\Util\ProcessExecutor;
 use Composer\Downloader\TransportException;
+use React\Promise\PromiseInterface;
 
 /**
  * Base downloader for files
@@ -51,10 +53,13 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     protected $cache;
     /** @var EventDispatcher */
     protected $eventDispatcher;
+    /** @var ProcessExecutor */
+    protected $process;
     /**
      * @private this is only public for php 5.3 support in closures
      */
     public $lastCacheWrites = array();
+    private $additionalCleanupPaths = array();
 
     /**
      * Constructor.
@@ -66,14 +71,15 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @param Cache            $cache           Cache instance
      * @param Filesystem       $filesystem      The filesystem
      */
-    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, Filesystem $filesystem = null, ProcessExecutor $process = null)
     {
         $this->io = $io;
         $this->config = $config;
         $this->eventDispatcher = $eventDispatcher;
         $this->httpDownloader = $httpDownloader;
-        $this->filesystem = $filesystem ?: new Filesystem();
         $this->cache = $cache;
+        $this->process = $process ?: new ProcessExecutor($io);
+        $this->filesystem = $filesystem ?: new Filesystem($this->process);
 
         if ($this->cache && $this->cache->gcIsNecessary()) {
             $this->cache->gc($config->get('cache-files-ttl'), $config->get('cache-files-maxsize'));
@@ -258,6 +264,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $path,
         );
 
+        if (isset($this->additionalCleanupPaths[$package->getName()])) {
+            foreach ($this->additionalCleanupPaths[$package->getName()] as $path) {
+                $this->filesystem->remove($path);
+            }
+        }
+
         foreach ($dirsToCleanUp as $dir) {
             if (is_dir($dir) && $this->filesystem->isDirEmpty($dir)) {
                 $this->filesystem->removeDirectory($dir);
@@ -292,6 +304,29 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
+     * TODO mark private in v3
+     * @protected This is public due to PHP 5.3
+     */
+    public function addCleanupPath(PackageInterface $package, $path)
+    {
+        $this->additionalCleanupPaths[$package->getName()][] = $path;
+    }
+
+    /**
+     * TODO mark private in v3
+     * @protected This is public due to PHP 5.3
+     */
+    public function removeCleanupPath(PackageInterface $package, $path)
+    {
+        if (isset($this->additionalCleanupPaths[$package->getName()])) {
+            $idx = array_search($path, $this->additionalCleanupPaths[$package->getName()]);
+            if (false !== $idx) {
+                unset($this->additionalCleanupPaths[$package->getName()][$idx]);
+            }
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function update(PackageInterface $initial, PackageInterface $target, $path)
@@ -303,10 +338,19 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Upgrading' : 'Downgrading';
         $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
 
-        $this->remove($initial, $path, false);
-        $this->install($target, $path, false);
+        $promise = $this->remove($initial, $path, false);
+        if (!$promise instanceof PromiseInterface) {
+            $promise = \React\Promise\resolve();
+        }
+        $self = $this;
+        $io = $this->io;
 
-        $this->io->writeError('');
+        return $promise->then(function () use ($self, $target, $path, $io) {
+            $promise = $self->install($target, $path, false);
+            $io->writeError('');
+
+            return $promise;
+        });
     }
 
     /**
@@ -380,9 +424,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $output = '';
 
         try {
-            $res = $this->download($package, $targetDir.'_compare', null, false);
+            $this->download($package, $targetDir.'_compare', null, false);
             $this->httpDownloader->wait();
-            $res = $this->install($package, $targetDir.'_compare', false);
+            $this->install($package, $targetDir.'_compare', false);
+            $this->process->wait();
 
             $comparer = new Comparer();
             $comparer->setSource($targetDir.'_compare');

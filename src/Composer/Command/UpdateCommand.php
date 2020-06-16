@@ -180,6 +180,8 @@ EOT
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'update', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
+        $composer->getInstallationManager()->setOutputProgress(!$input->getOption('no-progress'));
+
         $install = Installer::create($io, $composer);
 
         $config = $composer->getConfig();
