@@ -3,10 +3,10 @@ Update updates URLs for updated packages if they have changed
 
 a/a is dev and gets everything updated as it updates to a new ref
 b/b is a tag and gets everything updated by updating the package URL directly
-c/c is a tag and not whitelisted and remains unchanged
+c/c is a tag and not allowlisted and remains unchanged
 d/d is dev but with a #ref so it should get URL updated but not the reference
 e/e is dev and newly installed with a #ref so it should get the correct URL but with the #111 ref
-f/f is dev but not whitelisted and remains unchanged
+f/f is dev but not allowlisted and remains unchanged
 g/g is dev and installed in a different ref than the #ref, so it gets updated and gets the new URL but not the new ref
 --COMPOSER--
 {

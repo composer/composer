@@ -1,5 +1,5 @@
 --TEST--
-Update with a package whitelist pattern and all-dependencies flag updates packages and their dependencies, even if defined as root dependency, matching the pattern
+Update with a package allow list pattern and all-dependencies flag updates packages and their dependencies, even if defined as root dependency, matching the pattern
 --COMPOSER--
 {
     "repositories": [
@@ -8,10 +8,10 @@ Update with a package whitelist pattern and all-dependencies flag updates packag
             "package": [
                 { "name": "fixed/pkg", "version": "1.1.0" },
                 { "name": "fixed/pkg", "version": "1.0.0" },
-                { "name": "whitelisted/pkg-component1", "version": "1.1.0" },
-                { "name": "whitelisted/pkg-component1", "version": "1.0.0" },
-                { "name": "whitelisted/pkg-component2", "version": "1.1.0", "require": { "dependency/pkg": "1.*" } },
-                { "name": "whitelisted/pkg-component2", "version": "1.0.0", "require": { "dependency/pkg": "1.*" } },
+                { "name": "allowed/pkg-component1", "version": "1.1.0" },
+                { "name": "allowed/pkg-component1", "version": "1.0.0" },
+                { "name": "allowed/pkg-component2", "version": "1.1.0", "require": { "dependency/pkg": "1.*" } },
+                { "name": "allowed/pkg-component2", "version": "1.0.0", "require": { "dependency/pkg": "1.*" } },
                 { "name": "dependency/pkg", "version": "1.1.0" },
                 { "name": "dependency/pkg", "version": "1.0.0" },
                 { "name": "unrelated/pkg", "version": "1.1.0", "require": { "unrelated/pkg-dependency": "1.*" }  },
@@ -23,8 +23,8 @@ Update with a package whitelist pattern and all-dependencies flag updates packag
     ],
     "require": {
         "fixed/pkg": "1.*",
-        "whitelisted/pkg-component1": "1.*",
-        "whitelisted/pkg-component2": "1.*",
+        "allowed/pkg-component1": "1.*",
+        "allowed/pkg-component2": "1.*",
         "dependency/pkg": "1.*",
         "unrelated/pkg": "1.*"
     }
@@ -32,8 +32,8 @@ Update with a package whitelist pattern and all-dependencies flag updates packag
 --INSTALLED--
 [
     { "name": "fixed/pkg", "version": "1.0.0" },
-    { "name": "whitelisted/pkg-component1", "version": "1.0.0" },
-    { "name": "whitelisted/pkg-component2", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
+    { "name": "allowed/pkg-component1", "version": "1.0.0" },
+    { "name": "allowed/pkg-component2", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
     { "name": "dependency/pkg", "version": "1.0.0" },
     { "name": "unrelated/pkg", "version": "1.0.0", "require": { "unrelated/pkg-dependency": "1.*" } },
     { "name": "unrelated/pkg-dependency", "version": "1.0.0" }
@@ -42,8 +42,8 @@ Update with a package whitelist pattern and all-dependencies flag updates packag
 {
     "packages": [
         { "name": "fixed/pkg", "version": "1.0.0" },
-        { "name": "whitelisted/pkg-component1", "version": "1.0.0" },
-        { "name": "whitelisted/pkg-component2", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
+        { "name": "allowed/pkg-component1", "version": "1.0.0" },
+        { "name": "allowed/pkg-component2", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
         { "name": "dependency/pkg", "version": "1.0.0" },
         { "name": "unrelated/pkg", "version": "1.0.0", "require": { "unrelated/pkg-dependency": "1.*" } },
         { "name": "unrelated/pkg-dependency", "version": "1.0.0" }
@@ -58,8 +58,8 @@ Update with a package whitelist pattern and all-dependencies flag updates packag
     "platform-dev": []
 }
 --RUN--
-update whitelisted/pkg-* --with-all-dependencies
+update allowed/pkg-* --with-all-dependencies
 --EXPECT--
-Upgrading whitelisted/pkg-component1 (1.0.0 => 1.1.0)
+Upgrading allowed/pkg-component1 (1.0.0 => 1.1.0)
 Upgrading dependency/pkg (1.0.0 => 1.1.0)
-Upgrading whitelisted/pkg-component2 (1.0.0 => 1.1.0)
+Upgrading allowed/pkg-component2 (1.0.0 => 1.1.0)
