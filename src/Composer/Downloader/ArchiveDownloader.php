@@ -95,7 +95,7 @@ abstract class ArchiveDownloader extends FileDownloader
             $filesystem->unlink($fileName);
 
             /**
-             * Returns the folder content, excluding dotfiles
+             * Returns the folder content, excluding .DS_Store
              *
              * @param  string         $dir Directory
              * @return \SplFileInfo[]

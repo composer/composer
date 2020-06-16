@@ -283,20 +283,31 @@ class InstallationManager
 
             // execute operations in batches to make sure every plugin is installed in the
             // right order and activated before the packages depending on it are installed
-            while ($operations) {
-                $batch = array();
-
-                foreach ($operations as $index => $operation) {
-                    unset($operations[$index]);
-                    $batch[$index] = $operation;
-                    if (in_array($operation->getOperationType(), array('update', 'install'), true)) {
-                        $package = $operation->getOperationType() === 'update' ? $operation->getTargetPackage() : $operation->getPackage();
-                        if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
-                            break;
+            $batches = array();
+            $batch = array();
+            foreach ($operations as $index => $operation) {
+                if (in_array($operation->getOperationType(), array('update', 'install'), true)) {
+                    $package = $operation->getOperationType() === 'update' ? $operation->getTargetPackage() : $operation->getPackage();
+                    if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
+                        if ($batch) {
+                            $batches[] = $batch;
                         }
+                        unset($operations[$index]);
+                        $batches[] = array($index => $operation);
+                        $batch = array();
+
+                        continue;
                     }
                 }
+                unset($operations[$index]);
+                $batch[$index] = $operation;
+            }
 
+            if ($batch) {
+                $batches[] = $batch;
+            }
+
+            foreach ($batches as $batch) {
                 $this->executeBatch($repo, $batch, $cleanupPromises, $devMode, $runScripts);
             }
         } catch (\Exception $e) {
