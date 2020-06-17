@@ -18,10 +18,18 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\Platform;
+use Composer\IO\IOInterface;
+use Composer\Config;
+use Composer\Cache;
+use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem as ComposerFilesystem;
+use Composer\Util\Filesystem;
+use Composer\EventDispatcher\EventDispatcher;
 use Symfony\Component\Filesystem\Exception\IOException;
-use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 
 /**
  * Download a package from a local path.
@@ -77,11 +85,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         if (realpath($path) === $realUrl) {
             if ($output) {
-                $this->io->writeError(sprintf(
-                    '  - Installing <info>%s</info> (<comment>%s</comment>): Source already present',
-                    $package->getName(),
-                    $package->getFullPrettyVersion()
-                ));
+                $this->io->writeError("  - " . InstallOperation::format($package).': Source already present');
             } else {
                 $this->io->writeError('Source already present', false);
             }
@@ -115,15 +119,11 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             $allowedStrategies = array(self::STRATEGY_MIRROR);
         }
 
-        $fileSystem = new Filesystem();
+        $symfonyFilesystem = new SymfonyFilesystem();
         $this->filesystem->removeDirectory($path);
 
         if ($output) {
-            $this->io->writeError(sprintf(
-                '  - Installing <info>%s</info> (<comment>%s</comment>): ',
-                $package->getName(),
-                $package->getFullPrettyVersion()
-            ), false);
+            $this->io->writeError("  - " . InstallOperation::format($package).': ', false);
         }
 
         $isFallback = false;
@@ -142,9 +142,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     $path = rtrim($path, "/");
                     $this->io->writeError(sprintf('Symlinking from %s', $url), false);
                     if ($transportOptions['relative']) {
-                        $fileSystem->symlink($shortestPath, $path);
+                        $symfonyFilesystem->symlink($shortestPath, $path);
                     } else {
-                        $fileSystem->symlink($realUrl, $path);
+                        $symfonyFilesystem->symlink($realUrl, $path);
                     }
                 }
             } catch (IOException $e) {
@@ -161,12 +161,11 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         // Fallback if symlink failed or if symlink is not allowed for the package
         if (self::STRATEGY_MIRROR == $currentStrategy) {
-            $fs = new ComposerFilesystem();
-            $realUrl = $fs->normalizePath($realUrl);
+            $realUrl = $this->filesystem->normalizePath($realUrl);
 
             $this->io->writeError(sprintf('%sMirroring from %s', $isFallback ? '    ' : '', $url), false);
             $iterator = new ArchivableFilesFinder($realUrl, array());
-            $fileSystem->mirror($realUrl, $path, $iterator);
+            $symfonyFilesystem->mirror($realUrl, $path, $iterator);
         }
 
         if ($output) {
@@ -183,7 +182,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         if ($path === $realUrl) {
             if ($output) {
-                $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>), source is still present in $path");
+                $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
             }
 
             return;
@@ -196,7 +195,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
          */
         if (Platform::isWindows() && $this->filesystem->isJunction($path)) {
             if ($output) {
-                $this->io->writeError("  - Removing junction for <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+                $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
             }
             if (!$this->filesystem->removeJunction($path)) {
                 $this->io->writeError("    <warning>Could not remove junction at " . $path . " - is another process locking it?</warning>");
@@ -213,7 +212,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     public function getVcsReference(PackageInterface $package, $path)
     {
         $parser = new VersionParser;
-        $guesser = new VersionGuesser($this->config, new ProcessExecutor($this->io), $parser);
+        $guesser = new VersionGuesser($this->config, $this->process, $parser);
         $dumper = new ArrayDumper;
 
         $packageConfig = $dumper->dump($package);

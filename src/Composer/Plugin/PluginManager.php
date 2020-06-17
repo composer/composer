@@ -34,15 +34,23 @@ use Composer\Util\PackageSorter;
  */
 class PluginManager
 {
+    /** @var Composer */
     protected $composer;
+    /** @var IOInterface */
     protected $io;
+    /** @var Composer */
     protected $globalComposer;
+    /** @var VersionParser */
     protected $versionParser;
+    /** @var bool */
     protected $disablePlugins = false;
 
+    /** @var array<PluginInterface> */
     protected $plugins = array();
+    /** @var array<string, PluginInterface> */
     protected $registeredPlugins = array();
 
+    /** @var int */
     private static $classCounter = 0;
 
     /**

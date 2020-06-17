@@ -233,7 +233,7 @@ abstract class BasePackage implements PackageInterface
         }
 
         // if source reference is a sha1 hash -- truncate
-        if ($truncate && \strlen($reference) === 40) {
+        if ($truncate && \strlen($reference) === 40 && $this->getSourceType() !== 'svn') {
             return $this->getPrettyVersion() . ' ' . substr($reference, 0, 7);
         }
 

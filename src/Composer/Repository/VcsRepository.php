@@ -53,7 +53,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     private $emptyReferences = array();
     private $versionTransportExceptions = array();
 
-    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null, array $drivers = null, VersionCacheInterface $versionCache = null)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null, ProcessExecutor $process = null, array $drivers = null, VersionCacheInterface $versionCache = null)
     {
         parent::__construct();
         $this->drivers = $drivers ?: array(
@@ -78,7 +78,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $this->repoConfig = $repoConfig;
         $this->versionCache = $versionCache;
         $this->httpDownloader = $httpDownloader;
-        $this->processExecutor = new ProcessExecutor($io);
+        $this->processExecutor = $process ?: new ProcessExecutor($io);
     }
 
     public function getRepoName()

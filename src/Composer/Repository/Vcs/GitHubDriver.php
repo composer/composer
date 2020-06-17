@@ -338,14 +338,12 @@ class GitHubDriver extends VcsDriver
             $this->branches = array();
             $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads?per_page=100';
 
-            $branchBlacklist = array('gh-pages');
-
             do {
                 $response = $this->getContents($resource);
                 $branchData = $response->decodeJson();
                 foreach ($branchData as $branch) {
                     $name = substr($branch['ref'], 11);
-                    if (!in_array($name, $branchBlacklist)) {
+                    if ($name !== 'gh-pages') {
                         $this->branches[$name] = $branch['object']['sha'];
                     }
                 }

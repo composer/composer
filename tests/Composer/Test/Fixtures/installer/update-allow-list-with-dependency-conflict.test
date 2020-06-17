@@ -1,5 +1,5 @@
 --TEST--
-Update with a package whitelist only updates whitelisted packages if no dependency conflicts
+Update with a package allow list only updates allowed packages if no dependency conflicts
 --COMPOSER--
 {
     "repositories": [
@@ -8,8 +8,8 @@ Update with a package whitelist only updates whitelisted packages if no dependen
             "package": [
                 { "name": "fixed/pkg", "version": "1.1.0" },
                 { "name": "fixed/pkg", "version": "1.0.0" },
-                { "name": "whitelisted/pkg", "version": "1.1.0", "require": { "dependency/pkg": "1.1.0" } },
-                { "name": "whitelisted/pkg", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
+                { "name": "allowed/pkg", "version": "1.1.0", "require": { "dependency/pkg": "1.1.0" } },
+                { "name": "allowed/pkg", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
                 { "name": "dependency/pkg", "version": "1.1.0" },
                 { "name": "dependency/pkg", "version": "1.0.0" },
                 { "name": "unrelated/pkg", "version": "1.1.0", "require": { "unrelated/pkg-dependency": "1.*" }  },
@@ -21,14 +21,14 @@ Update with a package whitelist only updates whitelisted packages if no dependen
     ],
     "require": {
         "fixed/pkg": "1.*",
-        "whitelisted/pkg": "1.*",
+        "allowed/pkg": "1.*",
         "unrelated/pkg": "1.*"
     }
 }
 --INSTALLED--
 [
     { "name": "fixed/pkg", "version": "1.0.0" },
-    { "name": "whitelisted/pkg", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
+    { "name": "allowed/pkg", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
     { "name": "dependency/pkg", "version": "1.0.0" },
     { "name": "unrelated/pkg", "version": "1.0.0", "require": { "unrelated/pkg-dependency": "1.*" } },
     { "name": "unrelated/pkg-dependency", "version": "1.0.0" }
@@ -37,7 +37,7 @@ Update with a package whitelist only updates whitelisted packages if no dependen
 {
     "packages": [
         { "name": "fixed/pkg", "version": "1.0.0" },
-        { "name": "whitelisted/pkg", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
+        { "name": "allowed/pkg", "version": "1.0.0", "require": { "dependency/pkg": "1.0.0" } },
         { "name": "dependency/pkg", "version": "1.0.0" },
         { "name": "unrelated/pkg", "version": "1.0.0", "require": { "unrelated/pkg-dependency": "1.*" } },
         { "name": "unrelated/pkg-dependency", "version": "1.0.0" }
@@ -50,5 +50,5 @@ Update with a package whitelist only updates whitelisted packages if no dependen
     "prefer-lowest": false
 }
 --RUN--
-update whitelisted/pkg
+update allowed/pkg
 --EXPECT--

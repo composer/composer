@@ -14,11 +14,15 @@ namespace Composer\Test\Repository;
 
 use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
+use Composer\Util\ProcessExecutor;
+use Composer\Package\Version\VersionParser;
 use Composer\Util\Platform;
 use Symfony\Component\Process\ExecutableFinder;
 
-class PlatformRepositoryTest extends TestCase {
-    public function testHHVMVersionWhenExecutingInHHVM() {
+class PlatformRepositoryTest extends TestCase
+{
+    public function testHHVMVersionWhenExecutingInHHVM()
+    {
         if (!defined('HHVM_VERSION_ID')) {
             $this->markTestSkipped('Not running with HHVM');
             return;
@@ -36,7 +40,8 @@ class PlatformRepositoryTest extends TestCase {
         );
     }
 
-    public function testHHVMVersionWhenExecutingInPHP() {
+    public function testHHVMVersionWhenExecutingInPHP()
+    {
         if (defined('HHVM_VERSION_ID')) {
             $this->markTestSkipped('Running with HHVM');
             return;
@@ -54,17 +59,18 @@ class PlatformRepositoryTest extends TestCase {
         if ($hhvm === null) {
             $this->markTestSkipped('HHVM is not installed');
         }
-        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
-        $process->expects($this->once())->method('execute')->will($this->returnCallback(
-            function($command, &$out) {
-                $this->assertContains('HHVM_VERSION', $command);
-                $out = '4.0.1-dev';
-                return 0;
-            }
-        ));
-        $repository = new PlatformRepository(array(), array(), $process);
+        $repository = new PlatformRepository(array(), array());
         $package = $repository->findPackage('hhvm', '*');
         $this->assertNotNull($package, 'failed to find HHVM package');
-        $this->assertSame('4.0.1.0-dev', $package->getVersion());
+
+        $process = new ProcessExecutor();
+        $exitCode = $process->execute(
+            ProcessExecutor::escape($hhvm).
+            ' --php -d hhvm.jit=0 -r "echo HHVM_VERSION;" 2>/dev/null',
+            $version
+        );
+        $parser = new VersionParser;
+
+        $this->assertSame($parser->normalize($version), $package->getVersion());
     }
 }

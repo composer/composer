@@ -16,6 +16,9 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\IO\IOInterface;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 
 /**
  * Metapackage installation manager.
@@ -76,7 +79,7 @@ class MetapackageInstaller implements InstallerInterface
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+        $this->io->writeError("  - " . InstallOperation::format($package));
 
         $repo->addPackage(clone $package);
     }
@@ -90,11 +93,7 @@ class MetapackageInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$initial);
         }
 
-        $name = $target->getName();
-        $from = $initial->getFullPrettyVersion();
-        $to = $target->getFullPrettyVersion();
-        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Upgrading' : 'Downgrading';
-        $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>)");
+        $this->io->writeError("  - " . UpdateOperation::format($initial, $target));
 
         $repo->removePackage($initial);
         $repo->addPackage(clone $target);
@@ -109,7 +108,7 @@ class MetapackageInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
 
-        $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+        $this->io->writeError("  - " . UninstallOperation::format($package));
 
         $repo->removePackage($package);
     }

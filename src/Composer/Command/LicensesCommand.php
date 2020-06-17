@@ -21,6 +21,7 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * @author Benoît Merlet <benoit.merlet@gmail.com>
@@ -111,6 +112,28 @@ EOT
                 )));
                 break;
 
+            case 'summary':
+                $dependencies = array();
+                foreach ($packages as $package) {
+                    $license = $package->getLicense();
+                    $licenseName = $license[0];
+                    if (!isset($dependencies[$licenseName])) {
+                        $dependencies[$licenseName] = 0;
+                    }
+                    $dependencies[$licenseName]++;
+                }
+
+                $rows = array();
+                foreach ($dependencies as $usedLicense => $numberOfDependencies) {
+                    $rows[] = array($usedLicense, $numberOfDependencies);
+                }
+
+                $symfonyIo = new SymfonyStyle($input, $output);
+                $symfonyIo->table(
+                    array('License', 'Number of dependencies'),
+                    $rows
+                );
+                break;
             default:
                 throw new \RuntimeException(sprintf('Unsupported format "%s".  See help for supported formats.', $format));
         }

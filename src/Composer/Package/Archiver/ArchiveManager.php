@@ -25,7 +25,9 @@ use Composer\Json\JsonFile;
  */
 class ArchiveManager
 {
+    /** @var DownloadManager */
     protected $downloadManager;
+    /** @var Loop */
     protected $loop;
 
     /**

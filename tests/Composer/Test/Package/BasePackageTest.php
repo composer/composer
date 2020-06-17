@@ -81,7 +81,7 @@ class BasePackageTest extends TestCase
         $createPackage = function ($arr) use ($self) {
             $package = $self->getMockForAbstractClass('\Composer\Package\BasePackage', array(), '', false);
             $package->expects($self->once())->method('isDev')->will($self->returnValue(true));
-            $package->expects($self->once())->method('getSourceType')->will($self->returnValue('git'));
+            $package->expects($self->any())->method('getSourceType')->will($self->returnValue('git'));
             $package->expects($self->once())->method('getPrettyVersion')->will($self->returnValue('PrettyVersion'));
             $package->expects($self->any())->method('getSourceReference')->will($self->returnValue($arr['sourceReference']));
 

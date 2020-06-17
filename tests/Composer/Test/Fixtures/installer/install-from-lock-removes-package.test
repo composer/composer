@@ -6,8 +6,8 @@ Install from a lock file that deleted a package
         {
             "type": "package",
             "package": [
-                { "name": "whitelisted/pkg", "version": "1.1.0" },
-                { "name": "whitelisted/pkg", "version": "1.0.0", "require": { "fixed/dependency": "1.0.0", "old/dependency": "1.0.0" } },
+                { "name": "allowed/pkg", "version": "1.1.0" },
+                { "name": "allowed/pkg", "version": "1.0.0", "require": { "fixed/dependency": "1.0.0", "old/dependency": "1.0.0" } },
                 { "name": "fixed/dependency", "version": "1.1.0" },
                 { "name": "fixed/dependency", "version": "1.0.0" },
                 { "name": "old/dependency", "version": "1.0.0" }
@@ -15,14 +15,14 @@ Install from a lock file that deleted a package
         }
     ],
     "require": {
-        "whitelisted/pkg": "1.*",
+        "allowed/pkg": "1.*",
         "fixed/dependency": "1.*"
     }
 }
 --LOCK--
 {
     "packages": [
-        { "name": "whitelisted/pkg", "version": "1.1.0" },
+        { "name": "allowed/pkg", "version": "1.1.0" },
         { "name": "fixed/dependency", "version": "1.0.0" }
     ],
     "packages-dev": [],
@@ -33,7 +33,7 @@ Install from a lock file that deleted a package
 }
 --INSTALLED--
 [
-    { "name": "whitelisted/pkg", "version": "1.0.0", "require": { "old/dependency": "1.0.0", "fixed/dependency": "1.0.0" } },
+    { "name": "allowed/pkg", "version": "1.0.0", "require": { "old/dependency": "1.0.0", "fixed/dependency": "1.0.0" } },
     { "name": "fixed/dependency", "version": "1.0.0" },
     { "name": "old/dependency", "version": "1.0.0" }
 ]
@@ -41,4 +41,4 @@ Install from a lock file that deleted a package
 install
 --EXPECT--
 Removing old/dependency (1.0.0)
-Upgrading whitelisted/pkg (1.0.0 => 1.1.0)
+Upgrading allowed/pkg (1.0.0 => 1.1.0)

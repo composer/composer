@@ -20,6 +20,7 @@ use Composer\Util\HttpDownloader;
 use Composer\Util\Http\Response;
 
 /**
+ * @internal
  * @author François Pluchino <francois.pluchino@opendisplay.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nils Adermann <naderman@naderman.de>
@@ -54,8 +55,9 @@ class RemoteFilesystem
      * @param Config      $config     The config
      * @param array       $options    The options
      * @param bool        $disableTls
+     * @param AuthHelper  $authHelper
      */
-    public function __construct(IOInterface $io, Config $config, array $options = array(), $disableTls = false)
+    public function __construct(IOInterface $io, Config $config, array $options = array(), $disableTls = false, AuthHelper $authHelper = null)
     {
         $this->io = $io;
 
@@ -70,7 +72,7 @@ class RemoteFilesystem
         // handle the other externally set options normally.
         $this->options = array_replace_recursive($this->options, $options);
         $this->config = $config;
-        $this->authHelper = new AuthHelper($io, $config);
+        $this->authHelper = isset($authHelper) ? $authHelper : new AuthHelper($io, $config);
     }
 
     /**

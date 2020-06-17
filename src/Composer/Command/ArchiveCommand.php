@@ -23,6 +23,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\Filesystem;
 use Composer\Util\Loop;
+use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -112,9 +113,10 @@ EOT
             $archiveManager = $composer->getArchiveManager();
         } else {
             $factory = new Factory;
+            $process = new ProcessExecutor();
             $httpDownloader = $factory->createHttpDownloader($io, $config);
-            $downloadManager = $factory->createDownloadManager($io, $config, $httpDownloader);
-            $archiveManager = $factory->createArchiveManager($config, $downloadManager, new Loop($httpDownloader));
+            $downloadManager = $factory->createDownloadManager($io, $config, $httpDownloader, $process);
+            $archiveManager = $factory->createArchiveManager($config, $downloadManager, new Loop($httpDownloader, $process));
         }
 
         if ($packageName) {

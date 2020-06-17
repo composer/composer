@@ -16,6 +16,8 @@ use Composer\Package\PackageInterface;
 use Symfony\Component\Finder\Finder;
 use Composer\IO\IOInterface;
 use Composer\Exception\IrrecoverableDownloadException;
+use React\Promise\PromiseInterface;
+use Composer\DependencyResolver\Operation\InstallOperation;
 
 /**
  * Base downloader for archives
@@ -28,14 +30,7 @@ abstract class ArchiveDownloader extends FileDownloader
 {
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
-        $res = parent::download($package, $path, $prevPackage, $output);
-
-        // if not downgrading and the dir already exists it seems we have an inconsistent state in the vendor dir and the user should fix it
-        if (!$prevPackage && is_dir($path) && !$this->filesystem->isDirEmpty($path)) {
-            throw new IrrecoverableDownloadException('Expected empty path to extract '.$package.' into but directory exists: '.$path);
-        }
-
-        return $res;
+        return parent::download($package, $path, $prevPackage, $output);
     }
 
     /**
@@ -46,40 +41,75 @@ abstract class ArchiveDownloader extends FileDownloader
     public function install(PackageInterface $package, $path, $output = true)
     {
         if ($output) {
-            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>): Extracting archive");
+            $this->io->writeError("  - " . InstallOperation::format($package).": Extracting archive");
         } else {
             $this->io->writeError('Extracting archive', false);
         }
 
-        $this->filesystem->ensureDirectoryExists($path);
-        if (!$this->filesystem->isDirEmpty($path)) {
-            throw new \UnexpectedValueException('Expected empty path to extract '.$package.' into but directory exists: '.$path);
-        }
+        $this->filesystem->emptyDirectory($path);
 
         do {
             $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
         } while (is_dir($temporaryDir));
 
+        $this->addCleanupPath($package, $temporaryDir);
+        $this->addCleanupPath($package, $path);
+
+        $this->filesystem->ensureDirectoryExists($temporaryDir);
         $fileName = $this->getFileName($package, $path);
 
-        try {
-            $this->filesystem->ensureDirectoryExists($temporaryDir);
-            try {
-                $this->extract($package, $fileName, $temporaryDir);
-            } catch (\Exception $e) {
-                // remove cache if the file was corrupted
-                parent::clearLastCacheWrite($package);
-                throw $e;
-            }
+        $filesystem = $this->filesystem;
+        $self = $this;
 
-            $this->filesystem->unlink($fileName);
+        $cleanup = function () use ($path, $filesystem, $temporaryDir, $package, $self) {
+            // remove cache if the file was corrupted
+            $self->clearLastCacheWrite($package);
+
+            // clean up
+            $filesystem->removeDirectory($path);
+            $filesystem->removeDirectory($temporaryDir);
+            $self->removeCleanupPath($package, $temporaryDir);
+            $self->removeCleanupPath($package, $path);
+        };
+
+        $promise = null;
+        try {
+            $promise = $this->extract($package, $fileName, $temporaryDir);
+        } catch (\Exception $e) {
+            $cleanup();
+            throw $e;
+        }
+
+        if (!$promise instanceof PromiseInterface) {
+            $promise = \React\Promise\resolve();
+        }
+
+        return $promise->then(function () use ($self, $package, $filesystem, $fileName, $temporaryDir, $path) {
+            $filesystem->unlink($fileName);
+
+            /**
+             * Returns the folder content, excluding .DS_Store
+             *
+             * @param  string         $dir Directory
+             * @return \SplFileInfo[]
+             */
+            $getFolderContent = function ($dir) {
+                $finder = Finder::create()
+                    ->ignoreVCS(false)
+                    ->ignoreDotFiles(false)
+                    ->notName('.DS_Store')
+                    ->depth(0)
+                    ->in($dir);
+
+                return iterator_to_array($finder);
+            };
 
             $renameAsOne = false;
-            if (!file_exists($path) || ($this->filesystem->isDirEmpty($path) && $this->filesystem->removeDirectory($path))) {
+            if (!file_exists($path) || ($filesystem->isDirEmpty($path) && $filesystem->removeDirectory($path))) {
                 $renameAsOne = true;
             }
 
-            $contentDir = $this->getFolderContent($temporaryDir);
+            $contentDir = $getFolderContent($temporaryDir);
             $singleDirAtTopLevel = 1 === count($contentDir) && is_dir(reset($contentDir));
 
             if ($renameAsOne) {
@@ -89,28 +119,28 @@ abstract class ArchiveDownloader extends FileDownloader
                 } else {
                     $extractedDir = $temporaryDir;
                 }
-                $this->filesystem->rename($extractedDir, $path);
+                $filesystem->rename($extractedDir, $path);
             } else {
                 // only one dir in the archive, extract its contents out of it
                 if ($singleDirAtTopLevel) {
-                    $contentDir = $this->getFolderContent((string) reset($contentDir));
+                    $contentDir = $getFolderContent((string) reset($contentDir));
                 }
 
                 // move files back out of the temp dir
                 foreach ($contentDir as $file) {
                     $file = (string) $file;
-                    $this->filesystem->rename($file, $path . '/' . basename($file));
+                    $filesystem->rename($file, $path . '/' . basename($file));
                 }
             }
 
-            $this->filesystem->removeDirectory($temporaryDir);
-        } catch (\Exception $e) {
-            // clean up
-            $this->filesystem->removeDirectory($path);
-            $this->filesystem->removeDirectory($temporaryDir);
+            $filesystem->removeDirectory($temporaryDir);
+            $self->removeCleanupPath($package, $temporaryDir);
+            $self->removeCleanupPath($package, $path);
+        }, function ($e) use ($cleanup) {
+            $cleanup();
 
             throw $e;
-        }
+        });
     }
 
     /**
@@ -119,25 +149,8 @@ abstract class ArchiveDownloader extends FileDownloader
      * @param string $file Extracted file
      * @param string $path Directory
      *
+     * @return PromiseInterface|null
      * @throws \UnexpectedValueException If can not extract downloaded file to path
      */
     abstract protected function extract(PackageInterface $package, $file, $path);
-
-    /**
-     * Returns the folder content, excluding dotfiles
-     *
-     * @param  string         $dir Directory
-     * @return \SplFileInfo[]
-     */
-    private function getFolderContent($dir)
-    {
-        $finder = Finder::create()
-            ->ignoreVCS(false)
-            ->ignoreDotFiles(false)
-            ->notName('.DS_Store')
-            ->depth(0)
-            ->in($dir);
-
-        return iterator_to_array($finder);
-    }
 }

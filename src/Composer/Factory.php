@@ -335,15 +335,16 @@ class Factory
         }
 
         $httpDownloader = self::createHttpDownloader($io, $config);
-        $loop = new Loop($httpDownloader);
+        $process = new ProcessExecutor($io);
+        $loop = new Loop($httpDownloader, $process);
         $composer->setLoop($loop);
 
         // initialize event dispatcher
-        $dispatcher = new EventDispatcher($composer, $io);
+        $dispatcher = new EventDispatcher($composer, $io, $process);
         $composer->setEventDispatcher($dispatcher);
 
         // initialize repository manager
-        $rm = RepositoryFactory::manager($io, $config, $httpDownloader, $dispatcher);
+        $rm = RepositoryFactory::manager($io, $config, $httpDownloader, $dispatcher, $process);
         $composer->setRepositoryManager($rm);
 
         // force-set the version of the global package if not defined as
@@ -354,7 +355,7 @@ class Factory
 
         // load package
         $parser = new VersionParser;
-        $guesser = new VersionGuesser($config, new ProcessExecutor($io), $parser);
+        $guesser = new VersionGuesser($config, $process, $parser);
         $loader = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser, $io);
         $package = $loader->load($localConfig, 'Composer\Package\RootPackage', $cwd);
         $composer->setPackage($package);
@@ -368,7 +369,7 @@ class Factory
 
         if ($fullLoad) {
             // initialize download manager
-            $dm = $this->createDownloadManager($io, $config, $httpDownloader, $dispatcher);
+            $dm = $this->createDownloadManager($io, $config, $httpDownloader, $process, $dispatcher);
             $composer->setDownloadManager($dm);
 
             // initialize autoload generator
@@ -381,7 +382,7 @@ class Factory
         }
 
         // add installers to the manager (must happen after download manager is created since they read it out of $composer)
-        $this->createDefaultInstallers($im, $composer, $io);
+        $this->createDefaultInstallers($im, $composer, $io, $process);
 
         if ($fullLoad) {
             $globalComposer = null;
@@ -399,7 +400,7 @@ class Factory
         if ($fullLoad && isset($composerFile)) {
             $lockFile = self::getLockFile($composerFile);
 
-            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $im, file_get_contents($composerFile));
+            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $im, file_get_contents($composerFile), $process);
             $composer->setLocker($locker);
         }
 
@@ -460,14 +461,16 @@ class Factory
      * @param  EventDispatcher            $eventDispatcher
      * @return Downloader\DownloadManager
      */
-    public function createDownloadManager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
+    public function createDownloadManager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, ProcessExecutor $process, EventDispatcher $eventDispatcher = null)
     {
         $cache = null;
         if ($config->get('cache-files-ttl') > 0) {
             $cache = new Cache($io, $config->get('cache-files-dir'), 'a-z0-9_./');
         }
 
-        $dm = new Downloader\DownloadManager($io);
+        $fs = new Filesystem($process);
+
+        $dm = new Downloader\DownloadManager($io, false, $fs);
         switch ($preferred = $config->get('preferred-install')) {
             case 'dist':
                 $dm->setPreferDist(true);
@@ -485,22 +488,19 @@ class Factory
             $dm->setPreferences($preferred);
         }
 
-        $executor = new ProcessExecutor($io);
-        $fs = new Filesystem($executor);
-
-        $dm->setDownloader('git', new Downloader\GitDownloader($io, $config, $executor, $fs));
-        $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config, $executor, $fs));
-        $dm->setDownloader('fossil', new Downloader\FossilDownloader($io, $config, $executor, $fs));
-        $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config, $executor, $fs));
-        $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config));
-        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
-        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
-        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
-        $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
-        $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $executor));
-        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
-        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
-        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache));
+        $dm->setDownloader('git', new Downloader\GitDownloader($io, $config, $process, $fs));
+        $dm->setDownloader('svn', new Downloader\SvnDownloader($io, $config, $process, $fs));
+        $dm->setDownloader('fossil', new Downloader\FossilDownloader($io, $config, $process, $fs));
+        $dm->setDownloader('hg', new Downloader\HgDownloader($io, $config, $process, $fs));
+        $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config, $process, $fs));
+        $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
 
         return $dm;
     }
@@ -544,10 +544,13 @@ class Factory
      * @param Composer                      $composer
      * @param IO\IOInterface                $io
      */
-    protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io)
+    protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io, ProcessExecutor $process = null)
     {
-        $im->addInstaller(new Installer\LibraryInstaller($io, $composer, null));
-        $im->addInstaller(new Installer\PluginInstaller($io, $composer));
+        $fs = new Filesystem($process);
+        $binaryInstaller = new Installer\BinaryInstaller($io, rtrim($composer->getConfig()->get('bin-dir'), '/'), $composer->getConfig()->get('bin-compat'), $fs);
+
+        $im->addInstaller(new Installer\LibraryInstaller($io, $composer, null, $fs, $binaryInstaller));
+        $im->addInstaller(new Installer\PluginInstaller($io, $composer, $fs, $binaryInstaller));
         $im->addInstaller(new Installer\MetapackageInstaller($io));
     }
 

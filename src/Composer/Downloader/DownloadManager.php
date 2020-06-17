@@ -25,11 +25,17 @@ use React\Promise\PromiseInterface;
  */
 class DownloadManager
 {
+    /** @var IOInterface */
     private $io;
+    /** @var bool */
     private $preferDist = false;
+    /** @var bool */
     private $preferSource = false;
+    /** @var array<string, string> */
     private $packagePreferences = array();
+    /** @var Filesystem */
     private $filesystem;
+    /** @var array<string, DownloaderInterface> */
     private $downloaders = array();
 
     /**

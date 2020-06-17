@@ -28,6 +28,7 @@ use Composer\Installer\PackageEvent;
 use Composer\Installer\BinaryInstaller;
 use Composer\Util\ProcessExecutor;
 use Composer\Script\Event as ScriptEvent;
+use Composer\ClassLoader;
 use Symfony\Component\Process\PhpExecutableFinder;
 
 /**
@@ -45,11 +46,17 @@ use Symfony\Component\Process\PhpExecutableFinder;
  */
 class EventDispatcher
 {
+    /** @var Composer */
     protected $composer;
+    /** @var IOInterface */
     protected $io;
+    /** @var ?ClassLoader */
     protected $loader;
+    /** @var ProcessExecutor */
     protected $process;
+    /** @var array<string, array<int, array<callable|string>>> */
     protected $listeners = array();
+    /** @var list<string> */
     private $eventStack;
 
     /**

@@ -220,6 +220,8 @@ EOT
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'remove', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
+        $composer->getInstallationManager()->setOutputProgress(!$input->getOption('no-progress'));
+
         $install = Installer::create($io, $composer);
 
         $updateDevMode = !$input->getOption('update-no-dev');
@@ -237,7 +239,7 @@ EOT
             $flags .= ' --with-dependencies';
         }
 
-        $io->writeError('<info>Running composer update '.implode(' ', $packages).$flags);
+        $io->writeError('<info>Running composer update '.implode(' ', $packages).$flags.'</info>');
 
         $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 

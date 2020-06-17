@@ -226,7 +226,7 @@ class Installer
         }
 
         if ($this->runScripts) {
-            $_SERVER['COMPOSER_DEV_MODE'] = (int) $this->devMode;
+            $_SERVER['COMPOSER_DEV_MODE'] = $this->devMode ? '1' : '0';
             putenv('COMPOSER_DEV_MODE='.$_SERVER['COMPOSER_DEV_MODE']);
 
             // dispatch pre event
@@ -685,7 +685,7 @@ class Installer
         }
 
         if ($this->executeOperations) {
-            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode);
+            $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts);
         } else {
             foreach ($localRepoTransaction->getOperations() as $operation) {
                 // output op, but alias op only in debug verbosity

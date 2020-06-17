@@ -31,6 +31,7 @@ class HttpDownloader
     const STATUS_STARTED = 2;
     const STATUS_COMPLETED = 3;
     const STATUS_FAILED = 4;
+    const STATUS_ABORTED = 5;
 
     private $io;
     private $config;
@@ -44,6 +45,7 @@ class HttpDownloader
     private $rfs;
     private $idGen = 0;
     private $disabled;
+    private $allowAsync = false;
 
     /**
      * @param IOInterface $io         The IO instance
@@ -139,6 +141,10 @@ class HttpDownloader
             'origin' => Url::getOrigin($this->config, $request['url']),
         );
 
+        if (!$sync && !$this->allowAsync) {
+            throw new \LogicException('You must use the HttpDownloader instance which is part of a Composer\Loop instance to be able to run async http requests');
+        }
+
         // capture username/password from URL if there is one
         if (preg_match('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $request['url'], $match)) {
             $this->io->setAuthentication($job['origin'], rawurldecode($match[1]), rawurldecode($match[2]));
@@ -179,8 +185,20 @@ class HttpDownloader
 
         $downloader = $this;
         $io = $this->io;
+        $curl = $this->curl;
 
-        $canceler = function () {};
+        $canceler = function () use (&$job, $curl) {
+            if ($job['status'] === self::STATUS_QUEUED) {
+                $job['status'] = self::STATUS_ABORTED;
+            }
+            if ($job['status'] !== self::STATUS_STARTED) {
+                return;
+            }
+            $job['status'] = self::STATUS_ABORTED;
+            if (isset($job['curl_id'])) {
+                $curl->abortRequest($job['curl_id']);
+            }
+        };
 
         $promise = new Promise($resolver, $canceler);
         $promise->then(function ($response) use (&$job, $downloader) {
@@ -189,7 +207,6 @@ class HttpDownloader
 
             // TODO 3.0 this should be done directly on $this when PHP 5.3 is dropped
             $downloader->markJobDone();
-            $downloader->scheduleNextJob();
 
             return $response;
         }, function ($e) use (&$job, $downloader) {
@@ -197,7 +214,6 @@ class HttpDownloader
             $job['exception'] = $e;
 
             $downloader->markJobDone();
-            $downloader->scheduleNextJob();
 
             throw $e;
         });
@@ -239,9 +255,9 @@ class HttpDownloader
         }
 
         if ($job['request']['copyTo']) {
-            $this->curl->download($resolve, $reject, $origin, $url, $options, $job['request']['copyTo']);
+            $job['curl_id'] = $this->curl->download($resolve, $reject, $origin, $url, $options, $job['request']['copyTo']);
         } else {
-            $this->curl->download($resolve, $reject, $origin, $url, $options);
+            $job['curl_id'] = $this->curl->download($resolve, $reject, $origin, $url, $options);
         }
     }
 
@@ -253,49 +269,58 @@ class HttpDownloader
         $this->runningJobs--;
     }
 
-    /**
-     * @private
-     */
-    public function scheduleNextJob()
-    {
-        foreach ($this->jobs as $job) {
-            if ($job['status'] === self::STATUS_QUEUED) {
-                $this->startJob($job['id']);
-                if ($this->runningJobs >= $this->maxJobs) {
-                    return;
-                }
-            }
-        }
-    }
-
-    public function wait($index = null, $progress = false)
+    public function wait($index = null)
     {
         while (true) {
-            if ($this->curl) {
-                $this->curl->tick();
-            }
-
-            if (null !== $index) {
-                if ($this->jobs[$index]['status'] === self::STATUS_COMPLETED || $this->jobs[$index]['status'] === self::STATUS_FAILED) {
-                    return;
-                }
-            } else {
-                $done = true;
-                foreach ($this->jobs as $job) {
-                    if (!in_array($job['status'], array(self::STATUS_COMPLETED, self::STATUS_FAILED), true)) {
-                        $done = false;
-                        break;
-                    } elseif (!$job['sync']) {
-                        unset($this->jobs[$job['id']]);
-                    }
-                }
-                if ($done) {
-                    return;
-                }
+            if (!$this->countActiveJobs($index)) {
+                return;
             }
 
             usleep(1000);
         }
+    }
+
+    /**
+     * @internal
+     */
+    public function enableAsync()
+    {
+        $this->allowAsync = true;
+    }
+
+    /**
+     * @internal
+     *
+     * @return int number of active (queued or started) jobs
+     */
+    public function countActiveJobs($index = null)
+    {
+        if ($this->runningJobs < $this->maxJobs) {
+            foreach ($this->jobs as $job) {
+                if ($job['status'] === self::STATUS_QUEUED && $this->runningJobs < $this->maxJobs) {
+                    $this->startJob($job['id']);
+                }
+            }
+        }
+
+        if ($this->curl) {
+            $this->curl->tick();
+        }
+
+        if (null !== $index) {
+            return $this->jobs[$index]['status'] < self::STATUS_COMPLETED ? 1 : 0;
+        }
+
+        $active = 0;
+        foreach ($this->jobs as $job) {
+            if ($job['status'] < self::STATUS_COMPLETED) {
+                $active++;
+            } elseif (!$job['sync']) {
+                unset($this->jobs[$job['id']]);
+            }
+        }
+
+        return $active;
     }
 
     private function getResponse($index)

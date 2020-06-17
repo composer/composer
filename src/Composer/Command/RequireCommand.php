@@ -281,10 +281,12 @@ EOT
             $flags .= ' --with-dependencies';
         }
 
-        $io->writeError('<info>Running composer update '.implode(' ', array_keys($requirements)).$flags);
+        $io->writeError('<info>Running composer update '.implode(' ', array_keys($requirements)).$flags.'</info>');
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'require', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+
+        $composer->getInstallationManager()->setOutputProgress(!$input->getOption('no-progress'));
 
         $install = Installer::create($io, $composer);
 

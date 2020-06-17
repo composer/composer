@@ -20,6 +20,7 @@ use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\HttpDownloader;
 use Composer\IO\IOInterface;
+use Composer\Util\Filesystem;
 
 /**
  * GZip archive downloader.
@@ -28,15 +29,6 @@ use Composer\IO\IOInterface;
  */
 class GzipDownloader extends ArchiveDownloader
 {
-    /** @var ProcessExecutor */
-    protected $process;
-
-    public function __construct(IOInterface $io, Config $config, HttpDownloader $downloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, ProcessExecutor $process = null)
-    {
-        $this->process = $process ?: new ProcessExecutor($io);
-        parent::__construct($io, $config, $downloader, $eventDispatcher, $cache);
-    }
-
     protected function extract(PackageInterface $package, $file, $path)
     {
         $filename = pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_FILENAME);

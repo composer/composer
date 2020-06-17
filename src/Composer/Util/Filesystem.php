@@ -28,7 +28,7 @@ class Filesystem
 
     public function __construct(ProcessExecutor $executor = null)
     {
-        $this->processExecutor = $executor ?: new ProcessExecutor();
+        $this->processExecutor = $executor;
     }
 
     public function remove($file)
@@ -320,7 +320,7 @@ class Filesystem
         if (Platform::isWindows()) {
             // Try to copy & delete - this is a workaround for random "Access denied" errors.
             $command = sprintf('xcopy %s %s /E /I /Q /Y', ProcessExecutor::escape($source), ProcessExecutor::escape($target));
-            $result = $this->processExecutor->execute($command, $output);
+            $result = $this->getProcess()->execute($command, $output);
 
             // clear stat cache because external processes aren't tracked by the php stat cache
             clearstatcache();
@@ -334,7 +334,7 @@ class Filesystem
             // We do not use PHP's "rename" function here since it does not support
             // the case where $source, and $target are located on different partitions.
             $command = sprintf('mv %s %s', ProcessExecutor::escape($source), ProcessExecutor::escape($target));
-            $result = $this->processExecutor->execute($command, $output);
+            $result = $this->getProcess()->execute($command, $output);
 
             // clear stat cache because external processes aren't tracked by the php stat cache
             clearstatcache();
@@ -546,6 +546,10 @@ class Filesystem
      */
     protected function getProcess()
     {
+        if (!$this->processExecutor) {
+             $this->processExecutor = new ProcessExecutor();
+        }
+
         return $this->processExecutor;
     }
 

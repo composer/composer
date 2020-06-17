@@ -65,7 +65,7 @@ class SvnDownloader extends VcsDownloader
             throw new \RuntimeException('The .svn directory is missing from '.$path.', see https://getcomposer.org/commit-deps for more information');
         }
 
-        $util = new SvnUtil($url, $this->io, $this->config);
+        $util = new SvnUtil($url, $this->io, $this->config, $this->process);
         $flags = "";
         if (version_compare($util->binaryVersion(), '1.7.0', '>=')) {
             $flags .= ' --ignore-ancestry';
@@ -103,7 +103,7 @@ class SvnDownloader extends VcsDownloader
      */
     protected function execute(PackageInterface $package, $baseUrl, $command, $url, $cwd = null, $path = null)
     {
-        $util = new SvnUtil($baseUrl, $this->io, $this->config);
+        $util = new SvnUtil($baseUrl, $this->io, $this->config, $this->process);
         $util->setCacheCredentials($this->cacheCredentials);
         try {
             return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
@@ -202,7 +202,7 @@ class SvnDownloader extends VcsDownloader
 
             $command = sprintf('svn log -r%s:%s --incremental', ProcessExecutor::escape($fromRevision), ProcessExecutor::escape($toRevision));
 
-            $util = new SvnUtil($baseUrl, $this->io, $this->config);
+            $util = new SvnUtil($baseUrl, $this->io, $this->config, $this->process);
             $util->setCacheCredentials($this->cacheCredentials);
             try {
                 return $util->executeLocal($command, $path, null, $this->io->isVerbose());
