@@ -104,9 +104,15 @@ class ZipDownloader extends ArchiveDownloader
                     throw $processError;
                 }
 
-                $io->writeError('    <warning>'.$processError->getMessage().'</warning>');
-                $io->writeError('    The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems)');
-                $io->writeError('    Unzip with unzip command failed, falling back to ZipArchive class');
+                if (!is_file($file)) {
+                    $io->writeError('    <warning>'.$processError->getMessage().'</warning>');
+                    $io->writeError('    <warning>This most likely is due to a custom installer plugin not handling the returned Promise from the downloader</warning>');
+                    $io->writeError('    <warning>See https://github.com/composer/installers/commit/5006d0c28730ade233a8f42ec31ac68fb1c5c9bb for an example fix</warning>');
+                } else {
+                    $io->writeError('    <warning>'.$processError->getMessage().'</warning>');
+                    $io->writeError('    The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems)');
+                    $io->writeError('    Unzip with unzip command failed, falling back to ZipArchive class');
+                }
 
                 return $self->extractWithZipArchive($package, $file, $path, true);
             };
@@ -114,9 +120,12 @@ class ZipDownloader extends ArchiveDownloader
             try {
                 $promise = $this->process->executeAsync($command);
 
-                return $promise->then(function ($process) use ($tryFallback, $command, $package) {
+                return $promise->then(function ($process) use ($tryFallback, $command, $package, $file) {
                     if (!$process->isSuccessful()) {
-                        return $tryFallback(new \RuntimeException('Failed to extract '.$package->getName().': ('.$process->getExitCode().') '.$command."\n\n".$process->getErrorOutput()));
+                        $output = $process->getErrorOutput();
+                        $output = str_replace(', '.$file.'.zip or '.$file.'.ZIP', '', $output);
+
+                        return $tryFallback(new \RuntimeException('Failed to extract '.$package->getName().': ('.$process->getExitCode().') '.$command."\n\n".$output));
                     }
                 });
             } catch (\Exception $e) {
