@@ -312,9 +312,6 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $prefix = substr($branch, 0, 1) === 'v' ? 'v' : '';
                 $version = $prefix . preg_replace('{(\.9{7})+}', '.x', $parsedBranch);
             }
-            if ($driver->getRootIdentifier() === $branch) {
-                $parsedBranch = '9999999-dev';
-            }
 
             $cachedPackage = $this->getCachedPackageVersion($version, $identifier, $isVerbose, $isVeryVerbose);
             if ($cachedPackage) {
