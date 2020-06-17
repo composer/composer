@@ -219,7 +219,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 // broken package, version doesn't match tag
                 if ($data['version_normalized'] !== $parsedTag) {
                     if ($isVeryVerbose) {
-                        $this->io->writeError('<warning>Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json</warning>');
+                        if (preg_match('{(^dev-|[.-]?dev$)}i', $parsedTag)) {
+                            $this->io->writeError('<warning>Skipped tag '.$tag.', invalid tag name, tags can not use dev prefixes or suffixes</warning>');
+                        } else {
+                            $this->io->writeError('<warning>Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json</warning>');
+                        }
                     }
                     continue;
                 }
