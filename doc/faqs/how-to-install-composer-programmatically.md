@@ -20,7 +20,7 @@ then
     exit 1
 fi
 
-php composer-setup.php --quiet
+php composer-setup.php --quiet --${COMPOSER_MAJOR_VERSION:-1}
 RESULT=$?
 rm composer-setup.php
 exit $RESULT
