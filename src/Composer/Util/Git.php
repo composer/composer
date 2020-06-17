@@ -403,7 +403,7 @@ class Git
      *
      * @return string|null The git version number.
      */
-    public static function getVersion(ProcessExecutor $process = null)
+    public static function getVersion(ProcessExecutor $process)
     {
         if (false === self::$version) {
             self::$version = null;
