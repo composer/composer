@@ -69,7 +69,7 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Retrieves the processed URL that will be downloaded
+     * Retrieves the processed URL that will be downloaded.
      *
      * @return string
      */
@@ -79,7 +79,7 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Sets the processed URL that will be downloaded
+     * Sets the processed URL that will be downloaded.
      *
      * @param string $processedUrl New processed URL
      */
@@ -89,7 +89,7 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Returns the type of this download (package, metadata)
+     * Returns the type of this download (package, metadata).
      *
      * @return string
      */
@@ -100,6 +100,7 @@ class PreFileDownloadEvent extends Event
 
     /**
      * Returns the context of this download, if any.
+     *
      * If this download is of type package, the package object is returned.
      *
      * @return mixed
