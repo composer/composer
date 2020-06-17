@@ -29,11 +29,6 @@ abstract class ArchiveDownloader extends FileDownloader
 {
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
-        // if not upgrading/downgrading and the dir already exists it seems we have an inconsistent state in the vendor dir and the user should fix it
-        if (!$prevPackage && is_dir($path) && !$this->filesystem->isDirEmpty($path)) {
-            throw new IrrecoverableDownloadException('Expected empty path to extract '.$package.' into but directory exists: '.$path);
-        }
-
         return parent::download($package, $path, $prevPackage, $output);
     }
 
@@ -50,10 +45,7 @@ abstract class ArchiveDownloader extends FileDownloader
             $this->io->writeError('Extracting archive', false);
         }
 
-        $this->filesystem->ensureDirectoryExists($path);
-        if (!$this->filesystem->isDirEmpty($path)) {
-            throw new \UnexpectedValueException('Expected empty path to extract '.$package.' into but directory exists: '.$path);
-        }
+        $this->filesystem->emptyDirectory($path);
 
         do {
             $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
