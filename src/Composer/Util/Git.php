@@ -20,7 +20,7 @@ use Composer\IO\IOInterface;
  */
 class Git
 {
-    private static $version;
+    private static $version = false;
 
     /** @var IOInterface */
     protected $io;
@@ -291,6 +291,16 @@ class Git
         return false;
     }
 
+    public static function getNoShowSignatureFlag(ProcessExecutor $process)
+    {
+        $gitVersion = self::getVersion($process);
+        if ($gitVersion && version_compare($gitVersion, '2.10.0-rc0', '>=')) {
+            return ' --no-show-signature';
+        }
+
+        return '';
+    }
+
     private function checkRefIsInMirror($url, $dir, $ref)
     {
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
@@ -398,16 +408,18 @@ class Git
      *
      * @return string|null The git version number.
      */
-    public function getVersion()
+    public static function getVersion(ProcessExecutor $process = null)
     {
-        if (isset(self::$version)) {
-            return self::$version;
+        if (false === self::$version) {
+            self::$version = null;
+            if (!$process) {
+                $process = new ProcessExecutor;
+            }
+            if (0 === $process->execute('git --version', $output) && preg_match('/^git version (\d+(?:\.\d+)+)/m', $output, $matches)) {
+                self::$version = $matches[1];
+            }
         }
-        if (0 !== $this->process->execute('git --version', $output)) {
-            return;
-        }
-        if (preg_match('/^git version (\d+(?:\.\d+)+)/m', $output, $matches)) {
-            return self::$version = $matches[1];
-        }
+
+        return self::$version;
     }
 }

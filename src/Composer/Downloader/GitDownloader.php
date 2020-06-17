@@ -48,7 +48,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $flag = Platform::isWindows() ? '/D ' : '';
 
         // --dissociate option is only available since git 2.3.0-rc0
-        $gitVersion = $this->gitUtil->getVersion();
+        $gitVersion = GitUtil::getVersion($this->process);
         $msg = "Cloning ".$this->getShortHash($ref);
 
         $command = 'git clone --no-checkout %url% %path% && cd '.$flag.'%path% && git remote add composer %url% && git fetch composer && git remote set-url origin %sanitizedUrl% && git remote set-url composer %sanitizedUrl%';
@@ -435,7 +435,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
         $path = $this->normalizePath($path);
-        $command = sprintf('git log %s..%s --pretty=format:"%%h - %%an: %%s"', ProcessExecutor::escape($fromReference), ProcessExecutor::escape($toReference));
+        $command = sprintf('git log %s..%s --pretty=format:"%%h - %%an: %%s"'.GitUtil::getNoShowSignatureFlag($this->process), ProcessExecutor::escape($fromReference), ProcessExecutor::escape($toReference));
 
         if (0 !== $this->process->execute($command, $output, $path)) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());

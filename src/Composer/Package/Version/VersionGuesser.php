@@ -86,7 +86,7 @@ class VersionGuesser
         if (null !== $versionData && null !== $versionData['version']) {
             return $this->postprocess($versionData);
         }
-        
+
         return null;
     }
 
@@ -169,7 +169,7 @@ class VersionGuesser
         }
 
         if (!$commit) {
-            $command = 'git log --pretty="%H" -n1 HEAD';
+            $command = 'git log --pretty="%H" -n1 HEAD'.GitUtil::getNoShowSignatureFlag($this->process);
             if (0 === $this->process->execute($command, $output, $path)) {
                 $commit = trim($output) ?: null;
             }

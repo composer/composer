@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
+use Composer\Util\Git as GitUtil;
 
 class VersionGuesserTest extends TestCase
 {
@@ -66,7 +67,18 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at($step))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git log --pretty="%H" -n1 HEAD', $command);
+                $self->assertEquals('git --version', $command);
+
+                return 0;
+            })
+        ;
+
+        ++$step;
+        $executor
+            ->expects($this->at($step))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self, $executor) {
+                $self->assertEquals('git log --pretty="%H" -n1 HEAD'.GitUtil::getNoShowSignatureFlag($executor), $command);
 
                 return 128;
             })
