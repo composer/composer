@@ -353,6 +353,11 @@ interface PackageInterface
     public function getArchiveExcludes();
 
     /**
+     * @return bool
+     */
+    public function isDefaultBranch();
+
+    /**
      * Returns a list of options to download package dist files
      *
      * @return array

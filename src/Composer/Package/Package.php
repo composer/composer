@@ -58,6 +58,7 @@ class Package extends BasePackage
     protected $devAutoload = array();
     protected $includePaths = array();
     protected $archiveExcludes = array();
+    protected $isDefaultBranch = false;
 
     /**
      * Creates a new in memory package.
@@ -567,6 +568,22 @@ class Package extends BasePackage
     public function getArchiveExcludes()
     {
         return $this->archiveExcludes;
+    }
+
+    /**
+     * @param bool $defaultBranch
+     */
+    public function setIsDefaultBranch($defaultBranch)
+    {
+        $this->isDefaultBranch = $defaultBranch;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function isDefaultBranch()
+    {
+        return $this->isDefaultBranch;
     }
 
     /**
