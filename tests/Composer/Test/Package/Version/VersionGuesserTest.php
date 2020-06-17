@@ -17,6 +17,7 @@ use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
 use Composer\Util\Git as GitUtil;
+use Composer\Util\ProcessExecutor;
 
 class VersionGuesserTest extends TestCase
 {
@@ -31,7 +32,7 @@ class VersionGuesserTest extends TestCase
     {
         $branch = 'default';
 
-        $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
+        $executor = $this->getMockBuilder('Composer\\Util\\ProcessExecutor')
             ->setMethods(array('execute'))
             ->disableArgumentCloning()
             ->disableOriginalConstructor()
@@ -40,6 +41,8 @@ class VersionGuesserTest extends TestCase
 
         $self = $this;
         $step = 0;
+
+        GitUtil::getVersion(new ProcessExecutor);
 
         $executor
             ->expects($this->at($step))
@@ -59,17 +62,6 @@ class VersionGuesserTest extends TestCase
                 $self->assertEquals('git describe --exact-match --tags', $command);
 
                 return 128;
-            })
-        ;
-
-        ++$step;
-        $executor
-            ->expects($this->at($step))
-            ->method('execute')
-            ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git --version', $command);
-
-                return 0;
             })
         ;
 
