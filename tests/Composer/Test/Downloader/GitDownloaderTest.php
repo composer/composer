@@ -18,6 +18,8 @@ use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Prophecy\Argument;
+use Composer\Util\ProcessExecutor;
+use Composer\Util\Git as GitUtil;
 
 class GitDownloaderTest extends TestCase
 {
@@ -30,6 +32,8 @@ class GitDownloaderTest extends TestCase
     {
         $this->skipIfNotExecutable('git');
 
+        $this->initGitVersion('1.0.0');
+
         $this->fs = new Filesystem;
         $this->workingDir = $this->getUniqueTmpDirectory();
     }
@@ -40,10 +44,15 @@ class GitDownloaderTest extends TestCase
             $this->fs->removeDirectory($this->workingDir);
         }
 
+        $this->initGitVersion(false);
+    }
+
+    private function initGitVersion($version)
+    {
         // reset the static version cache
         $refl = new \ReflectionProperty('Composer\Util\Git', 'version');
         $refl->setAccessible(true);
-        $refl->setValue(null, null);
+        $refl->setValue(null, $version);
     }
 
     protected function setupConfig($config = null)
@@ -103,32 +112,23 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue('dev-master'));
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
-        $processExecutor->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo($this->winCompat('git --version')))
-            ->will($this->returnCallback(function ($command, &$output = null) {
-                $output = 'git version 1.0.0';
-
-                return 0;
-            }));
-
         $expectedGitCommand = $this->winCompat("git clone --no-checkout 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer 'https://example.com/composer/composer' && git fetch composer && git remote set-url origin 'https://example.com/composer/composer' && git remote set-url composer 'https://example.com/composer/composer'");
-        $processExecutor->expects($this->at(1))
+        $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->at(2))
+        $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git branch -r")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->at(3))
+        $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git checkout 'master' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->at(4))
+        $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git reset --hard '1234567890123456789012345678901234567890' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
@@ -157,14 +157,7 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue('dev-master'));
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
-        $processExecutor->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo($this->winCompat('git --version')))
-            ->will($this->returnCallback(function ($command, &$output = null) {
-                $output = 'git version 2.3.1';
-
-                return 0;
-            }));
+        $this->initGitVersion('2.17.0');
 
         $config = new Config;
         $this->setupConfig($config);
@@ -174,7 +167,7 @@ class GitDownloaderTest extends TestCase
         $filesystem->removeDirectory($cachePath);
 
         $expectedGitCommand = $this->winCompat(sprintf("git clone --mirror 'https://example.com/composer/composer' '%s'", $cachePath));
-        $processExecutor->expects($this->at(1))
+        $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnCallback(function () use ($cachePath) {
@@ -182,7 +175,7 @@ class GitDownloaderTest extends TestCase
 
                 return 0;
             }));
-        $processExecutor->expects($this->at(2))
+        $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo('git rev-parse --git-dir'), $this->anything(), $this->equalTo($this->winCompat($cachePath)))
             ->will($this->returnCallback(function ($command, &$output = null) {
@@ -190,28 +183,28 @@ class GitDownloaderTest extends TestCase
 
                 return 0;
             }));
-        $processExecutor->expects($this->at(3))
+        $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($this->winCompat('git rev-parse --quiet --verify \'1234567890123456789012345678901234567890^{commit}\'')), $this->equalTo(null), $this->equalTo($this->winCompat($cachePath)))
             ->will($this->returnValue(0));
 
         $expectedGitCommand = $this->winCompat(sprintf("git clone --no-checkout '%1\$s' 'composerPath' --dissociate --reference '%1\$s' && cd 'composerPath' && git remote set-url origin 'https://example.com/composer/composer' && git remote add composer 'https://example.com/composer/composer'", $cachePath));
-        $processExecutor->expects($this->at(4))
+        $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->at(5))
+        $processExecutor->expects($this->at(4))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git branch -r")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->at(6))
+        $processExecutor->expects($this->at(5))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git checkout 'master' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->at(7))
+        $processExecutor->expects($this->at(6))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git reset --hard '1234567890123456789012345678901234567890' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
@@ -241,50 +234,41 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue('1.0.0'));
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
-        $processExecutor->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo($this->winCompat('git --version')))
-            ->will($this->returnCallback(function ($command, &$output = null) {
-                $output = 'git version 1.0.0';
-
-                return 0;
-            }));
-
         $expectedGitCommand = $this->winCompat("git clone --no-checkout 'https://github.com/mirrors/composer' 'composerPath' && cd 'composerPath' && git remote add composer 'https://github.com/mirrors/composer' && git fetch composer && git remote set-url origin 'https://github.com/mirrors/composer' && git remote set-url composer 'https://github.com/mirrors/composer'");
-        $processExecutor->expects($this->at(1))
+        $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(1));
 
-        $processExecutor->expects($this->at(2))
+        $processExecutor->expects($this->at(1))
             ->method('getErrorOutput')
             ->with()
             ->will($this->returnValue('Error1'));
 
         $expectedGitCommand = $this->winCompat("git clone --no-checkout 'git@github.com:mirrors/composer' 'composerPath' && cd 'composerPath' && git remote add composer 'git@github.com:mirrors/composer' && git fetch composer && git remote set-url origin 'git@github.com:mirrors/composer' && git remote set-url composer 'git@github.com:mirrors/composer'");
-        $processExecutor->expects($this->at(3))
+        $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
         $expectedGitCommand = $this->winCompat("git remote set-url origin 'https://github.com/composer/composer'");
-        $processExecutor->expects($this->at(4))
+        $processExecutor->expects($this->at(3))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
         $expectedGitCommand = $this->winCompat("git remote set-url --push origin 'git@github.com:composer/composer.git'");
-        $processExecutor->expects($this->at(5))
+        $processExecutor->expects($this->at(4))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->at(6))
+        $processExecutor->expects($this->at(5))
             ->method('execute')
             ->with($this->equalTo('git branch -r'))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->at(7))
+        $processExecutor->expects($this->at(6))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git checkout 'ref' -- && git reset --hard 'ref' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
@@ -328,28 +312,19 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue('1.0.0'));
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
-        $processExecutor->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo($this->winCompat('git --version')))
-            ->will($this->returnCallback(function ($command, &$output = null) {
-                $output = 'git version 1.0.0';
-
-                return 0;
-            }));
-
         $expectedGitCommand = $this->winCompat("git clone --no-checkout '{$url}' 'composerPath' && cd 'composerPath' && git remote add composer '{$url}' && git fetch composer && git remote set-url origin '{$url}' && git remote set-url composer '{$url}'");
-        $processExecutor->expects($this->at(1))
+        $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
         $expectedGitCommand = $this->winCompat("git remote set-url --push origin '{$pushUrl}'");
-        $processExecutor->expects($this->at(2))
+        $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
-        $processExecutor->expects($this->exactly(5))
+        $processExecutor->expects($this->exactly(4))
             ->method('execute')
             ->will($this->returnValue(0));
 
@@ -375,14 +350,6 @@ class GitDownloaderTest extends TestCase
             ->will($this->returnValue(array('https://example.com/composer/composer')));
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $processExecutor->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo($this->winCompat('git --version')))
-            ->will($this->returnCallback(function ($command, &$output = null) {
-                $output = 'git version 1.0.0';
-
-                return 0;
-            }));
-        $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(1));
