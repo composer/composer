@@ -18,6 +18,9 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\Comparer\Comparer;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
@@ -284,7 +287,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     public function install(PackageInterface $package, $path, $output = true)
     {
         if ($output) {
-            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+            $this->io->writeError("  - " . InstallOperation::format($package));
         }
 
         $this->filesystem->emptyDirectory($path);
@@ -332,12 +335,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
-        $name = $target->getName();
-        $from = $initial->getFullPrettyVersion();
-        $to = $target->getFullPrettyVersion();
-
-        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Upgrading' : 'Downgrading';
-        $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
+        $this->io->writeError("  - " . UpdateOperation::format($initial, $target) . ": ", false);
 
         $promise = $this->remove($initial, $path, false);
         if (!$promise instanceof PromiseInterface) {
@@ -360,7 +358,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     public function remove(PackageInterface $package, $path, $output = true)
     {
         if ($output) {
-            $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+            $this->io->writeError("  - " . UninstallOperation::format($package));
         }
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');

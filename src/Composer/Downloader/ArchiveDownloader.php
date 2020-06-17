@@ -17,6 +17,7 @@ use Symfony\Component\Finder\Finder;
 use Composer\IO\IOInterface;
 use Composer\Exception\IrrecoverableDownloadException;
 use React\Promise\PromiseInterface;
+use Composer\DependencyResolver\Operation\InstallOperation;
 
 /**
  * Base downloader for archives
@@ -40,7 +41,7 @@ abstract class ArchiveDownloader extends FileDownloader
     public function install(PackageInterface $package, $path, $output = true)
     {
         if ($output) {
-            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>): Extracting archive");
+            $this->io->writeError("  - " . InstallOperation::format($package).": Extracting archive");
         } else {
             $this->io->writeError('Extracting archive', false);
         }
