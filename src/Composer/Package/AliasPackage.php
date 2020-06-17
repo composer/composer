@@ -392,11 +392,6 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
         return $this->aliasOf->getArchiveExcludes();
     }
 
-    public function isDefaultBranch()
-    {
-        return $this->aliasOf->isDefaultBranch();
-    }
-
     public function isAbandoned()
     {
         return $this->aliasOf->isAbandoned();

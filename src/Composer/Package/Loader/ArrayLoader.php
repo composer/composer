@@ -53,9 +53,6 @@ class ArrayLoader implements LoaderInterface
         } else {
             $version = $this->versionParser->normalize($config['version']);
         }
-        if (isset($config['default_branch']) && $config['default_branch'] === true) {
-            $version = '9999999-dev';
-        }
         $package = new $class($config['name'], $version, $config['version']);
         $package->setType(isset($config['type']) ? strtolower($config['type']) : 'library');
 
@@ -76,10 +73,6 @@ class ArrayLoader implements LoaderInterface
 
         if (isset($config['installation-source'])) {
             $package->setInstallationSource($config['installation-source']);
-        }
-
-        if (isset($config['default_branch']) && $config['default_branch'] === true) {
-            $package->setIsDefaultBranch(true);
         }
 
         if (isset($config['source'])) {

@@ -149,10 +149,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             $this->loader = new ArrayLoader($this->versionParser);
         }
 
-        $hasRootIdentifierComposerJson = false;
         try {
-            $hasRootIdentifierComposerJson = $driver->hasComposerFile($driver->getRootIdentifier());
-            if ($hasRootIdentifierComposerJson) {
+            if ($driver->hasComposerFile($driver->getRootIdentifier())) {
                 $data = $driver->getComposerInformation($driver->getRootIdentifier());
                 $this->packageName = !empty($data['name']) ? $data['name'] : null;
             }
@@ -213,9 +211,6 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $data['version'] = preg_replace('{[.-]?dev$}i', '', $data['version']);
                 $data['version_normalized'] = preg_replace('{(^dev-|[.-]?dev$)}i', '', $data['version_normalized']);
 
-                // make sure tag do not contain the default_branch marker
-                unset($data['default_branch']);
-
                 // broken package, version doesn't match tag
                 if ($data['version_normalized'] !== $parsedTag) {
                     if ($isVeryVerbose) {
@@ -260,11 +255,6 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         $branches = $driver->getBranches();
-        // make sure the root identifier branch gets loaded first
-        if ($hasRootIdentifierComposerJson && isset($branches[$driver->getRootIdentifier()])) {
-            $branches = array($driver->getRootIdentifier() => $branches[$driver->getRootIdentifier()]) + $branches;
-        }
-
         foreach ($branches as $branch => $identifier) {
             $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $branch . '</comment>)';
             if ($isVeryVerbose) {
@@ -294,9 +284,6 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $prefix = substr($branch, 0, 1) === 'v' ? 'v' : '';
                 $version = $prefix . preg_replace('{(\.9{7})+}', '.x', $parsedBranch);
             }
-            if ($driver->getRootIdentifier() === $branch) {
-                $parsedBranch = '9999999-dev';
-            }
 
             $cachedPackage = $this->getCachedPackageVersion($version, $identifier, $isVerbose, $isVeryVerbose);
             if ($cachedPackage) {
@@ -321,11 +308,6 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 // branches are always auto-versioned, read value from branch name
                 $data['version'] = $version;
                 $data['version_normalized'] = $parsedBranch;
-
-                unset($data['default_branch']);
-                if ($driver->getRootIdentifier() === $branch) {
-                    $data['default_branch'] = true;
-                }
 
                 if ($isVeryVerbose) {
                     $this->io->writeError('Importing branch '.$branch.' ('.$data['version'].')');
