@@ -154,8 +154,17 @@ class VersionGuesser
             if ($isFeatureBranch) {
                 $featureVersion = $version;
                 $featurePrettyVersion = $prettyVersion;
+
+                // try to find name of default branch from git info
+                $defaultBranch = null;
+                if (0 === $this->process->execute('git remote show origin', $output) || 0 === $this->process->execute('git remote show upstream', $output)) {
+                    if (preg_match('{^  HEAD branch: (.+)$}m', $output, $match)) {
+                        $defaultBranch = trim($match[1]);
+                    }
+                }
+
                 // try to find the best (nearest) version branch to assume this feature's version
-                $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path);
+                $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path, $defaultBranch);
                 $version = $result['version'];
                 $prettyVersion = $result['pretty_version'];
             }
@@ -222,7 +231,7 @@ class VersionGuesser
             $branches = array_keys($driver->getBranches());
 
             // try to find the best (nearest) version branch to assume this feature's version
-            $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path);
+            $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path, 'default');
             $result['commit'] = '';
             $result['feature_version'] = $version;
             $result['feature_pretty_version'] = $version;
@@ -231,7 +240,7 @@ class VersionGuesser
         }
     }
 
-    private function guessFeatureVersion(array $packageConfig, $version, array $branches, $scmCmdline, $path)
+    private function guessFeatureVersion(array $packageConfig, $version, array $branches, $scmCmdline, $path, $defaultBranch)
     {
         $prettyVersion = $version;
 
@@ -248,14 +257,14 @@ class VersionGuesser
                 $nonFeatureBranches = implode('|', $packageConfig['non-feature-branches']);
             }
 
-            foreach ($branches as $candidate) {
-                // return directly, if branch is configured to be non-feature branch
-                if ($candidate === $branch && preg_match('{^(' . $nonFeatureBranches . ')$}', $candidate)) {
-                    break;
-                }
+            // return directly, if branch is configured to be non-feature branch
+            if (preg_match('{^(' . $nonFeatureBranches . ')$}', $branch)) {
+                return array('version' => $version, 'pretty_version' => $prettyVersion);
+            }
 
+            foreach ($branches as $candidate) {
                 // do not compare against itself or other feature branches
-                if ($candidate === $branch || !preg_match('{^(' . $nonFeatureBranches . '|master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
+                if ($candidate === $branch || !preg_match('{^(' . $nonFeatureBranches . ($defaultBranch ? '|'.preg_quote($defaultBranch) : '').'|master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
                     continue;
                 }
 
