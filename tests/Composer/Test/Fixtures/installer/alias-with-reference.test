@@ -8,7 +8,8 @@ Aliases of referenced packages work
             "package": [
                 {
                     "name": "a/aliased", "version": "dev-master",
-                    "source": { "reference": "orig", "type": "git", "url": "" }
+                    "source": { "reference": "orig", "type": "git", "url": "" },
+                    "default-branch": true
                 },
                 {
                     "name": "b/requirer", "version": "1.0.0",
@@ -31,7 +32,8 @@ update
         {
             "name": "a/aliased", "version": "dev-master",
             "source": { "reference": "abcd", "type": "git", "url": "" },
-            "type": "library"
+            "type": "library",
+            "default-branch": true
         },
         {
             "name": "b/requirer", "version": "1.0.0",

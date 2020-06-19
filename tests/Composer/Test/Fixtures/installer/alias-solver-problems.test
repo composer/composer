@@ -6,8 +6,8 @@ Test the error output of solver problems with dev-master aliases.
         {
             "type": "package",
             "package": [
-                {"name": "a/a", "version": "dev-master", "require": {"d/d": "1.0.0"}},
-                {"name": "b/b", "version": "dev-master", "require": {"d/d": "2.0.0"}},
+                {"name": "a/a", "version": "dev-master", "require": {"d/d": "1.0.0"}, "default-branch": true},
+                {"name": "b/b", "version": "dev-master", "require": {"d/d": "2.0.0"}, "default-branch": true},
                 {"name": "d/d", "version": "1.0.0"},
                 {"name": "d/d", "version": "2.0.0"}
             ]

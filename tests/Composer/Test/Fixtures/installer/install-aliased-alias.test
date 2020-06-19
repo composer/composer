@@ -11,7 +11,8 @@ Installing double aliased package
                     "dist": { "type": "file", "url": "" },
                     "require": {
                         "b/b": "dev-master"
-                    }
+                    },
+                    "default-branch": true
                 },
                 {
                     "name": "b/b", "version": "dev-foo",

@@ -14,7 +14,8 @@ Installs a dev package from lock using dist
                         "type": "zip",
                         "url": "http://www.example.com/dist.zip",
                         "reference": "459720ff3b74ee0c0d159277c6f2f5df89d8a4f6"
-                    }
+                    },
+                    "default-branch": true
                 }
             ]
         }
@@ -37,7 +38,8 @@ install --prefer-dist
                 "url": "http://www.example.com/dist.zip",
                 "reference": "459720ff3b74ee0c0d159277c6f2f5df89d8a4f6"
             },
-            "type": "library"
+            "type": "library",
+            "default-branch": true
         }
     ],
     "packages-dev": [],

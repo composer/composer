@@ -8,7 +8,8 @@ Update to a state without dependency works well from locked with dependency
 [
     {
         "name": "a/a", "version": "dev-master",
-        "source": { "reference": "1234", "type": "git", "url": "" }
+        "source": { "reference": "1234", "type": "git", "url": "" },
+        "default-branch": true
     }
 ]
 --LOCK--
@@ -17,7 +18,8 @@ Update to a state without dependency works well from locked with dependency
         {
             "name": "a/a", "version": "dev-master",
             "source": { "reference": "1234", "type": "git", "url": "" },
-            "type": "library"
+            "type": "library",
+            "default-branch": true
         }
     ],
     "packages-dev": [],
