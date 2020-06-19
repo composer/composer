@@ -264,7 +264,7 @@ abstract class Rule
                 return 'You can only install one version of a package, so only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals, $isVerbose) . '.';
             case self::RULE_LEARNED:
                 if (isset($learnedPool[$this->reasonData])) {
-                    $learnedString = ', learned rules:' . Problem::formatDeduplicatedRules($learnedPool[$this->reasonData], '        ', $repositorySet, $request, $pool, $installedMap, $learnedPool);
+                    $learnedString = ', learned rules:' . Problem::formatDeduplicatedRules($learnedPool[$this->reasonData], '        ', $repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
                 } else {
                     $learnedString = ' (reasoning unavailable)';
                 }
