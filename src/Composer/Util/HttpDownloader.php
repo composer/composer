@@ -72,7 +72,7 @@ class HttpDownloader
         $this->config = $config;
 
         // TODO enable curl only on 5.6+ if older versions cause any problem
-        if (extension_loaded('curl')) {
+        if (extension_loaded('curl') && PHP_MAJOR_VERSION < 8) {
             $this->curl = new Http\CurlDownloader($io, $config, $options, $disableTls);
         }
 
