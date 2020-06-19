@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\MultiConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -385,6 +386,10 @@ class Solver
             $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
 
             foreach ($rule->getLiterals() as $literal) {
+                if (!$this->decisions->decided($literal)) {
+                    continue;
+                }
+
                 // skip the one true literal
                 if ($this->decisions->satisfy($literal)) {
                     continue;
@@ -411,6 +416,16 @@ class Solver
                 }
             }
             unset($literal);
+
+            $decision = $this->decisions->atOffset($decisionId-1);
+            if ($rule !== $decision[Decisions::DECISION_REASON] && $decision[Decisions::DECISION_REASON] instanceof MultiConflictRule) {
+                $num++;
+                foreach ($decision[Decisions::DECISION_REASON]->getLiterals() as $literal) {
+                    if (!$this->decisions->satisfy($literal)) {
+                        $seen[abs($literal)] = true;
+                    }
+                }
+            }
 
             $l1retry = true;
             while ($l1retry) {
@@ -457,6 +472,13 @@ class Solver
                     }
                     // only level 1 marks left
                     $l1num++;
+                    $l1retry = true;
+                }
+
+                $decision = $this->decisions->atOffset($decisionId);
+                $rule = $decision[Decisions::DECISION_REASON];
+
+                if ($rule instanceof MultiConflictRule) {
                     $l1retry = true;
                 }
             }
