@@ -313,7 +313,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $version = $prefix . preg_replace('{(\.9{7})+}', '.x', $parsedBranch);
             }
 
-            $cachedPackage = $this->getCachedPackageVersion($version, $identifier, $isVerbose, $isVeryVerbose);
+            $cachedPackage = $this->getCachedPackageVersion($version, $identifier, $isVerbose, $isVeryVerbose, $driver->getRootIdentifier() === $branch);
             if ($cachedPackage) {
                 $this->addPackage($cachedPackage);
 
@@ -423,7 +423,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         return false;
     }
 
-    private function getCachedPackageVersion($version, $identifier, $isVerbose, $isVeryVerbose)
+    private function getCachedPackageVersion($version, $identifier, $isVerbose, $isVeryVerbose, $isDefaultBranch = false)
     {
         if (!$this->versionCache) {
             return;
@@ -444,6 +444,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $this->io->writeError($msg);
             } elseif ($isVerbose) {
                 $this->io->overwriteError($msg, false);
+            }
+
+            unset($cachedPackage['default_branch']);
+            if ($isDefaultBranch) {
+                $cachedPackage['default_branch'] = true;
             }
 
             if ($existingPackage = $this->findPackage($cachedPackage['name'], new Constraint('=', $cachedPackage['version_normalized']))) {
