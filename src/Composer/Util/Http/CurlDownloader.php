@@ -218,10 +218,10 @@ class CurlDownloader
             $job = $this->jobs[$id];
             curl_multi_remove_handle($this->multiHandle, $job['handle']);
             curl_close($job['handle']);
-            if (is_resource($job['headerHandle'])) {
+            if (false !== $job['headerHandle']) {
                 fclose($job['headerHandle']);
             }
-            if (is_resource($job['bodyHandle'])) {
+            if (false !== $job['bodyHandle']) {
                 fclose($job['bodyHandle']);
             }
             if ($job['filename']) {
@@ -335,10 +335,10 @@ class CurlDownloader
                     $e->setResponse($response->getBody());
                 }
 
-                if (is_resource($job['headerHandle'])) {
+                if (false !== $job['headerHandle']) {
                     fclose($job['headerHandle']);
                 }
-                if (is_resource($job['bodyHandle'])) {
+                if (false !== $job['bodyHandle']) {
                     fclose($job['bodyHandle']);
                 }
                 if ($job['filename']) {
