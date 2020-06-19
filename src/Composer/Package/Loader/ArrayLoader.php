@@ -124,7 +124,7 @@ class ArrayLoader implements LoaderInterface
             $package->setInstallationSource($config['installation-source']);
         }
 
-        if (isset($config['default_branch']) && $config['default_branch'] === true) {
+        if (isset($config['default-branch']) && $config['default-branch'] === true) {
             $package->setIsDefaultBranch(true);
         }
 
@@ -368,7 +368,7 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-        if (isset($config['default_branch']) && $config['default_branch'] === true) {
+        if (isset($config['default-branch']) && $config['default-branch'] === true) {
             return VersionParser::DEV_MASTER_ALIAS;
         }
     }

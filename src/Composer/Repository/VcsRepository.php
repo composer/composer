@@ -231,8 +231,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $data['version'] = preg_replace('{[.-]?dev$}i', '', $data['version']);
                 $data['version_normalized'] = preg_replace('{(^dev-|[.-]?dev$)}i', '', $data['version_normalized']);
 
-                // make sure tag do not contain the default_branch marker
-                unset($data['default_branch']);
+                // make sure tag do not contain the default-branch marker
+                unset($data['default-branch']);
 
                 // broken package, version doesn't match tag
                 if ($data['version_normalized'] !== $parsedTag) {
@@ -337,9 +337,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $data['version'] = $version;
                 $data['version_normalized'] = $parsedBranch;
 
-                unset($data['default_branch']);
+                unset($data['default-branch']);
                 if ($driver->getRootIdentifier() === $branch) {
-                    $data['default_branch'] = true;
+                    $data['default-branch'] = true;
                 }
 
                 if ($isVeryVerbose) {
@@ -446,9 +446,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $this->io->overwriteError($msg, false);
             }
 
-            unset($cachedPackage['default_branch']);
+            unset($cachedPackage['default-branch']);
             if ($isDefaultBranch) {
-                $cachedPackage['default_branch'] = true;
+                $cachedPackage['default-branch'] = true;
             }
 
             if ($existingPackage = $this->findPackage($cachedPackage['name'], new Constraint('=', $cachedPackage['version_normalized']))) {

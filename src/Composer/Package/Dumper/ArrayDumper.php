@@ -96,7 +96,7 @@ class ArrayDumper
         }
 
         if ($package->isDefaultBranch()) {
-            $data['default_branch'] = true;
+            $data['default-branch'] = true;
         }
 
         $data = $this->dumpValues($package, $keys, $data);
