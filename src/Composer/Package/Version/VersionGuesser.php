@@ -110,6 +110,35 @@ class VersionGuesser
         return $versionData;
     }
 
+    /**
+     * Tries to find name of default branch from VCS info
+     *
+     * @param string $path Path to guess into
+     */
+    public function getDefaultBranchName($path)
+    {
+        GitUtil::cleanEnv();
+        if (0 === $this->process->execute('git remote show origin', $output, $path) || 0 === $this->process->execute('git remote show upstream', $output, $path)) {
+            if (preg_match('{^  HEAD branch: (.+)$}m', $output, $match)) {
+                return trim($match[1]);
+            }
+        }
+
+        if (is_dir($path.'/.git')) {
+            return 'master';
+        }
+
+        if (is_dir($path.'/.hg')) {
+            return 'default';
+        }
+
+        if (is_dir($path.'/.svn')) {
+            return 'trunk';
+        }
+
+        return null;
+    }
+
     private function guessGitVersion(array $packageConfig, $path)
     {
         GitUtil::cleanEnv();
@@ -155,16 +184,8 @@ class VersionGuesser
                 $featureVersion = $version;
                 $featurePrettyVersion = $prettyVersion;
 
-                // try to find name of default branch from git info
-                $defaultBranch = null;
-                if (0 === $this->process->execute('git remote show origin', $output) || 0 === $this->process->execute('git remote show upstream', $output)) {
-                    if (preg_match('{^  HEAD branch: (.+)$}m', $output, $match)) {
-                        $defaultBranch = trim($match[1]);
-                    }
-                }
-
                 // try to find the best (nearest) version branch to assume this feature's version
-                $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path, $defaultBranch);
+                $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path);
                 $version = $result['version'];
                 $prettyVersion = $result['pretty_version'];
             }
@@ -231,7 +252,7 @@ class VersionGuesser
             $branches = array_keys($driver->getBranches());
 
             // try to find the best (nearest) version branch to assume this feature's version
-            $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path, 'default');
+            $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path);
             $result['commit'] = '';
             $result['feature_version'] = $version;
             $result['feature_pretty_version'] = $version;
@@ -240,7 +261,7 @@ class VersionGuesser
         }
     }
 
-    private function guessFeatureVersion(array $packageConfig, $version, array $branches, $scmCmdline, $path, $defaultBranch)
+    private function guessFeatureVersion(array $packageConfig, $version, array $branches, $scmCmdline, $path)
     {
         $prettyVersion = $version;
 
@@ -261,6 +282,8 @@ class VersionGuesser
             if (preg_match('{^(' . $nonFeatureBranches . ')$}', $branch)) {
                 return array('version' => $version, 'pretty_version' => $prettyVersion);
             }
+
+            $defaultBranch = $this->getDefaultBranchName($path);
 
             foreach ($branches as $candidate) {
                 // do not compare against itself or other feature branches
