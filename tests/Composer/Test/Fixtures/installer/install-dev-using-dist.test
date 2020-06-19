@@ -26,7 +26,7 @@ Installs a dev package from lock using dist
     "minimum-stability": "dev"
 }
 --RUN--
-install --prefer-dist
+install
 --EXPECT-LOCK--
 {
     "packages": [

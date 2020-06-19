@@ -356,7 +356,7 @@ class Factory
         // load package
         $parser = new VersionParser;
         $guesser = new VersionGuesser($config, $process, $parser);
-        $loader = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser, $io);
+        $loader = $this->loadRootPackage($rm, $config, $parser, $guesser, $io);
         $package = $loader->load($localConfig, 'Composer\Package\RootPackage', $cwd);
         $composer->setPackage($package);
 
@@ -565,6 +565,11 @@ class Factory
                 $repo->removePackage($package);
             }
         }
+    }
+
+    protected function loadRootPackage(RepositoryManager $rm, Config $config, VersionParser $parser, VersionGuesser $guesser, IOInterface $io)
+    {
+        return new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser, $io);
     }
 
     /**

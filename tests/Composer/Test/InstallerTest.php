@@ -14,7 +14,10 @@ namespace Composer\Test;
 
 use Composer\DependencyResolver\Request;
 use Composer\Installer;
-use Composer\Console\Application;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 use Composer\IO\BufferIO;
 use Composer\Json\JsonFile;
 use Composer\Package\Dumper\ArrayDumper;
@@ -263,7 +266,12 @@ class InstallerTest extends TestCase
         $installer = Installer::create($io, $composer);
 
         $application = new Application;
-        $application->get('install')->setCode(function ($input, $output) use ($installer) {
+        $install = new Command('install');
+        $install->addOption('ignore-platform-reqs', null, InputOption::VALUE_NONE);
+        $install->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY);
+        $install->addOption('no-dev', null, InputOption::VALUE_NONE);
+        $install->addOption('dry-run', null, InputOption::VALUE_NONE);
+        $install->setCode(function ($input, $output) use ($installer) {
             $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
             $installer
@@ -273,8 +281,21 @@ class InstallerTest extends TestCase
 
             return $installer->run();
         });
+        $application->add($install);
 
-        $application->get('update')->setCode(function ($input, $output) use ($installer) {
+        $update = new Command('update');
+        $update->addOption('ignore-platform-reqs', null, InputOption::VALUE_NONE);
+        $update->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY);
+        $update->addOption('no-dev', null, InputOption::VALUE_NONE);
+        $update->addOption('no-install', null, InputOption::VALUE_NONE);
+        $update->addOption('dry-run', null, InputOption::VALUE_NONE);
+        $update->addOption('lock', null, InputOption::VALUE_NONE);
+        $update->addOption('with-all-dependencies', null, InputOption::VALUE_NONE);
+        $update->addOption('with-dependencies', null, InputOption::VALUE_NONE);
+        $update->addOption('prefer-stable', null, InputOption::VALUE_NONE);
+        $update->addOption('prefer-lowest', null, InputOption::VALUE_NONE);
+        $update->addArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL);
+        $update->setCode(function ($input, $output) use ($installer) {
             $packages = $input->getArgument('packages');
             $filteredPackages = array_filter($packages, function ($package) {
                 return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
@@ -305,6 +326,7 @@ class InstallerTest extends TestCase
 
             return $installer->run();
         });
+        $application->add($update);
 
         if (!preg_match('{^(install|update)\b}', $run)) {
             throw new \UnexpectedValueException('The run command only supports install and update');
