@@ -4,7 +4,7 @@
 
 # HTTP basic authentication
 
-Your [Satis or Toran Proxy](handling-private-packages-with-satis.md) server
+Your [Satis or Private Packagist](handling-private-packages-with-satis.md) server
 could be secured with http basic authentication. In order to allow your project
 to have access to these packages you will have to tell composer how to
 authenticate with your credentials.
