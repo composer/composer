@@ -124,6 +124,10 @@ class ArrayLoader implements LoaderInterface
             $package->setInstallationSource($config['installation-source']);
         }
 
+        if (isset($config['default-branch']) && $config['default-branch'] === true) {
+            $package->setIsDefaultBranch(true);
+        }
+
         if (isset($config['source'])) {
             if (!isset($config['source']['type']) || !isset($config['source']['url']) || !isset($config['source']['reference'])) {
                 throw new \UnexpectedValueException(sprintf(
@@ -364,7 +368,7 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-        if (\in_array($config['version'], array('dev-master', 'dev-default', 'dev-trunk'), true)) {
+        if (isset($config['default-branch']) && $config['default-branch'] === true) {
             return VersionParser::DEV_MASTER_ALIAS;
         }
     }

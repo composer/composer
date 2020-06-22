@@ -105,12 +105,36 @@ class RootPackageLoaderTest extends TestCase
                 'pretty_version' => '3.0-dev',
                 'commit' => 'aabbccddee',
             ));
+        $versionGuesser->getDefaultBranchName(Argument::cetera())
+            ->willReturn('main');
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
         $loader = new RootPackageLoader($manager->reveal(), $config, null, $versionGuesser->reveal());
         $package = $loader->load(array());
 
         $this->assertEquals('3.0-dev', $package->getPrettyVersion());
+    }
+
+    public function testDefaultBranchIsSetForRootPackageInDefaultBranch()
+    {
+        // see #6845
+        $manager = $this->prophesize('\\Composer\\Repository\\RepositoryManager');
+        $versionGuesser = $this->prophesize('\\Composer\\Package\\Version\\VersionGuesser');
+        $versionGuesser->guessVersion(Argument::cetera())
+            ->willReturn(array(
+                'name' => 'A',
+                'version' => 'dev-main',
+                'pretty_version' => 'dev-main',
+                'commit' => 'aabbccddee',
+            ));
+        $versionGuesser->getDefaultBranchName(Argument::cetera())
+            ->willReturn('main');
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $loader = new RootPackageLoader($manager->reveal(), $config, null, $versionGuesser->reveal());
+        $package = $loader->load(array());
+
+        $this->assertTrue($package->isDefaultBranch());
     }
 
     public function testFeatureBranchPrettyVersion()
@@ -146,6 +170,17 @@ class RootPackageLoaderTest extends TestCase
 
         $executor
             ->expects($this->at(1))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self) {
+                $self->assertEquals('git remote show origin', $command);
+                $output = "  HEAD branch: master";
+
+                return 0;
+            })
+        ;
+
+        $executor
+            ->expects($this->at(2))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
                 $self->assertEquals('git rev-list master..latest-production', $command);

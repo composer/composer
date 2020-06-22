@@ -8,7 +8,8 @@ Downgrading from unstable to more stable package should work even if already ins
             "package": [
                 {
                     "name": "a/a", "version": "dev-master",
-                    "source": { "reference": "abcd", "url": "", "type": "git" }
+                    "source": { "reference": "abcd", "url": "", "type": "git" },
+                    "default-branch": true
                 },
                 {
                     "name": "a/a", "version": "1.0.0",
@@ -17,7 +18,8 @@ Downgrading from unstable to more stable package should work even if already ins
                 },
                 {
                     "name": "b/b", "version": "dev-master",
-                    "source": { "reference": "abcd", "url": "", "type": "git" }
+                    "source": { "reference": "abcd", "url": "", "type": "git" },
+                    "default-branch": true
                 },
                 {
                     "name": "b/b", "version": "1.0.0",
@@ -36,11 +38,13 @@ Downgrading from unstable to more stable package should work even if already ins
 [
     {
         "name": "a/a", "version": "dev-master",
-        "source": { "reference": "abcd", "url": "", "type": "git" }
+        "source": { "reference": "abcd", "url": "", "type": "git" },
+        "default-branch": true
     },
     {
         "name": "b/b", "version": "dev-master",
-        "source": { "reference": "abcd", "url": "", "type": "git" }
+        "source": { "reference": "abcd", "url": "", "type": "git" },
+        "default-branch": true
     }
 ]
 --RUN--

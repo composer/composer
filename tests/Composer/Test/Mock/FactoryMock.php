@@ -17,6 +17,8 @@ use Composer\Config;
 use Composer\Factory;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\WritableRepositoryInterface;
+use Composer\Package\Version\VersionGuesser;
+use Composer\Package\Version\VersionParser;
 use Composer\Package\RootPackageInterface;
 use Composer\Installer;
 use Composer\EventDispatcher\EventDispatcher;
@@ -37,6 +39,11 @@ class FactoryMock extends Factory
         ));
 
         return $config;
+    }
+
+    protected function loadRootPackage(RepositoryManager $rm, Config $config, VersionParser $parser, VersionGuesser $guesser, IOInterface $io)
+    {
+        return new \Composer\Package\Loader\RootPackageLoader($rm, $config, $parser, new VersionGuesserMock(), $io);
     }
 
     protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage)

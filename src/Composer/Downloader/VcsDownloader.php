@@ -21,6 +21,9 @@ use Composer\Util\ProcessExecutor;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
 use React\Promise\PromiseInterface;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -120,7 +123,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             throw new \InvalidArgumentException('Package '.$package->getPrettyName().' is missing reference information');
         }
 
-        $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>): ", false);
+        $this->io->writeError("  - " . InstallOperation::format($package).': ', false);
 
         $urls = $this->prepareUrls($package->getSourceUrls());
         while ($url = array_shift($urls)) {
@@ -153,23 +156,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             throw new \InvalidArgumentException('Package '.$target->getPrettyName().' is missing reference information');
         }
 
-        $name = $target->getName();
-        if ($initial->getPrettyVersion() == $target->getPrettyVersion()) {
-            if ($target->getSourceType() === 'svn') {
-                $from = $initial->getSourceReference();
-                $to = $target->getSourceReference();
-            } else {
-                $from = substr($initial->getSourceReference(), 0, 7);
-                $to = substr($target->getSourceReference(), 0, 7);
-            }
-            $name .= ' '.$initial->getPrettyVersion();
-        } else {
-            $from = $initial->getFullPrettyVersion();
-            $to = $target->getFullPrettyVersion();
-        }
-
-        $actionName = VersionParser::isUpgrade($initial->getVersion(), $target->getVersion()) ? 'Upgrading' : 'Downgrading';
-        $this->io->writeError("  - " . $actionName . " <info>" . $name . "</info> (<comment>" . $from . "</comment> => <comment>" . $to . "</comment>): ", false);
+        $this->io->writeError("  - " . UpdateOperation::format($initial, $target).': ', false);
 
         $urls = $this->prepareUrls($target->getSourceUrls());
 
@@ -227,7 +214,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      */
     public function remove(PackageInterface $package, $path)
     {
-        $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getPrettyVersion() . "</comment>)");
+        $this->io->writeError("  - " . UninstallOperation::format($package));
         if (!$this->filesystem->removeDirectory($path)) {
             throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
         }

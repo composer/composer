@@ -336,7 +336,7 @@ class Factory
 
         $httpDownloader = self::createHttpDownloader($io, $config);
         $process = new ProcessExecutor($io);
-        $loop = new Loop($httpDownloader);
+        $loop = new Loop($httpDownloader, $process);
         $composer->setLoop($loop);
 
         // initialize event dispatcher
@@ -356,7 +356,7 @@ class Factory
         // load package
         $parser = new VersionParser;
         $guesser = new VersionGuesser($config, $process, $parser);
-        $loader = new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser, $io);
+        $loader = $this->loadRootPackage($rm, $config, $parser, $guesser, $io);
         $package = $loader->load($localConfig, 'Composer\Package\RootPackage', $cwd);
         $composer->setPackage($package);
 
@@ -495,11 +495,11 @@ class Factory
         $dm->setDownloader('perforce', new Downloader\PerforceDownloader($io, $config, $process, $fs));
         $dm->setDownloader('zip', new Downloader\ZipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
         $dm->setDownloader('rar', new Downloader\RarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
-        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs));
+        $dm->setDownloader('tar', new Downloader\TarDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
         $dm->setDownloader('gzip', new Downloader\GzipDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
         $dm->setDownloader('xz', new Downloader\XzDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
-        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs));
-        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs));
+        $dm->setDownloader('phar', new Downloader\PharDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
+        $dm->setDownloader('file', new Downloader\FileDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
         $dm->setDownloader('path', new Downloader\PathDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $fs, $process));
 
         return $dm;
@@ -565,6 +565,11 @@ class Factory
                 $repo->removePackage($package);
             }
         }
+    }
+
+    protected function loadRootPackage(RepositoryManager $rm, Config $config, VersionParser $parser, VersionGuesser $guesser, IOInterface $io)
+    {
+        return new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser, $io);
     }
 
     /**

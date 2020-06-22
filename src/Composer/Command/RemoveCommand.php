@@ -220,6 +220,8 @@ EOT
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'remove', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
+        $composer->getInstallationManager()->setOutputProgress(!$input->getOption('no-progress'));
+
         $install = Installer::create($io, $composer);
 
         $updateDevMode = !$input->getOption('update-no-dev');

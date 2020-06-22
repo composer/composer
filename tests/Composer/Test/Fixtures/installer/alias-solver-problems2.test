@@ -6,7 +6,7 @@ Test the error output of solver problems with dev-master aliases.
         {
             "type": "package",
             "package": [
-                { "name": "locked/pkg", "version": "dev-master", "require": {"locked/dependency": "1.0.0"} }
+                { "name": "locked/pkg", "version": "dev-master", "require": {"locked/dependency": "1.0.0"}, "default-branch": true }
             ]
         }
     ],
@@ -18,7 +18,7 @@ Test the error output of solver problems with dev-master aliases.
 --LOCK--
 {
     "packages": [
-        { "name": "locked/pkg", "version": "dev-master", "require": {"locked/dependency": "1.0.0"} },
+        { "name": "locked/pkg", "version": "dev-master", "require": {"locked/dependency": "1.0.0"}, "default-branch": true },
         { "name": "locked/dependency", "version": "1.0.0" }
     ],
     "packages-dev": [],

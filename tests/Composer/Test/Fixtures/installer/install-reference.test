@@ -7,18 +7,19 @@ Installs a dev package forcing it's reference
             "type": "package",
             "package": [
                 {
-                    "name": "a/a", "version": "dev-master",
-                    "source": { "reference": "abc123", "url": "", "type": "git" }
+                    "name": "a/a", "version": "dev-main",
+                    "source": { "reference": "abc123", "url": "", "type": "git" },
+                    "default-branch": true
                 }
             ]
         }
     ],
     "require": {
-        "a/a": "dev-master#def000"
+        "a/a": "dev-main#def000"
     }
 }
 --RUN--
 install
 --EXPECT--
-Installing a/a (dev-master def000)
-Marking a/a (9999999-dev def000) as installed, alias of a/a (dev-master def000)
+Installing a/a (dev-main def000)
+Marking a/a (9999999-dev def000) as installed, alias of a/a (dev-main def000)

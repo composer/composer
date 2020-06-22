@@ -16,6 +16,8 @@ use Composer\Config;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
+use Composer\Util\Git as GitUtil;
+use Composer\Util\ProcessExecutor;
 
 class VersionGuesserTest extends TestCase
 {
@@ -30,7 +32,7 @@ class VersionGuesserTest extends TestCase
     {
         $branch = 'default';
 
-        $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
+        $executor = $this->getMockBuilder('Composer\\Util\\ProcessExecutor')
             ->setMethods(array('execute'))
             ->disableArgumentCloning()
             ->disableOriginalConstructor()
@@ -39,6 +41,8 @@ class VersionGuesserTest extends TestCase
 
         $self = $this;
         $step = 0;
+
+        GitUtil::getVersion(new ProcessExecutor);
 
         $executor
             ->expects($this->at($step))
@@ -65,8 +69,8 @@ class VersionGuesserTest extends TestCase
         $executor
             ->expects($this->at($step))
             ->method('execute')
-            ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git log --pretty="%H" -n1 HEAD', $command);
+            ->willReturnCallback(function ($command, &$output) use ($self, $executor) {
+                $self->assertEquals('git log --pretty="%H" -n1 HEAD'.GitUtil::getNoShowSignatureFlag($executor), $command);
 
                 return 128;
             })
@@ -131,6 +135,64 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals($commitHash, $versionArray['commit']);
     }
 
+    public function testGuessVersionReadsAndRespectsDefaultBranchAsNonFeatureBranch()
+    {
+        $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
+        $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
+
+        $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
+            ->setMethods(array('execute'))
+            ->disableArgumentCloning()
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+
+        $self = $this;
+
+        $executor
+            ->expects($this->at(0))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self, $commitHash, $anotherCommitHash) {
+                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $output = "  arbitrary $commitHash Commit message\n* current $anotherCommitHash Another message\n";
+
+                return 0;
+            })
+        ;
+
+        $executor
+            ->expects($this->at(1))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self) {
+                $self->assertEquals('git remote show origin', $command);
+                $output = "  HEAD branch: arbitrary\r\n";
+
+                return 0;
+            })
+        ;
+
+        $executor
+            ->expects($this->at(2))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output, $path) use ($self, $anotherCommitHash) {
+                $self->assertEquals('git rev-list arbitrary..current', $command);
+                $output = "$anotherCommitHash\n";
+
+                return 0;
+            })
+        ;
+
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $guesser = new VersionGuesser($config, $executor, new VersionParser());
+        $versionArray = $guesser->guessVersion(array('version' => 'self.version'), 'dummy/path');
+
+        $this->assertEquals("dev-arbitrary", $versionArray['version']);
+        $this->assertEquals($anotherCommitHash, $versionArray['commit']);
+        $this->assertEquals("dev-current", $versionArray['feature_version']);
+        $this->assertEquals("dev-current", $versionArray['feature_pretty_version']);
+    }
+
     public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNaming()
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
@@ -158,6 +220,17 @@ class VersionGuesserTest extends TestCase
 
         $executor
             ->expects($this->at(1))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self) {
+                $self->assertEquals('git remote show origin', $command);
+                $output = "  HEAD branch: foo\r\n";
+
+                return 0;
+            })
+        ;
+
+        $executor
+            ->expects($this->at(2))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output, $path) use ($self, $anotherCommitHash) {
                 $self->assertEquals('git rev-list arbitrary..current', $command);
@@ -202,9 +275,18 @@ class VersionGuesserTest extends TestCase
                 return 0;
             })
         ;
-
         $executor
             ->expects($this->at(1))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self) {
+                $self->assertEquals('git remote show origin', $command);
+                $output = "  HEAD branch: foo\r\n";
+
+                return 0;
+            })
+        ;
+        $executor
+            ->expects($this->at(2))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output, $path) use ($self, $anotherCommitHash) {
                 $self->assertEquals('git rev-list latest-testing..current', $command);
@@ -374,9 +456,18 @@ class VersionGuesserTest extends TestCase
                 return 0;
             })
         ;
-
         $executor
             ->expects($this->at(1))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self) {
+                $self->assertEquals('git remote show origin', $command);
+                $output = "  HEAD branch: foo\r\n";
+
+                return 0;
+            })
+        ;
+        $executor
+            ->expects($this->at(2))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
                 $self->assertEquals('git describe --exact-match --tags', $command);
@@ -415,9 +506,18 @@ class VersionGuesserTest extends TestCase
                 return 0;
             })
         ;
-
         $executor
             ->expects($this->at(1))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self) {
+                $self->assertEquals('git remote show origin', $command);
+                $output = "  HEAD branch: foo\r\n";
+
+                return 0;
+            })
+        ;
+        $executor
+            ->expects($this->at(2))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
                 $self->assertEquals('git describe --exact-match --tags', $command);

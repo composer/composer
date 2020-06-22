@@ -23,6 +23,7 @@ use Composer\Config;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\IO\IOInterface;
+use Composer\Semver\CompilingMatcher;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Loop;
 use Composer\Plugin\PluginEvents;
@@ -764,7 +765,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 continue;
             }
 
-            if ($constraint && !$constraint->matches(new Constraint('==', $version))) {
+            if ($constraint && !CompilingMatcher::match($constraint, Constraint::OP_EQ, $version)) {
                 continue;
             }
 
@@ -1013,8 +1014,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         while ($retries--) {
             try {
                 if ($this->eventDispatcher) {
-                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
+                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata');
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                    $filename = $preFileDownloadEvent->getProcessedUrl();
                 }
 
                 $response = $this->httpDownloader->get($filename, $this->options);
@@ -1099,8 +1101,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         while ($retries--) {
             try {
                 if ($this->eventDispatcher) {
-                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
+                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata');
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                    $filename = $preFileDownloadEvent->getProcessedUrl();
                 }
 
                 $options = $this->options;
@@ -1165,8 +1168,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $httpDownloader = $this->httpDownloader;
         if ($this->eventDispatcher) {
-            $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename);
+            $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata');
             $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+            $filename = $preFileDownloadEvent->getProcessedUrl();
         }
 
         $options = $lastModifiedTime ? array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime))) : array();

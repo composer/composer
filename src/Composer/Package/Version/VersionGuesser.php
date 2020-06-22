@@ -20,6 +20,7 @@ use Composer\Util\Git as GitUtil;
 use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
+use Composer\Util\Platform;
 use Composer\Package\Version\VersionParser;
 
 
@@ -110,6 +111,43 @@ class VersionGuesser
         return $versionData;
     }
 
+    /**
+     * Tries to find name of default branch from VCS info
+     *
+     * @param string $path Path to guess into
+     */
+    public function getDefaultBranchName($path)
+    {
+        if (version_compare(GitUtil::getVersion($this->process), '2.3.0-rc0', '>=')) {
+            GitUtil::cleanEnv();
+            $oldVal = getenv('GIT_SSH_COMMAND');
+            putenv("GIT_SSH_COMMAND=ssh".(Platform::isWindows() ? '.exe' : '')." -o StrictHostKeyChecking=yes");
+            $hasGitRemote = 0 === $this->process->execute('git remote show origin', $output, $path);
+            if ($oldVal) {
+                putenv("GIT_SSH_COMMAND=$oldVal");
+            } else {
+                putenv("GIT_SSH_COMMAND");
+            }
+            if ($hasGitRemote && preg_match('{^  HEAD branch: (.+)$}m', $output, $match)) {
+                return trim($match[1]);
+            }
+        }
+
+        if (is_dir($path.'/.git')) {
+            return 'master';
+        }
+
+        if (is_dir($path.'/.hg')) {
+            return 'default';
+        }
+
+        if (is_dir($path.'/.svn')) {
+            return 'trunk';
+        }
+
+        return null;
+    }
+
     private function guessGitVersion(array $packageConfig, $path)
     {
         GitUtil::cleanEnv();
@@ -154,6 +192,7 @@ class VersionGuesser
             if ($isFeatureBranch) {
                 $featureVersion = $version;
                 $featurePrettyVersion = $prettyVersion;
+
                 // try to find the best (nearest) version branch to assume this feature's version
                 $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'git rev-list %candidate%..%branch%', $path);
                 $version = $result['version'];
@@ -172,7 +211,7 @@ class VersionGuesser
         }
 
         if (!$commit) {
-            $command = 'git log --pretty="%H" -n1 HEAD';
+            $command = 'git log --pretty="%H" -n1 HEAD'.GitUtil::getNoShowSignatureFlag($this->process);
             if (0 === $this->process->execute($command, $output, $path)) {
                 $commit = trim($output) ?: null;
             }
@@ -248,14 +287,16 @@ class VersionGuesser
                 $nonFeatureBranches = implode('|', $packageConfig['non-feature-branches']);
             }
 
-            foreach ($branches as $candidate) {
-                // return directly, if branch is configured to be non-feature branch
-                if ($candidate === $branch && preg_match('{^(' . $nonFeatureBranches . ')$}', $candidate)) {
-                    break;
-                }
+            // return directly, if branch is configured to be non-feature branch
+            if (preg_match('{^(' . $nonFeatureBranches . ')$}', $branch)) {
+                return array('version' => $version, 'pretty_version' => $prettyVersion);
+            }
 
+            $defaultBranch = $this->getDefaultBranchName($path);
+
+            foreach ($branches as $candidate) {
                 // do not compare against itself or other feature branches
-                if ($candidate === $branch || !preg_match('{^(' . $nonFeatureBranches . '|master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
+                if ($candidate === $branch || !preg_match('{^(' . $nonFeatureBranches . ($defaultBranch ? '|'.preg_quote($defaultBranch) : '').'|master|main|latest|next|current|support|tip|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
                     continue;
                 }
 

@@ -27,6 +27,9 @@ use Composer\Util\Filesystem;
 use Composer\EventDispatcher\EventDispatcher;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
+use Composer\DependencyResolver\Operation\UpdateOperation;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
 
 /**
  * Download a package from a local path.
@@ -38,15 +41,6 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 {
     const STRATEGY_SYMLINK = 10;
     const STRATEGY_MIRROR = 20;
-
-    /** @var ProcessExecutor */
-    private $process;
-
-    public function __construct(IOInterface $io, Config $config, HttpDownloader $downloader, EventDispatcher $eventDispatcher = null, Cache $cache = null, Filesystem $fs = null, ProcessExecutor $process = null)
-    {
-        $this->process = $process ?: new ProcessExecutor($io);
-        parent::__construct($io, $config, $downloader, $eventDispatcher, $cache, $fs);
-    }
 
     /**
      * {@inheritdoc}
@@ -91,11 +85,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         if (realpath($path) === $realUrl) {
             if ($output) {
-                $this->io->writeError(sprintf(
-                    '  - Installing <info>%s</info> (<comment>%s</comment>): Source already present',
-                    $package->getName(),
-                    $package->getFullPrettyVersion()
-                ));
+                $this->io->writeError("  - " . InstallOperation::format($package).': Source already present');
             } else {
                 $this->io->writeError('Source already present', false);
             }
@@ -133,11 +123,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         $this->filesystem->removeDirectory($path);
 
         if ($output) {
-            $this->io->writeError(sprintf(
-                '  - Installing <info>%s</info> (<comment>%s</comment>): ',
-                $package->getName(),
-                $package->getFullPrettyVersion()
-            ), false);
+            $this->io->writeError("  - " . InstallOperation::format($package).': ', false);
         }
 
         $isFallback = false;
@@ -196,7 +182,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         if ($path === $realUrl) {
             if ($output) {
-                $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>), source is still present in $path");
+                $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
             }
 
             return;
@@ -209,7 +195,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
          */
         if (Platform::isWindows() && $this->filesystem->isJunction($path)) {
             if ($output) {
-                $this->io->writeError("  - Removing junction for <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>)");
+                $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
             }
             if (!$this->filesystem->removeJunction($path)) {
                 $this->io->writeError("    <warning>Could not remove junction at " . $path . " - is another process locking it?</warning>");

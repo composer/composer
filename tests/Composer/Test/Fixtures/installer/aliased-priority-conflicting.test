@@ -13,20 +13,24 @@ Aliases take precedence over default package even if default is selected
                 {
                     "name": "a/req", "version": "dev-master",
                     "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
-                    "source": { "reference": "forked", "type": "git", "url": "" }
+                    "source": { "reference": "forked", "type": "git", "url": "" },
+                    "default-branch": true
                 },
                 {
                     "name": "a/req", "version": "dev-master",
                     "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
-                    "source": { "reference": "master", "type": "git", "url": "" }
+                    "source": { "reference": "master", "type": "git", "url": "" },
+                    "default-branch": true
                 },
                 {
                     "name": "a/a", "version": "dev-master",
-                    "require": { "a/req": "dev-master" }
+                    "require": { "a/req": "dev-master" },
+                    "default-branch": true
                 },
                 {
                     "name": "a/b", "version": "dev-master",
-                    "require": { "a/req": "dev-master" }
+                    "require": { "a/req": "dev-master" },
+                    "default-branch": true
                 }
             ]
         }
@@ -44,12 +48,14 @@ Aliases take precedence over default package even if default is selected
         {
             "name": "a/a", "version": "dev-master",
             "require": { "a/req": "dev-master" },
-            "type": "library"
+            "type": "library",
+            "default-branch": true
         },
         {
             "name": "a/b", "version": "dev-master",
             "require": { "a/req": "dev-master" },
-            "type": "library"
+            "type": "library",
+            "default-branch": true
         },
         {
             "name": "a/req", "version": "dev-feature-foo",

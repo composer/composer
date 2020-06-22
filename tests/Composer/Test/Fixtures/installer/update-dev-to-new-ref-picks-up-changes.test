@@ -7,36 +7,39 @@ Updating a dev package to its latest ref should pick up new dependencies
             "type": "package",
             "package": [
                 {
-                    "name": "a/devpackage", "version": "dev-master",
+                    "name": "a/devpackage", "version": "dev-main",
                     "source": { "reference": "newref", "url": "", "type": "git" },
                     "require": {
                         "a/dependency": "*"
-                    }
+                    },
+                    "default-branch": true
                 },
                 {
-                    "name": "a/dependency", "version": "dev-master",
+                    "name": "a/dependency", "version": "dev-main",
                     "source": { "reference": "ref", "url": "", "type": "git" },
-                    "require": {}
+                    "require": {},
+                    "default-branch": true
                 }
             ]
         }
     ],
     "require": {
-        "a/devpackage": "dev-master"
+        "a/devpackage": "dev-main"
     },
     "minimum-stability": "dev"
 }
 --INSTALLED--
 [
     {
-        "name": "a/devpackage", "version": "dev-master",
+        "name": "a/devpackage", "version": "dev-main",
         "source": { "reference": "oldref", "url": "", "type": "git" },
-        "require": {}
+        "require": {},
+        "default-branch": true
     }
 ]
 --RUN--
 update
 --EXPECT--
-Installing a/dependency (dev-master ref)
-Marking a/dependency (9999999-dev ref) as installed, alias of a/dependency (dev-master ref)
-Upgrading a/devpackage (dev-master oldref => dev-master newref)
+Installing a/dependency (dev-main ref)
+Marking a/dependency (9999999-dev ref) as installed, alias of a/dependency (dev-main ref)
+Upgrading a/devpackage (dev-main oldref => dev-main newref)

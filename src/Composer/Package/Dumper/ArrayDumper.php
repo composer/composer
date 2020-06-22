@@ -95,6 +95,10 @@ class ArrayDumper
             $data['time'] = $package->getReleaseDate()->format(DATE_RFC3339);
         }
 
+        if ($package->isDefaultBranch()) {
+            $data['default-branch'] = true;
+        }
+
         $data = $this->dumpValues($package, $keys, $data);
 
         if ($package instanceof CompletePackageInterface) {

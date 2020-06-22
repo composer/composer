@@ -12,21 +12,21 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
-use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\StabilityFilter;
+use Composer\Plugin\PluginEvents;
+use Composer\Plugin\PrePoolCreateEvent;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
+use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Semver\Constraint\MultiConstraint;
-use Composer\EventDispatcher\EventDispatcher;
-use Composer\Plugin\PrePoolCreateEvent;
-use Composer\Plugin\PluginEvents;
 use Composer\Semver\Intervals;
 
 /**
@@ -103,7 +103,7 @@ class PoolBuilder
      * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
      * @psalm-param array<string, int> $stabilityFlags
      * @param array[] $rootAliases
-     * @psalm-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $rootAliases
+     * @psalm-param array<string, array<string, array{alias: string, alias_normalized: string}>> $rootAliases
      * @param string[] $rootReferences an array of package name => source reference
      * @psalm-param array<string, string> $rootReferences
      */
@@ -111,7 +111,7 @@ class PoolBuilder
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
-        $this->rootAliases = $this->getRootAliasesPerPackage($rootAliases);
+        $this->rootAliases = $rootAliases;
         $this->rootReferences = $rootReferences;
         $this->eventDispatcher = $eventDispatcher;
         $this->io = $io;
@@ -193,7 +193,7 @@ class PoolBuilder
 
                 $found = false;
                 foreach ($aliasedPackages as $packageOrAlias) {
-                    if ($constraint->matches(new Constraint('==', $packageOrAlias->getVersion()))) {
+                    if (CompilingMatcher::match($constraint, Constraint::OP_EQ, $packageOrAlias->getVersion())) {
                         $found = true;
                     }
                 }
@@ -496,20 +496,6 @@ class PoolBuilder
             }
             unset($this->aliasMap[spl_object_hash($package)]);
         }
-    }
-
-    private function getRootAliasesPerPackage(array $aliases)
-    {
-        $normalizedAliases = array();
-
-        foreach ($aliases as $alias) {
-            $normalizedAliases[$alias['package']][$alias['version']] = array(
-                'alias' => $alias['alias'],
-                'alias_normalized' => $alias['alias_normalized'],
-            );
-        }
-
-        return $normalizedAliases;
     }
 }
 
