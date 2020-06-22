@@ -26,9 +26,6 @@ parameters:
         # BC with older PHPUnit
         - '~^Call to an undefined static method PHPUnit\\Framework\\TestCase::setExpectedException\(\)\.$~'
 
-        # ZipArchive::* Class constants are already checked before use.
-        - '~^Access to undefined constant ZipArchive::~'
-
     paths:
         - ../src
         - ../tests
