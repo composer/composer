@@ -20,6 +20,7 @@ use Composer\Util\Git as GitUtil;
 use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
+use Composer\Util\Platform;
 use Composer\Package\Version\VersionParser;
 
 
@@ -117,9 +118,17 @@ class VersionGuesser
      */
     public function getDefaultBranchName($path)
     {
-        GitUtil::cleanEnv();
-        if (0 === $this->process->execute('git remote show origin', $output, $path) || 0 === $this->process->execute('git remote show upstream', $output, $path)) {
-            if (preg_match('{^  HEAD branch: (.+)$}m', $output, $match)) {
+        if (version_compare(GitUtil::getVersion($this->process), '2.3.0-rc0', '>=')) {
+            GitUtil::cleanEnv();
+            $oldVal = getenv('GIT_SSH_COMMAND');
+            putenv("GIT_SSH_COMMAND=ssh".(Platform::isWindows() ? '.exe' : '')." -o StrictHostKeyChecking=yes");
+            $hasGitRemote = 0 === $this->process->execute('git remote show origin', $output, $path);
+            if ($oldVal) {
+                putenv("GIT_SSH_COMMAND=$oldVal");
+            } else {
+                putenv("GIT_SSH_COMMAND");
+            }
+            if ($hasGitRemote && preg_match('{^  HEAD branch: (.+)$}m', $output, $match)) {
                 return trim($match[1]);
             }
         }
@@ -287,7 +296,7 @@ class VersionGuesser
 
             foreach ($branches as $candidate) {
                 // do not compare against itself or other feature branches
-                if ($candidate === $branch || !preg_match('{^(' . $nonFeatureBranches . ($defaultBranch ? '|'.preg_quote($defaultBranch) : '').'|master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
+                if ($candidate === $branch || !preg_match('{^(' . $nonFeatureBranches . ($defaultBranch ? '|'.preg_quote($defaultBranch) : '').'|master|main|latest|next|current|support|tip|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
                     continue;
                 }
 
