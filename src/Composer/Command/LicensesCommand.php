@@ -96,9 +96,9 @@ EOT
                 break;
 
             case 'json':
-                $dependencies = array();
+                $usedLicenses = array();
                 foreach ($packages as $package) {
-                    $dependencies[$package->getPrettyName()] = array(
+                    $usedLicenses[$package->getPrettyName()] = array(
                         'version' => $package->getFullPrettyVersion(),
                         'license' => $package->getLicense(),
                     );
@@ -108,23 +108,23 @@ EOT
                     'name' => $root->getPrettyName(),
                     'version' => $root->getFullPrettyVersion(),
                     'license' => $root->getLicense(),
-                    'dependencies' => $dependencies,
+                    'dependencies' => $usedLicenses,
                 )));
                 break;
 
             case 'summary':
-                $dependencies = array();
+                $usedLicenses = array();
                 foreach ($packages as $package) {
                     $license = $package->getLicense();
                     $licenseName = $license[0];
-                    if (!isset($dependencies[$licenseName])) {
-                        $dependencies[$licenseName] = 0;
+                    if (!isset($usedLicenses[$licenseName])) {
+                        $usedLicenses[$licenseName] = 0;
                     }
-                    $dependencies[$licenseName]++;
+                    $usedLicenses[$licenseName]++;
                 }
 
                 $rows = array();
-                foreach ($dependencies as $usedLicense => $numberOfDependencies) {
+                foreach ($usedLicenses as $usedLicense => $numberOfDependencies) {
                     $rows[] = array($usedLicense, $numberOfDependencies);
                 }
 
