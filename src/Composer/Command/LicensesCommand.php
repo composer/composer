@@ -124,7 +124,7 @@ EOT
                 }
 
                 // Sort licenses so that the most used license will appear first
-                arsort($dependencies, SORT_NUMERIC);
+                arsort($usedLicenses, SORT_NUMERIC);
 
                 $rows = array();
                 foreach ($usedLicenses as $usedLicense => $numberOfDependencies) {
