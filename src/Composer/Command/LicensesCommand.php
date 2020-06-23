@@ -123,6 +123,9 @@ EOT
                     $usedLicenses[$licenseName]++;
                 }
 
+                // Sort licenses so that the most used license will appear first
+                arsort($dependencies, SORT_NUMERIC);
+
                 $rows = array();
                 foreach ($usedLicenses as $usedLicense => $numberOfDependencies) {
                     $rows[] = array($usedLicense, $numberOfDependencies);
