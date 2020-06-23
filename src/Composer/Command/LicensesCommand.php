@@ -34,7 +34,7 @@ class LicensesCommand extends BaseCommand
             ->setName('licenses')
             ->setDescription('Shows information about licenses of dependencies.')
             ->setDefinition(array(
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text, json or summary', 'text'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
             ))
             ->setHelp(
