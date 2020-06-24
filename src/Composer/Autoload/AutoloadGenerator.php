@@ -1064,8 +1064,7 @@ INITIALIZER;
                         $path = preg_replace('{/+}', '/', preg_quote(trim(strtr($path, '\\', '/'), '/')));
 
                         // add support for wildcards * and **
-                        $path = str_replace('\\*\\*', '.+?', $path);
-                        $path = str_replace('\\*', '[^/]+?', $path);
+                        $path = strtr($path, array('\\*\\*' => '.+?', '\\*' => '[^/]+?'));
 
                         // add support for up-level relative paths
                         $updir = null;
