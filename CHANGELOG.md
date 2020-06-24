@@ -1,3 +1,14 @@
+### [2.0.0-alpha2] 2020-06-24
+
+  * Added parallel installation of packages (requires OSX/Linux/WSL, and that `unzip` is present in PATH)
+  * Added optimization of constraints by compiling them to PHP code, which should reduce CPU time of updates
+  * Added handling of Ctrl-C on Windows for PHP 7.4+
+  * Added better support for default branch names other than `master`
+  * Added --format=summary flag to `license` command
+  * Fixed issue in platform check when requiring ext-zend-opcache
+  * Fixed inline aliases issues
+  * Fixed git integration issue when signatures are set to be shown by default
+
 ### [2.0.0-alpha1] 2020-06-03
 
   * Breaking: This is a major release and while we tried to keep things compatible for most users, you might want to have a look at the [UPGRADE](UPGRADE-2.0.md) guides
@@ -27,7 +38,7 @@
   * Added --json and --merge flags to `config` command to allow editing complex `extra.*` values by using json as input
   * Added confirmation prompt when running Composer as superuser in interactive mode
   * Added --no-check-version to `validate` command to remove the warning in case the version is defined
-  * Added --ignore-platform-req (without s) to all commands supporting --ignore-platform-reqs, which accepts a package name so you can ignore only specific     platform requirements
+  * Added --ignore-platform-req (without s) to all commands supporting --ignore-platform-reqs, which accepts a package name so you can ignore only specific platform requirements
   * Added support for wildcards (`*`) in classmap autoloader paths
   * Added support for configuring GitLab deploy tokens in addition to private tokens, see [gitlab-token](doc/06-config.md#gitlab-token)
   * Added support for package version guessing for require and init command to take all platform packages into account, not just php version
@@ -897,6 +908,7 @@
 
   * Initial release
 
+[2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
 [1.10.7]: https://github.com/composer/composer/compare/1.10.6...1.10.7
 [1.10.6]: https://github.com/composer/composer/compare/1.10.5...1.10.6
