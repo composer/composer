@@ -96,9 +96,9 @@ EOT
                 break;
 
             case 'json':
-                $usedLicenses = array();
+                $dependencies = array();
                 foreach ($packages as $package) {
-                    $usedLicenses[$package->getPrettyName()] = array(
+                    $dependencies[$package->getPrettyName()] = array(
                         'version' => $package->getFullPrettyVersion(),
                         'license' => $package->getLicense(),
                     );
@@ -108,7 +108,7 @@ EOT
                     'name' => $root->getPrettyName(),
                     'version' => $root->getFullPrettyVersion(),
                     'license' => $root->getLicense(),
-                    'dependencies' => $usedLicenses,
+                    'dependencies' => $dependencies,
                 )));
                 break;
 
