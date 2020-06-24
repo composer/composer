@@ -34,7 +34,7 @@ class LicensesCommand extends BaseCommand
             ->setName('licenses')
             ->setDescription('Shows information about licenses of dependencies.')
             ->setDefinition(array(
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text, json or summary', 'text'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
             ))
             ->setHelp(
@@ -113,18 +113,21 @@ EOT
                 break;
 
             case 'summary':
-                $dependencies = array();
+                $usedLicenses = array();
                 foreach ($packages as $package) {
                     $license = $package->getLicense();
                     $licenseName = $license[0];
-                    if (!isset($dependencies[$licenseName])) {
-                        $dependencies[$licenseName] = 0;
+                    if (!isset($usedLicenses[$licenseName])) {
+                        $usedLicenses[$licenseName] = 0;
                     }
-                    $dependencies[$licenseName]++;
+                    $usedLicenses[$licenseName]++;
                 }
 
+                // Sort licenses so that the most used license will appear first
+                arsort($usedLicenses, SORT_NUMERIC);
+
                 $rows = array();
-                foreach ($dependencies as $usedLicense => $numberOfDependencies) {
+                foreach ($usedLicenses as $usedLicense => $numberOfDependencies) {
                     $rows[] = array($usedLicense, $numberOfDependencies);
                 }
 
