@@ -46,9 +46,15 @@
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
 
+### [1.10.8] 2020-06-24
+
+  * Fixed compatibility issue with git being configured to show signatures by default
+  * Fixed discarding of local changes when updating packages to include untracked files
+  * Several minor fixes
+
 ### [1.10.7] 2020-06-03
 
-  * Fix PHP 8 deprecations
+  * Fixed PHP 8 deprecations
   * Fixed detection of pcntl_signal being in disabled_functions when pcntl_async_signal is allowed
 
 ### [1.10.6] 2020-05-06
@@ -910,6 +916,7 @@
 
 [2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
+[1.10.8]: https://github.com/composer/composer/compare/1.10.7...1.10.8
 [1.10.7]: https://github.com/composer/composer/compare/1.10.6...1.10.7
 [1.10.6]: https://github.com/composer/composer/compare/1.10.5...1.10.6
 [1.10.5]: https://github.com/composer/composer/compare/1.10.4...1.10.5
