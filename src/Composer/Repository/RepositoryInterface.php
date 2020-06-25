@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\PackageInterface;
+use Composer\Package\BasePackage;
 use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
@@ -70,8 +71,10 @@ interface RepositoryInterface extends \Countable
      * - The namesFound returned are names which should be considered as canonically found in this repository, that should not be looked up in any further lower priority repositories
      *
      * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
-     * @param array $acceptableStabilities
-     * @param array $stabilityFlags
+     * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
+     * @psalm-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
+     * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
+     * @psalm-param array<string, BasePackage::STABILITY_*> $stabilityFlags
      *
      * @return array [namesFound => string[], packages => PackageInterface[]]
      * @psalm-return array{namesFound: string[], packages: PackageInterface[]}
