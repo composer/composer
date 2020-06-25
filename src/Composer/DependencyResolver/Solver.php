@@ -417,12 +417,14 @@ class Solver
             }
             unset($literal);
 
-            $decision = $this->decisions->atOffset($decisionId-1);
-            if ($rule !== $decision[Decisions::DECISION_REASON] && $decision[Decisions::DECISION_REASON] instanceof MultiConflictRule) {
-                $num++;
-                foreach ($decision[Decisions::DECISION_REASON]->getLiterals() as $literal) {
-                    if (!$this->decisions->satisfy($literal)) {
-                        $seen[abs($literal)] = true;
+            if ($decisionId > 0) {
+                $decision = $this->decisions->atOffset($decisionId-1);
+                if ($rule !== $decision[Decisions::DECISION_REASON] && $decision[Decisions::DECISION_REASON] instanceof MultiConflictRule) {
+                    $num++;
+                    foreach ($decision[Decisions::DECISION_REASON]->getLiterals() as $literal) {
+                        if (!$this->decisions->satisfy($literal)) {
+                            $seen[abs($literal)] = true;
+                        }
                     }
                 }
             }
