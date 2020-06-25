@@ -54,15 +54,15 @@ class FundCommand extends BaseCommand
         $result = $remoteRepos->loadPackages($packagesToLoad, array('dev' => BasePackage::STABILITY_DEV), array());
 
         // collect funding data from default branches
-        foreach ($result['packages'] as $pkg) {
+        foreach ($result['packages'] as $package) {
             if (
-                !$pkg instanceof AliasPackage
-                && $pkg instanceof CompletePackageInterface
-                && $pkg->isDefaultBranch()
-                && $pkg->getFunding()
-                && isset($packagesToLoad[$pkg->getName()])
+                !$package instanceof AliasPackage
+                && $package instanceof CompletePackageInterface
+                && $package->isDefaultBranch()
+                && $package->getFunding()
+                && isset($packagesToLoad[$package->getName()])
             ) {
-                $fundings = $this->insertFundingData($fundings, $pkg);
+                $fundings = $this->insertFundingData($fundings, $package);
                 unset($packagesToLoad[$package->getName()]);
             }
         }
