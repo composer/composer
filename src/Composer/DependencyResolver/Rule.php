@@ -183,7 +183,7 @@ abstract class Rule
                 return 'Root composer.json requires '.$packageName.($constraint ? ' '.$constraint->getPrettyString() : '').' -> satisfiable by '.$this->formatPackagesUnique($pool, $packages, $isVerbose).'.';
 
             case self::RULE_FIXED:
-                $package = $this->deduplicateMasterAlias($this->reasonData['package']);
+                $package = $this->deduplicateDefaultBranchAlias($this->reasonData['package']);
                 if ($this->reasonData['lockable']) {
                     return $package->getPrettyName().' is locked to version '.$package->getPrettyVersion().' and an update of this package was not requested.';
                 }
@@ -191,14 +191,14 @@ abstract class Rule
                 return $package->getPrettyName().' is present at version '.$package->getPrettyVersion() . ' and cannot be modified by Composer';
 
             case self::RULE_PACKAGE_CONFLICT:
-                $package1 = $this->deduplicateMasterAlias($pool->literalToPackage($literals[0]));
-                $package2 = $this->deduplicateMasterAlias($pool->literalToPackage($literals[1]));
+                $package1 = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[0]));
+                $package2 = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[1]));
 
                 return $package2->getPrettyString().' conflicts with '.$package1->getPrettyString().'.';
 
             case self::RULE_PACKAGE_REQUIRES:
                 $sourceLiteral = array_shift($literals);
-                $sourcePackage = $this->deduplicateMasterAlias($pool->literalToPackage($sourceLiteral));
+                $sourcePackage = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($sourceLiteral));
 
                 $requires = array();
                 foreach ($literals as $literal) {
@@ -281,7 +281,7 @@ abstract class Rule
                             $group = $literal > 0 ? 'install' : 'don\'t install';
                         }
 
-                        $groups[$group][] = $this->deduplicateMasterAlias($package);
+                        $groups[$group][] = $this->deduplicateDefaultBranchAlias($package);
                     }
                     $ruleTexts = array();
                     foreach ($groups as $group => $packages) {
@@ -295,10 +295,10 @@ abstract class Rule
             case self::RULE_PACKAGE_ALIAS:
                 $aliasPackage = $pool->literalToPackage($literals[0]);
                 // avoid returning content like "9999999-dev is an alias of dev-master" as it is useless
-                if ($aliasPackage->getVersion() === VersionParser::DEV_MASTER_ALIAS) {
+                if ($aliasPackage->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
                     return '';
                 }
-                $package = $this->deduplicateMasterAlias($pool->literalToPackage($literals[1]));
+                $package = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[1]));
 
                 return $aliasPackage->getPrettyString() .' is an alias of '.$package->getPrettyString().' and thus requires it to be installed too.';
             default:
@@ -342,9 +342,9 @@ abstract class Rule
         return $names;
     }
 
-    private function deduplicateMasterAlias(PackageInterface $package)
+    private function deduplicateDefaultBranchAlias(PackageInterface $package)
     {
-        if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEV_MASTER_ALIAS) {
+        if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
             $package = $package->getAliasOf();
         }
 

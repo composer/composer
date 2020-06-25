@@ -596,8 +596,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if (!isset($versionsToLoad[$version['uid']])) {
                     if (!isset($version['version_normalized'])) {
                         $version['version_normalized'] = $this->versionParser->normalize($version['version']);
-                    } elseif ($version['version_normalized'] === VersionParser::DEV_MASTER_ALIAS) {
-                        // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEV_MASTER_ALIAS, we renormalize it
+                    } elseif ($version['version_normalized'] === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                        // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEFAULT_BRANCH_ALIAS, we renormalize it
                         $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                     }
 
@@ -717,8 +717,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     foreach ($versions as $version) {
                         if (!isset($version['version_normalized'])) {
                             $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
-                        } elseif ($version['version_normalized'] === VersionParser::DEV_MASTER_ALIAS) {
-                            // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEV_MASTER_ALIAS, we renormalize it
+                        } elseif ($version['version_normalized'] === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                            // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEFAULT_BRANCH_ALIAS, we renormalize it
                             $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
                         }
 

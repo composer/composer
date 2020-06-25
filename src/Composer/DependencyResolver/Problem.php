@@ -329,14 +329,18 @@ class Problem
     public static function getPackageList(array $packages, $isVerbose)
     {
         $prepared = array();
+        $hasDefaultBranch = array();
         foreach ($packages as $package) {
             $prepared[$package->getName()]['name'] = $package->getPrettyName();
             $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion().($package instanceof AliasPackage ? ' (alias of '.$package->getAliasOf()->getPrettyVersion().')' : '');
+            if ($package->isDefaultBranch()) {
+                $hasDefaultBranch[$package->getName()] = true;
+            }
         }
         foreach ($prepared as $name => $package) {
-            // remove the implicit dev-master alias to avoid cruft in the display
-            if (isset($package['versions'][VersionParser::DEV_MASTER_ALIAS]) && isset($package['versions']['dev-master'])) {
-                unset($package['versions'][VersionParser::DEV_MASTER_ALIAS]);
+            // remove the implicit default branch alias to avoid cruft in the display
+            if (isset($package['versions'][VersionParser::DEFAULT_BRANCH_ALIAS]) && isset($hasDefaultBranch[$name])) {
+                unset($package['versions'][VersionParser::DEFAULT_BRANCH_ALIAS]);
             }
 
             uksort($package['versions'], 'version_compare');

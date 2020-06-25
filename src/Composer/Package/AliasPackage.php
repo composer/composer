@@ -176,7 +176,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
     {
         // for self.version requirements, we use the original package's branch name instead, to avoid leaking the magic dev-master-alias to users
         $prettyVersion = $this->prettyVersion;
-        if ($prettyVersion === VersionParser::DEV_MASTER_ALIAS) {
+        if ($prettyVersion === VersionParser::DEFAULT_BRANCH_ALIAS) {
             $prettyVersion = $this->aliasOf->getPrettyVersion();
         }
 

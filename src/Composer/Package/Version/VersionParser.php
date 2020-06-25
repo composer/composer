@@ -18,8 +18,8 @@ use Composer\Semver\Semver;
 
 class VersionParser extends SemverVersionParser
 {
-    const DEV_MASTER_ALIAS = '9999999-dev';
-    
+    const DEFAULT_BRANCH_ALIAS = '9999999-dev';
+
     private static $constraints = array();
 
     /**
@@ -72,8 +72,12 @@ class VersionParser extends SemverVersionParser
      */
     public static function isUpgrade($normalizedFrom, $normalizedTo)
     {
-        $normalizedFrom = str_replace(array('dev-master', 'dev-trunk', 'dev-default'), VersionParser::DEV_MASTER_ALIAS, $normalizedFrom);
-        $normalizedTo = str_replace(array('dev-master', 'dev-trunk', 'dev-default'), VersionParser::DEV_MASTER_ALIAS, $normalizedTo);
+        if ($normalizedFrom === $normalizedTo) {
+            return true;
+        }
+
+        $normalizedFrom = str_replace(array('dev-master', 'dev-trunk', 'dev-default'), VersionParser::DEFAULT_BRANCH_ALIAS, $normalizedFrom);
+        $normalizedTo = str_replace(array('dev-master', 'dev-trunk', 'dev-default'), VersionParser::DEFAULT_BRANCH_ALIAS, $normalizedTo);
 
         if (substr($normalizedFrom, 0, 4) === 'dev-' || substr($normalizedTo, 0, 4) === 'dev-') {
             return true;
