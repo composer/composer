@@ -676,6 +676,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if ($acceptableStabilities === null || $stabilityFlags === null || StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), 'dev')) {
                 $packageNames[$name.'~dev'] = $constraint;
             }
+            // if only dev stability is requested, we skip loading the non dev file
+            if (isset($acceptableStabilities['dev']) && count($acceptableStabilities) === 1 && count($stabilityFlags) === 0) {
+                unset($packageNames[$name]);
+            }
         }
 
         foreach ($packageNames as $name => $constraint) {
