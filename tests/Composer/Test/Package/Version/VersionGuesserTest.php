@@ -189,7 +189,7 @@ class VersionGuesserTest extends TestCase
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash, $anotherCommitHash) {
                 $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
-                $output = "  arbitrary $commitHash Commit message\n* current $anotherCommitHash Another message\n";
+                $output = "  arbitrary $commitHash Commit message\n* feature $anotherCommitHash Another message\n";
 
                 return 0;
             })
@@ -199,7 +199,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(1))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output, $path) use ($self, $anotherCommitHash) {
-                $self->assertEquals('git rev-list arbitrary..current', $command);
+                $self->assertEquals('git rev-list arbitrary..feature', $command);
                 $output = "$anotherCommitHash\n";
 
                 return 0;
@@ -213,8 +213,8 @@ class VersionGuesserTest extends TestCase
 
         $this->assertEquals("dev-arbitrary", $versionArray['version']);
         $this->assertEquals($anotherCommitHash, $versionArray['commit']);
-        $this->assertEquals("dev-current", $versionArray['feature_version']);
-        $this->assertEquals("dev-current", $versionArray['feature_pretty_version']);
+        $this->assertEquals("dev-feature", $versionArray['feature_version']);
+        $this->assertEquals("dev-feature", $versionArray['feature_pretty_version']);
     }
 
     public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNamingRegex()
@@ -236,7 +236,7 @@ class VersionGuesserTest extends TestCase
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash, $anotherCommitHash) {
                 $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
-                $output = "  latest-testing $commitHash Commit message\n* current $anotherCommitHash Another message\n";
+                $output = "  latest-testing $commitHash Commit message\n* feature $anotherCommitHash Another message\n";
 
                 return 0;
             })
@@ -245,7 +245,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(1))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output, $path) use ($self, $anotherCommitHash) {
-                $self->assertEquals('git rev-list latest-testing..current', $command);
+                $self->assertEquals('git rev-list latest-testing..feature', $command);
                 $output = "$anotherCommitHash\n";
 
                 return 0;
@@ -259,8 +259,8 @@ class VersionGuesserTest extends TestCase
 
         $this->assertEquals("dev-latest-testing", $versionArray['version']);
         $this->assertEquals($anotherCommitHash, $versionArray['commit']);
-        $this->assertEquals("dev-current", $versionArray['feature_version']);
-        $this->assertEquals("dev-current", $versionArray['feature_pretty_version']);
+        $this->assertEquals("dev-feature", $versionArray['feature_version']);
+        $this->assertEquals("dev-feature", $versionArray['feature_pretty_version']);
     }
 
     public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNamingWhenOnNonFeatureBranch()
