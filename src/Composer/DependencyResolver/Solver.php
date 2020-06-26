@@ -417,18 +417,6 @@ class Solver
             }
             unset($literal);
 
-            if ($decisionId > 0) {
-                $decision = $this->decisions->atOffset($decisionId-1);
-                if ($rule !== $decision[Decisions::DECISION_REASON] && $decision[Decisions::DECISION_REASON] instanceof MultiConflictRule) {
-                    $num++;
-                    foreach ($decision[Decisions::DECISION_REASON]->getLiterals() as $literal) {
-                        if (!$this->decisions->satisfy($literal)) {
-                            $seen[abs($literal)] = true;
-                        }
-                    }
-                }
-            }
-
             $l1retry = true;
             while ($l1retry) {
                 $l1retry = false;
@@ -481,6 +469,15 @@ class Solver
                 $rule = $decision[Decisions::DECISION_REASON];
 
                 if ($rule instanceof MultiConflictRule) {
+                    // there is only ever exactly one positive decision in a multiconflict rule
+                    foreach ($rule->getLiterals() as $literal) {
+                        if (!isset($seen[abs($literal)]) && !$this->decisions->satisfy($literal)) {
+                            $num++;
+                            $seen[abs($literal)] = true;
+                            break;
+                        }
+                    }
+
                     $l1retry = true;
                 }
             }
