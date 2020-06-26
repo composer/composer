@@ -386,7 +386,8 @@ class Solver
             $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
 
             foreach ($rule->getLiterals() as $literal) {
-                if (!$this->decisions->decided($literal)) {
+                // multiconflictrule is really a bunch of rules in one, so some may not have finished propagating yet
+                if ($rule instanceof MultiConflictRule && !$this->decisions->decided($literal)) {
                     continue;
                 }
 
