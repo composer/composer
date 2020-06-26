@@ -473,6 +473,7 @@ class Solver
                     // there is only ever exactly one positive decision in a multiconflict rule
                     foreach ($rule->getLiterals() as $literal) {
                         if (!isset($seen[abs($literal)]) && $this->decisions->satisfy(-$literal)) {
+                            $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
                             $l = $this->decisions->decisionLevel($literal);
                             if (1 === $l) {
                                 $l1num++;
