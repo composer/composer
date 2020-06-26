@@ -252,7 +252,7 @@ class VersionGuesser
 
             // sort numeric branches below named ones, to make sure if the branch has the same distance from main and 1.10 and 1.9 for example, main is picked
             // and sort using natural sort so that 1.10 will appear before 1.9
-            rsort($branches, SORT_NATURAL);
+            rsort($branches, defined('SORT_NATURAL') ? SORT_NATURAL : SORT_REGULAR);
 
             foreach ($branches as $candidate) {
                 // do not compare against itself or other feature branches
