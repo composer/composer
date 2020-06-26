@@ -471,8 +471,20 @@ class Solver
                 if ($rule instanceof MultiConflictRule) {
                     // there is only ever exactly one positive decision in a multiconflict rule
                     foreach ($rule->getLiterals() as $literal) {
-                        if (!isset($seen[abs($literal)]) && !$this->decisions->satisfy($literal)) {
-                            $num++;
+                        if (!isset($seen[abs($literal)]) && $this->decisions->satisfy(-$literal)) {
+                            $l = $this->decisions->decisionLevel($literal);
+                            if (1 === $l) {
+                                $l1num++;
+                            } elseif ($level === $l) {
+                                $num++;
+                            } else {
+                                // not level1 or conflict level, add to new rule
+                                $learnedLiterals[] = $literal;
+
+                                if ($l > $ruleLevel) {
+                                    $ruleLevel = $l;
+                                }
+                            }
                             $seen[abs($literal)] = true;
                             break;
                         }
