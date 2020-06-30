@@ -192,14 +192,14 @@ metadata for the `git`/`hg` types and to speed up installs.
 
 ## cache-files-ttl
 
-Defaults to `15552000` (6 months). Composer caches all dist (zip, tar, ..)
+Defaults to `15552000` (6 months). Composer caches all dist (zip, tar, ...)
 packages that it downloads. Those are purged after six months of being unused by
 default. This option allows you to tweak this duration (in seconds) or disable
 it completely by setting it to 0.
 
 ## cache-files-maxsize
 
-Defaults to `300MiB`. Composer caches all dist (zip, tar, ..) packages that it
+Defaults to `300MiB`. Composer caches all dist (zip, tar, ...) packages that it
 downloads. When the garbage collection is periodically ran, this is the maximum
 size the cache will be able to use. Older (less used) files will be removed
 first until the cache fits.

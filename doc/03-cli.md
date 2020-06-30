@@ -185,7 +185,7 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--with-all-dependencies:** Update also dependencies of packages in the argument list, including those which are root requirements.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
-  a bit of time to run so it is currently not done by default.
+  a bit of time to run, so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
@@ -252,7 +252,7 @@ If you do not specify a package, composer will prompt you to search for a packag
 * **--sort-packages:** Keep packages sorted in `composer.json`.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
   get a faster autoloader. This is recommended especially for production, but
-  can take a bit of time to run so it is currently not done by default.
+  can take a bit of time to run, so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
@@ -763,7 +763,7 @@ performance.
 * **--no-scripts:** Skips the execution of all scripts defined in `composer.json` file.
 * **--optimize (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
-  a bit of time to run so it is currently not done by default.
+  a bit of time to run, so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize`.
 * **--apcu:** Use APCu to cache found/not-found classes.
@@ -781,7 +781,7 @@ Deletes all content from Composer's cache directories.
 ## licenses
 
 Lists the name, version and license of every package installed. Use
-`--format=json` to get machine readable output.
+`--format=json` to get machine-readable output.
 
 ### Options
 
@@ -897,7 +897,7 @@ directory to something other than `vendor/bin`.
 The `COMPOSER_CACHE_DIR` var allows you to change the Composer cache directory,
 which is also configurable via the [`cache-dir`](06-config.md#cache-dir) option.
 
-By default it points to `$COMPOSER_HOME/cache` on \*nix and macOS, and
+By default, it points to `$COMPOSER_HOME/cache` on \*nix and macOS, and
 `C:\Users\<user>\AppData\Local\Composer` (or `%LOCALAPPDATA%/Composer`) on Windows.
 
 ### COMPOSER_CAFILE
@@ -919,7 +919,7 @@ The `COMPOSER_HOME` var allows you to change the Composer home directory. This
 is a hidden, global (per-user on the machine) directory that is shared between
 all projects.
 
-By default it points to `C:\Users\<user>\AppData\Roaming\Composer` on Windows
+By default, it points to `C:\Users\<user>\AppData\Roaming\Composer` on Windows
 and `/Users/<user>/.composer` on macOS. On \*nix systems that follow the [XDG Base
 Directory Specifications](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html),
 it points to `$XDG_CONFIG_HOME/composer`. On other \*nix systems, it points to
@@ -964,8 +964,8 @@ commands) to finish executing. The default value is 300 seconds (5 minutes).
 
 ### COMPOSER_ROOT_VERSION
 
-By setting this var you can specify the version of the root package, if it can
-not be guessed from VCS info and is not present in `composer.json`.
+By setting this var you can specify the version of the root package, if it 
+cannot be guessed from VCS info and is not present in `composer.json`.
 
 ### COMPOSER_VENDOR_DIR
 
@@ -990,13 +990,13 @@ details.
 
 ### HTTP_PROXY_REQUEST_FULLURI
 
-If you use a proxy but it does not support the request_fulluri flag, then you
+If you use a proxy, but it does not support the request_fulluri flag, then you
 should set this env var to `false` or `0` to prevent Composer from setting the
 request_fulluri option.
 
 ### HTTPS_PROXY_REQUEST_FULLURI
 
-If you use a proxy but it does not support the request_fulluri flag for HTTPS
+If you use a proxy, but it does not support the request_fulluri flag for HTTPS
 requests, then you should set this env var to `false` or `0` to prevent Composer
 from setting the request_fulluri option.
 
@@ -1019,7 +1019,7 @@ can also set it to `*` to ignore the proxy for all HTTP requests.
 If set to `1`, disables network access (best effort). This can be used for debugging or
 to run Composer on a plane or a starship with poor connectivity.
 
-If set to `prime`, GitHub VCS repositories will prime the cache so it can then be used
+If set to `prime`, GitHub VCS repositories will prime the cache, so it can then be used
 fully offline with `1`.
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

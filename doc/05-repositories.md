@@ -6,7 +6,7 @@ of repositories are available, and how they work.
 ## Concepts
 
 Before we look at the different types of repositories that exist, we need to
-understand some of the basic concepts that Composer is built on.
+understand some basic concepts that Composer is built on.
 
 ### Package
 
@@ -41,7 +41,7 @@ be preferred.
 A repository is a package source. It's a list of packages/versions. Composer
 will look in all your repositories to find the packages your project requires.
 
-By default only the Packagist.org repository is registered in Composer. You can
+By default, only the Packagist.org repository is registered in Composer. You can
 add more repositories to your project by declaring them in `composer.json`.
 
 Repositories are only available to the root package and the repositories
@@ -122,7 +122,7 @@ It may include any of the other fields specified in the [schema](04-schema.md).
 
 The `notify-batch` field allows you to specify a URL that will be called
 every time a user installs a package. The URL can be either an absolute path
-(that will use the same domain as the repository) or a fully qualified URL.
+(that will use the same domain as the repository), or a fully qualified URL.
 
 An example value:
 
@@ -217,7 +217,7 @@ from these systems.
 
 There are a few use cases for this. The most common one is maintaining your
 own fork of a third party library. If you are using a certain library for your
-project and you decide to change something in the library, you will want your
+project, and you decide to change something in the library, you will want your
 project to use the patched version. If the library is on GitHub (this is the
 case most of the time), you can simply fork it there and push your changes to
 your fork. After that you update the project's `composer.json`. All you have
@@ -316,7 +316,7 @@ Please note:
 
 #### BitBucket Driver Configuration
 
-The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs and you will need to create an OAuth consumer to use the driver, please refer to [Atlassian's Documentation](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). You will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and is not used by Composer.
+The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs, and you will need to create an OAuth consumer to use the driver, please refer to [Atlassian's Documentation](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). You will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and is not used by Composer.
 
 After creating an OAuth consumer in the BitBucket control panel, you need to setup your auth.json file with
 the credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
@@ -437,7 +437,7 @@ Here is an example for the smarty template engine:
 }
 ```
 
-Typically you would leave the source part off, as you don't really need it.
+Typically, you would leave the source part off, as you don't really need it.
 
 > **Note**: This repository type has a few limitations and should be avoided
 > whenever possible:
