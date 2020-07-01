@@ -175,7 +175,7 @@ EOT
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $locker = $composer->getLocker();
             if ($locker->isLocked()) {
-                $lockedRepo = $locker->getLockedRepository();
+                $lockedRepo = $locker->getLockedRepository(true);
                 $installedRepo = new InstalledRepository(array($lockedRepo, $localRepo, $platformRepo));
             } else {
                 $installedRepo = new InstalledRepository(array($localRepo, $platformRepo));
@@ -191,7 +191,7 @@ EOT
                 throw new \UnexpectedValueException('A valid composer.json and composer.lock files is required to run this command with --locked');
             }
             $locker = $composer->getLocker();
-            $lockedRepo = $locker->getLockedRepository();
+            $lockedRepo = $locker->getLockedRepository(true);
             $installedRepo = new InstalledRepository(array($lockedRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
