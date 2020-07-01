@@ -26,14 +26,14 @@ In this case the project name is `acme/hello-world`, where `acme` is the vendor
 name. Supplying a vendor name is mandatory.
 
 > **Note:** If you don't know what to use as a vendor name, your GitHub
-> username is usually a good bet. While package names are case insensitive, the
+> username is usually a good bet. While package names are case-insensitive, the
 > convention is all lowercase and dashes for word separation.
 
 ## Library Versioning
 
 In the vast majority of cases, you will be maintaining your library using some
 sort of version control system like git, svn, hg or fossil. In these cases,
-Composer infers versions from your VCS and you **should not** specify a version
+Composer infers versions from your VCS, and you **should not** specify a version
 in your `composer.json` file. (See the [Versions article](articles/versions.md)
 to learn about how Composer uses VCS branches and tags to resolve version
 constraints.)
@@ -69,7 +69,7 @@ can help your team to always test against the same dependency versions.
 However, this lock file will not have any effect on other projects that depend
 on it. It only has an effect on the main project.
 
-If you do not want to commit the lock file and you are using git, add it to
+If you do not want to commit the lock file, and you are using git, add it to
 the `.gitignore`.
 
 ## Publishing to a VCS

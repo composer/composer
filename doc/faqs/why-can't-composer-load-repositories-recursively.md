@@ -24,7 +24,7 @@ their package's packages, etc, then resolve requirements. It could work, but it
 slows down the initialization a lot since VCS repos can each take a few seconds,
 and it could end up in a completely broken state since many versions of a package
 could define the same packages inside a package repository, but with different
-dist/source. There are many many ways this could go wrong.
+dist/source. There are many ways this could go wrong.
 
 - Fetch the repositories of root package, then fetch the repositories of the
 first level dependencies, then fetch the repositories of their dependencies, etc,

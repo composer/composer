@@ -77,7 +77,7 @@ versions, how versions relate to each other, and on version constraints.
 
 > **Note:** If you are trying to require a package but Composer throws an error
 > regarding package stability, the version you have specified may not meet your
-> default minimum stability requirements. By default only stable releases are taken
+> default minimum stability requirements. By default, only stable releases are taken
 > into consideration when searching for valid package versions in your VCS.
 >
 > You might run into this if you are trying to require dev, alpha, beta, or RC

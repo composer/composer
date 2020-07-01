@@ -6,7 +6,7 @@
 
 ## Synopsis
 
-At times it may be necessary for a package to require additional actions during
+At times, it may be necessary for a package to require additional actions during
 installation, such as installing packages outside of the default `vendor`
 library.
 

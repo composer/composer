@@ -107,5 +107,5 @@ and alias it to `1.0.x-dev`.
 > inline-aliased again in A's `composer.json`.
 
 > **Note:** Inline aliasing should be avoided, especially for published
-> packages/libraries. If you found a bug, try and get your fix merged upstream.
+> packages/libraries. If you found a bug, try to get your fix merged upstream.
 > This helps to avoid issues for users of your package.

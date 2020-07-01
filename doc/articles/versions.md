@@ -159,7 +159,7 @@ Example: `~1.2`
 
 ### Caret Version Range (^)
 
-The `^` operator behaves very similarly but it sticks closer to semantic
+The `^` operator behaves very similarly, but it sticks closer to semantic
 versioning, and will always allow non-breaking updates. For example `^1.2.3`
 is equivalent to `>=1.2.3 <2.0.0` as none of the releases until 2.0 should
 break backwards compatibility. For pre-1.0 versions it also acts with safety
