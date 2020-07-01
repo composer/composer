@@ -299,8 +299,9 @@ EOT
 
         // list packages
         $packages = array();
+        $packageFilterRegex = null;
         if (null !== $packageFilter) {
-            $packageFilter = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
+            $packageFilterRegex = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
         }
 
         $packageListFilter = array();
@@ -342,10 +343,8 @@ EOT
                 $type = 'available';
             }
             if ($repo instanceof ComposerRepository) {
-                foreach ($repo->getPackageNames() as $name) {
-                    if (!$packageFilter || preg_match($packageFilter, $name)) {
-                        $packages[$type][$name] = $name;
-                    }
+                foreach ($repo->getPackageNames($packageFilter) as $name) {
+                    $packages[$type][$name] = $name;
                 }
             } else {
                 foreach ($repo->getPackages() as $package) {
@@ -353,7 +352,7 @@ EOT
                         || !is_object($packages[$type][$package->getName()])
                         || version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '<')
                     ) {
-                        if (!$packageFilter || preg_match($packageFilter, $package->getName())) {
+                        if (!$packageFilterRegex || preg_match($packageFilterRegex, $package->getName())) {
                             if (!$packageListFilter || in_array($package->getName(), $packageListFilter, true)) {
                                 $packages[$type][$package->getName()] = $package;
                             }
