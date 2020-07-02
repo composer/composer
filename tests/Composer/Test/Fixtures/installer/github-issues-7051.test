@@ -103,8 +103,7 @@ Solver Bug Exception caused by analyze on mutli conflict rule reported in GitHub
                     "version": "v2.8.7"
                 }
             ]
-        },
-        "packagist.org": false
+        }
     }
 }
 --RUN--
