@@ -567,6 +567,7 @@ EOT
         $matchedPackage = null;
         $versions = array();
         $matches = $repositorySet->findPackages($name, $constraint);
+        $pool = $repositorySet->createPoolForPackage($name);
         foreach ($matches as $index => $package) {
             // select an exact match if it is in the installed repo and no specific version was required
             if (null === $version && $installedRepo->hasPackage($package)) {
@@ -576,8 +577,6 @@ EOT
             $versions[$package->getPrettyVersion()] = $package->getVersion();
             $matches[$index] = $package->getId();
         }
-
-        $pool = $repositorySet->createPoolForPackage($name);
 
         // select preferred package according to policy rules
         if (!$matchedPackage && $matches && $preferred = $policy->selectPreferredPackages($pool, $matches)) {
