@@ -214,7 +214,7 @@ class GitHubDriver extends VcsDriver
         $result = array();
         $key = null;
         foreach (preg_split('{\r?\n}', $funding) as $line) {
-            $line = preg_replace('{#.*}', '', $line);
+            $line = preg_replace('{# .*}', '', $line);
             $line = trim($line);
             if (preg_match('{^(\w+)\s*:\s*(.+)$}', $line, $match)) {
                 if (preg_match('{^\[.*\]$}', $match[2])) {
@@ -233,6 +233,10 @@ class GitHubDriver extends VcsDriver
         }
 
         foreach ($result as $key => $item) {
+            if (empty($item['url']) || $item['url'] === '#') {
+                unset($result[$key]);
+                continue;
+            }
             switch ($item['type']) {
                 case 'tidelift':
                     $result[$key]['url'] = 'https://tidelift.com/funding/github/' . $item['url'];
@@ -263,6 +267,8 @@ class GitHubDriver extends VcsDriver
                     break;
             }
         }
+
+        sort($result);
 
         return $this->fundingInfo = $result;
     }
