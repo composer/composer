@@ -233,10 +233,6 @@ class GitHubDriver extends VcsDriver
         }
 
         foreach ($result as $key => $item) {
-            if (empty($item['url']) || $item['url'] === '#') {
-                unset($result[$key]);
-                continue;
-            }
             switch ($item['type']) {
                 case 'tidelift':
                     $result[$key]['url'] = 'https://tidelift.com/funding/github/' . $item['url'];
@@ -266,6 +262,10 @@ class GitHubDriver extends VcsDriver
                     $result[$key]['url'] = 'https://funding.communitybridge.org/projects/' . basename($item['url']);
                     break;
             }
+        }
+
+        if (empty($item['url']) || $item['url'] === '#' || filter_var($result[$key]['url'], FILTER_VALIDATE_URL) === false) {
+            unset($result[$key]);
         }
 
         sort($result);
