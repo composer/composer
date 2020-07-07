@@ -214,20 +214,19 @@ class GitHubDriver extends VcsDriver
         $result = array();
         $key = null;
         foreach (preg_split('{\r?\n}', $funding) as $line) {
-            $line = preg_replace('{#.*}', '', $line);
             $line = trim($line);
             if (preg_match('{^(\w+)\s*:\s*(.+)$}', $line, $match)) {
-                if (preg_match('{^\[.*\]$}', $match[2])) {
-                    foreach (array_map('trim', preg_split('{[\'"]?\s*,\s*[\'"]?}', substr($match[2], 1, -1))) as $item) {
+                if (preg_match('{^\[(.*)\](?:\s*#.*)?$}', $match[2], $match2)) {
+                    foreach (array_map('trim', preg_split('{[\'"]?\s*,\s*[\'"]?}', $match2[1])) as $item) {
                         $result[] = array('type' => $match[1], 'url' => trim($item, '"\' '));
                     }
-                } else {
-                    $result[] = array('type' => $match[1], 'url' => trim($match[2], '"\' '));
+                } elseif (preg_match('{^([^#].*?)(\s+#.*)?$}', $match[2], $match2)) {
+                    $result[] = array('type' => $match[1], 'url' => trim($match2[1], '"\' '));
                 }
                 $key = null;
-            } elseif (preg_match('{^(\w+)\s*:$}', $line, $match)) {
+            } elseif (preg_match('{^(\w+)\s*:\s*#\s*$}', $line, $match)) {
                 $key = $match[1];
-            } elseif ($key && preg_match('{^-\s*(.+)$}', $line, $match)) {
+            } elseif ($key && preg_match('{^-\s*(.+)(\s+#.*)?$}', $line, $match)) {
                 $result[] = array('type' => $key, 'url' => trim($match[1], '"\' '));
             }
         }
