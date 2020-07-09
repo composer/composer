@@ -501,7 +501,7 @@ TAGSPUBKEY
 
         $io->writeError('<error>Unable to write "'.$localFilename.'". Access is denied.</error>');
         $helpMessage = 'Please run the self-update command as an Administrator.';
-        $question = 'Complete this operation with Administrator priviledges [<comment>Y,n</comment>]? ';
+        $question = 'Complete this operation with Administrator privileges [<comment>Y,n</comment>]? ';
 
         if (!$io->askConfirmation($question, false)) {
             $io->writeError('<warning>Operation cancelled. '.$helpMessage.'</warning>');
