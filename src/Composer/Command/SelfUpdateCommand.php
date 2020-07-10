@@ -467,7 +467,7 @@ TAGSPUBKEY
     /**
      * Returns true if this is a non-admin Windows user account
      *
-     * @param null|string $isCygwin Set by method
+     * @param null|bool $isCygwin Set by method
      * @return bool
      */
     protected function isWindowsNonAdminUser(&$isCygwin)
