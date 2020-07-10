@@ -12,8 +12,12 @@
 
 namespace Composer\Command;
 
+use Composer\Config;
 use Composer\Factory;
+use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
+use Composer\XdebugHandler\Process;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\StringInput;
@@ -40,6 +44,8 @@ within the global context of COMPOSER_HOME.
 
 You can use this to install CLI utilities globally, all you need
 is to add the COMPOSER_HOME/vendor/bin dir to your PATH env var.
+
+This is already done for you on Windows, when a global command is run.
 
 COMPOSER_HOME is c:\Users\<user>\AppData\Roaming\Composer on Windows
 and /home/<user>/.composer on unix systems.
@@ -76,6 +82,7 @@ EOT
         }
 
         // change to global dir
+        $io = $this->getIO();
         $config = Factory::createConfig();
         $home = $config->get('home');
 
@@ -92,7 +99,13 @@ EOT
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not switch to home directory "'.$home.'"', 0, $e);
         }
-        $this->getIO()->writeError('<info>Changed current directory to '.$home.'</info>');
+        $io->writeError('<info>Changed current directory to '.$home.'</info>');
+
+        $binDir = $home.'/'.$config->get('bin-dir', Config::RELATIVE_PATHS);
+
+        if (Platform::isWindows()) {
+            $this->checkWindowsPath($io, $binDir);
+        }
 
         // create new input without "global" command prefix
         $input = new StringInput(preg_replace('{\bg(?:l(?:o(?:b(?:a(?:l)?)?)?)?)?\b}', '', $input->__toString(), 1));
@@ -107,5 +120,88 @@ EOT
     public function isProxyCommand()
     {
         return true;
+    }
+
+    /**
+     * Adds the global bin directory to the user path if it is missing
+     *
+     * @param IOInterface $io
+     * @param string $binDir The global bin directory
+     */
+    private function checkWindowsPath(IOInterface $io, $binDir)
+    {
+        // Check local environment. Any %..% value will have been expanded
+        if ($this->findInWindowsPath((string) getenv('Path'), $binDir)) {
+            return;
+        }
+
+        // Check user environment
+        exec('reg query HKCU\Environment -v Path 2> nul', $output, $exitCode);
+        $regex = '{[[:blank:]]*REG_[A-Z_]{2,}[[:blank:]]*(.*)$}';
+
+        if (!preg_match($regex, implode(PHP_EOL, $output), $matches)) {
+            // Shouldn't happen
+            return;
+        }
+
+        $regPath = trim($matches[1]);
+
+        if ($this->findInWindowsPath($regPath, $binDir)) {
+            return;
+        }
+
+        // Update Path in user environment
+        $path = Process::escape($this->appendToWindowsPath($regPath, $binDir));
+        $command = 'setx Path '.$path.' 2>&1';
+        exec($command, $output, $exitCode);
+
+        $details = '"'.$binDir.'" to your PATH.';
+
+        if ($exitCode !== 0) {
+            $io->writeError('<warning>Failed to add '.$details.'</warning>');
+        } else {
+            $io->writeError('<info>Added '.$details.' Open a new terminal to use it.</info>');
+        }
+    }
+
+    /**
+     * Returns true if the directory is found in the path list
+     *
+     * @param string $path Environment path list
+     * @param string $directory The directory to search for
+     * @return bool
+     */
+    private function findInWindowsPath($path, $directory)
+    {
+        $path = preg_replace('{/+}', '/', strtr($path, '\\', '/'));
+        $path = ';'.$path.';';
+
+        $directory = preg_replace('{/+}', '/', strtr($directory, '\\', '/'));
+        $directory = preg_quote(rtrim($directory, '/'), '{}');
+
+        // Search for trailing slash in path
+        $regex = '{;'.$directory.'/?'.';}';
+
+        return (bool) preg_match($regex, $path);
+    }
+
+    /**
+     * Adds a directory entry to the end of a path list
+     *
+     * @param string $path Environment path list
+     * @param string $directory The directory to append
+     * @return string The appended path list
+     */
+    private function appendToWindowsPath($path, $directory)
+    {
+        // Normalize to single backslashes with no trailing backslash
+        $directory = preg_replace('{\\\\+}', '\\', strtr($directory, '/', '\\'));
+        $directory = rtrim($directory, '\\');
+
+        if ($path = rtrim($path, ';')) {
+            return $path.';'.$directory;
+        }
+
+        return $directory;
     }
 }
