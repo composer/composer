@@ -248,7 +248,7 @@ EOT
             } else {
                 $latestPackage = null;
                 if ($input->getOption('latest')) {
-                    $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo);
+                    $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $input->getOption('minor-only'));
                 }
                 if ($input->getOption('outdated') && $input->getOption('strict') && $latestPackage && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion() && !$latestPackage->isAbandoned()) {
                     $exitCode = 1;
