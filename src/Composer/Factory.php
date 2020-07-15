@@ -69,18 +69,32 @@ class Factory
         }
 
         $userDir = self::getUserDir();
-        if (is_dir($userDir . '/.composer')) {
-            return $userDir . '/.composer';
-        }
+        $dirs = array();
 
         if (self::useXdg()) {
             // XDG Base Directory Specifications
-            $xdgConfig = getenv('XDG_CONFIG_HOME') ?: $userDir . '/.config';
+            $xdgConfig = getenv('XDG_CONFIG_HOME');
+            if (!$xdgConfig && is_dir('/etc/xdg')) {
+                $xdgConfig = '/etc/xdg';
+            }
+            if (!$xdgConfig) {
+                $xdgConfig = $userDir . '/.config';
+            }
 
-            return $xdgConfig . '/composer';
+            $dirs[] = $xdgConfig . '/composer';
         }
 
-        return $userDir . '/.composer';
+        $dirs[] = $userDir . '/.composer';
+
+        // select first dir which exists of: $XDG_CONFIG_HOME/composer or ~/.composer
+        foreach ($dirs as $dir) {
+            if (is_dir($dir)) {
+                return $dir;
+            }
+        }
+
+        // if none exists, we default to first defined one (XDG one if system uses it, or ~/.composer otherwise)
+        return $dirs[0];
     }
 
     /**
@@ -642,6 +656,10 @@ class Factory
             if (substr($key, 0, 4) === 'XDG_') {
                 return true;
             }
+        }
+
+        if (is_dir('/etc/xdg')) {
+            return true;
         }
 
         return false;
