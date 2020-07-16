@@ -408,6 +408,7 @@ php composer.phar show monolog/monolog 1.0.2
 * **--tree (-t):** List your dependencies as a tree. If you pass a package name it will show the dependency tree for that package.
 * **--latest (-l):** List all installed packages including their latest version.
 * **--outdated (-o):** Implies --latest, but this lists *only* packages that have a newer version available.
+* **--no-dev:** Filters dev dependencies from the package list.
 * **--minor-only (-m):** Use with --latest. Only shows packages that have minor SemVer-compatible updates.
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 * **--strict:** Return a non-zero exit code when there are outdated packages.
@@ -433,6 +434,7 @@ The color coding is as such:
 * **--strict:** Returns non-zero exit code if any package is outdated.
 * **--minor-only (-m):** Only shows packages that have minor SemVer-compatible updates.
 * **--format (-f):** Lets you pick between text (default) or json output format.
+* **--no-dev:** Do not show outdated dev dependencies.
 
 ## browse / home
 
