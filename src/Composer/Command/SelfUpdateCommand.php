@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\Config;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
 use Composer\IO\IOInterface;
@@ -104,6 +105,11 @@ EOT
 
         if ($input->getOption('update-keys')) {
             return $this->fetchKeys($io, $config);
+        }
+
+        // ensure composer.phar location is accessible
+        if (!file_exists($localFilename)) {
+            throw new FilesystemException('Composer update failed: the "'.$localFilename.'" is not accessible');
         }
 
         // check if current dir is writable and if not try the cache dir from settings
@@ -248,10 +254,8 @@ TAGSPUBKEY
             $this->cleanBackups($rollbackDir);
         }
 
-        if ($err = $this->setLocalPhar($localFilename, $tempFilename, $backupFile)) {
+        if (!$this->setLocalPhar($localFilename, $tempFilename, $backupFile)) {
             @unlink($tempFilename);
-            $io->writeError('<error>The file is corrupted ('.$err->getMessage().').</error>');
-            $io->writeError('<error>Please re-run the self-update command to try again.</error>');
 
             return 1;
         }
@@ -331,9 +335,7 @@ TAGSPUBKEY
 
         $io = $this->getIO();
         $io->writeError(sprintf("Rolling back to version <info>%s</info>.", $rollbackVersion));
-        if ($err = $this->setLocalPhar($localFilename, $oldFile)) {
-            $io->writeError('<error>The backup file was corrupted ('.$err->getMessage().').</error>');
-
+        if (!$this->setLocalPhar($localFilename, $oldFile)) {
             return 1;
         }
 
@@ -341,37 +343,49 @@ TAGSPUBKEY
     }
 
     /**
-     * @param  string                                        $localFilename
-     * @param  string                                        $newFilename
-     * @param  string                                        $backupTarget
-     * @throws \Exception
-     * @return \UnexpectedValueException|\PharException|null
+     * Checks if the downloaded/rollback phar is valid then moves it
+     *
+     * @param  string $localFilename The composer.phar location
+     * @param  string $newFilename The downloaded or backup phar
+     * @param  string $backupTarget The filename to use for the backup
+     * @throws \FilesystemException If the file cannot be moved
+     * @return bool Whether the phar is valid and has been moved
      */
     protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
     {
+        $io = $this->getIO();
+        @chmod($newFilename, fileperms($localFilename));
+
+        // check phar validity
+        if (!$this->validatePhar($newFilename, $error)) {
+            $io->writeError('<error>The '.($backupTarget ? 'update' : 'backup').' file is corrupted ('.$error.')</error>');
+
+            if ($backupTarget) {
+                $io->writeError('<error>Please re-run the self-update command to try again.</error>');
+            }
+
+            return false;
+        }
+
+        // copy current file into backups dir
+        if ($backupTarget) {
+            @copy($localFilename, $backupTarget);
+        }
+
         try {
-            @chmod($newFilename, fileperms($localFilename));
-            if (!ini_get('phar.readonly')) {
-                // test the phar validity
-                $phar = new \Phar($newFilename);
-                // free the variable to unlock the file
-                unset($phar);
-            }
-
-            // copy current file into installations dir
-            if ($backupTarget && file_exists($localFilename)) {
-                @copy($localFilename, $backupTarget);
-            }
-
             rename($newFilename, $localFilename);
 
-            return null;
+            return true;
         } catch (\Exception $e) {
-            if (!$e instanceof \UnexpectedValueException && !$e instanceof \PharException) {
-                throw $e;
+            // see if we can run this operation as an Admin on Windows
+            if (!is_writable(dirname($localFilename))
+                && $io->isInteractive()
+                && $this->isWindowsNonAdminUser($isCygwin)) {
+                return $this->tryAsWindowsAdmin($localFilename, $newFilename, $isCygwin);
             }
 
-            return $e;
+            $action = 'Composer '.($backupTarget ? 'update' : 'rollback');
+            throw new FilesystemException($action.' failed: "'.$localFilename.'" could not be written.'.PHP_EOL.$e->getMessage());
         }
     }
 
@@ -413,5 +427,130 @@ TAGSPUBKEY
             ->in($rollbackDir);
 
         return $finder;
+    }
+
+    /**
+     * Validates the downloaded/backup phar file
+     *
+     * @param string $pharFile The downloaded or backup phar
+     * @param null|string $error Set by method on failure
+     *
+     * Code taken from getcomposer.org/installer. Any changes should be made
+     * there and replicated here
+     *
+     * @return bool If the operation succeeded
+     * @throws \Exception
+     */
+    protected function validatePhar($pharFile, &$error)
+    {
+        if (ini_get('phar.readonly')) {
+            return true;
+        }
+
+        try {
+            // Test the phar validity
+            $phar = new \Phar($pharFile);
+            // Free the variable to unlock the file
+            unset($phar);
+            $result = true;
+        } catch (\Exception $e) {
+            if (!$e instanceof \UnexpectedValueException && !$e instanceof \PharException) {
+                throw $e;
+            }
+            $error = $e->getMessage();
+            $result = false;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Returns true if this is a non-admin Windows user account
+     *
+     * @param null|bool $isCygwin Set by method
+     * @return bool
+     */
+    protected function isWindowsNonAdminUser(&$isCygwin)
+    {
+        $isCygwin = preg_match('/cygwin/i', php_uname());
+
+        if (!$isCygwin && !Platform::isWindows()) {
+            return false;
+        }
+
+        // fltmc.exe manages filter drivers and errors without admin privileges
+        $command = sprintf('%sfltmc.exe filters', $isCygwin ? 'cmd.exe /c ' : '');
+        exec($command, $output, $exitCode);
+
+        return $exitCode !== 0;
+    }
+
+    /**
+     * Invokes a UAC prompt to update composer.phar as an admin
+     *
+     * Uses a .vbs script to elevate and run the cmd.exe move command.
+     *
+     * @param string $localFilename The composer.phar location
+     * @param string $newFilename The downloaded or backup phar
+     * @param bool $isCygwin Whether we are running on Cygwin
+     * @return bool Whether composer.phar has been updated
+     */
+    protected function tryAsWindowsAdmin($localFilename, $newFilename, $isCygwin)
+    {
+        $io = $this->getIO();
+
+        $io->writeError('<error>Unable to write "'.$localFilename.'". Access is denied.</error>');
+        $helpMessage = 'Please run the self-update command as an Administrator.';
+        $question = 'Complete this operation with Administrator privileges [<comment>Y,n</comment>]? ';
+
+        if (!$io->askConfirmation($question, false)) {
+            $io->writeError('<warning>Operation cancelled. '.$helpMessage.'</warning>');
+
+            return false;
+        }
+
+        $tmpFile = tempnam(sys_get_temp_dir(), '');
+        $script = $tmpFile.'.vbs';
+        rename($tmpFile, $script);
+
+        $checksum = hash_file('sha256', $newFilename);
+
+        // format the file names for cmd.exe
+        if ($isCygwin) {
+            $source = exec(sprintf("cygpath -w '%s'", $newFilename));
+            $destination = exec(sprintf("cygpath -w '%s'", $localFilename));
+        } else {
+            // cmd's internal move is fussy about backslashes
+            $source = str_replace('/', '\\', $newFilename);
+            $destination = str_replace('/', '\\', $localFilename);
+        }
+
+        $vbs = <<<EOT
+Set UAC = CreateObject("Shell.Application")
+UAC.ShellExecute "cmd.exe", "/c move /y ""$source"" ""$destination""", "", "runas", 0
+Wscript.Sleep(300)
+EOT;
+
+        file_put_contents($script, $vbs);
+
+        if ($isCygwin) {
+            chmod($script, 0755);
+            $cygscript = sprintf('"%s"', exec(sprintf("cygpath -w '%s'", $script)));
+            $command = sprintf("cmd.exe /c '%s'", $cygscript);
+        } else {
+            $command = sprintf('"%s"', $script);
+        }
+
+        exec($command);
+        @unlink($script);
+
+        // see if the file was moved
+        if ($result = (hash_file('sha256', $localFilename) === $checksum)) {
+            $io->writeError('<info>Operation succeeded.</info>');
+        } else {
+            $io->writeError('<error>Operation failed (file not written). '.$helpMessage.'</error>');
+        };
+
+        return $result;
     }
 }
