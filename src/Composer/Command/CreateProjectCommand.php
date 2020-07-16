@@ -39,6 +39,7 @@ use Composer\Json\JsonFile;
 use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
 use Composer\Package\Version\VersionParser;
+use Composer\EventDispatcher\EventDispatcher;
 
 /**
  * Install a package as new project into new directory.
@@ -286,8 +287,12 @@ EOT
             $config->merge(array('config' => array('secure-http' => false)));
         }
 
+        $composer = Factory::create($io, $config->all(), $disablePlugins);
+        $eventDispatcher = $composer->getEventDispatcher();
+
         if (null === $repository) {
-            $sourceRepo = new CompositeRepository(RepositoryFactory::defaultRepos($io, $config));
+            $rm = RepositoryFactory::manager($io, $config, $eventDispatcher, Factory::createRemoteFilesystem($io, $config));
+            $sourceRepo = new CompositeRepository(RepositoryFactory::defaultRepos($io, $config, $rm));
         } else {
             $sourceRepo = RepositoryFactory::fromString($io, $config, $repository, true);
         }
@@ -384,7 +389,7 @@ EOT
             $package = $package->getAliasOf();
         }
 
-        $dm = $this->createDownloadManager($io, $config);
+        $dm = $this->createDownloadManager($io, $config, $eventDispatcher);
         $dm->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
             ->setOutputProgress(!$noProgress);
@@ -409,11 +414,11 @@ EOT
         return $installedFromVcs;
     }
 
-    protected function createDownloadManager(IOInterface $io, Config $config)
+    protected function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher)
     {
         $factory = new Factory();
 
-        return $factory->createDownloadManager($io, $config);
+        return $factory->createDownloadManager($io, $config, $eventDispatcher);
     }
 
     protected function createInstallationManager()
