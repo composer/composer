@@ -19,6 +19,7 @@ use Composer\Repository\PlatformRepository;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ * @internal
  */
 class Transaction
 {

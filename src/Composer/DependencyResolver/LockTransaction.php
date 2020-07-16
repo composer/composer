@@ -22,6 +22,7 @@ use Composer\Test\Repository\ArrayRepositoryTest;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ * @internal
  */
 class LockTransaction extends Transaction
 {
