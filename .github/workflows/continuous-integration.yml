@@ -38,14 +38,6 @@ jobs:
             dependencies: highest
             os: ubuntu-latest
             experimental: false
-          - php-version: 5.3
-            dependencies: lowest
-            os: ubuntu-latest
-            experimental: false
-          - php-version: 7.4
-            dependencies: highest
-            os: ubuntu-latest
-            experimental: true # TODO fix build errors there if possible
           - php-version: 7.4
             os: windows-latest
             dependencies: locked
@@ -54,10 +46,6 @@ jobs:
             os: macos-latest
             dependencies: locked
             experimental: false
-          - php-version: 8.0
-            dependencies: highest
-            os: ubuntu-latest
-            experimental: true
 
     steps:
       - name: "Checkout"
