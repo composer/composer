@@ -74,9 +74,6 @@ class Factory
         if (self::useXdg()) {
             // XDG Base Directory Specifications
             $xdgConfig = getenv('XDG_CONFIG_HOME');
-            if (!$xdgConfig && is_dir('/etc/xdg')) {
-                $xdgConfig = '/etc/xdg';
-            }
             if (!$xdgConfig) {
                 $xdgConfig = $userDir . '/.config';
             }
