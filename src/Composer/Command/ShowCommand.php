@@ -22,6 +22,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
@@ -196,17 +197,18 @@ EOT
             $installedRepo = new InstalledRepository(array($lockedRepo));
             $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {
-            $repos = $installedRepo = new InstalledRepository(array($this->getComposer()->getRepositoryManager()->getLocalRepository()));
-            $root = $composer->getPackage();
-            $repo = $composer->getRepositoryManager()->getLocalRepository();
+            // --installed / default case
+            if (!$composer) {
+                $composer = $this->getComposer();
+            }
+            $rootPkg = $composer->getPackage();
+            $repos = $installedRepo = new InstalledRepository(array($composer->getRepositoryManager()->getLocalRepository()));
 
             if ($input->getOption('no-dev')) {
-                $packages = $this->filterRequiredPackages($repo, $root);
-            } else {
-                $packages = $this->appendPackages($repo->getPackages(), array());
+                $packages = $this->filterRequiredPackages($installedRepo, $rootPkg);
+                $repos = $installedRepo = new InstalledRepository(array(new InstalledArrayRepository(array_map(function ($pkg) { return clone $pkg; }, $packages))));
             }
-            $packageNames = array_keys($packages);
-            $rootPkg = $this->getComposer()->getPackage();
+
             if (!$installedRepo->getPackages() && ($rootPkg->getRequires() || $rootPkg->getDevRequires())) {
                 $io->writeError('<warning>No dependencies installed. Try running composer install or update.</warning>');
             }
@@ -358,13 +360,7 @@ EOT
                     }
                 }
             } else {
-                $root = $composer->getPackage();
-                if ($input->getOption('no-dev')) {
-                    $packageList = $this->filterRequiredPackages($repo, $root);
-                } else {
-                    $packageList = $this->appendPackages($repo->getPackages(), array());
-                }
-                foreach ($packageList as $package) {
+                foreach ($repo->getPackages() as $package) {
                     if (!isset($packages[$type][$package->getName()])
                         || !is_object($packages[$type][$package->getName()])
                         || version_compare($packages[$type][$package->getName()]->getVersion(), $package->getVersion(), '<')
@@ -1239,6 +1235,7 @@ EOT
 
         return $this->repositorySet;
     }
+
     /**
      * Find package requires and child requires
      *
@@ -1249,36 +1246,18 @@ EOT
      */
     private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, $bucket = array())
     {
-        $requires = array_keys($package->getRequires());
+        $requires = $package->getRequires();
 
-        $packageListNames = array_keys($bucket);
-        $packages = array_filter(
-            $repo->getPackages(),
-            function ($package) use ($requires, $packageListNames) {
-                return in_array($package->getName(), $requires, true) && ! in_array($package->getName(), $packageListNames, true);
+        foreach ($repo->getPackages() as $candidate) {
+            foreach ($candidate->getNames() as $name) {
+                if (isset($requires[$name])) {
+                    if (!in_array($candidate, $bucket, true)) {
+                        $bucket[] = $candidate;
+                        $bucket = $this->filterRequiredPackages($repo, $candidate, $bucket);
+                    }
+                    break;
+                }
             }
-        );
-
-        $bucket = $this->appendPackages($packages, $bucket);
-
-        foreach ($packages as $requiredPackage) {
-            $bucket = $this->filterRequiredPackages($repo, $requiredPackage, $bucket);
-        }
-
-        return $bucket;
-    }
-
-    /**
-     * Adds packages to the package list
-     *
-     * @param  array $packages the list of packages to add
-     * @param  array $bucket   the list to add packages to
-     * @return array
-     */
-    public function appendPackages(array $packages, array $bucket)
-    {
-        foreach ($packages as $package) {
-            $bucket[$package->getName()] = $package;
         }
 
         return $bucket;
