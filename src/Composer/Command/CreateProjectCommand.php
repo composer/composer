@@ -41,6 +41,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Loop;
 use Composer\Package\Version\VersionParser;
+use Composer\EventDispatcher\EventDispatcher;
 
 /**
  * Install a package as new project into new directory.
@@ -296,8 +297,12 @@ EOT
             $config->merge(array('config' => array('secure-http' => false)));
         }
 
+        $composer = Factory::create($io, $config->all(), $disablePlugins);
+        $eventDispatcher = $composer->getEventDispatcher();
+
         if (null === $repository) {
-            $sourceRepo = new CompositeRepository(RepositoryFactory::defaultRepos($io, $config));
+            $rm = RepositoryFactory::manager($io, $config, $eventDispatcher, Factory::createRemoteFilesystem($io, $config));
+            $sourceRepo = new CompositeRepository(RepositoryFactory::defaultRepos($io, $config, $rm));
         } else {
             $sourceRepo = RepositoryFactory::fromString($io, $config, $repository, true);
         }
@@ -403,10 +408,7 @@ EOT
             $package = $package->getAliasOf();
         }
 
-        $factory = new Factory();
-
-        $httpDownloader = $factory->createHttpDownloader($io, $config);
-        $dm = $factory->createDownloadManager($io, $config, $httpDownloader, $process);
+        $dm = $this->createDownloadManager($io, $config, $eventDispatcher);
         $dm->setPreferSource($preferSource)
             ->setPreferDist($preferDist);
 
@@ -429,5 +431,17 @@ EOT
         putenv('COMPOSER_ROOT_VERSION='.$_SERVER['COMPOSER_ROOT_VERSION']);
 
         return $installedFromVcs;
+    }
+
+    protected function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher)
+    {
+        $factory = new Factory();
+
+        return $factory->createDownloadManager($io, $config, $eventDispatcher);
+    }
+
+    protected function createInstallationManager()
+    {
+        return new InstallationManager();
     }
 }
