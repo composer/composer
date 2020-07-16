@@ -81,6 +81,8 @@ jobs:
             echo "::set-env name=SYMFONY_PHPUNIT_VERSION::6.5";
           elif [ "${{ matrix.php-version }}" = "7.1" ]; then
             echo "::set-env name=SYMFONY_PHPUNIT_VERSION::7.5";
+          elif [ "${{ matrix.php-version }}" = "8.0" ]; then
+            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::9.2";
           else
             echo "::set-env name=SYMFONY_PHPUNIT_VERSION::8.3";
           fi
