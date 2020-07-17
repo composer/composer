@@ -1202,7 +1202,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $filename = $preFileDownloadEvent->getProcessedUrl();
         }
 
-        $options = $lastModifiedTime ? array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime))) : array();
+        $options = $this->options;
+        if ($lastModifiedTime) {
+            if (isset($options['http']['header'])) {
+                $options['http']['header'] = (array) $options['http']['header'];
+            }
+            $options['http']['header'][] = array('If-Modified-Since: '.$lastModifiedTime);
+        }
 
         $io = $this->io;
         $url = $this->url;
