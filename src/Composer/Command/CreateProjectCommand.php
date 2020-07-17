@@ -288,13 +288,13 @@ EOT
         }
 
         $composer = Factory::create($io, $config->all(), $disablePlugins);
-        $eventDispatcher = $composer->getEventDispatcher();
+        $config = $composer->getConfig();
+        $rm = $composer->getRepositoryManager();
 
         if (null === $repository) {
-            $rm = RepositoryFactory::manager($io, $config, $eventDispatcher, Factory::createRemoteFilesystem($io, $config));
             $sourceRepo = new CompositeRepository(RepositoryFactory::defaultRepos($io, $config, $rm));
         } else {
-            $sourceRepo = RepositoryFactory::fromString($io, $config, $repository, true);
+            $sourceRepo = RepositoryFactory::fromString($io, $config, $repository, true, $rm);
         }
 
         $parser = new VersionParser();
@@ -389,13 +389,13 @@ EOT
             $package = $package->getAliasOf();
         }
 
-        $dm = $this->createDownloadManager($io, $config, $eventDispatcher);
+        $dm = $composer->getDownloadManager();
         $dm->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
             ->setOutputProgress(!$noProgress);
 
         $projectInstaller = new ProjectInstaller($directory, $dm);
-        $im = $this->createInstallationManager();
+        $im = $composer->getInstallationManager();
         $im->addInstaller($projectInstaller);
         $im->install(new InstalledFilesystemRepository(new JsonFile('php://memory')), new InstallOperation($package));
         $im->notifyInstalls($io);
@@ -412,17 +412,5 @@ EOT
         putenv('COMPOSER_ROOT_VERSION='.$_SERVER['COMPOSER_ROOT_VERSION']);
 
         return $installedFromVcs;
-    }
-
-    protected function createDownloadManager(IOInterface $io, Config $config, EventDispatcher $eventDispatcher)
-    {
-        $factory = new Factory();
-
-        return $factory->createDownloadManager($io, $config, $eventDispatcher);
-    }
-
-    protected function createInstallationManager()
-    {
-        return new InstallationManager();
     }
 }

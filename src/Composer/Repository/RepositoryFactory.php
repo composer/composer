@@ -62,11 +62,11 @@ class RepositoryFactory
      * @param  bool                $allowFilesystem
      * @return RepositoryInterface
      */
-    public static function fromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false)
+    public static function fromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false, RepositoryManager $rm = null)
     {
         $repoConfig = static::configFromString($io, $config, $repository, $allowFilesystem);
 
-        return static::createRepo($io, $config, $repoConfig);
+        return static::createRepo($io, $config, $repoConfig, $rm);
     }
 
     /**
@@ -75,9 +75,11 @@ class RepositoryFactory
      * @param  array               $repoConfig
      * @return RepositoryInterface
      */
-    public static function createRepo(IOInterface $io, Config $config, array $repoConfig)
+    public static function createRepo(IOInterface $io, Config $config, array $repoConfig, RepositoryManager $rm = null)
     {
-        $rm = static::manager($io, $config, null, Factory::createRemoteFilesystem($io, $config));
+        if (!$rm) {
+            $rm = static::manager($io, $config, null, Factory::createRemoteFilesystem($io, $config));
+        }
         $repos = static::createRepos($rm, array($repoConfig));
 
         return reset($repos);
