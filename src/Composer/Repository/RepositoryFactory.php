@@ -173,6 +173,6 @@ class RepositoryFactory
             $name .= '2';
         }
 
-        return is_numeric((string) $name) ? 'repo'.$name : $name;
+        return $name;
     }
 }
