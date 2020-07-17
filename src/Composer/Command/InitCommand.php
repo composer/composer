@@ -98,7 +98,7 @@ EOT
         if ($repositories) {
             $config = Factory::createConfig($io);
             foreach ($repositories as $repo) {
-                $options['repositories'][] = RepositoryFactory::configFromString($io, $config, $repo);
+                $options['repositories'][] = RepositoryFactory::configFromString($io, $config, $repo, true);
             }
         }
 
@@ -173,7 +173,7 @@ EOT
             $repos = array(new PlatformRepository);
             $createDefaultPackagistRepo = true;
             foreach ($repositories as $repo) {
-                $repoConfig = RepositoryFactory::configFromString($io, $config, $repo);
+                $repoConfig = RepositoryFactory::configFromString($io, $config, $repo, true);
                 if (
                     (isset($repoConfig['packagist']) && $repoConfig === array('packagist' => false))
                     || (isset($repoConfig['packagist.org']) && $repoConfig === array('packagist.org' => false))

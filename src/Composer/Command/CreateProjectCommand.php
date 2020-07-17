@@ -356,7 +356,7 @@ EOT
             $repositorySet->addRepository(new CompositeRepository(RepositoryFactory::defaultRepos($io, $config)));
         } else {
             foreach ($repositories as $repo) {
-                $repoConfig = RepositoryFactory::configFromString($io, $config, $repo);
+                $repoConfig = RepositoryFactory::configFromString($io, $config, $repo, true);
                 if (
                     (isset($repoConfig['packagist']) && $repoConfig === array('packagist' => false))
                     || (isset($repoConfig['packagist.org']) && $repoConfig === array('packagist.org' => false))
