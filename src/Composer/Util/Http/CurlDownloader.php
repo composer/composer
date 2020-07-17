@@ -56,6 +56,8 @@ class CurlDownloader
         'ssl' => array(
             'cafile' => CURLOPT_CAINFO,
             'capath' => CURLOPT_CAPATH,
+            'verify_peer' => CURLOPT_SSL_VERIFYPEER,
+            'verify_peer_name' => CURLOPT_SSL_VERIFYHOST,
         ),
     );
 
@@ -178,7 +180,11 @@ class CurlDownloader
         foreach (self::$options as $type => $curlOptions) {
             foreach ($curlOptions as $name => $curlOption) {
                 if (isset($options[$type][$name])) {
-                    curl_setopt($curlHandle, $curlOption, $options[$type][$name]);
+                    if ($type === 'ssl' && $name === 'verify_peer_name') {
+                        curl_setopt($curlHandle, $curlOption, $options[$type][$name] === true ? 2 : $options[$type][$name]);
+                    } else {
+                        curl_setopt($curlHandle, $curlOption, $options[$type][$name]);
+                    }
                 }
             }
         }
