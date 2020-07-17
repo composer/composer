@@ -724,8 +724,9 @@ By default the command checks for the packages on packagist.org.
   which will be used instead of packagist. Can be either an HTTP URL pointing
   to a `composer` repository, a path to a local `packages.json` file, or a
   JSON string which similar to what the [repositories](04-schema.md#repositories)
-  key accepts.
-* **--add-repository:** Add the repository option to the composer.json.
+  key accepts. You can use this multiple times to configure multiple repositories.
+* **--add-repository:** Add the custom repository in the composer.json. If a lock
+  file is present it will be deleted and an update will be run instead of install.
 * **--dev:** Install packages listed in `require-dev`.
 * **--no-dev:** Disables installation of require-dev packages.
 * **--no-scripts:** Disables the execution of the scripts defined in the root
@@ -966,7 +967,7 @@ commands) to finish executing. The default value is 300 seconds (5 minutes).
 
 ### COMPOSER_ROOT_VERSION
 
-By setting this var you can specify the version of the root package, if it 
+By setting this var you can specify the version of the root package, if it
 cannot be guessed from VCS info and is not present in `composer.json`.
 
 ### COMPOSER_VENDOR_DIR

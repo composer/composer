@@ -69,9 +69,9 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum-stability allowed (unless a version is specified).'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
-                new InputOption('repository', null, InputOption::VALUE_REQUIRED, 'Pick a different repository (as url or json config) to look for the package.'),
+                new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories to look the package up, either by URL or using JSON arrays'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'DEPRECATED: Use --repository instead.'),
-                new InputOption('add-repository', null, InputOption::VALUE_NONE, 'Add the repository option to the composer.json.'),
+                new InputOption('add-repository', null, InputOption::VALUE_NONE, 'Add the custom repository in the composer.json. If a lock file is present it will be deleted and an update will be run instead of install.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
@@ -153,9 +153,13 @@ EOT
         );
     }
 
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true, $addRepository = false)
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositories = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true, $addRepository = false)
     {
         $oldCwd = getcwd();
+
+        if ($repositories !== null && !is_array($repositories)) {
+            $repositories = (array) $repositories;
+        }
 
         // we need to manually load the configuration to pass the auth credentials to the io interface!
         $io->loadConfiguration($config);
@@ -163,28 +167,36 @@ EOT
         $this->suggestedPackagesReporter = new SuggestedPackagesReporter($io);
 
         if ($packageName !== null) {
-            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repository, $disablePlugins, $noScripts, $noProgress, $ignorePlatformReqs, $secureHttp);
+            $installedFromVcs = $this->installRootPackage($io, $config, $packageName, $directory, $packageVersion, $stability, $preferSource, $preferDist, $installDevPackages, $repositories, $disablePlugins, $noScripts, $noProgress, $ignorePlatformReqs, $secureHttp);
         } else {
             $installedFromVcs = false;
+        }
+
+        if ($repositories !== null && $addRepository && is_file('composer.lock')) {
+            unlink('composer.lock');
         }
 
         $composer = Factory::create($io, null, $disablePlugins);
 
         // add the repository to the composer.json and use it for the install run later
-        if ($repository !== null && $addRepository) {
-            if ($composer->getLocker()->isLocked()) {
-                $io->writeError('<error>Adding a repository when creating a project that provides a composer.lock file is not supported</error>');
+        if ($repositories !== null && $addRepository) {
+            foreach ($repositories as $index => $repo) {
+                $repoConfig = RepositoryFactory::configFromString($io, $composer->getConfig(), $repo, true);
+                $composerJsonRepositoriesConfig = $composer->getConfig()->getRepositories();
+                $name = RepositoryFactory::generateRepositoryName($index, $repoConfig, $composerJsonRepositoriesConfig);
+                $configSource = new JsonConfigSource(new JsonFile('composer.json'));
 
-                return false;
+                if (
+                    (isset($repoConfig['packagist']) && $repoConfig === array('packagist' => false))
+                    || (isset($repoConfig['packagist.org']) && $repoConfig === array('packagist.org' => false))
+                ) {
+                    $configSource->addRepository('packagist.org', false);
+                } else {
+                    $configSource->addRepository($name, $repoConfig);
+                }
+
+                $composer = Factory::create($io, null, $disablePlugins);
             }
-
-            $repoConfig = RepositoryFactory::configFromString($io, $composer->getConfig(), $repository, true);
-            $composerJsonRepositoriesConfig = $composer->getConfig()->getRepositories();
-            $name = RepositoryFactory::generateRepositoryName(0, $repoConfig, $composerJsonRepositoriesConfig);
-            $configSource = new JsonConfigSource(new JsonFile('composer.json'));
-            $configSource->addRepository($name, $repoConfig);
-
-            $composer = Factory::create($io, null, $disablePlugins);
         }
 
         $process = new ProcessExecutor($io);
@@ -290,16 +302,10 @@ EOT
         return 0;
     }
 
-    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repository = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $ignorePlatformReqs = false, $secureHttp = true)
+    protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, array $repositories = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $ignorePlatformReqs = false, $secureHttp = true)
     {
         if (!$secureHttp) {
             $config->merge(array('config' => array('secure-http' => false)));
-        }
-
-        if (null === $repository) {
-            $sourceRepo = new CompositeRepository(RepositoryFactory::defaultRepos($io, $config));
-        } else {
-            $sourceRepo = RepositoryFactory::fromString($io, $config, $repository, true);
         }
 
         $parser = new VersionParser();
@@ -346,7 +352,20 @@ EOT
         }
 
         $repositorySet = new RepositorySet($stability);
-        $repositorySet->addRepository($sourceRepo);
+        if (null === $repositories) {
+            $repositorySet->addRepository(new CompositeRepository(RepositoryFactory::defaultRepos($io, $config)));
+        } else {
+            foreach ($repositories as $repo) {
+                $repoConfig = RepositoryFactory::configFromString($io, $config, $repo);
+                if (
+                    (isset($repoConfig['packagist']) && $repoConfig === array('packagist' => false))
+                    || (isset($repoConfig['packagist.org']) && $repoConfig === array('packagist.org' => false))
+                ) {
+                    continue;
+                }
+                $repositorySet->addRepository(RepositoryFactory::createRepo($io, $config, $repoConfig));
+            }
+        }
 
         $platformOverrides = $config->get('platform') ?: array();
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
