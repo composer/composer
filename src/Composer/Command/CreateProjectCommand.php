@@ -41,6 +41,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Loop;
 use Composer\Package\Version\VersionParser;
+use Composer\EventDispatcher\EventDispatcher;
 
 /**
  * Install a package as new project into new directory.
@@ -351,9 +352,13 @@ EOT
             throw new \InvalidArgumentException('Invalid stability provided ('.$stability.'), must be one of: '.implode(', ', array_keys(BasePackage::$stabilities)));
         }
 
+        $composer = Factory::create($io, $config->all(), $disablePlugins);
+        $config = $composer->getConfig();
+        $rm = $composer->getRepositoryManager();
+
         $repositorySet = new RepositorySet($stability);
         if (null === $repositories) {
-            $repositorySet->addRepository(new CompositeRepository(RepositoryFactory::defaultRepos($io, $config)));
+            $repositorySet->addRepository(new CompositeRepository(RepositoryFactory::defaultRepos($io, $config, $rm)));
         } else {
             foreach ($repositories as $repo) {
                 $repoConfig = RepositoryFactory::configFromString($io, $config, $repo, true);
@@ -363,7 +368,7 @@ EOT
                 ) {
                     continue;
                 }
-                $repositorySet->addRepository(RepositoryFactory::createRepo($io, $config, $repoConfig));
+                $repositorySet->addRepository(RepositoryFactory::createRepo($io, $config, $repoConfig, $rm));
             }
         }
 
@@ -422,15 +427,12 @@ EOT
             $package = $package->getAliasOf();
         }
 
-        $factory = new Factory();
-
-        $httpDownloader = $factory->createHttpDownloader($io, $config);
-        $dm = $factory->createDownloadManager($io, $config, $httpDownloader, $process);
+        $dm = $composer->getDownloadManager();
         $dm->setPreferSource($preferSource)
             ->setPreferDist($preferDist);
 
         $projectInstaller = new ProjectInstaller($directory, $dm, $fs);
-        $im = $factory->createInstallationManager(new Loop($httpDownloader, $process), $io);
+        $im = $composer->getInstallationManager();
         $im->setOutputProgress(!$noProgress);
         $im->addInstaller($projectInstaller);
         $im->execute(new InstalledFilesystemRepository(new JsonFile('php://memory')), array(new InstallOperation($package)));
