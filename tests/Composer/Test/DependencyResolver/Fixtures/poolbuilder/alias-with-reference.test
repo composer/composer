@@ -35,7 +35,8 @@ Check root aliases get selected correctly
 [
     {
         "name": "a/aliased", "version": "dev-master",
-        "source": { "reference": "orig", "type": "git", "url": "" }
+        "source": { "reference": "orig", "type": "git", "url": "" },
+        "default-branch": true
     },
     {
         "name": "a/aliased", "version": "1.0"
