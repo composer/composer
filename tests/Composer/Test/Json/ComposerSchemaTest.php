@@ -40,10 +40,9 @@ class ComposerSchemaTest extends TestCase
     public function testRequiredProperties()
     {
         $json = '{ }';
-        $this->assertEquals(array(
-            array('property' => 'name', 'message' => 'The property name is required', 'constraint' => 'required'),
-            array('property' => 'description', 'message' => 'The property description is required', 'constraint' => 'required'),
-        ), $this->check($json));
+        $result = $this->check($json);
+        $this->assertContains(array('property' => 'name', 'message' => 'The property name is required', 'constraint' => 'required'), $result);
+        $this->assertContains(array('property' => 'description', 'message' => 'The property description is required', 'constraint' => 'required'), $result);
 
         $json = '{ "name": "vendor/package" }';
         $this->assertEquals(array(

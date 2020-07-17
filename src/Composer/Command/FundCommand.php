@@ -14,6 +14,8 @@ namespace Composer\Command;
 
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Repository\CompositeRepository;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -39,15 +41,38 @@ class FundCommand extends BaseCommand
         $repo = $composer->getRepositoryManager()->getLocalRepository();
         $remoteRepos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
         $fundings = array();
+
+        $packagesToLoad = array();
         foreach ($repo->getPackages() as $package) {
             if ($package instanceof AliasPackage) {
                 continue;
             }
-            $latest = $remoteRepos->findPackage($package->getName(), 'dev-master');
-            if ($latest instanceof CompletePackageInterface && $latest->getFunding()) {
-                $fundings = $this->insertFundingData($fundings, $latest);
+            $packagesToLoad[$package->getName()] = new MatchAllConstraint();
+        }
+
+        // load all packages dev versions in parallel
+        $result = $remoteRepos->loadPackages($packagesToLoad, array('dev' => BasePackage::STABILITY_DEV), array());
+
+        // collect funding data from default branches
+        foreach ($result['packages'] as $package) {
+            if (
+                !$package instanceof AliasPackage
+                && $package instanceof CompletePackageInterface
+                && $package->isDefaultBranch()
+                && $package->getFunding()
+                && isset($packagesToLoad[$package->getName()])
+            ) {
+                $fundings = $this->insertFundingData($fundings, $package);
+                unset($packagesToLoad[$package->getName()]);
+            }
+        }
+
+        // collect funding from installed packages if none was found in the default branch above
+        foreach ($repo->getPackages() as $package) {
+            if ($package instanceof AliasPackage || !isset($packagesToLoad[$package->getName()])) {
                 continue;
             }
+
             if ($package instanceof CompletePackageInterface && $package->getFunding()) {
                 $fundings = $this->insertFundingData($fundings, $package);
             }

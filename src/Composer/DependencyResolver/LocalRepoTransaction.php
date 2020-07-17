@@ -23,6 +23,7 @@ use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ * @internal
  */
 class LocalRepoTransaction extends Transaction
 {

@@ -81,6 +81,13 @@ class Application extends BaseApplication
         }
 
         if (!$shutdownRegistered) {
+            if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
+                pcntl_async_signals(true);
+                pcntl_signal(SIGINT, function ($sig) {
+                    exit(130);
+                });
+            }
+
             $shutdownRegistered = true;
 
             register_shutdown_function(function () {

@@ -90,8 +90,8 @@ class ArrayLoader implements LoaderInterface
         if (isset($config['version_normalized'])) {
             $version = $config['version_normalized'];
 
-            // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEV_MASTER_ALIAS, we renormalize it
-            if ($version === VersionParser::DEV_MASTER_ALIAS) {
+            // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEFAULT_BRANCH_ALIAS, we renormalize it
+            if ($version === VersionParser::DEFAULT_BRANCH_ALIAS) {
                 $version = $this->versionParser->normalize($config['version']);
             }
         } else {
@@ -369,7 +369,7 @@ class ArrayLoader implements LoaderInterface
         }
 
         if (isset($config['default-branch']) && $config['default-branch'] === true) {
-            return VersionParser::DEV_MASTER_ALIAS;
+            return VersionParser::DEFAULT_BRANCH_ALIAS;
         }
     }
 }

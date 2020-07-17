@@ -110,11 +110,6 @@ class RootPackageLoader extends ArrayLoader
             }
         }
 
-        $defaultBranch = $this->versionGuesser->getDefaultBranchName($cwd ?: getcwd());
-        if ($defaultBranch && $config['version'] === 'dev-'.$defaultBranch) {
-            $config['default-branch'] = true;
-        }
-
         $realPackage = $package = parent::load($config, $class);
         if ($realPackage instanceof AliasPackage) {
             $realPackage = $package->getAliasOf();

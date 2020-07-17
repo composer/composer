@@ -351,7 +351,7 @@ class RemoteFilesystem
         if ($originUrl === 'bitbucket.org'
             && !$this->authHelper->isPublicBitBucketDownload($fileUrl)
             && substr($fileUrl, -4) === '.zip'
-            && (!$locationHeader || substr($locationHeader, -4) !== '.zip')
+            && (!$locationHeader || substr(parse_url($locationHeader, PHP_URL_PATH), -4) !== '.zip')
             && $contentType && preg_match('{^text/html\b}i', $contentType)
         ) {
             $result = false;

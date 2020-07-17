@@ -24,10 +24,4 @@ class VersionGuesserMock extends VersionGuesser
     {
         return null;
     }
-
-    public function getDefaultBranchName($path)
-    {
-        return null;
-    }
-
 }

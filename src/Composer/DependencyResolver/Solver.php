@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\MultiConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -385,6 +386,11 @@ class Solver
             $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
 
             foreach ($rule->getLiterals() as $literal) {
+                // multiconflictrule is really a bunch of rules in one, so some may not have finished propagating yet
+                if ($rule instanceof MultiConflictRule && !$this->decisions->decided($literal)) {
+                    continue;
+                }
+
                 // skip the one true literal
                 if ($this->decisions->satisfy($literal)) {
                     continue;
@@ -457,6 +463,35 @@ class Solver
                     }
                     // only level 1 marks left
                     $l1num++;
+                    $l1retry = true;
+                }
+
+                $decision = $this->decisions->atOffset($decisionId);
+                $rule = $decision[Decisions::DECISION_REASON];
+
+                if ($rule instanceof MultiConflictRule) {
+                    // there is only ever exactly one positive decision in a multiconflict rule
+                    foreach ($rule->getLiterals() as $literal) {
+                        if (!isset($seen[abs($literal)]) && $this->decisions->satisfy(-$literal)) {
+                            $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
+                            $l = $this->decisions->decisionLevel($literal);
+                            if (1 === $l) {
+                                $l1num++;
+                            } elseif ($level === $l) {
+                                $num++;
+                            } else {
+                                // not level1 or conflict level, add to new rule
+                                $learnedLiterals[] = $literal;
+
+                                if ($l > $ruleLevel) {
+                                    $ruleLevel = $l;
+                                }
+                            }
+                            $seen[abs($literal)] = true;
+                            break;
+                        }
+                    }
+
                     $l1retry = true;
                 }
             }

@@ -100,7 +100,7 @@ class AllFunctionalTest extends TestCase
      * @dataProvider getTestFiles
      * @depends testBuildPhar
      */
-    public function testIntegration(\SplFileInfo $testFile)
+    public function testIntegration($testFile)
     {
         $testData = $this->parseTestFile($testFile);
 
@@ -133,15 +133,15 @@ class AllFunctionalTest extends TestCase
     {
         $tests = array();
         foreach (Finder::create()->in(__DIR__.'/Fixtures/functional')->name('*.test')->files() as $file) {
-            $tests[] = array($file);
+            $tests[] = array($file->getRealPath());
         }
 
         return $tests;
     }
 
-    private function parseTestFile(\SplFileInfo $file)
+    private function parseTestFile($file)
     {
-        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), null, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), null, PREG_SPLIT_DELIM_CAPTURE);
         $data = array();
         $section = null;
 

@@ -3,8 +3,9 @@
 ## For composer CLI users
 
 - The new platform-check feature means that Composer checks the runtime PHP version and available extensions to ensure they match the project dependencies. If a mismatch is found, it exits with error details to make sure problems are not overlooked. To avoid issues when deploying to production it is recommended to run `composer check-platform-reqs` with the production PHP process as part of your build or deployment process.
-- If a packages exists in a higher priority repository, it will now be entirely ignored in lower priority repositories. See [repository priorities](https://getcomposer.org/repoprio) for details.
+- If a package exists in a higher priority repository, it will now be entirely ignored in lower priority repositories. See [repository priorities](https://getcomposer.org/repoprio) for details.
 - Invalid PSR-0 / PSR-4 class configurations will not autoload anymore in optimized-autoloader mode, as per the warnings introduced in 1.10
+- On linux systems supporting the XDG Base Directory Specification, Composer will now prefer using XDG_CONFIG_DIR/composer over ~/.composer if both are available (1.x used ~/.composer first)
 - Package names now must comply to our [naming guidelines](doc/04-schema.md#name) or Composer will abort, as per the warnings introduced in 1.8.1
 - Deprecated --no-suggest flag as it is not needed anymore
 - PEAR support (repository, downloader, etc.) has been removed
@@ -27,7 +28,7 @@
   - packages are now wrapped into a `"packages"` top level key instead of the whole file being the package array
   - packages now contain an `"installed-path"` key which lists where they were installed
   - there is a top level `"dev"` key which stores whether dev requirements were installed or not
-- `PreFileDownloadEvent` now receives an `HttpDownloader` instance instead of `RemoteFilesystem`, and that instance can not be overridden by listeners anymore
+- `PreFileDownloadEvent` now receives an `HttpDownloader` instance instead of `RemoteFilesystem`, and that instance cannot be overridden by listeners anymore
 - `VersionSelector::findBestCandidate`'s third argument (phpVersion) was removed in favor of passing in a complete PlatformRepository instance into the constructor
 - `InitCommand::determineRequirements`'s fourth argument (phpVersion) should now receive a complete PlatformRepository instance or null if platform requirements are to be ignored
 - `IOInterface` now extends PSR-3's `LoggerInterface`, and has new `writeRaw` + `writeErrorRaw` methods
@@ -74,3 +75,9 @@ If your repository only has a small number of packages, and you want to avoid th
 `"providers-api": "https://packagist.org/providers/%package%.json",`
 
 The providers-api is optional, but if you implement it it should return packages which provide a given package name, but not the package which has that name. For example https://packagist.org/providers/monolog/monolog.json lists some package which have a "provide" rule for monolog/monolog, but it does not list monolog/monolog itself.
+
+### list
+
+This is also optional, it should accept an optional `?filter=xx` query param, which can contain `*` as wildcards matching any substring.
+
+It must return an array of package names as `{"packageNames": ["a/b", "c/d"]}`. See https://packagist.org/packages/list.json?filter=composer/* for example.

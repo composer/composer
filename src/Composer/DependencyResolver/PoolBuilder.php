@@ -99,9 +99,9 @@ class PoolBuilder
 
     /**
      * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
-     * @psalm-param array<string, int> $acceptableStabilities
+     * @psalm-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
      * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
-     * @psalm-param array<string, int> $stabilityFlags
+     * @psalm-param array<string, BasePackage::STABILITY_*> $stabilityFlags
      * @param array[] $rootAliases
      * @psalm-param array<string, array<string, array{alias: string, alias_normalized: string}>> $rootAliases
      * @param string[] $rootReferences an array of package name => source reference

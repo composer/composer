@@ -123,7 +123,7 @@ Optional.
 
 ### homepage
 
-An URL to the website of the project.
+A URL to the website of the project.
 
 Optional.
 
@@ -184,7 +184,7 @@ An Example for disjunctive licenses:
 }
 ```
 
-Alternatively they can be separated with "or" and enclosed in parenthesis;
+Alternatively they can be separated with "or" and enclosed in parentheses;
 
 ```json
 {
@@ -192,8 +192,8 @@ Alternatively they can be separated with "or" and enclosed in parenthesis;
 }
 ```
 
-Similarly when multiple licenses need to be applied ("conjunctive license"),
-they should be separated with "and" and enclosed in parenthesis.
+Similarly, when multiple licenses need to be applied ("conjunctive license"),
+they should be separated with "and" and enclosed in parentheses.
 
 ### authors
 
@@ -265,8 +265,8 @@ development of new functionality.
 
 Each entry consists of the following
 
-* **type:** The type of funding or the platform through which funding can be provided, e.g. patreon, opencollective, tidelift or github.
-* **url:** URL to a website with details and a way to fund the package.
+* **type:** The type of funding, or the platform through which funding can be provided, e.g. patreon, opencollective, tidelift or github.
+* **url:** URL to a website with details, and a way to fund the package.
 
 An example:
 
@@ -934,7 +934,7 @@ It can be boolean or a package name/URL pointing to a recommended alternative.
 Examples:
 
 Use `"abandoned": true` to indicates this package is abandoned.
-Use `"abandoned": "monolog/monolog"` to indicates this package is abandoned and the
+Use `"abandoned": "monolog/monolog"` to indicates this package is abandoned, and the
 recommended alternative is  `monolog/monolog`.
 
 Defaults to false.
@@ -949,7 +949,7 @@ that will NOT be handled as feature branches. This is an array of strings.
 If you have non-numeric branch names, for example like "latest", "current", "latest-stable"
 or something, that do not look like a version number, then Composer handles such branches
 as feature branches. This means it searches for parent branches, that look like a version
-or ends at special branches (like master) and the root package version number becomes the
+or ends at special branches (like master), and the root package version number becomes the
 version of the parent branch or at least master or something.
 
 To handle non-numeric named branches as versions instead of searching for a parent branch

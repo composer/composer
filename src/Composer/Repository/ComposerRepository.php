@@ -58,6 +58,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $providersApiUrl;
     protected $hasProviders = false;
     protected $providersUrl;
+    protected $listUrl;
     protected $availablePackages;
     protected $lazyProvidersUrl;
     protected $providerListing;
@@ -288,32 +289,52 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return parent::getPackages();
     }
 
-    public function getPackageNames()
+    public function getPackageNames($packageFilter = null)
     {
-        // TODO add getPackageNames to the RepositoryInterface perhaps? With filtering capability embedded?
         $hasProviders = $this->hasProviders();
+
+        $packageFilterCb = function ($name) {
+            return true;
+        };
+        if (null !== $packageFilter) {
+            $packageFilterRegex = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
+            $packageFilterCb = function ($name) use ($packageFilterRegex) {
+                return (bool) preg_match($packageFilterRegex, $name);
+            };
+        }
 
         if ($this->lazyProvidersUrl) {
             if (is_array($this->availablePackages)) {
-                return array_keys($this->availablePackages);
+                return array_filter(array_keys($this->availablePackages), $packageFilterCb);
             }
 
-            // TODO implement new list API endpoint for those repos somehow?
+            if ($this->listUrl) {
+                $url = $this->listUrl;
+                if ($packageFilter) {
+                    $url .= '?filter='.urlencode($packageFilter);
+                }
+
+                $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
+
+                return $result['packageNames'];
+            }
 
             if ($this->hasPartialPackages()) {
-                return array_keys($this->partialPackagesByName);
+                return array_filter(array_keys($this->partialPackagesByName), $packageFilterCb);
             }
 
             return array();
         }
 
         if ($hasProviders) {
-            return $this->getProviderNames();
+            return array_filter($this->getProviderNames(), $packageFilterCb);
         }
 
         $names = array();
         foreach ($this->getPackages() as $package) {
-            $names[] = $package->getPrettyName();
+            if ($packageFilterCb($package->getName())) {
+                $names[] = $package->getPrettyName();
+            }
         }
 
         return $names;
@@ -596,8 +617,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if (!isset($versionsToLoad[$version['uid']])) {
                     if (!isset($version['version_normalized'])) {
                         $version['version_normalized'] = $this->versionParser->normalize($version['version']);
-                    } elseif ($version['version_normalized'] === VersionParser::DEV_MASTER_ALIAS) {
-                        // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEV_MASTER_ALIAS, we renormalize it
+                    } elseif ($version['version_normalized'] === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                        // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEFAULT_BRANCH_ALIAS, we renormalize it
                         $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                     }
 
@@ -676,6 +697,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if ($acceptableStabilities === null || $stabilityFlags === null || StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, array($name), 'dev')) {
                 $packageNames[$name.'~dev'] = $constraint;
             }
+            // if only dev stability is requested, we skip loading the non dev file
+            if (isset($acceptableStabilities['dev']) && count($acceptableStabilities) === 1 && count($stabilityFlags) === 0) {
+                unset($packageNames[$name]);
+            }
         }
 
         foreach ($packageNames as $name => $constraint) {
@@ -717,8 +742,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     foreach ($versions as $version) {
                         if (!isset($version['version_normalized'])) {
                             $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
-                        } elseif ($version['version_normalized'] === VersionParser::DEV_MASTER_ALIAS) {
-                            // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEV_MASTER_ALIAS, we renormalize it
+                        } elseif ($version['version_normalized'] === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                            // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEFAULT_BRANCH_ALIAS, we renormalize it
                             $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
                         }
 
@@ -860,6 +885,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if (!empty($data['providers-url'])) {
             $this->providersUrl = $this->canonicalizeUrl($data['providers-url']);
             $this->hasProviders = true;
+        }
+
+        if (!empty($data['list'])) {
+            $this->listUrl = $this->canonicalizeUrl($data['list']);
         }
 
         if (!empty($data['providers']) || !empty($data['providers-includes'])) {

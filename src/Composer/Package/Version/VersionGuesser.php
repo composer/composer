@@ -111,43 +111,6 @@ class VersionGuesser
         return $versionData;
     }
 
-    /**
-     * Tries to find name of default branch from VCS info
-     *
-     * @param string $path Path to guess into
-     */
-    public function getDefaultBranchName($path)
-    {
-        if (version_compare(GitUtil::getVersion($this->process), '2.3.0-rc0', '>=')) {
-            GitUtil::cleanEnv();
-            $oldVal = getenv('GIT_SSH_COMMAND');
-            putenv("GIT_SSH_COMMAND=ssh".(Platform::isWindows() ? '.exe' : '')." -o StrictHostKeyChecking=yes");
-            $hasGitRemote = 0 === $this->process->execute('git remote show origin', $output, $path);
-            if ($oldVal) {
-                putenv("GIT_SSH_COMMAND=$oldVal");
-            } else {
-                putenv("GIT_SSH_COMMAND");
-            }
-            if ($hasGitRemote && preg_match('{^  HEAD branch: (.+)$}m', $output, $match)) {
-                return trim($match[1]);
-            }
-        }
-
-        if (is_dir($path.'/.git')) {
-            return 'master';
-        }
-
-        if (is_dir($path.'/.hg')) {
-            return 'default';
-        }
-
-        if (is_dir($path.'/.svn')) {
-            return 'trunk';
-        }
-
-        return null;
-    }
-
     private function guessGitVersion(array $packageConfig, $path)
     {
         GitUtil::cleanEnv();
@@ -174,7 +137,7 @@ class VersionGuesser
                     } else {
                         $version = $this->versionParser->normalizeBranch($match[1]);
                         $prettyVersion = 'dev-' . $match[1];
-                        $isFeatureBranch = 0 === strpos($version, 'dev-');
+                        $isFeatureBranch = $this->isFeatureBranch($packageConfig, $match[1]);
                     }
 
                     if ($match[2]) {
@@ -247,7 +210,7 @@ class VersionGuesser
             $version = $this->versionParser->normalizeBranch($branch);
             $isFeatureBranch = 0 === strpos($version, 'dev-');
 
-            if (VersionParser::DEV_MASTER_ALIAS === $version) {
+            if (VersionParser::DEFAULT_BRANCH_ALIAS === $version) {
                 return array('version' => $version, 'commit' => null, 'pretty_version' => 'dev-'.$branch);
             }
 
@@ -282,21 +245,18 @@ class VersionGuesser
             $branch = preg_replace('{^dev-}', '', $version);
             $length = PHP_INT_MAX;
 
-            $nonFeatureBranches = '';
-            if (!empty($packageConfig['non-feature-branches'])) {
-                $nonFeatureBranches = implode('|', $packageConfig['non-feature-branches']);
-            }
-
             // return directly, if branch is configured to be non-feature branch
-            if (preg_match('{^(' . $nonFeatureBranches . ')$}', $branch)) {
+            if (!$this->isFeatureBranch($packageConfig, $branch)) {
                 return array('version' => $version, 'pretty_version' => $prettyVersion);
             }
 
-            $defaultBranch = $this->getDefaultBranchName($path);
+            // sort numeric branches below named ones, to make sure if the branch has the same distance from main and 1.10 and 1.9 for example, main is picked
+            // and sort using natural sort so that 1.10 will appear before 1.9
+            rsort($branches, defined('SORT_NATURAL') ? SORT_NATURAL : SORT_REGULAR);
 
             foreach ($branches as $candidate) {
                 // do not compare against itself or other feature branches
-                if ($candidate === $branch || !preg_match('{^(' . $nonFeatureBranches . ($defaultBranch ? '|'.preg_quote($defaultBranch) : '').'|master|main|latest|next|current|support|tip|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
+                if ($candidate === $branch || $this->isFeatureBranch($packageConfig, $candidate)) {
                     continue;
                 }
 
@@ -308,12 +268,22 @@ class VersionGuesser
                 if (strlen($output) < $length) {
                     $length = strlen($output);
                     $version = $this->versionParser->normalizeBranch($candidate);
-                    $prettyVersion = 'dev-' . $match[1];
+                    $prettyVersion = 'dev-' . $candidate;
                 }
             }
         }
 
         return array('version' => $version, 'pretty_version' => $prettyVersion);
+    }
+
+    private function isFeatureBranch(array $packageConfig, $branchName)
+    {
+        $nonFeatureBranches = '';
+        if (!empty($packageConfig['non-feature-branches'])) {
+            $nonFeatureBranches = implode('|', $packageConfig['non-feature-branches']);
+        }
+
+        return !preg_match('{^(' . $nonFeatureBranches . '|master|main|latest|next|current|support|tip|trunk|default|develop|\d+\..+)$}', $branchName, $match);
     }
 
     private function guessFossilVersion(array $packageConfig, $path)
