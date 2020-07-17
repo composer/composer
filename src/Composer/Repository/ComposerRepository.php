@@ -1139,7 +1139,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if (isset($options['http']['header'])) {
                     $options['http']['header'] = (array) $options['http']['header'];
                 }
-                $options['http']['header'][] = array('If-Modified-Since: '.$lastModifiedTime);
+                $options['http']['header'][] = 'If-Modified-Since: '.$lastModifiedTime;
                 $response = $this->httpDownloader->get($filename, $options);
                 $json = $response->getBody();
                 if ($json === '' && $response->getStatusCode() === 304) {
@@ -1207,7 +1207,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (isset($options['http']['header'])) {
                 $options['http']['header'] = (array) $options['http']['header'];
             }
-            $options['http']['header'][] = array('If-Modified-Since: '.$lastModifiedTime);
+            $options['http']['header'][] = 'If-Modified-Since: '.$lastModifiedTime;
         }
 
         $io = $this->io;
