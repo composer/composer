@@ -380,8 +380,8 @@ TAGSPUBKEY
             // see if we can run this operation as an Admin on Windows
             if (!is_writable(dirname($localFilename))
                 && $io->isInteractive()
-                && $this->isWindowsNonAdminUser($isCygwin)) {
-                return $this->tryAsWindowsAdmin($localFilename, $newFilename, $isCygwin);
+                && $this->isWindowsNonAdminUser()) {
+                return $this->tryAsWindowsAdmin($localFilename, $newFilename);
             }
 
             $action = 'Composer '.($backupTarget ? 'update' : 'rollback');
@@ -467,20 +467,16 @@ TAGSPUBKEY
     /**
      * Returns true if this is a non-admin Windows user account
      *
-     * @param null|bool $isCygwin Set by method
      * @return bool
      */
-    protected function isWindowsNonAdminUser(&$isCygwin)
+    protected function isWindowsNonAdminUser()
     {
-        $isCygwin = preg_match('/cygwin/i', php_uname());
-
-        if (!$isCygwin && !Platform::isWindows()) {
+        if (!Platform::isWindows()) {
             return false;
         }
 
         // fltmc.exe manages filter drivers and errors without admin privileges
-        $command = sprintf('%sfltmc.exe filters', $isCygwin ? 'cmd.exe /c ' : '');
-        exec($command, $output, $exitCode);
+        exec('fltmc.exe filters', $output, $exitCode);
 
         return $exitCode !== 0;
     }
@@ -492,10 +488,9 @@ TAGSPUBKEY
      *
      * @param string $localFilename The composer.phar location
      * @param string $newFilename The downloaded or backup phar
-     * @param bool $isCygwin Whether we are running on Cygwin
      * @return bool Whether composer.phar has been updated
      */
-    protected function tryAsWindowsAdmin($localFilename, $newFilename, $isCygwin)
+    protected function tryAsWindowsAdmin($localFilename, $newFilename)
     {
         $io = $this->getIO();
 
@@ -515,15 +510,9 @@ TAGSPUBKEY
 
         $checksum = hash_file('sha256', $newFilename);
 
-        // format the file names for cmd.exe
-        if ($isCygwin) {
-            $source = exec(sprintf("cygpath -w '%s'", $newFilename));
-            $destination = exec(sprintf("cygpath -w '%s'", $localFilename));
-        } else {
-            // cmd's internal move is fussy about backslashes
-            $source = str_replace('/', '\\', $newFilename);
-            $destination = str_replace('/', '\\', $localFilename);
-        }
+        // cmd's internal move is fussy about backslashes
+        $source = str_replace('/', '\\', $newFilename);
+        $destination = str_replace('/', '\\', $localFilename);
 
         $vbs = <<<EOT
 Set UAC = CreateObject("Shell.Application")
@@ -532,16 +521,7 @@ Wscript.Sleep(300)
 EOT;
 
         file_put_contents($script, $vbs);
-
-        if ($isCygwin) {
-            chmod($script, 0755);
-            $cygscript = sprintf('"%s"', exec(sprintf("cygpath -w '%s'", $script)));
-            $command = sprintf("cmd.exe /c '%s'", $cygscript);
-        } else {
-            $command = sprintf('"%s"', $script);
-        }
-
-        exec($command);
+        exec('"'.$script.'"');
         @unlink($script);
 
         // see if the file was moved
