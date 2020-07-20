@@ -205,6 +205,13 @@ if [ -d /proc/cygdrive ]; then
     esac
 fi
 
+# @see https://github.com/git-for-windows/msys2-runtime/pull/11
+# @see https://github.com/msys2/MSYS2-packages/blob/f31cce2ca6e1ceba/bash/0006-bash-4.3-add-pwd-W-option.patch#L25
+if [[ "\$OSTYPE" == "msys" ]] && [[ ! -z \${MSYS_NO_PATHCONV+x} ]]; then
+    # Setting MSYS_NO_PATHCONV disables automatic unix to windows path translations by msys - translate them here.
+    dir="$(cd "\$dir" && pwd -W)";
+fi
+
 "\${dir}/$binFile" "\$@"
 
 PROXY;
