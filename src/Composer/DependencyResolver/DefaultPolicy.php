@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
+use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -39,9 +40,8 @@ class DefaultPolicy implements PolicyInterface
         }
 
         $constraint = new Constraint($operator, $b->getVersion());
-        $version = new Constraint('==', $a->getVersion());
 
-        return $constraint->matchSpecific($version, true);
+        return CompilingMatcher::match($constraint, Constraint::OP_EQ, $a->getVersion());
     }
 
     public function selectPreferredPackages(Pool $pool, array $literals, $requiredPackage = null)
