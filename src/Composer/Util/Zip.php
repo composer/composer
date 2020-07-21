@@ -66,42 +66,44 @@ class Zip
      *
      * @param \ZipArchive $zip
      * @param string      $filename
+     * @throws \RuntimeException
      *
-     * @return bool|int
+     * @return int
      */
     private static function locateFile(\ZipArchive $zip, $filename)
     {
-        $indexOfShortestMatch = false;
-        $lengthOfShortestMatch = -1;
+        // return root composer.json if it is there and is a file
+        if (false !== ($index = $zip->locateName($filename)) && $zip->getFromIndex($index) !== false) {
+            return $index;
+        }
 
+        $topLevelPaths = array();
         for ($i = 0; $i < $zip->numFiles; $i++) {
-            $stat = $zip->statIndex($i);
-            if (strcmp(basename($stat['name']), $filename) === 0) {
-                $directoryName = dirname($stat['name']);
-                if ($directoryName === '.') {
-                    //if composer.json is in root directory
-                    //it has to be the one to use.
-                    return $i;
-                }
+            $name = $zip->getNameIndex($i);
+            $dirname = dirname($name);
 
-                if (strpos($directoryName, '\\') !== false ||
-                    strpos($directoryName, '/') !== false) {
-                    //composer.json files below first directory are rejected
-                    continue;
+            // handle archives with proper TOC
+            if ($dirname === '.') {
+                $topLevelPaths[$name] = true;
+                if (\count($topLevelPaths) > 1) {
+                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
                 }
+                continue;
+            }
 
-                $length = strlen($stat['name']);
-                if ($indexOfShortestMatch === false || $length < $lengthOfShortestMatch) {
-                    //Check it's not a directory.
-                    $contents = $zip->getFromIndex($i);
-                    if ($contents !== false) {
-                        $indexOfShortestMatch = $i;
-                        $lengthOfShortestMatch = $length;
-                    }
+            // handle archives which do not have a TOC record for the directory itself
+            if (false === strpos('\\', $dirname) && false === strpos('/', $dirname)) {
+                $topLevelPaths[$dirname.'/'] = true;
+                if (\count($topLevelPaths) > 1) {
+                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
                 }
             }
         }
 
-        return $indexOfShortestMatch;
+        if ($topLevelPaths && false !== ($index = $zip->locateName(key($topLevelPaths).$filename)) && $zip->getFromIndex($index) !== false) {
+            return $index;
+        }
+
+        throw new \RuntimeException('No composer.json found either at the top level or within the topmost directory');
     }
 }

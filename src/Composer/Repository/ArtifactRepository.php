@@ -88,7 +88,12 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
     private function getComposerInformation(\SplFileInfo $file)
     {
-        $json = Zip::getComposerJson($file->getPathname());
+        $json = null;
+        try {
+            $json = Zip::getComposerJson($file->getPathname());
+        } catch (\Exception $exception) {
+            $this->io->write('Failed loading package '.$file->getPathname().': '.$exception->getMessage(), false, IOInterface::VERBOSE);
+        }
 
         if (null === $json) {
             return false;
