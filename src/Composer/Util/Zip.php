@@ -66,8 +66,9 @@ class Zip
      *
      * @param \ZipArchive $zip
      * @param string      $filename
+     * @throws \RuntimeException
      *
-     * @return bool|int
+     * @return int
      */
     private static function locateFile(\ZipArchive $zip, $filename)
     {
@@ -85,8 +86,7 @@ class Zip
             if ($dirname === '.') {
                 $topLevelPaths[$name] = true;
                 if (\count($topLevelPaths) > 1) {
-                    // archive can only contain one top level directory
-                    return false;
+                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
                 }
                 continue;
             }
@@ -95,8 +95,7 @@ class Zip
             if (false === strpos('\\', $dirname) && false === strpos('/', $dirname)) {
                 $topLevelPaths[$dirname.'/'] = true;
                 if (\count($topLevelPaths) > 1) {
-                    // archive can only contain one top level directory
-                    return false;
+                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
                 }
             }
         }
@@ -105,7 +104,6 @@ class Zip
             return $index;
         }
 
-        // no composer.json found either at the top level or within the topmost directory
-        return false;
+        throw new \RuntimeException('No composer.json found either at the top level or within the topmost directory');
     }
 }

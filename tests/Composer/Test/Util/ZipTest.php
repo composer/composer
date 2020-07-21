@@ -55,28 +55,30 @@ class ZipTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function testReturnsNullIfTheZipHasNoComposerJson()
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testThrowsExceptionIfTheZipHasNoComposerJson()
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
             return;
         }
 
-        $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/nojson.zip');
-
-        $this->assertNull($result);
+        Zip::getComposerJson(__DIR__.'/Fixtures/Zip/nojson.zip');
     }
 
-    public function testReturnsNullIfTheComposerJsonIsInASubSubfolder()
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testThrowsExceptionIfTheComposerJsonIsInASubSubfolder()
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
             return;
         }
 
-        $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/subfolders.zip');
-
-        $this->assertNull($result);
+        Zip::getComposerJson(__DIR__.'/Fixtures/Zip/subfolders.zip');
     }
 
     public function testReturnsComposerJsonInZipRoot()
@@ -99,10 +101,12 @@ class ZipTest extends TestCase
         }
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/folder.zip');
-
         $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
 
+    /**
+     * @expectedException \RuntimeException
+     */
     public function testMultipleTopLevelDirsIsInvalid()
     {
         if (!extension_loaded('zip')) {
@@ -110,9 +114,7 @@ class ZipTest extends TestCase
             return;
         }
 
-        $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/multiple.zip');
-
-        $this->assertNull($result);
+        Zip::getComposerJson(__DIR__.'/Fixtures/Zip/multiple.zip');
     }
 
     public function testReturnsComposerJsonFromFirstSubfolder()
@@ -125,5 +127,18 @@ class ZipTest extends TestCase
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/single-sub.zip');
 
         $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testThrowsExceptionIfMultipleComposerInSubFoldersWereFound()
+    {
+        if (!extension_loaded('zip')) {
+            $this->markTestSkipped('The PHP zip extension is not loaded.');
+            return;
+        }
+
+        Zip::getComposerJson(__DIR__.'/Fixtures/Zip/multiple_subfolders.zip');
     }
 }
