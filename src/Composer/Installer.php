@@ -1679,7 +1679,7 @@ class Installer
      * restrict the update operation to a few packages, all other packages
      * that are already installed will be kept at their current version
      *
-     * @deprecated use setAllowList instead
+     * @deprecated use setUpdateAllowList instead
      *
      * @param  array     $packages
      * @return Installer
