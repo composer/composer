@@ -247,6 +247,7 @@ class VersionSelectorTest extends TestCase
             array('0.1.3', false, 'stable', '^0.1.3'),
             array('0.0.3', false, 'stable', '^0.0.3'),
             array('0.0.3-alpha', false, 'alpha', '^0.0.3@alpha'),
+            array('0.1.2.3', false, 'stable', '^0.1.2.3'),
             // date-based versions are not touched at all
             array('v20121020', false, 'stable', 'v20121020'),
             array('v20121020.2', false, 'stable', 'v20121020.2'),
