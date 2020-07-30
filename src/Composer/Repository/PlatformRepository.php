@@ -14,14 +14,16 @@ namespace Composer\Repository;
 
 use Composer\Composer;
 use Composer\Package\CompletePackage;
+use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
+use Composer\Platform\HhvmDetector;
+use Composer\Platform\Runtime;
 use Composer\Plugin\PluginInterface;
-use Composer\Util\ProcessExecutor;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Util\Silencer;
-use Composer\Util\Platform;
+use Composer\Util\Version;
 use Composer\XdebugHandler\XdebugHandler;
-use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -30,7 +32,9 @@ class PlatformRepository extends ArrayRepository
 {
     const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-(?:plugin|runtime)-api)$}iD';
 
-    private static $hhvmVersion;
+    /**
+     * @var VersionParser
+     */
     private $versionParser;
 
     /**
@@ -42,11 +46,13 @@ class PlatformRepository extends ArrayRepository
      */
     private $overrides = array();
 
-    private $process;
+    private $runtime;
+    private $hhvmDetector;
 
-    public function __construct(array $packages = array(), array $overrides = array(), ProcessExecutor $process = null)
+    public function __construct(array $packages = array(), array $overrides = array(), Runtime $runtime = null, HhvmDetector $hhvmDetector = null)
     {
-        $this->process = $process;
+        $this->runtime = $runtime ?: new Runtime();
+        $this->hhvmDetector = $hhvmDetector ?: new HhvmDetector();
         foreach ($overrides as $name => $version) {
             $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
         }
@@ -88,10 +94,10 @@ class PlatformRepository extends ArrayRepository
         $this->addPackage($composerRuntimeApi);
 
         try {
-            $prettyVersion = PHP_VERSION;
+            $prettyVersion = $this->runtime->getConstant('PHP_VERSION');
             $version = $this->versionParser->normalize($prettyVersion);
         } catch (\UnexpectedValueException $e) {
-            $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', PHP_VERSION);
+            $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', $this->runtime->getConstant('PHP_VERSION'));
             $version = $this->versionParser->normalize($prettyVersion);
         }
 
@@ -99,19 +105,19 @@ class PlatformRepository extends ArrayRepository
         $php->setDescription('The PHP interpreter');
         $this->addPackage($php);
 
-        if (PHP_DEBUG) {
+        if ($this->runtime->getConstant('PHP_DEBUG')) {
             $phpdebug = new CompletePackage('php-debug', $version, $prettyVersion);
             $phpdebug->setDescription('The PHP interpreter, with debugging symbols');
             $this->addPackage($phpdebug);
         }
 
-        if (defined('PHP_ZTS') && PHP_ZTS) {
+        if ($this->runtime->hasConstant('PHP_ZTS') && $this->runtime->getConstant('PHP_ZTS')) {
             $phpzts = new CompletePackage('php-zts', $version, $prettyVersion);
             $phpzts->setDescription('The PHP interpreter, with Zend Thread Safety');
             $this->addPackage($phpzts);
         }
 
-        if (PHP_INT_SIZE === 8) {
+        if ($this->runtime->getConstant('PHP_INT_SIZE') === 8) {
             $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
             $php64->setDescription('The PHP interpreter, 64bit');
             $this->addPackage($php64);
@@ -119,13 +125,13 @@ class PlatformRepository extends ArrayRepository
 
         // The AF_INET6 constant is only defined if ext-sockets is available but
         // IPv6 support might still be available.
-        if (defined('AF_INET6') || Silencer::call('inet_pton', '::') !== false) {
+        if ($this->runtime->hasConstant('AF_INET6') || Silencer::call(array($this->runtime, 'invoke'), array('inet_pton', '::')) !== false) {
             $phpIpv6 = new CompletePackage('php-ipv6', $version, $prettyVersion);
             $phpIpv6->setDescription('The PHP interpreter, with IPv6 support');
             $this->addPackage($phpIpv6);
         }
 
-        $loadedExtensions = get_loaded_extensions();
+        $loadedExtensions = $this->runtime->getExtensions();
 
         // Extensions scanning
         foreach ($loadedExtensions as $name) {
@@ -133,9 +139,7 @@ class PlatformRepository extends ArrayRepository
                 continue;
             }
 
-            $reflExt = new \ReflectionExtension($name);
-            $prettyVersion = $reflExt->getVersion();
-            $this->addExtension($name, $prettyVersion);
+            $this->addExtension($name, $this->runtime->getExtensionVersion($name));
         }
 
         // Check for Xdebug in a restarted process
@@ -147,112 +151,317 @@ class PlatformRepository extends ArrayRepository
         // Doing it this way to know that functions or constants exist before
         // relying on them.
         foreach ($loadedExtensions as $name) {
-            $prettyVersion = null;
-            $description = 'The '.$name.' PHP library';
             switch ($name) {
+                case 'amqp':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    // librabbitmq version => 0.9.0
+                    if (preg_match('/^librabbitmq version => (?<version>.+)$/m', $info, $librabbitmqMatches)) {
+                        $this->addLibrary($name.'-librabbitmq', $librabbitmqMatches['version'], 'AMQP librabbitmq version');
+                    }
+
+                    // AMQP protocol version => 0-9-1
+                    if (preg_match('/^AMQP protocol version => (?<version>.+)$/m', $info, $protocolMatches)) {
+                        $this->addLibrary($name.'-protocol', str_replace('-', '.', $protocolMatches['version']), 'AMQP protocol version');
+                    }
+                    break;
+
+                case 'bz2':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    // BZip2 Version => 1.0.6, 6-Sept-2010
+                    if (preg_match('/^BZip2 Version => (?<version>.*),/m', $info, $matches)) {
+                        $this->addLibrary($name, $matches['version']);
+                    }
+                    break;
+
                 case 'curl':
-                    $curlVersion = curl_version();
-                    $prettyVersion = $curlVersion['version'];
+                    $curlVersion = $this->runtime->invoke('curl_version');
+                    $this->addLibrary($name, $curlVersion['version']);
+
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    // SSL Version => OpenSSL/1.0.1t
+                    if (preg_match('{^SSL Version => (?<library>[^/]+)/(?<version>.+)$}m', $info, $sslMatches)) {
+                        $library = strtolower($sslMatches['library']);
+                        if ($library === 'openssl') {
+                            $parsedVersion = Version::parseOpenssl($sslMatches['version'], $isFips);
+                            $this->addLibrary($name.'-openssl'.($isFips ? '-fips': ''), $parsedVersion, 'curl OpenSSL version ('.$parsedVersion.')', array(), $isFips ? array('curl-openssl'): array());
+                        } else {
+                            $this->addLibrary($name.'-'.$library, $sslMatches['version'], 'curl '.$library.' version ('.$sslMatches['version'].')', array('curl-openssl'));
+                        }
+                    }
+
+                    // libSSH Version => libssh2/1.4.3
+                    if (preg_match('{^libSSH Version => (?<library>[^/]+)/(?<version>.+?)(?:/.*)?$}m', $info, $sshMatches)) {
+                        $this->addLibrary($name.'-'.strtolower($sshMatches['library']), $sshMatches['version'], 'curl '.$sshMatches['library'].' version');
+                    }
+
+                    // ZLib Version => 1.2.8
+                    if (preg_match('{^ZLib Version => (?<version>.+)$}m', $info, $zlibMatches)) {
+                        $this->addLibrary($name.'-zlib', $zlibMatches['version'], 'curl zlib version');
+                    }
                     break;
 
-                case 'iconv':
-                    $prettyVersion = ICONV_VERSION;
+                case 'date':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    // timelib version => 2018.03
+                    if (preg_match('/^timelib version => (?<version>.+)$/m', $info, $timelibMatches)) {
+                        $this->addLibrary($name.'-timelib', $timelibMatches['version'], 'date timelib version');
+                    }
+
+                    // Timezone Database => internal
+                    if (preg_match('/^Timezone Database => (?<source>internal|external)$/m', $info, $zoneinfoSourceMatches)) {
+                        $external = $zoneinfoSourceMatches['source'] === 'external';
+                        if (preg_match('/^"Olson" Timezone Database Version => (?<version>.+?)(\.system)?$/m', $info, $zoneinfoMatches)) {
+                            // If the timezonedb is provided by ext/timezonedb, register that version as a replacement
+                            if ($external && in_array('timezonedb', $loadedExtensions, true)) {
+                                $this->addLibrary('timezonedb-zoneinfo', $zoneinfoMatches['version'], 'zoneinfo ("Olson") database for date (replaced by timezonedb)', array($name.'-zoneinfo'));
+                            } else {
+                                $this->addLibrary($name.'-zoneinfo', $zoneinfoMatches['version'], 'zoneinfo ("Olson") database for date');
+                            }
+                        }
+                    }
                     break;
 
-                case 'intl':
-                    $name = 'ICU';
-                    if (defined('INTL_ICU_VERSION')) {
-                        $prettyVersion = INTL_ICU_VERSION;
-                    } else {
-                        $reflector = new \ReflectionExtension('intl');
+                case 'fileinfo':
+                    $info = $this->runtime->getExtensionInfo($name);
 
-                        ob_start();
-                        $reflector->info();
-                        $output = ob_get_clean();
+                    // libmagic => 537
+                    if (preg_match('/^^libmagic => (?<version>.+)$/m', $info, $magicMatches)) {
+                        $this->addLibrary($name.'-libmagic', $magicMatches['version'], 'fileinfo libmagic version');
+                    }
+                    break;
 
-                        preg_match('/^ICU version => (.*)$/m', $output, $matches);
-                        $prettyVersion = $matches[1];
+                case 'gd':
+                    $this->addLibrary($name, $this->runtime->getConstant('GD_VERSION'));
+
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^libJPEG Version => (?<version>.+?)(?: compatible)?$/m', $info, $libjpegMatches)) {
+                        $this->addLibrary($name.'-libjpeg', Version::parseLibjpeg($libjpegMatches['version']), 'libjpeg version for gd');
+                    }
+
+                    if (preg_match('/^libPNG Version => (?<version>.+)$/m', $info, $libpngMatches)) {
+                        $this->addLibrary($name.'-libpng', $libpngMatches['version'], 'libpng version for gd');
+                    }
+
+                    if (preg_match('/^FreeType Version => (?<version>.+)$/m', $info, $freetypeMatches)) {
+                        $this->addLibrary($name.'-freetype', $freetypeMatches['version'], 'freetype version for gd');
+                    }
+
+                    if (preg_match('/^libXpm Version => (?<versionId>\d+)$/m', $info, $libxpmMatches)) {
+                        $this->addLibrary($name.'-libxpm', Version::convertLibxpmVersionId($libxpmMatches['versionId']), 'libxpm version for gd');
                     }
 
                     break;
 
+                case 'gmp':
+                    $this->addLibrary($name, $this->runtime->getConstant('GMP_VERSION'));
+                    break;
+
+                case 'iconv':
+                    $this->addLibrary($name, $this->runtime->getConstant('ICONV_VERSION'));
+                    break;
+
+                case 'intl':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    $description = 'The ICU unicode and globalization support library';
+                    // Truthy check is for testing only so we can make the condition fail
+                    if ($this->runtime->hasConstant('INTL_ICU_VERSION')) {
+                        $this->addLibrary('icu', $this->runtime->getConstant('INTL_ICU_VERSION'), $description);
+                    } elseif (preg_match('/^ICU version => (?<version>.+)$/m', $info, $matches)) {
+                        $this->addLibrary('icu', $matches['version'], $description);
+                    }
+
+                    // ICU TZData version => 2019c
+                    if (preg_match('/^ICU TZData version => (?<version>.*)$/m', $info, $zoneinfoMatches)) {
+                        $this->addLibrary('icu-zoneinfo', Version::parseZoneinfoVersion($zoneinfoMatches['version']), 'zoneinfo ("Olson") database for icu');
+                    }
+
+                    # Add a separate version for the CLDR library version
+                    if ($this->runtime->hasClass('ResourceBundle')) {
+                        $cldrVersion = $this->runtime->invoke(array('ResourceBundle', 'create'), array('root', 'ICUDATA', false))->get('Version');
+                        $this->addLibrary('icu-cldr', $cldrVersion, 'ICU CLDR project version');
+                    }
+
+                    if ($this->runtime->hasClass('IntlChar')) {
+                        $this->addLibrary('icu-unicode', implode('.', array_slice($this->runtime->invoke(array('IntlChar', 'getUnicodeVersion')), 0, 3)), 'ICU unicode version');
+                    }
+                    break;
+
                 case 'imagick':
-                    $imagick = new \Imagick();
-                    $imageMagickVersion = $imagick->getVersion();
+                    $imageMagickVersion = $this->runtime->construct('Imagick')->getVersion();
                     // 6.x: ImageMagick 6.2.9 08/24/06 Q16 http://www.imagemagick.org
                     // 7.x: ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org
-                    preg_match('/^ImageMagick ([\d.]+)(?:-(\d+))?/', $imageMagickVersion['versionString'], $matches);
-                    if (isset($matches[2])) {
-                        $prettyVersion = "{$matches[1]}.{$matches[2]}";
-                    } else {
-                        $prettyVersion = $matches[1];
+                    preg_match('/^ImageMagick (?<version>[\d.]+)(?:-(?<patch>\d+))?/', $imageMagickVersion['versionString'], $matches);
+                    $version = $matches['version'];
+                    if (isset($matches['patch'])) {
+                        $version .= '.'.$matches['patch'];
+                    }
+
+                    $this->addLibrary($name.'-imagemagick', $version, null, array('imagick'));
+                    break;
+
+                case 'ldap':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^Vendor Version => (?<versionId>\d+)$/m', $info, $matches) && preg_match('/^Vendor Name => (?<vendor>.+)$/m', $info, $vendorMatches)) {
+                        $this->addLibrary($name.'-'.strtolower($vendorMatches['vendor']), Version::convertOpenldapVersionId($matches['versionId']), $vendorMatches['vendor'].' version of ldap');
                     }
                     break;
 
                 case 'libxml':
-                    $prettyVersion = LIBXML_DOTTED_VERSION;
+                    // ext/dom, ext/simplexml, ext/xmlreader and ext/xmlwriter use the same libxml as the ext/libxml
+                    $libxmlProvides = array_map(function($extension) {
+                        return $extension . '-libxml';
+                    }, array_intersect($loadedExtensions, array('dom', 'simplexml', 'xml', 'xmlreader', 'xmlwriter')));
+                    $this->addLibrary($name, $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version', array(), $libxmlProvides);
+
+                    break;
+
+                case 'mbstring':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    // libmbfl version => 1.3.2
+                    if (preg_match('/^libmbfl version => (?<version>.+)$/m', $info, $libmbflMatches)) {
+                        $this->addLibrary($name.'-libmbfl', $libmbflMatches['version'], 'mbstring libmbfl version');
+                    }
+
+                    if ($this->runtime->hasConstant('MB_ONIGURUMA_VERSION')) {
+                        $this->addLibrary($name.'-oniguruma', $this->runtime->getConstant('MB_ONIGURUMA_VERSION'), 'mbstring oniguruma version');
+
+                    // Multibyte regex (oniguruma) version => 5.9.5
+                    // oniguruma version => 6.9.0
+                    } elseif (preg_match('/^(?:oniguruma|Multibyte regex \(oniguruma\)) version => (?<version>.+)$/m', $info, $onigurumaMatches)) {
+                        $this->addLibrary($name.'-oniguruma', $onigurumaMatches['version'], 'mbstring oniguruma version');
+                    }
+
+                    break;
+
+                case 'memcached':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    // libmemcached version => 1.0.18
+                    if (preg_match('/^libmemcached version => (?<version>.+)$/m', $info, $matches)) {
+                        $this->addLibrary($name.'-libmemcached', $matches['version'], 'libmemcached version');
+                    }
                     break;
 
                 case 'openssl':
-                    $prettyVersion = preg_replace_callback('{^(?:OpenSSL|LibreSSL)?\s*([0-9.]+)([a-z]*).*}i', function ($match) {
-                        if (empty($match[2])) {
-                            return $match[1];
-                        }
-
-                        // OpenSSL versions add another letter when they reach Z.
-                        // e.g. OpenSSL 0.9.8zh 3 Dec 2015
-
-                        if (!preg_match('{^z*[a-z]$}', $match[2])) {
-                            // 0.9.8abc is garbage
-                            return 0;
-                        }
-
-                        $len = strlen($match[2]);
-                        $patchVersion = ($len - 1) * 26; // All Z
-                        $patchVersion += ord($match[2][$len - 1]) - 96;
-
-                        return $match[1].'.'.$patchVersion;
-                    }, OPENSSL_VERSION_TEXT);
-
-                    $description = OPENSSL_VERSION_TEXT;
+                    // OpenSSL 1.1.1g  21 Apr 2020
+                    if (preg_match('{^(?:OpenSSL|LibreSSL)?\s*(?<version>\S+)}i', $this->runtime->getConstant('OPENSSL_VERSION_TEXT'), $matches)) {
+                        $parsedVersion = Version::parseOpenssl($matches['version'], $isFips);
+                        $this->addLibrary($name.($isFips ? '-fips' : ''), $parsedVersion, $this->runtime->getConstant('OPENSSL_VERSION_TEXT'), array(), $isFips ? array($name) : array());
+                    }
                     break;
 
                 case 'pcre':
-                    $prettyVersion = preg_replace('{^(\S+).*}', '$1', PCRE_VERSION);
+                    $this->addLibrary($name, preg_replace('{^(\S+).*}', '$1', $this->runtime->getConstant('PCRE_VERSION')));
+
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    // PCRE Unicode Version => 12.1.0
+                    if (preg_match('/^PCRE Unicode Version => (?<version>.+)$/m', $info, $pcreUnicodeMatches)) {
+                        $this->addLibrary($name.'-unicode', $pcreUnicodeMatches['version'], 'PCRE Unicode version support');
+                    }
+
                     break;
 
-                case 'uuid':
-                    $prettyVersion = phpversion('uuid');
+                case 'mysqlnd':
+                case 'pdo_mysql':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^(?:Client API version|Version) => mysqlnd (?<version>.+?) /mi', $info, $matches)) {
+                        $this->addLibrary($name.'-mysqlnd', $matches['version'], 'mysqlnd library version for '.$name);
+                    }
+                    break;
+
+                case 'mongodb':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^libmongoc bundled version => (?<version>.+)$/m', $info, $libmongocMatches)) {
+                        $this->addLibrary($name.'-libmongoc', $libmongocMatches['version'], 'libmongoc version of mongodb');
+                    }
+
+                    if (preg_match('/^libbson bundled version => (?<version>.+)$/m', $info, $libbsonMatches)) {
+                        $this->addLibrary($name.'-libbson', $libbsonMatches['version'], 'libbson version of mongodb');
+                    }
+                    break;
+
+                case 'pgsql':
+                case 'pdo_pgsql':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^PostgreSQL\(libpq\) Version => (?<version>.*)$/m', $info, $matches)) {
+                        $this->addLibrary($name.'-libpq', $matches['version'], 'libpq for '.$name);
+                    }
+                    break;
+
+                case 'libsodium':
+                case 'sodium':
+                    $this->addLibrary('libsodium', $this->runtime->getConstant('SODIUM_LIBRARY_VERSION'));
+                    break;
+
+                case 'sqlite3':
+                case 'pdo_sqlite':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^SQLite Library => (?<version>.+)$/m', $info, $matches)) {
+                        $this->addLibrary($name.'-sqlite', $matches['version']);
+                    }
+                    break;
+
+                case 'ssh2':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^libssh2 version => (?<version>.+)$/m', $info, $matches)) {
+                        $this->addLibrary($name.'-libssh2', $matches['version']);
+                    }
                     break;
 
                 case 'xsl':
-                    $prettyVersion = LIBXSLT_DOTTED_VERSION;
+                    $this->addLibrary('libxslt', $this->runtime->getConstant('LIBXSLT_DOTTED_VERSION'), null, array('xsl'));
+
+                    $info = $this->runtime->getExtensionInfo('xsl');
+                    if (preg_match('/^libxslt compiled against libxml Version => (?<version>.+)$/m', $info, $matches)) {
+                        $this->addLibrary('libxslt-libxml', $matches['version'], 'libxml version libxslt is compiled against');
+                    }
+                    break;
+
+                case 'yaml':
+                    $info = $this->runtime->getExtensionInfo('yaml');
+
+                    if (preg_match('/^LibYAML Version => (?<version>.+)$/m', $info, $matches)) {
+                        $this->addLibrary($name.'-libyaml', $matches['version'], 'libyaml version of yaml');
+                    }
                     break;
 
                 case 'zip':
-                    if (defined('ZipArchive::LIBZIP_VERSION')) {
-                        $prettyVersion = \ZipArchive::LIBZIP_VERSION;
-                    } else {
-                        continue 2;
+                    if ($this->runtime->hasConstant('LIBZIP_VERSION', 'ZipArchive')) {
+                        $this->addLibrary($name.'-libzip', $this->runtime->getConstant('LIBZIP_VERSION','ZipArchive'), null, array('zip'));
                     }
+                    break;
+
+                case 'zlib':
+                    if ($this->runtime->hasConstant('ZLIB_VERSION')) {
+                        $this->addLibrary($name, $this->runtime->getConstant('ZLIB_VERSION'));
+
+                    // Linked Version => 1.2.8
+                    } elseif (preg_match('/^Linked Version => (?<version>.+)$/m', $this->runtime->getExtensionInfo($name), $matches)) {
+                        $this->addLibrary($name, $matches['version']);
+                    }
+                    break;
 
                 default:
-                    // None handled extensions have no special cases, skip
-                    continue 2;
+                    break;
             }
-
-            try {
-                $version = $this->versionParser->normalize($prettyVersion);
-            } catch (\UnexpectedValueException $e) {
-                continue;
-            }
-
-            $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
-            $lib->setDescription($description);
-            $this->addPackage($lib);
         }
 
-        if ($hhvmVersion = self::getHHVMVersion($this->process)) {
+        $hhvmVersion = $this->hhvmDetector->getVersion();
+        if ($hhvmVersion) {
             try {
                 $prettyVersion = $hhvmVersion;
                 $version = $this->versionParser->normalize($prettyVersion);
@@ -337,6 +546,11 @@ class PlatformRepository extends ArrayRepository
         $packageName = $this->buildPackageName($name);
         $ext = new CompletePackage($packageName, $version, $prettyVersion);
         $ext->setDescription('The '.$name.' PHP extension'.$extraDescription);
+
+        if ($name === 'uuid') {
+            $ext->setReplaces(array(new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version))));
+        }
+
         $this->addPackage($ext);
     }
 
@@ -349,28 +563,34 @@ class PlatformRepository extends ArrayRepository
         return 'ext-' . str_replace(' ', '-', $name);
     }
 
-    private static function getHHVMVersion(ProcessExecutor $process = null)
+    /**
+     * @param string      $name
+     * @param string      $prettyVersion
+     * @param string|null $description
+     * @param string[]    $replaces
+     * @param string[]    $provides
+     */
+    private function addLibrary($name, $prettyVersion, $description = null, array $replaces = array(), array $provides = array())
     {
-        if (null !== self::$hhvmVersion) {
-            return self::$hhvmVersion ?: null;
+        try {
+            $version = $this->versionParser->normalize($prettyVersion);
+        } catch (\UnexpectedValueException $e) {
+            return;
         }
 
-        self::$hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;
-        if (self::$hhvmVersion === null && !Platform::isWindows()) {
-            self::$hhvmVersion = false;
-            $finder = new ExecutableFinder();
-            $hhvmPath = $finder->find('hhvm');
-            if ($hhvmPath !== null) {
-                $process = $process ?: new ProcessExecutor();
-                $exitCode = $process->execute(
-                    ProcessExecutor::escape($hhvmPath).
-                    ' --php -d hhvm.jit=0 -r "echo HHVM_VERSION;" 2>/dev/null',
-                    self::$hhvmVersion
-                );
-                if ($exitCode !== 0) {
-                    self::$hhvmVersion = false;
-                }
-            }
+        if ($description === null) {
+            $description = 'The '.$name.' library';
         }
+
+        $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
+        $lib->setDescription($description);
+
+        $links = function ($alias) use ($name, $version) {
+            return new Link('lib-'.$name, 'lib-'.$alias, new Constraint('=', $version));
+        };
+        $lib->setReplaces(array_map($links, $replaces));
+        $lib->setProvides(array_map($links, $provides));
+
+        $this->addPackage($lib);
     }
 }
