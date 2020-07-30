@@ -154,9 +154,11 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'intl':
-                    # Add a seperate version for the CLDR library version
-                    $cldrVersion = \ResourceBundle::create('root', 'ICUDATA-curr', false)->get('Version');
-                    $this->addLibrary('cldr', 'The unicode CLDR project', $cldrVersion);
+                    if (class_exists('ResourceBundle', false)) {
+                        # Add a seperate version for the CLDR library version
+                        $cldrVersion = \ResourceBundle::create('root', 'ICUDATA-curr', false)->get('Version');
+                        $this->addLibrary('cldr', 'The unicode CLDR project', $cldrVersion);
+                    }
 
                     $name = 'icu';
                     $description = 'The ICU unicode and globalization support library';

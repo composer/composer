@@ -69,10 +69,13 @@ class PlatformRepositoryTest extends TestCase {
         $this->assertSame('4.0.1.0-dev', $package->getVersion());
     }
 
-    public function testICULibraryVersion()
-    {
+    public function testICULibraryVersion() {
         if (!defined('INTL_ICU_VERSION')) {
             $this->markTestSkipped('Test only work with ext-intl present');
+        }
+
+        if (!class_exists('ResourceBundle', false)) {
+            $this->markTestSkipped('Test only work with ResourceBundle class present');
         }
 
         $platformRepository = new PlatformRepository();
