@@ -26,6 +26,7 @@ class Versions
     private $rfs;
     private $config;
     private $channel;
+    private $versionsData;
 
     public function __construct(Config $config, RemoteFilesystem $rfs)
     {
@@ -63,13 +64,7 @@ class Versions
 
     public function getLatest($channel = null)
     {
-        if ($this->config->get('disable-tls') === true) {
-            $protocol = 'http';
-        } else {
-            $protocol = 'https';
-        }
-
-        $versions = JsonFile::parseJson($this->rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/versions', false));
+        $versions = $this->getVersionsData();
 
         foreach ($versions[$channel ?: $this->getChannel()] as $version) {
             if ($version['min-php'] <= PHP_VERSION_ID) {
@@ -78,5 +73,20 @@ class Versions
         }
 
         throw new \LogicException('There is no version of Composer available for your PHP version ('.PHP_VERSION.')');
+    }
+
+    private function getVersionsData()
+    {
+        if (!$this->versionsData) {
+            if ($this->config->get('disable-tls') === true) {
+                $protocol = 'http';
+            } else {
+                $protocol = 'https';
+            }
+
+            $this->versionsData = JsonFile::parseJson($this->rfs->getContents('getcomposer.org', $protocol . '://getcomposer.org/versions', false));
+        }
+
+        return $this->versionsData;
     }
 }
