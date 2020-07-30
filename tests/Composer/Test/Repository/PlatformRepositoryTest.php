@@ -12,7 +12,6 @@
 
 namespace Composer\Test\Repository;
 
-use Composer\Package\Package;
 use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
 use Composer\Util\Platform;
@@ -67,39 +66,5 @@ class PlatformRepositoryTest extends TestCase {
         $package = $repository->findPackage('hhvm', '*');
         $this->assertNotNull($package, 'failed to find HHVM package');
         $this->assertSame('4.0.1.0-dev', $package->getVersion());
-    }
-
-    public function testICULibraryVersion() {
-        if (!defined('INTL_ICU_VERSION')) {
-            $this->markTestSkipped('Test only work with ext-intl present');
-        }
-
-        if (!class_exists('ResourceBundle', false)) {
-            $this->markTestSkipped('Test only work with ResourceBundle class present');
-        }
-
-        $platformRepository = new PlatformRepository();
-        $packages = $platformRepository->getPackages();
-
-        /** @var Package $icuPackage */
-        $icuPackage = null;
-        /** @var Package $cldrPackage */
-        $cldrPackage = null;
-
-        foreach ($packages as $package) {
-            if ($package->getName() === 'lib-icu') {
-                $icuPackage = $package;
-            }
-
-            if ($package->getName() === 'lib-cldr') {
-                $cldrPackage = $package;
-            }
-        }
-
-        self::assertNotNull($icuPackage, 'Expected to find lib-icu in packages');
-        self::assertNotNull($cldrPackage, 'Expected to find lib-cldr in packages');
-
-        self::assertSame(3, substr_count($icuPackage->getVersion(), '.'), 'Expected to find real ICU version');
-        self::assertSame(3, substr_count($cldrPackage->getVersion(), '.'), 'Expected to find real CLDR version');
     }
 }
