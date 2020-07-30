@@ -72,7 +72,7 @@ class Versions
             }
         }
 
-        throw new \LogicException('There is no version of Composer available for your PHP version ('.PHP_VERSION.')');
+        throw new \UnexpectedValueException('There is no version of Composer available for your PHP version ('.PHP_VERSION.')');
     }
 
     private function getVersionsData()

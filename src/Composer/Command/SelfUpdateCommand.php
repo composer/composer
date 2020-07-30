@@ -135,8 +135,36 @@ EOT
 
         $latest = $versionsUtil->getLatest();
         $latestStable = $versionsUtil->getLatest('stable');
+        try {
+            $latestPreview = $versionsUtil->getLatest('preview');
+        } catch (\UnexpectedValueException $e) {
+            $latestPreview = $latestStable;
+        }
         $latestVersion = $latest['version'];
         $updateVersion = $input->getArgument('version') ?: $latestVersion;
+        $currentMajorVersion = preg_replace('{^(\d+).*}', '$1', Composer::getVersion());
+        $updateMajorVersion = preg_replace('{^(\d+).*}', '$1', $updateVersion);
+        $previewMajorVersion = preg_replace('{^(\d+).*}', '$1', $latestPreview['version']);
+
+        if ($versionsUtil->getChannel() === 'stable' && !$input->getArgument('version')) {
+            // if requesting stable channel and no specific version, avoid automatically upgrading to the next major
+            // simply output a warning that the next major stable is available and let users upgrade to it manually
+            if ($currentMajorVersion < $updateMajorVersion) {
+                $skippedVersion = $updateVersion;
+
+                $versionsUtil->setChannel($currentMajorVersion);
+
+                $latest = $versionsUtil->getLatest();
+                $latestStable = $versionsUtil->getLatest('stable');
+                $latestVersion = $latest['version'];
+                $updateVersion = $latestVersion;
+
+                $io->writeError('<warning>A new stable major version of Composer is available ('.$skippedVersion.'), run "composer self-update --'.$updateMajorVersion.'" to update to it. See also https://github.com/composer/composer/releases for changelogs.</warning>');
+            } elseif ($currentMajorVersion < $previewMajorVersion) {
+                // promote next major version if available in preview
+                $io->writeError('<warning>A preview release of the next major version of Composer is available ('.$latestPreview['version'].'), run "composer self-update --preview" to give it a try. See also https://github.com/composer/composer/releases for changelogs.</warning>');
+            }
+        }
 
         if ($requestedChannel && is_numeric($requestedChannel) && substr($latestStable['version'], 0, 1) !== $requestedChannel) {
             $io->writeError('<warning>Warning: You forced the install of '.$latestVersion.' via --'.$requestedChannel.', but '.$latestStable['version'].' is the latest stable version. Updating to it via composer self-update --stable is recommended.</warning>');
