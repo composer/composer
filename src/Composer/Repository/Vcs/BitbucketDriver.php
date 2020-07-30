@@ -119,10 +119,14 @@ abstract class BitbucketDriver extends VcsDriver
 
         if (!isset($this->infoCache[$identifier])) {
             if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
-                return $this->infoCache[$identifier] = JsonFile::parseJson($res);
-            }
+                $composer = JsonFile::parseJson($res);
+            } else {
+                $composer = $this->getBaseComposerInformation($identifier);
 
-            $composer = $this->getBaseComposerInformation($identifier);
+                if ($this->shouldCache($identifier)) {
+                    $this->cache->write($identifier, json_encode($composer));
+                }
+            }
 
             if ($composer) {
                 // specials for bitbucket
@@ -173,10 +177,6 @@ abstract class BitbucketDriver extends VcsDriver
             }
 
             $this->infoCache[$identifier] = $composer;
-
-            if ($this->shouldCache($identifier)) {
-                $this->cache->write($identifier, json_encode($composer));
-            }
         }
 
         return $this->infoCache[$identifier];
