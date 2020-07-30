@@ -154,7 +154,14 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'intl':
-                    $name = 'ICU';
+                    if (class_exists('ResourceBundle', false)) {
+                        # Add a seperate version for the CLDR library version
+                        $cldrVersion = \ResourceBundle::create('root', 'ICUDATA-curr', false)->get('Version');
+                        $this->addLibrary('cldr', 'The unicode CLDR project', $cldrVersion);
+                    }
+
+                    $name = 'icu';
+                    $description = 'The ICU unicode and globalization support library';
                     if (defined('INTL_ICU_VERSION')) {
                         $prettyVersion = INTL_ICU_VERSION;
                     } else {
@@ -228,15 +235,7 @@ class PlatformRepository extends ArrayRepository
                     continue 2;
             }
 
-            try {
-                $version = $this->versionParser->normalize($prettyVersion);
-            } catch (\UnexpectedValueException $e) {
-                continue;
-            }
-
-            $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
-            $lib->setDescription($description);
-            $this->addPackage($lib);
+            $this->addLibrary($name, $description, $prettyVersion);
         }
 
         $hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;
@@ -345,5 +344,23 @@ class PlatformRepository extends ArrayRepository
     private function buildPackageName($name)
     {
         return 'ext-' . str_replace(' ', '-', $name);
+    }
+
+    /**
+     * @param string $name
+     * @param string $description
+     * @param string $prettyVersion
+     */
+    private function addLibrary($name, $description, $prettyVersion)
+    {
+        try {
+            $version = $this->versionParser->normalize($prettyVersion);
+        } catch (\UnexpectedValueException $e) {
+            return;
+        }
+
+        $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
+        $lib->setDescription($description);
+        $this->addPackage($lib);
     }
 }
