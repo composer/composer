@@ -146,10 +146,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         if (!empty($this->cachedPackages[$target->getId()][$ref])) {
             $msg = "Checking out ".$this->getShortHash($ref).' from cache';
-            $command = 'git rev-parse --quiet --verify %ref% || (git remote set-url composer %cachePath% && git fetch composer && git fetch --tags composer); git remote set-url composer %sanitizedUrl%';
+            $command = '(git rev-parse --quiet --verify %ref% || (git remote set-url composer %cachePath% && git fetch composer && git fetch --tags composer)) && git remote set-url composer %sanitizedUrl%';
         } else {
             $msg = "Checking out ".$this->getShortHash($ref);
-            $command = 'git remote set-url composer %url% && git rev-parse --quiet --verify %ref% || (git fetch composer && git fetch --tags composer); git remote set-url composer %sanitizedUrl%';
+            $command = '(git remote set-url composer %url% && git rev-parse --quiet --verify %ref% || (git fetch composer && git fetch --tags composer)) && git remote set-url composer %sanitizedUrl%';
             if (getenv('COMPOSER_DISABLE_NETWORK')) {
                 throw new \RuntimeException('The required git reference for '.$target->getName().' is not in cache and network is disabled, aborting');
             }
