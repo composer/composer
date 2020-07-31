@@ -14,9 +14,11 @@ namespace Composer\Repository;
 
 use Composer\Composer;
 use Composer\Package\CompletePackage;
+use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginInterface;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Silencer;
 use Composer\Util\Platform;
@@ -331,17 +333,14 @@ class PlatformRepository extends ArrayRepository
                     $imageMagickVersion = $imagick->getVersion();
                     // 6.x: ImageMagick 6.2.9 08/24/06 Q16 http://www.imagemagick.org
                     // 7.x: ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org
-                    preg_match('/^ImageMagick ([\d\.]+)(?:-(\d+))?/', $imageMagickVersion['versionString'], $matches);
+                    preg_match('/^ImageMagick ([\d.]+)(?:-(\d+))?/', $imageMagickVersion['versionString'], $matches);
                     if (isset($matches[2])) {
                         $version = "{$matches[1]}.{$matches[2]}";
                     } else {
                         $version = $matches[1];
                     }
 
-                    $this->addLibrary('imagick-imagemagick', $version);
-
-                    // Alias for backwards compatibility
-                    $this->addLibrary('imagick', $version);
+                    $this->addLibrary('imagick-imagemagick', $version, null, array('imagick'));
                     break;
 
                 case 'libxml':
@@ -406,9 +405,7 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'xsl':
-                    $this->addLibrary('libxslt', LIBXSLT_DOTTED_VERSION);
-                    // Alias for backwards compatibility
-                    $this->addLibrary('xsl', LIBXSLT_DOTTED_VERSION);
+                    $this->addLibrary('libxslt', LIBXSLT_DOTTED_VERSION, null, array('xsl'));
                     break;
 
                 case 'zip':
@@ -534,8 +531,9 @@ class PlatformRepository extends ArrayRepository
      * @param string      $name
      * @param string      $prettyVersion
      * @param string|null $description
+     * @param string[]    $compatibilityAliases
      */
-    private function addLibrary($name, $prettyVersion, $description = null)
+    private function addLibrary($name, $prettyVersion, $description = null, array $compatibilityAliases = array())
     {
         try {
             $version = $this->versionParser->normalize($prettyVersion);
@@ -549,6 +547,13 @@ class PlatformRepository extends ArrayRepository
 
         $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
         $lib->setDescription($description);
+
+        $replaces = array();
+        foreach ($compatibilityAliases as $alias) {
+            $replaces[] = new Link('lib-'.$name, 'lib-'.$alias, new Constraint('=', $version));
+        }
+        $lib->setReplaces($replaces);
+
         $this->addPackage($lib);
     }
 

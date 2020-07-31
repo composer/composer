@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Test\TestCase;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Version\VersionParser;
@@ -271,10 +272,7 @@ ICU Data version => 57.1',
             'imagick: 6.x' => array(
                 'imagick',
                 null,
-                array(
-                    'lib-imagick-imagemagick' => Imagick6Stub::STUB_VERSION,
-                    'lib-imagick' => Imagick6Stub::STUB_VERSION,
-                ),
+                array('lib-imagick-imagemagick' => Imagick6Stub::STUB_VERSION),
                 array(),
                 array(),
                 array('Imagick' => 'Composer\\Test\\Repository\\Imagick6Stub')
@@ -282,10 +280,7 @@ ICU Data version => 57.1',
             'imagick: 7.x' => array(
                 'imagick',
                 null,
-                array(
-                    'lib-imagick-imagemagick' => Imagick7Stub::STUB_VERSION,
-                    'lib-imagick' => Imagick7Stub::STUB_VERSION,
-                ),
+                array('lib-imagick-imagemagick' => Imagick7Stub::STUB_VERSION),
                 array(),
                 array(),
                 array('Imagick' => 'Composer\\Test\\Repository\\Imagick7Stub')
@@ -491,37 +486,24 @@ pcre.recursion_limit => 100000 => 100000
             'xsl' => array(
                 'xsl',
                 null,
-                array(
-                    'lib-libxslt' => '1.1.29',
-                    'lib-xsl' => '1.1.29',
-                ),
+                array('lib-libxslt' => '1.1.29'),
                 array(),
-                array(
-                    'LIBXSLT_DOTTED_VERSION' => '1.1.29',
-                )
+                array('LIBXSLT_DOTTED_VERSION' => '1.1.29')
             ),
             'zip' => array(
                 'zip',
                 null,
-                array(
-                    'lib-zip' => ZipArchiveStub::LIBZIP_VERSION,
-                ),
+                array('lib-zip' => ZipArchiveStub::LIBZIP_VERSION),
                 array(),
                 array(),
-                array(
-                    'ZipArchive' => 'Composer\\Test\\Repository\\ZipArchiveStub'
-                )
+                array('ZipArchive' => 'Composer\\Test\\Repository\\ZipArchiveStub')
             ),
             'zlib' => array(
                 'zlib',
                 null,
-                array(
-                    'lib-zlib' => '1.2.10',
-                ),
+                array('lib-zlib' => '1.2.10'),
                 array(),
-                array(
-                    'ZLIB_VERSION' => '1.2.10',
-                ),
+                array('ZLIB_VERSION' => '1.2.10'),
             ),
             'zlib: no constant present' => array(
                 'zlib',
@@ -533,9 +515,7 @@ Stream Wrapper => compress.zlib://
 Stream Filter => zlib.inflate, zlib.deflate
 Compiled Version => 1.2.8
 Linked Version => 1.2.11',
-                array(
-                    'lib-zlib' => '1.2.11',
-                ),
+                array('lib-zlib' => '1.2.11'),
                 array(),
                 array('ZLIB_VERSION' => false)
             ),
@@ -601,8 +581,12 @@ Linked Version => 1.2.11',
             $foundLibrary = false;
             foreach ($packages as $package) {
                 if ($package->getName() === $packageName) {
-                    self::assertSame($version, $package->getPrettyVersion(), sprintf('Expected version %s for %s', $version, $packageName));
                     $foundLibrary = true;
+                    self::assertSame($version, $package->getPrettyVersion(), sprintf('Expected version %s for %s', $version, $packageName));
+                    foreach ($package->getReplaces() as $link) {
+                        self::assertSame($package->getName(), $link->getSource());
+                        self::assertTrue($link->getConstraint()->matches(new Constraint('=', $package->getVersion())));
+                    }
                 }
             }
             self::assertTrue($version === false || $foundLibrary, sprintf('Could not find library %s', $packageName));
