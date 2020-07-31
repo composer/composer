@@ -16,6 +16,7 @@ use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\LoaderInterface;
+use Composer\Util\Tar;
 use Composer\Util\Zip;
 
 /**
@@ -66,7 +67,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
         $directory = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::FOLLOW_SYMLINKS);
         $iterator = new \RecursiveIteratorIterator($directory);
-        $regex = new \RegexIterator($iterator, '/^.+\.(zip|phar)$/i');
+        $regex = new \RegexIterator($iterator, '/^.+\.(zip|phar|tar|gz)$/i');
         foreach ($regex as $file) {
             /* @var $file \SplFileInfo */
             if (!$file->isFile()) {
@@ -89,8 +90,22 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     private function getComposerInformation(\SplFileInfo $file)
     {
         $json = null;
+        $fileType = null;
+        $fileExtension = pathinfo($file->getPathname(), PATHINFO_EXTENSION);
+        if (in_array($fileExtension, array('gz', 'tar', 'bz2'), true)) {
+            $fileType = 'tar';
+        } else if ($fileExtension === 'zip') {
+            $fileType = 'zip';
+        } else {
+            throw new \RuntimeException('Files with '.$fileExtension.' extensions aren\'t supported. Only ZIP, TAR and GZ are supported.');
+        }
+
         try {
-            $json = Zip::getComposerJson($file->getPathname());
+            if ($fileType === 'tar') {
+                $json = Tar::getComposerJson($file->getPathname());
+            } else {
+                $json = Zip::getComposerJson($file->getPathname());
+            }
         } catch (\Exception $exception) {
             $this->io->write('Failed loading package '.$file->getPathname().': '.$exception->getMessage(), false, IOInterface::VERBOSE);
         }
@@ -101,7 +116,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
         $package = JsonFile::parseJson($json, $file->getPathname().'#composer.json');
         $package['dist'] = array(
-            'type' => 'zip',
+            'type' => $fileType,
             'url' => strtr($file->getPathname(), '\\', '/'),
             'shasum' => sha1_file($file->getRealPath()),
         );
