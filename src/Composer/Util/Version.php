@@ -32,10 +32,11 @@ class Version
         $lettersLength = strlen($letters);
         // 0.9.8zg => 0.9.8.25.6
         // 0.9.8a => 0.9.8.0
+        $patch = 0;
         for ($a = 0; $a < $lettersLength; $a++) {
-            $version .= '.'.(ord($letters[$a]) - 97);
+            $patch += ord($letters[$a]) - 97;
         }
 
-        return $version . $matches['suffix'];
+        return $version.'.'.$patch.$matches['suffix'];
     }
 }

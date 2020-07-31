@@ -28,7 +28,7 @@ class VersionTest extends TestCase
             array('1.1.1g-dev', '1.1.1.6-dev'),
             array('1.1.1g', '1.1.1.6'),
             array('1.1.1-pre5', '1.1.1-pre5'),
-            array('0.9.8zg', '0.9.8.25.6'),
+            array('0.9.8zg', '0.9.8.31'),
         );
     }
 

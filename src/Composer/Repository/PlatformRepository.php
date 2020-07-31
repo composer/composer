@@ -32,6 +32,10 @@ class PlatformRepository extends ArrayRepository
     const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-(?:plugin|runtime)-api)$}iD';
 
     private static $hhvmVersion;
+    private static $loadedExtensions;
+    private static $extensionInfo = array();
+    private static $extensionClasses = array();
+    private static $extensionConstants = array();
 
     /**
      * @var VersionParser
@@ -58,17 +62,89 @@ class PlatformRepository extends ArrayRepository
         parent::__construct($packages);
     }
 
+    private static function getLoadedExtensions()
+    {
+        if (self::$loadedExtensions === null) {
+            return get_loaded_extensions();
+        }
+
+        return array_keys(self::$loadedExtensions);
+    }
+
+    private static function getExtensionVersion($extension)
+    {
+        if (!isset(self::$loadedExtensions[$extension])) {
+            $reflector = new \ReflectionExtension($extension);
+            return $reflector->getVersion();
+        }
+
+        return self::$loadedExtensions[$extension];
+    }
+
+    private static function isConstantDefined($constant)
+    {
+        return isset(self::$extensionConstants[$constant]) ? self::$extensionConstants[$constant] : defined($constant);
+    }
+
+    /**
+     * @internal For testing purposes only
+     * @param string $constant
+     * @param bool   $defined
+     */
+    public static function setConstantDefinedForTesting($constant, $defined)
+    {
+        self::$extensionConstants[$constant] = $defined;
+    }
+
+    /**
+     * @internal For testing purposes only
+     * @param string[] $loadedExtensions
+     */
+    public static function setLoadedExtensionsForTesting(array $loadedExtensions)
+    {
+        self::$loadedExtensions = $loadedExtensions;
+    }
+
+    private static function getExtensionClass($class)
+    {
+        return isset(self::$extensionClasses[$class]) ? self::$extensionClasses[$class] : $class;
+    }
+
+    /**
+     * @internal For testing purposes only
+     * @param string $class
+     * @param string $stub
+     */
+    public static function setExtensionClassForTesting($class, $stub)
+    {
+        self::$extensionClasses[$class] = $stub;
+    }
+
     /**
      * @param string $extension
      * @return string
      */
     private static function getExtensionInfo($extension)
     {
-        $reflector = new \ReflectionExtension($extension);
+        if (!isset(self::$extensionInfo[$extension])) {
+            $reflector = new \ReflectionExtension($extension);
 
-        ob_start();
-        $reflector->info();
-        return ob_get_clean();
+            ob_start();
+            $reflector->info();
+            self::$extensionInfo[$extension] = ob_get_clean();
+        }
+
+        return self::$extensionInfo[$extension];
+    }
+
+    /**
+     * @internal For testing purposes only
+     * @param string $extension
+     * @param string $info
+     */
+    public static function setExtensionInfoForTesting($extension, $info)
+    {
+        self::$extensionInfo[$extension] = $info;
     }
 
     public function getRepoName()
@@ -143,7 +219,7 @@ class PlatformRepository extends ArrayRepository
             $this->addPackage($phpIpv6);
         }
 
-        $loadedExtensions = get_loaded_extensions();
+        $loadedExtensions = self::getLoadedExtensions();
 
         // Extensions scanning
         foreach ($loadedExtensions as $name) {
@@ -151,9 +227,7 @@ class PlatformRepository extends ArrayRepository
                 continue;
             }
 
-            $reflExt = new \ReflectionExtension($name);
-            $prettyVersion = $reflExt->getVersion();
-            $this->addExtension($name, $prettyVersion);
+            $this->addExtension($name, self::getExtensionVersion($name));
         }
 
         // Check for Xdebug in a restarted process
@@ -230,29 +304,33 @@ class PlatformRepository extends ArrayRepository
 
                 case 'intl':
                     $description = 'The ICU unicode and globalization support library';
-                    if (defined('INTL_ICU_VERSION')) {
+                    // Truthy check is for testing only so we can make the condition fail
+                    if (self::isConstantDefined('INTL_ICU_VERSION')) {
                         $this->addLibrary('icu', INTL_ICU_VERSION, $description);
                     } elseif (preg_match('/^ICU version => (?P<version>.*)$/m', self::getExtensionInfo($name), $matches)) {
                         $this->addLibrary('icu', $matches[1], $description);
                     }
 
-                    if (class_exists('ResourceBundle', false)) {
+                    $resourceBundleClass = self::getExtensionClass('ResourceBundle');
+                    if (class_exists($resourceBundleClass, false)) {
                         # Add a separate version for the CLDR library version
-                        $cldrVersion = \ResourceBundle::create('root', 'ICUDATA-curr', false)->get('Version');
+                        $cldrVersion = $resourceBundleClass::create('root', 'ICUDATA', false)->get('Version');
                         $this->addLibrary('icu-cldr', $cldrVersion, 'ICU CLDR project version');
                     }
 
-                    if (class_exists('IntlChar', false)) {
-                        $this->addLibrary('icu-unicode', implode('.', array_slice(\IntlChar::getUnicodeVersion(), 0, 3)), 'ICU unicode version');
+                    $intlCharClass = self::getExtensionClass('IntlChar');
+                    if (class_exists($intlCharClass, false)) {
+                        $this->addLibrary('icu-unicode', implode('.', array_slice($intlCharClass::getUnicodeVersion(), 0, 3)), 'ICU unicode version');
                     }
                     break;
 
                 case 'imagick':
-                    $imagick = new \Imagick();
+                    $imagickClass = self::getExtensionClass('Imagick');
+                    $imagick = new $imagickClass();
                     $imageMagickVersion = $imagick->getVersion();
                     // 6.x: ImageMagick 6.2.9 08/24/06 Q16 http://www.imagemagick.org
                     // 7.x: ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org
-                    preg_match('/^ImageMagick ([\d.]+)(?:-(\d+))?/', $imageMagickVersion['versionString'], $matches);
+                    preg_match('/^ImageMagick ([\d\.]+)(?:-(\d+))?/', $imageMagickVersion['versionString'], $matches);
                     if (isset($matches[2])) {
                         $version = "{$matches[1]}.{$matches[2]}";
                     } else {
@@ -277,7 +355,7 @@ class PlatformRepository extends ArrayRepository
                         $this->addLibrary('mbstring-libmbfl', $libmbflMatches['version'], 'mbstring libmbfl version');
                     }
 
-                    if (defined('MB_ONIGURUMA_VERSION')) {
+                    if (self::isConstantDefined('MB_ONIGURUMA_VERSION')) {
                         $this->addLibrary('mbstring-oniguruma', MB_ONIGURUMA_VERSION, 'mbstring oniguruma version');
 
                     // Multibyte regex (oniguruma) version => 5.9.5
@@ -326,17 +404,19 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'xsl':
-                    $this->addLibrary($name, LIBXSLT_DOTTED_VERSION);
+                    $this->addLibrary('xsl', LIBXSLT_DOTTED_VERSION);
+                    $this->addLibrary('libxslt', LIBXSLT_DOTTED_VERSION);
                     break;
 
                 case 'zip':
-                    if (defined('ZipArchive::LIBZIP_VERSION')) {
-                        $this->addLibrary($name, \ZipArchive::LIBZIP_VERSION);
+                    $zipArchiveClass = self::getExtensionClass('ZipArchive');
+                    if (defined($zipArchiveClass . '::LIBZIP_VERSION')) {
+                        $this->addLibrary($name, $zipArchiveClass::LIBZIP_VERSION);
                     }
                     break;
 
                 case 'zlib':
-                    if (defined('ZLIB_VERSION')) {
+                    if (self::isConstantDefined('ZLIB_VERSION')) {
                         $this->addLibrary($name, ZLIB_VERSION);
 
                     // Compiled Version => 1.2.8
