@@ -336,7 +336,13 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'zlib':
-                    $this->addLibrary($name, ZLIB_VERSION);
+                    if (defined('ZLIB_VERSION')) {
+                        $this->addLibrary($name, ZLIB_VERSION);
+
+                    // Compiled Version => 1.2.8
+                    } elseif (preg_match('/^Compiled Version => (?P<version>.+)$/m', self::getExtensionInfo('zlib'), $matches)) {
+                        $this->addLibrary($name, $matches['version']);
+                    }
                     break;
 
                 default:
