@@ -243,7 +243,7 @@ class PlatformRepository extends ArrayRepository
                     }
 
                     if (class_exists('IntlChar', false)) {
-                        $this->addLibrary('icu-unicode', implode('.', \IntlChar::getUnicodeVersion()), 'ICU unicode version');
+                        $this->addLibrary('icu-unicode', implode('.', array_slice(\IntlChar::getUnicodeVersion(), 0, 3)), 'ICU unicode version');
                     }
                     break;
 
