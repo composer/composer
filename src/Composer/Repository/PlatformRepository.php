@@ -262,7 +262,8 @@ class PlatformRepository extends ArrayRepository
 
                     // SSL Version => OpenSSL/1.0.1t
                     if (preg_match('{^SSL Version => (?P<library>[^/]+)/(?P<version>.+)$}m', $info, $sslMatches)) {
-                        $this->addLibrary('curl-'.strtolower($sslMatches['library']), Version::normalizeOpenssl($sslMatches['version']), 'curl '. $sslMatches['library'].' version ('. $sslMatches['version'].')');
+                        $parsedVersion = Version::parseOpenssl($sslMatches['version'], $isFips);
+                        $this->addLibrary('curl-'.strtolower($sslMatches['library']).($isFips ? '-fips' : ''), $parsedVersion, 'curl '. $sslMatches['library'].' version ('. $sslMatches['version'].')');
                     }
 
                     // libSSH Version => libssh2/1.4.3
@@ -378,7 +379,8 @@ class PlatformRepository extends ArrayRepository
                 case 'openssl':
                     // OpenSSL 1.1.1g  21 Apr 2020
                     if (preg_match('{^(?:OpenSSL|LibreSSL)?\s*(?<version>[^ ]+)}i', OPENSSL_VERSION_TEXT, $matches)) {
-                        $this->addLibrary($name, Version::normalizeOpenssl($matches['version']), OPENSSL_VERSION_TEXT);
+                        $parsedVersion = Version::parseOpenssl($matches['version'], $isFips);
+                        $this->addLibrary($name.($isFips ? '-fips' : ''), $parsedVersion , OPENSSL_VERSION_TEXT);
                     }
                     break;
 

@@ -21,22 +21,30 @@ class Version
      * @param string $opensslVersion
      * @return string
      */
-    public static function normalizeOpenssl($opensslVersion)
+    public static function parseOpenssl($opensslVersion, &$isFips)
     {
-        if (!preg_match('/^(?P<version>.+?)(?P<letters>[a-z]+)(?P<suffix>-[0-9a-z]+|)$/', $opensslVersion, $matches)) {
+        $isFips = false;
+
+        if (!preg_match('/^(?P<version>[0-9\.]+)(?P<letters>[a-z]{0,2})?(?P<suffix>(?:-?(?:alpha|beta|dev|fips|pre|rc)[\d]*)*)?$/', $opensslVersion, $matches)) {
             return $opensslVersion;
         }
 
         $version = $matches['version'];
         $letters = $matches['letters'];
         $lettersLength = strlen($letters);
-        // 0.9.8zg => 0.9.8.25.6
-        // 0.9.8a => 0.9.8.0
+        // 0.9.8zg => 0.9.8.33
+        // 0.9.8a => 0.9.8.1
         $patch = 0;
         for ($a = 0; $a < $lettersLength; $a++) {
-            $patch += ord($letters[$a]) - 97;
+            $patch += ord($letters[$a]) - 96;
         }
 
-        return $version.'.'.$patch.$matches['suffix'];
+        $suffix = $matches['suffix'];
+        if ($suffix !== '') {
+            $suffix = '-' . ltrim($suffix, '-');
+        }
+        $isFips = strpos($suffix, 'fips') !== false;
+
+        return $version.'.'.$patch.strtr($suffix, array('-fips' => '', '-pre' => '-alpha'));
     }
 }

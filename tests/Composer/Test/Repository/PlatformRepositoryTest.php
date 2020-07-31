@@ -133,7 +133,50 @@ Directive => Local Value => Master Value
 curl.cainfo => no value => no value',
                 array(
                     'lib-curl' => '2.0.0',
-                    'lib-curl-openssl' => '1.0.1.19',
+                    'lib-curl-openssl' => '1.0.1.20',
+                    'lib-curl-zlib' => '1.2.8',
+                    'lib-curl-libssh2' => '1.4.3',
+                ),
+                array('curl_version' => array('version' => '2.0.0'))
+            ),
+
+            'curl' => array(
+                'curl',
+                '
+curl
+
+cURL support => enabled
+cURL Information => 7.38.0
+Age => 3
+Features
+AsynchDNS => Yes
+CharConv => No
+Debug => No
+GSS-Negotiate => No
+IDN => Yes
+IPv6 => Yes
+krb4 => No
+Largefile => Yes
+libz => Yes
+NTLM => Yes
+NTLMWB => Yes
+SPNEGO => Yes
+SSL => Yes
+SSPI => No
+TLS-SRP => Yes
+HTTP2 => No
+GSSAPI => Yes
+Protocols => dict, file, ftp, ftps, gopher, http, https, imap, imaps, ldap, ldaps, pop3, pop3s, rtmp, rtsp, scp, sftp, smtp, smtps, telnet, tftp
+Host => x86_64-pc-linux-gnu
+SSL Version => OpenSSL/1.0.1t-fips
+ZLib Version => 1.2.8
+libSSH Version => libssh2/1.4.3
+
+Directive => Local Value => Master Value
+curl.cainfo => no value => no value',
+                array(
+                    'lib-curl' => '2.0.0',
+                    'lib-curl-openssl-fips' => '1.0.1.20',
                     'lib-curl-zlib' => '1.2.8',
                     'lib-curl-libssh2' => '1.4.3',
                 ),
@@ -336,21 +379,56 @@ msgpack support => yes',
             'openssl' => array(
                 'openssl',
                 null,
-                array('lib-openssl' => '1.1.1.6'),
+                array('lib-openssl' => '1.1.1.7'),
                 array(),
                 array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g  21 Apr 2020')
             ),
             'openssl: two letters suffix' => array(
                 'openssl',
                 null,
-                array('lib-openssl' => '0.9.8.31'),
+                array('lib-openssl' => '0.9.8.33'),
                 array(),
                 array('OPENSSL_VERSION_TEXT' => 'OpenSSL 0.9.8zg  21 Apr 2020')
+            ),
+            'openssl: pre release is treated as alpha' => array(
+                'openssl',
+                null,
+                array('lib-openssl' => '1.1.1.7-alpha1'),
+                array(),
+                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g-pre1  21 Apr 2020')
+            ),
+            'openssl: beta release' => array(
+                'openssl',
+                null,
+                array('lib-openssl' => '1.1.1.7-beta2'),
+                array(),
+                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g-beta2  21 Apr 2020')
+            ),
+            'openssl: alpha release' => array(
+                'openssl',
+                null,
+                array('lib-openssl' => '1.1.1.7-alpha4'),
+                array(),
+                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g-alpha4  21 Apr 2020')
+            ),
+            'openssl: rc release' => array(
+                'openssl',
+                null,
+                array('lib-openssl' => '1.1.1.7-rc2'),
+                array(),
+                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g-rc2  21 Apr 2020')
+            ),
+            'openssl: fips' => array(
+                'openssl',
+                null,
+                array('lib-openssl-fips' => '1.1.1.7'),
+                array(),
+                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g-fips  21 Apr 2020')
             ),
             'openssl: LibreSSL' => array(
                 'openssl',
                 null,
-                array('lib-openssl' => '2.0.1'),
+                array('lib-openssl' => '2.0.1.0'),
                 array(),
                 array('OPENSSL_VERSION_TEXT' => 'LibreSSL 2.0.1')
             ),
