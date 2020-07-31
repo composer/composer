@@ -63,7 +63,8 @@ class VersionTest extends TestCase
             array('1.2.3zh-fips-dev', '1.2.3.34-dev', true),
             // Additional cases
             array('1.2.3zh-fips-rc3', '1.2.3.34-rc3', true, '1.2.3.34-RC3'),
-            // Check that letters overflow correctly
+            array('1.2.3zh-alpha10-fips', '1.2.3.34-alpha10', true),
+            // Check that alphabetical patch levels overflow correctly
             array('1.2.3', '1.2.3.0'),
             array('1.2.3a', '1.2.3.1'),
             array('1.2.3z', '1.2.3.26'),
@@ -73,7 +74,13 @@ class VersionTest extends TestCase
         );
     }
 
-    /** @dataProvider getOpenSslVersions */
+    /**
+     * @dataProvider getOpenSslVersions
+     * @param string      $input
+     * @param string      $parsedVersion
+     * @param bool        $fipsExpected
+     * @param string|null $normalizedVersion
+     */
     public function testParseOpensslVersions($input, $parsedVersion, $fipsExpected = false, $normalizedVersion = null)
     {
         self::assertSame($parsedVersion, Version::parseOpenssl($input, $isFips));

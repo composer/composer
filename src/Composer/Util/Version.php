@@ -19,32 +19,24 @@ class Version
 {
     /**
      * @param string $opensslVersion
+     * @param bool $isFips
      * @return string
      */
     public static function parseOpenssl($opensslVersion, &$isFips)
     {
         $isFips = false;
 
-        if (!preg_match('/^(?P<version>[0-9\.]+)(?P<letters>[a-z]{0,2})?(?P<suffix>(?:-?(?:alpha|beta|dev|fips|pre|rc)[\d]*)*)?$/', $opensslVersion, $matches)) {
+        if (!preg_match('/^(?<version>[0-9.]+)(?<patch>[a-z]{0,2})?(?<suffix>(?:-?(?:dev|pre|alpha|beta|rc|fips)[\d]*)*)?$/', $opensslVersion, $matches)) {
             return $opensslVersion;
         }
 
-        $version = $matches['version'];
-        $letters = $matches['letters'];
-        $lettersLength = strlen($letters);
-        // 0.9.8zg => 0.9.8.33
-        // 0.9.8a => 0.9.8.1
-        $patch = 0;
-        for ($a = 0; $a < $lettersLength; $a++) {
-            $patch += ord($letters[$a]) - 96;
-        }
+        // "" => 0, "a" => 1, "zg" => 33
+        $patch = strlen($matches['patch']) * (-ord('a')+1)
+            + array_sum(array_map('ord', str_split($matches['patch'])));
 
-        $suffix = $matches['suffix'];
-        if ($suffix !== '') {
-            $suffix = '-' . ltrim($suffix, '-');
-        }
-        $isFips = strpos($suffix, 'fips') !== false;
+        $isFips = strpos($matches['suffix'], 'fips') !== false;
+        $suffix = strtr('-'.ltrim($matches['suffix'], '-'), array('-fips' => '', '-pre' => '-alpha'));
 
-        return $version.'.'.$patch.strtr($suffix, array('-fips' => '', '-pre' => '-alpha'));
+        return rtrim($matches['version'].'.'.$patch.$suffix, '-');
     }
 }

@@ -195,7 +195,7 @@ Timezone Database => external
 Default timezone => Europe/Berlin',
                 array('lib-date-timelib' => '2018.03')
             ),
-            'date: extension before timelib was extracted' => array(
+            'date: before timelib was extracted' => array(
                 'date',
                 '
 date
@@ -525,7 +525,6 @@ Linked Version => 1.2.11',
     /**
      * @dataProvider getLibraryTestCases
      * @runInSeparateProcess
-     * @preserveGlobalState
      *
      * @param string $extension
      * @param string|null $info
@@ -558,9 +557,9 @@ Linked Version => 1.2.11',
 
         foreach ($constants as $constant => $constantValue) {
             if ($constantValue === false) {
-                PlatformRepository::setConstantDefinedForTesting($constant, false);
+                PlatformRepository::defineConstantForTesting($constant, false);
             } else {
-                PlatformRepository::setConstantDefinedForTesting($constant, true);
+                PlatformRepository::defineConstantForTesting($constant, true);
                 eval(sprintf(
                     'namespace Composer\Repository { const %s = %s; }',
                     $constant,
@@ -598,6 +597,7 @@ class ResourceBundleStub {
     const STUB_VERSION = '32.0.1';
 
     public static function create($locale, $bundleName, $fallback) {
+        Assert::assertSame(3, func_num_args());
         Assert::assertSame('root', $locale);
         Assert::assertSame('ICUDATA', $bundleName);
         Assert::assertFalse($fallback);
@@ -606,6 +606,7 @@ class ResourceBundleStub {
     }
 
     public function get($field) {
+        Assert::assertSame(1, func_num_args());
         Assert::assertSame('Version', $field);
 
         return self::STUB_VERSION;
@@ -615,8 +616,9 @@ class ResourceBundleStub {
 class IntlCharStub {
     const STUB_VERSION = '7.0.0';
 
-    public static function getUnicodeVersion()
-    {
+    public static function getUnicodeVersion() {
+        Assert::assertSame(0, func_num_args());
+
         return array(7, 0, 0, 0);
     }
 }
@@ -624,8 +626,9 @@ class IntlCharStub {
 class Imagick6Stub {
     const STUB_VERSION = '6.8.9.9';
 
-    public function getVersion()
-    {
+    public function getVersion() {
+        Assert::assertSame(0, func_num_args());
+
         return array('versionString' => 'ImageMagick 6.8.9-9 Q16 x86_64 2018-05-18 http://www.imagemagick.org');
     }
 }
@@ -633,8 +636,9 @@ class Imagick6Stub {
 class Imagick7Stub {
     const STUB_VERSION = '7.0.8.34';
 
-    public function getVersion()
-    {
+    public function getVersion() {
+        Assert::assertSame(0, func_num_args());
+
         return array('versionString' => 'ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org');
     }
 }
