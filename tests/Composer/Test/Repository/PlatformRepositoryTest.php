@@ -141,7 +141,7 @@ curl.cainfo => no value => no value',
                 array('curl_version' => array('version' => '2.0.0'))
             ),
 
-            'curl' => array(
+            'curl: OpenSSL fips version' => array(
                 'curl',
                 '
 curl
