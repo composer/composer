@@ -404,8 +404,9 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'xsl':
-                    $this->addLibrary('xsl', LIBXSLT_DOTTED_VERSION);
                     $this->addLibrary('libxslt', LIBXSLT_DOTTED_VERSION);
+                    // Alias for backwards compatibility
+                    $this->addLibrary('xsl', LIBXSLT_DOTTED_VERSION);
                     break;
 
                 case 'zip':
