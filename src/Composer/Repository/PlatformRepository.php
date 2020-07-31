@@ -419,8 +419,8 @@ class PlatformRepository extends ArrayRepository
                     if (self::isConstantDefined('ZLIB_VERSION')) {
                         $this->addLibrary($name, ZLIB_VERSION);
 
-                    // Compiled Version => 1.2.8
-                    } elseif (preg_match('/^Compiled Version => (?P<version>.+)$/m', self::getExtensionInfo('zlib'), $matches)) {
+                    // Linked Version => 1.2.8
+                    } elseif (preg_match('/^Linked Version => (?P<version>.+)$/m', self::getExtensionInfo('zlib'), $matches)) {
                         $this->addLibrary($name, $matches['version']);
                     }
                     break;

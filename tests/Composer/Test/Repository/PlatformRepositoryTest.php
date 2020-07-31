@@ -458,6 +458,8 @@ Linked Version => 1.2.11',
                 array(
                     'lib-zlib' => '1.2.11',
                 ),
+                array(),
+                array('ZLIB_VERSION' => false)
             ),
         );
     }
