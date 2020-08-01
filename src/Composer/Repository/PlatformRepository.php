@@ -18,7 +18,6 @@ use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Platform\HhvmDetector;
-use Composer\Platform\NativeRuntime;
 use Composer\Platform\Runtime;
 use Composer\Plugin\PluginInterface;
 use Composer\Semver\Constraint\Constraint;
@@ -54,7 +53,7 @@ class PlatformRepository extends ArrayRepository
 
     public function __construct(array $packages = array(), array $overrides = array(), Runtime $runtime = null, HhvmDetector $hhvmDetector = null)
     {
-        $this->runtime = $runtime ?: new NativeRuntime();
+        $this->runtime = $runtime ?: new Runtime();
         $this->hhvmDetector = $hhvmDetector ?: new HhvmDetector();
         foreach ($overrides as $name => $version) {
             $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);

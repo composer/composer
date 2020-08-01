@@ -488,7 +488,7 @@ Linked Version => 1.2.11',
     {
         $extensionVersion = '100.200.300';
 
-        $runtime = $this->createMock('Composer\Platform\Runtime');
+        $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
         $runtime
             ->method('getExtensions')
             ->willReturn(array($extension));

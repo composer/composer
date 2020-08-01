@@ -12,57 +12,83 @@
 
 namespace Composer\Platform;
 
-/**
- * An abstraction of the concrete runtime
- */
-interface Runtime
+class Runtime
 {
     /**
      * @param string $constant
      * @param class-string $class
      * @return bool
      */
-    public function hasConstant($constant, $class = null);
+    public function hasConstant($constant, $class = null) {
+        return defined(ltrim($class.'::'.$constant, ':'));
+    }
 
     /**
      * @param bool $constant
      * @param class-string $class
      * @return mixed
      */
-    public function getConstant($constant, $class = null);
+    public function getConstant($constant, $class = null) {
+        return constant(ltrim($class.'::'.$constant, ':'));
+    }
 
     /**
      * @param callable $callable
      * @param array $arguments
      * @return mixed
      */
-    public function invoke($callable, array $arguments = array());
+    public function invoke($callable, array $arguments = array()) {
+        return call_user_func_array($callable, $arguments);
+    }
 
     /**
      * @param class-string $class
      * @return bool
      */
-    public function hasClass($class);
+    public function hasClass($class)  {
+        return class_exists($class, false);
+    }
 
     /**
      * @param class-string $class
      * @param array $arguments
      * @return object
      */
-    public function construct($class, array $arguments = array());
+    public function construct($class, array $arguments = array()) {
+        if (empty($arguments)) {
+            return new $class;
+        }
+
+        $refl = new \ReflectionClass($class);
+        return $refl->newInstanceArgs($arguments);
+    }
 
     /** @return string[] */
-    public function getExtensions();
+    public function getExtensions()
+    {
+        return get_loaded_extensions();
+    }
 
     /**
      * @param string $extension
      * @return string
      */
-    public function getExtensionVersion($extension);
+    public function getExtensionVersion($extension)
+    {
+        return phpversion($extension);
+    }
 
     /**
      * @param string $extension
      * @return string
      */
-    public function getExtensionInfo($extension);
+    public function getExtensionInfo($extension)
+    {
+        $reflector = new \ReflectionExtension($extension);
+
+        ob_start();
+        $reflector->info();
+
+        return ob_get_clean();
+    }
 }
