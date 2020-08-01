@@ -67,7 +67,7 @@ class HhvmDetectorTest extends TestCase
         );
         self::assertSame(0, $exitCode);
 
-        self::assertSame(self::getVersionParser()->normalize($version), $detectedVersion);
+        self::assertSame(self::getVersionParser()->normalize($version), self::getVersionParser()->normalize($detectedVersion));
     }
 
     /** @runInSeparateProcess */
@@ -78,7 +78,7 @@ class HhvmDetectorTest extends TestCase
             define('HHVM_VERSION_ID', 20201);
         }
         $version = $this->hhvmDetector->getVersion();
-        self::assertSame(self::versionIdToVersion(), $version);
+        self::assertSame(self::getVersionParser()->normalize(self::versionIdToVersion()), self::getVersionParser()->normalize($version));
     }
 
     private static function versionIdToVersion()
