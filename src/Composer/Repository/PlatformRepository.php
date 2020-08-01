@@ -17,14 +17,14 @@ use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
+use Composer\Platform\HhvmDetector;
+use Composer\Platform\NativeRuntime;
+use Composer\Platform\Runtime;
 use Composer\Plugin\PluginInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Util\ProcessExecutor;
 use Composer\Util\Silencer;
-use Composer\Util\Platform;
 use Composer\Util\Version;
 use Composer\XdebugHandler\XdebugHandler;
-use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -34,10 +34,6 @@ class PlatformRepository extends ArrayRepository
     const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-(?:plugin|runtime)-api)$}iD';
 
     private static $hhvmVersion;
-    private static $loadedExtensions;
-    private static $extensionInfo = array();
-    private static $extensionClasses = array();
-    private static $extensionConstants = array();
 
     /**
      * @var VersionParser
@@ -53,119 +49,17 @@ class PlatformRepository extends ArrayRepository
      */
     private $overrides = array();
 
-    private $process;
+    private $runtime;
+    private $hhvmDetector;
 
-    public function __construct(array $packages = array(), array $overrides = array(), ProcessExecutor $process = null)
+    public function __construct(array $packages = array(), array $overrides = array(), Runtime $runtime = null, HhvmDetector $hhvmDetector = null)
     {
-        $this->process = $process;
+        $this->runtime = $runtime ?: new NativeRuntime();
+        $this->hhvmDetector = $hhvmDetector ?: new HhvmDetector();
         foreach ($overrides as $name => $version) {
             $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
         }
         parent::__construct($packages);
-    }
-
-    /**
-     * @return string[]
-     */
-    private static function getLoadedExtensions()
-    {
-        if (self::$loadedExtensions === null) {
-            return get_loaded_extensions();
-        }
-
-        return array_keys(self::$loadedExtensions);
-    }
-
-    /**
-     * @param string $extension
-     * @return string
-     * @throws \ReflectionException
-     */
-    private static function getExtensionVersion($extension)
-    {
-        if (!isset(self::$loadedExtensions[$extension])) {
-            $reflector = new \ReflectionExtension($extension);
-            return $reflector->getVersion();
-        }
-
-        return self::$loadedExtensions[$extension];
-    }
-
-    /**
-     * @param string $constant
-     * @return bool
-     */
-    private static function isConstantDefined($constant)
-    {
-        return isset(self::$extensionConstants[$constant]) ? self::$extensionConstants[$constant] : defined($constant);
-    }
-
-    /**
-     * @internal For testing purposes only
-     * @param string $constant
-     * @param bool   $defined
-     * @return void
-     */
-    public static function defineConstantForTesting($constant, $defined)
-    {
-        self::$extensionConstants[$constant] = $defined;
-    }
-
-    /**
-     * @internal For testing purposes only
-     * @param string[] $loadedExtensions
-     * @return void
-     */
-    public static function setLoadedExtensionsForTesting(array $loadedExtensions)
-    {
-        self::$loadedExtensions = $loadedExtensions;
-    }
-
-    /**
-     * @param class-string $class
-     * @return class-string
-     */
-    private static function getExtensionClass($class)
-    {
-        return isset(self::$extensionClasses[$class]) ? self::$extensionClasses[$class] : $class;
-    }
-
-    /**
-     * @internal For testing purposes only
-     * @param string $class
-     * @param string $stub
-     */
-    public static function setExtensionClassForTesting($class, $stub)
-    {
-        self::$extensionClasses[$class] = $stub;
-    }
-
-    /**
-     * @param string $extension
-     * @return string
-     */
-    private static function getExtensionInfo($extension)
-    {
-        if (!isset(self::$extensionInfo[$extension])) {
-            $reflector = new \ReflectionExtension($extension);
-
-            ob_start();
-            $reflector->info();
-            self::$extensionInfo[$extension] = ob_get_clean();
-        }
-
-        return self::$extensionInfo[$extension];
-    }
-
-    /**
-     * @internal For testing purposes only
-     * @param string $extension
-     * @param string $info
-     * @return void
-     */
-    public static function setExtensionInfoForTesting($extension, $info)
-    {
-        self::$extensionInfo[$extension] = $info;
     }
 
     public function getRepoName()
@@ -240,7 +134,7 @@ class PlatformRepository extends ArrayRepository
             $this->addPackage($phpIpv6);
         }
 
-        $loadedExtensions = self::getLoadedExtensions();
+        $loadedExtensions = $this->runtime->getExtensions();
 
         // Extensions scanning
         foreach ($loadedExtensions as $name) {
@@ -248,7 +142,7 @@ class PlatformRepository extends ArrayRepository
                 continue;
             }
 
-            $this->addExtension($name, self::getExtensionVersion($name));
+            $this->addExtension($name, $this->runtime->getExtensionVersion($name));
         }
 
         // Check for Xdebug in a restarted process
@@ -262,7 +156,7 @@ class PlatformRepository extends ArrayRepository
         foreach ($loadedExtensions as $name) {
             switch ($name) {
                 case 'amqp':
-                    $info = self::getExtensionInfo($name);
+                    $info = $this->runtime->getExtensionInfo($name);
 
                     // librabbitmq version => 0.9.0
                     if (preg_match('/^librabbitmq version => (?<version>.+)$/m', $info, $librabbitmqMatches)) {
@@ -276,10 +170,10 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'curl':
-                    $curlVersion = curl_version();
+                    $curlVersion = $this->runtime->invoke('curl_version');
                     $this->addLibrary($name, $curlVersion['version']);
 
-                    $info = self::getExtensionInfo($name);
+                    $info = $this->runtime->getExtensionInfo($name);
 
                     // SSL Version => OpenSSL/1.0.1t
                     if (preg_match('{^SSL Version => (?<library>[^/]+)/(?<version>.+)$}m', $info, $sslMatches)) {
@@ -299,7 +193,7 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'date':
-                    $info = self::getExtensionInfo($name);
+                    $info = $this->runtime->getExtensionInfo($name);
 
                     // timelib version => 2018.03
                     if (preg_match('/^timelib version => (?<version>.+)$/m', $info, $timelibMatches)) {
@@ -308,7 +202,7 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'fileinfo':
-                    $info = self::getExtensionInfo($name);
+                    $info = $this->runtime->getExtensionInfo($name);
 
                     // libmagic => 537
                     if (preg_match('/^^libmagic => (?<version>.+)$/m', $info, $magicMatches)) {
@@ -317,65 +211,60 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'gd':
-                    $this->addLibrary($name, GD_VERSION);
+                    $this->addLibrary($name, $this->runtime->getConstant('GD_VERSION'));
                     break;
 
                 case 'iconv':
-                    $this->addLibrary($name, ICONV_VERSION);
+                    $this->addLibrary($name, $this->runtime->getConstant('ICONV_VERSION'));
                     break;
 
                 case 'intl':
                     $description = 'The ICU unicode and globalization support library';
                     // Truthy check is for testing only so we can make the condition fail
-                    if (self::isConstantDefined('INTL_ICU_VERSION')) {
-                        $this->addLibrary('icu', INTL_ICU_VERSION, $description);
-                    } elseif (preg_match('/^ICU version => (?<version>.*)$/m', self::getExtensionInfo($name), $matches)) {
-                        $this->addLibrary('icu', $matches[1], $description);
+                    if ($this->runtime->hasConstant('INTL_ICU_VERSION')) {
+                        $this->addLibrary('icu', $this->runtime->getConstant('INTL_ICU_VERSION'), $description);
+                    } elseif (preg_match('/^ICU version => (?<version>.+)$/m', $this->runtime->getExtensionInfo($name), $matches)) {
+                        $this->addLibrary('icu', $matches['version'], $description);
                     }
 
-                    $resourceBundleClass = self::getExtensionClass('ResourceBundle');
-                    if (class_exists($resourceBundleClass, false)) {
-                        # Add a separate version for the CLDR library version
-                        $cldrVersion = $resourceBundleClass::create('root', 'ICUDATA', false)->get('Version');
+                    # Add a separate version for the CLDR library version
+                    if ($this->runtime->hasClass('ResourceBundle')) {
+                        $cldrVersion = $this->runtime->invoke(array('ResourceBundle', 'create'), array('root', 'ICUDATA', false))->get('Version');
                         $this->addLibrary('icu-cldr', $cldrVersion, 'ICU CLDR project version');
                     }
 
-                    $intlCharClass = self::getExtensionClass('IntlChar');
-                    if (class_exists($intlCharClass, false)) {
-                        $this->addLibrary('icu-unicode', implode('.', array_slice($intlCharClass::getUnicodeVersion(), 0, 3)), 'ICU unicode version');
+                    if ($this->runtime->hasClass('IntlChar')) {
+                        $this->addLibrary('icu-unicode', implode('.', array_slice($this->runtime->invoke(array('IntlChar', 'getUnicodeVersion')), 0, 3)), 'ICU unicode version');
                     }
                     break;
 
                 case 'imagick':
-                    $imagickClass = self::getExtensionClass('Imagick');
-                    $imagick = new $imagickClass();
-                    $imageMagickVersion = $imagick->getVersion();
+                    $imageMagickVersion = $this->runtime->construct('Imagick')->getVersion();
                     // 6.x: ImageMagick 6.2.9 08/24/06 Q16 http://www.imagemagick.org
                     // 7.x: ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org
-                    preg_match('/^ImageMagick ([\d.]+)(?:-(\d+))?/', $imageMagickVersion['versionString'], $matches);
-                    if (isset($matches[2])) {
-                        $version = "{$matches[1]}.{$matches[2]}";
-                    } else {
-                        $version = $matches[1];
+                    preg_match('/^ImageMagick (?<version>[\d.]+)(?:-(?<patch>\d+))?/', $imageMagickVersion['versionString'], $matches);
+                    $version = $matches['version'];
+                    if (isset($matches['patch'])) {
+                        $version .= '.'.$matches['patch'];
                     }
 
                     $this->addLibrary('imagick-imagemagick', $version, null, array('imagick'));
                     break;
 
                 case 'libxml':
-                    $this->addLibrary($name, LIBXML_DOTTED_VERSION, 'libxml library version');
+                    $this->addLibrary($name, $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version');
                     break;
 
                 case 'mbstring':
-                    $info = self::getExtensionInfo($name);
+                    $info = $this->runtime->getExtensionInfo($name);
 
                     // libmbfl version => 1.3.2
                     if (preg_match('/^libmbfl version => (?<version>.+)$/m', $info, $libmbflMatches)) {
                         $this->addLibrary('mbstring-libmbfl', $libmbflMatches['version'], 'mbstring libmbfl version');
                     }
 
-                    if (self::isConstantDefined('MB_ONIGURUMA_VERSION')) {
-                        $this->addLibrary('mbstring-oniguruma', MB_ONIGURUMA_VERSION, 'mbstring oniguruma version');
+                    if ($this->runtime->hasConstant('MB_ONIGURUMA_VERSION')) {
+                        $this->addLibrary('mbstring-oniguruma', $this->runtime->getConstant('MB_ONIGURUMA_VERSION'), 'mbstring oniguruma version');
 
                     // Multibyte regex (oniguruma) version => 5.9.5
                     // oniguruma version => 6.9.0
@@ -386,7 +275,7 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'memcached':
-                    $info = self::getExtensionInfo($name);
+                    $info = $this->runtime->getExtensionInfo($name);
 
                     // libmemcached version => 1.0.18
                     if (preg_match('/^libmemcached version => (?<version>.+)$/m', $info, $matches)) {
@@ -396,16 +285,16 @@ class PlatformRepository extends ArrayRepository
 
                 case 'openssl':
                     // OpenSSL 1.1.1g  21 Apr 2020
-                    if (preg_match('{^(?:OpenSSL|LibreSSL)?\s*(?<version>\S+)}i', OPENSSL_VERSION_TEXT, $matches)) {
+                    if (preg_match('{^(?:OpenSSL|LibreSSL)?\s*(?<version>\S+)}i', $this->runtime->getConstant('OPENSSL_VERSION_TEXT'), $matches)) {
                         $parsedVersion = Version::parseOpenssl($matches['version'], $isFips);
-                        $this->addLibrary($name.($isFips ? '-fips' : ''), $parsedVersion , OPENSSL_VERSION_TEXT, $isFips ? array($name) : array());
+                        $this->addLibrary($name.($isFips ? '-fips' : ''), $parsedVersion , $this->runtime->getConstant('OPENSSL_VERSION_TEXT'), $isFips ? array($name) : array());
                     }
                     break;
 
                 case 'pcre':
-                    $this->addLibrary($name, preg_replace('{^(\S+).*}', '$1', PCRE_VERSION));
+                    $this->addLibrary($name, preg_replace('{^(\S+).*}', '$1', $this->runtime->getConstant('PCRE_VERSION')));
 
-                    $info = self::getExtensionInfo($name);
+                    $info = $this->runtime->getExtensionInfo($name);
 
                     // PCRE Unicode Version => 12.1.0
                     if (preg_match('/^PCRE Unicode Version => (?<version>.+)$/m', $info, $pcreUnicodeMatches)) {
@@ -416,30 +305,25 @@ class PlatformRepository extends ArrayRepository
 
                 case 'libsodium':
                 case 'sodium':
-                    $this->addLibrary('libsodium', SODIUM_LIBRARY_VERSION);
-                    break;
-
-                case 'uuid':
-                    $this->addLibrary($name, phpversion('uuid'));
+                    $this->addLibrary('libsodium', $this->runtime->getConstant('SODIUM_LIBRARY_VERSION'));
                     break;
 
                 case 'xsl':
-                    $this->addLibrary('libxslt', LIBXSLT_DOTTED_VERSION, null, array('xsl'));
+                    $this->addLibrary('libxslt', $this->runtime->getConstant('LIBXSLT_DOTTED_VERSION'), null, array('xsl'));
                     break;
 
                 case 'zip':
-                    $zipArchiveClass = self::getExtensionClass('ZipArchive');
-                    if (defined($zipArchiveClass . '::LIBZIP_VERSION')) {
-                        $this->addLibrary($name, $zipArchiveClass::LIBZIP_VERSION);
+                    if ($this->runtime->hasConstant('LIBZIP_VERSION', 'ZipArchive')) {
+                        $this->addLibrary($name, $this->runtime->getConstant('LIBZIP_VERSION','ZipArchive'));
                     }
                     break;
 
                 case 'zlib':
-                    if (self::isConstantDefined('ZLIB_VERSION')) {
-                        $this->addLibrary($name, ZLIB_VERSION);
+                    if ($this->runtime->hasConstant('ZLIB_VERSION')) {
+                        $this->addLibrary($name, $this->runtime->getConstant('ZLIB_VERSION'));
 
                     // Linked Version => 1.2.8
-                    } elseif (preg_match('/^Linked Version => (?<version>.+)$/m', self::getExtensionInfo('zlib'), $matches)) {
+                    } elseif (preg_match('/^Linked Version => (?<version>.+)$/m', $this->runtime->getExtensionInfo('zlib'), $matches)) {
                         $this->addLibrary($name, $matches['version']);
                     }
                     break;
@@ -449,7 +333,8 @@ class PlatformRepository extends ArrayRepository
             }
         }
 
-        if ($hhvmVersion = self::getHHVMVersion($this->process)) {
+        $hhvmVersion = $this->hhvmDetector->getVersion();
+        if ($hhvmVersion) {
             try {
                 $prettyVersion = $hhvmVersion;
                 $version = $this->versionParser->normalize($prettyVersion);
@@ -534,6 +419,11 @@ class PlatformRepository extends ArrayRepository
         $packageName = $this->buildPackageName($name);
         $ext = new CompletePackage($packageName, $version, $prettyVersion);
         $ext->setDescription('The '.$name.' PHP extension'.$extraDescription);
+
+        if ($name === 'uuid') {
+            $ext->setReplaces(array(new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version))));
+        }
+
         $this->addPackage($ext);
     }
 
@@ -574,30 +464,5 @@ class PlatformRepository extends ArrayRepository
         $lib->setReplaces($replaces);
 
         $this->addPackage($lib);
-    }
-
-    private static function getHHVMVersion(ProcessExecutor $process = null)
-    {
-        if (null !== self::$hhvmVersion) {
-            return self::$hhvmVersion ?: null;
-        }
-
-        self::$hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;
-        if (self::$hhvmVersion === null && !Platform::isWindows()) {
-            self::$hhvmVersion = false;
-            $finder = new ExecutableFinder();
-            $hhvmPath = $finder->find('hhvm');
-            if ($hhvmPath !== null) {
-                $process = $process ?: new ProcessExecutor();
-                $exitCode = $process->execute(
-                    ProcessExecutor::escape($hhvmPath).
-                    ' --php -d hhvm.jit=0 -r "echo HHVM_VERSION;" 2>/dev/null',
-                    self::$hhvmVersion
-                );
-                if ($exitCode !== 0) {
-                    self::$hhvmVersion = false;
-                }
-            }
-        }
     }
 }

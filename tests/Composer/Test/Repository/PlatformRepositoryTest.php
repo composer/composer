@@ -13,67 +13,24 @@
 namespace Composer\Test\Repository;
 
 use Composer\Repository\PlatformRepository;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Test\TestCase;
-use Composer\Util\ProcessExecutor;
-use Composer\Package\Version\VersionParser;
-use Composer\Util\Platform;
 use PHPUnit\Framework\Assert;
-use Symfony\Component\Process\ExecutableFinder;
 
 class PlatformRepositoryTest extends TestCase
 {
-    public function testHHVMVersionWhenExecutingInHHVM()
+    public function testHhvmPackage()
     {
-        if (!defined('HHVM_VERSION_ID')) {
-            $this->markTestSkipped('Not running with HHVM');
-            return;
-        }
-        $repository = new PlatformRepository();
-        $package = $repository->findPackage('hhvm', '*');
-        $this->assertNotNull($package, 'failed to find HHVM package');
-        $this->assertSame(
-            sprintf('%d.%d.%d',
-                HHVM_VERSION_ID / 10000,
-                (HHVM_VERSION_ID / 100) % 100,
-                HHVM_VERSION_ID % 100
-            ),
-            $package->getPrettyVersion()
-        );
-    }
+        $hhvmDetector = $this->createMock('Composer\Platform\HhvmDetector');
+        $platformRepository = new PlatformRepository(array(), array(), null, $hhvmDetector);
 
-    public function testHHVMVersionWhenExecutingInPHP()
-    {
-        if (defined('HHVM_VERSION_ID')) {
-            $this->markTestSkipped('Running with HHVM');
-            return;
-        }
-        if (PHP_VERSION_ID < 50400) {
-            $this->markTestSkipped('Test only works on PHP 5.4+');
-            return;
-        }
-        if (Platform::isWindows()) {
-            $this->markTestSkipped('Test does not run on Windows');
-            return;
-        }
-        $finder = new ExecutableFinder();
-        $hhvm = $finder->find('hhvm');
-        if ($hhvm === null) {
-            $this->markTestSkipped('HHVM is not installed');
-        }
-        $repository = new PlatformRepository(array(), array());
-        $package = $repository->findPackage('hhvm', '*');
-        $this->assertNotNull($package, 'failed to find HHVM package');
+        $hhvmDetector
+            ->method('getVersion')
+            ->willReturn('2.1.0');
 
-        $process = new ProcessExecutor();
-        $exitCode = $process->execute(
-            ProcessExecutor::escape($hhvm).
-            ' --php -d hhvm.jit=0 -r "echo HHVM_VERSION;" 2>/dev/null',
-            $version
-        );
-        $parser = new VersionParser;
+        $hhvm = $platformRepository->findPackage('hhvm', '*');
+        self::assertNotNull($hhvm, 'hhvm found');
 
-        $this->assertSame($parser->normalize($version), $package->getVersion());
+        self::assertSame('2.1.0.0', $hhvm->getVersion());
     }
 
     public static function getLibraryTestCases()
@@ -138,7 +95,7 @@ curl.cainfo => no value => no value',
                     'lib-curl-zlib' => '1.2.8',
                     'lib-curl-libssh2' => '1.4.3',
                 ),
-                array('curl_version' => array('version' => '2.0.0'))
+                array(array('curl_version', array(), array('version' => '2.0.0')))
             ),
 
             'curl: OpenSSL fips version' => array(
@@ -181,7 +138,7 @@ curl.cainfo => no value => no value',
                     'lib-curl-zlib' => '1.2.8',
                     'lib-curl-libssh2' => '1.4.3',
                 ),
-                array('curl_version' => array('version' => '2.0.0'))
+                array(array('curl_version', array(), array('version' => '2.0.0')))
             ),
             'date' => array(
                 'date',
@@ -220,14 +177,14 @@ libmagic => 537',
                 null,
                 array('lib-gd' => '1.2.3'),
                 array(),
-                array('GD_VERSION' => '1.2.3')
+                array(array('GD_VERSION', null, '1.2.3'))
             ),
             'iconv' => array(
                 'iconv',
                 null,
                 array('lib-iconv' => '1.2.4'),
                 array(),
-                array('ICONV_VERSION' => '1.2.4')
+                array(array('ICONV_VERSION', null, '1.2.4'))
             ),
             'intl' => array(
                 'intl',
@@ -247,13 +204,16 @@ intl.use_exceptions => 0 => 0',
                 array(
                     'lib-icu' => '100',
                     'lib-icu-cldr' => ResourceBundleStub::STUB_VERSION,
-                    'lib-icu-unicode' => IntlCharStub::STUB_VERSION,
+                    'lib-icu-unicode' => '7.0.0',
                 ),
-                array(),
-                array('INTL_ICU_VERSION' => '100'),
                 array(
-                    'ResourceBundle' => 'Composer\\Test\\Repository\\ResourceBundleStub',
-                    'IntlChar' => 'Composer\\Test\\Repository\\IntlCharStub',
+                    array(array('ResourceBundle', 'create'), array('root', 'ICUDATA', false), new ResourceBundleStub()),
+                    array(array('IntlChar', 'getUnicodeVersion'), array(), array(7, 0, 0, 0)),
+                ),
+                array(array('INTL_ICU_VERSION', null, '100')),
+                array(
+                    array('ResourceBundle'),
+                    array('IntlChar'),
                 )
             ),
             'intl: INTL_ICU_VERSION not defined' => array(
@@ -266,31 +226,29 @@ version => 1.1.0
 ICU version => 57.1
 ICU Data version => 57.1',
                 array('lib-icu' => '57.1'),
-                array(),
-                array('INTL_ICU_VERSION' => false)
             ),
             'imagick: 6.x' => array(
                 'imagick',
                 null,
-                array('lib-imagick-imagemagick' => Imagick6Stub::STUB_VERSION),
+                array('lib-imagick-imagemagick' => '6.2.9'),
                 array(),
                 array(),
-                array('Imagick' => 'Composer\\Test\\Repository\\Imagick6Stub')
+                array(array('Imagick', array(), new ImagickStub('ImageMagick 6.2.9 Q16 x86_64 2018-05-18 http://www.imagemagick.org')))
             ),
             'imagick: 7.x' => array(
                 'imagick',
                 null,
-                array('lib-imagick-imagemagick' => Imagick7Stub::STUB_VERSION),
+                array('lib-imagick-imagemagick' => '7.0.8.34'),
                 array(),
                 array(),
-                array('Imagick' => 'Composer\\Test\\Repository\\Imagick7Stub')
+                array(array('Imagick', array(), new ImagickStub('ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org')))
             ),
             'libxml' => array(
                 'libxml',
                 null,
                 array('lib-libxml' => '2.1.5'),
                 array(),
-                array('LIBXML_DOTTED_VERSION' => '2.1.5')
+                array(array('LIBXML_DOTTED_VERSION', null, '2.1.5'))
             ),
             'mbstring' => array(
                 'mbstring',
@@ -311,7 +269,7 @@ Multibyte regex (oniguruma) version => 6.1.3',
                     'lib-mbstring-oniguruma' => '7.0.0',
                 ),
                 array(),
-                array('MB_ONIGURUMA_VERSION' => '7.0.0')
+                array(array('MB_ONIGURUMA_VERSION', null, '7.0.0'))
             ),
             'mbstring: no MB_ONIGURUMA constant' => array(
                 'mbstring',
@@ -330,9 +288,7 @@ Multibyte regex (oniguruma) version => 6.1.3',
                 array(
                     'lib-mbstring-libmbfl' => '1.3.2',
                     'lib-mbstring-oniguruma' => '6.1.3',
-                ),
-                array(),
-                array('MB_ONIGURUMA_VERSION' => false)
+                )
             ),
             'mbstring: no MB_ONIGURUMA constant <7.40' => array(
                 'mbstring',
@@ -353,8 +309,6 @@ Multibyte regex (oniguruma) backtrack check => On',
                     'lib-mbstring-libmbfl' => '1.3.2',
                     'lib-mbstring-oniguruma' => '6.9.4',
                 ),
-                array(),
-                array('MB_ONIGURUMA_VERSION' => false)
             ),
             'memcached' => array(
                 'memcached',
@@ -376,56 +330,56 @@ msgpack support => yes',
                 null,
                 array('lib-openssl' => '1.1.1.7'),
                 array(),
-                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g  21 Apr 2020')
+                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g  21 Apr 2020'))
             ),
             'openssl: two letters suffix' => array(
                 'openssl',
                 null,
                 array('lib-openssl' => '0.9.8.33'),
                 array(),
-                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 0.9.8zg  21 Apr 2020')
+                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 0.9.8zg  21 Apr 2020'))
             ),
             'openssl: pre release is treated as alpha' => array(
                 'openssl',
                 null,
                 array('lib-openssl' => '1.1.1.7-alpha1'),
                 array(),
-                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g-pre1  21 Apr 2020')
+                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-pre1  21 Apr 2020'))
             ),
             'openssl: beta release' => array(
                 'openssl',
                 null,
                 array('lib-openssl' => '1.1.1.7-beta2'),
                 array(),
-                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g-beta2  21 Apr 2020')
+                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-beta2  21 Apr 2020'))
             ),
             'openssl: alpha release' => array(
                 'openssl',
                 null,
                 array('lib-openssl' => '1.1.1.7-alpha4'),
                 array(),
-                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g-alpha4  21 Apr 2020')
+                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-alpha4  21 Apr 2020'))
             ),
             'openssl: rc release' => array(
                 'openssl',
                 null,
                 array('lib-openssl' => '1.1.1.7-rc2'),
                 array(),
-                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g-rc2  21 Apr 2020')
+                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-rc2  21 Apr 2020'))
             ),
             'openssl: fips' => array(
                 'openssl',
                 null,
                 array('lib-openssl-fips' => '1.1.1.7'),
                 array(),
-                array('OPENSSL_VERSION_TEXT' => 'OpenSSL 1.1.1g-fips  21 Apr 2020')
+                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-fips  21 Apr 2020'))
             ),
             'openssl: LibreSSL' => array(
                 'openssl',
                 null,
                 array('lib-openssl' => '2.0.1.0'),
                 array(),
-                array('OPENSSL_VERSION_TEXT' => 'LibreSSL 2.0.1')
+                array(array('OPENSSL_VERSION_TEXT', null, 'LibreSSL 2.0.1'))
             ),
             'pcre' => array(
                 'pcre',
@@ -442,7 +396,7 @@ PCRE JIT Target => x86 64bit (little endian + unaligned)',
                     'lib-pcre-unicode' => '11.0.0',
                 ),
                 array(),
-                array('PCRE_VERSION' => '10.33 2019-04-16')
+                array(array('PCRE_VERSION', null, '10.33 2019-04-16'))
             ),
             'pcre: no unicode version included' => array(
                 'pcre',
@@ -461,49 +415,42 @@ pcre.recursion_limit => 100000 => 100000
                     'lib-pcre-unicode' => false,
                 ),
                 array(),
-                array('PCRE_VERSION' => '8.38 2015-11-23')
+                array(array('PCRE_VERSION', null, '8.38 2015-11-23'))
             ),
             'libsodium' => array(
                 'libsodium',
                 null,
                 array('lib-libsodium' => '1.0.17'),
                 array(),
-                array('SODIUM_LIBRARY_VERSION' => '1.0.17')
+                array(array('SODIUM_LIBRARY_VERSION', null, '1.0.17'))
             ),
             'libsodium: different extension name' => array(
                 'sodium',
                 null,
                 array('lib-libsodium' => '1.0.15'),
                 array(),
-                array('SODIUM_LIBRARY_VERSION' => '1.0.15')
-            ),
-            'uuid' => array(
-                'uuid',
-                null,
-                array('lib-uuid' => '1.0.4'),
-                array('phpversion' => '1.0.4'),
+                array(array('SODIUM_LIBRARY_VERSION', null, '1.0.15'))
             ),
             'xsl' => array(
                 'xsl',
                 null,
                 array('lib-libxslt' => '1.1.29'),
                 array(),
-                array('LIBXSLT_DOTTED_VERSION' => '1.1.29')
+                array(array('LIBXSLT_DOTTED_VERSION', null, '1.1.29'))
             ),
             'zip' => array(
                 'zip',
                 null,
-                array('lib-zip' => ZipArchiveStub::LIBZIP_VERSION),
+                array('lib-zip' => '1.5.0'),
                 array(),
-                array(),
-                array('ZipArchive' => 'Composer\\Test\\Repository\\ZipArchiveStub')
+                array(array('LIBZIP_VERSION', 'ZipArchive', '1.5.0')),
             ),
             'zlib' => array(
                 'zlib',
                 null,
                 array('lib-zlib' => '1.2.10'),
                 array(),
-                array('ZLIB_VERSION' => '1.2.10'),
+                array(array('ZLIB_VERSION', null, '1.2.10')),
             ),
             'zlib: no constant present' => array(
                 'zlib',
@@ -516,15 +463,12 @@ Stream Filter => zlib.inflate, zlib.deflate
 Compiled Version => 1.2.8
 Linked Version => 1.2.11',
                 array('lib-zlib' => '1.2.11'),
-                array(),
-                array('ZLIB_VERSION' => false)
             ),
         );
     }
 
     /**
      * @dataProvider getLibraryTestCases
-     * @runInSeparateProcess
      *
      * @param string $extension
      * @param string|null $info
@@ -539,56 +483,68 @@ Linked Version => 1.2.11',
         array $expectations,
         array $functions = array(),
         array $constants = array(),
-        array $classes = array()
+        array $classDefinitions = array()
     )
     {
-        PlatformRepository::setLoadedExtensionsForTesting(array($extension => '100.200.300'));
-        if ($info !== null) {
-            PlatformRepository::setExtensionInfoForTesting($extension, $info);
-        }
+        $extensionVersion = '100.200.300';
 
-        foreach ($functions as $function => $returnValue) {
-            eval(sprintf(
-                'namespace Composer\Repository { function %s() { return %s; } }',
-                $function,
-                var_export($returnValue, true)
-            ));
-        }
+        $runtime = $this->createMock('Composer\Platform\Runtime');
+        $runtime
+            ->method('getExtensions')
+            ->willReturn(array($extension));
 
-        foreach ($constants as $constant => $constantValue) {
-            if ($constantValue === false) {
-                PlatformRepository::defineConstantForTesting($constant, false);
-            } else {
-                PlatformRepository::defineConstantForTesting($constant, true);
-                eval(sprintf(
-                    'namespace Composer\Repository { const %s = %s; }',
-                    $constant,
-                    var_export($constantValue, true)
-                ));
-            }
-        }
+        $runtime
+            ->method('getExtensionVersion')
+            ->willReturn($extensionVersion);
 
-        foreach ($classes as $class => $stub) {
-            PlatformRepository::setExtensionClassForTesting($class, $stub);
-        }
+        $runtime
+            ->method('getExtensionInfo')
+            ->with($extension)
+            ->willReturn($info);
 
-        $platformRepository = new PlatformRepository();
-        $packages = $platformRepository->getPackages();
+        $runtime
+            ->method('invoke')
+            ->willReturnMap($functions);
+
+        $runtime
+            ->method('hasConstant')
+            ->willReturnMap(
+                array_map(
+                    function ($constantDefintion) { return array($constantDefintion[0], $constantDefintion[1], true); },
+                    $constants
+                )
+            );
+        $runtime
+            ->method('getConstant')
+            ->willReturnMap($constants);
+
+        $runtime
+            ->method('hasClass')
+            ->willReturnMap(
+                array_map(
+                    function ($classDefinition) { return array($classDefinition[0], true); },
+                    $classDefinitions
+                )
+            );
+        $runtime
+            ->method('construct')
+            ->willReturnMap($classDefinitions);
+
+        $platformRepository = new PlatformRepository(array(), array(), $runtime);
 
         $expectations['ext-' . $extension] = '100.200.300';
         foreach ($expectations as $packageName => $version) {
-            $foundLibrary = false;
-            foreach ($packages as $package) {
-                if ($package->getName() === $packageName) {
-                    $foundLibrary = true;
-                    self::assertSame($version, $package->getPrettyVersion(), sprintf('Expected version %s for %s', $version, $packageName));
-                    foreach ($package->getReplaces() as $link) {
-                        self::assertSame($package->getName(), $link->getSource());
-                        self::assertTrue($link->getConstraint()->matches(new Constraint('=', $package->getVersion())));
-                    }
+            $package = $platformRepository->findPackage($packageName, '*');
+            if ($version === false) {
+                self::assertNull($package, sprintf('Expected to not find package "%s"', $packageName));
+            } else {
+                self::assertNotNull($packageName, sprintf('Expected to find package "%s"', $packageName));
+                self::assertSame($version, $package->getPrettyVersion(), sprintf('Expected version %s for %s', $version, $packageName));
+                foreach ($package->getReplaces() as $link) {
+                    self::assertSame($package->getName(), $link->getSource());
+                    self::assertTrue($link->getConstraint()->matches($this->getVersionConstraint('=', $package->getVersion())));
                 }
             }
-            self::assertTrue($version === false || $foundLibrary, sprintf('Could not find library %s', $packageName));
         }
     }
 }
@@ -613,36 +569,16 @@ class ResourceBundleStub {
     }
 }
 
-class IntlCharStub {
-    const STUB_VERSION = '7.0.0';
+class ImagickStub {
+    private $versionString;
 
-    public static function getUnicodeVersion() {
-        Assert::assertSame(0, func_num_args());
-
-        return array(7, 0, 0, 0);
+    public function __construct($versionString) {
+        $this->versionString = $versionString;
     }
-}
-
-class Imagick6Stub {
-    const STUB_VERSION = '6.8.9.9';
 
     public function getVersion() {
         Assert::assertSame(0, func_num_args());
 
-        return array('versionString' => 'ImageMagick 6.8.9-9 Q16 x86_64 2018-05-18 http://www.imagemagick.org');
+        return array('versionString' => $this->versionString);
     }
-}
-
-class Imagick7Stub {
-    const STUB_VERSION = '7.0.8.34';
-
-    public function getVersion() {
-        Assert::assertSame(0, func_num_args());
-
-        return array('versionString' => 'ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org');
-    }
-}
-
-class ZipArchiveStub {
-    const LIBZIP_VERSION = '1.5.0';
 }
