@@ -57,7 +57,6 @@ class HhvmDetectorTest extends TestCase
         }
 
         $detectedVersion = $this->hhvmDetector->getVersion();
-        var_dump($detectedVersion);
         self::assertNotNull($detectedVersion, 'Failed to detect HHVM version');
 
         $process = new ProcessExecutor();
@@ -79,7 +78,6 @@ class HhvmDetectorTest extends TestCase
             define('HHVM_VERSION_ID', 20201);
         }
         $version = $this->hhvmDetector->getVersion();
-        var_dump($version);
         self::assertSame(self::versionIdToVersion(), $version);
     }
 
