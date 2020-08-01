@@ -85,6 +85,10 @@ class HhvmDetectorTest extends TestCase
 
     private static function versionIdToVersion()
     {
+        if (!defined('HHVM_VERSION_ID')) {
+            return null;
+        }
+
         return sprintf(
             '%d.%d.%d',
             HHVM_VERSION_ID / 10000,
