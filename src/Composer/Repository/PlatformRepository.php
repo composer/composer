@@ -257,6 +257,20 @@ class PlatformRepository extends ArrayRepository
                     $this->addLibrary('imagick-imagemagick', $version, null, array('imagick'));
                     break;
 
+                case 'ldap':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^Vendor Version => (?<versionId>\d+)$/m', $info, $matches)) {
+                        $versionId = $matches['versionId'];
+                        $version = sprintf(
+                            '%d.%d.%d',
+                            $versionId / 10000,
+                            ($versionId / 100) % 100,
+                            $versionId % 100
+                        );
+                        $this->addLibrary($name.'-openldap', $version, 'OpenLDAP version of ext/ldap');
+                    }
+
                 case 'libxml':
                     $this->addLibrary($name, $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version');
                     break;

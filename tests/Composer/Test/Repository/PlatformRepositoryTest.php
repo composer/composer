@@ -254,6 +254,23 @@ ICU Data version => 57.1',
                 array(),
                 array(array('Imagick', array(), new ImagickStub('ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org')))
             ),
+            'ldap' => array(
+                'ldap',
+                '
+ldap
+
+LDAP Support => enabled
+RCS Version => $Id: 5f1913de8e05a346da913956f81e0c0d8991c7cb $
+Total Links => 0/unlimited
+API Version => 3001
+Vendor Name => OpenLDAP
+Vendor Version => 20450
+SASL Support => Enabled
+
+Directive => Local Value => Master Value
+ldap.max_links => Unlimited => Unlimited',
+                array('lib-ldap-openldap' => '2.4.50')
+            ),
             'libxml' => array(
                 'libxml',
                 null,
