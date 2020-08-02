@@ -458,8 +458,18 @@ sqlite3.defensive => 1 => 1',
             ),
             'xsl' => array(
                 'xsl',
-                null,
-                array('lib-libxslt' => '1.1.29'),
+                '
+xsl
+
+XSL => enabled
+libxslt Version => 1.1.33
+libxslt compiled against libxml Version => 2.9.8
+EXSLT => enabled
+libexslt Version => 1.1.29',
+                array(
+                    'lib-libxslt' => '1.1.29',
+                    'lib-libxslt-libxml' => '2.9.8',
+                ),
                 array(),
                 array(array('LIBXSLT_DOTTED_VERSION', null, '1.1.29'))
             ),
