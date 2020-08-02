@@ -12,9 +12,7 @@
 
 namespace Composer\Test\Util;
 
-use Composer\Package\Version\VersionParser;
 use Composer\Util\Version;
-use Composer\Util\Zip;
 use Composer\Test\TestCase;
 
 /**
@@ -87,7 +85,27 @@ class VersionTest extends TestCase
         self::assertSame($fipsExpected, $isFips);
 
         $normalizedVersion = $normalizedVersion ? $normalizedVersion : $parsedVersion;
-        $versionParser = new VersionParser();
-        self::assertSame($normalizedVersion, $versionParser->normalize($parsedVersion));
+        self::assertSame($normalizedVersion, $this->getVersionParser()->normalize($parsedVersion));
+    }
+
+    public function getLibJpegVersions()
+    {
+        return array(
+            array('9', '9.0'),
+            array('9a', '9.1'),
+            array('9b', '9.2'),
+            // Never seen in the wild, just for overflow correctness
+            array('9za', '9.27'),
+        );
+    }
+
+    /**
+     * @dataProvider getLibJpegVersions
+     * @param string $input
+     * @param string $parsedVersion
+     */
+    public function testParseLibjpegVersion($input, $parsedVersion)
+    {
+        self::assertSame($parsedVersion, Version::parseLibjpeg($input));
     }
 }

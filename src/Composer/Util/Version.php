@@ -20,14 +20,14 @@ class Version
     /**
      * @param string $opensslVersion
      * @param bool $isFips
-     * @return string
+     * @return string|null
      */
     public static function parseOpenssl($opensslVersion, &$isFips)
     {
         $isFips = false;
 
         if (!preg_match('/^(?<version>[0-9.]+)(?<patch>[a-z]{0,2})?(?<suffix>(?:-?(?:dev|pre|alpha|beta|rc|fips)[\d]*)*)?$/', $opensslVersion, $matches)) {
-            return $opensslVersion;
+            return null;
         }
 
         // "" => 0, "a" => 1, "zg" => 33
@@ -38,5 +38,19 @@ class Version
         $suffix = strtr('-'.ltrim($matches['suffix'], '-'), array('-fips' => '', '-pre' => '-alpha'));
 
         return rtrim($matches['version'].'.'.$patch.$suffix, '-');
+    }
+
+    /**
+     * @param string $libjpegVersion
+     * @return string|null
+     */
+    public static function parseLibjpeg($libjpegVersion)
+    {
+        if (!preg_match('/^(?<major>\d+)(?<minor>[a-z]*)$/', $libjpegVersion, $matches)) {
+            return null;
+        }
+
+        $minor = strlen($matches['minor']) * (-ord('a')+1) + array_sum(array_map('ord', str_split($matches['minor'])));
+        return $matches['major'].'.'.$minor;
     }
 }
