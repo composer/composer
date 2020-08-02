@@ -185,8 +185,63 @@ libmagic => 537',
             ),
             'gd' => array(
                 'gd',
-                null,
-                array('lib-gd' => '1.2.3'),
+                '
+gd
+
+GD Support => enabled
+GD Version => bundled (2.1.0 compatible)
+FreeType Support => enabled
+FreeType Linkage => with freetype
+FreeType Version => 2.10.0
+GIF Read Support => enabled
+GIF Create Support => enabled
+JPEG Support => enabled
+libJPEG Version => 9 compatible
+PNG Support => enabled
+libPNG Version => 1.6.34
+WBMP Support => enabled
+XBM Support => enabled
+WebP Support => enabled
+
+Directive => Local Value => Master Value
+gd.jpeg_ignore_warning => 1 => 1',
+                array(
+                    'lib-gd' => '1.2.3',
+                    'lib-gd-freetype' => '2.10.0',
+                    'lib-gd-libjpeg' => '9.0',
+                    'lib-gd-libpng' => '1.6.34',
+                ),
+                array(),
+                array(array('GD_VERSION', null, '1.2.3'))
+            ),
+            'gd: libjpeg version variation' => array(
+                'gd',
+                '
+gd
+
+GD Support => enabled
+GD Version => bundled (2.1.0 compatible)
+FreeType Support => enabled
+FreeType Linkage => with freetype
+FreeType Version => 2.9.1
+GIF Read Support => enabled
+GIF Create Support => enabled
+JPEG Support => enabled
+libJPEG Version => 6b
+PNG Support => enabled
+libPNG Version => 1.6.35
+WBMP Support => enabled
+XBM Support => enabled
+WebP Support => enabled
+
+Directive => Local Value => Master Value
+gd.jpeg_ignore_warning => 1 => 1',
+                array(
+                    'lib-gd' => '1.2.3',
+                    'lib-gd-freetype' => '2.9.1',
+                    'lib-gd-libjpeg' => '6.2',
+                    'lib-gd-libpng' => '1.6.35',
+                ),
                 array(),
                 array(array('GD_VERSION', null, '1.2.3'))
             ),

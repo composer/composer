@@ -218,6 +218,21 @@ class PlatformRepository extends ArrayRepository
 
                 case 'gd':
                     $this->addLibrary($name, $this->runtime->getConstant('GD_VERSION'));
+
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^libJPEG Version => (?<version>.+?)(?: compatible)?$/m', $info, $libjpegMatches)) {
+                        $this->addLibrary($name.'-libjpeg', Version::parseLibjpeg($libjpegMatches['version']), 'libjpeg version for gd');
+                    }
+
+                    if (preg_match('/^libPNG Version => (?<version>.+)$/m', $info, $libpngMatches)) {
+                        $this->addLibrary($name.'-libpng', $libpngMatches['version'], 'libpng version for gd');
+                    }
+
+                    if (preg_match('/^FreeType Version => (?<version>.+)$/m', $info, $freetypeMatches)) {
+                        $this->addLibrary($name.'-freetype', $freetypeMatches['version'], 'freetype version for gd');
+                    }
+
                     break;
 
                 case 'gmp':
