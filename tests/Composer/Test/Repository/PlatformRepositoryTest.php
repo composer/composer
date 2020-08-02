@@ -197,6 +197,13 @@ libmagic => 537',
                 array(),
                 array(array('ICONV_VERSION', null, '1.2.4'))
             ),
+            'gmp' => array(
+                'gmp',
+                null,
+                array('lib-gmp' => '6.1.0'),
+                array(),
+                array(array('GMP_VERSION', null, '6.1.0'))
+            ),
             'intl' => array(
                 'intl',
                 '

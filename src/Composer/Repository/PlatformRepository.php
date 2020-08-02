@@ -220,6 +220,10 @@ class PlatformRepository extends ArrayRepository
                     $this->addLibrary($name, $this->runtime->getConstant('GD_VERSION'));
                     break;
 
+                case 'gmp':
+                    $this->addLibrary($name, $this->runtime->getConstant('GMP_VERSION'));
+                    break;
+
                 case 'iconv':
                     $this->addLibrary($name, $this->runtime->getConstant('ICONV_VERSION'));
                     break;
@@ -270,6 +274,7 @@ class PlatformRepository extends ArrayRepository
                         );
                         $this->addLibrary($name.'-openldap', $version, 'OpenLDAP version of ext/ldap');
                     }
+                    break;
 
                 case 'libxml':
                     $this->addLibrary($name, $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version');
