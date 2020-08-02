@@ -168,6 +168,15 @@ class PlatformRepository extends ArrayRepository
                     }
                     break;
 
+                case 'bz2':
+                    $info = $this->runtime->getExtensionInfo('bz2');
+
+                    // BZip2 Version => 1.0.6, 6-Sept-2010
+                    if (preg_match('/BZip2 Version => (?<version>.*),/m', $info, $matches)) {
+                        $this->addLibrary($name, $matches['version']);
+                    }
+                    break;
+
                 case 'curl':
                     $curlVersion = $this->runtime->invoke('curl_version');
                     $this->addLibrary($name, $curlVersion['version']);

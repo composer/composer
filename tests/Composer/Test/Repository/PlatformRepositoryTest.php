@@ -55,6 +55,17 @@ Default heartbeats interval => 0',
                     'lib-amqp-librabbitmq' => '0.9.0',
                 )
             ),
+            'bz2' => array(
+                'bz2',
+                '
+bz2
+
+BZip2 Support => Enabled
+Stream Wrapper support => compress.bzip2://
+Stream Filter support => bzip2.decompress, bzip2.compress
+BZip2 Version => 1.0.5, 6-Sept-2010',
+                array('lib-bz2' => '1.0.5')
+            ),
             'curl' => array(
                 'curl',
                 '
