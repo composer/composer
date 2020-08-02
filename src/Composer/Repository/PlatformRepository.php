@@ -288,8 +288,15 @@ class PlatformRepository extends ArrayRepository
                     }
                     break;
 
+                case 'dom':
+                case 'simplexml';
+                case 'xmlreader';
+                case 'xmlwriter';
+                    $this->addLibrary($name.'-libxml', $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version for '.$name, array());
+                    break;
+
                 case 'libxml':
-                    $this->addLibrary($name, $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version');
+                    $this->addLibrary($name, $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version', array(), array_intersect($loadedExtensions, array('dom', 'simplexml', 'xmlreader', 'xmlwriter')));
                     break;
 
                 case 'mbstring':
@@ -509,9 +516,10 @@ class PlatformRepository extends ArrayRepository
      * @param string      $name
      * @param string      $prettyVersion
      * @param string|null $description
-     * @param string[]    $compatibilityAliases
+     * @param string[]    $replaces
+     * @param string[]    $provides
      */
-    private function addLibrary($name, $prettyVersion, $description = null, array $compatibilityAliases = array())
+    private function addLibrary($name, $prettyVersion, $description = null, array $replaces = array(), array $provides = array())
     {
         try {
             $version = $this->versionParser->normalize($prettyVersion);
@@ -526,11 +534,11 @@ class PlatformRepository extends ArrayRepository
         $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
         $lib->setDescription($description);
 
-        $replaces = array();
-        foreach ($compatibilityAliases as $alias) {
-            $replaces[] = new Link('lib-'.$name, 'lib-'.$alias, new Constraint('=', $version));
-        }
-        $lib->setReplaces($replaces);
+        $links = function ($alias) use ($name, $version) {
+            return new Link('lib-'.$name, 'lib-'.$alias, new Constraint('=', $version));
+        };
+        $lib->setReplaces(array_map($links, $replaces));
+        $lib->setProvides(array_map($links, $provides));
 
         $this->addPackage($lib);
     }

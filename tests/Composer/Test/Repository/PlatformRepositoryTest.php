@@ -145,7 +145,7 @@ Directive => Local Value => Master Value
 curl.cainfo => no value => no value',
                 array(
                     'lib-curl' => '2.0.0',
-                    'lib-curl-openssl-fips' => '1.0.1.20',
+                    'lib-curl-openssl-fips' => array('1.0.1.20', array('lib-curl-openssl')),
                     'lib-curl-zlib' => '1.2.8',
                     'lib-curl-libssh2' => '1.4.3',
                 ),
@@ -338,7 +338,7 @@ ICU Data version => 57.1',
             'imagick: 6.x' => array(
                 'imagick',
                 null,
-                array('lib-imagick-imagemagick' => '6.2.9'),
+                array('lib-imagick-imagemagick' => array('6.2.9', array('lib-imagick'))),
                 array(),
                 array(),
                 array(array('Imagick', array(), new ImagickStub('ImageMagick 6.2.9 Q16 x86_64 2018-05-18 http://www.imagemagick.org')))
@@ -346,7 +346,7 @@ ICU Data version => 57.1',
             'imagick: 7.x' => array(
                 'imagick',
                 null,
-                array('lib-imagick-imagemagick' => '7.0.8.34'),
+                array('lib-imagick-imagemagick' => array('7.0.8.34', array('lib-imagick'))),
                 array(),
                 array(),
                 array(array('Imagick', array(), new ImagickStub('ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org')))
@@ -372,6 +372,13 @@ ldap.max_links => Unlimited => Unlimited',
                 'libxml',
                 null,
                 array('lib-libxml' => '2.1.5'),
+                array(),
+                array(array('LIBXML_DOTTED_VERSION', null, '2.1.5'))
+            ),
+            'libxml: related extensions' => array(
+                array('libxml', 'dom', 'simplexml', 'xmlreader', 'xmlwriter'),
+                null,
+                array('lib-libxml' => array('2.1.5', array(), array('dom', 'simplexml', 'xmlreader', 'xmlwriter'))),
                 array(),
                 array(array('LIBXML_DOTTED_VERSION', null, '2.1.5'))
             ),
@@ -495,7 +502,6 @@ msgpack support => yes',
             'openssl: fips' => array(
                 'openssl',
                 null,
-                array('lib-openssl-fips' => '1.1.1.7'),
                 array(),
                 array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-fips  21 Apr 2020'))
             ),
@@ -656,7 +662,7 @@ libxslt compiled against libxml Version => 2.9.8
 EXSLT => enabled
 libexslt Version => 1.1.29',
                 array(
-                    'lib-libxslt' => '1.1.29',
+                    'lib-libxslt' => array('1.1.29', array('lib-xsl')),
                     'lib-libxslt-libxml' => '2.9.8',
                 ),
                 array(),
@@ -665,7 +671,7 @@ libexslt Version => 1.1.29',
             'zip' => array(
                 'zip',
                 null,
-                array('lib-zip-libzip' => '1.5.0'),
+                array('lib-zip-libzip' => array('1.5.0', array('lib-zip'))),
                 array(),
                 array(array('LIBZIP_VERSION', 'ZipArchive', '1.5.0')),
             ),
@@ -694,7 +700,7 @@ Linked Version => 1.2.11',
     /**
      * @dataProvider getLibraryTestCases
      *
-     * @param string $extension
+     * @param string|string[] $extensions
      * @param string|null $info
      * @param array<string,string|false> $expectations
      * @param array<string,mixed> $functions
@@ -702,7 +708,7 @@ Linked Version => 1.2.11',
      * @param array<string,class-string> $classes
      */
     public function testLibraryInformation(
-        $extension,
+        $extensions,
         $info,
         array $expectations,
         array $functions = array(),
@@ -710,21 +716,31 @@ Linked Version => 1.2.11',
         array $classDefinitions = array()
     )
     {
+        $extensions = (array)$extensions;
+
         $extensionVersion = '100.200.300';
 
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
         $runtime
             ->method('getExtensions')
-            ->willReturn(array($extension));
+            ->willReturn($extensions);
+
 
         $runtime
             ->method('getExtensionVersion')
-            ->willReturn($extensionVersion);
+            ->willReturnMap(
+                array_map(function($extension) use ($extensionVersion) {
+                    return array($extension, $extensionVersion);
+                }, $extensions)
+            );
 
         $runtime
             ->method('getExtensionInfo')
-            ->with($extension)
-            ->willReturn($info);
+            ->willReturnMap(
+                array_map(function ($extension) use ($info) {
+                    return array($extension, $info);
+                }, $extensions)
+            );
 
         $runtime
             ->method('invoke')
@@ -756,15 +772,37 @@ Linked Version => 1.2.11',
 
         $platformRepository = new PlatformRepository(array(), array(), $runtime);
 
-        $expectations['ext-' . $extension] = '100.200.300';
-        foreach ($expectations as $packageName => $version) {
+        $expectations = array_merge($expectations, array_combine(array_map(function($extension) {
+                return 'ext-'.$extension;
+            }, $extensions), array_fill(0, count($extensions), $extensionVersion)));
+
+        foreach ($expectations as $packageName => $expectedVersion) {
             $package = $platformRepository->findPackage($packageName, '*');
-            if ($version === false) {
+            if ($expectedVersion === false) {
                 self::assertNull($package, sprintf('Expected to not find package "%s"', $packageName));
             } else {
                 self::assertNotNull($package, sprintf('Expected to find package "%s"', $packageName));
-                self::assertSame($version, $package->getPrettyVersion(), sprintf('Expected version %s for %s', $version, $packageName));
-                foreach ($package->getReplaces() as $link) {
+
+                $expectedProvides = array();
+                $expectedReplaces = array();
+                if (is_array($expectedVersion)) {
+                    $expectedReplaces = isset($expectedVersion[1]) ? $expectedVersion[1] : array();
+                    $expectedProvides = isset($expectedVersion[2]) ? $expectedVersion[2] : array();
+                    $expectedVersion = $expectedVersion[0];
+                }
+
+                self::assertSame($expectedVersion, $package->getPrettyVersion(), sprintf('Expected version %s for %s', $expectedVersion, $packageName));
+
+                $replaces = $package->getReplaces();
+                self::assertCount(count($expectedReplaces), $replaces, sprintf('Replaces for %s', $package));
+                foreach ($replaces as $link) {
+                    self::assertSame($package->getName(), $link->getSource());
+                    self::assertTrue($link->getConstraint()->matches($this->getVersionConstraint('=', $package->getVersion())));
+                }
+
+                $provides = $package->getProvides();
+                self::assertCount(count($expectedProvides), $provides, sprintf('Provides for %s', $package));
+                foreach ($provides as $link) {
                     self::assertSame($package->getName(), $link->getSource());
                     self::assertTrue($link->getConstraint()->matches($this->getVersionConstraint('=', $package->getVersion())));
                 }
