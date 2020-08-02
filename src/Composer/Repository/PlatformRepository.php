@@ -157,12 +157,12 @@ class PlatformRepository extends ArrayRepository
 
                     // librabbitmq version => 0.9.0
                     if (preg_match('/^librabbitmq version => (?<version>.+)$/m', $info, $librabbitmqMatches)) {
-                        $this->addLibrary('amqp-librabbitmq', $librabbitmqMatches['version'], 'AMQP librabbitmq version');
+                        $this->addLibrary($name.'-librabbitmq', $librabbitmqMatches['version'], 'AMQP librabbitmq version');
                     }
 
                     // AMQP protocol version => 0-9-1
                     if (preg_match('/^AMQP protocol version => (?<version>.+)$/m', $info, $protocolMatches)) {
-                        $this->addLibrary('amqp-protocol', str_replace('-', '.', $protocolMatches['version']), 'AMQP protocol version');
+                        $this->addLibrary($name.'-protocol', str_replace('-', '.', $protocolMatches['version']), 'AMQP protocol version');
                     }
                     break;
 
@@ -184,17 +184,17 @@ class PlatformRepository extends ArrayRepository
                     // SSL Version => OpenSSL/1.0.1t
                     if (preg_match('{^SSL Version => (?<library>[^/]+)/(?<version>.+)$}m', $info, $sslMatches)) {
                         $parsedVersion = Version::parseOpenssl($sslMatches['version'], $isFips);
-                        $this->addLibrary('curl-'.strtolower($sslMatches['library']).($isFips ? '-fips' : ''), $parsedVersion, 'curl '. $sslMatches['library'].' version ('. $sslMatches['version'].')', $isFips ? array('curl-'.strtolower($sslMatches['library'])) : array());
+                        $this->addLibrary($name.'-'.strtolower($sslMatches['library']).($isFips ? '-fips' : ''), $parsedVersion, 'curl '. $sslMatches['library'].' version ('. $sslMatches['version'].')', $isFips ? array('curl-'.strtolower($sslMatches['library'])) : array());
                     }
 
                     // libSSH Version => libssh2/1.4.3
                     if (preg_match('{^libSSH Version => (?<library>[^/]+)/(?<version>.+)$}m', $info, $sshMatches)) {
-                        $this->addLibrary('curl-'.strtolower($sshMatches['library']), $sshMatches['version'], 'curl '.$sshMatches['library'].' version');
+                        $this->addLibrary($name.'-'.strtolower($sshMatches['library']), $sshMatches['version'], 'curl '.$sshMatches['library'].' version');
                     }
 
                     // ZLib Version => 1.2.8
                     if (preg_match('{^ZLib Version => (?<version>.+)$}m', $info, $zlibMatches)) {
-                        $this->addLibrary('curl-zlib', $zlibMatches['version'], 'curl zlib version');
+                        $this->addLibrary($name.'-zlib', $zlibMatches['version'], 'curl zlib version');
                     }
                     break;
 
@@ -203,7 +203,7 @@ class PlatformRepository extends ArrayRepository
 
                     // timelib version => 2018.03
                     if (preg_match('/^timelib version => (?<version>.+)$/m', $info, $timelibMatches)) {
-                        $this->addLibrary('date-timelib', $timelibMatches['version'], 'ext/date timelib version');
+                        $this->addLibrary($name.'-timelib', $timelibMatches['version'], 'ext/date timelib version');
                     }
                     break;
 
@@ -212,7 +212,7 @@ class PlatformRepository extends ArrayRepository
 
                     // libmagic => 537
                     if (preg_match('/^^libmagic => (?<version>.+)$/m', $info, $magicMatches)) {
-                        $this->addLibrary('fileinfo-libmagic', $magicMatches['version'], 'fileinfo libmagic version');
+                        $this->addLibrary($name.'-libmagic', $magicMatches['version'], 'fileinfo libmagic version');
                     }
                     break;
 
@@ -277,7 +277,7 @@ class PlatformRepository extends ArrayRepository
                         $version .= '.'.$matches['patch'];
                     }
 
-                    $this->addLibrary('imagick-imagemagick', $version, null, array('imagick'));
+                    $this->addLibrary($name.'-imagemagick', $version, null, array('imagick'));
                     break;
 
                 case 'ldap':
@@ -297,16 +297,16 @@ class PlatformRepository extends ArrayRepository
 
                     // libmbfl version => 1.3.2
                     if (preg_match('/^libmbfl version => (?<version>.+)$/m', $info, $libmbflMatches)) {
-                        $this->addLibrary('mbstring-libmbfl', $libmbflMatches['version'], 'mbstring libmbfl version');
+                        $this->addLibrary($name.'-libmbfl', $libmbflMatches['version'], 'mbstring libmbfl version');
                     }
 
                     if ($this->runtime->hasConstant('MB_ONIGURUMA_VERSION')) {
-                        $this->addLibrary('mbstring-oniguruma', $this->runtime->getConstant('MB_ONIGURUMA_VERSION'), 'mbstring oniguruma version');
+                        $this->addLibrary($name.'-oniguruma', $this->runtime->getConstant('MB_ONIGURUMA_VERSION'), 'mbstring oniguruma version');
 
                     // Multibyte regex (oniguruma) version => 5.9.5
                     // oniguruma version => 6.9.0
                     } elseif (preg_match('/^(?:oniguruma|Multibyte regex \(oniguruma\)) version => (?<version>.+)$/m', $info, $onigurumaMatches)) {
-                        $this->addLibrary('mbstring-oniguruma', $onigurumaMatches['version'], 'mbstring oniguruma version');
+                        $this->addLibrary($name.'-oniguruma', $onigurumaMatches['version'], 'mbstring oniguruma version');
                     }
 
                     break;
@@ -316,7 +316,7 @@ class PlatformRepository extends ArrayRepository
 
                     // libmemcached version => 1.0.18
                     if (preg_match('/^libmemcached version => (?<version>.+)$/m', $info, $matches)) {
-                        $this->addLibrary('memcached-libmemcached', $matches['version'], 'libmemcached version');
+                        $this->addLibrary($name.'-libmemcached', $matches['version'], 'libmemcached version');
                     }
                     break;
 
@@ -335,7 +335,7 @@ class PlatformRepository extends ArrayRepository
 
                     // PCRE Unicode Version => 12.1.0
                     if (preg_match('/^PCRE Unicode Version => (?<version>.+)$/m', $info, $pcreUnicodeMatches)) {
-                        $this->addLibrary('pcre-unicode', $pcreUnicodeMatches['version'], 'PCRE Unicode version support');
+                        $this->addLibrary($name.'-unicode', $pcreUnicodeMatches['version'], 'PCRE Unicode version support');
                     }
 
                     break;
@@ -383,7 +383,7 @@ class PlatformRepository extends ArrayRepository
 
                 case 'zip':
                     if ($this->runtime->hasConstant('LIBZIP_VERSION', 'ZipArchive')) {
-                        $this->addLibrary('zip-libzip', $this->runtime->getConstant('LIBZIP_VERSION','ZipArchive'), null, array('zip'));
+                        $this->addLibrary($name.'-libzip', $this->runtime->getConstant('LIBZIP_VERSION','ZipArchive'), null, array('zip'));
                     }
                     break;
 
