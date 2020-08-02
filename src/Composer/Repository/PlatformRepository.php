@@ -233,6 +233,10 @@ class PlatformRepository extends ArrayRepository
                         $this->addLibrary($name.'-freetype', $freetypeMatches['version'], 'freetype version for gd');
                     }
 
+                    if (preg_match('/^libXpm Version => (?<versionId>\d+)$/m', $info, $libxpmMatches)) {
+                        $this->addLibrary($name.'-libxpm', Version::convertLibxpmVersionId($libxpmMatches['versionId']), 'libxpm version for gd');
+                    }
+
                     break;
 
                 case 'gmp':
@@ -280,14 +284,7 @@ class PlatformRepository extends ArrayRepository
                     $info = $this->runtime->getExtensionInfo($name);
 
                     if (preg_match('/^Vendor Version => (?<versionId>\d+)$/m', $info, $matches)) {
-                        $versionId = $matches['versionId'];
-                        $version = sprintf(
-                            '%d.%d.%d',
-                            $versionId / 10000,
-                            ($versionId / 100) % 100,
-                            $versionId % 100
-                        );
-                        $this->addLibrary($name.'-openldap', $version, 'OpenLDAP version of ext/ldap');
+                        $this->addLibrary($name.'-openldap', Version::convertOpenldapVersionId($matches['versionId']), 'OpenLDAP version of ext/ldap');
                     }
                     break;
 

@@ -245,6 +245,41 @@ gd.jpeg_ignore_warning => 1 => 1',
                 array(),
                 array(array('GD_VERSION', null, '1.2.3'))
             ),
+            'gd: libxpm' => array(
+                'gd',
+                '
+gd
+
+GD Support => enabled
+GD headers Version => 2.2.5
+GD library Version => 2.2.5
+FreeType Support => enabled
+FreeType Linkage => with freetype
+FreeType Version => 2.6.3
+GIF Read Support => enabled
+GIF Create Support => enabled
+JPEG Support => enabled
+libJPEG Version => 6b
+PNG Support => enabled
+libPNG Version => 1.6.28
+WBMP Support => enabled
+XPM Support => enabled
+libXpm Version => 30411
+XBM Support => enabled
+WebP Support => enabled
+
+Directive => Local Value => Master Value
+gd.jpeg_ignore_warning => 1 => 1',
+                array(
+                    'lib-gd' => '2.2.5',
+                    'lib-gd-freetype' => '2.6.3',
+                    'lib-gd-libjpeg' => '6.2',
+                    'lib-gd-libpng' => '1.6.28',
+                    'lib-gd-libxpm' => '3.4.11',
+                ),
+                array(),
+                array(array('GD_VERSION', null, '2.2.5'))
+            ),
             'iconv' => array(
                 'iconv',
                 null,

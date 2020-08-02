@@ -53,4 +53,32 @@ class Version
         $minor = strlen($matches['minor']) * (-ord('a')+1) + array_sum(array_map('ord', str_split($matches['minor'])));
         return $matches['major'].'.'.$minor;
     }
+
+    /**
+     * @param int $versionId
+     * @return string
+     */
+    public static function convertLibxpmVersionId($versionId)
+    {
+        return self::convertVersionId($versionId, 100);
+    }
+
+    /**
+     * @param int $versionId
+     * @return string
+     */
+    public static function convertOpenldapVersionId($versionId)
+    {
+        return self::convertVersionId($versionId, 100);
+    }
+
+    private static function convertVersionId($versionId, $base)
+    {
+        return sprintf(
+            '%d.%d.%d',
+            $versionId / ($base * $base),
+            ($versionId / $base) % $base,
+            $versionId % $base
+        );
+    }
 }
