@@ -20,7 +20,7 @@ class PlatformRepositoryTest extends TestCase
 {
     public function testHhvmPackage()
     {
-        $hhvmDetector = $this->createMock('Composer\Platform\HhvmDetector');
+        $hhvmDetector = $this->getMockBuilder('Composer\Platform\HhvmDetector')->getMock();
         $platformRepository = new PlatformRepository(array(), array(), null, $hhvmDetector);
 
         $hhvmDetector
