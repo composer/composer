@@ -549,7 +549,7 @@ Linked Version => 1.2.11',
             if ($version === false) {
                 self::assertNull($package, sprintf('Expected to not find package "%s"', $packageName));
             } else {
-                self::assertNotNull($packageName, sprintf('Expected to find package "%s"', $packageName));
+                self::assertNotNull($package, sprintf('Expected to find package "%s"', $packageName));
                 self::assertSame($version, $package->getPrettyVersion(), sprintf('Expected version %s for %s', $version, $packageName));
                 foreach ($package->getReplaces() as $link) {
                     self::assertSame($package->getName(), $link->getSource());

@@ -32,8 +32,6 @@ class PlatformRepository extends ArrayRepository
 {
     const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-(?:plugin|runtime)-api)$}iD';
 
-    private static $hhvmVersion;
-
     /**
      * @var VersionParser
      */
@@ -169,10 +167,10 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'bz2':
-                    $info = $this->runtime->getExtensionInfo('bz2');
+                    $info = $this->runtime->getExtensionInfo($name);
 
                     // BZip2 Version => 1.0.6, 6-Sept-2010
-                    if (preg_match('/BZip2 Version => (?<version>.*),/m', $info, $matches)) {
+                    if (preg_match('/^BZip2 Version => (?<version>.*),/m', $info, $matches)) {
                         $this->addLibrary($name, $matches['version']);
                     }
                     break;
