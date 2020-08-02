@@ -364,10 +364,11 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'sqlite3':
+                case 'pdo_sqlite':
                     $info = $this->runtime->getExtensionInfo($name);
 
                     if (preg_match('/^SQLite Library => (?<version>.*)$/m', $info, $matches)) {
-                        $this->addLibrary('sqlite3-sqlite', $matches['version']);
+                        $this->addLibrary($name.'-sqlite', $matches['version']);
                     }
                     break;
 

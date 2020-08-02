@@ -621,6 +621,16 @@ Revision =>  $Id: 9c5f356c77143981d2e905e276e439501fe0f419 $',
                 array(),
                 array(array('SODIUM_LIBRARY_VERSION', null, '1.0.15'))
             ),
+            'pdo_sqlite' => array(
+                'pdo_sqlite',
+                '
+pdo_sqlite
+
+PDO Driver for SQLite 3.x => enabled
+SQLite Library => 3.32.3
+                ',
+                array('lib-pdo_sqlite-sqlite' => '3.32.3')
+            ),
             'sqlite3' => array(
                 'sqlite3',
                 '
