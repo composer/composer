@@ -441,7 +441,7 @@ pcre.recursion_limit => 100000 => 100000
             'zip' => array(
                 'zip',
                 null,
-                array('lib-zip' => '1.5.0'),
+                array('lib-zip-libzip' => '1.5.0'),
                 array(),
                 array(array('LIBZIP_VERSION', 'ZipArchive', '1.5.0')),
             ),

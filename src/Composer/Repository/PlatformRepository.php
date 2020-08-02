@@ -313,7 +313,7 @@ class PlatformRepository extends ArrayRepository
 
                 case 'zip':
                     if ($this->runtime->hasConstant('LIBZIP_VERSION', 'ZipArchive')) {
-                        $this->addLibrary($name, $this->runtime->getConstant('LIBZIP_VERSION','ZipArchive'));
+                        $this->addLibrary('zip-libzip', $this->runtime->getConstant('LIBZIP_VERSION','ZipArchive'), null, array('zip'));
                     }
                     break;
 
