@@ -309,6 +309,15 @@ class PlatformRepository extends ArrayRepository
 
                     break;
 
+                case 'pgsql':
+                case 'pdo_pgsql':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^PostgreSQL\(libpq\) Version => (?<version>.*)$/m', $info, $matches)) {
+                        $this->addLibrary($name.'-libpq', $matches['version'], 'libpq for '.$name);
+                    }
+                    break;
+
                 case 'libsodium':
                 case 'sodium':
                     $this->addLibrary('libsodium', $this->runtime->getConstant('SODIUM_LIBRARY_VERSION'));

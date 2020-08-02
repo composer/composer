@@ -428,6 +428,39 @@ pcre.recursion_limit => 100000 => 100000
                 array(),
                 array(array('PCRE_VERSION', null, '8.38 2015-11-23'))
             ),
+            'pgsql' => array(
+                'pgsql',
+                '
+pgsql
+
+PostgreSQL Support => enabled
+PostgreSQL(libpq) Version => 12.2
+PostgreSQL(libpq)  => PostgreSQL 12.3 on x86_64-apple-darwin18.7.0, compiled by Apple clang version 11.0.0 (clang-1100.0.33.17), 64-bit
+Multibyte character support => enabled
+SSL support => enabled
+Active Persistent Links => 0
+Active Links => 0
+
+Directive => Local Value => Master Value
+pgsql.allow_persistent => On => On
+pgsql.max_persistent => Unlimited => Unlimited
+pgsql.max_links => Unlimited => Unlimited
+pgsql.auto_reset_persistent => Off => Off
+pgsql.ignore_notice => Off => Off
+pgsql.log_notice => Off => Off',
+                array('lib-pgsql-libpq' => '12.2')
+            ),
+            'pdo_pgsql' => array(
+                'pdo_pgsql',
+                '
+                pdo_pgsql
+
+PDO Driver for PostgreSQL => enabled
+PostgreSQL(libpq) Version => 12.1
+Module version => 7.1.33
+Revision =>  $Id: 9c5f356c77143981d2e905e276e439501fe0f419 $',
+                array('lib-pdo_pgsql-libpq' => '12.1')
+            ),
             'libsodium' => array(
                 'libsodium',
                 null,
