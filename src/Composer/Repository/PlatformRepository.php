@@ -309,6 +309,15 @@ class PlatformRepository extends ArrayRepository
 
                     break;
 
+                case 'mysqlnd':
+                case 'pdo_mysql':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^(?:Client API version|Version) => mysqlnd (?<version>.+?) /mi', $info, $matches)) {
+                        $this->addLibrary($name.'-mysqlnd', $matches['version'], 'mysqlnd library version for '.$name);
+                    }
+                    break;
+
                 case 'pgsql':
                 case 'pdo_pgsql':
                     $info = $this->runtime->getExtensionInfo($name);

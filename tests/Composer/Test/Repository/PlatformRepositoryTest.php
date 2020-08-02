@@ -392,6 +392,38 @@ msgpack support => yes',
                 array(),
                 array(array('OPENSSL_VERSION_TEXT', null, 'LibreSSL 2.0.1'))
             ),
+            'mysqlnd' => array(
+                'mysqlnd',
+                '
+                mysqlnd
+
+mysqlnd => enabled
+Version => mysqlnd 5.0.11-dev - 20150407 - $Id: 38fea24f2847fa7519001be390c98ae0acafe387 $
+Compression => supported
+core SSL => supported
+extended SSL => supported
+Command buffer size => 4096
+Read buffer size => 32768
+Read timeout => 31536000
+Collecting statistics => Yes
+Collecting memory statistics => Yes
+Tracing => n/a
+Loaded plugins => mysqlnd,debug_trace,auth_plugin_mysql_native_password,auth_plugin_mysql_clear_password,auth_plugin_sha256_password
+API Extensions => pdo_mysql,mysqli',
+                array('lib-mysqlnd-mysqlnd' => '5.0.11-dev')
+            ),
+            'pdo_mysql' => array(
+                'pdo_mysql',
+                '
+                pdo_mysql
+
+PDO Driver for MySQL => enabled
+Client API version => mysqlnd 5.0.10-dev - 20150407 - $Id: 38fea24f2847fa7519001be390c98ae0acafe387 $
+
+Directive => Local Value => Master Value
+pdo_mysql.default_socket => /tmp/mysql.sock => /tmp/mysql.sock',
+                array('lib-pdo_mysql-mysqlnd' => '5.0.10-dev')
+            ),
             'pcre' => array(
                 'pcre',
                 '
