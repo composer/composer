@@ -314,6 +314,14 @@ class PlatformRepository extends ArrayRepository
                     $this->addLibrary('libsodium', $this->runtime->getConstant('SODIUM_LIBRARY_VERSION'));
                     break;
 
+                case 'sqlite3':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^SQLite Library => (?<version>.*)$/m', $info, $matches)) {
+                        $this->addLibrary('sqlite3-sqlite', $matches['version']);
+                    }
+                    break;
+
                 case 'xsl':
                     $this->addLibrary('libxslt', $this->runtime->getConstant('LIBXSLT_DOTTED_VERSION'), null, array('xsl'));
                     break;
@@ -329,7 +337,7 @@ class PlatformRepository extends ArrayRepository
                         $this->addLibrary($name, $this->runtime->getConstant('ZLIB_VERSION'));
 
                     // Linked Version => 1.2.8
-                    } elseif (preg_match('/^Linked Version => (?<version>.+)$/m', $this->runtime->getExtensionInfo('zlib'), $matches)) {
+                    } elseif (preg_match('/^Linked Version => (?<version>.+)$/m', $this->runtime->getExtensionInfo($name), $matches)) {
                         $this->addLibrary($name, $matches['version']);
                     }
                     break;

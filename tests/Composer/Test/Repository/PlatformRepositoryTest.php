@@ -442,6 +442,20 @@ pcre.recursion_limit => 100000 => 100000
                 array(),
                 array(array('SODIUM_LIBRARY_VERSION', null, '1.0.15'))
             ),
+            'sqlite3' => array(
+                'sqlite3',
+                '
+sqlite3
+
+SQLite3 support => enabled
+SQLite3 module version => 7.1.33
+SQLite Library => 3.31.0
+
+Directive => Local Value => Master Value
+sqlite3.extension_dir => no value => no value
+sqlite3.defensive => 1 => 1',
+                array('lib-sqlite3-sqlite' => '3.31.0')
+            ),
             'xsl' => array(
                 'xsl',
                 null,
