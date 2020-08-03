@@ -1,4 +1,4 @@
-### [2.0.0-beta1] 2020-08-xx
+### [2.0.0-alpha3] 2020-08-03
 
   * Breaking: Zip archives loaded by artifact repositories must now have a composer.json on top level, or a max of one folder on top level of the archive
   * Added --no-dev support to `show` and `outdated` commands to skip dev requirements
@@ -56,6 +56,12 @@
   * Fixed package ordering when autoloading and especially when loading plugins, to make sure dependencies are loaded before their dependents
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
+
+### [1.10.10] 2020-08-03
+
+  * Fixed `create-project` not triggering events while installing the root package
+  * Fixed PHP 8 compatibility issue
+  * Fixed `self-update` to avoid automatically upgrading to the next major version once it becomes stable
 
 ### [1.10.9] 2020-07-16
 
@@ -932,9 +938,10 @@
 
   * Initial release
 
-[2.0.0-beta1]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-beta1
+[2.0.0-alpha3]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-alpha3
 [2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
+[1.10.10]: https://github.com/composer/composer/compare/1.10.9...1.10.10
 [1.10.9]: https://github.com/composer/composer/compare/1.10.8...1.10.9
 [1.10.8]: https://github.com/composer/composer/compare/1.10.7...1.10.8
 [1.10.7]: https://github.com/composer/composer/compare/1.10.6...1.10.7
