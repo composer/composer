@@ -187,6 +187,41 @@ ZLib Version => 1.2.3.4',
                 ),
                 array(array('curl_version', array(), array('version' => '7.22.0')))
             ),
+            'curl: NSS' => array(
+                'curl',
+                '
+curl
+
+cURL support => enabled
+cURL Information => 7.24.0
+Age => 3
+Features
+AsynchDNS => Yes
+Debug => No
+GSS-Negotiate => Yes
+IDN => Yes
+IPv6 => Yes
+Largefile => Yes
+NTLM => Yes
+SPNEGO => No
+SSL => Yes
+SSPI => No
+krb4 => No
+libz => Yes
+CharConv => No
+Protocols => dict, file, ftp, ftps, gopher, http, https, imap, imaps, ldap, ldaps, pop3, pop3s, rtsp, scp, sftp, smtp, smtps, telnet, tftp
+Host => x86_64-redhat-linux-gnu
+SSL Version => NSS/3.13.3.0
+ZLib Version => 1.2.5
+libSSH Version => libssh2/1.4.1',
+                array(
+                    'lib-curl' => '7.24.0',
+                    'lib-curl-nss' => array('3.13.3.0', array('lib-curl-openssl')),
+                    'lib-curl-zlib' => '1.2.5',
+                    'lib-curl-libssh2' => '1.4.1',
+                ),
+                array(array('curl_version', array(), array('version' => '7.24.0')))
+            ),
             'date' => array(
                 'date',
                 '
