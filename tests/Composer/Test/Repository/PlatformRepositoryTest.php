@@ -377,6 +377,7 @@ intl.use_exceptions => 0 => 0',
                     'lib-icu' => '100',
                     'lib-icu-cldr' => ResourceBundleStub::STUB_VERSION,
                     'lib-icu-unicode' => '7.0.0',
+                    'lib-icu-zoneinfo' => '2016.2',
                 ),
                 array(
                     array(array('ResourceBundle', 'create'), array('root', 'ICUDATA', false), new ResourceBundleStub()),

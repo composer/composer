@@ -30,12 +30,9 @@ class Version
             return null;
         }
 
-        // "" => 0, "a" => 1, "zg" => 33
-        $patch = strlen($matches['patch']) * (-ord('a')+1)
-            + array_sum(array_map('ord', str_split($matches['patch'])));
-
         $isFips = strpos($matches['suffix'], 'fips') !== false;
         $suffix = strtr('-'.ltrim($matches['suffix'], '-'), array('-fips' => '', '-pre' => '-alpha'));
+        $patch = self::convertAlphaVersionToIntVersion($matches['patch']);
 
         return rtrim($matches['version'].'.'.$patch.$suffix, '-');
     }
@@ -50,8 +47,31 @@ class Version
             return null;
         }
 
-        $minor = strlen($matches['minor']) * (-ord('a')+1) + array_sum(array_map('ord', str_split($matches['minor'])));
-        return $matches['major'].'.'.$minor;
+        return $matches['major'].'.'.self::convertAlphaVersionToIntVersion($matches['minor']);
+    }
+
+    /**
+     * @param string $zoneinfoVersion
+     * @return string|null
+     */
+    public static function parseZoneinfoVersion($zoneinfoVersion)
+    {
+        if (!preg_match('/^(?<year>\d{4})(?<revision>[a-z]*)$/', $zoneinfoVersion, $matches)) {
+            return null;
+        }
+
+        return $matches['year'].'.'.self::convertAlphaVersionToIntVersion($matches['revision']);
+    }
+
+    /**
+     * "" => 0, "a" => 1, "zg" => 33
+     *
+     * @param string $alpha
+     * @return int
+     */
+    private static function convertAlphaVersionToIntVersion($alpha)
+    {
+        return strlen($alpha) * (-ord('a')+1) + array_sum(array_map('ord', str_split($alpha)));
     }
 
     /**

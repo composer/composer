@@ -108,4 +108,24 @@ class VersionTest extends TestCase
     {
         self::assertSame($parsedVersion, Version::parseLibjpeg($input));
     }
+
+    public function getZoneinfoVersions()
+    {
+        return array(
+            array('2019c', '2019.3'),
+            array('2020a', '2020.1'),
+            // Never happened so far but fixate overflow behavior
+            array('2020za', '2020.27'),
+        );
+    }
+
+    /**
+     * @dataProvider getZoneinfoVersions
+     * @param string $input
+     * @param string $parsedVersion
+     */
+    public function testParseZoneinfoVersion($input, $parsedVersion)
+    {
+        self::assertSame($parsedVersion, Version::parseZoneinfoVersion($input));
+    }
 }

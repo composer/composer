@@ -266,12 +266,19 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'intl':
+                    $info = $this->runtime->getExtensionInfo($name);
+
                     $description = 'The ICU unicode and globalization support library';
                     // Truthy check is for testing only so we can make the condition fail
                     if ($this->runtime->hasConstant('INTL_ICU_VERSION')) {
                         $this->addLibrary('icu', $this->runtime->getConstant('INTL_ICU_VERSION'), $description);
-                    } elseif (preg_match('/^ICU version => (?<version>.+)$/m', $this->runtime->getExtensionInfo($name), $matches)) {
+                    } elseif (preg_match('/^ICU version => (?<version>.+)$/m', $info, $matches)) {
                         $this->addLibrary('icu', $matches['version'], $description);
+                    }
+
+                    // ICU TZData version => 2019c
+                    if (preg_match('/^ICU TZData version => (?<version>.*)$/m', $info, $zoneinfoMatches)) {
+                        $this->addLibrary('icu-zoneinfo', Version::parseZoneinfoVersion($zoneinfoMatches['version']), 'zoneinfo ("Olson") database for icu');
                     }
 
                     # Add a separate version for the CLDR library version
