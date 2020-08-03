@@ -183,8 +183,13 @@ class PlatformRepository extends ArrayRepository
 
                     // SSL Version => OpenSSL/1.0.1t
                     if (preg_match('{^SSL Version => (?<library>[^/]+)/(?<version>.+)$}m', $info, $sslMatches)) {
-                        $parsedVersion = Version::parseOpenssl($sslMatches['version'], $isFips);
-                        $this->addLibrary($name.'-'.strtolower($sslMatches['library']).($isFips ? '-fips' : ''), $parsedVersion, 'curl '. $sslMatches['library'].' version ('. $sslMatches['version'].')', $isFips ? array('curl-'.strtolower($sslMatches['library'])) : array());
+                        $library = strtolower($sslMatches['library']);
+                        if ($library === 'openssl') {
+                            $parsedVersion = Version::parseOpenssl($sslMatches['version'], $isFips);
+                            $this->addLibrary($name.'-openssl'.($isFips ? '-fips': ''), $parsedVersion, 'curl OpenSSL version ('.$parsedVersion.')', array(), $isFips ? array('curl-openssl'): array());
+                        } else {
+                            $this->addLibrary($name.'-'.$library, $sslMatches['version'], 'curl '.$library.' version ('.$sslMatches['version'].')', array('curl-openssl'));
+                        }
                     }
 
                     // libSSH Version => libssh2/1.4.3
@@ -203,7 +208,7 @@ class PlatformRepository extends ArrayRepository
 
                     // timelib version => 2018.03
                     if (preg_match('/^timelib version => (?<version>.+)$/m', $info, $timelibMatches)) {
-                        $this->addLibrary($name.'-timelib', $timelibMatches['version'], 'ext/date timelib version');
+                        $this->addLibrary($name.'-timelib', $timelibMatches['version'], 'date timelib version');
                     }
                     break;
 
@@ -284,19 +289,17 @@ class PlatformRepository extends ArrayRepository
                     $info = $this->runtime->getExtensionInfo($name);
 
                     if (preg_match('/^Vendor Version => (?<versionId>\d+)$/m', $info, $matches)) {
-                        $this->addLibrary($name.'-openldap', Version::convertOpenldapVersionId($matches['versionId']), 'OpenLDAP version of ext/ldap');
+                        $this->addLibrary($name.'-openldap', Version::convertOpenldapVersionId($matches['versionId']), 'OpenLDAP version of ldap');
                     }
                     break;
 
-                case 'dom':
-                case 'simplexml';
-                case 'xmlreader';
-                case 'xmlwriter';
-                    $this->addLibrary($name.'-libxml', $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version for '.$name, array());
-                    break;
-
                 case 'libxml':
-                    $this->addLibrary($name, $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version', array(), array_intersect($loadedExtensions, array('dom', 'simplexml', 'xmlreader', 'xmlwriter')));
+                    // ext/dom, ext/simplexml, ext/xmlreader and ext/xmlwriter use the same libxml as the ext/libxml
+                    $libxmlProvides = array_map(function($extension) {
+                        return $extension . '-libxml';
+                    }, array_intersect($loadedExtensions, array('dom', 'simplexml', 'xmlreader', 'xmlwriter')));
+                    $this->addLibrary($name, $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version', array(), $libxmlProvides);
+
                     break;
 
                 case 'mbstring':
@@ -331,7 +334,7 @@ class PlatformRepository extends ArrayRepository
                     // OpenSSL 1.1.1g  21 Apr 2020
                     if (preg_match('{^(?:OpenSSL|LibreSSL)?\s*(?<version>\S+)}i', $this->runtime->getConstant('OPENSSL_VERSION_TEXT'), $matches)) {
                         $parsedVersion = Version::parseOpenssl($matches['version'], $isFips);
-                        $this->addLibrary($name.($isFips ? '-fips' : ''), $parsedVersion , $this->runtime->getConstant('OPENSSL_VERSION_TEXT'), $isFips ? array($name) : array());
+                        $this->addLibrary($name.($isFips ? '-fips' : ''), $parsedVersion, $this->runtime->getConstant('OPENSSL_VERSION_TEXT'), array(), $isFips ? array($name) : array());
                     }
                     break;
 

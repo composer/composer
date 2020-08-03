@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Repository;
 
+use Composer\Package\Package;
 use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
 use PHPUnit\Framework\Assert;
@@ -145,11 +146,46 @@ Directive => Local Value => Master Value
 curl.cainfo => no value => no value',
                 array(
                     'lib-curl' => '2.0.0',
-                    'lib-curl-openssl-fips' => array('1.0.1.20', array('lib-curl-openssl')),
+                    'lib-curl-openssl-fips' => array('1.0.1.20', array(), array('lib-curl-openssl')),
                     'lib-curl-zlib' => '1.2.8',
                     'lib-curl-libssh2' => '1.4.3',
                 ),
                 array(array('curl_version', array(), array('version' => '2.0.0')))
+            ),
+            'curl: gnutls' => array(
+                'curl',
+                '
+curl
+
+cURL support => enabled
+cURL Information => 7.22.0
+Age => 3
+Features
+AsynchDNS => No
+CharConv => No
+Debug => No
+GSS-Negotiate => Yes
+IDN => Yes
+IPv6 => Yes
+krb4 => No
+Largefile => Yes
+libz => Yes
+NTLM => Yes
+NTLMWB => Yes
+SPNEGO => No
+SSL => Yes
+SSPI => No
+TLS-SRP => Yes
+Protocols => dict, file, ftp, ftps, gopher, http, https, imap, imaps, ldap, pop3, pop3s, rtmp, rtsp, smtp, smtps, telnet, tftp
+Host => x86_64-pc-linux-gnu
+SSL Version => GnuTLS/2.12.14
+ZLib Version => 1.2.3.4',
+                array(
+                    'lib-curl' => '7.22.0',
+                    'lib-curl-zlib' => '1.2.3.4',
+                    'lib-curl-gnutls' => array('2.12.14', array('lib-curl-openssl')),
+                ),
+                array(array('curl_version', array(), array('version' => '7.22.0')))
             ),
             'date' => array(
                 'date',
@@ -378,7 +414,7 @@ ldap.max_links => Unlimited => Unlimited',
             'libxml: related extensions' => array(
                 array('libxml', 'dom', 'simplexml', 'xmlreader', 'xmlwriter'),
                 null,
-                array('lib-libxml' => array('2.1.5', array(), array('dom', 'simplexml', 'xmlreader', 'xmlwriter'))),
+                array('lib-libxml' => array('2.1.5', array(), array('lib-dom-libxml', 'lib-simplexml-libxml', 'lib-xmlreader-libxml', 'lib-xmlwriter-libxml'))),
                 array(),
                 array(array('LIBXML_DOTTED_VERSION', null, '2.1.5'))
             ),
@@ -502,6 +538,7 @@ msgpack support => yes',
             'openssl: fips' => array(
                 'openssl',
                 null,
+                array('lib-openssl-fips' => array('1.1.1.7', array(), array('lib-openssl'))),
                 array(),
                 array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-fips  21 Apr 2020'))
             ),
@@ -575,7 +612,6 @@ pcre.recursion_limit => 100000 => 100000
                 ',
                 array(
                     'lib-pcre' => '8.38',
-                    'lib-pcre-unicode' => false,
                 ),
                 array(),
                 array(array('PCRE_VERSION', null, '8.38 2015-11-23'))
@@ -772,41 +808,50 @@ Linked Version => 1.2.11',
 
         $platformRepository = new PlatformRepository(array(), array(), $runtime);
 
+        $expectations = array_map(function ($expectation) {
+                return array_replace(array(null, array(), array()), (array) $expectation);
+            }, $expectations);
+
+        $libraries = array_map(
+            function ($package) {
+                return $package['name'];
+            }, array_filter(
+                   $platformRepository->search('lib', PlatformRepository::SEARCH_NAME),
+                   function ($package) {
+                       return strpos($package['name'], 'lib-') === 0;
+                   }
+               )
+        );
+        $expectedLibraries = array_merge(array_keys(array_filter($expectations,function($expectation) { return $expectation[0] !== false; })));
+        self::assertCount(count(array_filter($expectedLibraries)), $libraries, sprintf('Expected: %s, got %s', var_export($expectedLibraries, true), var_export($libraries, true)));
+
         $expectations = array_merge($expectations, array_combine(array_map(function($extension) {
                 return 'ext-'.$extension;
-            }, $extensions), array_fill(0, count($extensions), $extensionVersion)));
+            }, $extensions), array_fill(0, count($extensions), array($extensionVersion, array(), array()))));
 
-        foreach ($expectations as $packageName => $expectedVersion) {
+        foreach ($expectations as $packageName => $expectation) {
+            list($expectedVersion, $expectedReplaces, $expectedProvides) = $expectation;
+
             $package = $platformRepository->findPackage($packageName, '*');
             if ($expectedVersion === false) {
                 self::assertNull($package, sprintf('Expected to not find package "%s"', $packageName));
             } else {
                 self::assertNotNull($package, sprintf('Expected to find package "%s"', $packageName));
-
-                $expectedProvides = array();
-                $expectedReplaces = array();
-                if (is_array($expectedVersion)) {
-                    $expectedReplaces = isset($expectedVersion[1]) ? $expectedVersion[1] : array();
-                    $expectedProvides = isset($expectedVersion[2]) ? $expectedVersion[2] : array();
-                    $expectedVersion = $expectedVersion[0];
-                }
-
                 self::assertSame($expectedVersion, $package->getPrettyVersion(), sprintf('Expected version %s for %s', $expectedVersion, $packageName));
-
-                $replaces = $package->getReplaces();
-                self::assertCount(count($expectedReplaces), $replaces, sprintf('Replaces for %s', $package));
-                foreach ($replaces as $link) {
-                    self::assertSame($package->getName(), $link->getSource());
-                    self::assertTrue($link->getConstraint()->matches($this->getVersionConstraint('=', $package->getVersion())));
-                }
-
-                $provides = $package->getProvides();
-                self::assertCount(count($expectedProvides), $provides, sprintf('Provides for %s', $package));
-                foreach ($provides as $link) {
-                    self::assertSame($package->getName(), $link->getSource());
-                    self::assertTrue($link->getConstraint()->matches($this->getVersionConstraint('=', $package->getVersion())));
-                }
+                $this->assertPackageLinks('replaces', $expectedReplaces, $package, $package->getReplaces());
+                $this->assertPackageLinks('provides', $expectedProvides, $package, $package->getProvides());
             }
+        }
+    }
+
+    private function assertPackageLinks($context, array $expectedLinks, Package $sourcePackage, array $links)
+    {
+        self::assertCount(count($expectedLinks), $links, sprintf('%s: expected package count to match', $context));
+
+        foreach ($links as $link) {
+            self::assertSame($sourcePackage->getName(), $link->getSource());
+            self::assertContains($link->getTarget(), $expectedLinks, sprintf('%s: package %s not in %s', $context, $link->getTarget(), var_export($expectedLinks, true)));
+            self::assertTrue($link->getConstraint()->matches($this->getVersionConstraint('=', $sourcePackage->getVersion())));
         }
     }
 }
