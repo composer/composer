@@ -197,7 +197,10 @@ timelib version => 2018.03
 "Olson" Timezone Database Version => 2020.1
 Timezone Database => external
 Default timezone => Europe/Berlin',
-                array('lib-date-timelib' => '2018.03')
+                array(
+                    'lib-date-timelib' => '2018.03',
+                    'lib-date-zoneinfo' => '2020.1',
+                )
             ),
             'date: before timelib was extracted' => array(
                 'date',
@@ -208,7 +211,32 @@ date/time support => enabled
 "Olson" Timezone Database Version => 2013.2
 Timezone Database => internal
 Default timezone => Europe/Amsterdam',
-                array('lib-date-timelib' => false)
+                array(
+                    'lib-date-zoneinfo' => '2013.2',
+                    'lib-date-timelib' => false,
+                )
+            ),
+            'date: internal zoneinfo' => array(
+                array('date', 'timezonedb'),
+                '
+date
+
+date/time support => enabled
+"Olson" Timezone Database Version => 2020.1
+Timezone Database => internal
+Default timezone => UTC',
+                array('lib-date-zoneinfo' => '2020.1')
+            ),
+            'date: external zoneinfo' => array(
+                array('date', 'timezonedb'),
+                '
+date
+
+date/time support => enabled
+"Olson" Timezone Database Version => 2020.1
+Timezone Database => external
+Default timezone => UTC',
+                array('lib-timezonedb-zoneinfo' => array('2020.1', array('lib-date-zoneinfo')))
             ),
             'fileinfo' => array(
                 'fileinfo',

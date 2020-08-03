@@ -210,6 +210,19 @@ class PlatformRepository extends ArrayRepository
                     if (preg_match('/^timelib version => (?<version>.+)$/m', $info, $timelibMatches)) {
                         $this->addLibrary($name.'-timelib', $timelibMatches['version'], 'date timelib version');
                     }
+
+                    // Timezone Database => internal
+                    if (preg_match('/^Timezone Database => (?<source>internal|external)$/m', $info, $zoneinfoSourceMatches)) {
+                        $external = $zoneinfoSourceMatches['source'] === 'external';
+                        if (preg_match('/^"Olson" Timezone Database Version => (?<version>.+)$/m', $info, $zoneinfoMatches)) {
+                            // If the timezonedb is provided by ext/timezonedb, register that version as a replacement
+                            if ($external && in_array('timezonedb', $loadedExtensions, true)) {
+                                $this->addLibrary('timezonedb-zoneinfo', $zoneinfoMatches['version'], 'zoneinfo ("Olson") database for date (replaced by timezonedb)', array($name.'-zoneinfo'));
+                            } else {
+                                $this->addLibrary($name.'-zoneinfo', $zoneinfoMatches['version'], 'zoneinfo ("Olson") database for date');
+                            }
+                        }
+                    }
                     break;
 
                 case 'fileinfo':
