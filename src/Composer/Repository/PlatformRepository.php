@@ -94,10 +94,10 @@ class PlatformRepository extends ArrayRepository
         $this->addPackage($composerRuntimeApi);
 
         try {
-            $prettyVersion = PHP_VERSION;
+            $prettyVersion = $this->runtime->getConstant('PHP_VERSION');
             $version = $this->versionParser->normalize($prettyVersion);
         } catch (\UnexpectedValueException $e) {
-            $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', PHP_VERSION);
+            $prettyVersion = preg_replace('#^([^~+-]+).*$#', '$1', $this->runtime->getConstant('PHP_VERSION'));
             $version = $this->versionParser->normalize($prettyVersion);
         }
 
@@ -105,19 +105,19 @@ class PlatformRepository extends ArrayRepository
         $php->setDescription('The PHP interpreter');
         $this->addPackage($php);
 
-        if (PHP_DEBUG) {
+        if ($this->runtime->getConstant('PHP_DEBUG')) {
             $phpdebug = new CompletePackage('php-debug', $version, $prettyVersion);
             $phpdebug->setDescription('The PHP interpreter, with debugging symbols');
             $this->addPackage($phpdebug);
         }
 
-        if (defined('PHP_ZTS') && PHP_ZTS) {
+        if ($this->runtime->hasConstant('PHP_ZTS') && $this->runtime->getConstant('PHP_ZTS')) {
             $phpzts = new CompletePackage('php-zts', $version, $prettyVersion);
             $phpzts->setDescription('The PHP interpreter, with Zend Thread Safety');
             $this->addPackage($phpzts);
         }
 
-        if (PHP_INT_SIZE === 8) {
+        if ($this->runtime->getConstant('PHP_INT_SIZE') === 8) {
             $php64 = new CompletePackage('php-64bit', $version, $prettyVersion);
             $php64->setDescription('The PHP interpreter, 64bit');
             $this->addPackage($php64);
@@ -125,7 +125,7 @@ class PlatformRepository extends ArrayRepository
 
         // The AF_INET6 constant is only defined if ext-sockets is available but
         // IPv6 support might still be available.
-        if (defined('AF_INET6') || Silencer::call('inet_pton', '::') !== false) {
+        if ($this->runtime->hasConstant('AF_INET6') || Silencer::call(array($this->runtime, 'invoke'), array('inet_pton', '::')) !== false) {
             $phpIpv6 = new CompletePackage('php-ipv6', $version, $prettyVersion);
             $phpIpv6->setDescription('The PHP interpreter, with IPv6 support');
             $this->addPackage($phpIpv6);

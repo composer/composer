@@ -31,7 +31,106 @@ class PlatformRepositoryTest extends TestCase
         $hhvm = $platformRepository->findPackage('hhvm', '*');
         self::assertNotNull($hhvm, 'hhvm found');
 
-        self::assertSame('2.1.0.0', $hhvm->getVersion());
+        self::assertSame('2.1.0', $hhvm->getPrettyVersion());
+    }
+
+    public function getPhpFlavorTestCases()
+    {
+        return array(
+            array(
+                array(
+                    'PHP_VERSION' => '7.1.33',
+                ),
+                array(
+                    'php' => '7.1.33'
+                )
+            ),
+            array(
+                array(
+                    'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
+                    'PHP_DEBUG' => true,
+                ),
+                array(
+                    'php' => '7.2.31',
+                    'php-debug' => '7.2.31',
+                ),
+            ),
+            array(
+                array(
+                    'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
+                    'PHP_ZTS' => true,
+                ),
+                array(
+                    'php' => '7.2.31',
+                    'php-zts' => '7.2.31',
+                ),
+            ),
+            array(
+                array(
+                    'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
+                    'PHP_INT_SIZE' => 8,
+                ),
+                array(
+                    'php' => '7.2.31',
+                    'php-64bit' => '7.2.31',
+                ),
+            ),
+            array(
+                array(
+                    'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
+                    'AF_INET6' => 30,
+                ),
+                array(
+                    'php' => '7.2.31',
+                    'php-ipv6' => '7.2.31',
+                ),
+            ),
+            array(
+                array(
+                    'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
+                ),
+                array(
+                    'php' => '7.2.31',
+                    'php-ipv6' => '7.2.31',
+                ),
+                array(
+                    array('inet_pton', array('::'), null),
+                )
+            )
+        );
+    }
+
+    /** @dataProvider getPhpFlavorTestCases */
+    public function testPhpVersion(array $constants, array $packages, array $functions = array())
+    {
+        $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
+        $runtime
+            ->method('getExtensions')
+            ->willReturn(array());
+        $runtime
+            ->method('hasConstant')
+            ->willReturnMap(
+                array_map(function($constant) {
+                    return array($constant, null, true);
+                }, array_keys($constants))
+            );
+        $runtime
+            ->method('getConstant')
+            ->willReturnMap(
+                array_map(function($constant, $value) {
+                    return array($constant, null, $value);
+                }, array_keys($constants), array_values($constants))
+            );
+        $runtime
+            ->method('invoke')
+            ->willReturnMap($functions);
+
+        $repository = new PlatformRepository(array(), array(), $runtime);
+        foreach ($packages as $packageName => $version) {
+            $package = $repository->findPackage($packageName, '*');
+            self::assertNotNull($package, sprintf('Expected to find package "%s"', $packageName));
+            self::assertSame($version, $package->getPrettyVersion(), sprintf('Expected package "%s" version to be %s, got %s', $packageName, $version, $package->getPrettyVersion()));
+        }
     }
 
     public static function getLibraryTestCases()
@@ -971,6 +1070,7 @@ Linked Version => 1.2.11',
             ->method('invoke')
             ->willReturnMap($functions);
 
+        $constants[] = array('PHP_VERSION', null, '7.1.0');
         $runtime
             ->method('hasConstant')
             ->willReturnMap(
