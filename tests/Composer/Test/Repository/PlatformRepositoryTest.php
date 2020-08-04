@@ -847,6 +847,17 @@ sqlite3.extension_dir => no value => no value
 sqlite3.defensive => 1 => 1',
                 array('lib-sqlite3-sqlite' => '3.31.0')
             ),
+            'ssh2' => array(
+                'ssh2',
+                '
+ssh2
+
+SSH2 support => enabled
+extension version => 1.2
+libssh2 version => 1.8.0
+banner => SSH-2.0-libssh2_1.8.0',
+                array('lib-ssh2-libssh2' => '1.8.0')
+            ),
             'yaml' => array(
                 'yaml',
                 '

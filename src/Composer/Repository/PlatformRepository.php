@@ -409,8 +409,16 @@ class PlatformRepository extends ArrayRepository
                 case 'pdo_sqlite':
                     $info = $this->runtime->getExtensionInfo($name);
 
-                    if (preg_match('/^SQLite Library => (?<version>.*)$/m', $info, $matches)) {
+                    if (preg_match('/^SQLite Library => (?<version>.+)$/m', $info, $matches)) {
                         $this->addLibrary($name.'-sqlite', $matches['version']);
+                    }
+                    break;
+
+                case 'ssh2':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^libssh2 version => (?<version>.+)$/m', $info, $matches)) {
+                        $this->addLibrary($name.'-libssh2', $matches['version']);
                     }
                     break;
 
@@ -418,7 +426,7 @@ class PlatformRepository extends ArrayRepository
                     $this->addLibrary('libxslt', $this->runtime->getConstant('LIBXSLT_DOTTED_VERSION'), null, array('xsl'));
 
                     $info = $this->runtime->getExtensionInfo('xsl');
-                    if (preg_match('/^libxslt compiled against libxml Version => (?<version>.*)$/m', $info, $matches)) {
+                    if (preg_match('/^libxslt compiled against libxml Version => (?<version>.+)$/m', $info, $matches)) {
                         $this->addLibrary('libxslt-libxml', $matches['version'], 'libxml version libxslt is compiled against');
                     }
                     break;
