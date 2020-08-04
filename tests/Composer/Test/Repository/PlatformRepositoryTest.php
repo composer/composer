@@ -319,6 +319,28 @@ Timezone Database => external
 Default timezone => UTC',
                 array('lib-timezonedb-zoneinfo' => array('2020.1', array('lib-date-zoneinfo')))
             ),
+            'date: zoneinfo 0.system' => array(
+                'date',
+                '
+
+
+date/time support => enabled
+timelib version => 2018.03
+"Olson" Timezone Database Version => 0.system
+Timezone Database => internal
+Default timezone => Europe/Berlin
+
+Directive => Local Value => Master Value
+date.timezone => no value => no value
+date.default_latitude => 31.7667 => 31.7667
+date.default_longitude => 35.2333 => 35.2333
+date.sunset_zenith => 90.583333 => 90.583333
+date.sunrise_zenith => 90.583333 => 90.583333',
+                array(
+                    'lib-date-zoneinfo' => '0',
+                    'lib-date-timelib' => '2018.03',
+                )
+            ),
             'fileinfo' => array(
                 'fileinfo',
                 '

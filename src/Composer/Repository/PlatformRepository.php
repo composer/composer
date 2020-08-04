@@ -214,7 +214,7 @@ class PlatformRepository extends ArrayRepository
                     // Timezone Database => internal
                     if (preg_match('/^Timezone Database => (?<source>internal|external)$/m', $info, $zoneinfoSourceMatches)) {
                         $external = $zoneinfoSourceMatches['source'] === 'external';
-                        if (preg_match('/^"Olson" Timezone Database Version => (?<version>.+)$/m', $info, $zoneinfoMatches)) {
+                        if (preg_match('/^"Olson" Timezone Database Version => (?<version>.+?)(\.system)?$/m', $info, $zoneinfoMatches)) {
                             // If the timezonedb is provided by ext/timezonedb, register that version as a replacement
                             if ($external && in_array('timezonedb', $loadedExtensions, true)) {
                                 $this->addLibrary('timezonedb-zoneinfo', $zoneinfoMatches['version'], 'zoneinfo ("Olson") database for date (replaced by timezonedb)', array($name.'-zoneinfo'));
