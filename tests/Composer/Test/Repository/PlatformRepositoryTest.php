@@ -691,6 +691,34 @@ Directive => Local Value => Master Value
 pdo_mysql.default_socket => /tmp/mysql.sock => /tmp/mysql.sock',
                 array('lib-pdo_mysql-mysqlnd' => '5.0.10-dev')
             ),
+            'mongodb' => array(
+                'mongodb',
+                '
+                mongodb
+
+MongoDB support => enabled
+MongoDB extension version => 1.6.1
+MongoDB extension stability => stable
+libbson bundled version => 1.15.2
+libmongoc bundled version => 1.15.2
+libmongoc SSL => enabled
+libmongoc SSL library => OpenSSL
+libmongoc crypto => enabled
+libmongoc crypto library => libcrypto
+libmongoc crypto system profile => disabled
+libmongoc SASL => disabled
+libmongoc ICU => enabled
+libmongoc compression => enabled
+libmongoc compression snappy => disabled
+libmongoc compression zlib => enabled
+
+Directive => Local Value => Master Value
+mongodb.debug => no value => no value',
+                array(
+                    'lib-mongodb-libmongoc' => '1.15.2',
+                    'lib-mongodb-libbson' => '1.15.2',
+                )
+            ),
             'pcre' => array(
                 'pcre',
                 '
@@ -796,6 +824,24 @@ Directive => Local Value => Master Value
 sqlite3.extension_dir => no value => no value
 sqlite3.defensive => 1 => 1',
                 array('lib-sqlite3-sqlite' => '3.31.0')
+            ),
+            'yaml' => array(
+                'yaml',
+                '
+                yaml
+
+LibYAML Support => enabled
+Module Version => 2.0.2
+LibYAML Version => 0.2.2
+
+Directive => Local Value => Master Value
+yaml.decode_binary => 0 => 0
+yaml.decode_timestamp => 0 => 0
+yaml.decode_php => 0 => 0
+yaml.output_canonical => 0 => 0
+yaml.output_indent => 2 => 2
+yaml.output_width => 80 => 80',
+                array('lib-yaml-libyaml' => '0.2.2')
             ),
             'xsl' => array(
                 'xsl',

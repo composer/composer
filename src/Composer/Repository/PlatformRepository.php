@@ -379,6 +379,18 @@ class PlatformRepository extends ArrayRepository
                     }
                     break;
 
+                case 'mongodb':
+                    $info = $this->runtime->getExtensionInfo($name);
+
+                    if (preg_match('/^libmongoc bundled version => (?<version>.+)$/m', $info, $libmongocMatches)) {
+                        $this->addLibrary($name.'-libmongoc', $libmongocMatches['version'], 'libmongoc version of mongodb');
+                    }
+
+                    if (preg_match('/^libbson bundled version => (?<version>.+)$/m', $info, $libbsonMatches)) {
+                        $this->addLibrary($name.'-libbson', $libbsonMatches['version'], 'libbson version of mongodb');
+                    }
+                    break;
+
                 case 'pgsql':
                 case 'pdo_pgsql':
                     $info = $this->runtime->getExtensionInfo($name);
@@ -410,6 +422,13 @@ class PlatformRepository extends ArrayRepository
                         $this->addLibrary('libxslt-libxml', $matches['version'], 'libxml version libxslt is compiled against');
                     }
                     break;
+
+                case 'yaml':
+                    $info = $this->runtime->getExtensionInfo('yaml');
+
+                    if (preg_match('/^LibYAML Version => (?<version>.+)$/m', $info, $matches)) {
+                        $this->addLibrary($name.'-libyaml', $matches['version'], 'libyaml version of yaml');
+                    }
 
                 case 'zip':
                     if ($this->runtime->hasConstant('LIBZIP_VERSION', 'ZipArchive')) {
