@@ -222,6 +222,52 @@ libSSH Version => libssh2/1.4.1',
                 ),
                 array(array('curl_version', array(), array('version' => '7.24.0')))
             ),
+            'curl' => array(
+                'curl',
+                '
+
+curl
+
+cURL support => enabled
+cURL Information => 7.68.0
+Age => 5
+Features
+AsynchDNS => Yes
+CharConv => No
+Debug => No
+GSS-Negotiate => No
+IDN => Yes
+IPv6 => Yes
+krb4 => No
+Largefile => Yes
+libz => Yes
+NTLM => Yes
+NTLMWB => Yes
+SPNEGO => Yes
+SSL => Yes
+SSPI => No
+TLS-SRP => Yes
+HTTP2 => Yes
+GSSAPI => Yes
+KERBEROS5 => Yes
+UNIX_SOCKETS => Yes
+PSL => Yes
+HTTPS_PROXY => Yes
+MULTI_SSL => No
+BROTLI => Yes
+Protocols => dict, file, ftp, ftps, gopher, http, https, imap, imaps, ldap, ldaps, pop3, pop3s, rtmp, rtsp, scp, sftp, smb, smbs, smtp, smtps, telnet, tftp
+Host => x86_64-pc-linux-gnu
+SSL Version => OpenSSL/1.1.1g
+ZLib Version => 1.2.11
+libSSH Version => libssh/0.9.3/openssl/zlib',
+                array(
+                    'lib-curl' => '7.68.0',
+                    'lib-curl-openssl' => '1.1.1.7',
+                    'lib-curl-zlib' => '1.2.11',
+                    'lib-curl-libssh' => '0.9.3',
+                ),
+                array(array('curl_version', array(), array('version' => '7.68.0'))),
+            ),
             'date' => array(
                 'date',
                 '

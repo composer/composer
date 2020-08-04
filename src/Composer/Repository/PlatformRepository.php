@@ -193,7 +193,7 @@ class PlatformRepository extends ArrayRepository
                     }
 
                     // libSSH Version => libssh2/1.4.3
-                    if (preg_match('{^libSSH Version => (?<library>[^/]+)/(?<version>.+)$}m', $info, $sshMatches)) {
+                    if (preg_match('{^libSSH Version => (?<library>[^/]+)/(?<version>.+?)(?:/.*)?$}m', $info, $sshMatches)) {
                         $this->addLibrary($name.'-'.strtolower($sshMatches['library']), $sshMatches['version'], 'curl '.$sshMatches['library'].' version');
                     }
 
