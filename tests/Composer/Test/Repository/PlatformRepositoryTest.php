@@ -522,9 +522,9 @@ ldap.max_links => Unlimited => Unlimited',
                 array(array('LIBXML_DOTTED_VERSION', null, '2.1.5'))
             ),
             'libxml: related extensions' => array(
-                array('libxml', 'dom', 'simplexml', 'xmlreader', 'xmlwriter'),
+                array('libxml', 'dom', 'simplexml', 'xml', 'xmlreader', 'xmlwriter'),
                 null,
-                array('lib-libxml' => array('2.1.5', array(), array('lib-dom-libxml', 'lib-simplexml-libxml', 'lib-xmlreader-libxml', 'lib-xmlwriter-libxml'))),
+                array('lib-libxml' => array('2.1.5', array(), array('lib-dom-libxml', 'lib-simplexml-libxml', 'lib-xml-libxml', 'lib-xmlreader-libxml', 'lib-xmlwriter-libxml'))),
                 array(),
                 array(array('LIBXML_DOTTED_VERSION', null, '2.1.5'))
             ),
