@@ -222,7 +222,7 @@ libSSH Version => libssh2/1.4.1',
                 ),
                 array(array('curl_version', array(), array('version' => '7.24.0')))
             ),
-            'curl' => array(
+            'curl: libssh not libssh2' => array(
                 'curl',
                 '
 
