@@ -94,7 +94,7 @@ class PlatformRepositoryTest extends TestCase
                     'php-ipv6' => '7.2.31',
                 ),
                 array(
-                    array('inet_pton', array('::'), null),
+                    array('inet_pton', array('::'), ''),
                 )
             )
         );
