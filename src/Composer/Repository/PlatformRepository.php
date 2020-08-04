@@ -429,6 +429,7 @@ class PlatformRepository extends ArrayRepository
                     if (preg_match('/^LibYAML Version => (?<version>.+)$/m', $info, $matches)) {
                         $this->addLibrary($name.'-libyaml', $matches['version'], 'libyaml version of yaml');
                     }
+                    break;
 
                 case 'zip':
                     if ($this->runtime->hasConstant('LIBZIP_VERSION', 'ZipArchive')) {
