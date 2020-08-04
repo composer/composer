@@ -308,8 +308,8 @@ class PlatformRepository extends ArrayRepository
                 case 'ldap':
                     $info = $this->runtime->getExtensionInfo($name);
 
-                    if (preg_match('/^Vendor Version => (?<versionId>\d+)$/m', $info, $matches)) {
-                        $this->addLibrary($name.'-openldap', Version::convertOpenldapVersionId($matches['versionId']), 'OpenLDAP version of ldap');
+                    if (preg_match('/^Vendor Version => (?<versionId>\d+)$/m', $info, $matches) && preg_match('/^Vendor Name => (?<vendor>.+)$/m', $info, $vendorMatches)) {
+                        $this->addLibrary($name.'-'.strtolower($vendorMatches['vendor']), Version::convertOpenldapVersionId($matches['versionId']), $vendorMatches['vendor'].' version of ldap');
                     }
                     break;
 
