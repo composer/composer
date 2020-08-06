@@ -92,12 +92,12 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         $json = null;
         $fileType = null;
         $fileExtension = pathinfo($file->getPathname(), PATHINFO_EXTENSION);
-        if (in_array($fileExtension, array('gz', 'tar', 'bz2'), true)) {
+        if (in_array($fileExtension, array('gz', 'tar'), true)) {
             $fileType = 'tar';
         } else if ($fileExtension === 'zip') {
             $fileType = 'zip';
         } else {
-            throw new \RuntimeException('Files with '.$fileExtension.' extensions aren\'t supported. Only ZIP, TAR and GZ are supported.');
+            throw new \RuntimeException('Files with "'.$fileExtension.'" extensions aren\'t supported. Only ZIP and TAR archives are supported.');
         }
 
         try {

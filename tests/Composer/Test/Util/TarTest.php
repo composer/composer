@@ -23,11 +23,6 @@ class TarTest extends TestCase
 
     public function testReturnsNullifTheTarIsNotFound()
     {
-        if (!extension_loaded('zip')) {
-            $this->markTestSkipped('The PHP zip extension is not loaded.');
-            return;
-        }
-
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/invalid.zip');
 
         $this->assertNull($result);
@@ -35,11 +30,6 @@ class TarTest extends TestCase
 
     public function testReturnsNullIfTheTarIsEmpty()
     {
-        if (!extension_loaded('zip')) {
-            $this->markTestSkipped('The PHP zip extension is not loaded.');
-            return;
-        }
-
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/empty.tar.gz');
 
         $this->assertNull($result);
@@ -50,11 +40,6 @@ class TarTest extends TestCase
      */
     public function testThrowsExceptionIfTheTarHasNoComposerJson()
     {
-        if (!extension_loaded('zip')) {
-            $this->markTestSkipped('The PHP zip extension is not loaded.');
-            return;
-        }
-
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/nojson.tar.gz');
     }
 
@@ -63,21 +48,11 @@ class TarTest extends TestCase
      */
     public function testThrowsExceptionIfTheComposerJsonIsInASubSubfolder()
     {
-        if (!extension_loaded('zip')) {
-            $this->markTestSkipped('The PHP zip extension is not loaded.');
-            return;
-        }
-
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/subfolders.tar.gz');
     }
 
-    public function testReturnsComposerJsonInZipRoot()
+    public function testReturnsComposerJsonInTarRoot()
     {
-        if (!extension_loaded('zip')) {
-            $this->markTestSkipped('The PHP zip extension is not loaded.');
-            return;
-        }
-
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/root.tar.gz');
 
         $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
@@ -85,11 +60,6 @@ class TarTest extends TestCase
 
     public function testReturnsComposerJsonInFirstFolder()
     {
-        if (!extension_loaded('zip')) {
-            $this->markTestSkipped('The PHP zip extension is not loaded.');
-            return;
-        }
-
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/folder.tar.gz');
         $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
@@ -99,21 +69,11 @@ class TarTest extends TestCase
      */
     public function testMultipleTopLevelDirsIsInvalid()
     {
-        if (!extension_loaded('zip')) {
-            $this->markTestSkipped('The PHP zip extension is not loaded.');
-            return;
-        }
-
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/multiple.tar.gz');
     }
 
     public function testReturnsComposerJsonFromFirstSubfolder()
     {
-        if (!extension_loaded('zip')) {
-            $this->markTestSkipped('The PHP zip extension is not loaded.');
-            return;
-        }
-
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/single-sub.tar.gz');
 
         $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
@@ -124,11 +84,6 @@ class TarTest extends TestCase
      */
     public function testThrowsExceptionIfMultipleComposerInSubFoldersWereFound()
     {
-        if (!extension_loaded('zip')) {
-            $this->markTestSkipped('The PHP zip extension is not loaded.');
-            return;
-        }
-
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/multiple_subfolders.tar.gz');
     }
 }
