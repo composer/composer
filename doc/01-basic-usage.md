@@ -142,6 +142,9 @@ reinstalling the project you can feel confident the dependencies installed are
 still working even if your dependencies released many new versions since then.
 (See note below about using the `update` command.)
 
+> **Note:** For libraries it is not necessary to commit the lock
+> file, see also: [Libraries - Lock file](02-libraries.md#lock-file).
+
 ## Updating dependencies to their latest versions
 
 As mentioned above, the `composer.lock` file prevents you from automatically getting
@@ -164,9 +167,6 @@ If you only want to install, upgrade or remove one dependency, you can explicitl
 ```sh
 php composer.phar update monolog/monolog [...]
 ```
-
-> **Note:** For libraries it is not necessary to commit the lock
-> file, see also: [Libraries - Lock file](02-libraries.md#lock-file).
 
 ## Packagist
 
