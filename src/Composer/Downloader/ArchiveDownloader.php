@@ -46,10 +46,17 @@ abstract class ArchiveDownloader extends FileDownloader
             $this->io->writeError('Extracting archive', false);
         }
 
-        $this->filesystem->emptyDirectory($path);
+        $vendorDir = $this->config->get('vendor-dir');
+
+        // clean up the target directory, unless it contains the vendor dir, as the vendor dir contains
+        // the archive to be extracted. This is the case when installing with create-project in the current directory
+        // but in that case we ensure the directory is empty already in ProjectInstaller so no need to empty it here.
+        if (false === strpos($this->filesystem->normalizePath($vendorDir), $this->filesystem->normalizePath($path).DIRECTORY_SEPARATOR)) {
+            $this->filesystem->emptyDirectory($path);
+        }
 
         do {
-            $temporaryDir = $this->config->get('vendor-dir').'/composer/'.substr(md5(uniqid('', true)), 0, 8);
+            $temporaryDir = $vendorDir.'/composer/'.substr(md5(uniqid('', true)), 0, 8);
         } while (is_dir($temporaryDir));
 
         $this->addCleanupPath($package, $temporaryDir);
