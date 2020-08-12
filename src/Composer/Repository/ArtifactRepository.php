@@ -97,7 +97,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         } else if ($fileExtension === 'zip') {
             $fileType = 'zip';
         } else {
-            throw new \RuntimeException('Files with "'.$fileExtension.'" extensions aren\'t supported. Only ZIP and TAR/TAR.GZ archives are supported.');
+            throw new \RuntimeException('Files with "'.$fileExtension.'" extensions aren\'t supported. Only ZIP and TAR/TAR.GZ/TGZ archives are supported.');
         }
 
         try {
