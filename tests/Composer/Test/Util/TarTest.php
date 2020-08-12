@@ -20,7 +20,6 @@ use Composer\Test\TestCase;
  */
 class TarTest extends TestCase
 {
-
     public function testReturnsNullifTheTarIsNotFound()
     {
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/invalid.zip');
@@ -31,7 +30,6 @@ class TarTest extends TestCase
     public function testReturnsNullIfTheTarIsEmpty()
     {
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/empty.tar.gz');
-
         $this->assertNull($result);
     }
 
@@ -54,7 +52,6 @@ class TarTest extends TestCase
     public function testReturnsComposerJsonInTarRoot()
     {
         $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/root.tar.gz');
-
         $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
 
@@ -70,20 +67,5 @@ class TarTest extends TestCase
     public function testMultipleTopLevelDirsIsInvalid()
     {
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/multiple.tar.gz');
-    }
-
-    public function testReturnsComposerJsonFromFirstSubfolder()
-    {
-        $result = Tar::getComposerJson(__DIR__.'/Fixtures/Tar/single-sub.tar.gz');
-
-        $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
-    }
-
-    /**
-     * @expectedException \RuntimeException
-     */
-    public function testThrowsExceptionIfMultipleComposerInSubFoldersWereFound()
-    {
-        Tar::getComposerJson(__DIR__.'/Fixtures/Tar/multiple_subfolders.tar.gz');
     }
 }

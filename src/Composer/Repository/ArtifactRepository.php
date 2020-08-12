@@ -67,7 +67,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
         $directory = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::FOLLOW_SYMLINKS);
         $iterator = new \RecursiveIteratorIterator($directory);
-        $regex = new \RegexIterator($iterator, '/^.+\.(zip|phar|tar|gz)$/i');
+        $regex = new \RegexIterator($iterator, '/^.+\.(zip|phar|tar|gz|tgz)$/i');
         foreach ($regex as $file) {
             /* @var $file \SplFileInfo */
             if (!$file->isFile()) {
@@ -92,7 +92,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         $json = null;
         $fileType = null;
         $fileExtension = pathinfo($file->getPathname(), PATHINFO_EXTENSION);
-        if (in_array($fileExtension, array('gz', 'tar'), true)) {
+        if (in_array($fileExtension, array('gz', 'tar', 'tgz'), true)) {
             $fileType = 'tar';
         } else if ($fileExtension === 'zip') {
             $fileType = 'zip';

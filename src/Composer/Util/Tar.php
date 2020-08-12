@@ -30,53 +30,39 @@ class Tar
             return null;
         }
 
-        return self::extractComposerJsonFromFolder($phar, $phar, 2);
+        return self::extractComposerJsonFromFolder($phar);
     }
 
     /**
-     * @param \PharData PharData
-     * @param \PharData $folder
-     * @param int      $searchLevels
-     * @param string      $path
+     * @param \PharData $phar
      *
      * @throws \RuntimeException
      *
      * @return string
      */
-    private static function extractComposerJsonFromFolder(\PharData $phar, \PharData $folder, $searchLevels, $path = '')
+    private static function extractComposerJsonFromFolder(\PharData $phar)
     {
-        $composerJson = null;
-        $directories = array();
-        foreach ($folder as $folderFile) {
-            if ($folderFile->isFile() && $folderFile->getBasename() === 'composer.json') {
-                if (count(explode('/', $path))> 2) {
-                    throw new \RuntimeException('No composer.json found either at the top level or within the topmost directory');
-                }
+        if (isset($phar['composer.json'])) {
+            return $phar['composer.json']->getContent();
+        }
 
-                return $folder->offsetGet($path . 'composer.json')->getContent();
-            }
+        $topLevelPaths = array();
+        foreach ($phar as $folderFile) {
+            $name = $folderFile->getBasename();
 
             if ($folderFile->isDir()) {
-                $directories[] = $folderFile;
+                $topLevelPaths[$name] = true;
+                if (\count($topLevelPaths) > 1) {
+                    throw new \RuntimeException('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: '.implode(',', array_keys($topLevelPaths)));
+                }
+
+                continue;
             }
         }
 
-        if ($searchLevels === 0) {
-            throw new \RuntimeException('No composer.json found either at the top level or within the topmost directory');
-        }
-
-        $composerJsons = array();
-        foreach ($directories as $dir) {
-            $pathName = $dir->getPathname();
-            $composerJsons[] = self::extractComposerJsonFromFolder($phar, new \PharData($pathName), $searchLevels - 1, $path . $dir->getBasename() . '/');
-        }
-
-        if (count($composerJsons) > 1) {
-            throw new \RuntimeException('Multiple composer json were found in the archive file. Make sure to have a single composer.json at the root directory.');
-        }
-
-        if (count($composerJsons) === 1) {
-            return $composerJsons[0];
+        $composerJsonPath = key($topLevelPaths).'/composer.json';
+        if ($topLevelPaths && isset($phar[$composerJsonPath])) {
+            return $phar[$composerJsonPath]->getContent();
         }
 
         throw new \RuntimeException('No composer.json found either at the top level or within the topmost directory');
