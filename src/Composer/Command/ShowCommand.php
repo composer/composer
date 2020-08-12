@@ -578,8 +578,8 @@ EOT
 
         $matchedPackage = null;
         $versions = array();
-        $matches = $repositorySet->findPackages($name, $constraint);
         $pool = $repositorySet->createPoolForPackage($name);
+        $matches = $pool->whatProvides($name, $constraint);
         foreach ($matches as $index => $package) {
             // select an exact match if it is in the installed repo and no specific version was required
             if (null === $version && $installedRepo->hasPackage($package)) {
