@@ -516,7 +516,7 @@ There are some cases, when there is no ability to have one of the previously
 mentioned repository types online, even the VCS one. Typical example could be
 cross-organisation library exchange through built artifacts. Of course, most
 of the times they are private. To simplify maintenance, one can simply use a
-repository of type `artifact` with a folder containing ZIP archives of those
+repository of type `artifact` with a folder containing ZIP or TAR archives of those
 private packages:
 
 ```json
