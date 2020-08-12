@@ -22,6 +22,7 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Seld\JsonLint\ParsingException;
 use Composer\Command;
 use Composer\Composer;
 use Composer\Factory;
@@ -191,6 +192,10 @@ class Application extends BaseApplication
                 }
             } catch (NoSslException $e) {
                 // suppress these as they are not relevant at this point
+            } catch (ParsingException $e) {
+                $this->emitGithubActionError($e);
+
+                throw $e;
             }
 
             $this->hasPluginCommands = true;
@@ -307,9 +312,18 @@ class Application extends BaseApplication
         } catch (ScriptExecutionException $e) {
             return (int) $e->getCode();
         } catch (\Exception $e) {
+            $this->emitGithubActionError($e);
             $this->hintCommonErrors($e);
             restore_error_handler();
             throw $e;
+        }
+    }
+
+    private function emitGithubActionError(\Exception $e) {
+        if (!empty($_ENV['GITHUB_ACTIONS'])) {
+            // newlines need to be encoded
+            // see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
+            echo "::error ::". str_replace("\n", '%0A', $e->getMessage());
         }
     }
 
