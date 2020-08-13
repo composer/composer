@@ -4,7 +4,7 @@ namespace Composer\Console;
 
 final class GithubActionError {
     /**
-     * @param string $e
+     * @param string $message
      * @param null|string $file
      * @param null|int $line
      */
