@@ -560,7 +560,7 @@ class PlatformRepository extends ArrayRepository
      */
     private function buildPackageName($name)
     {
-        return 'ext-' . str_replace(' ', '-', $name);
+        return 'ext-' . str_replace(' ', '-', strtolower($name));
     }
 
     /**
