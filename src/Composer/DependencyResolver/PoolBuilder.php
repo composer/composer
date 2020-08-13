@@ -238,6 +238,8 @@ class PoolBuilder
         $this->skippedLoad = array();
         $this->indexCounter = 0;
 
+        Intervals::clear();
+
         return $pool;
     }
 
