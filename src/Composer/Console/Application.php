@@ -321,8 +321,8 @@ class Application extends BaseApplication
         } catch (ScriptExecutionException $e) {
             return (int) $e->getCode();
         } catch (\Exception $e) {
-            $this->hintCommonErrors($e);
             GithubActionError::emit($e->getMessage());
+            $this->hintCommonErrors($e);
 
             restore_error_handler();
 
