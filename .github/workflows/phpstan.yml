@@ -34,7 +34,6 @@ jobs:
           extensions: "intl, zip"
           ini-values: "memory_limit=-1"
           php-version: "${{ matrix.php-version }}"
-          tools: "cs2pr"
 
       - name: "Determine composer cache directory"
         id: "determine-composer-cache-directory"
@@ -53,4 +52,4 @@ jobs:
       - name: Run PHPStan
         run: |
           bin/composer require --dev phpstan/phpstan:^0.12.26 phpunit/phpunit:^7.5 --with-all-dependencies
-          vendor/bin/phpstan analyse --configuration=phpstan/config.neon || vendor/bin/phpstan analyse --configuration=phpstan/config.neon --error-format=checkstyle | cs2pr
+          vendor/bin/phpstan analyse --configuration=phpstan/config.neon
