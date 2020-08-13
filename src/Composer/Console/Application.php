@@ -202,7 +202,8 @@ class Application extends BaseApplication
                     $line = $details['line'];
                 }
 
-                GithubActionError::emit($e->getMessage(), $file, $line);
+                $ghe = new GithubActionError($this->io);
+                $ghe->emit($e->getMessage(), $file, $line);
 
                 throw $e;
             }
@@ -321,7 +322,9 @@ class Application extends BaseApplication
         } catch (ScriptExecutionException $e) {
             return (int) $e->getCode();
         } catch (\Exception $e) {
-            GithubActionError::emit($e->getMessage());
+            $ghe = new GithubActionError($this->io);
+            $ghe->emit($e->getMessage());
+
             $this->hintCommonErrors($e);
 
             restore_error_handler();

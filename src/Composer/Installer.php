@@ -422,7 +422,8 @@ class Installer
                 $this->io->writeError('<warning>Running update with --no-dev does not mean require-dev is ignored, it just means the packages will not be installed. If dev requirements are blocking the update you have to resolve those problems.</warning>', true, IOInterface::QUIET);
             }
 
-            GithubActionError::emit($err."\n".$prettyProblem);
+            $ghe = new GithubActionError($this->io);
+            $ghe->emit($err."\n".$prettyProblem);
 
             return max(1, $e->getCode());
         }
@@ -585,7 +586,8 @@ class Installer
             $this->io->writeError('You may need to move packages from require-dev or some of their dependencies to require.');
             $this->io->writeError($prettyProblem);
 
-            GithubActionError::emit($err."\n".$prettyProblem);
+            $ghe = new GithubActionError($this->io);
+            $ghe->emit($err."\n".$prettyProblem);
 
             return max(1, $e->getCode());
         }
@@ -654,7 +656,8 @@ class Installer
                 $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
                 $this->io->writeError($prettyProblem);
 
-                GithubActionError::emit($err."\n".$prettyProblem);
+                $ghe = new GithubActionError($this->io);
+                $ghe->emit($err."\n".$prettyProblem);
 
                 return max(1, $e->getCode());
             }
