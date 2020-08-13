@@ -193,7 +193,16 @@ class Application extends BaseApplication
             } catch (NoSslException $e) {
                 // suppress these as they are not relevant at this point
             } catch (ParsingException $e) {
-                $this->emitGithubActionError($e);
+                $details = $e->getDetails();
+
+                $file = realpath(Factory::getComposerFile());
+
+                $line = null;
+                if ($details && isset($details['line'])) {
+                    $line = $details['line'];
+                }
+
+                $this->emitGithubActionError($e, $file, $line);
 
                 throw $e;
             }
@@ -242,7 +251,7 @@ class Application extends BaseApplication
                 if (function_exists('posix_getuid') && posix_getuid() === 0) {
                     if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                         $io->writeError('<warning>Do not run Composer as root/super user! See https://getcomposer.org/root for details</warning>');
-                        
+
                         if ($io->isInteractive()) {
                             if (!$io->askConfirmation('<info>Continue as root/super user</info> [<comment>yes</comment>]? ', true)) {
                                 return 1;
@@ -319,11 +328,19 @@ class Application extends BaseApplication
         }
     }
 
-    private function emitGithubActionError(\Exception $e) {
+    private function emitGithubActionError(\Exception $e, $file = null, $line = null) {
         if (!empty($_ENV['GITHUB_ACTIONS'])) {
             // newlines need to be encoded
             // see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
-            echo "::error ::". str_replace("\n", '%0A', $e->getMessage());
+            $message = str_replace("\n", '%0A', $e->getMessage());
+
+            if ($file && $line) {
+                echo "::error file=". $file .",line=". $line ."::". $message;
+            } elseif ($file) {
+                echo "::error file=". $file ."::". $message;
+            } else {
+                echo "::error ::". $message;
+            }
         }
     }
 
