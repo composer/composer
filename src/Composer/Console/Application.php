@@ -322,10 +322,10 @@ class Application extends BaseApplication
             return (int) $e->getCode();
         } catch (\Exception $e) {
             $this->hintCommonErrors($e);
+            GithubActionError::emit($e->getMessage());
+
             restore_error_handler();
 
-            GithubActionError::emit($e->getMessage());
-            
             throw $e;
         }
     }
