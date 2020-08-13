@@ -22,6 +22,7 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Seld\JsonLint\ParsingException;
 use Composer\Command;
 use Composer\Composer;
 use Composer\Factory;
@@ -191,6 +192,20 @@ class Application extends BaseApplication
                 }
             } catch (NoSslException $e) {
                 // suppress these as they are not relevant at this point
+            } catch (ParsingException $e) {
+                $details = $e->getDetails();
+
+                $file = realpath(Factory::getComposerFile());
+
+                $line = null;
+                if ($details && isset($details['line'])) {
+                    $line = $details['line'];
+                }
+
+                $ghe = new GithubActionError($this->io);
+                $ghe->emit($e->getMessage(), $file, $line);
+
+                throw $e;
             }
 
             $this->hasPluginCommands = true;
@@ -237,7 +252,7 @@ class Application extends BaseApplication
                 if (function_exists('posix_getuid') && posix_getuid() === 0) {
                     if ($commandName !== 'self-update' && $commandName !== 'selfupdate') {
                         $io->writeError('<warning>Do not run Composer as root/super user! See https://getcomposer.org/root for details</warning>');
-                        
+
                         if ($io->isInteractive()) {
                             if (!$io->askConfirmation('<info>Continue as root/super user</info> [<comment>yes</comment>]? ', true)) {
                                 return 1;
@@ -307,8 +322,13 @@ class Application extends BaseApplication
         } catch (ScriptExecutionException $e) {
             return (int) $e->getCode();
         } catch (\Exception $e) {
+            $ghe = new GithubActionError($this->io);
+            $ghe->emit($e->getMessage());
+
             $this->hintCommonErrors($e);
+
             restore_error_handler();
+
             throw $e;
         }
     }

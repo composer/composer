@@ -13,6 +13,7 @@
 namespace Composer;
 
 use Composer\Autoload\AutoloadGenerator;
+use Composer\Console\GithubActionError;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\LocalRepoTransaction;
 use Composer\DependencyResolver\LockTransaction;
@@ -412,11 +413,17 @@ class Installer
             $ruleSetSize = $solver->getRuleSetSize();
             $solver = null;
         } catch (SolverProblemsException $e) {
-            $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
-            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose()));
+            $err = 'Your requirements could not be resolved to an installable set of packages.';
+            $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose());
+
+            $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
+            $this->io->writeError($prettyProblem);
             if (!$this->devMode) {
                 $this->io->writeError('<warning>Running update with --no-dev does not mean require-dev is ignored, it just means the packages will not be installed. If dev requirements are blocking the update you have to resolve those problems.</warning>', true, IOInterface::QUIET);
             }
+
+            $ghe = new GithubActionError($this->io);
+            $ghe->emit($err."\n".$prettyProblem);
 
             return max(1, $e->getCode());
         }
@@ -571,10 +578,16 @@ class Installer
             $nonDevLockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
             $solver = null;
         } catch (SolverProblemsException $e) {
-            $this->io->writeError('<error>Unable to find a compatible set of packages based on your non-dev requirements alone.</error>', true, IOInterface::QUIET);
+            $err = 'Unable to find a compatible set of packages based on your non-dev requirements alone.';
+            $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose(), true);
+
+            $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
             $this->io->writeError('Your requirements can be resolved successfully when require-dev packages are present.');
             $this->io->writeError('You may need to move packages from require-dev or some of their dependencies to require.');
-            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose(), true));
+            $this->io->writeError($prettyProblem);
+
+            $ghe = new GithubActionError($this->io);
+            $ghe->emit($err."\n".$prettyProblem);
 
             return max(1, $e->getCode());
         }
@@ -637,8 +650,14 @@ class Installer
                     return 1;
                 }
             } catch (SolverProblemsException $e) {
-                $this->io->writeError('<error>Your lock file does not contain a compatible set of packages. Please run composer update.</error>', true, IOInterface::QUIET);
-                $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose()));
+                $err = 'Your lock file does not contain a compatible set of packages. Please run composer update.';
+                $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose());
+
+                $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
+                $this->io->writeError($prettyProblem);
+
+                $ghe = new GithubActionError($this->io);
+                $ghe->emit($err."\n".$prettyProblem);
 
                 return max(1, $e->getCode());
             }
