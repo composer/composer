@@ -19,7 +19,7 @@ final class GithubActionError {
      * @param null|int $line
      */
     public function emit($message, $file = null, $line = null) {
-        if (getenv('GITHUB_ACTIONS')) {
+        if (getenv('GITHUB_ACTIONS') && !getenv('COMPOSER_TESTS_ARE_RUNNING')) {
             // newlines need to be encoded
             // see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
             $message = str_replace("\n", '%0A', $message);
