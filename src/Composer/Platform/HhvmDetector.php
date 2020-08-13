@@ -21,8 +21,8 @@ class HhvmDetector
     private $executableFinder;
     private $processExecutor;
 
-    public function __construct(ExecutableFinder  $executableFinder = null, ProcessExecutor $processExecutor = null) {
-
+    public function __construct(ExecutableFinder  $executableFinder = null, ProcessExecutor $processExecutor = null)
+    {
         $this->executableFinder = $executableFinder;
         $this->processExecutor = $processExecutor;
     }
@@ -32,7 +32,8 @@ class HhvmDetector
         self::$hhvmVersion = null;
     }
 
-    public function getVersion() {
+    public function getVersion()
+    {
         if (null !== self::$hhvmVersion) {
             return self::$hhvmVersion ?: null;
         }
@@ -54,6 +55,7 @@ class HhvmDetector
                 }
             }
         }
+
         return self::$hhvmVersion;
     }
 }

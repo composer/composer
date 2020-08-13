@@ -28,7 +28,8 @@ class HhvmDetectorTest extends TestCase
         $this->hhvmDetector->reset();
     }
 
-    public function testHHVMVersionWhenExecutingInHHVM() {
+    public function testHHVMVersionWhenExecutingInHHVM()
+    {
         if (!defined('HHVM_VERSION_ID')) {
             self::markTestSkipped('Not running with HHVM');
             return;
@@ -37,7 +38,8 @@ class HhvmDetectorTest extends TestCase
         self::assertSame(self::versionIdToVersion(), $version);
     }
 
-    public function testHHVMVersionWhenExecutingInPHP() {
+    public function testHHVMVersionWhenExecutingInPHP()
+    {
         if (defined('HHVM_VERSION_ID')) {
             self::markTestSkipped('Running with HHVM');
             return;

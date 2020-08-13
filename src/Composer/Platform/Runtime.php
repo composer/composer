@@ -19,7 +19,8 @@ class Runtime
      * @param class-string $class
      * @return bool
      */
-    public function hasConstant($constant, $class = null) {
+    public function hasConstant($constant, $class = null)
+    {
         return defined(ltrim($class.'::'.$constant, ':'));
     }
 
@@ -28,7 +29,8 @@ class Runtime
      * @param class-string $class
      * @return mixed
      */
-    public function getConstant($constant, $class = null) {
+    public function getConstant($constant, $class = null)
+    {
         return constant(ltrim($class.'::'.$constant, ':'));
     }
 
@@ -37,7 +39,8 @@ class Runtime
      * @param array $arguments
      * @return mixed
      */
-    public function invoke($callable, array $arguments = array()) {
+    public function invoke($callable, array $arguments = array())
+    {
         return call_user_func_array($callable, $arguments);
     }
 
@@ -45,7 +48,8 @@ class Runtime
      * @param class-string $class
      * @return bool
      */
-    public function hasClass($class)  {
+    public function hasClass($class)
+    {
         return class_exists($class, false);
     }
 
@@ -54,7 +58,8 @@ class Runtime
      * @param array $arguments
      * @return object
      */
-    public function construct($class, array $arguments = array()) {
+    public function construct($class, array $arguments = array())
+    {
         if (empty($arguments)) {
             return new $class;
         }

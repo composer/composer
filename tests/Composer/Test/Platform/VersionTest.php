@@ -10,9 +10,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Composer\Test\Util;
+namespace Composer\Test\Platform;
 
-use Composer\Util\Version;
+use Composer\Platform\Version;
 use Composer\Test\TestCase;
 
 /**
