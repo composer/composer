@@ -13,6 +13,7 @@
 namespace Composer\Util\Http;
 
 use Composer\Config;
+use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
@@ -364,6 +365,18 @@ class CurlDownloader
             if ($this->jobs[$i]['progress'] !== $progress) {
                 $previousProgress = $this->jobs[$i]['progress'];
                 $this->jobs[$i]['progress'] = $progress;
+
+                if (isset($this->jobs[$i]['options']['max_file_size'])) {
+                    // Compare max_file_size with the content-length header this value will be -1 until the header is parsed
+                    if ($this->jobs[$i]['options']['max_file_size'] < $progress['download_content_length']) {
+                        throw new MaxFileSizeExceededException('Maximum allowed download size reached. Content-length header indicates ' . $progress['download_content_length'] . ' bytes. Allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes');
+                    }
+
+                    // Compare max_file_size with the download size in bytes
+                    if ($this->jobs[$i]['options']['max_file_size'] < $progress['size_download']) {
+                        throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . $progress['size_download'] . ' of allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes');
+                    }
+                }
 
                 // TODO
                 //$this->onProgress($curlHandle, $this->jobs[$i]['callback'], $progress, $previousProgress);
