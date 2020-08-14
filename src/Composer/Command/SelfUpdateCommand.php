@@ -271,7 +271,12 @@ TAGSPUBKEY
             $signature = json_decode($signature, true);
             $signature = base64_decode($signature['sha384']);
             $verified = 1 === openssl_verify(file_get_contents($tempFilename), $signature, $pubkeyid, $algo);
-            openssl_free_key($pubkeyid);
+
+            // PHP 8 automatically frees the key instance and deprecates the function
+            if (PHP_VERSION_ID < 80000) {
+                openssl_free_key($pubkeyid);
+            }
+
             if (!$verified) {
                 throw new \RuntimeException('The phar signature did not match the file you downloaded, this means your public keys are outdated or that the phar file is corrupt/has been modified');
             }
