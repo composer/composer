@@ -144,7 +144,7 @@ class PlatformRepositoryTest extends TestCase
         }
     }
 
-    public function testInetPtonRegressiom()
+    public function testInetPtonRegression()
     {
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
 
