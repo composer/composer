@@ -35,6 +35,15 @@ class Runtime
     }
 
     /**
+     * @param string $fn
+     * @return bool
+     */
+    public function hasFunction($fn)
+    {
+        return function_exists($fn);
+    }
+
+    /**
      * @param callable $callable
      * @param array $arguments
      * @return mixed
