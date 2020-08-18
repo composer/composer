@@ -40,7 +40,7 @@ jobs:
         run: "echo \"::set-output name=directory::$(composer config cache-dir)\""
 
       - name: "Cache dependencies installed with composer"
-        uses: "actions/cache@v1"
+        uses: "actions/cache@v2"
         with:
           path: "${{ steps.determine-composer-cache-directory.outputs.directory }}"
           key: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}-${{ hashFiles('**/composer.lock') }}"
@@ -51,5 +51,5 @@ jobs:
 
       - name: Run PHPStan
         run: |
-          bin/composer require --dev phpstan/phpstan:^0.12.26 phpunit/phpunit:^7.5 --with-all-dependencies
+          bin/composer require --dev phpstan/phpstan:^0.12.37 phpunit/phpunit:^7.5.20 --with-all-dependencies
           vendor/bin/phpstan analyse --configuration=phpstan/config.neon
