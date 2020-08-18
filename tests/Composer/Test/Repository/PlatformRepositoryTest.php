@@ -95,8 +95,19 @@ class PlatformRepositoryTest extends TestCase
                 ),
                 array(
                     array('inet_pton', array('::'), ''),
-                )
-            )
+                ),
+            ),
+            array(
+                array(
+                    'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
+                ),
+                array(
+                    'php' => '7.2.31',
+                ),
+                array(
+                    array('inet_pton', array('::'), false),
+                ),
+            ),
         );
     }
 
@@ -131,6 +142,39 @@ class PlatformRepositoryTest extends TestCase
             self::assertNotNull($package, sprintf('Expected to find package "%s"', $packageName));
             self::assertSame($version, $package->getPrettyVersion(), sprintf('Expected package "%s" version to be %s, got %s', $packageName, $version, $package->getPrettyVersion()));
         }
+    }
+
+    public function testInetPtonRegression()
+    {
+        $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
+
+        $runtime
+            ->expects(self::once())
+            ->method('invoke')
+            ->with('inet_pton', array('::'))
+            ->willReturn(false);
+        $runtime
+            ->method('hasConstant')
+            ->willReturnMap(
+                array(
+                    array('PHP_ZTS', false),
+                    array('AF_INET6', false),
+                )
+            );
+        $runtime
+            ->method('getExtensions')
+            ->willReturn(array());
+        $runtime
+            ->method('getConstant')
+            ->willReturnMap(
+                array(
+                    array('PHP_VERSION', null, '7.0.0'),
+                    array('PHP_DEBUG', null, false),
+                )
+            );
+        $repository = new PlatformRepository(array(), array(), $runtime);
+        $package = $repository->findPackage('php-ipv6', '*');
+        self::assertNull($package);
     }
 
     public static function getLibraryTestCases()
