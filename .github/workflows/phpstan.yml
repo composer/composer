@@ -51,5 +51,5 @@ jobs:
 
       - name: Run PHPStan
         run: |
-          bin/composer require --dev phpstan/phpstan:^0.12.26 phpunit/phpunit:^7.5 --with-all-dependencies
+          bin/composer require --dev phpstan/phpstan:^0.12.37 phpunit/phpunit:^7.5.20 --with-all-dependencies
           vendor/bin/phpstan analyse --configuration=phpstan/config.neon
