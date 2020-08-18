@@ -95,13 +95,28 @@ class PlatformRepositoryTest extends TestCase
                 ),
                 array(
                     array('inet_pton', array('::'), ''),
+                ),
+                array(
+                    array('inet_pton', true),
+                )
+            ),
+            array(
+                array(
+                    'PHP_VERSION' => '7.2.31-1+ubuntu16.04.1+deb.sury.org+1',
+                ),
+                array(
+                    'php' => '7.2.31',
+                ),
+                array(),
+                array(
+                    'inet_pton' => false,
                 )
             )
         );
     }
 
     /** @dataProvider getPhpFlavorTestCases */
-    public function testPhpVersion(array $constants, array $packages, array $functions = array())
+    public function testPhpVersion(array $constants, array $packages, array $functionMap = array(), array $functionExists = array())
     {
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
         $runtime
@@ -123,7 +138,11 @@ class PlatformRepositoryTest extends TestCase
             );
         $runtime
             ->method('invoke')
-            ->willReturnMap($functions);
+            ->willReturnMap($functionMap);
+
+        $runtime
+            ->method('hasFunction')
+            ->willReturnMap($functionExists);
 
         $repository = new PlatformRepository(array(), array(), $runtime);
         foreach ($packages as $packageName => $version) {
