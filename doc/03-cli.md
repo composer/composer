@@ -434,7 +434,6 @@ The color coding is as such:
 * **--strict:** Returns non-zero exit code if any package is outdated.
 * **--minor-only (-m):** Only shows packages that have minor SemVer-compatible updates.
 * **--format (-f):** Lets you pick between text (default) or json output format.
-* **--no-dev:** Do not show outdated dev dependencies.
 
 ## browse / home
 
