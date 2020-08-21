@@ -59,7 +59,7 @@ class ArrayRepository implements RepositoryInterface
         foreach ($packages as $package) {
             if (array_key_exists($package->getName(), $packageMap)) {
                 if (
-                    (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
+                    $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion()))
                     && StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, $package->getNames(), $package->getStability())
                 ) {
                     // add selected packages which match stability requirements
@@ -68,9 +68,16 @@ class ArrayRepository implements RepositoryInterface
                     if ($package instanceof AliasPackage && !isset($result[spl_object_hash($package->getAliasOf())])) {
                         $result[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
                     }
+
+                    // mark package as found only when constraint has a match
+                    // example:
+                    // - repository A (fork) has foobar@1.9.0
+                    // - composer repo has foobar@1.10.0
+                    // and in composer.json we have foobar@1.10
+                    // if repo A cannot fulfil this dependency we need to check composer repo
+                    $namesFound[$package->getName()] = true;
                 }
 
-                $namesFound[$package->getName()] = true;
             }
         }
 

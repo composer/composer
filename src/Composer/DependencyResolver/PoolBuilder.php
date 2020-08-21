@@ -21,6 +21,7 @@ use Composer\Package\Version\StabilityFilter;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PrePoolCreateEvent;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\Constraint;
@@ -102,6 +103,12 @@ class PoolBuilder
         $this->io = $io;
     }
 
+    /**
+     * @param RepositoryInterface[] $repositories
+     * @param Request               $request
+     *
+     * @return Pool
+     */
     public function buildPool(array $repositories, Request $request)
     {
         if ($request->getUpdateAllowList()) {
@@ -315,6 +322,10 @@ class PoolBuilder
             } else {
                 $this->nameConstraints[$require] = null;
             }
+
+            if (array_key_exists($require, $loadNames)) {
+                $loadNames[$require] = MultiConstraint::create($this->nameConstraints[$require] ?: array(), false);
+            }
         }
 
         // if we're doing a partial update with deps we also need to unfix packages which are being replaced in case they
@@ -325,9 +336,8 @@ class PoolBuilder
                 if (isset($this->loadedNames[$replace]) && isset($this->skippedLoad[$replace])) {
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$replace])) {
                         $this->unfixPackage($request, $replace);
-                        $loadNames[$replace] = null;
                         // TODO should we try to merge constraints here?
-                        $this->nameConstraints[$replace] = null;
+                        unset($loadNames[$replace], $this->nameConstraints[$replace]);
                     } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$replace])) {
                         $this->updateAllowWarned[$replace] = true;
                         $this->io->writeError('<warning>Dependency "'.$replace.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');

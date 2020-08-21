@@ -71,6 +71,7 @@ interface RepositoryInterface extends \Countable
      * - The namesFound returned are names which should be considered as canonically found in this repository, that should not be looked up in any further lower priority repositories
      *
      * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
+     * @psalm-param  array<string, ConstraintInterface> $packageNameMap
      * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
      * @psalm-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
      * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
