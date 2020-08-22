@@ -279,11 +279,11 @@ class Problem
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match your minimum-stability.');
         }
 
-        // check if the package is found when bypassing the constraint check
-        if ($packages = $repositorySet->findPackages($packageName, null)) {
+        // check if the package is found when bypassing the constraint check and stability checks
+        if ($packages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
             // we must first verify if a valid package would be found in a lower priority repository
             if ($allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
-                $higherRepoPackages = $repositorySet->findPackages($packageName, null);
+                $higherRepoPackages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES);
                 $nextRepoPackages = array();
                 $nextRepo = null;
 
