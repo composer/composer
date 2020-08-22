@@ -1,36 +1,55 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Util;
 
-use Composer\Config;
-use Composer\Downloader\TransportException;
 use Composer\Factory;
 use Composer\IO\IOInterface;
+use Composer\Config;
+use Composer\Downloader\TransportException;
 
+/**
+ * @author Oleg Andreyev <oleg@andreyev.lv>
+ */
 class BitbucketServer
 {
+    /** @var IOInterface */
     private $io;
+    /** @var Config */
     private $config;
+    /** @var ProcessExecutor */
     private $process;
-    private $remoteFilesystem;
+    /** @var HttpDownloader */
+    private $httpDownloader;
+    /** @var array */
     private $token = array();
+    /** @var int|null */
     private $time;
 
     /**
      * Constructor.
      *
-     * @param IOInterface      $io               The IO instance
-     * @param Config           $config           The composer configuration
-     * @param ProcessExecutor  $process          Process instance, injectable for mocking
-     * @param RemoteFilesystem $remoteFilesystem Remote Filesystem, injectable for mocking
-     * @param int              $time             Timestamp, injectable for mocking
+     * @param IOInterface     $io               The IO instance
+     * @param Config          $config           The composer configuration
+     * @param ProcessExecutor $process          Process instance, injectable for mocking
+     * @param HttpDownloader  $httpDownloader Remote Filesystem, injectable for mocking
+     * @param int             $time             Timestamp, injectable for mocking
      */
-    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, RemoteFilesystem $remoteFilesystem = null, $time = null)
+    public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null, $time = null)
     {
         $this->io = $io;
         $this->config = $config;
         $this->process = $process ?: new ProcessExecutor($io);
-        $this->remoteFilesystem = $remoteFilesystem ?: Factory::createRemoteFilesystem($this->io, $config);
+        $this->httpDownloader = $httpDownloader ?: Factory::createHttpDownloader($this->io, $config);
         $this->time = $time;
     }
 
@@ -70,9 +89,9 @@ class BitbucketServer
      */
     private function requestAccessToken($originUrl)
     {
-        // TODO
+        // TODO: Bitbucket server does not have oauth
         try {
-            $json = $this->remoteFilesystem->getContents($originUrl, self::OAUTH2_ACCESS_TOKEN_URL, false, array(
+            $response = $this->httpDownloader->get($originUrl, array(
                 'retry-auth-failure' => false,
                 'http' => array(
                     'method' => 'POST',
@@ -80,7 +99,7 @@ class BitbucketServer
                 ),
             ));
 
-            $this->token = json_decode($json, true);
+            $this->token = $response->decodeJson();
         } catch (TransportException $e) {
             if ($e->getCode() === 400) {
                 $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
@@ -152,6 +171,7 @@ class BitbucketServer
      */
     public function requestToken($originUrl, $consumerKey, $consumerSecret)
     {
+        // TODO
         if (!empty($this->token) || $this->getTokenFromConfig($originUrl)) {
             return $this->token['access_token'];
         }
@@ -202,5 +222,4 @@ class BitbucketServer
 
         return true;
     }
-
 }

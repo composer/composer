@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
@@ -8,12 +18,16 @@ use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Util\BitbucketServer;
+use Composer\Util\Http\Response;
 
-class BitbucketServerDriver extends BitbucketDriver
+/**
+ * @author Oleg Andreyev <oleg@andreyev.lv>
+ */
+class BitbucketServerDriver extends VcsDriver
 {
     /** @var Cache */
     protected $cache;
-    protected $ownerOrProject;
+    protected $owner;
     protected $repository;
     protected $hasIssues;
     protected $rootIdentifier;
@@ -30,6 +44,7 @@ class BitbucketServerDriver extends BitbucketDriver
      * @var VcsDriver
      */
     protected $fallbackDriver;
+
     /** @var string|null if set either git or hg */
     protected $vcsType;
 
@@ -43,7 +58,7 @@ class BitbucketServerDriver extends BitbucketDriver
         } else {
             preg_match('#^https?://([^/]+)/scm/([^/]+)/([^/]+?)(\.git|/?)$#i', $this->url, $match);
         }
-        $this->ownerOrProject = $match[2];
+        $this->owner = $match[2];
         $this->repository = $match[3];
         $this->originUrl = $match[1];
         $this->cache = new Cache(
@@ -51,7 +66,7 @@ class BitbucketServerDriver extends BitbucketDriver
             implode('/', array(
                 $this->config->get('cache-repo-dir'),
                 $this->originUrl,
-                $this->ownerOrProject,
+                $this->owner,
                 $this->repository,
             ))
         );
@@ -82,11 +97,11 @@ class BitbucketServerDriver extends BitbucketDriver
         $resource = sprintf(
             'https://%s/rest/api/1.0/projects/%s/repos/%s',
             $this->originUrl,
-            $this->ownerOrProject,
+            $this->owner,
             $this->repository
         );
 
-        $repoData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource, true), $resource);
+        $repoData = $this->fetchWithOAuthCredentials($resource, true)->decodeJson();
         if ($this->fallbackDriver) {
             return false;
         }
@@ -121,13 +136,7 @@ class BitbucketServerDriver extends BitbucketDriver
             if ($composer) {
                 // specials for bitbucket
                 if (!isset($composer['support']['source'])) {
-                    $label = array_search(
-                        $identifier,
-                        $this->getTags()
-                    ) ?: array_search(
-                        $identifier,
-                        $this->getBranches()
-                    ) ?: $identifier;
+                    $label = array_search($identifier, $this->getTags(), true) ?: array_search($identifier, $this->getBranches(), true) ?: $identifier;
 
                     if (array_key_exists($label, $tags = $this->getTags())) {
                         $hash = $tags[$label];
@@ -139,14 +148,14 @@ class BitbucketServerDriver extends BitbucketDriver
                         $composer['support']['source'] = sprintf(
                             'https://%s/projects/%s/repos/%s/browse',
                             $this->originUrl,
-                            $this->ownerOrProject,
+                            $this->owner,
                             $this->repository
                         );
                     } else {
                         $composer['support']['source'] = sprintf(
                             'https://%s/projects/%s/repos/%s/browse?at=%s',
                             $this->originUrl,
-                            $this->ownerOrProject,
+                            $this->owner,
                             $this->repository,
                             $identifier
                         );
@@ -156,7 +165,7 @@ class BitbucketServerDriver extends BitbucketDriver
                     $composer['support']['issues'] = sprintf(
                         'https://%s/%s/%s/issues',
                         $this->originUrl,
-                        $this->ownerOrProject,
+                        $this->owner,
                         $this->repository
                     );
                 }
@@ -192,13 +201,13 @@ class BitbucketServerDriver extends BitbucketDriver
         $resource = sprintf(
             'https://%s/rest/api/1.0/projects/%s/repos/%s/raw/%s?at=%s',
             $this->originUrl,
-            $this->ownerOrProject,
+            $this->owner,
             $this->repository,
             $file,
             $identifier
         );
 
-        return $this->getContentsWithOAuthCredentials($resource);
+        return $this->fetchWithOAuthCredentials($resource)->getBody();
     }
 
     /**
@@ -222,12 +231,11 @@ class BitbucketServerDriver extends BitbucketDriver
         $resource = sprintf(
             'https://%s/rest/api/1.0/projects/%s/repos/%s/commits/%s',
             $this->originUrl,
-            $this->ownerOrProject,
+            $this->owner,
             $this->repository,
             $identifier
         );
-
-        $commit = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
+        $commit = $this->fetchWithOAuthCredentials($resource)->decodeJson();
 
         $dateTime = new \DateTime();
         return $dateTime->setTimestamp($commit['authorTimestamp'] / 1000);
@@ -259,7 +267,7 @@ class BitbucketServerDriver extends BitbucketDriver
         $url = sprintf(
             'https://%s/rest/api/1.0/projects/%s/repos/%s/archive?at=%s&format=zip',
             $this->originUrl,
-            $this->ownerOrProject,
+            $this->owner,
             $this->repository,
             $identifier
         );
@@ -283,7 +291,7 @@ class BitbucketServerDriver extends BitbucketDriver
             $resource = sprintf(
                 'https://%s/rest/api/1.0/projects/%s/repos/%s/tags?%s',
                 $this->originUrl,
-                $this->ownerOrProject,
+                $this->owner,
                 $this->repository,
                 http_build_query(
                     array(
@@ -297,7 +305,7 @@ class BitbucketServerDriver extends BitbucketDriver
             );
             $hasNext = true;
             while ($hasNext) {
-                $tagsData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
+                $tagsData = $this->fetchWithOAuthCredentials($resource)->decodeJson();
                 foreach ($tagsData['values'] as $data) {
                     $this->tags[$data['displayId']] = $data['latestCommit'];
                 }
@@ -308,7 +316,7 @@ class BitbucketServerDriver extends BitbucketDriver
                     $resource = sprintf(
                         'https://%s/rest/api/1.0/projects/%s/repos/%s/tags?%s',
                         $this->originUrl,
-                        $this->ownerOrProject,
+                        $this->owner,
                         $this->repository,
                         http_build_query(
                             array(
@@ -343,7 +351,7 @@ class BitbucketServerDriver extends BitbucketDriver
             $resource = sprintf(
                 'https://%s/rest/api/1.0/projects/%s/repos/%s/branches?%s',
                 $this->originUrl,
-                $this->ownerOrProject,
+                $this->owner,
                 $this->repository,
                 http_build_query(
                     array(
@@ -357,7 +365,7 @@ class BitbucketServerDriver extends BitbucketDriver
             );
             $hasNext = true;
             while ($hasNext) {
-                $branchData = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
+                $branchData = $this->fetchWithOAuthCredentials($resource)->decodeJson();
                 foreach ($branchData['values'] as $data) {
                     $this->branches[$data['displayId']] = $data['latestCommit'];
                 }
@@ -367,7 +375,7 @@ class BitbucketServerDriver extends BitbucketDriver
                     $resource = sprintf(
                         'https://%s/rest/api/1.0/projects/%s/repos/%s/branches?%s',
                         $this->originUrl,
-                        $this->ownerOrProject,
+                        $this->owner,
                         $this->repository,
                         http_build_query(
                             array(
@@ -392,24 +400,26 @@ class BitbucketServerDriver extends BitbucketDriver
      * @param string $url              The URL of content
      * @param bool   $fetchingRepoData
      *
-     * @return mixed The result
+     * @return Response The result
      */
-    protected function getContentsWithOAuthCredentials($url, $fetchingRepoData = false)
+    protected function fetchWithOAuthCredentials($url, $fetchingRepoData = false)
     {
         try {
-            return $this->getContents($url);
+            return parent::getContents($url);
         } catch (TransportException $e) {
-            $bitbucketUtil = new BitbucketServer($this->io, $this->config, $this->process, $this->remoteFilesystem);
+            $bitbucketUtil = new BitbucketServer($this->io, $this->config, $this->process, $this->httpDownloader);
 
             if (403 === $e->getCode() || (401 === $e->getCode() && strpos($e->getMessage(), 'URL required authentication.') !== false)) {
                 if (!$this->io->hasAuthentication($this->originUrl)
                     && $bitbucketUtil->authorizeOAuth($this->originUrl)
                 ) {
-                    return $this->getContents($url);
+                    return parent::getContents($url);
                 }
 
                 if (!$this->io->isInteractive() && $fetchingRepoData) {
-                    return $this->attemptCloneFallback();
+                    if ($this->attemptCloneFallback()) {
+                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
+                    }
                 }
             }
 
@@ -421,12 +431,14 @@ class BitbucketServerDriver extends BitbucketDriver
     {
         try {
             $this->setupFallbackDriver($this->generateSshUrl());
+
+            return true;
         } catch (\RuntimeException $e) {
             $this->fallbackDriver = null;
 
             $this->io->writeError(
                 '<error>Failed to clone the ' . $this->generateSshUrl() . ' repository, try running in interactive mode'
-                . ' so that you can enter your Bitbucket OAuth consumer credentials</error>'
+                . ' so that you can enter your Bitbucket Server OAuth consumer credentials</error>'
             );
             throw $e;
         }
@@ -455,11 +467,11 @@ class BitbucketServerDriver extends BitbucketDriver
         $resource = sprintf(
             'https://%s/rest/api/1.0/projects/%s/repos/%s/branches/default',
             $this->originUrl,
-            $this->ownerOrProject,
+            $this->owner,
             $this->repository
         );
 
-        $data = JsonFile::parseJson($this->getContentsWithOAuthCredentials($resource), $resource);
+        $data = $this->fetchWithOAuthCredentials($resource)->decodeJson();
         if (isset($data['displayId'])) {
             return array('name' => $data['displayId']);
         }
@@ -480,8 +492,7 @@ class BitbucketServerDriver extends BitbucketDriver
 
             if ($this->vcsType !== 'git') {
                 throw new \RuntimeException(
-                    $this->url.' does not appear to be a git repository, use '.
-                    $this->cloneHttpsUrl.' if this is a mercurial bitbucket repository'
+                    $this->url.' does not appear to be a git repository, use '. $this->cloneHttpsUrl
                 );
             }
 
@@ -494,16 +505,6 @@ class BitbucketServerDriver extends BitbucketDriver
 
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match('#^https?://bitbucket\.org/([^/]+)/(.+?)\.git$#i', $url)) {
-            return false;
-        }
-
-        if (!extension_loaded('openssl')) {
-            $io->writeError('Skipping Bitbucket git driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
-
-            return false;
-        }
-
         return true;
     }
 
@@ -512,7 +513,7 @@ class BitbucketServerDriver extends BitbucketDriver
      */
     protected function generateSshUrl()
     {
-        return 'git@' . $this->originUrl . '/' . $this->ownerOrProject.'/'.$this->repository.'.git';
+        return 'git@' . $this->originUrl . '/' . $this->owner.'/'.$this->repository.'.git';
     }
 
     /**
@@ -524,8 +525,8 @@ class BitbucketServerDriver extends BitbucketDriver
             array('url' => $url),
             $this->io,
             $this->config,
-            $this->process,
-            $this->remoteFilesystem
+            $this->httpDownloader,
+            $this->process
         );
         $this->fallbackDriver->initialize();
     }
