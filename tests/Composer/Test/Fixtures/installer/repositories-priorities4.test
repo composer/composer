@@ -1,5 +1,5 @@
 --TEST--
-Packages found in a higher priority repository won't be considered as found if version does not match
+Packages found in a higher priority repository take precedence even if they are not found in the requested version case #2
 --COMPOSER--
 {
     "repositories": [
