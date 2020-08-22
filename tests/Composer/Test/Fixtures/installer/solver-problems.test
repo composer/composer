@@ -145,9 +145,12 @@ Your requirements could not be resolved to an installable set of packages.
     - Root composer.json requires package/found7 2.* -> satisfiable by package/found7[2.0.0].
     - package/found7 2.0.0 requires php-64bit 1.0.1 -> your php-64bit version (%s) does not satisfy that requirement.
   Problem 15
+    - Root composer.json requires conflict/requirer2 2.* -> satisfiable by conflict/requirer2[2.0.0].
+    - conflict/requirer2 2.0.0 requires conflict/dep 2.0.0 -> found conflict/dep[2.0.0] but it conflicts with another require.
+  Problem 16
     - Root composer.json requires requirer/pkg 1.* -> satisfiable by requirer/pkg[1.0.0].
     - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> found dependency/pkg[1.0.0] but it conflicts with your root composer.json require (2.*).
-  Problem 16
+  Problem 17
     - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> found dependency/pkg[1.0.0] but it conflicts with your root composer.json require (2.*).
     - package/found5 2.0.0 requires requirer/pkg 1.* -> satisfiable by requirer/pkg[1.0.0].
     - Root composer.json requires package/found5 2.* -> satisfiable by package/found5[2.0.0].

@@ -1,0 +1,117 @@
+--TEST--
+Tests for a bug introduced in commit 451bab1c2cd58e05af6e21639b829408ad023463 Solver.php line 554/523
+
+very package and link in this test matters, only a combination this complex will run into the situation in which
+a negatively decided literal will need to be learned inverted as a positive assertion.
+
+In particular in this case the goal is to first have the solver decide X 2.0 should not be installed to later
+decide to learn that X 2.0 must be installed and revert decisions to retry solving with this new assumption.
+
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "vendor/A",
+                    "version": "1.0",
+                    "require": {
+                        "vendor/B": "1.0",
+                        "vendor/C": ">=1.0",
+                        "vendor/D": "1.0"
+                    }
+                },
+                {
+                    "name": "vendor/B",
+                    "version": "1.0",
+                    "require": {
+                        "vendor/E": "1.0"
+                    }
+                },
+                {
+                    "name": "vendor/C",
+                    "version": "1.0",
+                    "require": {
+                        "vendor/F": "1.0"
+                    }
+                },
+                {
+                    "name": "vendor/C",
+                    "version": "2.0",
+                    "require": {
+                        "vendor/F": "1.0",
+                        "vendor/G": ">=1.0"
+                    }
+                },
+                {
+                    "name": "vendor/D",
+                    "version": "1.0",
+                    "require": {
+                        "vendor/F": ">=1.0"
+                    }
+                },
+                {
+                    "name": "vendor/E",
+                    "version": "1.0",
+                    "require": {
+                        "vendor/G": "<=2.0"
+                    }
+                },
+                {
+                    "name": "vendor/F",
+                    "version": "1.0"
+                },
+                {
+                    "name": "vendor/F",
+                    "version": "2.0"
+                },
+                {
+                    "name": "vendor/G",
+                    "version": "1.0"
+                },
+                {
+                    "name": "vendor/G",
+                    "version": "2.0"
+                },
+                {
+                    "name": "vendor/G",
+                    "version": "3.0"
+                }
+            ]
+        }
+    ],
+    "require": {
+        "vendor/a": "*"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 7 installs, 0 updates, 0 removals
+  - Locking vendor/A (1.0)
+  - Locking vendor/B (1.0)
+  - Locking vendor/C (2.0)
+  - Locking vendor/D (1.0)
+  - Locking vendor/E (1.0)
+  - Locking vendor/F (1.0)
+  - Locking vendor/G (2.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 7 installs, 0 updates, 0 removals
+Generating autoload files
+
+--EXPECT--
+Installing vendor/F (1.0)
+Installing vendor/D (1.0)
+Installing vendor/G (2.0)
+Installing vendor/C (2.0)
+Installing vendor/E (1.0)
+Installing vendor/B (1.0)
+Installing vendor/A (1.0)
+--EXPECT-EXIT-CODE--
+0

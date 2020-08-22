@@ -1,0 +1,57 @@
+--TEST--
+Packages found in a higher priority repository won't be considered as found if version does not match
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "ruflin/elastica",
+                    "version": "dev-outdated-branch"
+                }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "friendsofsymfony/elastica-bundle",
+                    "version": "dev-foobar-master",
+                    "require": {
+                        "ruflin/elastica": "3.2.*"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "composer",
+            "url": "https://repo.packagist.org"
+        }
+    ],
+    "require": {
+        "friendsofsymfony/elastica-bundle": "dev-foobar-master"
+    }
+}
+
+--RUN--
+update
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 3 installs, 0 updates, 0 removals
+  - Locking friendsofsymfony/elastica-bundle (dev-foobar-master)
+  - Locking psr/log (1.1.3)
+  - Locking ruflin/elastica (3.2.4)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 3 installs, 0 updates, 0 removals
+4 package suggestions were added by new dependencies, use `composer suggest` to see details.
+Generating autoload files
+
+--EXPECT--
+Installing psr/log (1.1.3)
+Installing ruflin/elastica (3.2.4)
+Installing friendsofsymfony/elastica-bundle (dev-foobar-master)
+--EXPECT-EXIT-CODE--
+0

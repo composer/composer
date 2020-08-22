@@ -28,6 +28,7 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\InstalledRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\StabilityFilter;
+use Composer\Semver\Constraint\MatchAllConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -161,6 +162,12 @@ class RepositorySet
         $loadFromAllRepos = ($flags & self::ALLOW_SHADOWED_REPOSITORIES) !== 0;
 
         $packages = array();
+
+        // missing constraint is tread as `match all`
+        if ($constraint === null) {
+            $constraint = new MatchAllConstraint();
+        }
+
         if ($loadFromAllRepos) {
             foreach ($this->repositories as $repository) {
                 $packages[] = $repository->findPackages($name, $constraint) ?: array();
