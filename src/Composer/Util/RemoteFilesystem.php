@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\Config;
+use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
@@ -244,6 +245,11 @@ class RemoteFilesystem
             $degradedPackagist = true;
         }
 
+        $maxFileSize = null;
+        if (isset($options['max_file_size'])) {
+            $maxFileSize = $options['max_file_size'];
+        }
+
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
         $actualContextOptions = stream_context_get_options($ctx);
@@ -273,7 +279,7 @@ class RemoteFilesystem
         });
         $http_response_header = array();
         try {
-            $result = $this->getRemoteContents($originUrl, $fileUrl, $ctx, $http_response_header);
+            $result = $this->getRemoteContents($originUrl, $fileUrl, $ctx, $http_response_header, $maxFileSize);
 
             if (!empty($http_response_header[0])) {
                 $statusCode = $this->findStatusCode($http_response_header);
@@ -532,21 +538,32 @@ class RemoteFilesystem
     /**
      * Get contents of remote URL.
      *
-     * @param string   $originUrl The origin URL
-     * @param string   $fileUrl   The file URL
-     * @param resource $context   The stream context
+     * @param string   $originUrl   The origin URL
+     * @param string   $fileUrl     The file URL
+     * @param resource $context     The stream context
+     * @param int      $maxFileSize The maximum allowed file size
      *
      * @return string|false The response contents or false on failure
      */
-    protected function getRemoteContents($originUrl, $fileUrl, $context, array &$responseHeaders = null)
+    protected function getRemoteContents($originUrl, $fileUrl, $context, array &$responseHeaders = null, $maxFileSize = null)
     {
         $result = false;
 
         try {
             $e = null;
-            $result = file_get_contents($fileUrl, false, $context);
+            if ($maxFileSize !== null) {
+                $result = file_get_contents($fileUrl, false, $context, 0, $maxFileSize);
+            } else {
+                // passing `null` to file_get_contents will convert `null` to `0` and return 0 bytes
+                $result = file_get_contents($fileUrl, false, $context);
+            }
+
         } catch (\Throwable $e) {
         } catch (\Exception $e) {
+        }
+
+        if ($maxFileSize !== null && Platform::strlen($result) >= $maxFileSize) {
+            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($result) . ' of allowed ' .  $maxFileSize . ' bytes');
         }
 
         $responseHeaders = isset($http_response_header) ? $http_response_header : array();
