@@ -193,7 +193,7 @@ class RepositorySet
             }
         }
 
-        return $candidates;
+        return $result;
     }
 
     public function getProviders($packageName)

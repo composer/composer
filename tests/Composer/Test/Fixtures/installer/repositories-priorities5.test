@@ -1,0 +1,35 @@
+--TEST--
+Packages found in a higher priority repository take precedence even if they are not found in the requested version case #3
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "foo/a", "version": "2.0.0-dev" }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                { "name": "foo/a", "version": "2.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "foo/a": "2.*"
+    }
+}
+--RUN--
+update
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires foo/a 2.*, it is satisfiable by foo/a[2.0.0] from package repo (defining 1 package) but foo/a[2.0.0-dev] from package repo (defining 1 package) has higher repository priority. The packages with higher priority do not match your minimum-stability and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.
+
+--EXPECT--
+--EXPECT-EXIT-CODE--
+2
