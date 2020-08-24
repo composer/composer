@@ -248,6 +248,7 @@ class RemoteFilesystem
         $maxFileSize = null;
         if (isset($options['max_file_size'])) {
             $maxFileSize = $options['max_file_size'];
+            unset($options['max_file_size']);
         }
 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
