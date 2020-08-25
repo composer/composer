@@ -41,6 +41,7 @@ class Config
         'cache-ttl' => 15552000, // 6 months
         'cache-files-ttl' => null, // fallback to cache-ttl
         'cache-files-maxsize' => '300MiB',
+        'cache-read-only' => false,
         'bin-compat' => 'auto',
         'discard-changes' => false,
         'autoloader-suffix' => null,
@@ -236,6 +237,7 @@ class Config
                 return (($flags & self::RELATIVE_PATHS) == self::RELATIVE_PATHS) ? $val : $this->realpath($val);
 
             // booleans with env var support
+            case 'cache-read-only':
             case 'htaccess-protect':
                 // convert foo-bar to COMPOSER_FOO_BAR and check if it exists since it overrides the local config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));

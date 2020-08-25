@@ -59,6 +59,7 @@ EOT
                 continue;
             }
             $cache = new Cache($io, $cachePath);
+            $cache->setReadOnly($config->get('cache-read-only'));
             if (!$cache->isEnabled()) {
                 $io->writeError("<info>Cache is not enabled ($key): $cachePath</info>");
 
