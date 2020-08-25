@@ -105,6 +105,7 @@ class GitLabDriver extends VcsDriver
         $this->repository = preg_replace('#(\.git)$#', '', $match['repo']);
 
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->namespace.'/'.$this->repository);
+        $this->cache->setReadOnly($this->config->get('cache-read-only'));
 
         $this->fetchProject();
     }

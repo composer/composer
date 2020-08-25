@@ -85,11 +85,11 @@ gitlab.com the domain names must be also specified with the
 
 ## gitlab-token
 
-A list of domain names and private tokens. Private token can be either simple 
-string, or array with username and token. For example using `{"gitlab.com": 
+A list of domain names and private tokens. Private token can be either simple
+string, or array with username and token. For example using `{"gitlab.com":
 "privatetoken"}` as the value of this option will use `privatetoken` to access
 private repositories on gitlab. Using `{"gitlab.com": {"username": "gitlabuser",
- "token": "privatetoken"}}` will use both username and token for gitlab deploy 
+ "token": "privatetoken"}}` will use both username and token for gitlab deploy
 token functionality (https://docs.gitlab.com/ee/user/project/deploy_tokens/)
 Please note: If the package is not hosted at
 gitlab.com the domain names must be also specified with the
@@ -203,6 +203,10 @@ Defaults to `300MiB`. Composer caches all dist (zip, tar, ...) packages that it
 downloads. When the garbage collection is periodically ran, this is the maximum
 size the cache will be able to use. Older (less used) files will be removed
 first until the cache fits.
+
+## cache-read-only
+
+Defaults to `false`. Whether to use the Composer cache in read-only mode.
 
 ## bin-compat
 

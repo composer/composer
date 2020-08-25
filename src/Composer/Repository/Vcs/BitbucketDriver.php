@@ -60,6 +60,7 @@ abstract class BitbucketDriver extends VcsDriver
                 $this->repository,
             ))
         );
+        $this->cache->setReadOnly($this->config->get('cache-read-only'));
     }
 
     /**

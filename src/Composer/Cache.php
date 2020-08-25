@@ -30,19 +30,22 @@ class Cache
     private $enabled = true;
     private $allowlist;
     private $filesystem;
+    private $readOnly;
 
     /**
      * @param IOInterface $io
      * @param string      $cacheDir   location of the cache
      * @param string      $allowlist  List of characters that are allowed in path names (used in a regex character class)
      * @param Filesystem  $filesystem optional filesystem instance
+     * @param bool        $readOnly   whether the cache is in readOnly mode
      */
-    public function __construct(IOInterface $io, $cacheDir, $allowlist = 'a-z0-9.', Filesystem $filesystem = null)
+    public function __construct(IOInterface $io, $cacheDir, $allowlist = 'a-z0-9.', Filesystem $filesystem = null, $readOnly = false)
     {
         $this->io = $io;
         $this->root = rtrim($cacheDir, '/\\') . '/';
         $this->allowlist = $allowlist;
         $this->filesystem = $filesystem ?: new Filesystem();
+        $this->readOnly = (bool) $readOnly;
 
         if (!self::isUsable($cacheDir)) {
             $this->enabled = false;
@@ -57,6 +60,22 @@ class Cache
             $this->io->writeError('<warning>Cannot create cache directory ' . $this->root . ', or directory is not writable. Proceeding without cache</warning>');
             $this->enabled = false;
         }
+    }
+
+    /**
+     * @param bool $readOnly
+     */
+    public function setReadOnly($readOnly)
+    {
+        $this->readOnly = (bool) $readOnly;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isReadOnly()
+    {
+        return $this->readOnly;
     }
 
     public static function isUsable($path)
@@ -90,7 +109,7 @@ class Cache
 
     public function write($file, $contents)
     {
-        if ($this->enabled) {
+        if ($this->enabled && !$this->readOnly) {
             $file = preg_replace('{[^'.$this->allowlist.']}i', '-', $file);
 
             $this->io->writeError('Writing '.$this->root . $file.' into cache', true, IOInterface::DEBUG);
@@ -128,7 +147,7 @@ class Cache
      */
     public function copyFrom($file, $source)
     {
-        if ($this->enabled) {
+        if ($this->enabled && !$this->readOnly) {
             $file = preg_replace('{[^'.$this->allowlist.']}i', '-', $file);
             $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
 

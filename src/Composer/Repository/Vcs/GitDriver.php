@@ -75,6 +75,7 @@ class GitDriver extends VcsDriver
         $this->getBranches();
 
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $cacheUrl));
+        $this->cache->setReadOnly($this->config->get('cache-read-only'));
     }
 
     /**

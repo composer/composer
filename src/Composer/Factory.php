@@ -477,6 +477,7 @@ class Factory
         $cache = null;
         if ($config->get('cache-files-ttl') > 0) {
             $cache = new Cache($io, $config->get('cache-files-dir'), 'a-z0-9_./');
+            $cache->setReadOnly($config->get('cache-read-only'));
         }
 
         $fs = new Filesystem($process);
