@@ -1,0 +1,59 @@
+--TEST--
+Packages found in a higher priority repository take precedence even if they are not found in the requested version case #2
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "ruflin/elastica",
+                    "version": "dev-outdated-branch"
+                }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "friendsofsymfony/elastica-bundle",
+                    "version": "dev-foobar-master",
+                    "require": {
+                        "ruflin/elastica": "2.*"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "ruflin/elastica",
+                    "version": "2.0.0"
+                },
+                {
+                    "name": "ruflin/elastica",
+                    "version": "2.0.1"
+                }
+            ]
+        }
+    ],
+    "require": {
+        "friendsofsymfony/elastica-bundle": "dev-foobar-master"
+    }
+}
+
+--RUN--
+update
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires friendsofsymfony/elastica-bundle dev-foobar-master -> satisfiable by friendsofsymfony/elastica-bundle[dev-foobar-master].
+    - friendsofsymfony/elastica-bundle dev-foobar-master requires ruflin/elastica 2.* -> satisfiable by ruflin/elastica[2.0.0, 2.0.1] from package repo (defining 2 packages) but ruflin/elastica[dev-outdated-branch] from package repo (defining 1 package) has higher repository priority. The packages with higher priority do not match your constraint and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.
+
+--EXPECT--
+--EXPECT-EXIT-CODE--
+2

@@ -36,6 +36,7 @@ class ArtifactRepositoryTest extends TestCase
             'vendor1/package2-4.3.2',
             'vendor3/package1-5.4.3',
             'test/jsonInRoot-1.0.0',
+            'test/jsonInRootTarFile-1.0.0',
             'test/jsonInFirstLevel-1.0.0',
             //The files not-an-artifact.zip and jsonSecondLevel are not valid
             //artifacts and do not get detected.
@@ -52,6 +53,13 @@ class ArtifactRepositoryTest extends TestCase
         sort($foundPackages);
 
         $this->assertSame($expectedPackages, $foundPackages);
+
+        $tarPackage = array_filter($repo->getPackages(), function (BasePackage $package) {
+            return $package->getPrettyName() === 'test/jsonInRootTarFile';
+        });
+        $this->assertCount(1, $tarPackage);
+        $tarPackage = array_pop($tarPackage);
+        $this->assertSame('tar', $tarPackage->getDistType());
     }
 
     public function testAbsoluteRepoUrlCreatesAbsoluteUrlPackages()

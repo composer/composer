@@ -130,6 +130,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->baseUrl = rtrim(preg_replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
         $this->io = $io;
         $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->url), 'a-z0-9.$~');
+        $this->cache->setReadOnly($config->get('cache-read-only'));
         $this->versionParser = new VersionParser();
         $this->loader = new ArrayLoader($this->versionParser);
         $this->httpDownloader = $httpDownloader;
@@ -1082,7 +1083,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $data = $response->decodeJson();
                 HttpDownloader::outputWarnings($this->io, $this->url, $data);
 
-                if ($cacheKey) {
+                if ($cacheKey && !$this->cache->isReadOnly()) {
                     if ($storeLastModifiedTime) {
                         $lastModifiedDate = $response->getHeader('last-modified');
                         if ($lastModifiedDate) {
@@ -1150,7 +1151,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if (isset($options['http']['header'])) {
                     $options['http']['header'] = (array) $options['http']['header'];
                 }
-                $options['http']['header'][] = array('If-Modified-Since: '.$lastModifiedTime);
+                $options['http']['header'][] = 'If-Modified-Since: '.$lastModifiedTime;
                 $response = $this->httpDownloader->get($filename, $options);
                 $json = $response->getBody();
                 if ($json === '' && $response->getStatusCode() === 304) {
@@ -1166,7 +1167,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $data['last-modified'] = $lastModifiedDate;
                     $json = json_encode($data);
                 }
-                $this->cache->write($cacheKey, $json);
+                if (!$this->cache->isReadOnly()) {
+                    $this->cache->write($cacheKey, $json);
+                }
 
                 return $data;
             } catch (\Exception $e) {
@@ -1213,7 +1216,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $filename = $preFileDownloadEvent->getProcessedUrl();
         }
 
-        $options = $lastModifiedTime ? array('http' => array('header' => array('If-Modified-Since: '.$lastModifiedTime))) : array();
+        $options = $this->options;
+        if ($lastModifiedTime) {
+            if (isset($options['http']['header'])) {
+                $options['http']['header'] = (array) $options['http']['header'];
+            }
+            $options['http']['header'][] = 'If-Modified-Since: '.$lastModifiedTime;
+        }
 
         $io = $this->io;
         $url = $this->url;
@@ -1243,7 +1252,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $data['last-modified'] = $lastModifiedDate;
                 $json = JsonFile::encode($data, JsonFile::JSON_UNESCAPED_SLASHES | JsonFile::JSON_UNESCAPED_UNICODE);
             }
-            $cache->write($cacheKey, $json);
+            if (!$cache->isReadOnly()) {
+                $cache->write($cacheKey, $json);
+            }
             $repo->freshMetadataUrls[$filename] = true;
 
             return $data;

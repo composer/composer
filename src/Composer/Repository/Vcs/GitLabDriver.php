@@ -105,6 +105,7 @@ class GitLabDriver extends VcsDriver
         $this->repository = preg_replace('#(\.git)$#', '', $match['repo']);
 
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->namespace.'/'.$this->repository);
+        $this->cache->setReadOnly($this->config->get('cache-read-only'));
 
         $this->fetchProject();
     }
@@ -131,10 +132,14 @@ class GitLabDriver extends VcsDriver
 
         if (!isset($this->infoCache[$identifier])) {
             if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
-                return $this->infoCache[$identifier] = JsonFile::parseJson($res);
-            }
+                $composer =  JsonFile::parseJson($res);
+            } else {
+                $composer = $this->getBaseComposerInformation($identifier);
 
-            $composer = $this->getBaseComposerInformation($identifier);
+                if ($this->shouldCache($identifier)) {
+                    $this->cache->write($identifier, json_encode($composer));
+                }
+            }
 
             if ($composer) {
                 // specials for gitlab (this data is only available if authentication is provided)
@@ -144,10 +149,6 @@ class GitLabDriver extends VcsDriver
                 if (!isset($composer['abandoned']) && !empty($this->project['archived'])) {
                     $composer['abandoned'] = true;
                 }
-            }
-
-            if ($this->shouldCache($identifier)) {
-                $this->cache->write($identifier, json_encode($composer));
             }
 
             $this->infoCache[$identifier] = $composer;
@@ -448,7 +449,7 @@ class GitLabDriver extends VcsDriver
                     if (!$moreThanGuestAccess) {
                         $this->io->writeError('<warning>GitLab token with Guest only access detected</warning>');
 
-                        return $this->attemptCloneFallback(); 
+                        return $this->attemptCloneFallback();
                     }
                 }
 

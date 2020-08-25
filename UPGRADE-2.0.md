@@ -80,4 +80,6 @@ The providers-api is optional, but if you implement it it should return packages
 
 This is also optional, it should accept an optional `?filter=xx` query param, which can contain `*` as wildcards matching any substring.
 
-It must return an array of package names as `{"packageNames": ["a/b", "c/d"]}`. See https://packagist.org/packages/list.json?filter=composer/* for example.
+It must return an array of package names as `{"packageNames": ["a/b", "c/d"]}`. See <https://packagist.org/packages/list.json?filter=composer/*> for example.
+
+It should return the names of package which names match the filter (or all names if no filter is present). Replace/provide rules should not be considered here.

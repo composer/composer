@@ -265,6 +265,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                     if ($e->getCode() === 404) {
                         $this->emptyReferences[] = $identifier;
                     }
+                    if ($e->getCode() === 401 || $e->getCode() === 403) {
+                        throw $e;
+                    }
                 }
                 if ($isVeryVerbose) {
                     $this->io->writeError('<warning>Skipped tag '.$tag.', '.($e instanceof TransportException ? 'no composer file was found (' . $e->getCode() . ' HTTP status code)' : $e->getMessage()).'</warning>');
@@ -349,6 +352,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $this->versionTransportExceptions['branches'][$branch] = $e;
                 if ($e->getCode() === 404) {
                     $this->emptyReferences[] = $identifier;
+                }
+                if ($e->getCode() === 401 || $e->getCode() === 403) {
+                    throw $e;
                 }
                 if ($isVeryVerbose) {
                     $this->io->writeError('<warning>Skipped branch '.$branch.', no composer file was found (' . $e->getCode() . ' HTTP status code)</warning>');

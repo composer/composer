@@ -180,7 +180,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     {
         $realUrl = realpath($package->getDistUrl());
 
-        if ($path === $realUrl) {
+        if (realpath($path) === $realUrl) {
             if ($output) {
                 $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
             }

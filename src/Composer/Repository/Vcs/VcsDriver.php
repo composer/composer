@@ -81,7 +81,7 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     protected function shouldCache($identifier)
     {
-        return $this->cache && preg_match('{[a-f0-9]{40}}i', $identifier);
+        return $this->cache && preg_match('{^[a-f0-9]{40}$}iD', $identifier);
     }
 
     /**

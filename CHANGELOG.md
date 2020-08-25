@@ -1,3 +1,14 @@
+### [2.0.0-alpha3] 2020-08-03
+
+  * Breaking: Zip archives loaded by artifact repositories must now have a composer.json on top level, or a max of one folder on top level of the archive
+  * Added --no-dev support to `show` and `outdated` commands to skip dev requirements
+  * Added support for multiple --repository flags being passed into the `create-project` command, only useful in combination with `--add-repository` to persist them to composer.json
+  * Added a new optional `list` API endpoint for v2-format composer repositories, see [UPGRADE](UPGRADE-2.0.md) for details
+  * Fixed `show -a` command not listing anything
+  * Fixed solver bug where it ended in a "Reached invalid decision id 0"
+  * Fixed updates of git-installed packages on windows
+  * Lots of minor bug fixes
+
 ### [2.0.0-alpha2] 2020-06-24
 
   * Added parallel installation of packages (requires OSX/Linux/WSL, and that `unzip` is present in PATH)
@@ -45,6 +56,12 @@
   * Fixed package ordering when autoloading and especially when loading plugins, to make sure dependencies are loaded before their dependents
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
+
+### [1.10.10] 2020-08-03
+
+  * Fixed `create-project` not triggering events while installing the root package
+  * Fixed PHP 8 compatibility issue
+  * Fixed `self-update` to avoid automatically upgrading to the next major version once it becomes stable
 
 ### [1.10.9] 2020-07-16
 
@@ -921,8 +938,10 @@
 
   * Initial release
 
+[2.0.0-alpha3]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-alpha3
 [2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
+[1.10.10]: https://github.com/composer/composer/compare/1.10.9...1.10.10
 [1.10.9]: https://github.com/composer/composer/compare/1.10.8...1.10.9
 [1.10.8]: https://github.com/composer/composer/compare/1.10.7...1.10.8
 [1.10.7]: https://github.com/composer/composer/compare/1.10.6...1.10.7

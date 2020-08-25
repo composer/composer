@@ -78,6 +78,7 @@ class SvnDriver extends VcsDriver
         }
 
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->baseUrl));
+        $this->cache->setReadOnly($this->config->get('cache-read-only'));
 
         $this->getBranches();
         $this->getTags();

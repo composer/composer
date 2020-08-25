@@ -46,7 +46,7 @@ class InstalledVersions
      *
      * @param VersionParser $parser      Install composer/semver to have access to this class and functionality
      * @param string        $packageName
-     * @param ?string       $constraint  A version constraint to check for, if you pass one you have to make sure composer/semver is required by your package
+     * @param string|null   $constraint  A version constraint to check for, if you pass one you have to make sure composer/semver is required by your package
      *
      * @return bool
      */

@@ -187,7 +187,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $url = reset($urls);
             $cacheKey = $url['cacheKey'];
 
-            if ($cache) {
+            if ($cache && !$cache->isReadOnly()) {
                 $self->lastCacheWrites[$package->getName()] = $cacheKey;
                 $cache->copyFrom($cacheKey, $fileName);
             }

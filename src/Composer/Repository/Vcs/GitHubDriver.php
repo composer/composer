@@ -58,6 +58,7 @@ class GitHubDriver extends VcsDriver
             $this->originUrl = 'github.com';
         }
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
+        $this->cache->setReadOnly($this->config->get('cache-read-only'));
 
         if ( $this->config->get('use-github-api') === false || (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api'] ) ){
             $this->setupGitDriver($this->url);
@@ -151,10 +152,14 @@ class GitHubDriver extends VcsDriver
 
         if (!isset($this->infoCache[$identifier])) {
             if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
-                return $this->infoCache[$identifier] = JsonFile::parseJson($res);
-            }
+                $composer =  JsonFile::parseJson($res);
+            } else {
+                $composer = $this->getBaseComposerInformation($identifier);
 
-            $composer = $this->getBaseComposerInformation($identifier);
+                if ($this->shouldCache($identifier)) {
+                    $this->cache->write($identifier, json_encode($composer));
+                }
+            }
 
             if ($composer) {
                 // specials for github
@@ -171,10 +176,6 @@ class GitHubDriver extends VcsDriver
                 if (!isset($composer['funding']) && $funding = $this->getFundingInfo()) {
                     $composer['funding'] = $funding;
                 }
-            }
-
-            if ($this->shouldCache($identifier)) {
-                $this->cache->write($identifier, json_encode($composer));
             }
 
             $this->infoCache[$identifier] = $composer;

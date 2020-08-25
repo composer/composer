@@ -276,27 +276,19 @@ class Problem
 
         // check if the package is found when bypassing stability checks
         if ($packages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
+            // we must first verify if a valid package would be found in a lower priority repository
+            if ($allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
+                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, $packages, $allReposPackages, 'minimum-stability');
+            }
+
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match your minimum-stability.');
         }
 
-        // check if the package is found when bypassing the constraint check
-        if ($packages = $repositorySet->findPackages($packageName, null)) {
+        // check if the package is found when bypassing the constraint and stability checks
+        if ($packages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
             // we must first verify if a valid package would be found in a lower priority repository
             if ($allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
-                $higherRepoPackages = $repositorySet->findPackages($packageName, null);
-                $nextRepoPackages = array();
-                $nextRepo = null;
-
-                foreach ($allReposPackages as $package) {
-                    if ($nextRepo === null || $nextRepo === $package->getRepository()) {
-                        $nextRepoPackages[] = $package;
-                        $nextRepo = $package->getRepository();
-                    } else {
-                        break;
-                    }
-                }
-
-                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your constraint and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');
+                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, $packages, $allReposPackages, 'constraint');
             }
 
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.');
@@ -394,6 +386,24 @@ class Problem
         }
 
         return false;
+    }
+
+    private static function computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, array $higherRepoPackages, array $allReposPackages, $reason)
+    {
+        $nextRepoPackages = array();
+        $nextRepo = null;
+
+        foreach ($allReposPackages as $package) {
+            if ($nextRepo === null || $nextRepo === $package->getRepository()) {
+                $nextRepoPackages[] = $package;
+                $nextRepo = $package->getRepository();
+            } else {
+                break;
+            }
+        }
+
+        return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your '.$reason.' and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');
+
     }
 
     /**

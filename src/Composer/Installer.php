@@ -13,6 +13,7 @@
 namespace Composer;
 
 use Composer\Autoload\AutoloadGenerator;
+use Composer\Console\GithubActionError;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\LocalRepoTransaction;
 use Composer\DependencyResolver\LockTransaction;
@@ -387,9 +388,13 @@ class Installer
         $this->io->writeError('<info>Updating dependencies</info>');
 
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
-        if ($this->updateMirrors) {
+        if ($this->updateMirrors && $lockedRepository) {
             foreach ($lockedRepository->getPackages() as $lockedPackage) {
-                $request->requireName($lockedPackage->getName(), new Constraint('==', $lockedPackage->getVersion()));
+                // exclude alias packages here as for root aliases, both alias and aliased are
+                // present in the lock repo and we only want to require the aliased version
+                if (!$lockedPackage instanceof AliasPackage) {
+                    $request->requireName($lockedPackage->getName(), new Constraint('==', $lockedPackage->getVersion()));
+                }
             }
         } else {
             $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());
@@ -412,11 +417,17 @@ class Installer
             $ruleSetSize = $solver->getRuleSetSize();
             $solver = null;
         } catch (SolverProblemsException $e) {
-            $this->io->writeError('<error>Your requirements could not be resolved to an installable set of packages.</error>', true, IOInterface::QUIET);
-            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose()));
+            $err = 'Your requirements could not be resolved to an installable set of packages.';
+            $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose());
+
+            $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
+            $this->io->writeError($prettyProblem);
             if (!$this->devMode) {
                 $this->io->writeError('<warning>Running update with --no-dev does not mean require-dev is ignored, it just means the packages will not be installed. If dev requirements are blocking the update you have to resolve those problems.</warning>', true, IOInterface::QUIET);
             }
+
+            $ghe = new GithubActionError($this->io);
+            $ghe->emit($err."\n".$prettyProblem);
 
             return max(1, $e->getCode());
         }
@@ -571,10 +582,16 @@ class Installer
             $nonDevLockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
             $solver = null;
         } catch (SolverProblemsException $e) {
-            $this->io->writeError('<error>Unable to find a compatible set of packages based on your non-dev requirements alone.</error>', true, IOInterface::QUIET);
+            $err = 'Unable to find a compatible set of packages based on your non-dev requirements alone.';
+            $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose(), true);
+
+            $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
             $this->io->writeError('Your requirements can be resolved successfully when require-dev packages are present.');
             $this->io->writeError('You may need to move packages from require-dev or some of their dependencies to require.');
-            $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose(), true));
+            $this->io->writeError($prettyProblem);
+
+            $ghe = new GithubActionError($this->io);
+            $ghe->emit($err."\n".$prettyProblem);
 
             return max(1, $e->getCode());
         }
@@ -637,8 +654,14 @@ class Installer
                     return 1;
                 }
             } catch (SolverProblemsException $e) {
-                $this->io->writeError('<error>Your lock file does not contain a compatible set of packages. Please run composer update.</error>', true, IOInterface::QUIET);
-                $this->io->writeError($e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose()));
+                $err = 'Your lock file does not contain a compatible set of packages. Please run composer update.';
+                $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose());
+
+                $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
+                $this->io->writeError($prettyProblem);
+
+                $ghe = new GithubActionError($this->io);
+                $ghe->emit($err."\n".$prettyProblem);
 
                 return max(1, $e->getCode());
             }

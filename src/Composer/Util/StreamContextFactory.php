@@ -29,6 +29,7 @@ final class StreamContextFactory
      * Creates a context supporting HTTP proxies
      *
      * @param  string            $url            URL the context is to be used for
+     * @psalm-param array{http: array{follow_location?: int, max_redirects?: int, header?: string|array<string, string|int>}} $defaultOptions
      * @param  array             $defaultOptions Options to merge with the default
      * @param  array             $defaultParams  Parameters to specify on the context
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
@@ -56,7 +57,8 @@ final class StreamContextFactory
     /**
      * @param string $url
      * @param array $options
-     * @return array ['http' => ['header' => [...], 'proxy' => '..', 'request_fulluri' => bool]] formatted as a stream context array
+     * @psalm-return array{http:{header: string[], proxy?: string, request_fulluri: bool}, ssl: array} 
+     * @return array formatted as a stream context array
      */
     public static function initOptions($url, array $options)
     {
