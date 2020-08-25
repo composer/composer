@@ -390,7 +390,11 @@ class Installer
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
         if ($this->updateMirrors && $lockedRepository) {
             foreach ($lockedRepository->getPackages() as $lockedPackage) {
-                $request->requireName($lockedPackage->getName(), new Constraint('==', $lockedPackage->getVersion()));
+                // exclude alias packages here as for root aliases, both alias and aliased are
+                // present in the lock repo and we only want to require the aliased version
+                if (!$lockedPackage instanceof AliasPackage) {
+                    $request->requireName($lockedPackage->getName(), new Constraint('==', $lockedPackage->getVersion()));
+                }
             }
         } else {
             $links = array_merge($this->package->getRequires(), $this->package->getDevRequires());

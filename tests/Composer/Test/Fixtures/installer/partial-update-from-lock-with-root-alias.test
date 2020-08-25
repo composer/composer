@@ -1,0 +1,77 @@
+--TEST--
+Partial update from lock file with root aliases should work
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/dep", "version": "1.0.0", "require": { "c/aliased": "2.0.0" } },
+                { "name": "b/dep", "version": "1.0.0", "require": { "c/aliased": "1.0.0" } },
+                { "name": "c/aliased", "version": "1.0.0" },
+                { "name": "c/aliased", "version": "2.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "a/dep": "*",
+        "b/dep": "*",
+        "c/aliased": "1.0.0 as 2.0.0"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        { "name": "a/dep", "version": "1.0.0", "require": { "c/aliased": "2.0.0" } },
+        { "name": "b/dep", "version": "1.0.0", "require": { "c/aliased": "1.0.0" } },
+        { "name": "c/aliased", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [
+        {
+            "package": "c/aliased",
+            "version": "1.0.0.0",
+            "alias": "2.0.0",
+            "alias_normalized": "2.0.0.0"
+        }
+    ],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--INSTALLED--
+[
+    { "name": "a/dep", "version": "1.0.0", "require": { "c/aliased": "2.0.0" } },
+    { "name": "b/dep", "version": "1.0.0", "require": { "c/aliased": "1.0.0" } },
+    { "name": "c/aliased", "version": "1.0.0" }
+]
+--RUN--
+update --lock
+--EXPECT-LOCK--
+{
+    "packages": [
+        { "name": "a/dep", "version": "1.0.0", "require": { "c/aliased": "2.0.0" }, "type": "library" },
+        { "name": "b/dep", "version": "1.0.0", "require": { "c/aliased": "1.0.0" }, "type": "library" },
+        { "name": "c/aliased", "version": "1.0.0", "type": "library" }
+    ],
+    "packages-dev": [],
+    "aliases": [
+        {
+            "package": "c/aliased",
+            "version": "1.0.0.0",
+            "alias": "2.0.0",
+            "alias_normalized": "2.0.0.0"
+        }
+    ],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Marking c/aliased (2.0.0) as installed, alias of c/aliased (1.0.0)
