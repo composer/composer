@@ -56,7 +56,14 @@ class Request
     public function requireName($packageName, ConstraintInterface $constraint = null)
     {
         $packageName = strtolower($packageName);
-        $this->requires[$packageName] = $constraint ? $constraint : new MatchAllConstraint();
+
+        if ($constraint === null) {
+            $constraint = new MatchAllConstraint();
+        }
+        if (isset($this->requires[$packageName])) {
+            throw new \LogicException('Overwriting requires seems like a bug ('.$packageName.' '.$this->requires[$packageName]->getPrettyConstraint().' => '.$constraint->getPrettyConstraint().', check why it is happening, might be a root alias');
+        }
+        $this->requires[$packageName] = $constraint;
     }
 
     /**
