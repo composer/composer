@@ -1,0 +1,54 @@
+--TEST--
+This is a variant of the test provider-gets-picked-together-with-other-version-of-provided-conflict.test which differs
+in so far as that the root requirements were all moved into a package which now allows the combination to succeed.
+
+Only root requirements strictly limit compatibility with versions if a package by a provided name also actually exists.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "foo/root",
+                    "require": {
+                        "foo/original": "3.0.0",
+                        "foo/provider": "1.0.0",
+                        "foo/requirer": "1.0.0"
+                    },
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/provider",
+                    "provide": {
+                        "foo/original": "3.0.0"
+                    },
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/original",
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/requirer",
+                    "require": {
+                        "foo/original": "1.0.0"
+                    },
+                    "version": "1.0.0"
+                }
+            ]
+        }
+    ],
+    "require": {
+        "foo/root": "1.0.0"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT--
+Installing foo/original (1.0.0)
+Installing foo/provider (1.0.0)
+Installing foo/requirer (1.0.0)
+Installing foo/root (1.0.0)
