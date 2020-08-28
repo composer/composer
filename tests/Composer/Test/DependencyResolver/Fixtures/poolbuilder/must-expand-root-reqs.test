@@ -1,0 +1,36 @@
+--TEST--
+Fixed packages do not get loaded from the repos
+
+--REQUEST--
+{
+    "require": {
+        "some/pkg": "*",
+        "root/req": "*"
+    }
+}
+
+--FIXED--
+[
+    {"name": "some/pkg", "version": "1.0.3", "id": 1},
+    {"name": "dep/dep", "version": "2.1.5", "id": 2}
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "some/pkg", "version": "1.0.0"},
+        {"name": "some/pkg", "version": "1.1.0"},
+        {"name": "root/req", "version": "1.0.0", "require": {"dep/dep": "2.*"}},
+        {"name": "root/req", "version": "2.0.0", "require": {"dep/dep": "3.*"}},
+        {"name": "dep/dep", "version": "2.3.4"},
+        {"name": "dep/dep", "version": "3.0.1"}
+    ]
+]
+
+--EXPECT--
+[
+    1,
+    2,
+    "root/req-1.0.0.0",
+    "root/req-2.0.0.0"
+]

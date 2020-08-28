@@ -14,6 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
+use Composer\Repository\FilterRepository;
 use Composer\Repository\LockArrayRepository;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
@@ -74,8 +75,16 @@ class PoolBuilderTest extends TestCase
 
         $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $rootReferences);
         foreach ($packageRepos as $packages) {
-            $repositorySet->addRepository($repo = new ArrayRepository());
-           foreach ($packages as $package) {
+            $repo = new ArrayRepository();
+            if (isset($packages['canonical']) || isset($packages['only']) || isset($packages['exclude'])) {
+                $options = $packages;
+                $packages = $options['packages'];
+                unset($options['packages']);
+                $repositorySet->addRepository(new FilterRepository($repo, $options));
+            } else {
+                $repositorySet->addRepository($repo);
+            }
+            foreach ($packages as $package) {
                 $repo->addPackage($loadPackage($package));
             }
         }
