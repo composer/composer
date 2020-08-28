@@ -245,6 +245,11 @@ class PoolBuilder
 
     private function markPackageNameForLoading(Request $request, $name, ConstraintInterface $constraint)
     {
+        // Skip platform requires at this stage
+        if (PlatformRepository::isPlatformPackage($name)) {
+            return;
+        }
+
         // Root require (which was not unfixed) already loaded the maximum range so no
         // need to check anything here
         if (isset($this->maxExtendedReqs[$name])) {

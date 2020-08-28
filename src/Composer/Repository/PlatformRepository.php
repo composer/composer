@@ -593,4 +593,21 @@ class PlatformRepository extends ArrayRepository
 
         $this->addPackage($lib);
     }
+
+    /**
+     * Check if a package name is a platform package.
+     *
+     * @param $name
+     * @return bool
+     */
+    public static function isPlatformPackage($name)
+    {
+        static $cache = array();
+
+        if (isset($cache[$name])) {
+            return $cache[$name];
+        }
+
+        return $cache[$name] = (bool) preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name);
+    }
 }
