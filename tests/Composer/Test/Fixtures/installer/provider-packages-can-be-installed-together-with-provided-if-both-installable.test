@@ -15,12 +15,16 @@ Test that providers can be installed in conjunction with the package they provid
                 },
                 {
                     "name": "foo/standard",
-                    "version": "1.0.0"
+                    "version": "1.0.0",
+                    "provide": {
+                        "foo/also-necessary": "1.0.0"
+                    }
                 }
             ]
         }
     ],
     "require": {
+        "foo/also-necessary": "1.0.0",
         "foo/standard": "1.0.0",
         "foo/polyfill": "1.0.0"
     }
@@ -30,5 +34,5 @@ Test that providers can be installed in conjunction with the package they provid
 update
 
 --EXPECT--
-Installing foo/standard (1.0.0)
 Installing foo/polyfill (1.0.0)
+Installing foo/standard (1.0.0)

@@ -17,6 +17,7 @@ use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
+use Composer\Util\Url;
 use Composer\Util\Svn as SvnUtil;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
@@ -77,7 +78,7 @@ class SvnDriver extends VcsDriver
             $this->baseUrl = substr($this->url, 0, $pos);
         }
 
-        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $this->baseUrl));
+        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', Url::sanitize($this->baseUrl)));
         $this->cache->setReadOnly($this->config->get('cache-read-only'));
 
         $this->getBranches();

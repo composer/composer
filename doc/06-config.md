@@ -93,7 +93,8 @@ private repositories on gitlab. Using `{"gitlab.com": {"username": "gitlabuser",
 token functionality (https://docs.gitlab.com/ee/user/project/deploy_tokens/)
 Please note: If the package is not hosted at
 gitlab.com the domain names must be also specified with the
-[`gitlab-domains`](06-config.md#gitlab-domains) option.
+[`gitlab-domains`](06-config.md#gitlab-domains) option. The token must have
+`api` or `read_api` scope.
 
 ## disable-tls
 

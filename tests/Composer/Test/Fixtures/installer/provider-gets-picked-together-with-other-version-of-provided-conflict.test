@@ -1,0 +1,56 @@
+--TEST--
+A root requirement for a name exists as well as a dependency's requirement for the same name but in a different version.
+Since the root requirement does not allow the dependency's requirement to be installed, this conflicts.
+
+The difference between this test and the one which does not conflict is that here the root requirement could only be
+satisfied with the provided package but would conflict with the actual package by the given name.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "foo/provider",
+                    "provide": {
+                        "foo/original": "3.0.0"
+                    },
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/original",
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/requirer",
+                    "require": {
+                        "foo/original": "1.0.0"
+                    },
+                    "version": "1.0.0"
+                }
+            ]
+        }
+    ],
+    "require": {
+        "foo/original": "3.0.0",
+        "foo/provider": "1.0.0",
+        "foo/requirer": "1.0.0"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires foo/requirer 1.0.0 -> satisfiable by foo/requirer[1.0.0].
+    - foo/requirer 1.0.0 requires foo/original 1.0.0 -> found foo/original[1.0.0] but it conflicts with your root composer.json require (3.0.0).
+
+--EXPECT--

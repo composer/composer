@@ -280,6 +280,14 @@ class AuthHelperTest extends TestCase
                     'password' => 'my_password'
                 )
             ),
+            array(
+                'https://gitlab.com',
+                'gitlab.com',
+                array(
+                    'username' => 'my_username',
+                    'password' => 'my_password'
+                )
+            ),
         );
     }
 
@@ -302,7 +310,7 @@ class AuthHelperTest extends TestCase
         $this->config->expects($this->once())
             ->method('get')
             ->with('gitlab-domains')
-            ->willReturn(array());
+            ->willReturn(array($origin));
 
         $this->io->expects($this->once())
             ->method('writeError')

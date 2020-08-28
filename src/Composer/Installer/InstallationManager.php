@@ -292,14 +292,12 @@ class InstallationManager
                         if ($batch) {
                             $batches[] = $batch;
                         }
-                        unset($operations[$index]);
                         $batches[] = array($index => $operation);
                         $batch = array();
 
                         continue;
                     }
                 }
-                unset($operations[$index]);
                 $batch[$index] = $operation;
             }
 
@@ -308,7 +306,7 @@ class InstallationManager
             }
 
             foreach ($batches as $batch) {
-                $this->executeBatch($repo, $batch, $cleanupPromises, $devMode, $runScripts);
+                $this->executeBatch($repo, $batch, $cleanupPromises, $devMode, $runScripts, $operations);
             }
         } catch (\Exception $e) {
             $runCleanup();
@@ -336,7 +334,11 @@ class InstallationManager
         $repo->write($devMode, $this);
     }
 
-    private function executeBatch(RepositoryInterface $repo, array $operations, array $cleanupPromises, $devMode, $runScripts)
+    /**
+     * @param array $operations List of operations to execute in this batch
+     * @param array $allOperations Complete list of operations to be executed in the install job, used for event listeners
+     */
+    private function executeBatch(RepositoryInterface $repo, array $operations, array $cleanupPromises, $devMode, $runScripts, array $allOperations)
     {
         foreach ($operations as $index => $operation) {
             $opType = $operation->getOperationType();
@@ -363,7 +365,7 @@ class InstallationManager
 
             $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($opType);
             if (defined($event) && $runScripts && $this->eventDispatcher) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
+                $this->eventDispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $allOperations, $operation);
             }
 
             $dispatcher = $this->eventDispatcher;
@@ -378,12 +380,12 @@ class InstallationManager
             $promise = $promise->then(function () use ($opType, $installManager, $repo, $operation) {
                 return $installManager->$opType($repo, $operation);
             })->then($cleanupPromises[$index])
-            ->then(function () use ($opType, $runScripts, $dispatcher, $installManager, $devMode, $repo, $operations, $operation) {
+            ->then(function () use ($opType, $runScripts, $dispatcher, $installManager, $devMode, $repo, $allOperations, $operation) {
                 $repo->write($devMode, $installManager);
 
                 $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($opType);
                 if (defined($event) && $runScripts && $dispatcher) {
-                    $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $operations, $operation);
+                    $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $allOperations, $operation);
                 }
             }, function ($e) use ($opType, $package, $io) {
                 $io->writeError('    <error>' . ucfirst($opType) .' of '.$package->getPrettyName().' failed</error>');

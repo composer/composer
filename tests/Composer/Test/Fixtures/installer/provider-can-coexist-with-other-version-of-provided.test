@@ -1,0 +1,34 @@
+--TEST--
+Test that providers can coexist with a different version of the package they provide
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "foo/provider",
+                    "provide": {
+                        "foo/original": "3.0.0"
+                    },
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/original",
+                    "version": "1.0.0"
+                }
+            ]
+        }
+    ],
+    "require": {
+        "foo/original": "1.0.0",
+        "foo/provider": "1.0.0"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT--
+Installing foo/original (1.0.0)
+Installing foo/provider (1.0.0)

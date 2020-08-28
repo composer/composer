@@ -1,0 +1,46 @@
+--TEST--
+A root requirement for a name exists as well as a dependency's requirement for the same name but in a different version.
+The root requirement is satisfied by the actual package by that name in that version. The dependency's requirement can
+be satisfied by another package which provides the name in the other version. This will result in all packages being
+installed as the provider does not conflict with the actual package and all requirements can be met.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "foo/provider",
+                    "provide": {
+                        "foo/original": "3.0.0"
+                    },
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/original",
+                    "version": "1.0.0"
+                },
+                {
+                    "name": "foo/requirer",
+                    "require": {
+                        "foo/original": "3.0.0"
+                    },
+                    "version": "1.0.0"
+                }
+            ]
+        }
+    ],
+    "require": {
+        "foo/original": "1.0.0",
+        "foo/provider": "1.0.0",
+        "foo/requirer": "1.0.0"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT--
+Installing foo/original (1.0.0)
+Installing foo/provider (1.0.0)
+Installing foo/requirer (1.0.0)
