@@ -23,18 +23,20 @@ Fixed packages and replacers get unfixed correctly (refs https://github.com/comp
 [
 ]
 
---PACKAGES--
+--PACKAGE-REPOS--
 [
-    {"name": "root/req1", "version": "1.0.0", "require": {"replacer/pkg": "1.*"}},
-    {"name": "root/req1", "version": "1.1.0", "require": {"replacer/pkg": "1.*"}},
-    {"name": "root/req3", "version": "1.0.0", "require": {"replaced/pkg": "1.*"}},
-    {"name": "root/req3", "version": "1.1.0", "require": {"replaced/pkg": "1.*"}},
-    {"name": "replacer/pkg", "version": "1.0.0", "replace": {"replaced/pkg": "*"}},
-    {"name": "replacer/pkg", "version": "1.1.0", "replace": {"replaced/pkg": "*"}},
-    {"name": "replaced/pkg", "version": "1.2.3"},
-    {"name": "replaced/pkg", "version": "1.2.4"},
-    {"name": "dep/dep", "version": "2.3.5"},
-    {"name": "dep/dep", "version": "2.3.6"}
+    [
+        {"name": "root/req1", "version": "1.0.0", "require": {"replacer/pkg": "1.*"}},
+        {"name": "root/req1", "version": "1.1.0", "require": {"replacer/pkg": "1.*"}},
+        {"name": "root/req3", "version": "1.0.0", "require": {"replaced/pkg": "1.*"}},
+        {"name": "root/req3", "version": "1.1.0", "require": {"replaced/pkg": "1.*"}},
+        {"name": "replacer/pkg", "version": "1.0.0", "replace": {"replaced/pkg": "*"}},
+        {"name": "replacer/pkg", "version": "1.1.0", "replace": {"replaced/pkg": "*"}},
+        {"name": "replaced/pkg", "version": "1.2.3"},
+        {"name": "replaced/pkg", "version": "1.2.4"},
+        {"name": "dep/dep", "version": "2.3.5"},
+        {"name": "dep/dep", "version": "2.3.6"}
+    ]
 ]
 
 --EXPECT--

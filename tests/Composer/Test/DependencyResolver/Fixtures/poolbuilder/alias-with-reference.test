@@ -31,21 +31,23 @@ Check root aliases get selected correctly
 [
 ]
 
---PACKAGES--
+--PACKAGE-REPOS--
 [
-    {
-        "name": "a/aliased", "version": "dev-master",
-        "source": { "reference": "orig", "type": "git", "url": "" },
-        "default-branch": true
-    },
-    {
-        "name": "a/aliased", "version": "1.0"
-    },
-    {
-        "name": "b/requirer", "version": "1.0.0",
-        "require": { "a/aliased": "1.0.0" },
-        "source": { "reference": "1.0.0", "type": "git", "url": "" }
-    }
+    [
+        {
+            "name": "a/aliased", "version": "dev-master",
+            "source": { "reference": "orig", "type": "git", "url": "" },
+            "default-branch": true
+        },
+        {
+            "name": "a/aliased", "version": "1.0"
+        },
+        {
+            "name": "b/requirer", "version": "1.0.0",
+            "require": { "a/aliased": "1.0.0" },
+            "source": { "reference": "1.0.0", "type": "git", "url": "" }
+        }
+    ]
 ]
 
 --EXPECT--

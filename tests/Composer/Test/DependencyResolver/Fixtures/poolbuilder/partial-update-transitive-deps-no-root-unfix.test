@@ -23,16 +23,18 @@ Partially updating one root requirement with transitive deps without root requir
 [
 ]
 
---PACKAGES--
+--PACKAGE-REPOS--
 [
-    {"name": "root/update", "version": "1.0.4", "require": {"dep/dep": "1.*", "dep2/dep2": "1.*"}},
-    {"name": "root/update", "version": "1.0.5", "require": {"dep/dep": "2.*", "dep2/dep2": "2.*"}},
-    {"name": "root/fix", "version": "1.0.6"},
-    {"name": "root/fix", "version": "2.0.7"},
-    {"name": "dep/dep", "version": "1.0.8", "require": {"root/fix": "1.*"}},
-    {"name": "dep/dep", "version": "2.0.9", "require": {"root/fix": "2.*"}},
-    {"name": "dep2/dep2", "version": "1.0.8", "require": {"dep/dep": "1.*"}},
-    {"name": "dep2/dep2", "version": "2.0.9", "require": {"dep/dep": "2.*"}}
+    [
+        {"name": "root/update", "version": "1.0.4", "require": {"dep/dep": "1.*", "dep2/dep2": "1.*"}},
+        {"name": "root/update", "version": "1.0.5", "require": {"dep/dep": "2.*", "dep2/dep2": "2.*"}},
+        {"name": "root/fix", "version": "1.0.6"},
+        {"name": "root/fix", "version": "2.0.7"},
+        {"name": "dep/dep", "version": "1.0.8", "require": {"root/fix": "1.*"}},
+        {"name": "dep/dep", "version": "2.0.9", "require": {"root/fix": "2.*"}},
+        {"name": "dep2/dep2", "version": "1.0.8", "require": {"dep/dep": "1.*"}},
+        {"name": "dep2/dep2", "version": "2.0.9", "require": {"dep/dep": "2.*"}}
+    ]
 ]
 
 --EXPECT--

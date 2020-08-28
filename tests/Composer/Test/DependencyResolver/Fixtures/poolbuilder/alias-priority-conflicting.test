@@ -26,29 +26,31 @@ Check root aliases are loaded
 [
 ]
 
---PACKAGES--
+--PACKAGE-REPOS--
 [
-    {
-        "name": "req/pkg", "version": "dev-feature-foo",
-        "source": { "reference": "feat.f", "type": "git", "url": "" }
-    },
-    {
-        "name": "req/pkg", "version": "dev-master",
-        "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
-        "source": { "reference": "forked", "type": "git", "url": "" },
-        "default-branch": true
-    },
-    {
-        "name": "req/pkg", "version": "dev-master",
-        "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
-        "source": { "reference": "master", "type": "git", "url": "" },
-        "default-branch": true
-    },
-    {
-        "name": "package/a", "version": "dev-master",
-        "require": { "req/pkg": "dev-master" },
-        "default-branch": true
-    }
+    [
+        {
+            "name": "req/pkg", "version": "dev-feature-foo",
+            "source": { "reference": "feat.f", "type": "git", "url": "" }
+        },
+        {
+            "name": "req/pkg", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+            "source": { "reference": "forked", "type": "git", "url": "" },
+            "default-branch": true
+        },
+        {
+            "name": "req/pkg", "version": "dev-master",
+            "extra": { "branch-alias": { "dev-master": "1.0.x-dev" } },
+            "source": { "reference": "master", "type": "git", "url": "" },
+            "default-branch": true
+        },
+        {
+            "name": "package/a", "version": "dev-master",
+            "require": { "req/pkg": "dev-master" },
+            "default-branch": true
+        }
+    ]
 ]
 
 --EXPECT--

@@ -36,7 +36,7 @@ class PoolBuilderTest extends TestCase
     /**
      * @dataProvider getIntegrationTests
      */
-    public function testPoolBuilder($file, $message, $expect, $root, $requestData, $packages, $fixed)
+    public function testPoolBuilder($file, $message, $expect, $root, $requestData, $packageRepos, $fixed)
     {
         $rootAliases = !empty($root['aliases']) ? $root['aliases'] : array();
         $minimumStability = !empty($root['minimum-stability']) ? $root['minimum-stability'] : 'stable';
@@ -73,11 +73,13 @@ class PoolBuilderTest extends TestCase
         };
 
         $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $rootReferences);
-        $repositorySet->addRepository($repo = new ArrayRepository());
-        $repositorySet->addRepository($lockedRepo = new LockArrayRepository());
-        foreach ($packages as $package) {
-            $repo->addPackage($loadPackage($package));
+        foreach ($packageRepos as $packages) {
+            $repositorySet->addRepository($repo = new ArrayRepository());
+           foreach ($packages as $package) {
+                $repo->addPackage($loadPackage($package));
+            }
         }
+        $repositorySet->addRepository($lockedRepo = new LockArrayRepository());
 
         if (isset($requestData['locked'])) {
             foreach ($requestData['locked'] as $package) {
@@ -153,7 +155,7 @@ class PoolBuilderTest extends TestCase
                 $request = JsonFile::parseJson($testData['REQUEST']);
                 $root = !empty($testData['ROOT']) ? JsonFile::parseJson($testData['ROOT']) : array();
 
-                $packages = JsonFile::parseJson($testData['PACKAGES']);
+                $packageRepos = JsonFile::parseJson($testData['PACKAGE-REPOS']);
                 $fixed = array();
                 if (!empty($testData['FIXED'])) {
                     $fixed = JsonFile::parseJson($testData['FIXED']);
@@ -163,7 +165,7 @@ class PoolBuilderTest extends TestCase
                 die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
             }
 
-            $tests[basename($file)] = array(str_replace($fixturesDir.'/', '', $file), $message, $expect, $root, $request, $packages, $fixed);
+            $tests[basename($file)] = array(str_replace($fixturesDir.'/', '', $file), $message, $expect, $root, $request, $packageRepos, $fixed);
         }
 
         return $tests;
@@ -178,7 +180,7 @@ class PoolBuilderTest extends TestCase
             'ROOT' => false,
             'REQUEST' => true,
             'FIXED' => false,
-            'PACKAGES' => true,
+            'PACKAGE-REPOS' => true,
             'EXPECT' => true,
         );
 

@@ -12,10 +12,12 @@ Test package is not found
 [
 ]
 
---PACKAGES--
+--PACKAGE-REPOS--
 [
-    {"name": "root/req", "version": "1.0.0", "require": {"dep/dep": "2.*"}},
-    {"name": "dep/dep", "version": "2.3.4", "require": {"dep/dep3": "2.*"}}
+    [
+        {"name": "root/req", "version": "1.0.0", "require": {"dep/dep": "2.*"}},
+        {"name": "dep/dep", "version": "2.3.4", "require": {"dep/dep3": "2.*"}}
+    ]
 ]
 
 --EXPECT--
