@@ -122,9 +122,8 @@ EOT
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'validate', $input, $output);
         $eventCode = $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
-        $exitCode = max($eventCode, $exitCode);
 
-        return $exitCode;
+        return max($eventCode, $exitCode);
     }
 
     private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false)
