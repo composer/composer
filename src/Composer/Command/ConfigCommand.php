@@ -605,7 +605,7 @@ EOT
                 $value = strtolower($values[0]);
                 if (true === $booleanValidator($value)) {
                     if (false === $booleanNormalizer($value)) {
-                        $this->configSource->addRepository($matches[1], false);
+                        $this->configSource->addRepository($matches[1], []);
 
                         return 0;
                     }
