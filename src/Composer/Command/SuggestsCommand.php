@@ -83,7 +83,7 @@ EOT
 
         // Determine output mode, default is by-package
         $mode = SuggestedPackagesReporter::MODE_BY_PACKAGE;
-        $io = $this->getIO();
+
         // if by-suggestion is given we override the default
         if ($input->getOption('by-suggestion')) {
             $mode = SuggestedPackagesReporter::MODE_BY_SUGGESTION;
