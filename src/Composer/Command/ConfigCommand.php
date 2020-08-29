@@ -568,7 +568,7 @@ EOT
         if ($input->getOption('global') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]) || substr($settingKey, 0, 6) === 'extra.')) {
             throw new \InvalidArgumentException('The '.$settingKey.' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global composer.json');
         }
-        if ($input->getOption('unset') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]))) {
+        if ((isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey])) && $input->getOption('unset')) {
             $this->configSource->removeProperty($settingKey);
 
             return 0;
