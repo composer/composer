@@ -474,7 +474,7 @@ EOT
             ),
         );
 
-        if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {
+        if ((isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey])) && $input->getOption('unset')) {
             if ($settingKey === 'disable-tls' && $this->config->get('disable-tls')) {
                 $this->getIO()->writeError('<info>You are now running Composer with SSL/TLS protection enabled.</info>');
             }
