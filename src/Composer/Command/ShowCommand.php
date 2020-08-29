@@ -423,7 +423,9 @@ EOT
                         $packageIsIgnored = \in_array($package->getPrettyName(), $ignoredPackages, true);
                         if ($input->getOption('outdated') && ($packageIsUpToDate || $packageIsIgnored)) {
                             continue;
-                        } elseif ($input->getOption('outdated') || $input->getOption('strict')) {
+                        }
+
+                        if ($input->getOption('outdated') || $input->getOption('strict')) {
                             $hasOutdatedPackages = true;
                         }
 
