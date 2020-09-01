@@ -266,7 +266,7 @@ class PoolBuilder
         }
 
         // Maybe it was already marked before but not loaded yet. In that case
-        // we have to extend the constraint (we don't check if they match because
+        // we have to extend the constraint (we don't check if they are identical because
         // MultiConstraint::create() will optimize anyway)
         if (isset($this->packagesToLoad[$name])) {
             // Already marked for loading and this does not expand the constraint to be loaded, nothing to do
