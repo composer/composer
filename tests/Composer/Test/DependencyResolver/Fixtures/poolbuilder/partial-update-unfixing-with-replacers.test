@@ -1,0 +1,52 @@
+--TEST--
+Fixed packages and replacers get unfixed correctly (refs https://github.com/composer/composer/pull/8942)
+
+--REQUEST--
+{
+    "require": {
+        "root/req1": "*",
+        "root/req3": "*"
+    },
+    "locked": [
+        {"name": "root/req1", "version": "1.0.0", "require": {"replacer/pkg": "1.*"}},
+        {"name": "root/req3", "version": "1.0.0", "require": {"replaced/pkg": "1.*", "dep/dep": "2.*"}},
+        {"name": "replacer/pkg", "version": "1.0.0", "replace": {"replaced/pkg": "*"}},
+        {"name": "dep/dep", "version": "2.3.5"}
+    ],
+    "allowList": [
+        "root/req1"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "root/req1", "version": "1.0.0", "require": {"replacer/pkg": "1.*"}},
+        {"name": "root/req1", "version": "1.1.0", "require": {"replacer/pkg": "1.*"}},
+        {"name": "root/req3", "version": "1.0.0", "require": {"replaced/pkg": "1.*"}},
+        {"name": "root/req3", "version": "1.1.0", "require": {"replaced/pkg": "1.*"}},
+        {"name": "replacer/pkg", "version": "1.0.0", "replace": {"replaced/pkg": "*"}},
+        {"name": "replacer/pkg", "version": "1.1.0", "replace": {"replaced/pkg": "*"}},
+        {"name": "replaced/pkg", "version": "1.2.3"},
+        {"name": "replaced/pkg", "version": "1.2.4"},
+        {"name": "dep/dep", "version": "2.3.5"},
+        {"name": "dep/dep", "version": "2.3.6"}
+    ]
+]
+
+--EXPECT--
+[
+    "root/req3-1.0.0.0 (locked)",
+    "dep/dep-2.3.5.0 (locked)",
+    "root/req1-1.0.0.0",
+    "root/req1-1.1.0.0",
+    "replacer/pkg-1.0.0.0",
+    "replacer/pkg-1.1.0.0",
+    "replaced/pkg-1.2.3.0",
+    "replaced/pkg-1.2.4.0"
+]

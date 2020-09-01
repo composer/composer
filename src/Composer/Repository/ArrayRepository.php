@@ -50,7 +50,7 @@ class ArrayRepository implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags)
+    public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array())
     {
         $packages = $this->getPackages();
 
@@ -61,6 +61,7 @@ class ArrayRepository implements RepositoryInterface
                 if (
                     (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
                     && StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, $package->getNames(), $package->getStability())
+                    && !isset($alreadyLoaded[$package->getName()][$package->getVersion()])
                 ) {
                     // add selected packages which match stability requirements
                     $result[spl_object_hash($package)] = $package;

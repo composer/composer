@@ -1,0 +1,31 @@
+--TEST--
+Tests if version constraint is expanded. If not, dep/dep 3.0.0 would not be loaded here.
+
+--REQUEST--
+{
+    "require": {
+        "root/req": "*"
+    }
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "root/req", "version": "1.0.0", "require": {"dep/dep": "2.3.4"}},
+        {"name": "dep/dep", "version": "2.3.4", "require": {"dep/dep2": "2.*"}},
+        {"name": "dep/dep", "version": "2.3.5"},
+        {"name": "dep/dep2", "version": "2.3.4", "require": {"dep/dep": "2.*"}}
+    ]
+]
+
+--EXPECT--
+[
+    "root/req-1.0.0.0",
+    "dep/dep-2.3.4.0",
+    "dep/dep2-2.3.4.0",
+    "dep/dep-2.3.5.0"
+]

@@ -16,6 +16,7 @@ use Composer\Package\Link;
 use Composer\Package\Package;
 use Composer\Test\TestCase;
 use Composer\Util\PackageSorter;
+use Composer\Semver\Constraint\MatchAllConstraint;
 
 class PackageSorterTest extends TestCase
 {
@@ -120,7 +121,7 @@ class PackageSorterTest extends TestCase
 
         $links = array();
         foreach ($requires as $requireName) {
-            $links[] = new Link($package->getName(), $requireName);
+            $links[] = new Link($package->getName(), $requireName, new MatchAllConstraint);
         }
         $package->setRequires($links);
 

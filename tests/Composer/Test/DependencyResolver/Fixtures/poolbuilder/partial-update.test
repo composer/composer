@@ -1,0 +1,39 @@
+--TEST--
+Partially updating a root requirement without deps, still selects a new dependency if the update results in a replacement missing for another locked package.
+
+--REQUEST--
+{
+    "require": {
+        "some/pkg": "*",
+        "root/req": "*"
+    },
+    "locked": [
+        {"name": "some/pkg", "version": "1.0.3", "replace": {"dep/dep": "2.1.0"}, "id": 1},
+        {"name": "root/req", "version": "1.0.0", "require": {"dep/dep": "2.*"}, "id": 2}
+    ],
+    "allowList": [
+        "some/pkg"
+    ]
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "some/pkg", "version": "1.0.4"},
+        {"name": "root/req", "version": "1.0.0", "require": {"dep/dep": "2.*"}},
+        {"name": "root/req", "version": "2.0.0", "require": {"dep/dep": "3.*"}},
+        {"name": "dep/dep", "version": "2.3.4"},
+        {"name": "dep/dep", "version": "3.0.1"}
+    ]
+]
+
+--EXPECT--
+[
+    2,
+   "some/pkg-1.0.4.0",
+   "dep/dep-2.3.4.0"
+]

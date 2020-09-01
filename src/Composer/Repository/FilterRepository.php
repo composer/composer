@@ -108,7 +108,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags)
+    public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array())
     {
         foreach ($packageMap as $name => $constraint) {
             if (!$this->isAllowed($name)) {
@@ -120,7 +120,7 @@ class FilterRepository implements RepositoryInterface
             return array('namesFound' => array(), 'packages' => array());
         }
 
-        $result = $this->repo->loadPackages($packageMap, $acceptableStabilities, $stabilityFlags);
+        $result = $this->repo->loadPackages($packageMap, $acceptableStabilities, $stabilityFlags, $alreadyLoaded);
         if (!$this->canonical) {
             $result['namesFound'] = array();
         }

@@ -1,0 +1,31 @@
+--TEST--
+Test irrelevant package versions are not loaded recursively
+
+--REQUEST--
+{
+    "require": {
+        "root/req": "*"
+    }
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "root/req", "version": "1.0.0", "require": {"dep/dep": "2.*"}},
+        {"name": "dep/dep", "version": "2.3.4", "require": {"dep/dep2": "2.*"}},
+        {"name": "dep/dep", "version": "3.0.1"},
+        {"name": "dep/dep2", "version": "2.3.4"},
+        {"name": "dep/dep2", "version": "3.0.1"}
+    ]
+]
+
+--EXPECT--
+[
+    "root/req-1.0.0.0",
+    "dep/dep-2.3.4.0",
+    "dep/dep2-2.3.4.0"
+]

@@ -18,19 +18,23 @@ Stability flags apply
 
 --REQUEST--
 {
-    "flagged/pkg": "*",
-    "default/pkg": "*"
+    "require": {
+        "flagged/pkg": "*",
+        "default/pkg": "*"
+    }
 }
 
---PACKAGES--
+--PACKAGE-REPOS--
 [
-    {"name": "flagged/pkg", "version": "1.0.0", "id": 1},
-    {"name": "flagged/pkg", "version": "1.0.0-beta", "id": 2},
-    {"name": "flagged/pkg", "version": "1.0.0-dev", "id": 3},
-    {"name": "flagged/pkg", "version": "1.0.0-RC", "id": 4},
-    {"name": "default/pkg", "version": "1.0.0", "id": 5},
-    {"name": "default/pkg", "version": "1.0.0-RC", "id": 6},
-    {"name": "default/pkg", "version": "1.0.0-alpha", "id": 7}
+    [
+        {"name": "flagged/pkg", "version": "1.0.0", "id": 1},
+        {"name": "flagged/pkg", "version": "1.0.0-beta", "id": 2},
+        {"name": "flagged/pkg", "version": "1.0.0-dev", "id": 3},
+        {"name": "flagged/pkg", "version": "1.0.0-RC", "id": 4},
+        {"name": "default/pkg", "version": "1.0.0", "id": 5},
+        {"name": "default/pkg", "version": "1.0.0-RC", "id": 6},
+        {"name": "default/pkg", "version": "1.0.0-alpha", "id": 7}
+    ]
 ]
 
 --EXPECT--
@@ -40,5 +44,5 @@ Stability flags apply
     4,
     5,
     6,
-    "default/pkg-1.2.0.0 alias of 6"
+    "default/pkg-1.2.0.0 (alias of 6)"
 ]

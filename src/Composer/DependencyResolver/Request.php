@@ -17,6 +17,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\RootAliasPackage;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Semver\Constraint\MatchAllConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -55,6 +56,13 @@ class Request
     public function requireName($packageName, ConstraintInterface $constraint = null)
     {
         $packageName = strtolower($packageName);
+
+        if ($constraint === null) {
+            $constraint = new MatchAllConstraint();
+        }
+        if (isset($this->requires[$packageName])) {
+            throw new \LogicException('Overwriting requires seems like a bug ('.$packageName.' '.$this->requires[$packageName]->getPrettyConstraint().' => '.$constraint->getPrettyConstraint().', check why it is happening, might be a root alias');
+        }
         $this->requires[$packageName] = $constraint;
     }
 

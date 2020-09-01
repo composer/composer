@@ -32,7 +32,7 @@ class Link
     protected $target;
 
     /**
-     * @var ConstraintInterface|null
+     * @var ConstraintInterface
      */
     protected $constraint;
 
@@ -49,13 +49,13 @@ class Link
     /**
      * Creates a new package link.
      *
-     * @param string                   $source
-     * @param string                   $target
-     * @param ConstraintInterface|null $constraint       Constraint applying to the target of this link
-     * @param string                   $description      Used to create a descriptive string representation
-     * @param string|null              $prettyConstraint
+     * @param string              $source
+     * @param string              $target
+     * @param ConstraintInterface $constraint       Constraint applying to the target of this link
+     * @param string              $description      Used to create a descriptive string representation
+     * @param string|null         $prettyConstraint
      */
-    public function __construct($source, $target, ConstraintInterface $constraint = null, $description = 'relates to', $prettyConstraint = null)
+    public function __construct($source, $target, ConstraintInterface $constraint, $description = 'relates to', $prettyConstraint = null)
     {
         $this->source = strtolower($source);
         $this->target = strtolower($target);
@@ -89,7 +89,7 @@ class Link
     }
 
     /**
-     * @return ConstraintInterface|null
+     * @return ConstraintInterface
      */
     public function getConstraint()
     {

@@ -14,6 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
+use Composer\Repository\FilterRepository;
 use Composer\Repository\LockArrayRepository;
 use Composer\DependencyResolver\DefaultPolicy;
 use Composer\DependencyResolver\Pool;
@@ -36,11 +37,12 @@ class PoolBuilderTest extends TestCase
     /**
      * @dataProvider getIntegrationTests
      */
-    public function testPoolBuilder($file, $message, $expect, $root, $requestData, $packages, $fixed)
+    public function testPoolBuilder($file, $message, $expect, $root, $requestData, $packageRepos, $fixed)
     {
         $rootAliases = !empty($root['aliases']) ? $root['aliases'] : array();
         $minimumStability = !empty($root['minimum-stability']) ? $root['minimum-stability'] : 'stable';
         $stabilityFlags = !empty($root['stability-flags']) ? $root['stability-flags'] : array();
+        $rootReferences = !empty($root['references']) ? $root['references'] : array();
         $stabilityFlags = array_map(function ($stability) {
             return BasePackage::$stabilities[$stability];
         }, $stabilityFlags);
@@ -71,15 +73,41 @@ class PoolBuilderTest extends TestCase
             return $pkg;
         };
 
-        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases);
-        $repositorySet->addRepository($repo = new ArrayRepository());
-        foreach ($packages as $package) {
-            $repo->addPackage($loadPackage($package));
+        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $rootReferences);
+        foreach ($packageRepos as $packages) {
+            $repo = new ArrayRepository();
+            if (isset($packages['canonical']) || isset($packages['only']) || isset($packages['exclude'])) {
+                $options = $packages;
+                $packages = $options['packages'];
+                unset($options['packages']);
+                $repositorySet->addRepository(new FilterRepository($repo, $options));
+            } else {
+                $repositorySet->addRepository($repo);
+            }
+            foreach ($packages as $package) {
+                $repo->addPackage($loadPackage($package));
+            }
         }
+        $repositorySet->addRepository($lockedRepo = new LockArrayRepository());
 
-        $request = new Request();
-        foreach ($requestData as $package => $constraint) {
+        if (isset($requestData['locked'])) {
+            foreach ($requestData['locked'] as $package) {
+                $lockedRepo->addPackage($loadPackage($package));
+            }
+        }
+        $request = new Request($lockedRepo);
+        foreach ($requestData['require'] as $package => $constraint) {
             $request->requireName($package, $parser->parseConstraints($constraint));
+        }
+        if (isset($requestData['allowList'])) {
+            $transitiveDeps = Request::UPDATE_ONLY_LISTED;
+            if (isset($requestData['allowTransitiveDepsNoRootRequire']) && $requestData['allowTransitiveDepsNoRootRequire']) {
+                $transitiveDeps = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
+            }
+            if (isset($requestData['allowTransitiveDeps']) && $requestData['allowTransitiveDeps']) {
+                $transitiveDeps = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
+            }
+            $request->setUpdateAllowList(array_flip($requestData['allowList']), $transitiveDeps);
         }
 
         foreach ($fixed as $fixedPackage) {
@@ -97,11 +125,23 @@ class PoolBuilderTest extends TestCase
                 return $id;
             }
 
-            if ($package instanceof AliasPackage && $id = array_search($package->getAliasOf(), $packageIds, true)) {
-                return (string) $package->getName().'-'.$package->getVersion() .' alias of '.$id;
+            $suffix = '';
+            if ($package->getSourceReference()) {
+                $suffix = '#'.$package->getSourceReference();
+            }
+            if ($package->getRepository() instanceof LockArrayRepository) {
+                $suffix .= ' (locked)';
             }
 
-            return (string) $package;
+            if ($package instanceof AliasPackage) {
+                if ($id = array_search($package->getAliasOf(), $packageIds, true)) {
+                    return (string) $package->getName().'-'.$package->getVersion() . $suffix . ' (alias of '.$id . ')';
+                }
+
+                return (string) $package->getName().'-'.$package->getVersion() . $suffix . ' (alias of '.$package->getAliasOf()->getVersion().')';
+            }
+
+            return (string) $package->getName().'-'.$package->getVersion() . $suffix;
         }, $result);
 
         $this->assertSame($expect, $result);
@@ -124,7 +164,7 @@ class PoolBuilderTest extends TestCase
                 $request = JsonFile::parseJson($testData['REQUEST']);
                 $root = !empty($testData['ROOT']) ? JsonFile::parseJson($testData['ROOT']) : array();
 
-                $packages = JsonFile::parseJson($testData['PACKAGES']);
+                $packageRepos = JsonFile::parseJson($testData['PACKAGE-REPOS']);
                 $fixed = array();
                 if (!empty($testData['FIXED'])) {
                     $fixed = JsonFile::parseJson($testData['FIXED']);
@@ -134,7 +174,7 @@ class PoolBuilderTest extends TestCase
                 die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
             }
 
-            $tests[basename($file)] = array(str_replace($fixturesDir.'/', '', $file), $message, $expect, $root, $request, $packages, $fixed);
+            $tests[basename($file)] = array(str_replace($fixturesDir.'/', '', $file), $message, $expect, $root, $request, $packageRepos, $fixed);
         }
 
         return $tests;
@@ -149,7 +189,7 @@ class PoolBuilderTest extends TestCase
             'ROOT' => false,
             'REQUEST' => true,
             'FIXED' => false,
-            'PACKAGES' => true,
+            'PACKAGE-REPOS' => true,
             'EXPECT' => true,
         );
 

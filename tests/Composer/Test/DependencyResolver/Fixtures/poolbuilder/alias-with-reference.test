@@ -1,0 +1,59 @@
+--TEST--
+Check root aliases get selected correctly
+
+--ROOT--
+{
+    "stability-flags": {
+        "a/aliased": "dev"
+    },
+    "aliases": [
+        {
+            "package": "a/aliased",
+            "version": "dev-master",
+            "alias": "1.0.0"
+        }
+    ],
+    "references": {
+        "a/aliased": "abcd"
+    }
+}
+
+
+--REQUEST--
+{
+    "require": {
+        "a/aliased": "dev-master",
+        "b/requirer": "*"
+    }
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {
+            "name": "a/aliased", "version": "dev-master",
+            "source": { "reference": "orig", "type": "git", "url": "" },
+            "default-branch": true
+        },
+        {
+            "name": "a/aliased", "version": "1.0"
+        },
+        {
+            "name": "b/requirer", "version": "1.0.0",
+            "require": { "a/aliased": "1.0.0" },
+            "source": { "reference": "1.0.0", "type": "git", "url": "" }
+        }
+    ]
+]
+
+--EXPECT--
+[
+    "a/aliased-dev-master#abcd",
+    "a/aliased-1.0.0.0#abcd (alias of dev-master)",
+    "b/requirer-1.0.0.0#1.0.0",
+    "a/aliased-9999999-dev#abcd (alias of dev-master)"
+]
