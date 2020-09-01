@@ -265,8 +265,7 @@ class PoolBuilder
             $constraint = $rootRequires[$name];
         }
 
-        // Not yet loaded or already marked for a reload, override the existing constraint
-        // (either it's a new one to load, or it has already been extended above)
+        // Not yet loaded or already marked for a reload, set the constraint to be loaded
         if (!isset($this->loadedPackages[$name])) {
             // Maybe it was already marked before but not loaded yet. In that case
             // we have to extend the constraint (we don't check if they are identical because
