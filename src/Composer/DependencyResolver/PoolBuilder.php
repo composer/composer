@@ -216,6 +216,8 @@ class PoolBuilder
             }
         }
 
+        $this->runOptimizer();
+
         if ($this->eventDispatcher) {
             $prePoolCreateEvent = new PrePoolCreateEvent(
                 PluginEvents::PRE_POOL_CREATE,
@@ -570,6 +572,204 @@ class PoolBuilder
             unset($this->aliasMap[spl_object_hash($package)]);
         }
     }
+
+    /**
+     * The packages array now contains all packages referenced somewhere along the dependency tree which might result
+     * in thousands of packages.
+     *
+     * However, we have to understand that there's no way we can filter out certain packages during loading stage
+     * because some packages found later on might replace previously found ones.
+     *
+     * So any further optimizations can only happen at this stage.
+     *
+     * How can we further optimize then?
+     *
+     * Think of a root dependency of your project. Let's say you require packageA in version ^4.0.
+     * It's very likely that all the versions of packageA in <4.0 and >=5.0 have also been loaded because some
+     * transitive dependency referenced packageA in older or newer versions.
+     * Maybe we were lucky and no transitive dependency referenced 1.* versions so at least those ones are already gone.
+     * However, that still leaves us with all 2.*, 3.* and >5.0 versions which we'll load even though our root requirement
+     * already rules them out.
+     * In practice, this doesn't happen because root dependency constraints are not expanded with later found references
+     * but it maybe helps you to understand the logic behind the optimizer.
+     *
+     * The observation here:
+     * The higher up in the dependency tree a package was required, the more likely it was controlled/requested by the user.
+     * The highest level (level 0) being your root composer.json which is of course 100% controlled by the user and
+     * contains 100% of what the user requests. Then, on level 1, we have all the direct dependencies of the root
+     * dependencies, making those ones **extremely likely** to be requested by the user as well.
+     * In other words, the higher up the dependency tree the requirer of a package was found, the higher the probability
+     * that this constraint can be used as a hard requirement and does not need to be expanded on.
+     */
+    private function runOptimizer()
+    {
+        $total = \count($this->packages);
+
+        $this->unlearnLoadPackageOperationTracesFromReplacedPackages();
+        $this->applyOptimizations();
+
+        $filtered = $total - \count($this->packages);
+
+        if (0 === $filtered) {
+            return;
+        }
+
+        $this->io->write(sprintf('<info>Pool builder found a total of %s package versions referenced in your dependency tree. The optimizer was able to filter out %s (%d%%) of them early!</info>',
+            number_format($total),
+            number_format($filtered),
+            round(100/$total*$filtered)
+        ));
+    }
+
+    private function applyOptimizations()
+    {
+        $enableRecursion = false;
+
+        // Optimization 1: Remove all package versions that are not mentioned in any top level constraint
+        $removedPackages = array();
+        $highestDependencyTreeConstraints = $this->extractHighestDependencyTreeConstraints();
+
+        foreach ($this->packages as $i => $package) {
+            if (isset($highestDependencyTreeConstraints[$package->getName()]) && !$highestDependencyTreeConstraints[$package->getName()]->matches(new Constraint('==', $package->getVersion()))) {
+                unset($this->packages[$i]);
+
+                if (!isset($removedPackages[$package->getName()])) {
+                    $removedPackages[$package->getName()] = array();
+                }
+
+                $removedPackages[$package->getName()][] = $package->getVersion();
+                $enableRecursion = true;
+            }
+        }
+
+        // Optimization 2: Unlearn load package operations learnt from packages that have now been removed and if it results
+        // in 0 remaining load operations, we can remove that package completely
+        $packagesToRemove = array();
+
+        foreach ($this->loadPackageOperationsTrace as $targetPackageName => $operations) {
+            foreach ($operations as $j => $operation) {
+                if (isset($removedPackages[$operation->getSource()]) && \in_array($operation->getSourceVersion(), $removedPackages[$operation->getSource()], true)) {
+                    unset($this->loadPackageOperationsTrace[$targetPackageName][$j]);
+
+                    if (0 === \count($this->loadPackageOperationsTrace[$targetPackageName])) {
+                        $packagesToRemove[] = $targetPackageName;
+                    }
+                }
+            }
+        }
+
+        foreach ($this->packages as $i => $package) {
+            if (\in_array($package->getName(), $packagesToRemove, true)) {
+                unset($this->packages[$i]);
+                $enableRecursion = true;
+            }
+        }
+
+        // If we removed at least one package we'll run the optimizations recursively
+        // to account for new things learnt along the way as we may have removed load package operation traces
+        // resulting in a different set of $highestDependencyTreeConstraints
+        if ($enableRecursion) {
+            $this->applyOptimizations();
+        }
+    }
+
+    /**
+     * Before we extract the requirement highest up the dependency tree
+     * we make sure we unlearn all the requirements from packages
+     * that have been replaced which is done in this method.
+     */
+    private function unlearnLoadPackageOperationTracesFromReplacedPackages()
+    {
+        $replacedPackages = array();
+        $replacedPackagesConstraints = array();
+
+        // Collect all replacement constraints
+        foreach ($this->packages as $package) {
+            foreach ($package->getReplaces() as $link) {
+                // Make sure we do not replace ourselves (if someone made a mistake and tagged it)
+                // See e.g. https://github.com/BabDev/Pagerfanta/commit/fd00eb74632fecc0265327e9fe0eddc08c72b238#diff-b5d0ee8c97c7abd7e3fa29b9a27d1780
+                // TODO: should that go into package itself?
+                if ($package->getName() === $link->getTarget()) {
+                    continue;
+                }
+
+                if (!isset($replacedPackagesConstraints[$link->getTarget()])) {
+                    $replacedPackagesConstraints[$link->getTarget()] = array();
+                }
+
+                $replacedPackagesConstraints[$link->getTarget()][] = $link->getConstraint();
+            }
+        }
+
+        // Collect replaced packages
+        // Careful: Do NOT remove them from the packages.
+        // This might seem like a good option (they've got replaced by other packages after all), however, they have
+        // to end up in the pool so the solver can correctly resolve dependencies referring to replaced packages.
+        foreach ($this->packages as $i => $package) {
+            if (isset($replacedPackagesConstraints[$package->getName()])) {
+                foreach($replacedPackagesConstraints[$package->getName()] as $replacementTarget => $replacementConstraint) {
+                    if ($replacementConstraint->matches(new Constraint('==', $package->getVersion()))) {
+                        $replacedPackages[] = $package;
+                    }
+                }
+            }
+        }
+
+        // Unlearn all the traces from packages that have been replaced
+        foreach ($replacedPackages as $replacedPackage) {
+            foreach ($this->loadPackageOperationsTrace as $targetPackage => $operations) {
+                foreach ($operations as $i => $operation) {
+                    if ($operation->getSource() === $replacedPackage->getName() && $operation->getSourceVersion() === $replacedPackage->getVersion()) {
+                        unset($this->loadPackageOperationsTrace[$targetPackage][$i]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @return array<string, ConstraintInterface>
+     */
+    private function extractHighestDependencyTreeConstraints()
+    {
+        $constraints = array();
+
+        foreach ($this->loadPackageOperationsTrace as $name => $operations) {
+
+            $highestDependencyTreeConstraint = null;
+            $currentLevel = null;
+
+            foreach ($operations as $operation) {
+                if (null === $currentLevel || $operation->getLevelFoundOn() < $currentLevel) {
+                    $currentLevel = $operation->getLevelFoundOn();
+                    $highestDependencyTreeConstraint = $operation->getTargetConstraint();
+                    continue;
+                }
+
+                // If we're on the same level, we make sure we consider all of the constraints.
+                // We consider them as disjunctive because if we would do conjunctive, we could
+                // end up in having a conflict. That means we already know that these
+                // packages are not compatible with each other but we don't know which one to
+                // remove from the packages array. This is going to be the solver's task.
+                // In other words, we have to load them all -> disjunctive.
+                if ($operation->getLevelFoundOn() === $currentLevel) {
+                    $highestDependencyTreeConstraint = Intervals::compactConstraint(
+                        MultiConstraint::create(array(
+                            $highestDependencyTreeConstraint,
+                            $operation->getTargetConstraint()
+                        ), false)
+                    );
+                }
+            }
+
+            if (null !== $highestDependencyTreeConstraint) {
+                $constraints[$name] = $highestDependencyTreeConstraint;
+            }
+        }
+
+        return $constraints;
+    }
+
     /**
      * @param string $name
      * @param LoadPackageOperation $operation
