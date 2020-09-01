@@ -122,7 +122,7 @@ class AutoloadGenerator
     {
         if (is_array($ignorePlatformReqs)) {
             $this->ignorePlatformReqs = array_filter($ignorePlatformReqs, function ($req) {
-                return (bool) preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+                return PlatformRepository::isPlatformPackage($req);
             });
         } else {
             $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;

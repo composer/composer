@@ -130,7 +130,7 @@ abstract class Rule
         }
 
         if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $this->reasonData->getTarget())) {
+            if (PlatformRepository::isPlatformPackage($this->reasonData->getTarget())) {
                 return false;
             }
             foreach ($request->getFixedPackages() as $package) {
@@ -147,7 +147,7 @@ abstract class Rule
         }
 
         if ($this->getReason() === self::RULE_ROOT_REQUIRE) {
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $this->reasonData['packageName'])) {
+            if (PlatformRepository::isPlatformPackage($this->reasonData['packageName'])) {
                 return false;
             }
             foreach ($request->getFixedPackages() as $package) {

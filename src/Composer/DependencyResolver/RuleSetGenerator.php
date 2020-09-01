@@ -176,7 +176,7 @@ class RuleSetGenerator
             }
 
             foreach ($package->getRequires() as $link) {
-                if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($link->getTarget(), $ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+                if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($link->getTarget(), $ignorePlatformReqs, true))) && PlatformRepository::isPlatformPackage($link->getTarget())) {
                     continue;
                 }
 
@@ -200,7 +200,7 @@ class RuleSetGenerator
                     continue;
                 }
 
-                if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($link->getTarget(), $ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+                if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($link->getTarget(), $ignorePlatformReqs, true))) && PlatformRepository::isPlatformPackage($link->getTarget())) {
                     continue;
                 }
 
@@ -246,7 +246,7 @@ class RuleSetGenerator
         }
 
         foreach ($request->getRequires() as $packageName => $constraint) {
-            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($packageName, $ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $packageName)) {
+            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($packageName, $ignorePlatformReqs, true))) && PlatformRepository::isPlatformPackage($packageName)) {
                 continue;
             }
 

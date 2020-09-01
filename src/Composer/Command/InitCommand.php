@@ -737,7 +737,7 @@ EOT
         if (!$package) {
             // platform packages can not be found in the pool in versions other than the local platform's has
             // so if platform reqs are ignored we just take the user's word for it
-            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($name, $ignorePlatformReqs))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
+            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($name, $ignorePlatformReqs))) && PlatformRepository::isPlatformPackage($name)) {
                 return array($name, $requiredVersion ?: '*');
             }
 

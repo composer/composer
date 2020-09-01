@@ -104,7 +104,7 @@ class RepositorySet
         $this->stabilityFlags = $stabilityFlags;
         $this->rootRequires = $rootRequires;
         foreach ($rootRequires as $name => $constraint) {
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
+            if (PlatformRepository::isPlatformPackage($name)) {
                 unset($this->rootRequires[$name]);
             }
         }

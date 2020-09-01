@@ -264,7 +264,7 @@ class Transaction
             if ($isPlugin || count(array_intersect($package->getNames(), $pluginRequires))) {
                 // get the package's requires, but filter out any platform requirements
                 $requires = array_filter(array_keys($package->getRequires()), function ($req) {
-                    return !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+                    return !PlatformRepository::isPlatformPackage($req);
                 });
 
                 // is this a plugin with no meaningful dependencies?
