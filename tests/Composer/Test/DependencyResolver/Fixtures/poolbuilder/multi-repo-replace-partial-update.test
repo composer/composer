@@ -1,12 +1,21 @@
 --TEST--
-Check that replacers from additional repositories are loaded
+Check that replacers from additional repositories are loaded when doing a partial update
 
 --REQUEST--
 {
     "require": {
         "base/package": "^1.0",
         "indirect/replacer": "^1.0"
-    }
+    },
+    "locked": [
+        {"name": "shared/dep", "version": "1.2.0", "id": 1},
+        {"name": "indirect/replacer", "version": "1.2.0", "require": {"replacer/package": "^1.2"}, "id": 2},
+        {"name": "replacer/package", "version": "1.2.0", "require": {"shared/dep": "^1.1"}, "replace": {"base/package": "1.2.0"}, "id": 3}
+    ],
+    "allowList": [
+        "indirect/replacer"
+    ],
+    "allowTransitiveDepsNoRootRequire": true
 }
 
 --FIXED--
@@ -73,7 +82,7 @@ Check that replacers from additional repositories are loaded
                 "shared/dep": "^1.0"
             },
             "replace": {
-                "base/package": "1.2.0"
+                "base/package": "1.0.0"
             }
         },
         {
@@ -88,11 +97,11 @@ Check that replacers from additional repositories are loaded
 
 --EXPECT--
 [
-    "base/package-1.0.0.0",
     "indirect/replacer-1.2.0.0",
     "indirect/replacer-1.0.0.0",
-    "shared/dep-1.2.0.0",
     "replacer/package-1.2.0.0",
     "replacer/package-1.0.0.0",
-    "shared/dep-1.0.0.0"
+    "base/package-1.0.0.0",
+    "shared/dep-1.0.0.0",
+    "shared/dep-1.2.0.0"
 ]
