@@ -43,7 +43,6 @@ use React\Promise\Promise;
  */
 class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface
 {
-    private $config;
     private $repoConfig;
     private $options;
     private $url;
@@ -102,7 +101,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
         $repoConfig['url'] = rtrim($repoConfig['url'], '/');
 
-        if ('https?' === substr($repoConfig['url'], 0, 6)) {
+        if (strpos($repoConfig['url'], 'https?') === 0) {
             $repoConfig['url'] = (extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
         }
 
@@ -118,7 +117,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->allowSslDowngrade = true;
         }
 
-        $this->config = $config;
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
 
@@ -571,11 +569,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     if ($contents = $this->cache->read($cacheKey)) {
                         $contents = json_decode($contents, true);
                         if (isset($contents['last-modified'])) {
-                            $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
-                            if (true === $response) {
+                            if (isset($alreadyLoaded[$name])) {
                                 $packages = $contents;
-                            } elseif ($response) {
-                                $packages = $response;
+                            } else {
+                                $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
+                                $packages = true === $response ? $contents : $response;
                             }
                         }
                     }
