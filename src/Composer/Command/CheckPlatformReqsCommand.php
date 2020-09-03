@@ -15,7 +15,6 @@ namespace Composer\Command;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -169,18 +168,7 @@ EOT
                 $status,
             );
         }
-        $table = array_merge($rows, $table);
 
-        // Render table
-        $renderer = new Table($output);
-        $renderer->setStyle('compact');
-        $rendererStyle = $renderer->getStyle();
-        if (method_exists($rendererStyle, 'setVerticalBorderChars')) {
-            $rendererStyle->setVerticalBorderChars('');
-        } else {
-            $rendererStyle->setVerticalBorderChar('');
-        }
-        $rendererStyle->setCellRowContentFormat('%s  ');
-        $renderer->setRows($table)->render();
+        $this->renderTable($rows, $output);
     }
 }

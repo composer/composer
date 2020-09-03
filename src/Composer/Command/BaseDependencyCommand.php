@@ -24,7 +24,6 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Package\Version\VersionParser;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -178,17 +177,7 @@ class BaseDependencyCommand extends BaseCommand
             $table = array_merge($rows, $table);
         } while (!empty($results));
 
-        // Render table
-        $renderer = new Table($output);
-        $renderer->setStyle('compact');
-        $rendererStyle = $renderer->getStyle();
-        if (method_exists($rendererStyle, 'setVerticalBorderChars')) {
-            $rendererStyle->setVerticalBorderChars('');
-        } else {
-            $rendererStyle->setVerticalBorderChar('');
-        }
-        $rendererStyle->setCellRowContentFormat('%s  ');
-        $renderer->setRows($table)->render();
+        $this->renderTable($table, $output);
     }
 
     /**

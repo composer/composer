@@ -21,6 +21,7 @@ use Composer\IO\NullIO;
 use Composer\Plugin\PreCommandRunEvent;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
@@ -201,5 +202,19 @@ abstract class BaseCommand extends Command
         $parser = new VersionParser();
 
         return $parser->parseNameVersionPairs($requirements);
+    }
+
+    protected function renderTable(array $table, OutputInterface $output)
+    {
+        $renderer = new Table($output);
+        $renderer->setStyle('compact');
+        $rendererStyle = $renderer->getStyle();
+        if (method_exists($rendererStyle, 'setVerticalBorderChars')) {
+            $rendererStyle->setVerticalBorderChars('');
+        } else {
+            $rendererStyle->setVerticalBorderChar('');
+        }
+        $rendererStyle->setCellRowContentFormat('%s  ');
+        $renderer->setRows($table)->render();
     }
 }
