@@ -748,6 +748,7 @@ By default the command checks for the packages on packagist.org.
 * **--ignore-platform-req:** ignore a specific platform requirement(`php`,
   `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
   does not fulfill it.
+* **--ask:** Ask user to provide target directory for new project.
 
 ## dump-autoload (dumpautoload)
 

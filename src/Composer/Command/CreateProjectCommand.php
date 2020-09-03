@@ -84,6 +84,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
+                new InputOption('ask', null, InputOption::VALUE_NONE, 'Whether to ask for project directory.'),
             ))
             ->setHelp(
                 <<<EOT
@@ -128,6 +129,10 @@ EOT
         if ($input->getOption('no-custom-installers')) {
             $io->writeError('<warning>You are using the deprecated option "no-custom-installers". Use "no-plugins" instead.</warning>');
             $input->setOption('no-plugins', true);
+        }
+
+        if ($input->isInteractive() && $input->getOption('ask')) {
+            $input->setArgument('directory', $io->ask('New project directory <comment>[optional]</comment>: '));
         }
 
         $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
