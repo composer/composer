@@ -606,6 +606,7 @@ class PoolBuilder
         $total = \count($this->packages);
 
         $this->unlearnLoadPackageOperationTracesFromReplacedPackages();
+        $this->evenLoadPackageOperationTraces();
         $this->applyOptimizations();
 
         $filtered = $total - \count($this->packages);
@@ -721,6 +722,46 @@ class PoolBuilder
                 foreach ($operations as $i => $operation) {
                     if ($operation->getSource() === $replacedPackage->getName() && $operation->getSourceVersion() === $replacedPackage->getVersion()) {
                         unset($this->loadPackageOperationsTrace[$targetPackage][$i]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Let's say packageA in version 1.0.0 required packageB in ^2.0
+     * and in later versions that dependency was removed. We are not
+     * allowed to use ^2.0 as a hard constraint then so we need
+     * to "even out" these ones by allowing any version of that
+     * package found on this level.
+     */
+    private function evenLoadPackageOperationTraces()
+    {
+        $requiredPackageNamesOverAllSourceVersions = array();
+        $requiredPackageNamesPerSourceVersion = array();
+
+        // Collect all packages required in any version and per version
+        foreach ($this->loadPackageOperationsTrace as $targetPackage => $operations) {
+            foreach ($operations as $operation) {
+                $requiredPackageNamesOverAllSourceVersions[$operation->getLevelFoundOn()][$operation->getSource()][$operation->getTarget()] = true;
+                $requiredPackageNamesPerSourceVersion[$operation->getLevelFoundOn()][$operation->getSource()][$operation->getSourceVersion()][] = $operation->getTarget();
+            }
+        }
+
+        // Even out
+        foreach ($requiredPackageNamesPerSourceVersion as $levelFoundOn => $sources) {
+            foreach ($sources as $source => $info) {
+                foreach ($info as $sourceVersion => $targetPackages) {
+                    if ($packagesToEvenOut = array_diff(array_keys($requiredPackageNamesOverAllSourceVersions[$levelFoundOn][$source]), $targetPackages)) {
+                        foreach ($packagesToEvenOut as $packageName) {
+                            $this->traceLoadPackageOperation($packageName, new LoadPackageOperation(
+                                $source,
+                                $sourceVersion,
+                                $packageName,
+                                new MatchAllConstraint(),
+                                $levelFoundOn
+                            ));
+                        }
                     }
                 }
             }
