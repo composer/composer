@@ -299,7 +299,12 @@ class RemoteFilesystem
                 $e = new TransportException('Content-Length mismatch, received '.Platform::strlen($result).' bytes out of the expected '.$contentLength);
                 $e->setHeaders($http_response_header);
                 $e->setStatusCode($this->findStatusCode($http_response_header));
-                $e->setResponse($this->decodeResult($result, $http_response_header));
+                try {
+                    $e->setResponse($this->decodeResult($result, $http_response_header));
+                } catch (\Exception $e) {
+                    $e->setResponse($result);
+                }
+
                 $this->io->writeError('Content-Length mismatch, received '.Platform::strlen($result).' out of '.$contentLength.' bytes: (' . base64_encode($result).')', true, IOInterface::DEBUG);
 
                 throw $e;
