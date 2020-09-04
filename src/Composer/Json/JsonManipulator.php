@@ -117,7 +117,7 @@ class JsonManipulator
     private function sortPackages(array &$packages = array())
     {
         $prefix = function ($requirement) {
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $requirement)) {
+            if (PlatformRepository::isPlatformPackage($requirement)) {
                 return preg_replace(
                     array(
                         '/^php/',

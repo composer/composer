@@ -74,7 +74,7 @@ class PlatformRepository extends ArrayRepository
         // Later we might even replace the extensions instead.
         foreach ($this->overrides as $override) {
             // Check that it's a platform package.
-            if (!preg_match(self::PLATFORM_PACKAGE_REGEX, $override['name'])) {
+            if (!self::isPlatformPackage($override['name'])) {
                 throw new \InvalidArgumentException('Invalid platform package name in config.platform: '.$override['name']);
             }
 

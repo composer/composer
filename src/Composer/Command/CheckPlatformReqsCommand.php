@@ -82,7 +82,7 @@ EOT
          * @var Link[] $links
          */
         foreach ($requires as $require => $links) {
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $require)) {
+            if (PlatformRepository::isPlatformPackage($require)) {
                 $candidates = $installedRepo->findPackagesWithReplacersAndProviders($require);
                 if ($candidates) {
                     $reqResults = array();

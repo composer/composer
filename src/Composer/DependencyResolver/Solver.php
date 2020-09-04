@@ -169,7 +169,7 @@ class Solver
     protected function checkForRootRequireProblems(Request $request, $ignorePlatformReqs)
     {
         foreach ($request->getRequires() as $packageName => $constraint) {
-            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($packageName, $ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $packageName)) {
+            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($packageName, $ignorePlatformReqs, true))) && PlatformRepository::isPlatformPackage($packageName)) {
                 continue;
             }
 

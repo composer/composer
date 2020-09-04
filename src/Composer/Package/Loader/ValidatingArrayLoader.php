@@ -249,7 +249,7 @@ class ValidatingArrayLoader implements LoaderInterface
                             ($this->flags & self::CHECK_UNBOUND_CONSTRAINTS)
                             && 'require' === $linkType
                             && $linkConstraint->matches($unboundConstraint)
-                            && !preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $package)
+                            && !PlatformRepository::isPlatformPackage($package)
                         ) {
                             $this->warnings[] = $linkType.'.'.$package.' : unbound version constraints ('.$constraint.') should be avoided';
                         } elseif (
@@ -372,7 +372,7 @@ class ValidatingArrayLoader implements LoaderInterface
 
     public static function hasPackageNamingError($name, $isLink = false)
     {
-        if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name)) {
+        if (PlatformRepository::isPlatformPackage($name)) {
             return;
         }
 

@@ -761,7 +761,7 @@ class Installer
         $rootRequires = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
-            if ((true === $this->ignorePlatformReqs || (is_array($this->ignorePlatformReqs) && in_array($req, $this->ignorePlatformReqs, true))) && preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req)) {
+            if ((true === $this->ignorePlatformReqs || (is_array($this->ignorePlatformReqs) && in_array($req, $this->ignorePlatformReqs, true))) && PlatformRepository::isPlatformPackage($req)) {
                 continue;
             }
             if ($constraint instanceof Link) {
@@ -870,7 +870,7 @@ class Installer
     {
         $platformReqs = array();
         foreach ($links as $link) {
-            if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+            if (PlatformRepository::isPlatformPackage($link->getTarget())) {
                 $platformReqs[$link->getTarget()] = $link->getPrettyConstraint();
             }
         }
@@ -1152,7 +1152,7 @@ class Installer
     {
         if (is_array($ignorePlatformReqs)) {
             $this->ignorePlatformReqs = array_filter($ignorePlatformReqs, function ($req) {
-                return (bool) preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $req);
+                return PlatformRepository::isPlatformPackage($req);
             });
         } else {
             $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;

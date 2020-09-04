@@ -169,7 +169,7 @@ class InstalledRepository extends CompositeRepository
             // When inverting, we need to check for conflicts of the needles' requirements against installed packages
             if ($invert && $constraint && in_array($package->getName(), $needles) && $constraint->matches(new Constraint('=', $package->getVersion()))) {
                 foreach ($package->getRequires() as $link) {
-                    if (preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $link->getTarget())) {
+                    if (PlatformRepository::isPlatformPackage($link->getTarget())) {
                         if ($this->findPackage($link->getTarget(), $link->getConstraint())) {
                             continue;
                         }
