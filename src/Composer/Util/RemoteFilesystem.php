@@ -299,7 +299,12 @@ class RemoteFilesystem
                 $e = new TransportException('Content-Length mismatch, received '.Platform::strlen($result).' bytes out of the expected '.$contentLength);
                 $e->setHeaders($http_response_header);
                 $e->setStatusCode($this->findStatusCode($http_response_header));
-                $e->setResponse($result);
+                try {
+                    $e->setResponse($this->decodeResult($result, $http_response_header));
+                } catch (\Exception $e) {
+                    $e->setResponse($result);
+                }
+
                 $this->io->writeError('Content-Length mismatch, received '.Platform::strlen($result).' out of '.$contentLength.' bytes: (' . base64_encode($result).')', true, IOInterface::DEBUG);
 
                 throw $e;
@@ -322,7 +327,7 @@ class RemoteFilesystem
                 $e->setStatusCode($this->findStatusCode($http_response_header));
             }
             if ($e instanceof TransportException && $result !== false) {
-                $e->setResponse($result);
+                $e->setResponse($this->decodeResult($result, $http_response_header));
             }
             $result = false;
         }
@@ -394,7 +399,7 @@ class RemoteFilesystem
 
                 $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
                 $e->setHeaders($http_response_header);
-                $e->setResponse($result);
+                $e->setResponse($this->decodeResult($result, $http_response_header));
                 $e->setStatusCode($statusCode);
                 throw $e;
             }
@@ -407,35 +412,21 @@ class RemoteFilesystem
 
         // decode gzip
         if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http' && !$hasFollowedRedirect) {
-            $contentEncoding = Response::findHeaderValue($http_response_header, 'content-encoding');
-            $decode = $contentEncoding && 'gzip' === strtolower($contentEncoding);
-
-            if ($decode) {
-                try {
-                    if (PHP_VERSION_ID >= 50400) {
-                        $result = zlib_decode($result);
-                    } else {
-                        // work around issue with gzuncompress & co that do not work with all gzip checksums
-                        $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
-                    }
-
-                    if (!$result) {
-                        throw new TransportException('Failed to decode zlib stream');
-                    }
-                } catch (\Exception $e) {
-                    if ($this->degradedMode) {
-                        throw $e;
-                    }
-
-                    $this->degradedMode = true;
-                    $this->io->writeError(array(
-                        '',
-                        '<error>Failed to decode response: '.$e->getMessage().'</error>',
-                        '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
-                    ));
-
-                    return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
+            try {
+                $result = $this->decodeResult($result, $http_response_header);
+            } catch (\Exception $e) {
+                if ($this->degradedMode) {
+                    throw $e;
                 }
+
+                $this->degradedMode = true;
+                $this->io->writeError(array(
+                    '',
+                    '<error>Failed to decode response: '.$e->getMessage().'</error>',
+                    '<error>Retrying with degraded mode, check https://getcomposer.org/doc/articles/troubleshooting.md#degraded-mode for more info</error>',
+                ));
+
+                return $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
             }
         }
 
@@ -737,7 +728,7 @@ class RemoteFilesystem
         if (!$this->retry) {
             $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded, got redirect without Location ('.$http_response_header[0].')');
             $e->setHeaders($http_response_header);
-            $e->setResponse($result);
+            $e->setResponse($this->decodeResult($result, $http_response_header));
 
             throw $e;
         }
@@ -813,5 +804,29 @@ class RemoteFilesystem
         $port = parse_url($url, PHP_URL_PORT) ?: $defaultPort;
 
         return parse_url($url, PHP_URL_HOST).':'.$port;
+    }
+
+    private function decodeResult($result, $http_response_header)
+    {
+        // decode gzip
+        if ($result && extension_loaded('zlib')) {
+            $contentEncoding = Response::findHeaderValue($http_response_header, 'content-encoding');
+            $decode = $contentEncoding && 'gzip' === strtolower($contentEncoding);
+
+            if ($decode) {
+                if (PHP_VERSION_ID >= 50400) {
+                    $result = zlib_decode($result);
+                } else {
+                    // work around issue with gzuncompress & co that do not work with all gzip checksums
+                    $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
+                }
+
+                if (!$result) {
+                    throw new TransportException('Failed to decode zlib stream');
+                }
+            }
+        }
+
+        return $result;
     }
 }
