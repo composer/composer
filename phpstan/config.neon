@@ -1,5 +1,5 @@
 parameters:
-    level: 1
+    level: 2
     excludes_analyse:
        - '../tests/Composer/Test/Fixtures/*'
        - '../tests/Composer/Test/Autoload/Fixtures/*'
