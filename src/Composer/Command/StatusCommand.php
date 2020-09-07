@@ -121,7 +121,7 @@ EOT
             }
 
             if ($downloader instanceof VcsCapableDownloaderInterface) {
-                if ($currentRef = $downloader->getVcsReference($package, $targetDir)) {
+                if ($downloader->getVcsReference($package, $targetDir)) {
                     switch ($package->getInstallationSource()) {
                         case 'source':
                             $previousRef = $package->getSourceReference();

@@ -50,7 +50,6 @@ EOT
         $requires = array();
         if ($input->getOption('no-dev')) {
             $installedRepo = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'));
-            $dependencies = $installedRepo->getPackages();
         } else {
             $installedRepo = $composer->getRepositoryManager()->getLocalRepository();
             // fallback to lockfile if installed repo is empty
