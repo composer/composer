@@ -474,7 +474,7 @@ EOT
             ),
         );
 
-        if ((isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey])) && $input->getOption('unset')) {
+        if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {
             if ($settingKey === 'disable-tls' && $this->config->get('disable-tls')) {
                 $this->getIO()->writeError('<info>You are now running Composer with SSL/TLS protection enabled.</info>');
             }
@@ -568,7 +568,7 @@ EOT
         if ($input->getOption('global') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]) || substr($settingKey, 0, 6) === 'extra.')) {
             throw new \InvalidArgumentException('The '.$settingKey.' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global composer.json');
         }
-        if ((isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey])) && $input->getOption('unset')) {
+        if ($input->getOption('unset') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]))) {
             $this->configSource->removeProperty($settingKey);
 
             return 0;
@@ -605,7 +605,7 @@ EOT
                 $value = strtolower($values[0]);
                 if (true === $booleanValidator($value)) {
                     if (false === $booleanNormalizer($value)) {
-                        $this->configSource->addRepository($matches[1], []);
+                        $this->configSource->addRepository($matches[1], false);
 
                         return 0;
                     }
