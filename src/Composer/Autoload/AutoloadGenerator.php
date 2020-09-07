@@ -611,7 +611,13 @@ EOF;
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
             foreach (array_merge($package->getReplaces(), $package->getProvides()) as $link) {
-                if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
+	            $linkTarget = $link->getTarget();
+
+            	if (
+	                strpos($linkTarget, 'ext-') === 0
+	                &&
+                	preg_match('{^ext-(.+)$}iD', $linkTarget, $match)
+                ) {
                     $extensionProviders[$match[1]][] = $link->getConstraint() ?: new MatchAllConstraint();
                 }
             }
@@ -620,17 +626,27 @@ EOF;
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
             foreach ($package->getRequires() as $link) {
-                if (in_array($link->getTarget(), $ignorePlatformReqs, true)) {
+	            $linkTarget = $link->getTarget();
+
+                if (in_array($linkTarget, $ignorePlatformReqs, true)) {
                     continue;
                 }
 
-                if ('php' === $link->getTarget() && ($constraint = $link->getConstraint())) {
-                    if ($constraint->getLowerBound()->compareTo($lowestPhpVersion, '>')) {
-                        $lowestPhpVersion = $constraint->getLowerBound();
-                    }
+                if (
+	                'php' === $linkTarget
+	                &&
+	                ($constraint = $link->getConstraint())
+	                &&
+	                $constraint->getLowerBound()->compareTo($lowestPhpVersion, '>')
+                ) {
+                    $lowestPhpVersion = $constraint->getLowerBound();
                 }
 
-                if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
+                if (
+                	strpos($linkTarget, 'ext-') === 0
+	                &&
+                	preg_match('{^ext-(.+)$}iD', $linkTarget, $match)
+                ) {
                     // skip extension checks if they have a valid provider/replacer
                     if (isset($extensionProviders[$match[1]])) {
                         foreach ($extensionProviders[$match[1]] as $provided) {
