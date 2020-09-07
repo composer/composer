@@ -236,10 +236,6 @@ class ClassMapGenerator
 			throw new \RuntimeException(sprintf($message, $path));
 		}
 
-		if (strpos($contents, '<?') === false) {
-			return array();
-		}
-
 		$found = array();
 		if (stripos($contents, 'class') !== false) {
 			$found[] = 'class';
@@ -277,7 +273,12 @@ class ClassMapGenerator
 		$contents = preg_replace('{"[^"]*+(?:[^"]*+)*+"|\'[^\']*+(?:[^\']*+)*+\'}', 'null', $contents);
 
 		// strip leading non-php code if needed
-		$contents = preg_replace('{^.+?<\?}s', '<?', $contents, 1);
+		if (strpos($contents, '<?') !== 0) {
+			$contents = preg_replace('{^.+?<\?}s', '<?', $contents, 1, $replacements);
+			if ($replacements === 0) {
+				return array();
+			}
+		}
 
 		// strip non-php blocks in the file
 		if (strpos($contents, '?>') !== false) {
