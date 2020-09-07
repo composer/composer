@@ -568,13 +568,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 } elseif ($useLastModifiedCheck) {
                     if ($contents = $this->cache->read($cacheKey)) {
                         $contents = json_decode($contents, true);
-                        if (isset($contents['last-modified'])) {
-                            if (isset($alreadyLoaded[$name])) {
-                                $packages = $contents;
-                            } else {
-                                $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
-                                $packages = true === $response ? $contents : $response;
-                            }
+                        // we already loaded some packages from this file, so assume it is fresh and avoid fetching it again
+                        if (isset($alreadyLoaded[$name])) {
+                            $packages = $contents;
+                        } elseif (isset($contents['last-modified'])) {
+                            $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
+                            $packages = true === $response ? $contents : $response;
                         }
                     }
                 }
