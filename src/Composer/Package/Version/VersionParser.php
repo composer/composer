@@ -79,7 +79,7 @@ class VersionParser extends SemverVersionParser
         $normalizedFrom = str_replace(array('dev-master', 'dev-trunk', 'dev-default'), VersionParser::DEFAULT_BRANCH_ALIAS, $normalizedFrom);
         $normalizedTo = str_replace(array('dev-master', 'dev-trunk', 'dev-default'), VersionParser::DEFAULT_BRANCH_ALIAS, $normalizedTo);
 
-        if (substr($normalizedFrom, 0, 4) === 'dev-' || substr($normalizedTo, 0, 4) === 'dev-') {
+        if (strpos($normalizedFrom, 'dev-') === 0 || strpos($normalizedTo, 'dev-') === 0) {
             return true;
         }
 

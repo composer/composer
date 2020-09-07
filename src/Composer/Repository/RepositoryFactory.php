@@ -46,7 +46,7 @@ class RepositoryFactory
             } else {
                 throw new \InvalidArgumentException("Invalid repository URL ($repository) given. This file does not contain a valid composer repository.");
             }
-        } elseif ('{' === substr($repository, 0, 1)) {
+        } elseif (strpos($repository, '{') === 0) {
             // assume it is a json object that makes a repo config
             $repoConfig = JsonFile::parseJson($repository);
         } else {

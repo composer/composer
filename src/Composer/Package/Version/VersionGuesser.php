@@ -20,8 +20,6 @@ use Composer\Util\Git as GitUtil;
 use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
-use Composer\Util\Platform;
-use Composer\Package\Version\VersionParser;
 
 
 /**
@@ -96,7 +94,7 @@ class VersionGuesser
 
     private function postprocess(array $versionData)
     {
-        if (!empty($versionData['feature_version']) && $versionData['feature_version'] === $versionData['version'] && $versionData['feature_pretty_version'] === $versionData['feature_pretty_version']) {
+        if (!empty($versionData['feature_version']) && $versionData['feature_version'] === $versionData['version']) {
             unset($versionData['feature_version'], $versionData['feature_pretty_version']);
         }
 
@@ -129,7 +127,8 @@ class VersionGuesser
             // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\(HEAD detached at \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
-                    if ($match[1] === '(no branch)' || substr($match[1], 0, 10) === '(detached ' || substr($match[1], 0, 17) === '(HEAD detached at') {
+                    if ($match[1] === '(no branch)' || strpos($match[1], '(detached ') === 0 || strpos($match[1],
+                            '(HEAD detached at') === 0) {
                         $version = 'dev-' . $match[2];
                         $prettyVersion = $version;
                         $isFeatureBranch = true;

@@ -166,7 +166,7 @@ EOT
             }
         }
 
-        if ($requestedChannel && is_numeric($requestedChannel) && substr($latestStable['version'], 0, 1) !== $requestedChannel) {
+        if ($requestedChannel && is_numeric($requestedChannel) && strpos($latestStable['version'], $requestedChannel) !== 0) {
             $io->writeError('<warning>Warning: You forced the install of '.$latestVersion.' via --'.$requestedChannel.', but '.$latestStable['version'].' is the latest stable version. Updating to it via composer self-update --stable is recommended.</warning>');
         }
 

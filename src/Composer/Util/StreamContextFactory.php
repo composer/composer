@@ -57,7 +57,7 @@ final class StreamContextFactory
     /**
      * @param string $url
      * @param array $options
-     * @psalm-return array{http:{header: string[], proxy?: string, request_fulluri: bool}, ssl: array} 
+     * @psalm-return array{http:{header: string[], proxy?: string, request_fulluri: bool}, ssl: array}
      * @return array formatted as a stream context array
      */
     public static function initOptions($url, array $options)
@@ -99,9 +99,9 @@ final class StreamContextFactory
 
             if (isset($proxy['port'])) {
                 $proxyURL .= ":" . $proxy['port'];
-            } elseif ('http://' == substr($proxyURL, 0, 7)) {
+            } elseif (strpos($proxyURL, 'http://') === 0) {
                 $proxyURL .= ":80";
-            } elseif ('https://' == substr($proxyURL, 0, 8)) {
+            } elseif (strpos($proxyURL, 'https://') === 0) {
                 $proxyURL .= ":443";
             }
 

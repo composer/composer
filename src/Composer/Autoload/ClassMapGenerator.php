@@ -251,7 +251,7 @@ class ClassMapGenerator
         // strip strings
         $contents = preg_replace('{"[^"\\\\]*+(\\\\.[^"\\\\]*+)*+"|\'[^\'\\\\]*+(\\\\.[^\'\\\\]*+)*+\'}s', 'null', $contents);
         // strip leading non-php code if needed
-        if (substr($contents, 0, 2) !== '<?') {
+        if (strpos($contents, '<?') !== 0) {
             $contents = preg_replace('{^.+?<\?}s', '<?', $contents, 1, $replacements);
             if ($replacements === 0) {
                 return array();
