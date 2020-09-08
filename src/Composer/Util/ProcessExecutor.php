@@ -158,13 +158,13 @@ class ProcessExecutor
         $io = $this->io;
 
         $canceler = function () use (&$job) {
-            if ($job['status'] === self::STATUS_QUEUED) {
-                $job['status'] = self::STATUS_ABORTED;
+            if ($job['status'] === ProcessExecutor::STATUS_QUEUED) {
+                $job['status'] = ProcessExecutor::STATUS_ABORTED;
             }
-            if ($job['status'] !== self::STATUS_STARTED) {
+            if ($job['status'] !== ProcessExecutor::STATUS_STARTED) {
                 return;
             }
-            $job['status'] = self::STATUS_ABORTED;
+            $job['status'] = ProcessExecutor::STATUS_ABORTED;
             try {
                 if (defined('SIGINT')) {
                     $job['process']->signal(SIGINT);
