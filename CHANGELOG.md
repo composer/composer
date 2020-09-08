@@ -1,3 +1,7 @@
+### [1.10.12] 2020-09-08
+
+  * Fixed regressions with old version validation
+
 ### [1.10.11] 2020-09-08
 
   * Fixed more PHP 8 compatibility issues
@@ -885,6 +889,7 @@
 
   * Initial release
 
+[1.10.12]: https://github.com/composer/composer/compare/1.10.11...1.10.12
 [1.10.11]: https://github.com/composer/composer/compare/1.10.10...1.10.11
 [1.10.10]: https://github.com/composer/composer/compare/1.10.9...1.10.10
 [1.10.9]: https://github.com/composer/composer/compare/1.10.8...1.10.9
