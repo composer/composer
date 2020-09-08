@@ -94,7 +94,7 @@ class VersionGuesser
 
     private function postprocess(array $versionData)
     {
-        if (!empty($versionData['feature_version']) && $versionData['feature_version'] === $versionData['version']) {
+        if (!empty($versionData['feature_version']) && $versionData['feature_version'] === $versionData['version'] && $versionData['feature_pretty_version'] === $versionData['pretty_version']) {
             unset($versionData['feature_version'], $versionData['feature_pretty_version']);
         }
 
