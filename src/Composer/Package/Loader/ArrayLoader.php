@@ -334,7 +334,7 @@ class ArrayLoader implements LoaderInterface
      */
     public function getBranchAlias(array $config)
     {
-        if ('dev-' !== substr($config['version'], 0, 4) && '-dev' !== substr($config['version'], -4)) {
+        if (strpos($config['version'], 'dev-') !== 0 && '-dev' !== substr($config['version'], -4)) {
             return;
         }
 

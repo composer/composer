@@ -139,7 +139,7 @@ class Svn
             if ($type !== 'out') {
                 return;
             }
-            if ('Redirecting to URL ' === substr($buffer, 0, 19)) {
+            if (strpos($buffer, 'Redirecting to URL ') === 0) {
                 return;
             }
             $output .= $buffer;

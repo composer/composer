@@ -116,8 +116,8 @@ class DefaultPolicy implements PolicyInterface
             if ($requiredPackage && false !== ($pos = strpos($requiredPackage, '/'))) {
                 $requiredVendor = substr($requiredPackage, 0, $pos);
 
-                $aIsSameVendor = substr($a->getName(), 0, $pos) === $requiredVendor;
-                $bIsSameVendor = substr($b->getName(), 0, $pos) === $requiredVendor;
+                $aIsSameVendor = strpos($a->getName(), $requiredVendor) === 0;
+                $bIsSameVendor = strpos($b->getName(), $requiredVendor) === 0;
 
                 if ($bIsSameVendor !== $aIsSameVendor) {
                     return $aIsSameVendor ? -1 : 1;

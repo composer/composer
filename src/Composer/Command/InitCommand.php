@@ -120,7 +120,7 @@ EOT
         }
 
         $file = new JsonFile(Factory::getComposerFile());
-        $json = $file->encode($options);
+        $json = JsonFile::encode($options);
 
         if ($input->isInteractive()) {
             $io->writeError(array('', $json, ''));
@@ -655,7 +655,7 @@ EOT
         if (file_exists($ignoreFile)) {
             $contents = file_get_contents($ignoreFile);
 
-            if ("\n" !== substr($contents, 0, -1)) {
+            if (strpos($contents, "\n") !== 0) {
                 $contents .= "\n";
             }
         }

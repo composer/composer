@@ -12,17 +12,12 @@
 
 namespace Composer\EventDispatcher;
 
-use Composer\DependencyResolver\PolicyInterface;
-use Composer\DependencyResolver\Request;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
-use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryInterface;
-use Composer\Repository\RepositorySet;
 use Composer\Script;
 use Composer\Installer\PackageEvent;
 use Composer\Installer\BinaryInstaller;
@@ -177,7 +172,7 @@ class EventDispatcher
 
                 $args = array_merge($script, $event->getArguments());
                 $flags = $event->getFlags();
-                if (substr($callable, 0, 10) === '@composer ') {
+                if (strpos($callable, '@composer ') === 0) {
                     $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
                     if (0 !== ($exitCode = $this->executeTty($exec))) {
                         $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
@@ -239,11 +234,12 @@ class EventDispatcher
                     }
                 }
 
-                if (substr($exec, 0, 8) === '@putenv ') {
+                if (strpos($exec, '@putenv ') === 0) {
                     putenv(substr($exec, 8));
 
                     continue;
-                } elseif (substr($exec, 0, 5) === '@php ') {
+                }
+                if (strpos($exec, '@php ') === 0) {
                     $exec = $this->getPhpExecCommand() . ' ' . substr($exec, 5);
                 } else {
                     $finder = new PhpExecutableFinder();
@@ -257,7 +253,7 @@ class EventDispatcher
                 // if composer is being executed, make sure it runs the expected composer from current path
                 // resolution, even if bin-dir contains composer too because the project requires composer/composer
                 // see https://github.com/composer/composer/issues/8748
-                if (substr($exec, 0, 9) === 'composer ') {
+                if (strpos($exec, 'composer ') === 0) {
                     $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . substr($exec, 8);
                 }
 
@@ -472,7 +468,7 @@ class EventDispatcher
      */
     protected function isComposerScript($callable)
     {
-        return '@' === substr($callable, 0, 1) && '@php ' !== substr($callable, 0, 5) && '@putenv ' !== substr($callable, 0, 8);
+        return strpos($callable, '@') === 0 && strpos($callable, '@php ') !== 0 && strpos($callable, '@putenv ') !== 0;
     }
 
     /**

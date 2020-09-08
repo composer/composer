@@ -17,7 +17,6 @@ use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
-use Composer\Util\HttpDownloader;
 use Composer\Util\Http\Response;
 
 /**
@@ -41,7 +40,6 @@ class RemoteFilesystem
     private $options = array();
     private $peerCertificateMap = array();
     private $disableTls = false;
-    private $retryAuthFailure;
     private $lastHeaders;
     private $storeAuth;
     private $authHelper;
@@ -206,13 +204,13 @@ class RemoteFilesystem
         $this->fileName = $fileName;
         $this->progress = $progress;
         $this->lastProgress = null;
-        $this->retryAuthFailure = true;
+        $retryAuthFailure = true;
         $this->lastHeaders = array();
         $this->redirects = 1; // The first request counts.
 
         $tempAdditionalOptions = $additionalOptions;
         if (isset($tempAdditionalOptions['retry-auth-failure'])) {
-            $this->retryAuthFailure = (bool) $tempAdditionalOptions['retry-auth-failure'];
+            $retryAuthFailure = (bool) $tempAdditionalOptions['retry-auth-failure'];
 
             unset($tempAdditionalOptions['retry-auth-failure']);
         }
@@ -239,7 +237,7 @@ class RemoteFilesystem
             $options['http']['ignore_errors'] = true;
         }
 
-        if ($this->degradedMode && substr($fileUrl, 0, 26) === 'http://repo.packagist.org/') {
+        if ($this->degradedMode && strpos($fileUrl, 'http://repo.packagist.org/') === 0) {
             // access packagist using the resolved IPv4 instead of the hostname to force IPv4 protocol
             $fileUrl = 'http://' . gethostbyname('repo.packagist.org') . substr($fileUrl, 20);
             $degradedPackagist = true;
@@ -255,7 +253,7 @@ class RemoteFilesystem
 
         $actualContextOptions = stream_context_get_options($ctx);
         $usingProxy = !empty($actualContextOptions['http']['proxy']) ? ' using proxy ' . $actualContextOptions['http']['proxy'] : '';
-        $this->io->writeError((substr($origFileUrl, 0, 4) === 'http' ? 'Downloading ' : 'Reading ') . Url::sanitize($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
+        $this->io->writeError((strpos($origFileUrl, 'http') === 0 ? 'Downloading ' : 'Reading ') . Url::sanitize($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
         unset($origFileUrl, $actualContextOptions);
 
         // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
@@ -283,12 +281,12 @@ class RemoteFilesystem
             $result = $this->getRemoteContents($originUrl, $fileUrl, $ctx, $http_response_header, $maxFileSize);
 
             if (!empty($http_response_header[0])) {
-                $statusCode = $this->findStatusCode($http_response_header);
+                $statusCode = self::findStatusCode($http_response_header);
                 if ($statusCode >= 400 && Response::findHeaderValue($http_response_header, 'content-type') === 'application/json') {
                     HttpDownloader::outputWarnings($this->io, $originUrl, json_decode($result, true));
                 }
 
-                if (in_array($statusCode, array(401, 403)) && $this->retryAuthFailure) {
+                if (in_array($statusCode, array(401, 403)) && $retryAuthFailure) {
                     $this->promptAuthAndRetry($statusCode, $this->findStatusMessage($http_response_header), $http_response_header);
                 }
             }
@@ -298,7 +296,7 @@ class RemoteFilesystem
                 // alas, this is not possible via the stream callback because STREAM_NOTIFY_COMPLETED is documented, but not implemented anywhere in PHP
                 $e = new TransportException('Content-Length mismatch, received '.Platform::strlen($result).' bytes out of the expected '.$contentLength);
                 $e->setHeaders($http_response_header);
-                $e->setStatusCode($this->findStatusCode($http_response_header));
+                $e->setStatusCode(self::findStatusCode($http_response_header));
                 try {
                     $e->setResponse($this->decodeResult($result, $http_response_header));
                 } catch (\Exception $e) {
@@ -324,7 +322,7 @@ class RemoteFilesystem
         } catch (\Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
-                $e->setStatusCode($this->findStatusCode($http_response_header));
+                $e->setStatusCode(self::findStatusCode($http_response_header));
             }
             if ($e instanceof TransportException && $result !== false) {
                 $e->setResponse($this->decodeResult($result, $http_response_header));
@@ -354,7 +352,7 @@ class RemoteFilesystem
         $contentType = null;
         $locationHeader = null;
         if (!empty($http_response_header[0])) {
-            $statusCode = $this->findStatusCode($http_response_header);
+            $statusCode = self::findStatusCode($http_response_header);
             $contentType = Response::findHeaderValue($http_response_header, 'content-type');
             $locationHeader = Response::findHeaderValue($http_response_header, 'location');
         }
@@ -367,7 +365,7 @@ class RemoteFilesystem
             && $contentType && preg_match('{^text/html\b}i', $contentType)
         ) {
             $result = false;
-            if ($this->retryAuthFailure) {
+            if ($retryAuthFailure) {
                 $this->promptAuthAndRetry(401);
             }
         }
@@ -378,7 +376,7 @@ class RemoteFilesystem
             && false !== strpos($fileUrl, 'archive.zip')
         ) {
             $result = false;
-            if ($this->retryAuthFailure) {
+            if ($retryAuthFailure) {
                 $this->promptAuthAndRetry(401);
             }
         }
@@ -411,7 +409,7 @@ class RemoteFilesystem
         }
 
         // decode gzip
-        if ($result && extension_loaded('zlib') && substr($fileUrl, 0, 4) === 'http' && !$hasFollowedRedirect) {
+        if ($result && extension_loaded('zlib') && strpos($fileUrl, 'http') === 0 && !$hasFollowedRedirect) {
             try {
                 $result = $this->decodeResult($result, $http_response_header);
             } catch (\Exception $e) {
@@ -558,6 +556,7 @@ class RemoteFilesystem
             throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($result) . ' of allowed ' .  $maxFileSize . ' bytes');
         }
 
+        // https://www.php.net/manual/en/reserved.variables.httpresponseheader.php
         $responseHeaders = isset($http_response_header) ? $http_response_header : array();
 
         if (null !== $e) {

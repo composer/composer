@@ -148,7 +148,7 @@ EOT
         $io->write('Checking disk free space: ', false);
         $this->outputResult($this->checkDiskSpace($config));
 
-        if ('phar:' === substr(__FILE__, 0, 5)) {
+        if (strpos(__FILE__, 'phar:') === 0) {
             $io->write('Checking pubkeys: ', false);
             $this->outputResult($this->checkPubKeys($config));
 

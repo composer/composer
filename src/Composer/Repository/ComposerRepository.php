@@ -20,8 +20,6 @@ use Composer\Package\Version\StabilityFilter;
 use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
-use Composer\Composer;
-use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Semver\CompilingMatcher;
 use Composer\Util\HttpDownloader;
@@ -36,7 +34,6 @@ use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Http\Response;
 use Composer\Util\MetadataMinifier;
 use Composer\Util\Url;
-use React\Promise\Promise;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -815,7 +812,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $this->rootData;
         }
 
-        if (!extension_loaded('openssl') && 'https' === substr($this->url, 0, 5)) {
+        if (!extension_loaded('openssl') && strpos($this->url, 'https') === 0) {
             throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
 

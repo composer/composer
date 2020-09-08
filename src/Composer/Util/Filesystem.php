@@ -444,7 +444,7 @@ class Filesystem
      */
     public function isAbsolutePath($path)
     {
-        return substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':' || substr($path, 0, 2) === '\\\\';
+        return strpos($path, '/') === 0 || substr($path, 1, 1) === ':' || strpos($path, '\\\\') === 0;
     }
 
     /**
@@ -487,7 +487,7 @@ class Filesystem
             $path = substr($path, \strlen($prefix));
         }
 
-        if (substr($path, 0, 1) === '/') {
+        if (strpos($path, '/') === 0) {
             $absolute = true;
             $path = substr($path, 1);
         }

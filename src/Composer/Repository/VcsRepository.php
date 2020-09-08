@@ -302,10 +302,10 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             }
 
             // make sure branch packages have a dev flag
-            if ('dev-' === substr($parsedBranch, 0, 4) || VersionParser::DEFAULT_BRANCH_ALIAS === $parsedBranch) {
+            if (strpos($parsedBranch, 'dev-') === 0 || VersionParser::DEFAULT_BRANCH_ALIAS === $parsedBranch) {
                 $version = 'dev-' . $branch;
             } else {
-                $prefix = substr($branch, 0, 1) === 'v' ? 'v' : '';
+                $prefix = strpos($branch, 'v') === 0 ? 'v' : '';
                 $version = $prefix . preg_replace('{(\.9{7})+}', '.x', $parsedBranch);
             }
 
@@ -314,7 +314,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $this->addPackage($cachedPackage);
 
                 continue;
-            } elseif ($cachedPackage === false) {
+            }
+            if ($cachedPackage === false) {
                 $this->emptyReferences[] = $identifier;
 
                 continue;
