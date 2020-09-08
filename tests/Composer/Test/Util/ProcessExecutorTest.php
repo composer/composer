@@ -16,6 +16,7 @@ use Composer\IO\ConsoleIO;
 use Composer\Util\ProcessExecutor;
 use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
+use React\Promise\Promise;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
@@ -112,5 +113,16 @@ class ProcessExecutorTest extends TestCase
 
         $process->execute('php -r "echo \'<error>foo</error>\'.PHP_EOL;"');
         $this->assertSame('<error>foo</error>'.PHP_EOL, $output->fetch());
+    }
+
+    public function testExecuteAsyncCancel()
+    {
+        $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
+        $process->enableAsync();
+        /** @var Promise $promise */
+        $promise = $process->executeAsync('echo foo');
+        $this->assertEquals(1,  $process->countActiveJobs());
+        $promise->cancel();
+        $this->assertEquals(0,  $process->countActiveJobs());
     }
 }
