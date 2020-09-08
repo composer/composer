@@ -132,7 +132,8 @@ EOT
         }
 
         if ($input->isInteractive() && $input->getOption('ask')) {
-            $input->setArgument('directory', $io->ask('New project directory <comment>[optional]</comment>: '));
+            $parts = explode("/", strtolower($input->getArgument('package')), 2);
+            $input->setArgument('directory', $io->ask('New project directory [<comment>'.array_pop($parts).'</comment>]: '));
         }
 
         $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
