@@ -188,13 +188,13 @@ class HttpDownloader
         $curl = $this->curl;
 
         $canceler = function () use (&$job, $curl) {
-            if ($job['status'] === self::STATUS_QUEUED) {
-                $job['status'] = self::STATUS_ABORTED;
+            if ($job['status'] === HttpDownloader::STATUS_QUEUED) {
+                $job['status'] = HttpDownloader::STATUS_ABORTED;
             }
-            if ($job['status'] !== self::STATUS_STARTED) {
+            if ($job['status'] !== HttpDownloader::STATUS_STARTED) {
                 return;
             }
-            $job['status'] = self::STATUS_ABORTED;
+            $job['status'] = HttpDownloader::STATUS_ABORTED;
             if (isset($job['curl_id'])) {
                 $curl->abortRequest($job['curl_id']);
             }
