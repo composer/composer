@@ -1,3 +1,9 @@
+### [1.10.11] 2020-09-08
+
+  * Fixed more PHP 8 compatibility issues
+  * Fixed regression in handling of CTRL-C when xdebug is loaded
+  * Fixed `status` handling of broken symlinks
+
 ### [1.10.10] 2020-08-03
 
   * Fixed `create-project` not triggering events while installing the root package
@@ -879,6 +885,7 @@
 
   * Initial release
 
+[1.10.11]: https://github.com/composer/composer/compare/1.10.10...1.10.11
 [1.10.10]: https://github.com/composer/composer/compare/1.10.9...1.10.10
 [1.10.9]: https://github.com/composer/composer/compare/1.10.8...1.10.9
 [1.10.8]: https://github.com/composer/composer/compare/1.10.7...1.10.8
