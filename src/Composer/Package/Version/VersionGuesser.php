@@ -127,8 +127,11 @@ class VersionGuesser
             // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\(HEAD detached at \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
-                    if ($match[1] === '(no branch)' || strpos($match[1], '(detached ') === 0 || strpos($match[1],
-                            '(HEAD detached at') === 0) {
+                    if (
+                        $match[1] === '(no branch)'
+                        || strpos($match[1], '(detached ') === 0
+                        || strpos($match[1], '(HEAD detached at') === 0
+                    ) {
                         $version = 'dev-' . $match[2];
                         $prettyVersion = $version;
                         $isFeatureBranch = true;
