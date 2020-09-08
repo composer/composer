@@ -102,18 +102,18 @@ class Comparer
         if ($dh = opendir($dir)) {
             while ($file = readdir($dh)) {
                 if ($file !== '.' && $file !== '..') {
-                    if (is_dir($dir.'/'.$file)) {
+                    if (is_link($dir.'/'.$file)) {
+                        $array[$dir][$file] = readlink($dir.'/'.$file);
+                    } elseif (is_dir($dir.'/'.$file)) {
                         if (!count($array)) {
                             $array[0] = 'Temp';
                         }
                         if (!$this->doTree($dir.'/'.$file, $array)) {
                             return false;
                         }
-                    } else {
-                        if (filesize($dir.'/'.$file)) {
-                            set_time_limit(30);
-                            $array[$dir][$file] = md5_file($dir.'/'.$file);
-                        }
+                    } elseif (is_file($dir.'/'.$file) && filesize($dir.'/'.$file)) {
+                        set_time_limit(30);
+                        $array[$dir][$file] = md5_file($dir.'/'.$file);
                     }
                 }
             }
