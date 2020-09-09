@@ -57,6 +57,11 @@
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
 
+### [1.10.13] 2020-09-09
+
+  * Fixed regressions with old version validation
+  * Fixed invalid root aliases not being reported
+
 ### [1.10.12] 2020-09-08
 
   * Fixed regressions with old version validation
@@ -951,6 +956,7 @@
 [2.0.0-alpha3]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-alpha3
 [2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
+[1.10.13]: https://github.com/composer/composer/compare/1.10.12...1.10.13
 [1.10.12]: https://github.com/composer/composer/compare/1.10.11...1.10.12
 [1.10.11]: https://github.com/composer/composer/compare/1.10.10...1.10.11
 [1.10.10]: https://github.com/composer/composer/compare/1.10.9...1.10.10
