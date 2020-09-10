@@ -1,9 +1,21 @@
+### [2.0.0-RC1] 2020-09-10
+
+  * Added more advanced filtering to avoid loading all versions of all referenced packages when resolving dependencies, which should reduce memory usage further in some cases
+  * Added support for many new lib-* packages in the platform repository and improved version detection for some ext-* and lib-* packages
+  * Added an `--ask` flag to `create-project` command to make Composer prompt for the install dir name, [useful for project install instructions](https://github.com/composer/composer/pull/9181)
+  * Added support for tar in artifact repositories
+  * Added a `cache-read-only` config option to make the cache usable in read only mode for containers and such
+  * Added better error reporting for a few more specific cases
+  * Added a new optional `available-package-patterns` attribute for v2-format Composer repositories, see [UPGRADE](UPGRADE-2.0.md) for details
+  * Fixed more PHP 8 compatibility issues
+  * Lots of minor bug fixes for regressions
+
 ### [2.0.0-alpha3] 2020-08-03
 
   * Breaking: Zip archives loaded by artifact repositories must now have a composer.json on top level, or a max of one folder on top level of the archive
   * Added --no-dev support to `show` and `outdated` commands to skip dev requirements
   * Added support for multiple --repository flags being passed into the `create-project` command, only useful in combination with `--add-repository` to persist them to composer.json
-  * Added a new optional `list` API endpoint for v2-format composer repositories, see [UPGRADE](UPGRADE-2.0.md) for details
+  * Added a new optional `list` API endpoint for v2-format Composer repositories, see [UPGRADE](UPGRADE-2.0.md) for details
   * Fixed `show -a` command not listing anything
   * Fixed solver bug where it ended in a "Reached invalid decision id 0"
   * Fixed updates of git-installed packages on windows
@@ -953,6 +965,7 @@
 
   * Initial release
 
+[2.0.0-RC1]: https://github.com/composer/composer/compare/2.0.0-alpha3...2.0.0-RC1
 [2.0.0-alpha3]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-alpha3
 [2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
