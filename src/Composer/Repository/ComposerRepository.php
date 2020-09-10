@@ -1333,8 +1333,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             throw new \LogicException('lazyProvidersRepoContains should not be called unless hasAvailablePackageList is true');
         }
 
-        $ruledOutByExactMatch = $ruledOutByRegex = true;
-
         if (is_array($this->availablePackages) && isset($this->availablePackages[$name])) {
             return true;
         }
