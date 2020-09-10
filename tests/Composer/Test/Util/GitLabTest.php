@@ -72,12 +72,9 @@ class GitLabTest extends TestCase
         $this->assertTrue($gitLab->authorizeOAuthInteractively('http', $this->origin, $this->message));
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Invalid GitLab credentials 5 times in a row, aborting.
-     */
     public function testUsernamePasswordFailure()
     {
+        $this->setExpectedException('RuntimeException', 'Invalid GitLab credentials 5 times in a row, aborting.');
         $io = $this->getIOMock();
         $io
             ->expects($this->exactly(5))

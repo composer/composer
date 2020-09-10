@@ -33,19 +33,15 @@ class TarTest extends TestCase
         $this->assertNull($result);
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
     public function testThrowsExceptionIfTheTarHasNoComposerJson()
     {
+        $this->setExpectedException('RuntimeException');
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/nojson.tar.gz');
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
     public function testThrowsExceptionIfTheComposerJsonIsInASubSubfolder()
     {
+        $this->setExpectedException('RuntimeException');
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/subfolders.tar.gz');
     }
 
@@ -61,11 +57,9 @@ class TarTest extends TestCase
         $this->assertEquals("{\n    \"name\": \"foo/bar\"\n}\n", $result);
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
     public function testMultipleTopLevelDirsIsInvalid()
     {
+        $this->setExpectedException('RuntimeException');
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/multiple.tar.gz');
     }
 }

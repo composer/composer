@@ -96,16 +96,13 @@ class ZipDownloaderTest extends TestCase
 
             $this->fail('Download of invalid zip files should throw an exception');
         } catch (\Exception $e) {
-            $this->assertContains('is not a zip archive', $e->getMessage());
+            $this->assertStringContainsString('is not a zip archive', $e->getMessage());
         }
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage There was an error extracting the ZIP file
-     */
     public function testZipArchiveOnlyFailed()
     {
+        $this->setExpectedException('RuntimeException', 'There was an error extracting the ZIP file');
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('zip extension missing');
         }
@@ -126,12 +123,9 @@ class ZipDownloaderTest extends TestCase
         $this->wait($promise);
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): Not a directory
-     */
     public function testZipArchiveExtractOnlyFailed()
     {
+        $this->setExpectedException('RuntimeException', 'The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): Not a directory');
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('zip extension missing');
         }
@@ -174,12 +168,9 @@ class ZipDownloaderTest extends TestCase
         $this->wait($promise);
     }
 
-    /**
-     * @expectedException \Exception
-     * @expectedExceptionMessage Failed to extract : (1) unzip
-     */
     public function testSystemUnzipOnlyFailed()
     {
+        $this->setExpectedException('Exception', 'Failed to extract : (1) unzip');
         $this->setPrivateProperty('isWindows', false);
         $this->setPrivateProperty('hasSystemUnzip', true);
         $this->setPrivateProperty('hasZipArchive', false);
@@ -272,12 +263,9 @@ class ZipDownloaderTest extends TestCase
         $this->wait($promise);
     }
 
-    /**
-     * @expectedException \Exception
-     * @expectedExceptionMessage There was an error extracting the ZIP file
-     */
     public function testNonWindowsFallbackFailed()
     {
+        $this->setExpectedException('Exception', 'There was an error extracting the ZIP file');
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('zip extension missing');
         }
@@ -345,12 +333,9 @@ class ZipDownloaderTest extends TestCase
         $this->wait($promise);
     }
 
-    /**
-     * @expectedException \Exception
-     * @expectedExceptionMessage Failed to execute (1) unzip
-     */
     public function testWindowsFallbackFailed()
     {
+        $this->setExpectedException('Exception', 'Failed to execute (1) unzip');
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('zip extension missing');
         }

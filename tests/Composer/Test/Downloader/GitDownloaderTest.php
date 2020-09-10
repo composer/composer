@@ -78,15 +78,14 @@ class GitDownloaderTest extends TestCase
         return new GitDownloader($io, $config, $executor, $filesystem);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testDownloadForPackageWithoutSourceReference()
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
             ->method('getSourceReference')
             ->will($this->returnValue(null));
+
+        $this->setExpectedException('InvalidArgumentException');
 
         $downloader = $this->getDownloaderMock();
         $downloader->download($packageMock, '/path');
@@ -370,9 +369,6 @@ class GitDownloaderTest extends TestCase
         }
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testUpdateforPackageWithoutSourceReference()
     {
         $initialPackageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -380,6 +376,8 @@ class GitDownloaderTest extends TestCase
         $sourcePackageMock->expects($this->once())
             ->method('getSourceReference')
             ->will($this->returnValue(null));
+
+        $this->setExpectedException('InvalidArgumentException');
 
         $downloader = $this->getDownloaderMock();
         $downloader->download($sourcePackageMock, '/path', $initialPackageMock);

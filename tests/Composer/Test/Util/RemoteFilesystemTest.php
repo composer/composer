@@ -122,7 +122,7 @@ class RemoteFilesystemTest extends TestCase
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
         $this->callCallbackGet($fs, STREAM_NOTIFY_FILE_SIZE_IS, 0, '', 0, 0, 20);
-        $this->assertAttributeEquals(20, 'bytesMax', $fs);
+        $this->assertAttributeEqualsCustom(20, 'bytesMax', $fs);
     }
 
     public function testCallbackGetNotifyProgress()
@@ -138,7 +138,7 @@ class RemoteFilesystemTest extends TestCase
         $this->setAttribute($fs, 'progress', true);
 
         $this->callCallbackGet($fs, STREAM_NOTIFY_PROGRESS, 0, '', 0, 10, 20);
-        $this->assertAttributeEquals(50, 'lastProgress', $fs);
+        $this->assertAttributeEqualsCustom(50.0, 'lastProgress', $fs);
     }
 
     public function testCallbackGetPassesThrough404()
@@ -152,7 +152,7 @@ class RemoteFilesystemTest extends TestCase
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
-        $this->assertContains('testGetContents', $fs->getContents('http://example.org', 'file://'.__FILE__));
+        $this->assertStringContainsString('testGetContents', $fs->getContents('http://example.org', 'file://'.__FILE__));
     }
 
     public function testCopy()
@@ -162,15 +162,13 @@ class RemoteFilesystemTest extends TestCase
         $file = tempnam(sys_get_temp_dir(), 'c');
         $this->assertTrue($fs->copy('http://example.org', 'file://'.__FILE__, $file));
         $this->assertFileExists($file);
-        $this->assertContains('testCopy', file_get_contents($file));
+        $this->assertStringContainsString('testCopy', file_get_contents($file));
         unlink($file);
     }
 
-    /**
-     * @expectedException \Composer\Downloader\TransportException
-     */
     public function testCopyWithNoRetryOnFailure()
     {
+        $this->setExpectedException('Composer\Downloader\TransportException');
         $fs = $this->getRemoteFilesystemWithMockedMethods(array('getRemoteContents'));
 
         $fs->expects($this->once())->method('getRemoteContents')
@@ -240,7 +238,7 @@ class RemoteFilesystemTest extends TestCase
 
         $this->assertTrue($copyResult);
         $this->assertFileExists($file);
-        $this->assertContains('Copied', file_get_contents($file));
+        $this->assertStringContainsString('Copied', file_get_contents($file));
 
         unlink($file);
     }
@@ -392,6 +390,13 @@ class RemoteFilesystemTest extends TestCase
         $attr = new ReflectionProperty($object, $attribute);
         $attr->setAccessible(true);
         $attr->setValue($object, $value);
+    }
+
+    private function assertAttributeEqualsCustom($value, $attribute, $object)
+    {
+        $attr = new ReflectionProperty($object, $attribute);
+        $attr->setAccessible(true);
+        $this->assertSame($value, $attr->getValue($object));
     }
 
     /**

@@ -261,11 +261,9 @@ class BitbucketTest extends TestCase
         $this->assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
     }
 
-    /**
-     * @expectedException \Composer\Downloader\TransportException
-     */
     public function testRequestAccessTokenWithUsernameAndPasswordWithNotFoundResponse()
     {
+        $this->setExpectedException('Composer\Downloader\TransportException');
         $this->config->expects($this->once())
             ->method('get')
             ->with('bitbucket-oauth')

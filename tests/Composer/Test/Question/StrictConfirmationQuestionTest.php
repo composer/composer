@@ -38,13 +38,13 @@ class StrictConfirmationQuestionTest extends TestCase
     }
 
     /**
-     * @expectedException InvalidArgumentException
-     * @expectedExceptionMessage Please answer yes, y, no, or n.
      * @dataProvider             getAskConfirmationBadData
      */
     public function testAskConfirmationBadAnswer($answer)
     {
         list($input, $dialog) = $this->createInput($answer."\n");
+
+        $this->setExpectedException('InvalidArgumentException', 'Please answer yes, y, no, or n.');
 
         $question = new StrictConfirmationQuestion('Do you like French fries?');
         $question->setMaxAttempts(1);

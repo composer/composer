@@ -19,12 +19,11 @@ use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
-use PHPUnit\Framework\TestCase as BaseTestCase;
 use Symfony\Component\Process\ExecutableFinder;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\BasePackage;
 
-abstract class TestCase extends BaseTestCase
+abstract class TestCase extends PolyfillTestCase
 {
     private static $parser;
     private static $executableCache = array();

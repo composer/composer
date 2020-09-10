@@ -45,15 +45,14 @@ class HgDownloaderTest extends TestCase
         return new HgDownloader($io, $config, $executor, $filesystem);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testDownloadForPackageWithoutSourceReference()
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
             ->method('getSourceReference')
             ->will($this->returnValue(null));
+
+        $this->setExpectedException('InvalidArgumentException');
 
         $downloader = $this->getDownloaderMock();
         $downloader->install($packageMock, '/path');
@@ -86,9 +85,6 @@ class HgDownloaderTest extends TestCase
         $downloader->install($packageMock, 'composerPath');
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testUpdateforPackageWithoutSourceReference()
     {
         $initialPackageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -96,6 +92,8 @@ class HgDownloaderTest extends TestCase
         $sourcePackageMock->expects($this->once())
             ->method('getSourceReference')
             ->will($this->returnValue(null));
+
+        $this->setExpectedException('InvalidArgumentException');
 
         $downloader = $this->getDownloaderMock();
         $downloader->prepare('update', $sourcePackageMock, '/path', $initialPackageMock);

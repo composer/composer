@@ -62,11 +62,10 @@ class GitTest extends TestCase
         );
     }
 
-    /**
-     * @expectedException \RuntimeException
-     */
     public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithoutAuthentication()
     {
+        $this->setExpectedException('RuntimeException');
+
         $that = $this;
         $commandCallable = function ($url) use ($that) {
             $that->assertSame('https://github.com/acme/repo', $url);
