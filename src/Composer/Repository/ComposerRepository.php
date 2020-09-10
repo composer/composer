@@ -57,9 +57,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $providersUrl;
     protected $listUrl;
     /** @var bool Indicates whether a comprehensive list of packages this repository might provide is expressed in the repository root. **/
-    protected $hasPredefinedPackageCoverage = false;
+    protected $hasAvailablePackageList = false;
     protected $availablePackages;
-    protected $availablePackageRegexes;
+    protected $availablePackagePatterns;
     protected $lazyProvidersUrl;
     protected $providerListing;
     protected $loader;
@@ -166,7 +166,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return $this->filterPackages($this->whatProvides($name), $constraint, true);
             }
 
-            if ($this->lazyProvidersRepoDoesNotContain($name)) {
+            if ($this->hasAvailablePackageList && !$this->lazyProvidersRepoContains($name)) {
                 return;
             }
 
@@ -206,7 +206,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return $this->filterPackages($this->whatProvides($name), $constraint);
             }
 
-            if ($this->lazyProvidersRepoDoesNotContain($name)) {
+            if ($this->hasAvailablePackageList && !$this->lazyProvidersRepoContains($name)) {
                 return array();
             }
 
@@ -264,7 +264,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $hasProviders = $this->hasProviders();
 
         if ($this->lazyProvidersUrl) {
-            if (is_array($this->availablePackages) && count($this->availablePackageRegexes) == 0) {
+            if (is_array($this->availablePackages) && !$this->availablePackagePatterns) {
                 $packageMap = array();
                 foreach ($this->availablePackages as $name) {
                     $packageMap[$name] = new MatchAllConstraint();
@@ -392,9 +392,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if ($this->lazyProvidersUrl && count($packageNameMap)) {
-            if ($this->hasPredefinedPackageCoverage) {
+            if ($this->hasAvailablePackageList) {
                 foreach ($packageNameMap as $name => $constraint) {
-                    if ($this->lazyProvidersRepoDoesNotContain(strtolower($name))) {
+                    if (!$this->lazyProvidersRepoContains(strtolower($name))) {
                         unset($packageNameMap[$name]);
                     }
                 }
@@ -879,15 +879,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (!empty($data['available-packages'])) {
                 $availPackages = array_map('strtolower', $data['available-packages']);
                 $this->availablePackages = array_combine($availPackages, $availPackages);
-                $this->hasPredefinedPackageCoverage = true;
+                $this->hasAvailablePackageList = true;
             }
 
-            // Provides a list of package name regexes that are available in this repo
+            // Provides a list of package name patterns (using * wildcards to match any substring, e.g. "vendor/*") that are available in this repo
             // Disables lazy-provider behavior as with available-packages, but may allow much more compact expression of packages covered by this repository.
             // Over-specifying covered packages is safe, but may result in increased traffic to your repository.
-            if (!empty($data['available-package-regexes'])) {
-                $this->availablePackageRegexes = $data['available-package-regexes'];
-                $this->hasPredefinedPackageCoverage = true;
+            if (!empty($data['available-package-patterns'])) {
+                $this->availablePackagePatterns = array_map(function ($pattern) {
+                    return BasePackage::packageNameToRegexp($pattern);
+                }, $data['available-package-patterns']);
+                $this->hasAvailablePackageList = true;
             }
 
             // Remove legacy keys as most repos need to be compatible with Composer v1
@@ -1320,34 +1322,31 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * Returns true only if:
-     *   - this repository uses lazy providers
-     *   - this repository has predefined package coverage
-     *   - the name passed is not among the known provider names
+     * Checks if the package name is present in this lazy providers repo
      *
-     * @param $name
-     * @return bool
+     * @param string $name
+     * @return bool true if the package name is present in availablePackages or matched by availablePackagePatterns
      */
-    protected function lazyProvidersRepoDoesNotContain($name) {
-        if (! $this->hasPredefinedPackageCoverage) {
-            return false;
+    protected function lazyProvidersRepoContains($name)
+    {
+        if (!$this->hasAvailablePackageList) {
+            throw new \LogicException('lazyProvidersRepoContains should not be called unless hasAvailablePackageList is true');
         }
 
         $ruledOutByExactMatch = $ruledOutByRegex = true;
 
-        if (is_array($this->availablePackages)) {
-            $ruledOutByExactMatch = !isset($this->availablePackages[$name]);
+        if (is_array($this->availablePackages) && isset($this->availablePackages[$name])) {
+            return true;
         }
 
-        if (is_array($this->availablePackageRegexes)) {
-            foreach ($this->availablePackageRegexes as $providerRegex) {
-                if (preg_match(BasePackage::packageNameToRegexp($providerRegex), $name) == 1) {
-                    $ruledOutByRegex = false;
-                    break;
+        if (is_array($this->availablePackagePatterns)) {
+            foreach ($this->availablePackagePatterns as $providerRegex) {
+                if (preg_match($providerRegex, $name)) {
+                    return true;
                 }
             }
         }
 
-        return $ruledOutByExactMatch && $ruledOutByRegex;
+        return false;
     }
 }

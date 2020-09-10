@@ -68,7 +68,7 @@ This new metadata-url should serve all packages which are in the repository.
 - The `foo/bar.json` and `foo/bar~dev.json` files containing package versions MUST contain only versions for the foo/bar package, as `{"packages":{"foo/bar":[ ... versions here ... ]}}`.
 - The array of versions can also optionally be minified using `Composer\Util\MetadataMinifier::minify()`. If you do that, you should add a `"minified": "composer/2.0"` key at the top level to indicate to Composer it must expand the version list back into the original data. See https://repo.packagist.org/p2/monolog/monolog.json for an example.
 
-If your repository only has a small number of packages, and you want to avoid the 404-requests, you can also specify an `"available-packages"` key in `packages.json` which should be an array with all the package names that your repository contain.
+If your repository only has a small number of packages, and you want to avoid the 404-requests, you can also specify an `"available-packages"` key in `packages.json` which should be an array with all the package names that your repository contain. Alternatively you can specify an `"available-package-patterns"` key which is an array of package name patterns (with `*` matching any string, e.g. `vendor/*` would make composer look up every matching package name in this repository).
 
 ### providers-api
 
