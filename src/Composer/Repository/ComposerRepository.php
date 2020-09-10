@@ -12,6 +12,7 @@
 
 namespace Composer\Repository;
 
+use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
@@ -55,7 +56,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $hasProviders = false;
     protected $providersUrl;
     protected $listUrl;
+    /** @var bool Indicates whether a comprehensive list of packages this repository might provide is expressed in the repository root. **/
+    protected $hasPredefinedPackageCoverage = false;
     protected $availablePackages;
+    protected $availablePackageRegexes;
     protected $lazyProvidersUrl;
     protected $providerListing;
     protected $loader;
@@ -162,7 +166,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return $this->filterPackages($this->whatProvides($name), $constraint, true);
             }
 
-            if (is_array($this->availablePackages) && !isset($this->availablePackages[$name])) {
+            if ($this->lazyProvidersRepoDoesNotContain($name)) {
                 return;
             }
 
@@ -202,7 +206,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return $this->filterPackages($this->whatProvides($name), $constraint);
             }
 
-            if (is_array($this->availablePackages) && !isset($this->availablePackages[$name])) {
+            if ($this->lazyProvidersRepoDoesNotContain($name)) {
                 return array();
             }
 
@@ -260,7 +264,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $hasProviders = $this->hasProviders();
 
         if ($this->lazyProvidersUrl) {
-            if (is_array($this->availablePackages)) {
+            if (is_array($this->availablePackages) && count($this->availablePackageRegexes) == 0) {
                 $packageMap = array();
                 foreach ($this->availablePackages as $name) {
                     $packageMap[$name] = new MatchAllConstraint();
@@ -388,10 +392,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if ($this->lazyProvidersUrl && count($packageNameMap)) {
-            if (is_array($this->availablePackages)) {
-                $availPackages = $this->availablePackages;
+            if ($this->hasPredefinedPackageCoverage) {
                 foreach ($packageNameMap as $name => $constraint) {
-                    if (!isset($availPackages[strtolower($name)])) {
+                    if ($this->lazyProvidersRepoDoesNotContain(strtolower($name))) {
                         unset($packageNameMap[$name]);
                     }
                 }
@@ -876,6 +879,15 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (!empty($data['available-packages'])) {
                 $availPackages = array_map('strtolower', $data['available-packages']);
                 $this->availablePackages = array_combine($availPackages, $availPackages);
+                $this->hasPredefinedPackageCoverage = true;
+            }
+
+            // Provides a list of package name regexes that are available in this repo
+            // Disables lazy-provider behavior as with available-packages, but may allow much more compact expression of packages covered by this repository.
+            // Over-specifying covered packages is safe, but may result in increased traffic to your repository.
+            if (!empty($data['available-package-regexes'])) {
+                $this->availablePackageRegexes = $data['available-package-regexes'];
+                $this->hasPredefinedPackageCoverage = true;
             }
 
             // Remove legacy keys as most repos need to be compatible with Composer v1
@@ -1305,5 +1317,37 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         // wipe rootData as it is fully consumed at this point and this saves some memory
         $this->rootData = true;
+    }
+
+    /**
+     * Returns true only if:
+     *   - this repository uses lazy providers
+     *   - this repository has predefined package coverage
+     *   - the name passed is not among the known provider names
+     *
+     * @param $name
+     * @return bool
+     */
+    protected function lazyProvidersRepoDoesNotContain($name) {
+        if (! $this->hasPredefinedPackageCoverage) {
+            return false;
+        }
+
+        $ruledOutByExactMatch = $ruledOutByRegex = true;
+
+        if (is_array($this->availablePackages)) {
+            $ruledOutByExactMatch = !isset($this->availablePackages[$name]);
+        }
+
+        if (is_array($this->availablePackageRegexes)) {
+            foreach ($this->availablePackageRegexes as $providerRegex) {
+                if (preg_match(BasePackage::packageNameToRegexp($providerRegex), $name) == 1) {
+                    $ruledOutByRegex = false;
+                    break;
+                }
+            }
+        }
+
+        return $ruledOutByExactMatch && $ruledOutByRegex;
     }
 }
