@@ -72,7 +72,7 @@ class CacheTest extends TestCase
         $this->cache->gc(600, 1024 * 1024 * 1024);
 
         for ($i = 1; $i < 4; $i++) {
-            $this->assertFileNotExists("{$this->root}/cached.file{$i}.zip");
+            $this->assertFileDoesNotExist("{$this->root}/cached.file{$i}.zip");
         }
         $this->assertFileExists("{$this->root}/cached.file0.zip");
     }
@@ -101,7 +101,7 @@ class CacheTest extends TestCase
         $this->cache->gc(600, 1500);
 
         for ($i = 0; $i < 3; $i++) {
-            $this->assertFileNotExists("{$this->root}/cached.file{$i}.zip");
+            $this->assertFileDoesNotExist("{$this->root}/cached.file{$i}.zip");
         }
         $this->assertFileExists("{$this->root}/cached.file3.zip");
     }

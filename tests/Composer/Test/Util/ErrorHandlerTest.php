@@ -35,7 +35,11 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerCaptureNotice()
     {
-        $this->setExpectedException('\ErrorException', 'Undefined index: baz');
+        if (PHP_VERSION_ID >= 80000) {
+            $this->setExpectedException('\ErrorException', 'Undefined array key "baz"');
+        } else {
+            $this->setExpectedException('\ErrorException', 'Undefined index: baz');
+        }
 
         $array = array('foo' => 'bar');
         $array['baz'];

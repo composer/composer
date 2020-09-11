@@ -941,8 +941,8 @@ EOF;
         $this->assertFileContentEquals(__DIR__.'/Fixtures/autoload_functions.php', $this->vendorDir.'/autoload.php');
         $this->assertFileContentEquals(__DIR__.'/Fixtures/autoload_real_functions_with_removed_include_paths_and_autolad_files.php', $this->vendorDir.'/composer/autoload_real.php');
         $this->assertFileContentEquals(__DIR__.'/Fixtures/autoload_static_functions_with_removed_include_paths_and_autolad_files.php', $this->vendorDir.'/composer/autoload_static.php');
-        $this->assertFileNotExists($this->vendorDir.'/composer/autoload_files.php');
-        $this->assertFileNotExists($this->vendorDir.'/composer/include_paths.php');
+        $this->assertFileDoesNotExist($this->vendorDir.'/composer/autoload_files.php');
+        $this->assertFileDoesNotExist($this->vendorDir.'/composer/include_paths.php');
     }
 
     public function testFilesAutoloadOrderByDependencies()
@@ -1223,7 +1223,7 @@ EOF;
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, "composer", false, '_12');
 
-        $this->assertFileNotExists($this->vendorDir."/composer/include_paths.php");
+        $this->assertFileDoesNotExist($this->vendorDir."/composer/include_paths.php");
     }
 
     public function testPreAndPostEventsAreDispatchedDuringAutoloadDump()
