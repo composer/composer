@@ -319,7 +319,8 @@ class Solver
                 throw new SolverBugException(
                     "Trying to revert to invalid level ".(int) $newLevel." from level ".(int) $level."."
                 );
-            } elseif (!$newRule) {
+            }
+            if (!$newRule) {
                 throw new SolverBugException(
                     "No rule was learned from analyzing $rule at level $level."
                 );

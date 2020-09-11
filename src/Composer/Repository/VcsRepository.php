@@ -196,7 +196,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $this->addPackage($cachedPackage);
 
                 continue;
-            } elseif ($cachedPackage === false) {
+            }
+            if ($cachedPackage === false) {
                 $this->emptyReferences[] = $identifier;
 
                 continue;

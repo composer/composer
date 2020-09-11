@@ -1094,7 +1094,8 @@ INITIALIZER;
                     if ($type === 'files') {
                         $autoloads[$this->getFileIdentifier($package, $path)] = $relativePath;
                         continue;
-                    } elseif ($type === 'classmap') {
+                    }
+                    if ($type === 'classmap') {
                         $autoloads[] = $relativePath;
                         continue;
                     }
