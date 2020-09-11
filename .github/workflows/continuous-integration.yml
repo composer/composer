@@ -38,31 +38,31 @@ jobs:
         os: [ubuntu-latest]
         experimental: [false]
         include:
-          - php-version: 5.3
+          - php-version: "5.3"
             dependencies: highest
             os: ubuntu-latest
             experimental: false
-          - php-version: 5.3
+          - php-version: "5.3"
             dependencies: lowest
             os: ubuntu-latest
             experimental: false
-          - php-version: 7.4
+          - php-version: "7.4"
             dependencies: highest
             os: ubuntu-latest
             experimental: false
-          - php-version: 7.4
+          - php-version: "7.4"
             os: windows-latest
             dependencies: locked
             experimental: false
-          - php-version: 7.4
+          - php-version: "7.4"
             os: macos-latest
             dependencies: locked
             experimental: false
-          - php-version: 8.0
+          - php-version: "8.0"
             dependencies: lowest-ignore
             os: ubuntu-latest
             experimental: true
-          - php-version: 8.0
+          - php-version: "8.0"
             dependencies: highest-ignore
             os: ubuntu-latest
             experimental: true
@@ -83,7 +83,7 @@ jobs:
           elif [ "${{ matrix.php-version }}" = "7.1" ]; then
             echo "::set-env name=SYMFONY_PHPUNIT_VERSION::7.5";
           elif [ "${{ matrix.php-version }}" = "8.0" ]; then
-            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::9.2";
+            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::9.3";
           else
             echo "::set-env name=SYMFONY_PHPUNIT_VERSION::8.3";
           fi
@@ -95,25 +95,7 @@ jobs:
           extensions: "intl, zip"
           ini-values: "memory_limit=-1, phar.readonly=0"
           php-version: "${{ matrix.php-version }}"
-
-      - name: "Update to latest Composer snapshot"
-        if: "!startsWith(matrix.os, 'windows')"
-        run: "sudo -i composer self-update --snapshot"
-
-      - name: "Update to latest Composer snapshot on Windows"
-        if: "startsWith(matrix.os, 'windows')"
-        run: "composer self-update --snapshot"
-
-      - name: "Determine composer cache directory"
-        id: "determine-composer-cache-directory"
-        run: "echo \"::set-output name=directory::$(composer config cache-dir)\""
-
-      - name: "Cache dependencies installed with composer"
-        uses: "actions/cache@v2"
-        with:
-          path: "${{ steps.determine-composer-cache-directory.outputs.directory }}"
-          key: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}-${{ hashFiles('**/composer.lock') }}"
-          restore-keys: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}"
+          tools: composer:v2
 
       - name: "Handle lowest dependencies update"
         if: "contains(matrix.dependencies, 'lowest')"
@@ -136,9 +118,7 @@ jobs:
 
       - name: "Require latest PHPUnitBridge for PHP 8"
         if: "matrix.php-version == '8.0'"
-        run: |
-          composer require --no-update --dev symfony/phpunit-bridge:^5.1
-          composer config -g platform-check false
+        run: composer require --no-update --dev symfony/phpunit-bridge:^5.1
 
       - name: "Update Symfony's PHPUnitBridge to latest available for the current PHP always as it is not really a dependency of the project"
         run: "composer update ${{ env.COMPOSER_FLAGS }} symfony/phpunit-bridge"

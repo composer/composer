@@ -71,7 +71,7 @@ class LibraryInstallerTest extends TestCase
         $this->fs->removeDirectory($this->vendorDir);
 
         new LibraryInstaller($this->io, $this->composer);
-        $this->assertFileNotExists($this->vendorDir);
+        $this->assertFileDoesNotExist($this->vendorDir);
     }
 
     public function testInstallerCreationShouldNotCreateBinDirectory()
@@ -79,7 +79,7 @@ class LibraryInstallerTest extends TestCase
         $this->fs->removeDirectory($this->binDir);
 
         new LibraryInstaller($this->io, $this->composer);
-        $this->assertFileNotExists($this->binDir);
+        $this->assertFileDoesNotExist($this->binDir);
     }
 
     public function testIsInstalled()

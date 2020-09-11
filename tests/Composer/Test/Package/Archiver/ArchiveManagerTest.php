@@ -68,7 +68,7 @@ class ArchiveManagerTest extends ArchiverTest
         $this->assertFileExists($target);
 
         $tmppath = sys_get_temp_dir().'/composer_archiver/'.$this->manager->getPackageFilename($package);
-        $this->assertFileNotExists($tmppath);
+        $this->assertFileDoesNotExist($tmppath);
 
         unlink($target);
     }
@@ -90,7 +90,7 @@ class ArchiveManagerTest extends ArchiverTest
         $this->assertFileExists($target);
 
         $tmppath = sys_get_temp_dir().'/composer_archiver/'.$this->manager->getPackageFilename($package);
-        $this->assertFileNotExists($tmppath);
+        $this->assertFileDoesNotExist($tmppath);
 
         unlink($target);
     }

@@ -36,7 +36,7 @@ class ArchiveDownloaderTest extends TestCase
             ->will($this->returnValue('/vendor'));
 
         $first = $method->invoke($downloader, $packageMock, '/path');
-        $this->assertRegExp('#/vendor/composer/tmp-[a-z0-9]+\.js#', $first);
+        $this->assertMatchesRegularExpression('#/vendor/composer/tmp-[a-z0-9]+\.js#', $first);
         $this->assertSame($first, $method->invoke($downloader, $packageMock, '/path'));
     }
 

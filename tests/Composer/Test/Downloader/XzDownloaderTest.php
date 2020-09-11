@@ -77,7 +77,7 @@ class XzDownloaderTest extends TestCase
 
             $this->fail('Download of invalid tarball should throw an exception');
         } catch (\RuntimeException $e) {
-            $this->assertRegexp('/(File format not recognized|Unrecognized archive format)/i', $e->getMessage());
+            $this->assertMatchesRegularExpression('/(File format not recognized|Unrecognized archive format)/i', $e->getMessage());
         }
     }
 }
