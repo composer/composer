@@ -584,8 +584,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $packages = $this->fetchFile($url, $cacheKey, $hash, $useLastModifiedCheck);
                 } catch (TransportException $e) {
                     // 404s are acceptable for lazy provider repos
-                    if ($e->getStatusCode() === 404 && $this->lazyProvidersUrl) {
+                    if ($this->lazyProvidersUrl && in_array($e->getStatusCode(), array(404, 499), true)) {
                         $packages = array('packages' => array());
+                        if ($e->getStatusCode() === 499) {
+                            $this->io->error('<warning>' . $e->getMessage() . '</warning>');
+                        }
                     } else {
                         throw $e;
                     }
