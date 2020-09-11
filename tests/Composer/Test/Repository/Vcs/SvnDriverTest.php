@@ -40,11 +40,10 @@ class SvnDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    /**
-     * @expectedException RuntimeException
-     */
     public function testWrongCredentialsInUrl()
     {
+        $this->setExpectedException('RuntimeException');
+
         $console = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
 

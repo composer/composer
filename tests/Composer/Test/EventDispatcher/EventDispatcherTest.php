@@ -27,11 +27,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class EventDispatcherTest extends TestCase
 {
-    /**
-     * @expectedException RuntimeException
-     */
     public function testListenerExceptionsAreCaught()
     {
+        $this->setExpectedException('RuntimeException');
+
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $dispatcher = $this->getDispatcherStubForListenersTest(array(
             'Composer\Test\EventDispatcher\EventDispatcherTest::call',
@@ -425,11 +424,10 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals($expected, $io->getOutput());
     }
 
-    /**
-     * @expectedException RuntimeException
-     */
     public function testDispatcherDetectInfiniteRecursion()
     {
+        $this->setExpectedException('RuntimeException');
+
         $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
         ->setConstructorArgs(array(

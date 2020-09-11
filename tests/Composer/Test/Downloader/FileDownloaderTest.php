@@ -37,9 +37,6 @@ class FileDownloaderTest extends TestCase
         return new FileDownloader($io, $this->config, $httpDownloader, $eventDispatcher, $cache, $filesystem);
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testDownloadForPackageWithoutDistReference()
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -47,6 +44,8 @@ class FileDownloaderTest extends TestCase
             ->method('getDistUrl')
             ->will($this->returnValue(null))
         ;
+
+        $this->setExpectedException('InvalidArgumentException');
 
         $downloader = $this->getDownloader();
         $downloader->download($packageMock, '/path');
@@ -78,7 +77,7 @@ class FileDownloaderTest extends TestCase
                 unlink($path);
             }
             $this->assertInstanceOf('RuntimeException', $e);
-            $this->assertContains('exists and is not a directory', $e->getMessage());
+            $this->assertStringContainsString('exists and is not a directory', $e->getMessage());
         }
     }
 
@@ -153,7 +152,7 @@ class FileDownloaderTest extends TestCase
             }
 
             $this->assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
-            $this->assertContains('could not be saved to', $e->getMessage());
+            $this->assertStringContainsString('could not be saved to', $e->getMessage());
         }
     }
 
@@ -239,7 +238,7 @@ class FileDownloaderTest extends TestCase
             }
 
             $this->assertInstanceOf('UnexpectedValueException', $e, $e->getMessage());
-            $this->assertContains('checksum verification', $e->getMessage());
+            $this->assertStringContainsString('checksum verification', $e->getMessage());
         }
     }
 

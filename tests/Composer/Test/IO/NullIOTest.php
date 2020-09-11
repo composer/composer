@@ -42,7 +42,7 @@ class NullIOTest extends TestCase
     {
         $io = new NullIO();
 
-        $this->assertInternalType('array', $io->getAuthentications());
+        $this->assertTrue(is_array($io->getAuthentications()));
         $this->assertEmpty($io->getAuthentications());
         $this->assertEquals(array('username' => null, 'password' => null), $io->getAuthentication('foo'));
     }

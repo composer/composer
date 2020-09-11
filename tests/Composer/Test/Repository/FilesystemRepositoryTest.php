@@ -43,11 +43,9 @@ class FilesystemRepositoryTest extends TestCase
         $this->assertSame('vendor', $packages[0]->getType());
     }
 
-    /**
-     * @expectedException \Composer\Repository\InvalidRepositoryException
-     */
     public function testCorruptedRepositoryFile()
     {
+        $this->setExpectedException('Composer\Repository\InvalidRepositoryException');
         $json = $this->createJsonFileMock();
 
         $repository = new FilesystemRepository($json);

@@ -120,16 +120,13 @@ class ClassMapGeneratorTest extends TestCase
         ), ClassMapGenerator::createMap($finder));
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage does not exist
-     */
     public function testFindClassesThrowsWhenFileDoesNotExist()
     {
         $r = new \ReflectionClass('Composer\\Autoload\\ClassMapGenerator');
         $find = $r->getMethod('findClasses');
         $find->setAccessible(true);
 
+        $this->setExpectedException('RuntimeException', 'does not exist');
         $find->invoke(null, __DIR__ . '/no-file');
     }
 
@@ -213,12 +210,9 @@ class ClassMapGeneratorTest extends TestCase
         $fs->removeDirectory($tempDir);
     }
 
-    /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessage Could not scan for classes inside
-     */
     public function testCreateMapThrowsWhenDirectoryDoesNotExist()
     {
+        $this->setExpectedException('RuntimeException', 'Could not scan for classes inside');
         ClassMapGenerator::createMap(__DIR__ . '/no-file.no-foler');
     }
 

@@ -216,7 +216,7 @@ class JsonFileTest extends TestCase
             $result = JsonFile::parseJson($json);
             $this->fail(sprintf("Parsing should have failed but didn't.\nExpected:\n\"%s\"\nFor:\n\"%s\"\nGot:\n\"%s\"", $text, $json, var_export($result, true)));
         } catch (ParsingException $e) {
-            $this->assertContains($text, $e->getMessage());
+            $this->assertStringContainsString($text, $e->getMessage());
         }
     }
 

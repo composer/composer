@@ -33,11 +33,10 @@ class BasePackageTest extends TestCase
         }
     }
 
-    /**
-     * @expectedException LogicException
-     */
     public function testSetAnotherRepository()
     {
+        $this->setExpectedException('LogicException');
+
         $package = $this->getMockForAbstractClass('Composer\Package\BasePackage', array('foo'));
 
         $package->setRepository($this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock());

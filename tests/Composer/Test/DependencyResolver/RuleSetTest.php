@@ -63,13 +63,11 @@ class RuleSetTest extends TestCase
         $this->assertCount(1, $ruleSet->getIteratorFor(array(RuleSet::TYPE_REQUEST)));
     }
 
-    /**
-     * @expectedException \OutOfBoundsException
-     */
     public function testAddWhenTypeIsNotRecognized()
     {
         $ruleSet = new RuleSet;
 
+        $this->setExpectedException('OutOfBoundsException');
         $ruleSet->add(new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null), 7);
     }
 
@@ -152,6 +150,6 @@ class RuleSetTest extends TestCase
 
         $ruleSet->add($rule, RuleSet::TYPE_REQUEST);
 
-        $this->assertContains('REQUEST : No package found to satisfy root composer.json require foo/bar', $ruleSet->getPrettyString($repositorySetMock, $requestMock, $pool));
+        $this->assertStringContainsString('REQUEST : No package found to satisfy root composer.json require foo/bar', $ruleSet->getPrettyString($repositorySetMock, $requestMock, $pool));
     }
 }

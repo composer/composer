@@ -770,8 +770,8 @@ EOF;
             include $this->vendorDir.'/composer/autoload_classmap.php'
         );
         $this->assertAutoloadFiles('classmap5', $this->vendorDir.'/composer', 'classmap');
-        $this->assertNotContains('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
-        $this->assertNotContains('$loader->setApcuPrefix(', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertStringNotContainsString('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertStringNotContainsString('$loader->setApcuPrefix(', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
     }
 
     public function testClassMapAutoloadingAuthoritativeAndApcu()
@@ -819,8 +819,8 @@ EOF;
         );
         $this->assertAutoloadFiles('classmap8', $this->vendorDir.'/composer', 'classmap');
 
-        $this->assertContains('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
-        $this->assertContains('$loader->setApcuPrefix(', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertStringContainsString('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertStringContainsString('$loader->setApcuPrefix(', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
     }
 
     public function testFilesAutoloadGeneration()
@@ -1380,8 +1380,8 @@ EOF;
         $this->assertStringEqualsFile($vendorDir.'/composer/autoload_namespaces.php', $expectedNamespace);
         $this->assertStringEqualsFile($vendorDir.'/composer/autoload_psr4.php', $expectedPsr4);
         $this->assertStringEqualsFile($vendorDir.'/composer/autoload_classmap.php', $expectedClassmap);
-        $this->assertContains("\$vendorDir . '/b/b/bootstrap.php',\n", file_get_contents($vendorDir.'/composer/autoload_files.php'));
-        $this->assertContains("\$baseDir . '/test.php',\n", file_get_contents($vendorDir.'/composer/autoload_files.php'));
+        $this->assertStringContainsString("\$vendorDir . '/b/b/bootstrap.php',\n", file_get_contents($vendorDir.'/composer/autoload_files.php'));
+        $this->assertStringContainsString("\$baseDir . '/test.php',\n", file_get_contents($vendorDir.'/composer/autoload_files.php'));
     }
 
     public function testUpLevelRelativePaths()
@@ -1459,7 +1459,7 @@ EOF;
         $this->assertStringEqualsFile($this->vendorDir.'/composer/autoload_namespaces.php', $expectedNamespace);
         $this->assertStringEqualsFile($this->vendorDir.'/composer/autoload_psr4.php', $expectedPsr4);
         $this->assertStringEqualsFile($this->vendorDir.'/composer/autoload_classmap.php', $expectedClassmap);
-        $this->assertContains("\$baseDir . '/../test.php',\n", file_get_contents($this->vendorDir.'/composer/autoload_files.php'));
+        $this->assertStringContainsString("\$baseDir . '/../test.php',\n", file_get_contents($this->vendorDir.'/composer/autoload_files.php'));
     }
 
     public function testEmptyPaths()
@@ -1671,10 +1671,10 @@ EOF;
 
         if (null === $expectedFixture) {
             $this->assertFalse(file_exists($this->vendorDir . '/composer/platform_check.php'));
-            $this->assertNotContains("require __DIR__ . '/platform_check.php';", file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+            $this->assertStringNotContainsString("require __DIR__ . '/platform_check.php';", file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
         } else {
             $this->assertFileContentEquals(__DIR__ . '/Fixtures/platform/' . $expectedFixture . '.php', $this->vendorDir . '/composer/platform_check.php');
-            $this->assertContains("require __DIR__ . '/platform_check.php';", file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+            $this->assertStringContainsString("require __DIR__ . '/platform_check.php';", file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
         }
     }
 
