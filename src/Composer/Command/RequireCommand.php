@@ -302,7 +302,7 @@ EOT
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)
-            ->setUpdate(true)
+            ->setUpdate()
             ->setInstall(!$input->getOption('no-install'))
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setIgnorePlatformRequirements($ignorePlatformReqs)

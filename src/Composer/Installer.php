@@ -568,7 +568,7 @@ class Installer
         $repositorySet = $this->createRepositorySet(true, $platformRepo, $aliases);
         $repositorySet->addRepository($resultRepo);
 
-        $request = $this->createRequest($this->fixedRootPackage, $platformRepo, null);
+        $request = $this->createRequest($this->fixedRootPackage, $platformRepo);
 
         $links = $this->package->getRequires();
         foreach ($links as $link) {
@@ -996,7 +996,7 @@ class Installer
         if (!$this->optimizeAutoloader) {
             // Force classMapAuthoritative off when not optimizing the
             // autoloader
-            $this->setClassMapAuthoritative(false);
+            $this->setClassMapAuthoritative();
         }
 
         return $this;

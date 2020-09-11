@@ -158,7 +158,7 @@ EOT
             } elseif (isset($composer[$altType][$package])) {
                 $io->writeError('<warning>' . $composer[$altType][$package] . ' could not be found in ' . $type . ' but it is present in ' . $altType . '</warning>');
                 if ($io->isInteractive()) {
-                    if ($io->askConfirmation('Do you want to remove it from ' . $altType . ' [<comment>yes</comment>]? ', true)) {
+                    if ($io->askConfirmation('Do you want to remove it from ' . $altType . ' [<comment>yes</comment>]? ')) {
                         if ($dryRun) {
                             $toRemove[$altType][] = $composer[$altType][$package];
                         } else {
@@ -178,7 +178,7 @@ EOT
                 foreach ($matches as $matchedPackage) {
                     $io->writeError('<warning>' . $matchedPackage . ' could not be found in ' . $type . ' but it is present in ' . $altType . '</warning>');
                     if ($io->isInteractive()) {
-                        if ($io->askConfirmation('Do you want to remove it from ' . $altType . ' [<comment>yes</comment>]? ', true)) {
+                        if ($io->askConfirmation('Do you want to remove it from ' . $altType . ' [<comment>yes</comment>]? ')) {
                             if ($dryRun) {
                                 $toRemove[$altType][] = $matchedPackage;
                             } else {
@@ -249,7 +249,7 @@ EOT
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)
-            ->setUpdate(true)
+            ->setUpdate()
             ->setInstall(!$input->getOption('no-install'))
             ->setUpdateAllowList($packages)
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)

@@ -234,7 +234,7 @@ EOT
                 ->setApcuAutoloader($config->get('apcu-autoloader'));
 
             if (!$composer->getLocker()->isLocked()) {
-                $installer->setUpdate(true);
+                $installer->setUpdate();
             }
 
             if ($disablePlugins) {
@@ -254,7 +254,7 @@ EOT
             && (
                 $input->getOption('remove-vcs')
                 || !$io->isInteractive()
-                || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ', true)
+                || $io->askConfirmation('<info>Do you want to remove the existing VCS (.git, .svn..) history?</info> [<comment>Y,n</comment>]? ')
             )
         ) {
             $finder = new Finder();
@@ -414,7 +414,7 @@ EOT
                     $fs = new Filesystem();
                     $fs->removeDirectory($realDir);
                     exit(130);
-                }, true);
+                });
             }
         }
 

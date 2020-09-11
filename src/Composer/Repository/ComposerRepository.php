@@ -637,7 +637,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         // load acceptable packages in the providers
-        $loadedPackages = $this->createPackages($versionsToLoad, 'Composer\Package\CompletePackage');
+        $loadedPackages = $this->createPackages($versionsToLoad);
         $uids = array_keys($versionsToLoad);
 
         foreach ($loadedPackages as $index => $package) {
@@ -667,7 +667,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $repoData = $this->loadDataFromServer();
 
-        foreach ($this->createPackages($repoData, 'Composer\Package\CompletePackage') as $package) {
+        foreach ($this->createPackages($repoData) as $package) {
             $this->addPackage($package);
         }
     }
@@ -764,7 +764,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
 
-                    $loadedPackages = $repo->createPackages($versionsToLoad, 'Composer\Package\CompletePackage');
+                    $loadedPackages = $repo->createPackages($versionsToLoad);
                     foreach ($loadedPackages as $package) {
                         $package->setRepository($repo);
                         $packages[spl_object_hash($package)] = $package;

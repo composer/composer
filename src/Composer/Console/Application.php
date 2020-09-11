@@ -171,7 +171,7 @@ class Application extends BaseApplication
             // abort when we reach the home dir or top of the filesystem
             while (dirname($dir) !== $dir && $dir !== $home) {
                 if (file_exists($dir.'/'.Factory::getComposerFile())) {
-                    if ($io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ', true)) {
+                    if ($io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ')) {
                         $oldWorkingDir = getcwd();
                         chdir($dir);
                     }
@@ -254,7 +254,7 @@ class Application extends BaseApplication
                         $io->writeError('<warning>Do not run Composer as root/super user! See https://getcomposer.org/root for details</warning>');
 
                         if ($io->isInteractive()) {
-                            if (!$io->askConfirmation('<info>Continue as root/super user</info> [<comment>yes</comment>]? ', true)) {
+                            if (!$io->askConfirmation('<info>Continue as root/super user</info> [<comment>yes</comment>]? ')) {
                                 return 1;
                             }
                         }
@@ -518,7 +518,7 @@ class Application extends BaseApplication
 
         $composer = $this->getComposer(false, false);
         if (null === $composer) {
-            $composer = Factory::createGlobal($this->io, false);
+            $composer = Factory::createGlobal($this->io);
         }
 
         if (null !== $composer) {

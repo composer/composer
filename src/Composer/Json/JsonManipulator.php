@@ -385,7 +385,7 @@ class JsonManipulator
             if ($subName !== null) {
                 $curVal = json_decode($matches['content'], true);
                 unset($curVal[$name][$subName]);
-                $childrenClean = $that->format($curVal, 0);
+                $childrenClean = $that->format($curVal);
             }
 
             return $matches['start'] . $childrenClean . $matches['end'];

@@ -173,6 +173,6 @@ class RuleSet implements \IteratorAggregate, \Countable
 
     public function __toString()
     {
-        return $this->getPrettyString(null, null, null);
+        return $this->getPrettyString();
     }
 }

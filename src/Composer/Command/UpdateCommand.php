@@ -211,7 +211,7 @@ EOT
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu)
-            ->setUpdate(true)
+            ->setUpdate()
             ->setInstall(!$input->getOption('no-install'))
             ->setUpdateMirrors($updateMirrors)
             ->setUpdateAllowList($packages)
@@ -284,7 +284,7 @@ EOT
         if ($io->askConfirmation(sprintf(
             'Would you like to continue and update the above package%s [<comment>yes</comment>]? ',
             1 === count($packages) ? '' : 's'
-        ), true)) {
+        ))) {
             return $packages;
         }
 
@@ -295,7 +295,7 @@ EOT
     {
         $parser = new VersionParser;
         $oldPrettyString = $link->getConstraint()->getPrettyString();
-        $newConstraint = MultiConstraint::create(array($link->getConstraint(), $parser->parseConstraints($constraint)), true);
+        $newConstraint = MultiConstraint::create(array($link->getConstraint(), $parser->parseConstraints($constraint)));
         $newConstraint->setPrettyString($oldPrettyString.', '.$constraint);
         return new Link(
             $link->getSource(),

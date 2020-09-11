@@ -124,7 +124,7 @@ EOT
 
         if ($input->isInteractive()) {
             $io->writeError(array('', $json, ''));
-            if (!$io->askConfirmation('Do you confirm generation [<comment>yes</comment>]? ', true)) {
+            if (!$io->askConfirmation('Do you confirm generation [<comment>yes</comment>]? ')) {
                 $io->writeError('<error>Command aborted</error>');
 
                 return 1;
@@ -143,14 +143,14 @@ EOT
             if (!$this->hasVendorIgnore($ignoreFile)) {
                 $question = 'Would you like the <info>vendor</info> directory added to your <info>.gitignore</info> [<comment>yes</comment>]? ';
 
-                if ($io->askConfirmation($question, true)) {
+                if ($io->askConfirmation($question)) {
                     $this->addVendorIgnore($ignoreFile);
                 }
             }
         }
 
         $question = 'Would you like to install dependencies now [<comment>yes</comment>]? ';
-        if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question, true)) {
+        if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question)) {
             $this->installDependencies($output);
         }
 
@@ -358,7 +358,7 @@ EOT
         $question = 'Would you like to define your dependencies (require) interactively [<comment>yes</comment>]? ';
         $require = $input->getOption('require');
         $requirements = array();
-        if ($require || $io->askConfirmation($question, true)) {
+        if ($require || $io->askConfirmation($question)) {
             $requirements = $this->determineRequirements($input, $output, $require, $platformRepo, $preferredStability);
         }
         $input->setOption('require', $requirements);
@@ -366,7 +366,7 @@ EOT
         $question = 'Would you like to define your dev dependencies (require-dev) interactively [<comment>yes</comment>]? ';
         $requireDev = $input->getOption('require-dev');
         $devRequirements = array();
-        if ($requireDev || $io->askConfirmation($question, true)) {
+        if ($requireDev || $io->askConfirmation($question)) {
             $devRequirements = $this->determineRequirements($input, $output, $requireDev, $platformRepo, $preferredStability);
         }
         $input->setOption('require-dev', $devRequirements);

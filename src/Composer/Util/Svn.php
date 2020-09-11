@@ -207,7 +207,7 @@ class Svn
         $this->credentials['username'] = $this->io->ask("Username: ");
         $this->credentials['password'] = $this->io->askAndHideAnswer("Password: ");
 
-        $this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ", true);
+        $this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ");
 
         return $this;
     }
