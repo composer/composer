@@ -479,20 +479,6 @@ class CurlDownloader
         return new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')', $response->getStatusCode());
     }
 
-    private function onProgress($curlHandle, callable $notify, array $progress, array $previousProgress)
-    {
-        // TODO add support for progress
-        if (300 <= $progress['http_code'] && $progress['http_code'] < 400) {
-            return;
-        }
-        if ($previousProgress['download_content_length'] < $progress['download_content_length']) {
-            $notify(STREAM_NOTIFY_FILE_SIZE_IS, STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, (int) $progress['download_content_length'], false);
-        }
-        if ($previousProgress['size_download'] < $progress['size_download']) {
-            $notify(STREAM_NOTIFY_PROGRESS, STREAM_NOTIFY_SEVERITY_INFO, '', 0, (int) $progress['size_download'], (int) $progress['download_content_length'], false);
-        }
-    }
-
     private function checkCurlResult($code)
     {
         if ($code != CURLM_OK && $code != CURLM_CALL_MULTI_PERFORM) {

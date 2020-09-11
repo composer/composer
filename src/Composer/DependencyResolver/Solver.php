@@ -591,17 +591,6 @@ class Solver
         return 0;
     }
 
-    private function resetSolver()
-    {
-        $this->decisions->reset();
-
-        $this->propagateIndex = 0;
-        $this->branches = array();
-
-        $this->enableDisableLearnedRules();
-        $this->makeAssertionRuleDecisions();
-    }
-
     /**
      * enable/disable learnt rules
      *

@@ -315,23 +315,6 @@ class EventDispatcher
         return $className::$methodName($event);
     }
 
-    private function serializeCallback($cb)
-    {
-        if (is_array($cb) && count($cb) === 2) {
-            if (is_object($cb[0])) {
-                $cb[0] = get_class($cb[0]);
-            }
-            if (is_string($cb[0]) && is_string($cb[1])) {
-                $cb = implode('::', $cb);
-            }
-        }
-        if (is_string($cb)) {
-            return $cb;
-        }
-
-        return var_export($cb, true);
-    }
-
     /**
      * Add a listener for a particular event
      *

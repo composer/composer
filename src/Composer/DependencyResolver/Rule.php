@@ -331,16 +331,6 @@ abstract class Rule
         return Problem::getPackageList($packages, $isVerbose);
     }
 
-    private function getReplacedNames(PackageInterface $package)
-    {
-        $names = array();
-        foreach ($package->getReplaces() as $link) {
-            $names[] = $link->getTarget();
-        }
-
-        return $names;
-    }
-
     private function deduplicateDefaultBranchAlias(PackageInterface $package)
     {
         if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
