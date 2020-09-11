@@ -95,7 +95,7 @@ class GitLabDriver extends VcsDriver
             ? $match['scheme']
             : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https')
         ;
-        $this->originUrl = $this->determineOrigin($configuredDomains, $guessedDomain, $urlParts, $match['port']);
+        $this->originUrl = self::determineOrigin($configuredDomains, $guessedDomain, $urlParts, $match['port']);
 
         if (false !== strpos($this->originUrl, ':') || false !== strpos($this->originUrl, '/')) {
             $this->hasNonstandardOrigin = true;

@@ -114,7 +114,7 @@ EOT
         } else {
             $factory = new Factory;
             $process = new ProcessExecutor();
-            $httpDownloader = $factory->createHttpDownloader($io, $config);
+            $httpDownloader = Factory::createHttpDownloader($io, $config);
             $downloadManager = $factory->createDownloadManager($io, $config, $httpDownloader, $process);
             $archiveManager = $factory->createArchiveManager($config, $downloadManager, new Loop($httpDownloader, $process));
         }
