@@ -129,7 +129,7 @@ class ArrayLoader implements LoaderInterface
         }
 
         if (isset($config['source'])) {
-            if (!isset($config['source']['type']) || !isset($config['source']['url']) || !isset($config['source']['reference'])) {
+            if (!isset($config['source']['type'], $config['source']['url'], $config['source']['reference'])) {
                 throw new \UnexpectedValueException(sprintf(
                     "Package %s's source key should be specified as {\"type\": ..., \"url\": ..., \"reference\": ...},\n%s given.",
                     $config['name'],
@@ -145,8 +145,7 @@ class ArrayLoader implements LoaderInterface
         }
 
         if (isset($config['dist'])) {
-            if (!isset($config['dist']['type'])
-             || !isset($config['dist']['url'])) {
+            if (!isset($config['dist']['type'], $config['dist']['url'])) {
                 throw new \UnexpectedValueException(sprintf(
                     "Package %s's dist key should be specified as ".
                     "{\"type\": ..., \"url\": ..., \"reference\": ..., \"shasum\": ...},\n%s given.",

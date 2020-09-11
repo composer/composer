@@ -120,8 +120,7 @@ class ComposerSchemaTest extends TestCase
 
             // remove justinrainbow/json-schema 3.0/5.2 props so it works with all versions
             foreach ($errors as &$err) {
-                unset($err['pointer']);
-                unset($err['context']);
+                unset($err['pointer'], $err['context']);
             }
 
             return $errors;

@@ -399,7 +399,7 @@ class PoolBuilder
         if ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies()) {
             foreach ($package->getReplaces() as $link) {
                 $replace = $link->getTarget();
-                if (isset($this->loadedPackages[$replace]) && isset($this->skippedLoad[$replace])) {
+                if (isset($this->loadedPackages[$replace], $this->skippedLoad[$replace])) {
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$replace])) {
                         $this->unfixPackage($request, $replace);
                         $this->markPackageNameForLoading($request, $replace, $link->getConstraint());
@@ -488,9 +488,7 @@ class PoolBuilder
             $this->unfixPackage($request, $this->skippedLoad[$name]);
         }
 
-        unset($this->skippedLoad[$name]);
-        unset($this->loadedPackages[$name]);
-        unset($this->maxExtendedReqs[$name]);
+        unset($this->skippedLoad[$name], $this->loadedPackages[$name], $this->maxExtendedReqs[$name]);
     }
 
     private function removeLoadedPackage(Request $request, PackageInterface $package, $index)

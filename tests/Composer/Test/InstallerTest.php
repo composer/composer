@@ -347,10 +347,7 @@ class InstallerTest extends TestCase
         $output = str_replace("\r", '', $io->getOutput());
         $this->assertEquals($expectResult, $result, $output . stream_get_contents($appOutput));
         if ($expectLock && isset($actualLock)) {
-            unset($actualLock['hash']);
-            unset($actualLock['content-hash']);
-            unset($actualLock['_readme']);
-            unset($actualLock['plugin-api-version']);
+            unset($actualLock['hash'], $actualLock['content-hash'], $actualLock['_readme'], $actualLock['plugin-api-version']);
             $this->assertEquals($expectLock, $actualLock);
         }
 

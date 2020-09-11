@@ -236,8 +236,7 @@ class Bitbucket
         $authConfig = $this->config->get('bitbucket-oauth');
 
         if (
-            !isset($authConfig[$originUrl]['access-token'])
-            || !isset($authConfig[$originUrl]['access-token-expiration'])
+            !isset($authConfig[$originUrl]['access-token'], $authConfig[$originUrl]['access-token-expiration'])
             || time() > $authConfig[$originUrl]['access-token-expiration']
         ) {
             return false;

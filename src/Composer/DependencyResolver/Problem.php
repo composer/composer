@@ -331,7 +331,7 @@ class Problem
         }
         foreach ($prepared as $name => $package) {
             // remove the implicit default branch alias to avoid cruft in the display
-            if (isset($package['versions'][VersionParser::DEFAULT_BRANCH_ALIAS]) && isset($hasDefaultBranch[$name])) {
+            if (isset($package['versions'][VersionParser::DEFAULT_BRANCH_ALIAS], $hasDefaultBranch[$name])) {
                 unset($package['versions'][VersionParser::DEFAULT_BRANCH_ALIAS]);
             }
 

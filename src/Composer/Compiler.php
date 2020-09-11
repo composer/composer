@@ -199,9 +199,14 @@ class Compiler
         }
 
         if ($path === 'src/Composer/Composer.php') {
-            $content = str_replace('@package_version@', $this->version, $content);
-            $content = str_replace('@package_branch_alias_version@', $this->branchAliasVersion, $content);
-            $content = str_replace('@release_date@', $this->versionDate->format('Y-m-d H:i:s'), $content);
+            $content = strtr(
+                $content,
+                array(
+                    '@package_version@' => $this->version,
+                    '@package_branch_alias_version@' => $this->branchAliasVersion,
+                    '@release_date@' => $this->versionDate->format('Y-m-d H:i:s')
+                )
+            );
             $content = preg_replace('{SOURCE_VERSION = \'[^\']+\';}', 'SOURCE_VERSION = \'\';', $content);
         }
 

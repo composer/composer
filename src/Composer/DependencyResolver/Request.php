@@ -82,8 +82,7 @@ class Request
 
     public function unfixPackage(PackageInterface $package)
     {
-        unset($this->fixedPackages[spl_object_hash($package)]);
-        unset($this->unlockables[spl_object_hash($package)]);
+        unset($this->fixedPackages[spl_object_hash($package)], $this->unlockables[spl_object_hash($package)]);
     }
 
     public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies)

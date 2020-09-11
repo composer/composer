@@ -19,22 +19,12 @@ class StreamContextFactoryTest extends TestCase
 {
     protected function setUp()
     {
-        unset($_SERVER['HTTP_PROXY']);
-        unset($_SERVER['http_proxy']);
-        unset($_SERVER['HTTPS_PROXY']);
-        unset($_SERVER['https_proxy']);
-        unset($_SERVER['NO_PROXY']);
-        unset($_SERVER['no_proxy']);
+        unset($_SERVER['HTTP_PROXY'], $_SERVER['http_proxy'], $_SERVER['HTTPS_PROXY'], $_SERVER['https_proxy'], $_SERVER['NO_PROXY'], $_SERVER['no_proxy']);
     }
 
     protected function tearDown()
     {
-        unset($_SERVER['HTTP_PROXY']);
-        unset($_SERVER['http_proxy']);
-        unset($_SERVER['HTTPS_PROXY']);
-        unset($_SERVER['https_proxy']);
-        unset($_SERVER['NO_PROXY']);
-        unset($_SERVER['no_proxy']);
+        unset($_SERVER['HTTP_PROXY'], $_SERVER['http_proxy'], $_SERVER['HTTPS_PROXY'], $_SERVER['https_proxy'], $_SERVER['NO_PROXY'], $_SERVER['no_proxy']);
     }
 
     /**
