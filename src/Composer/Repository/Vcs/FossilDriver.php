@@ -28,7 +28,6 @@ class FossilDriver extends VcsDriver
     protected $rootIdentifier;
     protected $repoFile;
     protected $checkoutDir;
-    protected $infoCache = array();
 
     /**
      * {@inheritDoc}

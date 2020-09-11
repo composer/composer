@@ -30,7 +30,6 @@ class GitDriver extends VcsDriver
     protected $branches;
     protected $rootIdentifier;
     protected $repoDir;
-    protected $infoCache = array();
 
     /**
      * {@inheritDoc}

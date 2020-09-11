@@ -33,7 +33,6 @@ class GitHubDriver extends VcsDriver
     protected $rootIdentifier;
     protected $repoData;
     protected $hasIssues;
-    protected $infoCache = array();
     protected $isPrivate = false;
     private $isArchived = false;
     private $fundingInfo;

@@ -145,7 +145,7 @@ class Installer
      * @var array|null
      */
     protected $updateMirrors = false;
-    protected $updateAllowList = null;
+    protected $updateAllowList;
     protected $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
 
     /**

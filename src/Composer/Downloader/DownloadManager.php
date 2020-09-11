@@ -30,7 +30,7 @@ class DownloadManager
     /** @var bool */
     private $preferDist = false;
     /** @var bool */
-    private $preferSource = false;
+    private $preferSource;
     /** @var array<string, string> */
     private $packagePreferences = array();
     /** @var Filesystem */

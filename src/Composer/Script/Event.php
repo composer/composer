@@ -60,7 +60,6 @@ class Event extends BaseEvent
         $this->composer = $composer;
         $this->io = $io;
         $this->devMode = $devMode;
-        $this->originatingEvent = null;
     }
 
     /**

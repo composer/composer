@@ -66,7 +66,7 @@ class Application extends BaseApplication
     /**
      * @var string Store the initial working directory at startup time
      */
-    private $initialWorkingDirectory = '';
+    private $initialWorkingDirectory;
 
     public function __construct()
     {

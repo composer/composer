@@ -36,7 +36,6 @@ class SvnDriver extends VcsDriver
     protected $tags;
     protected $branches;
     protected $rootIdentifier;
-    protected $infoCache = array();
 
     protected $trunkPath = 'trunk';
     protected $branchesPath = 'branches';

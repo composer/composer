@@ -28,7 +28,6 @@ abstract class BitbucketDriver extends VcsDriver
     protected $rootIdentifier;
     protected $tags;
     protected $branches;
-    protected $infoCache = array();
     protected $branchesUrl = '';
     protected $tagsUrl = '';
     protected $homeUrl = '';
