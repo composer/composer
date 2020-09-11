@@ -79,7 +79,6 @@ class AuthHelper
     public function promptAuthIfNeeded($url, $origin, $statusCode, $reason = null, $headers = array())
     {
         $storeAuth = false;
-        $retry = false;
 
         if (in_array($origin, $this->config->get('github-domains'), true)) {
             $gitHubUtil = new GitHub($this->io, $this->config, null);
@@ -181,9 +180,7 @@ class AuthHelper
             $storeAuth = $this->config->get('store-auths');
         }
 
-        $retry = true;
-
-        return array('retry' => $retry, 'storeAuth' => $storeAuth);
+        return array('retry' => true, 'storeAuth' => $storeAuth);
     }
 
     /**

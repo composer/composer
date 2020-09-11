@@ -1115,7 +1115,7 @@ EOT
         array $packagesInTree
     ) {
         $children = array();
-        list($package, $versions) = $this->getPackage(
+        list($package) = $this->getPackage(
             $installedRepo,
             $remoteRepos,
             $name,

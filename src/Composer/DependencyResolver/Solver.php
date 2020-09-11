@@ -645,9 +645,6 @@ class Solver
          * with step 1
          */
 
-        $decisionQueue = array();
-        $decisionSupplementQueue = array();
-
         $level = 1;
         $systemLevel = $level + 1;
 

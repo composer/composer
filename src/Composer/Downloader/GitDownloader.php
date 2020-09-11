@@ -142,7 +142,6 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $cachePath = $this->config->get('cache-vcs-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $url).'/';
         $ref = $target->getSourceReference();
-        $flag = Platform::isWindows() ? '/D ' : '';
 
         if (!empty($this->cachedPackages[$target->getId()][$ref])) {
             $msg = "Checking out ".$this->getShortHash($ref).' from cache';

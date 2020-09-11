@@ -73,7 +73,7 @@ EOT
         // Dispatch pre-status-command
         $composer->getEventDispatcher()->dispatchScript(ScriptEvents::PRE_STATUS_CMD, true);
 
-        $exitCode = $this->doExecute($input, $output);
+        $exitCode = $this->doExecute($input);
 
         // Dispatch post-status-command
         $composer->getEventDispatcher()->dispatchScript(ScriptEvents::POST_STATUS_CMD, true);
@@ -83,10 +83,9 @@ EOT
 
     /**
      * @param  InputInterface  $input
-     * @param  OutputInterface $output
      * @return int
      */
-    private function doExecute(InputInterface $input, OutputInterface $output)
+    private function doExecute(InputInterface $input)
     {
         // init repos
         $composer = $this->getComposer();

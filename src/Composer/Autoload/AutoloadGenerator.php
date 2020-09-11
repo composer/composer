@@ -609,7 +609,7 @@ EOF;
         $extensionProviders = array();
 
         foreach ($packageMap as $item) {
-            list($package, $installPath) = $item;
+            $package = $item[0];
             foreach (array_merge($package->getReplaces(), $package->getProvides()) as $link) {
                 if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
                     $extensionProviders[$match[1]][] = $link->getConstraint() ?: new MatchAllConstraint();
@@ -618,7 +618,7 @@ EOF;
         }
 
         foreach ($packageMap as $item) {
-            list($package, $installPath) = $item;
+            $package = $item[0];
             foreach ($package->getRequires() as $link) {
                 if (in_array($link->getTarget(), $ignorePlatformReqs, true)) {
                     continue;

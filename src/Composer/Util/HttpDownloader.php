@@ -39,8 +39,6 @@ class HttpDownloader
     private $options = array();
     private $runningJobs = 0;
     private $maxJobs = 10;
-    private $lastProgress;
-    private $disableTls = false;
     private $curl;
     private $rfs;
     private $idGen = 0;
@@ -63,8 +61,6 @@ class HttpDownloader
         // The cafile option can be set via config.json
         if ($disableTls === false) {
             $this->options = StreamContextFactory::getTlsDefaults($options, $io);
-        } else {
-            $this->disableTls = true;
         }
 
         // handle the other externally set options normally.
@@ -81,7 +77,7 @@ class HttpDownloader
 
     public function get($url, $options = array())
     {
-        list($job, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => false), true);
+        list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => false), true);
         $this->wait($job['id']);
 
         return $this->getResponse($job['id']);
@@ -89,14 +85,14 @@ class HttpDownloader
 
     public function add($url, $options = array())
     {
-        list($job, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => false));
+        list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => false));
 
         return $promise;
     }
 
     public function copy($url, $to, $options = array())
     {
-        list($job, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to), true);
+        list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to), true);
         $this->wait($job['id']);
 
         return $this->getResponse($job['id']);
@@ -104,7 +100,7 @@ class HttpDownloader
 
     public function addCopy($url, $to, $options = array())
     {
-        list($job, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to));
+        list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to));
 
         return $promise;
     }
@@ -167,7 +163,7 @@ class HttpDownloader
                 $job['status'] = HttpDownloader::STATUS_STARTED;
 
                 if ($job['request']['copyTo']) {
-                    $result = $rfs->copy($job['origin'], $url, $job['request']['copyTo'], false /* TODO progress */, $options);
+                    $rfs->copy($job['origin'], $url, $job['request']['copyTo'], false /* TODO progress */, $options);
 
                     $headers = $rfs->getLastHeaders();
                     $response = new Http\Response($job['request'], $rfs->findStatusCode($headers), $headers, $job['request']['copyTo'].'~');
@@ -184,7 +180,6 @@ class HttpDownloader
         }
 
         $downloader = $this;
-        $io = $this->io;
         $curl = $this->curl;
 
         $canceler = function () use (&$job, $curl) {

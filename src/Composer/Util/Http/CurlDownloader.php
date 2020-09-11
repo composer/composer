@@ -214,7 +214,6 @@ class CurlDownloader
 
         $this->checkCurlResult(curl_multi_add_handle($this->multiHandle, $curlHandle));
         // TODO progress
-        //$params['notification'](STREAM_NOTIFY_RESOLVE, STREAM_NOTIFY_SEVERITY_INFO, '', 0, 0, 0, false);
 
         return (int) $curlHandle;
     }
@@ -271,7 +270,6 @@ class CurlDownloader
             $response = null;
             try {
                 // TODO progress
-                //$this->onProgress($curlHandle, $job['callback'], $progress, $job['progress']);
                 if (CURLE_OK !== $errno || $error) {
                     throw new TransportException($error);
                 }
@@ -363,7 +361,6 @@ class CurlDownloader
             $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
 
             if ($this->jobs[$i]['progress'] !== $progress) {
-                $previousProgress = $this->jobs[$i]['progress'];
                 $this->jobs[$i]['progress'] = $progress;
 
                 if (isset($this->jobs[$i]['options']['max_file_size'])) {
@@ -378,8 +375,7 @@ class CurlDownloader
                     }
                 }
 
-                // TODO
-                //$this->onProgress($curlHandle, $this->jobs[$i]['callback'], $progress, $previousProgress);
+                // TODO progress
             }
         }
     }

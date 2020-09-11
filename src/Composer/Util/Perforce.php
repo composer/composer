@@ -389,7 +389,6 @@ class Perforce
             } else {
                 $command = 'echo ' . ProcessExecutor::escape($password)  . ' | ' . $this->generateP4Command(' login -a', false);
                 $exitCode = $this->executeCommand($command);
-                $result = trim($this->commandResult);
                 if ($exitCode) {
                     throw new \Exception("Error logging in:" . $this->process->getErrorOutput());
                 }

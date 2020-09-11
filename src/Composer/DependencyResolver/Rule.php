@@ -322,7 +322,6 @@ abstract class Rule
      */
     protected function formatPackagesUnique($pool, array $packages, $isVerbose)
     {
-        $prepared = array();
         foreach ($packages as $index => $package) {
             if (!\is_object($package)) {
                 $packages[$index] = $pool->literalToPackage($package);

@@ -93,7 +93,7 @@ class Bitbucket
      * @param  string $originUrl
      * @return bool
      */
-    private function requestAccessToken($originUrl)
+    private function requestAccessToken()
     {
         try {
             $response = $this->httpDownloader->get(self::OAUTH2_ACCESS_TOKEN_URL, array(
@@ -166,7 +166,7 @@ class Bitbucket
 
         $this->io->setAuthentication($originUrl, $consumerKey, $consumerSecret);
 
-        if (!$this->requestAccessToken($originUrl)) {
+        if (!$this->requestAccessToken()) {
             return false;
         }
 
@@ -196,7 +196,7 @@ class Bitbucket
         }
 
         $this->io->setAuthentication($originUrl, $consumerKey, $consumerSecret);
-        if (!$this->requestAccessToken($originUrl)) {
+        if (!$this->requestAccessToken()) {
             return '';
         }
 

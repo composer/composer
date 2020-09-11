@@ -47,11 +47,6 @@ class RootPackageLoader extends ArrayLoader
      */
     private $versionGuesser;
 
-    /**
-     * @var IOInterface
-     */
-    private $io;
-
     public function __construct(RepositoryManager $manager, Config $config, VersionParser $parser = null, VersionGuesser $versionGuesser = null, IOInterface $io = null)
     {
         parent::__construct($parser);
@@ -59,7 +54,6 @@ class RootPackageLoader extends ArrayLoader
         $this->manager = $manager;
         $this->config = $config;
         $this->versionGuesser = $versionGuesser ?: new VersionGuesser($config, new ProcessExecutor($io), $this->versionParser);
-        $this->io = $io;
     }
 
     /**

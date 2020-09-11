@@ -155,7 +155,6 @@ class ProcessExecutor
         };
 
         $self = $this;
-        $io = $this->io;
 
         $canceler = function () use (&$job) {
             if ($job['status'] === ProcessExecutor::STATUS_QUEUED) {

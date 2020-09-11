@@ -153,7 +153,6 @@ EOT
 
     protected function printTable(OutputInterface $output, $results)
     {
-        $table = array();
         $rows = array();
         foreach ($results as $result) {
             /**
