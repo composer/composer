@@ -729,8 +729,7 @@ EOT
     private function checkConnectivity()
     {
         if (!ini_get('allow_url_fopen')) {
-            $result = '<info>Skipped because allow_url_fopen is missing.</info>';
-            return $result;
+            return '<info>Skipped because allow_url_fopen is missing.</info>';
         }
 
         return true;

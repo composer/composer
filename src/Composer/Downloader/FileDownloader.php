@@ -338,7 +338,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $this->io->writeError("  - " . UpdateOperation::format($initial, $target) . ": ", false);
 
         $promise = $this->remove($initial, $path, false);
-        if (!$promise instanceof PromiseInterface) {
+        if ($promise === null || !$promise instanceof PromiseInterface) {
             $promise = \React\Promise\resolve();
         }
         $self = $this;

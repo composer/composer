@@ -453,13 +453,11 @@ TAGSPUBKEY
 
     protected function getOldInstallationFinder($rollbackDir)
     {
-        $finder = Finder::create()
+        return Finder::create()
             ->depth(0)
             ->files()
             ->name('*' . self::OLD_INSTALL_EXT)
             ->in($rollbackDir);
-
-        return $finder;
     }
 
     /**
@@ -562,7 +560,7 @@ EOT;
             $io->writeError('<info>Operation succeeded.</info>');
         } else {
             $io->writeError('<error>Operation failed (file not written). '.$helpMessage.'</error>');
-        };
+        }
 
         return $result;
     }

@@ -426,9 +426,7 @@ class Perforce
     {
         $index = strpos($identifier, '@');
         if ($index === false) {
-            $path = $identifier. '/' . $file;
-
-            return $path;
+            return $identifier. '/' . $file;
         }
 
         $path = substr($identifier, 0, $index) . '/' . $file . substr($identifier, $index);
@@ -475,9 +473,7 @@ class Perforce
         $lastCommitArr = explode(' ', $lastCommit);
         $lastCommitNum = $lastCommitArr[1];
 
-        $branches = array('master' => $possibleBranches[$this->p4Branch] . '@'. $lastCommitNum);
-
-        return $branches;
+        return array('master' => $possibleBranches[$this->p4Branch] . '@'. $lastCommitNum);
     }
 
     public function getTags()

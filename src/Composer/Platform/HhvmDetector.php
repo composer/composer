@@ -35,7 +35,7 @@ class HhvmDetector
     public function getVersion()
     {
         if (null !== self::$hhvmVersion) {
-            return self::$hhvmVersion ?: null;
+            return self::$hhvmVersion;
         }
 
         self::$hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;

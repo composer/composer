@@ -51,7 +51,7 @@ class GitHubTest extends TestCase
                 $this->equalTo($url = sprintf('https://api.%s/', $this->origin)),
                 $this->anything()
             )
-            ->willReturn(new Response(array('url' => $url), 200, array(), '{}'));
+            ->willReturn(new Response(array('url' => $url), 200, array(), '{}'))
         ;
 
         $config = $this->getConfigMock();
