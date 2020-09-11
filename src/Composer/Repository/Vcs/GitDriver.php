@@ -25,7 +25,6 @@ use Composer\Config;
  */
 class GitDriver extends VcsDriver
 {
-    protected $cache;
     protected $tags;
     protected $branches;
     protected $rootIdentifier;

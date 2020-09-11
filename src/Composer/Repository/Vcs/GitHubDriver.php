@@ -25,7 +25,6 @@ use Composer\Util\Http\Response;
  */
 class GitHubDriver extends VcsDriver
 {
-    protected $cache;
     protected $owner;
     protected $repository;
     protected $tags;

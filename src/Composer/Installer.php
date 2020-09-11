@@ -996,7 +996,7 @@ class Installer
         if (!$this->optimizeAutoloader) {
             // Force classMapAuthoritative off when not optimizing the
             // autoloader
-            $this->setClassMapAuthoritative();
+            $this->setClassMapAuthoritative(false);
         }
 
         return $this;

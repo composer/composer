@@ -28,10 +28,6 @@ use Composer\Downloader\TransportException;
  */
 class SvnDriver extends VcsDriver
 {
-    /**
-     * @var Cache
-     */
-    protected $cache;
     protected $baseUrl;
     protected $tags;
     protected $branches;

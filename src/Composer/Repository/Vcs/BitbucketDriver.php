@@ -20,8 +20,6 @@ use Composer\Util\Http\Response;
 
 abstract class BitbucketDriver extends VcsDriver
 {
-    /** @var Cache */
-    protected $cache;
     protected $owner;
     protected $repository;
     protected $hasIssues;

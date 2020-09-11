@@ -147,11 +147,7 @@ class Pool implements \Countable
         $candidateVersion = $candidate->getVersion();
 
         if ($candidateName === $name) {
-            if ($constraint === null || CompilingMatcher::match($constraint, Constraint::OP_EQ, $candidateVersion)) {
-                return true;
-            }
-
-            return false;
+            return $constraint === null || CompilingMatcher::match($constraint, Constraint::OP_EQ, $candidateVersion);
         }
 
         $provides = $candidate->getProvides();
