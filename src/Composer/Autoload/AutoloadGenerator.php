@@ -53,7 +53,7 @@ class AutoloadGenerator
     private $classMapAuthoritative = false;
 
     /**
-     * @var bool
+     * @var bool|string
      */
     private $apcu = false;
 
@@ -92,11 +92,11 @@ class AutoloadGenerator
     /**
      * Whether or not generated autoloader considers APCu caching.
      *
-     * @param bool $apcu
+     * @param bool|string $apcu
      */
     public function setApcu($apcu)
     {
-        $this->apcu = (bool) $apcu;
+        $this->apcu = is_string($apcu) ? $apcu : (bool) $apcu;
     }
 
     /**
@@ -858,7 +858,7 @@ CLASSMAPAUTHORITATIVE;
         }
 
         if ($this->apcu) {
-            $apcuPrefix = substr(base64_encode(md5(uniqid('', true), true)), 0, -3);
+            $apcuPrefix = is_string($this->apcu) ? $this->apcu : substr(base64_encode(md5(uniqid('', true), true)), 0, -3);
             $file .= <<<APCU
         \$loader->setApcuPrefix('$apcuPrefix');
 

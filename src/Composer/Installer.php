@@ -1023,12 +1023,12 @@ class Installer
     /**
      * Whether or not generated autoloader considers APCu caching.
      *
-     * @param  bool      $apcuAutoloader
+     * @param  bool|string $apcuAutoloader
      * @return Installer
      */
     public function setApcuAutoloader($apcuAutoloader = false)
     {
-        $this->apcuAutoloader = (bool) $apcuAutoloader;
+        $this->apcuAutoloader = is_string($apcuAutoloader) ? $apcuAutoloader : (bool) $apcuAutoloader;
 
         return $this;
     }
