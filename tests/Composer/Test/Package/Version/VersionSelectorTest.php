@@ -57,9 +57,9 @@ class VersionSelectorTest extends TestCase
 
         $parser = new VersionParser;
         $package1 = $this->createPackage('1.0.0');
-        $package1->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.4'), 'requires', '>=5.4')));
+        $package1->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.4'), Link::TYPE_REQUIRE, '>=5.4')));
         $package2 = $this->createPackage('2.0.0');
-        $package2->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), 'requires', '>=5.6')));
+        $package2->setRequires(array('php' => new Link($packageName, 'php', $parser->parseConstraints('>=5.6'), Link::TYPE_REQUIRE, '>=5.6')));
         $packages = array($package1, $package2);
 
         $repositorySet->expects($this->any())
@@ -83,9 +83,9 @@ class VersionSelectorTest extends TestCase
 
         $parser = new VersionParser;
         $package1 = $this->createPackage('1.0.0');
-        $package1->setRequires(array('ext-zip' => new Link($packageName, 'ext-zip', $parser->parseConstraints('^5.2'), 'requires', '^5.2')));
+        $package1->setRequires(array('ext-zip' => new Link($packageName, 'ext-zip', $parser->parseConstraints('^5.2'), Link::TYPE_REQUIRE, '^5.2')));
         $package2 = $this->createPackage('2.0.0');
-        $package2->setRequires(array('ext-zip' => new Link($packageName, 'ext-zip', $parser->parseConstraints('^5.4'), 'requires', '^5.4')));
+        $package2->setRequires(array('ext-zip' => new Link($packageName, 'ext-zip', $parser->parseConstraints('^5.4'), Link::TYPE_REQUIRE, '^5.4')));
         $packages = array($package1, $package2);
 
         $repositorySet->expects($this->any())
@@ -109,9 +109,9 @@ class VersionSelectorTest extends TestCase
 
         $parser = new VersionParser;
         $package1 = $this->createPackage('1.0.0');
-        $package1->setRequires(array('composer-runtime-api' => new Link($packageName, 'composer-runtime-api', $parser->parseConstraints('^1.0'), 'requires', '^1.0')));
+        $package1->setRequires(array('composer-runtime-api' => new Link($packageName, 'composer-runtime-api', $parser->parseConstraints('^1.0'), Link::TYPE_REQUIRE, '^1.0')));
         $package2 = $this->createPackage('1.1.0');
-        $package2->setRequires(array('composer-runtime-api' => new Link($packageName, 'composer-runtime-api', $parser->parseConstraints('^2.0'), 'requires', '^2.0')));
+        $package2->setRequires(array('composer-runtime-api' => new Link($packageName, 'composer-runtime-api', $parser->parseConstraints('^2.0'), Link::TYPE_REQUIRE, '^2.0')));
         $packages = array($package1, $package2);
 
         $repositorySet->expects($this->any())

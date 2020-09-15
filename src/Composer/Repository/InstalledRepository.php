@@ -176,7 +176,7 @@ class InstalledRepository extends CompositeRepository
 
                         $platformPkg = $this->findPackage($link->getTarget(), '*');
                         $description = $platformPkg ? 'but '.$platformPkg->getPrettyVersion().' is installed' : 'but it is missing';
-                        $results[] = array($package, new Link($package->getName(), $link->getTarget(), null, 'requires', $link->getPrettyConstraint().' '.$description), false);
+                        $results[] = array($package, new Link($package->getName(), $link->getTarget(), null, Link::TYPE_REQUIRE, $link->getPrettyConstraint().' '.$description), false);
 
                         continue;
                     }

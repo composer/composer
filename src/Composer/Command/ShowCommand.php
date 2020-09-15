@@ -17,6 +17,7 @@ use Composer\DependencyResolver\DefaultPolicy;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
+use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
@@ -613,8 +614,8 @@ EOT
         $io = $this->getIO();
 
         $this->printMeta($package, $versions, $installedRepo, $latestPackage ?: null);
-        $this->printLinks($package, 'requires');
-        $this->printLinks($package, 'devRequires', 'requires (dev)');
+        $this->printLinks($package, Link::TYPE_REQUIRE);
+        $this->printLinks($package, Link::TYPE_DEV_REQUIRE, 'requires (dev)');
 
         if ($package->getSuggests()) {
             $io->write("\n<info>suggests</info>");
@@ -623,9 +624,9 @@ EOT
             }
         }
 
-        $this->printLinks($package, 'provides');
-        $this->printLinks($package, 'conflicts');
-        $this->printLinks($package, 'replaces');
+        $this->printLinks($package, Link::TYPE_PROVIDE);
+        $this->printLinks($package, Link::TYPE_CONFLICT);
+        $this->printLinks($package, Link::TYPE_REPLACE);
     }
 
     /**
@@ -911,7 +912,7 @@ EOT
 
     private function appendLinks($json, CompletePackageInterface $package)
     {
-        foreach (array('requires', 'devRequires', 'provides', 'conflicts', 'replaces') as $linkType) {
+        foreach (Link::$TYPES as $linkType) {
             $json = $this->appendLink($json, $package, $linkType);
         }
 

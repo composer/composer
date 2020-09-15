@@ -549,7 +549,7 @@ class PlatformRepository extends ArrayRepository
 
         if ($name === 'uuid') {
             $ext->setReplaces(array(
-                new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version), 'replaces', $ext->getPrettyVersion())
+                new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version), Link::TYPE_REPLACE, $ext->getPrettyVersion())
             ));
         }
 
@@ -588,7 +588,7 @@ class PlatformRepository extends ArrayRepository
         $lib->setDescription($description);
 
         $links = function ($alias) use ($name, $version, $lib) {
-            return new Link('lib-'.$name, 'lib-'.$alias, new Constraint('=', $version), 'replaces', $lib->getPrettyVersion());
+            return new Link('lib-'.$name, 'lib-'.$alias, new Constraint('=', $version), Link::TYPE_REPLACE, $lib->getPrettyVersion());
         };
         $lib->setReplaces(array_map($links, $replaces));
         $lib->setProvides(array_map($links, $provides));
