@@ -853,7 +853,7 @@ EOF;
         file_put_contents($this->vendorDir.'/c/c/foo/ClassMapBaz.php', '<?php class ClassMapBaz {}');
 
         $this->generator->setClassMapAuthoritative(true);
-        $this->generator->setApcu('custom\'Prefix');
+        $this->generator->setApcu(true, 'custom\'Prefix');
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_7');
 
         $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated.");
