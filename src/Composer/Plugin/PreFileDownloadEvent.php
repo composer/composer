@@ -35,6 +35,11 @@ class PreFileDownloadEvent extends Event
     /**
      * @var string
      */
+    private $customCacheKey;
+
+    /**
+     * @var string
+     */
     private $type;
 
     /**
@@ -86,6 +91,26 @@ class PreFileDownloadEvent extends Event
     public function setProcessedUrl($processedUrl)
     {
         $this->processedUrl = $processedUrl;
+    }
+
+    /**
+     * Retrieves a custom package cache key for this download.
+     *
+     * @return string
+     */
+    public function getCustomCacheKey()
+    {
+        return $this->customCacheKey;
+    }
+
+    /**
+     * Sets a custom package cache key for this download.
+     *
+     * @param string $customCacheKey New cache key
+     */
+    public function setCustomCacheKey($customCacheKey)
+    {
+        $this->customCacheKey = $customCacheKey;
     }
 
     /**

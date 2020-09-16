@@ -113,6 +113,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $urls[$index] = array(
                 'base' => $url,
                 'processed' => $processedUrl,
+                // we use the complete download url here to avoid conflicting entries
+                // from different packages, which would potentially allow a given package
+                // in a third party repo to pre-populate the cache for the same package in
+                // packagist for example.
                 'cacheKey' => $this->getCacheKey($package, $processedUrl)
             );
         }
@@ -136,6 +140,11 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             if ($eventDispatcher) {
                 $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $httpDownloader, $url['processed'], 'package', $package);
                 $eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                if ($preFileDownloadEvent->getCustomCacheKey() !== null) {
+                    $url['cacheKey'] = $this->getCacheKey($package, $preFileDownloadEvent->getCustomCacheKey());
+                } else if ($preFileDownloadEvent->getProcessedUrl() !== $url['processed']) {
+                    $url['cacheKey'] = $this->getCacheKey($package, $preFileDownloadEvent->getProcessedUrl());
+                }
                 $url['processed'] = $preFileDownloadEvent->getProcessedUrl();
             }
 
@@ -398,14 +407,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         return $url;
     }
 
-    private function getCacheKey(PackageInterface $package, $processedUrl)
+    private function getCacheKey(PackageInterface $package, $key)
     {
-        // we use the complete download url here to avoid conflicting entries
-        // from different packages, which would potentially allow a given package
-        // in a third party repo to pre-populate the cache for the same package in
-        // packagist for example.
-        $cacheKey = sha1($processedUrl);
-
+        $cacheKey = sha1($key);
         return $package->getName().'/'.$cacheKey.'.'.$package->getDistType();
     }
 
