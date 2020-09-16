@@ -865,7 +865,7 @@ CLASSMAPAUTHORITATIVE;
         }
 
         if ($this->apcu) {
-            $apcuPrefix = var_export(($this->apcuPrefix ?: substr(base64_encode(md5(uniqid('', true), true)), 0, -3)), true);
+            $apcuPrefix = var_export(($this->apcuPrefix !== null ? $this->apcuPrefix : substr(base64_encode(md5(uniqid('', true), true)), 0, -3)), true);
             $file .= <<<APCU
         \$loader->setApcuPrefix($apcuPrefix);
 
