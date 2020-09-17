@@ -21,10 +21,16 @@
             "homepage": "https://seld.be"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:simonberger/semver.git"
+        }
+    ],
     "require": {
         "php": "^5.3.2 || ^7.0 || ^8.0",
         "composer/ca-bundle": "^1.0",
-        "composer/semver": "^3.0",
+        "composer/semver": "dev-exclude-conflict-test",
         "composer/spdx-licenses": "^1.2",
         "composer/xdebug-handler": "^1.1",
         "justinrainbow/json-schema": "^5.2.10",

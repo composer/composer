@@ -79,6 +79,10 @@ class PoolBuilder
      */
     private $packages = array();
     /**
+     * @psalm-var array<string, ConstraintInterface>
+     */
+    private $conflicts = array();
+    /**
      * @psalm-var list<Package>
      */
     private $unacceptableFixedPackages = array();
@@ -232,6 +236,7 @@ class PoolBuilder
         $this->packagesToLoad = array();
         $this->loadedPackages = array();
         $this->loadedPerRepo = array();
+        $this->conflicts = array();
         $this->packages = array();
         $this->unacceptableFixedPackages = array();
         $this->maxExtendedReqs = array();
@@ -367,9 +372,24 @@ class PoolBuilder
             $this->aliasMap[spl_object_hash($aliasPackage->getAliasOf())][$newIndex] = $aliasPackage;
         }
 
+        foreach ($package->getConflicts() as $link) {
+            $conflict = $link->getTarget();
+            $conflictConstraint = $link->getConstraint();
+            if (isset($this->conflicts[$conflict]) && !Intervals::isSubsetOf($conflictConstraint, $this->conflicts[$conflict])) {
+                $newConflict = Intervals::compactConstraint(MultiConstraint::create(array($this->conflicts[$conflict], $conflictConstraint), false));
+                $this->conflicts[$conflict] = $newConflict;
+            } else {
+                $this->conflicts[$conflict] = $conflictConstraint;
+            }
+        }
+
         foreach ($package->getRequires() as $link) {
             $require = $link->getTarget();
             $linkConstraint = $link->getConstraint();
+
+            if (isset($this->conflicts[$require])) {
+                $linkConstraint = Intervals::excludeConflict($linkConstraint, $this->conflicts[$require]);
+            }
 
             if ($propagateUpdate) {
                 // if this is a partial update with transitive dependencies we need to unfix the package we now know is a

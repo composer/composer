@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9b94ece2895724239b36aec399e5321a",
+    "content-hash": "fd06218ced76485750b95e92051c1e9a",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -83,16 +83,16 @@
         },
         {
             "name": "composer/semver",
-            "version": "3.2.0",
+            "version": "dev-exclude-conflict-test",
             "source": {
                 "type": "git",
-                "url": "https://github.com/composer/semver.git",
-                "reference": "da7ce661431b17a71271cdf7f5437dc722133123"
+                "url": "https://github.com/simonberger/semver.git",
+                "reference": "e924e4bbd2a27de82f7aa9a4cbe779e1838527a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/da7ce661431b17a71271cdf7f5437dc722133123",
-                "reference": "da7ce661431b17a71271cdf7f5437dc722133123",
+                "url": "https://api.github.com/repos/simonberger/semver/zipball/e924e4bbd2a27de82f7aa9a4cbe779e1838527a4",
+                "reference": "e924e4bbd2a27de82f7aa9a4cbe779e1838527a4",
                 "shasum": ""
             },
             "require": {
@@ -113,7 +113,16 @@
                     "Composer\\Semver\\": "src"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Composer\\Semver\\": "tests"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/simple-phpunit"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -144,23 +153,9 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/composer/semver/tree/3.2.0"
+                "source": "https://github.com/simonberger/semver/tree/exclude-conflict-test"
             },
-            "funding": [
-                {
-                    "url": "https://packagist.com",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/composer",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/composer/composer",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2020-09-09T09:39:19+00:00"
+            "time": "2020-09-17T19:01:59+00:00"
         },
         {
             "name": "composer/spdx-licenses",
@@ -1526,7 +1521,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "composer/semver": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
