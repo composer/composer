@@ -123,13 +123,16 @@ class PoolBuilder
 
     public function buildPool(array $repositories, Request $request)
     {
+        $singleVersionPackages = $request->getFixedPackages();
+
         if ($request->getUpdateAllowList()) {
             $this->updateAllowList = $request->getUpdateAllowList();
             $this->warnAboutNonMatchingUpdateAllowList($request);
 
             foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
                 if (!$this->isUpdateAllowed($lockedPackage)) {
-                    $request->fixPackage($lockedPackage);
+                    //$request->fixPackage($lockedPackage);
+                    $singleVersionPackages[] = $lockedPackage;
                     $lockedName = $lockedPackage->getName();
                     // remember which packages we skipped loading remote content for in this partial update
                     $this->skippedLoad[$lockedName] = $lockedName;
@@ -140,7 +143,7 @@ class PoolBuilder
             }
         }
 
-        foreach ($request->getFixedPackages() as $package) {
+        foreach ($singleVersionPackages as $package) {
             // using MatchAllConstraint here because fixed packages do not need to retrigger
             // loading any packages
             $this->loadedPackages[$package->getName()] = new MatchAllConstraint();
@@ -345,7 +348,7 @@ class PoolBuilder
         // apply to
         if (isset($this->rootReferences[$name])) {
             // do not modify the references on already locked packages
-            if (!$request->isFixedPackage($package)) {
+            if ($request->getLockedRepository() !== $package->getRepository() && !$request->isFixedPackage($package)) {
                 $package->setSourceDistReferences($this->rootReferences[$name]);
             }
         }
@@ -473,7 +476,7 @@ class PoolBuilder
         foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
             if (!($lockedPackage instanceof AliasPackage) && $lockedPackage->getName() === $name) {
                 if (false !== $index = array_search($lockedPackage, $this->packages, true)) {
-                    $request->unfixPackage($lockedPackage);
+                    //$request->unfixPackage($lockedPackage);
                     $this->removeLoadedPackage($request, $lockedPackage, $index);
                 }
             }
@@ -496,7 +499,7 @@ class PoolBuilder
         unset($this->packages[$index]);
         if (isset($this->aliasMap[spl_object_hash($package)])) {
             foreach ($this->aliasMap[spl_object_hash($package)] as $aliasIndex => $aliasPackage) {
-                $request->unfixPackage($aliasPackage);
+                //$request->unfixPackage($aliasPackage);
                 unset($this->packages[$aliasIndex]);
             }
             unset($this->aliasMap[spl_object_hash($package)]);

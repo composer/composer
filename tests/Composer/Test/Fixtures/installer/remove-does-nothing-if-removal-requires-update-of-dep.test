@@ -1,0 +1,39 @@
+--TEST--
+Removing a package has no effect if another package would require an update in order to find a correct set of dependencies without the removed package
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "root/a", "version": "1.0.0", "require": { "remove/b": "*", "dep/c": "*"} },
+                { "name": "remove/b", "version": "1.0.0", "require": { "dep/c": "*"} },
+                { "name": "dep/c", "version": "1.0.0" },
+                { "name": "dep/c", "version": "1.2.0", "replace": { "remove/b": "1.0.0"} }
+            ]
+        }
+    ],
+    "require": {
+        "root/a": "*"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        { "name": "root/a", "version": "1.0.0", "require": { "remove/b": "*", "dep/c": "*"} },
+        { "name": "remove/b", "version": "1.0.0", "require": { "dep/c": "*"} },
+        { "name": "dep/c", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false
+}
+--RUN--
+update remove/b
+--EXPECT--
+Installing dep/c (1.0.0)
+Installing remove/b (1.0.0)
+Installing root/a (1.0.0)
