@@ -264,14 +264,6 @@ class Factory
     }
 
     /**
-     * @deprecated Use Composer\Repository\RepositoryFactory::defaultRepos instead
-     */
-    public static function createDefaultRepositories(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
-    {
-        return RepositoryFactory::defaultRepos($io, $config, $rm);
-    }
-
-    /**
      * Creates a Composer instance
      *
      * @param  IOInterface               $io             IO instance
