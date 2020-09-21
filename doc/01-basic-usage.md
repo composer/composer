@@ -13,7 +13,10 @@ a logging library. If you have not yet installed Composer, refer to the
 
 To start using Composer in your project, all you need is a `composer.json`
 file. This file describes the dependencies of your project and may contain
-other metadata as well.
+other metadata as well. It typically should go in the top-most directory of
+your project/VCS repository. You can technically run Composer anywhere but
+if you want to publish a package to Packagist.org, it will have to be able
+to find the file at the top of your VCS repository.
 
 ### The `require` key
 
