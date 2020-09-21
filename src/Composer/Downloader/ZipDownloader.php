@@ -220,6 +220,9 @@ class ZipDownloader extends ArchiveDownloader
      *
      * @param string $file File to extract
      * @param string $path Path where to extract file
+     *
+     * TODO v3 should make this private once we can drop PHP 5.3 support
+     * @protected
      */
     public function extract(PackageInterface $package, $file, $path)
     {
