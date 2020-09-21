@@ -174,6 +174,10 @@ class PoolBuilder
                 continue;
             }
 
+            if (isset($this->conflicts[$packageName])) {
+                $constraint = Intervals::excludeConflict($constraint, $this->conflicts[$packageName]);
+            }
+
             $this->packagesToLoad[$packageName] = $constraint;
             $this->maxExtendedReqs[$packageName] = true;
         }
