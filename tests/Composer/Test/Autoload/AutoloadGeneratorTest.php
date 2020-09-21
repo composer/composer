@@ -438,7 +438,7 @@ class AutoloadGeneratorTest extends TestCase
 
         $b->setAutoload(array('psr-4' => array('B\\' => 'src/')));
         $b->setReplaces(
-            array(new Link('b/b', 'b/c', new Constraint('==', '1.0'), 'replaces'))
+            array(new Link('b/b', 'b/c', new Constraint('==', '1.0'), Link::TYPE_REPLACE))
         );
 
         $this->repository->expects($this->once())
