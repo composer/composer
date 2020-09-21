@@ -375,9 +375,11 @@ class PoolBuilder
         foreach ($package->getConflicts() as $link) {
             $conflict = $link->getTarget();
             $conflictConstraint = $link->getConstraint();
-            if (isset($this->conflicts[$conflict]) && !Intervals::isSubsetOf($conflictConstraint, $this->conflicts[$conflict])) {
-                $newConflict = Intervals::compactConstraint(MultiConstraint::create(array($this->conflicts[$conflict], $conflictConstraint), false));
-                $this->conflicts[$conflict] = $newConflict;
+            if (isset($this->conflicts[$conflict])) {
+                if (!Intervals::isSubsetOf($conflictConstraint, $this->conflicts[$conflict])) {
+                    $newConflict = Intervals::compactConstraint(MultiConstraint::create(array($this->conflicts[$conflict], $conflictConstraint), false));
+                    $this->conflicts[$conflict] = $newConflict;
+                }
             } else {
                 $this->conflicts[$conflict] = $conflictConstraint;
             }

@@ -87,12 +87,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/simonberger/semver.git",
-                "reference": "e924e4bbd2a27de82f7aa9a4cbe779e1838527a4"
+                "reference": "bb13c1120e6dea91e1cc5c5b2aa1d96444ed6328"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simonberger/semver/zipball/e924e4bbd2a27de82f7aa9a4cbe779e1838527a4",
-                "reference": "e924e4bbd2a27de82f7aa9a4cbe779e1838527a4",
+                "url": "https://api.github.com/repos/simonberger/semver/zipball/bb13c1120e6dea91e1cc5c5b2aa1d96444ed6328",
+                "reference": "bb13c1120e6dea91e1cc5c5b2aa1d96444ed6328",
                 "shasum": ""
             },
             "require": {
@@ -155,7 +155,7 @@
                 "issues": "https://github.com/composer/semver/issues",
                 "source": "https://github.com/simonberger/semver/tree/exclude-conflict-test"
             },
-            "time": "2020-09-17T19:01:59+00:00"
+            "time": "2020-09-21T03:32:00+00:00"
         },
         {
             "name": "composer/spdx-licenses",
@@ -1533,5 +1533,5 @@
     "platform-overrides": {
         "php": "5.3.9"
     },
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "1.1.0"
 }
