@@ -193,6 +193,8 @@ class RuleSetGenerator
 
     protected function addConflictRules($ignorePlatformReqs = false)
     {
+        return;
+
         /** @var PackageInterface $package */
         foreach ($this->addedPackages as $package) {
             foreach ($package->getConflicts() as $link) {
