@@ -223,12 +223,10 @@ class RuleSetGenerator
 
     protected function addRulesForRequest(Request $request, $ignorePlatformReqs)
     {
-        $unlockableMap = $request->getUnlockableMap();
-
         foreach ($request->getFixedPackages() as $package) {
             if ($package->id == -1) {
                 // fixed package was not added to the pool as it did not pass the stability requirements, this is fine
-                if ($this->pool->isUnacceptableFixedPackage($package)) {
+                if ($this->pool->isUnacceptableFixedOrLockedPackage($package)) {
                     continue;
                 }
 
@@ -240,7 +238,6 @@ class RuleSetGenerator
 
             $rule = $this->createInstallOneOfRule(array($package), Rule::RULE_FIXED, array(
                 'package' => $package,
-                'lockable' => !isset($unlockableMap[$package->id]),
             ));
             $this->addRule(RuleSet::TYPE_REQUEST, $rule);
         }

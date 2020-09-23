@@ -45,6 +45,7 @@ Require a new package in the composer.json and updating with its name as an argu
 --RUN--
 update new/pkg --with-dependencies
 --EXPECT--
+Removing current/dep-provide (1.0.0)
 Removing current/dep (1.0.0)
 Installing new/pkg (1.0.0)
 Installing new/pkg-provide (1.0.0)

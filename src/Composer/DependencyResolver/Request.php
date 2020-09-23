@@ -44,7 +44,7 @@ class Request
     protected $lockedRepository;
     protected $requires = array();
     protected $fixedPackages = array();
-    protected $unlockables = array();
+    protected $lockedPackages = array();
     protected $updateAllowList = array();
     protected $updateAllowTransitiveDependencies = false;
 
@@ -71,18 +71,22 @@ class Request
      *
      * @param bool $lockable if set to false, the package will not be written to the lock file
      */
-    public function fixPackage(PackageInterface $package, $lockable = true)
+    public function fixPackage(PackageInterface $package)
     {
         $this->fixedPackages[spl_object_hash($package)] = $package;
-
-        if (!$lockable) {
-            $this->unlockables[spl_object_hash($package)] = $package;
-        }
     }
 
-    public function unfixPackage(PackageInterface $package)
+    /**
+     * Mark an existing package as installed but removable
+     */
+    public function lockPackage(PackageInterface $package)
     {
-        unset($this->fixedPackages[spl_object_hash($package)], $this->unlockables[spl_object_hash($package)]);
+        $this->lockedPackages[spl_object_hash($package)] = $package;
+    }
+
+    public function unlockPackage(PackageInterface $package)
+    {
+        unset($this->lockedPackages[spl_object_hash($package)]);
     }
 
     public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies)
@@ -121,6 +125,21 @@ class Request
         return isset($this->fixedPackages[spl_object_hash($package)]);
     }
 
+    public function getLockedPackages()
+    {
+        return $this->lockedPackages;
+    }
+
+    public function isLockedPackage(PackageInterface $package)
+    {
+        return isset($this->lockedPackages[spl_object_hash($package)]);
+    }
+
+    public function getFixedOrLockedPackages()
+    {
+        return array_merge($this->fixedPackages, $this->lockedPackages);
+    }
+
     // TODO look into removing the packageIds option, the only place true is used is for the installed map in the solver problems
     // some locked packages may not be in the pool so they have a package->id of -1
     public function getPresentMap($packageIds = false)
@@ -140,15 +159,15 @@ class Request
         return $presentMap;
     }
 
-    public function getUnlockableMap()
+    public function getFixedPackagesMap()
     {
-        $unlockableMap = array();
+        $fixedPackagesMap = array();
 
-        foreach ($this->unlockables as $package) {
-            $unlockableMap[$package->id] = $package;
+        foreach ($this->fixedPackages as $package) {
+            $fixedPackagesMap[$package->id] = $package;
         }
 
-        return $unlockableMap;
+        return $fixedPackagesMap;
     }
 
     public function getLockedRepository()

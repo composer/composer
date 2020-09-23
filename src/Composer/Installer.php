@@ -821,9 +821,9 @@ class Installer
     {
         $request = new Request($lockedRepository);
 
-        $request->fixPackage($rootPackage, false);
+        $request->fixPackage($rootPackage);
         if ($rootPackage instanceof RootAliasPackage) {
-            $request->fixPackage($rootPackage->getAliasOf(), false);
+            $request->fixPackage($rootPackage->getAliasOf());
         }
 
         $fixedPackages = $platformRepo->getPackages();
@@ -841,7 +841,7 @@ class Installer
                 || !isset($provided[$package->getName()])
                 || !$provided[$package->getName()]->getConstraint()->matches(new Constraint('=', $package->getVersion()))
             ) {
-                $request->fixPackage($package, false);
+                $request->fixPackage($package);
             }
         }
 

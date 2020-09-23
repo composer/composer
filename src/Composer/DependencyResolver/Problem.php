@@ -229,11 +229,11 @@ class Problem
             return array("- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', 'it has the wrong version installed or is missing from your system, make sure to load the extension providing it.');
         }
 
-        $fixedPackage = null;
-        foreach ($request->getFixedPackages() as $package) {
+        $lockedPackage = null;
+        foreach ($request->getLockedPackages() as $package) {
             if ($package->getName() === $packageName) {
-                $fixedPackage = $package;
-                if ($pool->isUnacceptableFixedPackage($package)) {
+                $lockedPackage = $package;
+                if ($pool->isUnacceptableFixedOrLockedPackage($package)) {
                     return array("- ", $package->getPrettyName().' is fixed to '.$package->getPrettyVersion().' (lock file version) by a partial update but that version is rejected by your minimum-stability. Make sure you list it as an argument for the update command.');
                 }
                 break;
@@ -253,13 +253,13 @@ class Problem
                 }
             }
 
-            if ($fixedPackage) {
-                $fixedConstraint = new Constraint('==', $fixedPackage->getVersion());
+            if ($lockedPackage) {
+                $fixedConstraint = new Constraint('==', $lockedPackage->getVersion());
                 $filtered = array_filter($packages, function ($p) use ($fixedConstraint) {
                     return $fixedConstraint->matches(new Constraint('==', $p->getVersion()));
                 });
                 if (0 === count($filtered)) {
-                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but the package is fixed to '.$fixedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.');
+                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but the package is fixed to '.$lockedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.');
                 }
             }
 
