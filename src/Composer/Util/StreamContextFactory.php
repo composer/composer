@@ -15,6 +15,7 @@ namespace Composer\Util;
 use Composer\Composer;
 use Composer\CaBundle\CaBundle;
 use Composer\Downloader\TransportException;
+use Composer\Util\Http\ProxyManager;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -57,10 +58,11 @@ final class StreamContextFactory
     /**
      * @param string $url
      * @param array $options
+     * @param bool $forCurl
      * @psalm-return array{http:{header: string[], proxy?: string, request_fulluri: bool}, ssl: array}
      * @return array formatted as a stream context array
      */
-    public static function initOptions($url, array $options)
+    public static function initOptions($url, array $options, $forCurl = false)
     {
         // Make sure the headers are in an array form
         if (!isset($options['http']['header'])) {
@@ -70,76 +72,26 @@ final class StreamContextFactory
             $options['http']['header'] = explode("\r\n", $options['http']['header']);
         }
 
-        // Handle HTTP_PROXY/http_proxy on CLI only for security reasons
-        if ((PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') && (!empty($_SERVER['HTTP_PROXY']) || !empty($_SERVER['http_proxy']))) {
-            $proxy = parse_url(!empty($_SERVER['http_proxy']) ? $_SERVER['http_proxy'] : $_SERVER['HTTP_PROXY']);
-        }
-
-        // Prefer CGI_HTTP_PROXY if available
-        if (!empty($_SERVER['CGI_HTTP_PROXY'])) {
-            $proxy = parse_url($_SERVER['CGI_HTTP_PROXY']);
-        }
-
-        // Override with HTTPS proxy if present and URL is https
-        if (preg_match('{^https://}i', $url) && (!empty($_SERVER['HTTPS_PROXY']) || !empty($_SERVER['https_proxy']))) {
-            $proxy = parse_url(!empty($_SERVER['https_proxy']) ? $_SERVER['https_proxy'] : $_SERVER['HTTPS_PROXY']);
-        }
-
-        // Remove proxy if URL matches no_proxy directive
-        if (!empty($_SERVER['NO_PROXY']) || !empty($_SERVER['no_proxy']) && parse_url($url, PHP_URL_HOST)) {
-            $pattern = new NoProxyPattern(!empty($_SERVER['no_proxy']) ? $_SERVER['no_proxy'] : $_SERVER['NO_PROXY']);
-            if ($pattern->test($url)) {
-                unset($proxy);
-            }
-        }
-
-        if (!empty($proxy)) {
-            $proxyURL = isset($proxy['scheme']) ? $proxy['scheme'] . '://' : '';
-            $proxyURL .= isset($proxy['host']) ? $proxy['host'] : '';
-
-            if (isset($proxy['port'])) {
-                $proxyURL .= ":" . $proxy['port'];
-            } elseif (strpos($proxyURL, 'http://') === 0) {
-                $proxyURL .= ":80";
-            } elseif (strpos($proxyURL, 'https://') === 0) {
-                $proxyURL .= ":443";
-            }
-
-            // http(s):// is not supported in proxy
-            $proxyURL = str_replace(array('http://', 'https://'), array('tcp://', 'ssl://'), $proxyURL);
-
-            if (0 === strpos($proxyURL, 'ssl:') && !extension_loaded('openssl')) {
-                throw new \RuntimeException('You must enable the openssl extension to use a proxy over https');
-            }
-
-            $options['http']['proxy'] = $proxyURL;
-
-            // enabled request_fulluri unless it is explicitly disabled
-            switch (parse_url($url, PHP_URL_SCHEME)) {
-                case 'http': // default request_fulluri to true for HTTP
-                    $reqFullUriEnv = getenv('HTTP_PROXY_REQUEST_FULLURI');
-                    if ($reqFullUriEnv === false || $reqFullUriEnv === '' || (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv)) {
-                        $options['http']['request_fulluri'] = true;
-                    }
-                    break;
-                case 'https': // default request_fulluri to false for HTTPS
-                    $reqFullUriEnv = getenv('HTTPS_PROXY_REQUEST_FULLURI');
-                    if (strtolower($reqFullUriEnv) !== 'false' && (bool) $reqFullUriEnv) {
-                        $options['http']['request_fulluri'] = true;
-                    }
-                    break;
-            }
-
-            // handle proxy auth if present
-            if (isset($proxy['user'])) {
-                $auth = rawurldecode($proxy['user']);
-                if (isset($proxy['pass'])) {
-                    $auth .= ':' . rawurldecode($proxy['pass']);
+        // Add stream proxy options if there is a proxy
+        if (!$forCurl) {
+            $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
+            if ($proxy->isSecure()) {
+                if (!extension_loaded('openssl')) {
+                    throw new TransportException('You must enable the openssl extension to use a proxy over https.');
                 }
-                $auth = base64_encode($auth);
-
-                $options['http']['header'][] = "Proxy-Authorization: Basic {$auth}";
+                if (0 === strpos($url, 'https://')) {
+                    throw new TransportException('PHP does not support https requests to a secure proxy.');
+                }
             }
+
+            $proxyOptions = $proxy->getContextOptions();
+
+            // Header will be a Proxy-Authorization string or not set
+            if (isset($proxyOptions['http']['header'])) {
+                $options['http']['header'][] = $proxyOptions['http']['header'];
+                unset($proxyOptions['http']['header']);
+            }
+            $options = array_replace_recursive($options, $proxyOptions);
         }
 
         if (defined('HHVM_VERSION')) {
@@ -148,7 +100,7 @@ final class StreamContextFactory
             $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
         }
 
-        if (extension_loaded('curl')) {
+        if ($forCurl) {
             $curl = curl_version();
             $httpVersion = 'curl '.$curl['version'];
         } else {

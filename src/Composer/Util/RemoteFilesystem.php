@@ -18,6 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
 use Composer\Util\Http\Response;
+use Composer\Util\Http\ProxyManager;
 
 /**
  * @internal
@@ -46,6 +47,7 @@ class RemoteFilesystem
     private $degradedMode = false;
     private $redirects;
     private $maxRedirects = 20;
+    private $proxyManager;
 
     /**
      * Constructor.
@@ -72,6 +74,7 @@ class RemoteFilesystem
         $this->options = array_replace_recursive($this->options, $options);
         $this->config = $config;
         $this->authHelper = isset($authHelper) ? $authHelper : new AuthHelper($io, $config);
+        $this->proxyManager = ProxyManager::getInstance();
     }
 
     /**
@@ -251,10 +254,10 @@ class RemoteFilesystem
 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
-        $actualContextOptions = stream_context_get_options($ctx);
-        $usingProxy = !empty($actualContextOptions['http']['proxy']) ? ' using proxy ' . $actualContextOptions['http']['proxy'] : '';
+        $proxy = ProxyManager::getInstance()->getProxyForRequest($fileUrl);
+        $usingProxy = $proxy->getLastProxy(' using proxy (%s)');
         $this->io->writeError((strpos($origFileUrl, 'http') === 0 ? 'Downloading ' : 'Reading ') . Url::sanitize($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
-        unset($origFileUrl, $actualContextOptions);
+        unset($origFileUrl, $proxy, $usingProxy);
 
         // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
         if ((!preg_match('{^http://(repo\.)?packagist\.org/p/}', $fileUrl) || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && empty($degradedPackagist) && $this->config) {
