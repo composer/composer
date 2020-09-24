@@ -722,7 +722,7 @@ By default the command checks for the packages on packagist.org.
 * **--prefer-dist:** Install packages from `dist` when available.
 * **--repository:** Provide a custom repository to search for the package,
   which will be used instead of packagist. Can be either an HTTP URL pointing
-  to a `composer` repository, a path to a local `packages.json` file, or a
+  to a `composer` repository, a path to a local `composer.json` file, or a
   JSON string which similar to what the [repositories](04-schema.md#repositories)
   key accepts. You can use this multiple times to configure multiple repositories.
 * **--add-repository:** Add the custom repository in the composer.json. If a lock
