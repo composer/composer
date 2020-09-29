@@ -129,22 +129,13 @@ class StreamContextFactoryTest extends TestCase
         $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET', 'header' => 'User-Agent: foo')));
         $options = stream_context_get_options($context);
 
-        $expected = array(
-            'http' => array(
-                'proxy' => 'tcp://proxyserver.net:80',
-                'method' => 'GET',
-                'header' => array('User-Agent: foo', "Proxy-Authorization: Basic " . base64_encode('username:password')),
-                'max_redirects' => 20,
-                'follow_location' => 1,
-            ), 'ssl' => array(
-                'SNI_enabled' => true,
-                'SNI_server_name' => 'example.org',
-            ),
-        );
-        if (PHP_VERSION_ID >= 50600) {
-            unset($expected['ssl']['SNI_server_name']);
-        }
-        $this->assertEquals($expected, $options);
+        $this->assertEquals(array('http' => array(
+            'proxy' => 'tcp://proxyserver.net:80',
+            'method' => 'GET',
+            'header' => array('User-Agent: foo', "Proxy-Authorization: Basic " . base64_encode('username:password')),
+            'max_redirects' => 20,
+            'follow_location' => 1,
+        )), $options);
     }
 
     public function testHttpsProxyOverride()
@@ -159,22 +150,13 @@ class StreamContextFactoryTest extends TestCase
         $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET', 'header' => 'User-Agent: foo')));
         $options = stream_context_get_options($context);
 
-        $expected = array(
-            'http' => array(
-                'proxy' => 'ssl://woopproxy.net:443',
-                'method' => 'GET',
-                'max_redirects' => 20,
-                'follow_location' => 1,
-                'header' => array('User-Agent: foo'),
-            ), 'ssl' => array(
-                'SNI_enabled' => true,
-                'SNI_server_name' => 'example.org',
-            ),
-        );
-        if (PHP_VERSION_ID >= 50600) {
-            unset($expected['ssl']['SNI_server_name']);
-        }
-        $this->assertEquals($expected, $options);
+        $this->assertEquals(array('http' => array(
+            'proxy' => 'ssl://woopproxy.net:443',
+            'method' => 'GET',
+            'max_redirects' => 20,
+            'follow_location' => 1,
+            'header' => array('User-Agent: foo'),
+        )), $options);
     }
 
     /**
