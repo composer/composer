@@ -27,22 +27,22 @@ to retrieve one).
 Sometimes automatic authentication is not possible, or you may want to predefine
 authentication credentials.
 
-Credentials can be stored on 3 different places; in an auth.json for the project, a global
-auth.json or in the composer.json itself.
+Credentials can be stored on 3 different places; in an `auth.json` for the project, a global
+`auth.json` or in the `composer.json` itself.
 
 ## Authentication in auth.json per project
 
-In this authentication storage method, an 'auth.json' file will be present in the same folder
-as the projects' composer.json file. You can either create and edit this file using the
+In this authentication storage method, an `auth.json` file will be present in the same folder
+as the projects' `composer.json` file. You can either create and edit this file using the
 command line or manually edit or create it.
 
-> **Note: Make sure the auth.json file is in the .gitignore** otherwise
+> **Note: Make sure the `auth.json` file is in the `.gitignore`** otherwise
 > other people will be able to abuse your credentials.
 
 ## Global authentication credentials
 
 If you don't want to supply credentials for every project you work on, storing your credentials
-globally might be a better idea. These credentials are stored in a global auth.json in your
+globally might be a better idea. These credentials are stored in a global `auth.json` in your
 composer home directory.
 
 ### Command line global credential editing
@@ -72,14 +72,14 @@ For specific authentication implementations, see their sections;
 
 Manually editing this file instead of using the command line may result in invalid json errors.
 To fix this you need to open the file in an editor and fix the error. To find the location of
-your global auth.json, execute:
+your global `auth.json`, execute:
 
 ```shell script
 composer config --global --list
 ```
 
 And look for the `[home]` section. (It is by default `~/.composer` or `%APPDATA%/Composer` on Windows)
-The folder will contain your global auth.json if it exists.
+The folder will contain your global `auth.json` if it exists.
 
 You can open this file in your favorite editor and fix the error.
 
@@ -90,7 +90,7 @@ You can open this file in your favorite editor and fix the error.
 > a version control system like git or when an attacker gains (read) access to
 > your production server files.
 
-It is also possible to add credentials to a composer.json on a per-project basis in the 'config'
+It is also possible to add credentials to a `composer.json` on a per-project basis in the `config`
 section or directly to the repository definition.
 
 # Authentication methods
@@ -123,7 +123,7 @@ composer config [--global] --editor --auth
 ## Inline http-basic
 
 For the inline http-basic authentication method the credentials are not stored in a separate
-auth.json in the project or globally, but in the composer.json or global configuration
+`auth.json` in the project or globally, but in the `composer.json` or global configuration
 in the same place where the composer repository definition is defined.
 
 ### Command line inline http-basic
@@ -178,7 +178,7 @@ composer config [--global] --editor
 ## gitlab-oauth
 
 > **Note:** For the gitlab authentication to work on private gitlab instances, the
-> "gitlab-domains" section should also contain the url.
+> `gitlab-domains` section should also contain the url.
 
 ### Command line gitlab-oauth
 
@@ -203,7 +203,7 @@ composer config [--global] --editor --auth
 ## gitlab-token
 
 > **Note:** For the gitlab authentication to work on private gitlab instances, the
-> "gitlab-domains" section should also contain the url.
+> `gitlab-domains` section should also contain the url.
 
 ### Command line gitlab-token
 
