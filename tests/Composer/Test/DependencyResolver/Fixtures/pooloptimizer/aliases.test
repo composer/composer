@@ -1,0 +1,99 @@
+--TEST--
+Test aliased and aliasees remain untouched if either is required, but are still optimized away otherwise.
+
+--REQUEST--
+{
+    "require": {
+        "package/a": "^1.0",
+        "package/required-aliasof-and-alias": "dev-main-both",
+        "package/required-aliasof": "dev-main-direct",
+        "package/required-alias": "1.*"
+    }
+}
+
+
+--POOL-BEFORE--
+[
+    {
+        "name": "package/a",
+        "version": "1.0.0",
+        "require": {
+            "package/required-aliasof-and-alias": "^1.0"
+        }
+    },
+    {
+        "name": "package/required-aliasof-and-alias",
+        "version": "dev-main-both",
+        "extra": {
+            "branch-alias": {
+                "dev-main-both": "1.x-dev"
+            }
+        }
+    },
+    {
+        "name": "package/required-aliasof",
+        "version": "dev-main-direct",
+        "extra": {
+            "branch-alias": {
+                "dev-main-direct": "1.x-dev"
+            }
+        }
+    },
+    {
+        "name": "package/required-alias",
+        "version": "dev-main-alias",
+        "extra": {
+            "branch-alias": {
+                "dev-main-alias": "1.x-dev"
+            }
+        }
+    },
+    {
+        "name": "package/not-referenced",
+        "version": "dev-lonesome-pkg",
+        "extra": {
+            "branch-alias": {
+                "dev-lonesome-pkg": "1.x-dev"
+            }
+        }
+    }
+]
+
+
+--POOL-AFTER--
+[
+    {
+        "name": "package/a",
+        "version": "1.0.0",
+        "require": {
+            "package/b": "^1.0"
+        }
+    },
+    {
+        "name": "package/required-aliasof-and-alias",
+        "version": "dev-main-both",
+        "extra": {
+            "branch-alias": {
+                "dev-main-both": "1.x-dev"
+            }
+        }
+    },
+    {
+        "name": "package/required-aliasof",
+        "version": "dev-main-direct",
+        "extra": {
+            "branch-alias": {
+                "dev-main-direct": "1.x-dev"
+            }
+        }
+    },
+    {
+        "name": "package/required-alias",
+        "version": "dev-main-alias",
+        "extra": {
+            "branch-alias": {
+                "dev-main-alias": "1.x-dev"
+            }
+        }
+    }
+]

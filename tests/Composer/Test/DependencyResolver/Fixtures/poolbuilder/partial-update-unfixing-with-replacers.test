@@ -50,3 +50,12 @@ Fixed packages and replacers get unfixed correctly (refs https://github.com/comp
     "replaced/pkg-1.2.3.0",
     "replaced/pkg-1.2.4.0"
 ]
+
+--EXPECT-OPTIMIZED--
+[
+    "root/req3-1.0.0.0 (locked)",
+    "dep/dep-2.3.5.0 (locked)",
+    "root/req1-1.1.0.0",
+    "replacer/pkg-1.1.0.0",
+    "replaced/pkg-1.2.4.0"
+]

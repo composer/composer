@@ -12,6 +12,8 @@
 
 namespace Composer\Repository;
 
+use Composer\DependencyResolver\PoolOptimizer;
+use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\PoolBuilder;
 use Composer\DependencyResolver\Request;
@@ -244,9 +246,9 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPool(Request $request, IOInterface $io, EventDispatcher $eventDispatcher = null)
+    public function createPool(Request $request, IOInterface $io, EventDispatcher $eventDispatcher = null, PoolOptimizer $poolOptimizer = null)
     {
-        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher);
+        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer);
 
         foreach ($this->repositories as $repo) {
             if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {

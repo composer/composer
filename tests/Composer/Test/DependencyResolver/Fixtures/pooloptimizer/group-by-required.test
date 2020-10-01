@@ -1,0 +1,99 @@
+--TEST--
+We are not allowed to group packages only by their dependency definition. It's also relevant what other
+packages require (package/b@1.0.1 must not be dropped although it has the very same definition as 2.0.0 and both are
+allowed by the request). However, package/b@1.0.0 can be removed.
+
+--REQUEST--
+{
+    "require": {
+        "package/a": "^1.0"
+    }
+}
+
+
+--POOL-BEFORE--
+[
+        {
+            "name": "package/a",
+            "version": "1.0.0",
+            "require": {
+                "package/b": "^1.0 || ^2.0"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.0",
+            "require": {
+                "package/c": "^1.0"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.1",
+            "require": {
+                "package/c": "^1.0"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "2.0.0",
+            "require": {
+                "package/c": "^1.0"
+            }
+        },
+        {
+            "name": "package/c",
+            "version": "1.0.0",
+            "require": {
+                "package/d": "^1.0"
+            }
+        },
+        {
+            "name": "package/d",
+            "version": "1.0.0",
+            "require": {
+                "package/b": ">=1.0 <1.1"
+            }
+        }
+]
+
+
+--POOL-AFTER--
+[
+        {
+             "name": "package/a",
+             "version": "1.0.0",
+             "require": {
+                 "package/b": "^1.0 || ^2.0"
+             }
+         },
+         {
+             "name": "package/b",
+             "version": "1.0.1",
+             "require": {
+                 "package/c": "^1.0"
+             }
+         },
+         {
+             "name": "package/b",
+             "version": "2.0.0",
+             "require": {
+                 "package/c": "^1.0"
+             }
+         },
+         {
+             "name": "package/c",
+             "version": "1.0.0",
+             "require": {
+                 "package/d": "^1.0"
+             }
+         },
+         {
+             "name": "package/d",
+             "version": "1.0.0",
+             "require": {
+                 "package/b": ">=1.0 <1.1"
+             }
+         }
+]
+

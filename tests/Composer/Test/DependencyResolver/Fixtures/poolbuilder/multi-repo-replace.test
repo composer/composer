@@ -96,3 +96,13 @@ Check that replacers from additional repositories are loaded
     "replacer/package-1.0.0.0",
     "shared/dep-1.0.0.0"
 ]
+
+--EXPECT-OPTIMIZED--
+[
+    "base/package-1.0.0.0",
+    "indirect/replacer-1.2.0.0",
+    "indirect/replacer-1.0.0.0",
+    "shared/dep-1.2.0.0",
+    "replacer/package-1.2.0.0",
+    "replacer/package-1.0.0.0"
+]

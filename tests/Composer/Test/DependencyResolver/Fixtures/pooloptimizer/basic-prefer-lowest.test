@@ -1,0 +1,47 @@
+--TEST--
+Test filters irrelevant package "package/b" in version 1.0.1 because prefer-lowest
+
+--REQUEST--
+{
+    "require": {
+        "package/a": "^1.0"
+    },
+    "preferLowest": true
+}
+
+
+--POOL-BEFORE--
+[
+        {
+            "name": "package/a",
+            "version": "1.0.0",
+            "require": {
+                "package/b": "^1.0"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.0"
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.1"
+        }
+]
+
+
+--POOL-AFTER--
+[
+        {
+            "name": "package/a",
+            "version": "1.0.0",
+            "require": {
+                "package/b": "^1.0"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.0"
+        }
+]
+

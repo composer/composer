@@ -62,6 +62,10 @@ class PoolBuilder
      */
     private $eventDispatcher;
     /**
+     * @var PoolOptimizer|null
+     */
+    private $poolOptimizer;
+    /**
      * @var IOInterface
      */
     private $io;
@@ -128,13 +132,14 @@ class PoolBuilder
      * @param string[] $rootReferences an array of package name => source reference
      * @phpstan-param array<string, string> $rootReferences
      */
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, EventDispatcher $eventDispatcher = null)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, EventDispatcher $eventDispatcher = null, PoolOptimizer $poolOptimizer = null)
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
         $this->rootAliases = $rootAliases;
         $this->rootReferences = $rootReferences;
         $this->eventDispatcher = $eventDispatcher;
+        $this->poolOptimizer = $poolOptimizer;
         $this->io = $io;
     }
 
@@ -258,6 +263,8 @@ class PoolBuilder
         $this->maxExtendedReqs = array();
         $this->skippedLoad = array();
         $this->indexCounter = 0;
+
+        $pool = $this->runOptimizer($request, $pool);
 
         Intervals::clear();
 
@@ -571,5 +578,34 @@ class PoolBuilder
             }
             unset($this->aliasMap[spl_object_hash($package)]);
         }
+    }
+
+    /**
+     * @return Pool
+     */
+    private function runOptimizer(Request $request, Pool $pool)
+    {
+        if (null === $this->poolOptimizer) {
+            return $pool;
+        }
+
+        $total = \count($pool->getPackages());
+
+        $pool = $this->poolOptimizer->optimize($request, $pool);
+
+        $filtered = $total - \count($pool->getPackages());
+
+        if (0 === $filtered) {
+            return $pool;
+        }
+
+        $this->io->write(sprintf(
+            '<info>Found %s package versions referenced in your dependency graph. %s (%d%%) were optimized away.</info>',
+            number_format($total),
+            number_format($filtered),
+            round(100/$total*$filtered)
+        ), true, IOInterface::VERY_VERBOSE);
+
+        return $pool;
     }
 }

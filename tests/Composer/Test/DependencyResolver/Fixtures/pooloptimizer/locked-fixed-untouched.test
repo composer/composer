@@ -1,0 +1,46 @@
+--TEST--
+Test locked and fixed packages remain untouched.
+
+--REQUEST--
+{
+    "require": {
+    },
+    "locked": [
+        {
+            "name": "package/a",
+            "version": "1.0.0"
+        }
+    ],
+    "fixed": [
+        {
+            "name": "package/c",
+            "version": "2.0.0"
+        }
+    ]
+}
+
+
+--POOL-BEFORE--
+[
+    {
+        "name": "package/a",
+        "version": "1.0.0"
+    },
+    {
+        "name": "package/c",
+        "version": "2.0.0"
+    }
+]
+
+
+--POOL-AFTER--
+[
+    {
+        "name": "package/a",
+        "version": "1.0.0"
+    },
+    {
+        "name": "package/c",
+        "version": "2.0.0"
+    }
+]

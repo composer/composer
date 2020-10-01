@@ -353,3 +353,27 @@ See also https://github.com/composer/composer/issues/4180 for more information.
 Composer can unpack zipballs using either a system-provided `unzip` or `7z` (7-Zip) utility, or PHP's
 native `ZipArchive` class. On OSes where ZIP files can contain permissions and symlinks, we recommend
 installing `unzip` or `7z` as these features are not supported by `ZipArchive`.
+
+
+## Disabling the pool optimizer
+
+In Composer, the `Pool` class contains all the packages that are relevant for the dependency
+resolving process. That is what is used to generate all the rules which are then
+passed on to the dependency solver.
+In order to improve performance, Composer tries to optimize this `Pool` by removing useless
+package information early on.
+
+If all goes well, you should never notice any issues with it but in case you run into
+an unexpected result such as an unresolvable set of dependencies or conflicts where you
+think Composer is wrong, you might want to disable the optimizer by using the environment
+variable `COMPOSER_POOL_OPTIMIZER` and run the update again like so:
+
+```bash
+COMPOSER_POOL_OPTIMIZER=0 php composer.phar update
+```
+
+Now double check if the result is still the same. It will take significantly longer and use
+a lot more memory to run the dependency resolving process.
+
+If the result is different, you likely hit a problem in the pool optimizer.
+Please [report this issue](https://github.com/composer/composer/issues) so it can be fixed.

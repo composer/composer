@@ -20,6 +20,7 @@ use Composer\DependencyResolver\LockTransaction;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\PoolOptimizer;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
@@ -430,7 +431,7 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher);
+        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy));
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
@@ -997,6 +998,23 @@ class Installer
         $rm->setLocalRepository(
             new InstalledArrayRepository($packages)
         );
+    }
+
+    /**
+     * @return PoolOptimizer|null
+     */
+    private function createPoolOptimizer(PolicyInterface $policy)
+    {
+        // Not the best architectural decision here, would need to be able
+        // to configure from the outside of Installer but this is only
+        // a debugging tool and should never be required in any other use case
+        if ('0' === Platform::getEnv('COMPOSER_POOL_OPTIMIZER')) {
+            $this->io->write('Pool Optimizer was disabled for debugging purposes.', true, IOInterface::DEBUG);
+
+            return null;
+        }
+
+        return new PoolOptimizer($policy);
     }
 
     /**
