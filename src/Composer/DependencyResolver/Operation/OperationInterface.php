@@ -29,7 +29,7 @@ interface OperationInterface
     /**
      * Returns operation reason.
      *
-     * @return string
+     * @return string|null
      */
     public function getReason();
 

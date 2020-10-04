@@ -26,7 +26,7 @@ abstract class SolverOperation implements OperationInterface
     /**
      * Initializes operation.
      *
-     * @param string $reason operation reason
+     * @param string|null $reason operation reason
      */
     public function __construct($reason = null)
     {
@@ -36,7 +36,7 @@ abstract class SolverOperation implements OperationInterface
     /**
      * Returns operation reason.
      *
-     * @return string
+     * @return string|null
      */
     public function getReason()
     {
