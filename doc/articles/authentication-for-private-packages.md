@@ -4,7 +4,7 @@
 
 # Authentication for privately hosted packages
 
-Your [private package server](handling-private-packages.md) is probably secured with one
+Your [private package server](handling-private-packages-with-satis.md) is probably secured with one
 or more authentication options. In order to allow your project to have access to these
 packages you will have to tell Composer how to authenticate with the server that hosts the
 package(s).
