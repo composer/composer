@@ -500,4 +500,46 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals("1.5.x-dev", $versionData['pretty_version']);
         $this->assertEquals("1.5.9999999.9999999-dev", $versionData['version']);
     }
+
+    public function testRemoteBranchesAreSelected()
+    {
+        $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
+            ->setMethods(array('execute'))
+            ->disableArgumentCloning()
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+
+        $self = $this;
+
+        $executor
+            ->expects($this->at(0))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self) {
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
+                $output = "* feature-branch 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n".
+                    "remotes/origin/1.5 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n";
+
+                return 0;
+            })
+        ;
+
+        $executor
+            ->expects($this->at(1))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output, $path) use ($self) {
+                $self->assertEquals('git rev-list remotes/origin/1.5..feature-branch', $command);
+                $output = "\n";
+
+                return 0;
+            })
+        ;
+
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $guesser = new VersionGuesser($config, $executor, new VersionParser());
+        $versionData = $guesser->guessVersion(array('version' => 'self.version'), 'dummy/path');
+        $this->assertEquals("1.5.x-dev", $versionData['pretty_version']);
+        $this->assertEquals("1.5.9999999.9999999-dev", $versionData['version']);
+    }
 }
