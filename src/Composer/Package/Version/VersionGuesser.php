@@ -142,7 +142,7 @@ class VersionGuesser
                 }
 
                 if ($branch && !preg_match('{^ *.+/HEAD }', $branch)) {
-                    if (preg_match('{^(?:\* )? *((?:remotes/(?:origin|upstream)/)[^\s/]+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                    if (preg_match('{^(?:\* )? *((?:remotes/(?:origin|upstream)/)?[^\s/]+) *([a-f0-9]+) .*$}', $branch, $match)) {
                         $branches[] = $match[1];
                     }
                 }
