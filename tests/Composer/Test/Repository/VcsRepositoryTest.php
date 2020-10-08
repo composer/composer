@@ -42,8 +42,8 @@ class VcsRepositoryTest extends TestCase
 
             return;
         }
-        if (!@mkdir(self::$gitRepo) || !@chdir(self::$gitRepo)) {
-            $this->skipped = 'Could not create and move into the temp git repo '.self::$gitRepo;
+        if (!@chdir(self::$gitRepo)) {
+            $this->skipped = 'Could not move into the temp git repo '.self::$gitRepo;
 
             return;
         }
