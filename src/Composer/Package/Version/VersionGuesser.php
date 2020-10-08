@@ -244,12 +244,27 @@ class VersionGuesser
                 $nonFeatureBranches = implode('|', $packageConfig['non-feature-branches']);
             }
 
+            // return directly, if branch is configured to be non-feature branch
+            if (preg_match('{^(' . $nonFeatureBranches . ')$}', $branch) && in_array($branch, $branches, true)) {
+                return array('version' => $version, 'pretty_version' => $prettyVersion);
+            }
+
+            // sort local branches first then remote ones
+            // and sort numeric branches below named ones, to make sure if the branch has the same distance from main and 1.10 and 1.9 for example, main is picked
+            // and sort using natural sort so that 1.10 will appear before 1.9
+            usort($branches, function ($a, $b) {
+                $aRemote = 0 === strpos($a, 'remotes/');
+                $bRemote = 0 === strpos($b, 'remotes/');
+
+                if ($aRemote !== $bRemote) {
+                    return $aRemote ? 1 : -1;
+                }
+
+                return strnatcasecmp($b, $a);
+            });
+
             foreach ($branches as $candidate) {
                 $candidateVersion = preg_replace('{^remotes/\S+/}', '', $candidate);
-                // return directly, if branch is configured to be non-feature branch
-                if ($candidate === $branch && preg_match('{^(' . $nonFeatureBranches . ')$}', $candidateVersion)) {
-                    break;
-                }
 
                 // do not compare against itself or other feature branches
                 if ($candidate === $branch || !preg_match('{^(' . $nonFeatureBranches . '|master|trunk|default|develop|\d+\..+)$}', $candidateVersion, $match)) {
