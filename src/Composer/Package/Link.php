@@ -30,7 +30,7 @@ class Link
     /**
      * Will be converted into a constant once the min PHP version allows this
      *
-     * @private
+     * @internal
      * @var string[]
      */
     public static $TYPES = array(
