@@ -48,7 +48,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at($step))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
 
                 return 128;
             })
@@ -116,7 +116,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash, $anotherCommitHash) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "* master $commitHash Commit message\n(no branch) $anotherCommitHash Commit message\n";
 
                 return 0;
@@ -153,7 +153,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash, $anotherCommitHash) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "  arbitrary $commitHash Commit message\n* current $anotherCommitHash Another message\n";
 
                 return 0;
@@ -200,7 +200,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash, $anotherCommitHash) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "  latest-testing $commitHash Commit message\n* current $anotherCommitHash Another message\n";
 
                 return 0;
@@ -247,7 +247,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash, $anotherCommitHash) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "* latest-testing $commitHash Commit message\n  current $anotherCommitHash Another message\n  master $anotherCommitHash Another message\n";
 
                 return 0;
@@ -282,7 +282,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "* (no branch) $commitHash Commit message\n";
 
                 return 0;
@@ -313,7 +313,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "* (HEAD detached at FETCH_HEAD) $commitHash Commit message\n";
 
                 return 0;
@@ -343,7 +343,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self, $commitHash) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "* (HEAD detached at 03a15d220) $commitHash Commit message\n";
 
                 return 0;
@@ -372,7 +372,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "* (HEAD detached at v2.0.5-alpha2) 433b98d4218c181bae01865901aac045585e8a1a Commit message\n";
 
                 return 0;
@@ -413,7 +413,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "* (HEAD detached at 1.0.0) c006f0c12bbbf197b5c071ffb1c0e9812bb14a4d Commit message\n";
 
                 return 0;
@@ -455,7 +455,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "* foo 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n";
 
                 return 0;
@@ -485,7 +485,7 @@ class VersionGuesserTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "* 1.5 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n";
 
                 return 0;
@@ -497,6 +497,48 @@ class VersionGuesserTest extends TestCase
         $guesser = new VersionGuesser($config, $executor, new VersionParser());
         $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
+        $this->assertEquals("1.5.x-dev", $versionData['pretty_version']);
+        $this->assertEquals("1.5.9999999.9999999-dev", $versionData['version']);
+    }
+
+    public function testRemoteBranchesAreSelected()
+    {
+        $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
+            ->setMethods(array('execute'))
+            ->disableArgumentCloning()
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+
+        $self = $this;
+
+        $executor
+            ->expects($this->at(0))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output) use ($self) {
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
+                $output = "* feature-branch 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n".
+                    "remotes/origin/1.5 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n";
+
+                return 0;
+            })
+        ;
+
+        $executor
+            ->expects($this->at(1))
+            ->method('execute')
+            ->willReturnCallback(function ($command, &$output, $path) use ($self) {
+                $self->assertEquals('git rev-list remotes/origin/1.5..feature-branch', $command);
+                $output = "\n";
+
+                return 0;
+            })
+        ;
+
+        $config = new Config;
+        $config->merge(array('repositories' => array('packagist' => false)));
+        $guesser = new VersionGuesser($config, $executor, new VersionParser());
+        $versionData = $guesser->guessVersion(array('version' => 'self.version'), 'dummy/path');
         $this->assertEquals("1.5.x-dev", $versionData['pretty_version']);
         $this->assertEquals("1.5.9999999.9999999-dev", $versionData['version']);
     }

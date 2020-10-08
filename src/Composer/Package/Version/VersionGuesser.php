@@ -118,7 +118,7 @@ class VersionGuesser
         $isDetached = false;
 
         // try to fetch current version from git branch
-        if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output, $path)) {
+        if (0 === $this->process->execute('git branch -a --no-color --no-abbrev -v', $output, $path)) {
             $branches = array();
             $isFeatureBranch = false;
 
@@ -141,8 +141,8 @@ class VersionGuesser
                     }
                 }
 
-                if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
-                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                if ($branch && !preg_match('{^ *.+/HEAD }', $branch)) {
+                    if (preg_match('{^(?:\* )? *((?:remotes/(?:origin|upstream)/)?[^\s/]+) *([a-f0-9]+) .*$}', $branch, $match)) {
                         $branches[] = $match[1];
                     }
                 }
@@ -245,13 +245,14 @@ class VersionGuesser
             }
 
             foreach ($branches as $candidate) {
+                $candidateVersion = preg_replace('{^remotes/\S+/}', '', $candidate);
                 // return directly, if branch is configured to be non-feature branch
-                if ($candidate === $branch && preg_match('{^(' . $nonFeatureBranches . ')$}', $candidate)) {
+                if ($candidate === $branch && preg_match('{^(' . $nonFeatureBranches . ')$}', $candidateVersion)) {
                     break;
                 }
 
                 // do not compare against itself or other feature branches
-                if ($candidate === $branch || !preg_match('{^(' . $nonFeatureBranches . '|master|trunk|default|develop|\d+\..+)$}', $candidate, $match)) {
+                if ($candidate === $branch || !preg_match('{^(' . $nonFeatureBranches . '|master|trunk|default|develop|\d+\..+)$}', $candidateVersion, $match)) {
                     continue;
                 }
 
@@ -262,8 +263,11 @@ class VersionGuesser
 
                 if (strlen($output) < $length) {
                     $length = strlen($output);
-                    $version = $this->versionParser->normalizeBranch($candidate);
-                    $prettyVersion = 'dev-' . $match[1];
+                    $version = $this->versionParser->normalizeBranch($candidateVersion);
+                    $prettyVersion = 'dev-' . $candidateVersion;
+                    if ($length === 0) {
+                        break;
+                    }
                 }
             }
         }
