@@ -165,6 +165,11 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             );
             $package['transport-options'] = $this->options;
 
+            // use the branch-version as the package version if available
+            if (!isset($package['version']) && isset($package['extra']['branch-version'])) {
+                $package['version'] = preg_replace('{(\.x)?(-dev)?$}', '.x-dev', $package['extra']['branch-version']);
+            }
+
             // carry over the root package version if this path repo is in the same git repository as root package
             if (!isset($package['version']) && ($rootVersion = getenv('COMPOSER_ROOT_VERSION'))) {
                 if (
