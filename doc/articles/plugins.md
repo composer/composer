@@ -223,7 +223,7 @@ class Plugin implements PluginInterface, Capable
 ### Command provider
 
 The [`Composer\Plugin\Capability\CommandProvider`][9] capability allows to register
-additional commands for Composer :
+additional commands for Composer:
 
 ```php
 <?php
