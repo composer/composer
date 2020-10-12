@@ -213,8 +213,7 @@ Example using a custom HTTP Header field for token authentication:
 
 ### Authentication
 
-Authentication can by handled in several different ways. More can be read about it
-[here](authentication-for-private-packages.md)
+Authentication can be handled in [several different ways](authentication-for-private-packages.md).
 
 ### Downloads
 
