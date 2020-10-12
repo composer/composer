@@ -179,7 +179,6 @@ class Locker
                 $packageByName[$package->getName()] = $package;
 
                 if ($package instanceof AliasPackage) {
-                    $packages->addPackage($package->getAliasOf());
                     $packageByName[$package->getAliasOf()->getName()] = $package->getAliasOf();
                 }
             }
