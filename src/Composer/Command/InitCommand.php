@@ -449,10 +449,7 @@ EOT
                 $existingPackages[] = $package->getName();
             }
         }
-        foreach ($requires as $requiredPackage) {
-            $existingPackages[] = substr($requiredPackage, 0, strpos($requiredPackage, ' '));
-        }
-        unset($composer, $installedRepo, $requiredPackage);
+        unset($composer, $installedRepo);
 
         $io = $this->getIO();
         while (null !== $package = $io->ask('Search for a package: ')) {
