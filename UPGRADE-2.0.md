@@ -11,6 +11,7 @@
 - PEAR support (repository, downloader, etc.) has been removed
 - `update` now lists changes to the lock file first (update step), and then the changes applied when installing the lock file to the vendor dir (install step)
 - `HTTPS_PROXY_REQUEST_FULLURI` if not specified will now default to false as this seems to work better in most environments
+- `dev-trunk`, `dev-master` and `dev-default` are no longer aliases for each other. The exact branch names are now preserved.
 
 ## For integrators and plugin authors
 
@@ -28,7 +29,7 @@
   - packages are now wrapped into a `"packages"` top level key instead of the whole file being the package array
   - packages now contain an `"installed-path"` key which lists where they were installed
   - there is a top level `"dev"` key which stores whether dev requirements were installed or not
-- Removed `OperationInterface::getReason` as it the data was not accurate. There is no replacement available.
+- Removed `OperationInterface::getReason` as the data was not accurate. There is no replacement available.
 - `PreFileDownloadEvent` now receives an `HttpDownloader` instance instead of `RemoteFilesystem`, and that instance cannot be overridden by listeners anymore
 - `VersionSelector::findBestCandidate`'s third argument (phpVersion) was removed in favor of passing in a complete PlatformRepository instance into the constructor
 - `InitCommand::determineRequirements`'s fourth argument (phpVersion) should now receive a complete PlatformRepository instance or null if platform requirements are to be ignored
