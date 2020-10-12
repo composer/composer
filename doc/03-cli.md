@@ -181,8 +181,8 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--with-dependencies:** Update also dependencies of packages in the argument list, except those which are root requirements.
-* **--with-all-dependencies:** Update also dependencies of packages in the argument list, including those which are root requirements.
+* **--with-dependencies (-w):** Update also dependencies of packages in the argument list, except those which are root requirements.
+* **--with-all-dependencies (-W):** Update also dependencies of packages in the argument list, including those which are root requirements.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run, so it is currently not done by default.
@@ -237,8 +237,8 @@ If you do not specify a package, composer will prompt you to search for a packag
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
-* **--update-with-dependencies:** Also update dependencies of the newly required packages, except those that are root requirements.
-* **--update-with-all-dependencies:** Also update dependencies of the newly required packages, including those that are root requirements.
+* **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements.
+* **--update-with-all-dependencies (-W):** Also update dependencies of the newly required packages, including those that are root requirements.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
@@ -278,7 +278,10 @@ uninstalled.
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
-* **--update-with-dependencies:** Also update dependencies of the removed packages.
+* **--update-with-dependencies (-w):** Also update dependencies of the removed packages.
+  (Deprecrated, is now default behavior)
+* **--update-with-all-dependencies (-W):** Allows all inherited dependencies to be updated,
+  including those that are root requirements.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
