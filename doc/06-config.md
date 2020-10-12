@@ -96,7 +96,8 @@ gitlab.com the domain names must be also specified with the
 Defaults to `false`. If set to true all HTTPS URLs will be tried with HTTP
 instead and no network level encryption is performed. Enabling this is a
 security risk and is NOT recommended. The better way is to enable the
-php_openssl extension in php.ini.
+php_openssl extension in php.ini. Enabling this will implicitly disable the
+`secure-http` option.
 
 ## secure-http
 

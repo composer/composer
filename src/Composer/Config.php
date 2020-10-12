@@ -328,6 +328,10 @@ class Config
             case 'disable-tls':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
             case 'secure-http':
+                if ($this->get('disable-tls') === true) {
+                    return false;
+                }
+
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
             case 'use-github-api':
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
