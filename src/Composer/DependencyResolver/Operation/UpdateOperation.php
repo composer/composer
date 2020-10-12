@@ -20,7 +20,7 @@ use Composer\Package\Version\VersionParser;
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class UpdateOperation extends SolverOperation
+class UpdateOperation implements OperationInterface
 {
     protected $initialPackage;
     protected $targetPackage;
@@ -30,12 +30,9 @@ class UpdateOperation extends SolverOperation
      *
      * @param PackageInterface $initial initial package
      * @param PackageInterface $target  target package (updated)
-     * @param string           $reason  update reason
      */
-    public function __construct(PackageInterface $initial, PackageInterface $target, $reason = null)
+    public function __construct(PackageInterface $initial, PackageInterface $target)
     {
-        parent::__construct($reason);
-
         $this->initialPackage = $initial;
         $this->targetPackage = $target;
     }

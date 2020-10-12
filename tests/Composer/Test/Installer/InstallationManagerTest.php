@@ -124,7 +124,7 @@ class InstallationManagerTest extends TestCase
         $manager->addInstaller($installer);
 
         $package = $this->createPackageMock();
-        $operation = new InstallOperation($package, 'test');
+        $operation = new InstallOperation($package);
 
         $package
             ->expects($this->once())
@@ -153,7 +153,7 @@ class InstallationManagerTest extends TestCase
 
         $initial = $this->createPackageMock();
         $target = $this->createPackageMock();
-        $operation = new UpdateOperation($initial, $target, 'test');
+        $operation = new UpdateOperation($initial, $target);
 
         $initial
             ->expects($this->once())
@@ -221,7 +221,7 @@ class InstallationManagerTest extends TestCase
             ->method('install')
             ->with($this->repository, $target);
 
-        $operation = new UpdateOperation($initial, $target, 'test');
+        $operation = new UpdateOperation($initial, $target);
         $manager->update($this->repository, $operation);
     }
 
@@ -232,7 +232,7 @@ class InstallationManagerTest extends TestCase
         $manager->addInstaller($installer);
 
         $package = $this->createPackageMock();
-        $operation = new UninstallOperation($package, 'test');
+        $operation = new UninstallOperation($package);
 
         $package
             ->expects($this->once())

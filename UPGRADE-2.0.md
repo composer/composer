@@ -28,6 +28,7 @@
   - packages are now wrapped into a `"packages"` top level key instead of the whole file being the package array
   - packages now contain an `"installed-path"` key which lists where they were installed
   - there is a top level `"dev"` key which stores whether dev requirements were installed or not
+- Removed `OperationInterface::getReason` as it the data was not accurate. There is no replacement available.
 - `PreFileDownloadEvent` now receives an `HttpDownloader` instance instead of `RemoteFilesystem`, and that instance cannot be overridden by listeners anymore
 - `VersionSelector::findBestCandidate`'s third argument (phpVersion) was removed in favor of passing in a complete PlatformRepository instance into the constructor
 - `InitCommand::determineRequirements`'s fourth argument (phpVersion) should now receive a complete PlatformRepository instance or null if platform requirements are to be ignored

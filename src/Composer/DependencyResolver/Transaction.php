@@ -158,10 +158,10 @@ class Transaction
         }
 
         foreach ($removeMap as $name => $package) {
-            array_unshift($operations, new Operation\UninstallOperation($package, null));
+            array_unshift($operations, new Operation\UninstallOperation($package));
         }
         foreach ($removeAliasMap as $nameVersion => $package) {
-            $operations[] = new Operation\MarkAliasUninstalledOperation($package, null);
+            $operations[] = new Operation\MarkAliasUninstalledOperation($package);
         }
 
         $operations = $this->movePluginsToFront($operations);
