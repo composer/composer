@@ -75,17 +75,17 @@ jobs:
         if: "!startsWith(matrix.os, 'windows')"
         run: |
           if [ "${{ matrix.php-version }}" = "5.3" ] || [ "${{ matrix.php-version }}" = "5.4" ] || [ "${{ matrix.php-version }}" = "5.5" ]; then
-            echo "SYMFONY_PHPUNIT_VERSION=4.8" >> $GITHUB_ENV";
+            echo "SYMFONY_PHPUNIT_VERSION=4.8" >> $GITHUB_ENV;
           elif [ "${{ matrix.php-version }}" = "5.6" ]; then
-            echo "SYMFONY_PHPUNIT_VERSION=5.7" >> $GITHUB_ENV";
+            echo "SYMFONY_PHPUNIT_VERSION=5.7" >> $GITHUB_ENV;
           elif [ "${{ matrix.php-version }}" = "7.0" ]; then
-            echo "SYMFONY_PHPUNIT_VERSION=6.5" >> $GITHUB_ENV";
+            echo "SYMFONY_PHPUNIT_VERSION=6.5" >> $GITHUB_ENV;
           elif [ "${{ matrix.php-version }}" = "7.1" ]; then
-            echo "SYMFONY_PHPUNIT_VERSION=7.5" >> $GITHUB_ENV";
+            echo "SYMFONY_PHPUNIT_VERSION=7.5" >> $GITHUB_ENV;
           elif [ "${{ matrix.php-version }}" = "8.0" ]; then
-            echo "SYMFONY_PHPUNIT_VERSION=9.3" >> $GITHUB_ENV";
+            echo "SYMFONY_PHPUNIT_VERSION=9.3" >> $GITHUB_ENV;
           else
-            echo "SYMFONY_PHPUNIT_VERSION=8.3" >> $GITHUB_ENV";
+            echo "SYMFONY_PHPUNIT_VERSION=8.3" >> $GITHUB_ENV;
           fi
 
       - name: "Install PHP"
