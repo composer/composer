@@ -75,17 +75,17 @@ jobs:
         if: "!startsWith(matrix.os, 'windows')"
         run: |
           if [ "${{ matrix.php-version }}" = "5.3" ] || [ "${{ matrix.php-version }}" = "5.4" ] || [ "${{ matrix.php-version }}" = "5.5" ]; then
-            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::4.8";
+            echo "SYMFONY_PHPUNIT_VERSION=4.8" >> $GITHUB_ENV";
           elif [ "${{ matrix.php-version }}" = "5.6" ]; then
-            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::5.7";
+            echo "SYMFONY_PHPUNIT_VERSION=5.7" >> $GITHUB_ENV";
           elif [ "${{ matrix.php-version }}" = "7.0" ]; then
-            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::6.5";
+            echo "SYMFONY_PHPUNIT_VERSION=6.5" >> $GITHUB_ENV";
           elif [ "${{ matrix.php-version }}" = "7.1" ]; then
-            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::7.5";
+            echo "SYMFONY_PHPUNIT_VERSION=7.5" >> $GITHUB_ENV";
           elif [ "${{ matrix.php-version }}" = "8.0" ]; then
-            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::9.3";
+            echo "SYMFONY_PHPUNIT_VERSION=9.3" >> $GITHUB_ENV";
           else
-            echo "::set-env name=SYMFONY_PHPUNIT_VERSION::8.3";
+            echo "SYMFONY_PHPUNIT_VERSION=8.3" >> $GITHUB_ENV";
           fi
 
       - name: "Install PHP"
@@ -99,11 +99,11 @@ jobs:
 
       - name: "Handle lowest dependencies update"
         if: "contains(matrix.dependencies, 'lowest')"
-        run: "echo \"::set-env name=COMPOSER_UPDATE_FLAGS::$COMPOSER_UPDATE_FLAGS --prefer-lowest\""
+        run: "echo \"COMPOSER_UPDATE_FLAGS=$COMPOSER_UPDATE_FLAGS --prefer-lowest\" >> $GITHUB_ENV"
 
       - name: "Handle ignore-platform-reqs dependencies update"
         if: "contains(matrix.dependencies, 'ignore')"
-        run: "echo \"::set-env name=COMPOSER_FLAGS::$COMPOSER_FLAGS --ignore-platform-req=php\""
+        run: "echo \"COMPOSER_FLAGS=$COMPOSER_FLAGS --ignore-platform-req=php\" >> $GITHUB_ENV"
 
       - name: "Remove platform config to get latest dependencies for current PHP version when build is not locked"
         run: "composer config platform --unset"
