@@ -1,13 +1,12 @@
 <!--
-    tagline: Access privately hosted packages
+    tagline: Access privately hosted packages/repositories
 -->
 
-# Authentication for privately hosted packages
+# Authentication for privately hosted packages and repositories
 
-Your [private package server](handling-private-packages.md) is probably secured with one
+Your [private package server](handling-private-packages.md) or version control system is probably secured with one
 or more authentication options. In order to allow your project to have access to these
-packages you will have to tell Composer how to authenticate with the server that hosts the
-package(s).
+packages and repositories you will have to tell Composer how to authenticate with the server that hosts them.
 
 # Authentication principles
 
@@ -53,6 +52,8 @@ For all authentication methods it is possible to edit them using the command lin
  - [Inline http-basic](#command-line-inline-http-basic)
  - [gitlab-oauth](#command-line-gitlab-oauth)
  - [gitlab-token](#command-line-gitlab-token)
+ - [github-oauth](#command-line-github-oauth)
+ - [bitbucket-oauth](#command-line-bitbucket-oauth)
 
 ### Manually editing global authentication credentials
 
@@ -71,6 +72,8 @@ For specific authentication implementations, see their sections;
  - [custom header](#manual-custom-token-authentication)
  - [gitlab-oauth](#manual-gitlab-oauth)
  - [gitlab-token](#manual-gitlab-token)
+ - [github-oauth](#manual-github-oauth)
+ - [bitbucket-oauth](#manual-bitbucket-oauth)
 
 Manually editing this file instead of using the command line may result in invalid json errors.
 To fix this you need to open the file in an editor and fix the error. To find the location of
@@ -97,12 +100,13 @@ section or directly in the repository definition.
 
 ## Authentication using the COMPOSER_AUTH environment variable
 
-> **Note:** Using this method also has security implications.
-> Credentials passed using command line environment variables will most likely be stored in memory,
+> **Note:** Using the command line environment variable method also has security implications.
+> These credentials will most likely be stored in memory,
 > and on be persisted to a file like ```~/.bash_history```(linux) or ```ConsoleHost_history.txt```
-> (Powershell on Windows) when closing a session.
+> (PowerShell on Windows) when closing a session.
 
 The final option to supply Composer with credentials is to use the ```COMPOSER_AUTH``` environment variable.
+These variables can be either passed as command line variables or set in actual environment variables.
 Read more about the usage of this environment variable [here](../03-cli.md#COMPOSER_AUTH).
 
 # Authentication methods
@@ -217,6 +221,8 @@ composer config [--global] --editor --auth
 > **Note:** For the gitlab authentication to work on private gitlab instances, the
 > [`gitlab-domains`](../06-config.md#gitlab-domains) section should also contain the url.
 
+When creating a gitlab token manually, make sure it has either the ```read_api``` or ```api``` scope.
+
 ### Command line gitlab-token
 
 ```sh
@@ -264,7 +270,7 @@ composer config [--global] --editor --auth
 
 ## bitbucket-oauth
 
-Read more about how to set up oauth on bitbucket [here](https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/).
+The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs, and you will need to create an OAuth consumer to use the driver, please refer to [Atlassian's Documentation](https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/). You will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and is not used by Composer.
 
 ### Command line bitbucket-oauth
 

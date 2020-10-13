@@ -82,6 +82,7 @@ A list of domain names and oauth keys. For example using `{"gitlab.com":
 private repositories on gitlab. Please note: If the package is not hosted at
 gitlab.com the domain names must be also specified with the
 [`gitlab-domains`](06-config.md#gitlab-domains) option.
+Further info can also be found [here](articles/authentication-for-private-packages.md#gitlab-oauth)
 
 ## gitlab-token
 
@@ -95,6 +96,7 @@ Please note: If the package is not hosted at
 gitlab.com the domain names must be also specified with the
 [`gitlab-domains`](06-config.md#gitlab-domains) option. The token must have
 `api` or `read_api` scope.
+Further info can also be found [here](articles/authentication-for-private-packages.md#gitlab-token)
 
 ## disable-tls
 
@@ -114,8 +116,8 @@ get a free SSL certificate is generally a better alternative.
 ## bitbucket-oauth
 
 A list of domain names and consumers. For example using `{"bitbucket.org":
-{"consumer-key": "myKey", "consumer-secret": "mySecret"}}`. [Read](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html)
-how to set up a consumer on Bitbucket.
+{"consumer-key": "myKey", "consumer-secret": "mySecret"}}`.
+Read more [here](articles/authentication-for-private-packages.md#bitbucket-oauth).
 
 ## cafile
 
@@ -134,11 +136,7 @@ capath must be a correctly hashed certificate directory.
 A list of domain names and username/passwords to authenticate against them. For
 example using `{"example.org": {"username": "alice", "password": "foo"}}` as the
 value of this option will let Composer authenticate against example.org.
-
-> **Note:** Authentication-related config options like `http-basic`, `bearer` and
-> `github-oauth` can also be specified inside a `auth.json` file that goes
-> besides your `composer.json`. That way you can gitignore it and every
-> developer can place their own credentials in there.
+More info can be found [here](articles/authentication-for-private-packages.md#http-basic).
 
 ## bearer
 
