@@ -1039,4 +1039,9 @@ to run Composer on a plane or a starship with poor connectivity.
 If set to `prime`, GitHub VCS repositories will prime the cache, so it can then be used
 fully offline with `1`.
 
+### COMPOSER_DEBUG_EVENTS
+
+If set to `1`, outputs information about events being dispatched, which can be
+useful for plugin authors to identify what is firing when exactly.
+
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

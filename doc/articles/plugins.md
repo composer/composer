@@ -94,6 +94,10 @@ and have it return an array. The array key must be the
 [event name](https://getcomposer.org/doc/articles/scripts.md#event-names)
 and the value is the name of the method in this class to be called.
 
+> **Note:** If you don't know which event to listen to, you can run a Composer
+> command with the COMPOSER_DEBUG_EVENTS=1 environment variable set, which might
+> help you identify what event you are looking for.
+
 ```php
 public static function getSubscribedEvents()
 {
@@ -263,7 +267,7 @@ Now the `custom-plugin-command` is available alongside Composer commands.
 
 ## Running plugins manually
 
-Plugins for an event can be run manually by the `run-script` command. This works the same way as 
+Plugins for an event can be run manually by the `run-script` command. This works the same way as
 [running scripts manually](scripts.md#running-scripts-manually).
 
 ## Using Plugins
