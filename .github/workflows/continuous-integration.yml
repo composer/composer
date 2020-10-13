@@ -93,7 +93,7 @@ jobs:
 
       - name: "Set SYMFONY_PHPUNIT_VERSION environment variable"
         if: "matrix.php-version == '7.4'"
-        run: "echo \"::set-env name=SYMFONY_PHPUNIT_VERSION::7.5\""
+        run: "echo \"SYMFONY_PHPUNIT_VERSION=7.5\" >> $GITHUB_ENV"
 
       - name: "Run tests"
         run: "vendor/bin/simple-phpunit"
