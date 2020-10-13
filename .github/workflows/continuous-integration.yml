@@ -12,7 +12,7 @@ env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
   COMPOSER_UPDATE_FLAGS: ""
   COMPOSER_TESTS_ARE_RUNNING: "1"
-  SYMFONY_PHPUNIT_VERSION: "8.3"
+  SYMFONY_PHPUNIT_VERSION: "8.5"
   SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT: "1"
 
 jobs:
@@ -83,9 +83,9 @@ jobs:
           elif [ "${{ matrix.php-version }}" = "7.1" ]; then
             echo "SYMFONY_PHPUNIT_VERSION=7.5" >> $GITHUB_ENV;
           elif [ "${{ matrix.php-version }}" = "8.0" ]; then
-            echo "SYMFONY_PHPUNIT_VERSION=9.3" >> $GITHUB_ENV;
+            echo "SYMFONY_PHPUNIT_VERSION=9.4" >> $GITHUB_ENV;
           else
-            echo "SYMFONY_PHPUNIT_VERSION=8.3" >> $GITHUB_ENV;
+            echo "SYMFONY_PHPUNIT_VERSION=8.5" >> $GITHUB_ENV;
           fi
 
       - name: "Install PHP"
