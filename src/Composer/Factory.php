@@ -591,6 +591,8 @@ class Factory
     }
 
     /**
+     * If you are calling this in a plugin, you probably should instead use $composer->getLoop()->getHttpDownloader()
+     *
      * @param  IOInterface      $io      IO instance
      * @param  Config           $config  Config instance
      * @param  array            $options Array of options passed directly to HttpDownloader constructor
