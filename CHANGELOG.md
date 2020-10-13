@@ -1,3 +1,7 @@
+### [1.10.15] 2020-10-13
+
+  * Fixed path repo version guessing issue
+
 ### [1.10.14] 2020-10-13
 
   * Fixed version guesser to look at remote branches as well as local ones
@@ -901,6 +905,7 @@
 
   * Initial release
 
+[1.10.15]: https://github.com/composer/composer/compare/1.10.14...1.10.15
 [1.10.14]: https://github.com/composer/composer/compare/1.10.13...1.10.14
 [1.10.13]: https://github.com/composer/composer/compare/1.10.12...1.10.13
 [1.10.12]: https://github.com/composer/composer/compare/1.10.11...1.10.12
