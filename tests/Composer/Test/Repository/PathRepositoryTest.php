@@ -97,21 +97,16 @@ class PathRepositoryTest extends TestCase
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
         $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
         $packages = $repository->getPackages();
-        $names = array();
+        $result = array();
 
         $this->assertGreaterThanOrEqual(3, $repository->count());
 
-        $package = $packages[0];
-        $names[] = $package->getName();
+        foreach ($packages as $package) {
+            $result[$package->getName()] = $package->getPrettyVersion();
+        }
 
-        $package = $packages[count($packages) - 1];
-        $names[] = $package->getName();
-
-        $package = $packages[2];
-        $names[] = $package->getName();
-
-        sort($names);
-        $this->assertSame(array('test/path-branch-versioned', 'test/path-unversioned', 'test/path-versioned'), $names);
+        ksort($result);
+        $this->assertSame(array('test/path-branch-versioned' => '1.2.x-dev', 'test/path-unversioned' => $result['test/path-unversioned'], 'test/path-versioned' => '0.0.2'), $result);
     }
 
     /**
