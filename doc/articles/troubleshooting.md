@@ -177,12 +177,7 @@ Because of GitHub's rate limits on their API it can happen that Composer prompts
 for authentication asking your username and password so it can go ahead with its work.
 
 If you would prefer not to provide your GitHub credentials to Composer you can
-manually create a token using the following procedure:
-
-1. [Create](https://github.com/settings/tokens) an OAuth token on GitHub.
-[Read more](https://github.com/blog/1509-personal-api-tokens) on this.
-
-2. Add it to the configuration running `composer config -g github-oauth.github.com <oauthtoken>`
+manually create a token using the [procedure documented here](authentication-for-private-packages.md#github-oauth).
 
 Now Composer should install/update without asking for authentication.
 

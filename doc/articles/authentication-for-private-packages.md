@@ -22,6 +22,8 @@ for credentials and save them (or a token if Composer is able to retrieve one).
 |[Custom header](#custom-token-authentication)|no|
 |[gitlab-oauth](#gitlab-oauth)|yes|
 |[gitlab-token](#gitlab-token)|yes|
+|[github-oauth](#github-oauth)|yes|
+|[bitbucket-oauth](#bitbucket-oauth)|yes|
 
 Sometimes automatic authentication is not possible, or you may want to predefine
 authentication credentials.
@@ -92,6 +94,16 @@ You can open this file in your favorite editor and fix the error.
 
 It is also possible to add credentials to a `composer.json` on a per-project basis in the `config`
 section or directly in the repository definition.
+
+## Authentication using the COMPOSER_AUTH environment variable
+
+> **Note:** Using this method also has security implications.
+> Credentials passed using command line environment variables will most likely be stored in memory,
+> and on be persisted to a file like ```~/.bash_history```(linux) or ```ConsoleHost_history.txt```
+> (Powershell on Windows) when closing a session.
+
+The final option to supply Composer with credentials is to use the ```COMPOSER_AUTH``` environment variable.
+Read more about the usage of this environment variable [here](../03-cli.md#COMPOSER_AUTH).
 
 # Authentication methods
 
@@ -221,6 +233,58 @@ composer config [--global] --editor --auth
 {
     "gitlab-token": {
         "example.org": "token"
+    }
+}
+```
+
+## github-oauth
+
+To create a new access token, head to your [token settings section on Github](https://github.com/settings/tokens) and [generate a new token](https://github.com/settings/tokens/new). For public repositories when rate limited, the ```public_repo``` scope is required, for private repositories the ```repo:status``` scope is needed.
+Read more about it [here](https://github.com/blog/1509-personal-api-tokens).
+
+### Command line github-oauth
+
+```sh
+composer config [--global] github-oauth.github.com token
+```
+
+### Manual github-oauth
+
+```sh
+composer config [--global] --editor --auth
+```
+
+```json
+{
+    "github-oauth": {
+        "github.com": "token"
+    }
+}
+```
+
+## bitbucket-oauth
+
+Read more about how to set up oauth on bitbucket [here](https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/).
+
+### Command line bitbucket-oauth
+
+```sh
+composer config [--global] bitbucket-oauth.bitbucket.org cosumer-key consumer-secret
+```
+
+### Manual bitbucket-oauth
+
+```sh
+composer config [--global] --editor --auth
+```
+
+```json
+{
+    "bitbucket-oauth": {
+        "bitbucket.org": {
+             "consumer-key": "key",
+             "consumer-secret": "secret"
+        }
     }
 }
 ```

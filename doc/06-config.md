@@ -71,9 +71,9 @@ URL.
 A list of domain names and oauth keys. For example using `{"github.com":
 "oauthtoken"}` as the value of this option will use `oauthtoken` to access
 private repositories on github and to circumvent the low IP-based rate limiting
-of their API. [Read
-more](articles/troubleshooting.md#api-rate-limit-and-oauth-tokens) on how to get
-an OAuth token for GitHub.
+of their API. Composer may prompt for credentials when needed, but these can also be
+manually set. Read more on how to get an OAuth token for GitHub and cli syntax
+[here](articles/authentication-for-private-packages.md#github-oauth).
 
 ## gitlab-oauth
 
