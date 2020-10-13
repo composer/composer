@@ -209,9 +209,9 @@ EOT
                 'require' => $rootPackage->getRequires(),
                 'require-dev' => $rootPackage->getDevRequires(),
             );
-            foreach ($toRemove as $type => $packages) {
-                foreach ($packages as $package) {
-                    unset($links[$type][$package]);
+            foreach ($toRemove as $type => $names) {
+                foreach ($names as $name) {
+                    unset($links[$type][$name]);
                 }
             }
             $rootPackage->setRequires($links['require']);
@@ -264,6 +264,15 @@ EOT
         if ($status !== 0) {
             $io->writeError("\n".'<error>Removal failed, reverting '.$file.' to its original content.</error>');
             file_put_contents($jsonFile->getPath(), $composerBackup);
+        }
+
+        if (!$dryRun) {
+            foreach ($packages as $package) {
+                if ($composer->getRepositoryManager()->getLocalRepository()->findPackages($package)) {
+                    $io->writeError('<error>Removal failed, '.$package.' is still present, it may be required by another package. See `composer why '.$package.'`.</error>');
+                    return 2;
+                }
+            }
         }
 
         return $status;
