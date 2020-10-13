@@ -658,6 +658,17 @@ the branch or tag that is currently checked out. Otherwise, the version should
 be explicitly defined in the package's `composer.json` file. If the version
 cannot be resolved by these means, it is assumed to be `dev-master`.
 
+When the version cannot be inferred from the local VCS repository, you should use
+the special `branch-version` entry under `extra` instead of `version`:
+
+```json
+{
+    "extra": {
+        "branch-version": "4.2-dev"
+    }
+}
+```
+
 The local package will be symlinked if possible, in which case the output in
 the console will read `Symlinking from ../../packages/my-package`. If symlinking
 is _not_ possible the package will be copied. In that case, the console will

@@ -201,4 +201,15 @@ class RootPackageLoaderTest extends TestCase
 
         $this->assertEquals("dev-latest-production", $package->getPrettyVersion());
     }
+
+    public function testLoadExtraBranchVersion()
+    {
+        $package = $this->loadPackage(array(
+            'extra' => array(
+                'branch-version' => '1.2',
+            ),
+        ));
+
+        $this->assertEquals('1.2.x-dev', $package->getPrettyVersion());
+    }
 }
