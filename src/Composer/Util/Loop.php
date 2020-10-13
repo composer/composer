@@ -21,20 +21,38 @@ use Symfony\Component\Console\Helper\ProgressBar;
  */
 class Loop
 {
+    /** @var HttpDownloader */
     private $httpDownloader;
+    /** @var ProcessExecutor|null */
     private $processExecutor;
+    /** @var Promise[]|null */
     private $currentPromises;
 
-    public function __construct(HttpDownloader $httpDownloader = null, ProcessExecutor $processExecutor = null)
+    public function __construct(HttpDownloader $httpDownloader, ProcessExecutor $processExecutor = null)
     {
         $this->httpDownloader = $httpDownloader;
-        if ($this->httpDownloader) {
-            $this->httpDownloader->enableAsync();
-        }
+        $this->httpDownloader->enableAsync();
+
         $this->processExecutor = $processExecutor;
         if ($this->processExecutor) {
             $this->processExecutor->enableAsync();
         }
+    }
+
+    /**
+     * @return HttpDownloader
+     */
+    public function getHttpDownloader()
+    {
+        return $this->httpDownloader;
+    }
+
+    /**
+     * @return ProcessExecutor|null
+     */
+    public function getProcessExecutor()
+    {
+        return $this->processExecutor;
     }
 
     public function wait(array $promises, ProgressBar $progress = null)
