@@ -234,7 +234,7 @@ EOT
                 ->setApcuAutoloader($config->get('apcu-autoloader'));
 
             if (!$composer->getLocker()->isLocked()) {
-                $installer->setUpdate();
+                $installer->setUpdate(true);
             }
 
             if ($disablePlugins) {

@@ -991,7 +991,7 @@ class Installer
      * @param  bool      $optimizeAutoloader
      * @return Installer
      */
-    public function setOptimizeAutoloader($optimizeAutoloader = false)
+    public function setOptimizeAutoloader($optimizeAutoloader)
     {
         $this->optimizeAutoloader = (bool) $optimizeAutoloader;
         if (!$this->optimizeAutoloader) {
@@ -1010,7 +1010,7 @@ class Installer
      * @param  bool      $classMapAuthoritative
      * @return Installer
      */
-    public function setClassMapAuthoritative($classMapAuthoritative = false)
+    public function setClassMapAuthoritative($classMapAuthoritative)
     {
         $this->classMapAuthoritative = (bool) $classMapAuthoritative;
         if ($this->classMapAuthoritative) {
@@ -1028,7 +1028,7 @@ class Installer
      * @param  string|null $apcuAutoloaderPrefix
      * @return Installer
      */
-    public function setApcuAutoloader($apcuAutoloader = false, $apcuAutoloaderPrefix = null)
+    public function setApcuAutoloader($apcuAutoloader, $apcuAutoloaderPrefix = null)
     {
         $this->apcuAutoloader = $apcuAutoloader;
         $this->apcuAutoloaderPrefix = $apcuAutoloaderPrefix;
@@ -1042,7 +1042,7 @@ class Installer
      * @param  bool      $update
      * @return Installer
      */
-    public function setUpdate($update = true)
+    public function setUpdate($update)
     {
         $this->update = (bool) $update;
 
@@ -1055,7 +1055,7 @@ class Installer
      * @param  bool      $install
      * @return Installer
      */
-    public function setInstall($install = true)
+    public function setInstall($install)
     {
         $this->install = (bool) $install;
 
@@ -1151,7 +1151,7 @@ class Installer
      * @param  bool|array $ignorePlatformReqs
      * @return Installer
      */
-    public function setIgnorePlatformRequirements($ignorePlatformReqs = false)
+    public function setIgnorePlatformRequirements($ignorePlatformReqs)
     {
         if (is_array($ignorePlatformReqs)) {
             $this->ignorePlatformReqs = array_filter($ignorePlatformReqs, function ($req) {
