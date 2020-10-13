@@ -74,7 +74,7 @@ class RootPackageLoader extends ArrayLoader
             $commit = null;
 
             if (isset($config['extra']['branch-version'])) {
-                $config['version'] = preg_replace('{(\.x)?(-dev)?$}', '.x-dev', $config['extra']['branch-version']);
+                $config['version'] = preg_replace('{(\.x)?(-dev)?$}', '', $config['extra']['branch-version']).'.x-dev';
             } elseif (getenv('COMPOSER_ROOT_VERSION')) {
                 // override with env var if available
                 $config['version'] = getenv('COMPOSER_ROOT_VERSION');

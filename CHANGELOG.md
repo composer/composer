@@ -69,6 +69,10 @@
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
 
+### [1.10.15] 2020-10-13
+
+  * Fixed path repo version guessing issue
+
 ### [1.10.14] 2020-10-13
 
   * Fixed version guesser to look at remote branches as well as local ones
@@ -976,6 +980,7 @@
 [2.0.0-alpha3]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-alpha3
 [2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
+[1.10.15]: https://github.com/composer/composer/compare/1.10.14...1.10.15
 [1.10.14]: https://github.com/composer/composer/compare/1.10.13...1.10.14
 [1.10.13]: https://github.com/composer/composer/compare/1.10.12...1.10.13
 [1.10.12]: https://github.com/composer/composer/compare/1.10.11...1.10.12
