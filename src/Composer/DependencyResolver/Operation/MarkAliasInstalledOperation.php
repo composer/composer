@@ -20,7 +20,7 @@ use Composer\Package\PackageInterface;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class MarkAliasInstalledOperation extends SolverOperation
+class MarkAliasInstalledOperation implements OperationInterface
 {
     protected $package;
 
@@ -28,12 +28,9 @@ class MarkAliasInstalledOperation extends SolverOperation
      * Initializes operation.
      *
      * @param AliasPackage $package package instance
-     * @param string       $reason  operation reason
      */
-    public function __construct(AliasPackage $package, $reason = null)
+    public function __construct(AliasPackage $package)
     {
-        parent::__construct($reason);
-
         $this->package = $package;
     }
 

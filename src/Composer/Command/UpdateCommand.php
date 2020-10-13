@@ -54,12 +54,13 @@ class UpdateCommand extends BaseCommand
                 new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
-                new InputOption('with-dependencies', null, InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, except those which are root requirements.'),
-                new InputOption('with-all-dependencies', null, InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, including those which are root requirements.'),
+                new InputOption('with-dependencies', 'w', InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, except those which are root requirements.'),
+                new InputOption('with-all-dependencies', 'W', InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, including those which are root requirements.'),
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
                 new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
                 new InputOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
+                new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.'),
@@ -189,7 +190,8 @@ EOT
 
         $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
-        $apcu = $input->getOption('apcu-autoloader') || $config->get('apcu-autoloader');
+        $apcuPrefix = $input->getOption('apcu-autoloader-prefix');
+        $apcu = $apcuPrefix !== null || $input->getOption('apcu-autoloader') || $config->get('apcu-autoloader');
 
         $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
         if ($input->getOption('with-all-dependencies')) {
@@ -210,8 +212,8 @@ EOT
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
-            ->setApcuAutoloader($apcu)
-            ->setUpdate()
+            ->setApcuAutoloader($apcu, $apcuPrefix)
+            ->setUpdate(true)
             ->setInstall(!$input->getOption('no-install'))
             ->setUpdateMirrors($updateMirrors)
             ->setUpdateAllowList($packages)

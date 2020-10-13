@@ -21,6 +21,26 @@ use Composer\Semver\Constraint\ConstraintInterface;
  */
 class Link
 {
+    const TYPE_REQUIRE = 'requires';
+    const TYPE_DEV_REQUIRE = 'devRequires';
+    const TYPE_PROVIDE = 'provides';
+    const TYPE_CONFLICT = 'conflicts';
+    const TYPE_REPLACE = 'replaces';
+
+    /**
+     * Will be converted into a constant once the min PHP version allows this
+     *
+     * @internal
+     * @var string[]
+     */
+    public static $TYPES = array(
+        self::TYPE_REQUIRE,
+        self::TYPE_DEV_REQUIRE,
+        self::TYPE_PROVIDE,
+        self::TYPE_CONFLICT,
+        self::TYPE_REPLACE,
+    );
+
     /**
      * @var string
      */
@@ -38,6 +58,7 @@ class Link
 
     /**
      * @var string
+     * @phpstan-var self::TYPE_* $description
      */
     protected $description;
 
@@ -49,14 +70,20 @@ class Link
     /**
      * Creates a new package link.
      *
-     * @param string              $source
-     * @param string              $target
-     * @param ConstraintInterface $constraint       Constraint applying to the target of this link
-     * @param string              $description      Used to create a descriptive string representation
-     * @param string|null         $prettyConstraint
+     * @param string               $source
+     * @param string               $target
+     * @param ConstraintInterface  $constraint       Constraint applying to the target of this link
+     * @param string               $description      Used to create a descriptive string representation
+     * @phpstan-param self::TYPE_* $description
+     * @param string|null          $prettyConstraint
      */
-    public function __construct($source, $target, ConstraintInterface $constraint, $description = 'relates to', $prettyConstraint = null)
-    {
+    public function __construct(
+        $source,
+        $target,
+        ConstraintInterface $constraint,
+        $description = 'relates to',
+        $prettyConstraint = null
+    ) {
         $this->source = strtolower($source);
         $this->target = strtolower($target);
         $this->constraint = $constraint;

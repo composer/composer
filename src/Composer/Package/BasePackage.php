@@ -22,12 +22,15 @@ use Composer\Repository\PlatformRepository;
  */
 abstract class BasePackage implements PackageInterface
 {
+    /**
+     * @phpstan-var array<string, array{description: string, method: Link::TYPE_*}>
+     */
     public static $supportedLinkTypes = array(
-        'require' => array('description' => 'requires', 'method' => 'requires'),
-        'conflict' => array('description' => 'conflicts', 'method' => 'conflicts'),
-        'provide' => array('description' => 'provides', 'method' => 'provides'),
-        'replace' => array('description' => 'replaces', 'method' => 'replaces'),
-        'require-dev' => array('description' => 'requires (for development)', 'method' => 'devRequires'),
+        'require' => array('description' => 'requires', 'method' => Link::TYPE_REQUIRE),
+        'conflict' => array('description' => 'conflicts', 'method' => Link::TYPE_CONFLICT),
+        'provide' => array('description' => 'provides', 'method' => Link::TYPE_PROVIDE),
+        'replace' => array('description' => 'replaces', 'method' => Link::TYPE_REPLACE),
+        'require-dev' => array('description' => 'requires (for development)', 'method' => Link::TYPE_DEV_REQUIRE),
     );
 
     const STABILITY_STABLE = 0;

@@ -507,7 +507,7 @@ package repository definitions. It will fetch all the packages that are
 `require`d and dump a `packages.json` that is your `composer` repository.
 
 Check [the satis GitHub repository](https://github.com/composer/satis) and
-the [Satis article](articles/handling-private-packages-with-satis.md) for more
+the [handling private packages article](articles/handling-private-packages.md) for more
 information.
 
 ### Artifact

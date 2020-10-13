@@ -144,6 +144,14 @@ class EventDispatcher
      */
     protected function doDispatch(Event $event)
     {
+        if (getenv('COMPOSER_DEBUG_EVENTS')) {
+            $details = null;
+            if ($event instanceof PackageEvent) {
+                $details = (string) $event->getOperation();
+            }
+            $this->io->writeError('Dispatching <info>'.$event->getName().'</info>'.($details ? ' ('.$details.')' : '').' event');
+        }
+
         $listeners = $this->getListeners($event);
 
         $this->pushEvent($event);

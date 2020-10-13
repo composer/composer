@@ -172,7 +172,7 @@ EOT
             $io->write(sprintf('PHP binary path: <comment>%s</comment>', PHP_BINARY));
         }
 
-        $io->write(sprintf('OpenSSL version: <comment>%s</comment>', OPENSSL_VERSION_TEXT));
+        $io->write('OpenSSL version: ' . (defined('OPENSSL_VERSION_TEXT') ? '<comment>'.OPENSSL_VERSION_TEXT.'</comment>' : '<error>missing</error>'));
 
         return $this->exitCode;
     }

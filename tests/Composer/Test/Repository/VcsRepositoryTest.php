@@ -44,7 +44,7 @@ class VcsRepositoryTest extends TestCase
         self::$gitRepo = $this->getUniqueTmpDirectory();
 
         if (!@chdir(self::$gitRepo)) {
-            $this->skipped = 'Could not create and move into the temp git repo '.self::$gitRepo;
+            $this->skipped = 'Could not move into the temp git repo '.self::$gitRepo;
 
             return;
         }

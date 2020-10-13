@@ -106,6 +106,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             throw new \InvalidArgumentException('The given package is missing url information');
         }
 
+        $cacheKeyGenerator = function (PackageInterface $package, $key) {
+            $cacheKey = sha1($key);
+
+            return $package->getName().'/'.$cacheKey.'.'.$package->getDistType();
+        };
+
         $retries = 3;
         $urls = $package->getDistUrls();
         foreach ($urls as $index => $url) {
@@ -113,7 +119,11 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $urls[$index] = array(
                 'base' => $url,
                 'processed' => $processedUrl,
-                'cacheKey' => $this->getCacheKey($package, $processedUrl)
+                // we use the complete download url here to avoid conflicting entries
+                // from different packages, which would potentially allow a given package
+                // in a third party repo to pre-populate the cache for the same package in
+                // packagist for example.
+                'cacheKey' => $cacheKeyGenerator($package, $processedUrl)
             );
         }
 
@@ -130,12 +140,17 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $accept = null;
         $reject = null;
-        $download = function () use ($io, $output, $httpDownloader, $cache, $eventDispatcher, $package, $fileName, &$urls, &$accept, &$reject) {
+        $download = function () use ($io, $output, $httpDownloader, $cache, $cacheKeyGenerator, $eventDispatcher, $package, $fileName, &$urls, &$accept, &$reject) {
             $url = reset($urls);
 
             if ($eventDispatcher) {
                 $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $httpDownloader, $url['processed'], 'package', $package);
                 $eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                if ($preFileDownloadEvent->getCustomCacheKey() !== null) {
+                    $url['cacheKey'] = $cacheKeyGenerator($package, $preFileDownloadEvent->getCustomCacheKey());
+                } else if ($preFileDownloadEvent->getProcessedUrl() !== $url['processed']) {
+                    $url['cacheKey'] = $cacheKeyGenerator($package, $preFileDownloadEvent->getProcessedUrl());
+                }
                 $url['processed'] = $preFileDownloadEvent->getProcessedUrl();
             }
 
@@ -396,17 +411,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
 
         return $url;
-    }
-
-    private function getCacheKey(PackageInterface $package, $processedUrl)
-    {
-        // we use the complete download url here to avoid conflicting entries
-        // from different packages, which would potentially allow a given package
-        // in a third party repo to pre-populate the cache for the same package in
-        // packagist for example.
-        $cacheKey = sha1($processedUrl);
-
-        return $package->getName().'/'.$cacheKey.'.'.$package->getDistType();
     }
 
     /**

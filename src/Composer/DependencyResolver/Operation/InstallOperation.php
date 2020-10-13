@@ -19,7 +19,7 @@ use Composer\Package\PackageInterface;
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class InstallOperation extends SolverOperation
+class InstallOperation implements OperationInterface
 {
     protected $package;
 
@@ -27,12 +27,9 @@ class InstallOperation extends SolverOperation
      * Initializes operation.
      *
      * @param PackageInterface $package package instance
-     * @param string           $reason  operation reason
      */
-    public function __construct(PackageInterface $package, $reason = null)
+    public function __construct(PackageInterface $package)
     {
-        parent::__construct($reason);
-
         $this->package = $package;
     }
 

@@ -438,7 +438,7 @@ class AutoloadGeneratorTest extends TestCase
 
         $b->setAutoload(array('psr-4' => array('B\\' => 'src/')));
         $b->setReplaces(
-            array(new Link('b/b', 'b/c', new Constraint('==', '1.0'), 'replaces'))
+            array(new Link('b/b', 'b/c', new Constraint('==', '1.0'), Link::TYPE_REPLACE))
         );
 
         $this->repository->expects($this->once())
@@ -821,6 +821,55 @@ EOF;
 
         $this->assertStringContainsString('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
         $this->assertStringContainsString('$loader->setApcuPrefix(', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+    }
+
+    public function testClassMapAutoloadingAuthoritativeAndApcuPrefix()
+    {
+        $package = new Package('a', '1.0', '1.0');
+        $package->setRequires(array(
+            new Link('a', 'a/a', new MatchAllConstraint()),
+            new Link('a', 'b/b', new MatchAllConstraint()),
+            new Link('a', 'c/c', new MatchAllConstraint()),
+        ));
+
+        $packages = array();
+        $packages[] = $a = new Package('a/a', '1.0', '1.0');
+        $packages[] = $b = new Package('b/b', '1.0', '1.0');
+        $packages[] = $c = new Package('c/c', '1.0', '1.0');
+        $a->setAutoload(array('psr-4' => array('' => 'src/')));
+        $b->setAutoload(array('psr-4' => array('' => './')));
+        $c->setAutoload(array('psr-4' => array('' => 'foo/')));
+
+        $this->repository->expects($this->once())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue($packages));
+
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/composer');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a/src');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b');
+        $this->fs->ensureDirectoryExists($this->vendorDir.'/c/c/foo');
+        file_put_contents($this->vendorDir.'/a/a/src/ClassMapFoo.php', '<?php class ClassMapFoo {}');
+        file_put_contents($this->vendorDir.'/b/b/ClassMapBar.php', '<?php class ClassMapBar {}');
+        file_put_contents($this->vendorDir.'/c/c/foo/ClassMapBaz.php', '<?php class ClassMapBaz {}');
+
+        $this->generator->setClassMapAuthoritative(true);
+        $this->generator->setApcu(true, 'custom\'Prefix');
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', false, '_7');
+
+        $this->assertFileExists($this->vendorDir.'/composer/autoload_classmap.php', "ClassMap file needs to be generated.");
+        $this->assertEquals(
+            array(
+                'ClassMapBar' => $this->vendorDir.'/b/b/ClassMapBar.php',
+                'ClassMapBaz' => $this->vendorDir.'/c/c/foo/ClassMapBaz.php',
+                'ClassMapFoo' => $this->vendorDir.'/a/a/src/ClassMapFoo.php',
+                'Composer\\InstalledVersions' => $this->vendorDir.'/composer/InstalledVersions.php',
+            ),
+            include $this->vendorDir.'/composer/autoload_classmap.php'
+        );
+        $this->assertAutoloadFiles('classmap8', $this->vendorDir.'/composer', 'classmap');
+
+        $this->assertStringContainsString('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertStringContainsString('$loader->setApcuPrefix(\'custom\\\'Prefix\');', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
     }
 
     public function testFilesAutoloadGeneration()

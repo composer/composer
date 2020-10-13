@@ -27,13 +27,6 @@ interface OperationInterface
     public function getOperationType();
 
     /**
-     * Returns operation reason.
-     *
-     * @return string
-     */
-    public function getReason();
-
-    /**
      * Serializes the operation in a human readable format
      *
      * @param $lock bool Whether this is an operation on the lock file

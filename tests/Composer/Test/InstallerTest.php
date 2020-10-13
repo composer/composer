@@ -145,11 +145,11 @@ class InstallerTest extends TestCase
 
         $a = $this->getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
         $a->setRequires(array(
-            'b' => new Link('A', 'B', $v = $this->getVersionConstraint('=', '1.0.0'), 'requires', $v->getPrettyString()),
+            'b' => new Link('A', 'B', $v = $this->getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ));
         $b = $this->getPackage('B', '1.0.0');
         $b->setRequires(array(
-            'a' => new Link('B', 'A', $v = $this->getVersionConstraint('=', '1.0.0'), 'requires', $v->getPrettyString()),
+            'a' => new Link('B', 'A', $v = $this->getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ));
 
         $cases[] = array(
@@ -165,11 +165,11 @@ class InstallerTest extends TestCase
 
         $a = $this->getPackage('A', '1.0.0', 'Composer\Package\RootPackage');
         $a->setRequires(array(
-            'b' => new Link('A', 'B', $v = $this->getVersionConstraint('=', '1.0.0'), 'requires', $v->getPrettyString()),
+            'b' => new Link('A', 'B', $v = $this->getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ));
         $b = $this->getPackage('B', '1.0.0');
         $b->setRequires(array(
-            'a' => new Link('B', 'A', $v = $this->getVersionConstraint('=', '1.0.0'), 'requires', $v->getPrettyString()),
+            'a' => new Link('B', 'A', $v = $this->getVersionConstraint('=', '1.0.0'), Link::TYPE_REQUIRE, $v->getPrettyString()),
         ));
 
         $cases[] = array(

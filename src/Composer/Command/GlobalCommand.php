@@ -75,6 +75,12 @@ EOT
             return parent::run($input, $output);
         }
 
+        // The COMPOSER env var should not apply to the global execution scope
+        if (getenv('COMPOSER')) {
+            putenv('COMPOSER');
+            unset($_SERVER['COMPOSER']);
+        }
+
         // change to global dir
         $config = Factory::createConfig();
         $home = $config->get('home');

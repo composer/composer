@@ -137,7 +137,7 @@ class RootPackageLoaderTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n";
 
                 return 0;
@@ -187,7 +187,7 @@ class RootPackageLoaderTest extends TestCase
             ->expects($this->at(0))
             ->method('execute')
             ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git branch --no-color --no-abbrev -v', $command);
+                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
                 $output = "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n";
 
                 return 0;

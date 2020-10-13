@@ -45,10 +45,10 @@ class TransactionTest extends TestCase
         );
 
         $packageD->setRequires(array(
-            'f/f' => new Link('d/d', 'f/f', $this->getVersionConstraint('>', '0.2'), 'requires'),
-            'g/provider' => new Link('d/d', 'g/provider', $this->getVersionConstraint('>', '0.2'), 'requires'),
+            'f/f' => new Link('d/d', 'f/f', $this->getVersionConstraint('>', '0.2'), Link::TYPE_REQUIRE),
+            'g/provider' => new Link('d/d', 'g/provider', $this->getVersionConstraint('>', '0.2'), Link::TYPE_REQUIRE),
         ));
-        $packageG->setProvides(array('g/provider' => new Link('g/g', 'g/provider', $this->getVersionConstraint('==', '1.0.0'), 'provides')));
+        $packageG->setProvides(array('g/provider' => new Link('g/g', 'g/provider', $this->getVersionConstraint('==', '1.0.0'), Link::TYPE_PROVIDE)));
 
         $expectedOperations = array(
             array('job' => 'uninstall', 'package' => $packageC),

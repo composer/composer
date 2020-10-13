@@ -112,7 +112,7 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
         $this->repo->addPackage($newPackageB = $this->getPackage('B', '1.1'));
 
-        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('<', '1.1'), 'requires')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('<', '1.1'), Link::TYPE_REQUIRE)));
 
         $this->reposComplete();
 
@@ -137,7 +137,7 @@ class SolverTest extends TestCase
                 $this->getVersionConstraint('<=', '1.3'),
                 $this->getVersionConstraint('<>', '1.3'),
                 $this->getVersionConstraint('!=', '1.2'),
-            )), 'requires'),
+            )), Link::TYPE_REQUIRE),
         ));
 
         $this->reposComplete();
@@ -157,11 +157,11 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageC = $this->getPackage('C', '1.0'));
 
         $packageB->setRequires(array(
-            'a' => new Link('B', 'A', $this->getVersionConstraint('>=', '1.0'), 'requires'),
-            'c' => new Link('B', 'C', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            'a' => new Link('B', 'A', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE),
+            'c' => new Link('B', 'C', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE),
         ));
         $packageC->setRequires(array(
-            'a' => new Link('C', 'A', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            'a' => new Link('C', 'A', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE),
         ));
 
         $this->reposComplete();
@@ -205,7 +205,7 @@ class SolverTest extends TestCase
         $this->repo->addPackage($newPackageB = $this->getPackage('B', '1.1'));
         $this->reposComplete();
 
-        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0.0.0'), 'requires')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0.0.0'), Link::TYPE_REQUIRE)));
 
         $this->request->fixPackage($packageA);
         $this->request->requireName('B', $this->getVersionConstraint('=', '1.1.0.0'));
@@ -235,8 +235,8 @@ class SolverTest extends TestCase
         $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.1'));
         $this->repo->addPackage($newPackageB = $this->getPackage('B', '1.1'));
 
-        $packageA->setRequires(array('b' => new Link('A', 'B', new MatchAllConstraint(), 'requires')));
-        $newPackageA->setRequires(array('b' => new Link('A', 'B', new MatchAllConstraint(), 'requires')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', new MatchAllConstraint(), Link::TYPE_REQUIRE)));
+        $newPackageA->setRequires(array('b' => new Link('A', 'B', new MatchAllConstraint(), Link::TYPE_REQUIRE)));
 
         $this->reposComplete();
 
@@ -341,7 +341,7 @@ class SolverTest extends TestCase
         $this->repo->addPackage($newPackageB = $this->getPackage('B', '1.1'));
         $this->repo->addPackage($packageC = $this->getPackage('C', '1.1'));
         $this->repo->addPackage($this->getPackage('D', '1.0'));
-        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('<', '1.1'), 'requires')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('<', '1.1'), Link::TYPE_REQUIRE)));
 
         $this->reposComplete();
 
@@ -362,8 +362,8 @@ class SolverTest extends TestCase
         $this->repo->addPackage($middlePackageB = $this->getPackage('B', '1.0'));
         $this->repo->addPackage($newPackageB = $this->getPackage('B', '1.1'));
         $this->repo->addPackage($oldPackageB = $this->getPackage('B', '0.9'));
-        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('<', '1.1'), 'requires')));
-        $packageA->setConflicts(array('b' => new Link('A', 'B', $this->getVersionConstraint('<', '1.0'), 'conflicts')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('<', '1.1'), Link::TYPE_REQUIRE)));
+        $packageA->setConflicts(array('b' => new Link('A', 'B', $this->getVersionConstraint('<', '1.0'), Link::TYPE_CONFLICT)));
 
         $this->reposComplete();
 
@@ -409,8 +409,8 @@ class SolverTest extends TestCase
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
-        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'requires')));
-        $packageQ->setProvides(array('b' => new Link('Q', 'B', $this->getVersionConstraint('=', '1.0'), 'provides')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE)));
+        $packageQ->setProvides(array('b' => new Link('Q', 'B', $this->getVersionConstraint('=', '1.0'), Link::TYPE_PROVIDE)));
 
         $this->reposComplete();
 
@@ -427,8 +427,8 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
-        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'requires')));
-        $packageQ->setReplaces(array('b' => new Link('Q', 'B', $this->getVersionConstraint('>=', '1.0'), 'replaces')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE)));
+        $packageQ->setReplaces(array('b' => new Link('Q', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REPLACE)));
 
         $this->reposComplete();
 
@@ -444,8 +444,8 @@ class SolverTest extends TestCase
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
-        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'requires')));
-        $packageQ->setReplaces(array('b' => new Link('Q', 'B', $this->getVersionConstraint('>=', '1.0'), 'replaces')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE)));
+        $packageQ->setReplaces(array('b' => new Link('Q', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REPLACE)));
 
         $this->reposComplete();
 
@@ -461,8 +461,8 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
-        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'requires')));
-        $packageQ->setReplaces(array('b' => new Link('Q', 'B', $this->getVersionConstraint('>=', '1.0'), 'replaces')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE)));
+        $packageQ->setReplaces(array('b' => new Link('Q', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REPLACE)));
 
         $this->reposComplete();
 
@@ -479,27 +479,27 @@ class SolverTest extends TestCase
     {
         $this->repo->addPackage($packageX = $this->getPackage('X', '1.0'));
         $packageX->setRequires(array(
-            'a' => new Link('X', 'A', $this->getVersionConstraint('>=', '2.0.0.0'), 'requires'),
-            'b' => new Link('X', 'B', $this->getVersionConstraint('>=', '2.0.0.0'), 'requires'),
+            'a' => new Link('X', 'A', $this->getVersionConstraint('>=', '2.0.0.0'), Link::TYPE_REQUIRE),
+            'b' => new Link('X', 'B', $this->getVersionConstraint('>=', '2.0.0.0'), Link::TYPE_REQUIRE),
         ));
 
         $this->repo->addPackage($packageA = $this->getPackage('A', '2.0.0'));
         $this->repo->addPackage($newPackageA = $this->getPackage('A', '2.1.0'));
         $this->repo->addPackage($newPackageB = $this->getPackage('B', '2.1.0'));
 
-        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '2.0.0.0'), 'requires')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '2.0.0.0'), Link::TYPE_REQUIRE)));
 
         // new package A depends on version of package B that does not exist
         // => new package A is not installable
-        $newPackageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '2.2.0.0'), 'requires')));
+        $newPackageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '2.2.0.0'), Link::TYPE_REQUIRE)));
 
         // add a package S replacing both A and B, so that S and B or S and A cannot be simultaneously installed
         // but an alternative option for A and B both exists
         // this creates a more difficult so solve conflict
         $this->repo->addPackage($packageS = $this->getPackage('S', '2.0.0'));
         $packageS->setReplaces(array(
-            'a' => new Link('S', 'A', $this->getVersionConstraint('>=', '2.0.0.0'), 'replaces'),
-            'b' => new Link('S', 'B', $this->getVersionConstraint('>=', '2.0.0.0'), 'replaces'),
+            'a' => new Link('S', 'A', $this->getVersionConstraint('>=', '2.0.0.0'), Link::TYPE_REPLACE),
+            'b' => new Link('S', 'B', $this->getVersionConstraint('>=', '2.0.0.0'), Link::TYPE_REPLACE),
         ));
 
         $this->reposComplete();
@@ -518,8 +518,8 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB1 = $this->getPackage('B', '0.9'));
         $this->repo->addPackage($packageB2 = $this->getPackage('B', '1.1'));
-        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'requires')));
-        $packageB2->setRequires(array('a' => new Link('B', 'A', $this->getVersionConstraint('>=', '1.0'), 'requires')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE)));
+        $packageB2->setRequires(array('a' => new Link('B', 'A', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE)));
 
         $this->reposComplete();
 
@@ -537,13 +537,13 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
         $this->repo->addPackage($packageC = $this->getPackage('C', '1.0'));
         $this->repo->addPackage($packageD = $this->getPackage('D', '1.0'));
-        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'requires')));
-        $packageB->setRequires(array('virtual' => new Link('B', 'Virtual', $this->getVersionConstraint('>=', '1.0'), 'requires')));
-        $packageC->setProvides(array('virtual' => new Link('C', 'Virtual', $this->getVersionConstraint('==', '1.0'), 'provides')));
-        $packageD->setProvides(array('virtual' => new Link('D', 'Virtual', $this->getVersionConstraint('==', '1.0'), 'provides')));
+        $packageA->setRequires(array('b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE)));
+        $packageB->setRequires(array('virtual' => new Link('B', 'Virtual', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE)));
+        $packageC->setProvides(array('virtual' => new Link('C', 'Virtual', $this->getVersionConstraint('==', '1.0'), Link::TYPE_PROVIDE)));
+        $packageD->setProvides(array('virtual' => new Link('D', 'Virtual', $this->getVersionConstraint('==', '1.0'), Link::TYPE_PROVIDE)));
 
-        $packageC->setRequires(array('a' => new Link('C', 'A', $this->getVersionConstraint('==', '1.0'), 'requires')));
-        $packageD->setRequires(array('a' => new Link('D', 'A', $this->getVersionConstraint('==', '1.0'), 'requires')));
+        $packageC->setRequires(array('a' => new Link('C', 'A', $this->getVersionConstraint('==', '1.0'), Link::TYPE_REQUIRE)));
+        $packageD->setRequires(array('a' => new Link('D', 'A', $this->getVersionConstraint('==', '1.0'), Link::TYPE_REQUIRE)));
 
         $this->reposComplete();
 
@@ -569,18 +569,18 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageD2 = $this->getPackage('D', '1.1'));
 
         $packageA->setRequires(array(
-            'b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'requires'),
-            'c' => new Link('A', 'C', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            'b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE),
+            'c' => new Link('A', 'C', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE),
         ));
 
         $packageD->setReplaces(array(
-            'b' => new Link('D', 'B', $this->getVersionConstraint('>=', '1.0'), 'replaces'),
-            'c' => new Link('D', 'C', $this->getVersionConstraint('>=', '1.0'), 'replaces'),
+            'b' => new Link('D', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REPLACE),
+            'c' => new Link('D', 'C', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REPLACE),
         ));
 
         $packageD2->setReplaces(array(
-            'b' => new Link('D', 'B', $this->getVersionConstraint('>=', '1.0'), 'replaces'),
-            'c' => new Link('D', 'C', $this->getVersionConstraint('>=', '1.0'), 'replaces'),
+            'b' => new Link('D', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REPLACE),
+            'c' => new Link('D', 'C', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REPLACE),
         ));
 
         $this->reposComplete();
@@ -605,19 +605,19 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageD = $this->getPackage('D', '2.0.9'));
 
         $packageC->setRequires(array(
-            'a' => new Link('C', 'A', $this->getVersionConstraint('>=', '2.0'), 'requires'),
-            'd' => new Link('C', 'D', $this->getVersionConstraint('>=', '2.0'), 'requires'),
+            'a' => new Link('C', 'A', $this->getVersionConstraint('>=', '2.0'), Link::TYPE_REQUIRE),
+            'd' => new Link('C', 'D', $this->getVersionConstraint('>=', '2.0'), Link::TYPE_REQUIRE),
         ));
 
         $packageD->setRequires(array(
-            'a' => new Link('D', 'A', $this->getVersionConstraint('>=', '2.1'), 'requires'),
-            'b' => new Link('D', 'B', $this->getVersionConstraint('>=', '2.0-dev'), 'requires'),
+            'a' => new Link('D', 'A', $this->getVersionConstraint('>=', '2.1'), Link::TYPE_REQUIRE),
+            'b' => new Link('D', 'B', $this->getVersionConstraint('>=', '2.0-dev'), Link::TYPE_REQUIRE),
         ));
 
-        $packageB1->setRequires(array('a' => new Link('B', 'A', $this->getVersionConstraint('==', '2.1.0.0-dev'), 'requires')));
-        $packageB2->setRequires(array('a' => new Link('B', 'A', $this->getVersionConstraint('==', '2.1.0.0-dev'), 'requires')));
+        $packageB1->setRequires(array('a' => new Link('B', 'A', $this->getVersionConstraint('==', '2.1.0.0-dev'), Link::TYPE_REQUIRE)));
+        $packageB2->setRequires(array('a' => new Link('B', 'A', $this->getVersionConstraint('==', '2.1.0.0-dev'), Link::TYPE_REQUIRE)));
 
-        $packageB2->setReplaces(array('d' => new Link('B', 'D', $this->getVersionConstraint('==', '2.0.9.0'), 'replaces')));
+        $packageB2->setReplaces(array('d' => new Link('B', 'D', $this->getVersionConstraint('==', '2.0.9.0'), Link::TYPE_REPLACE)));
 
         $this->reposComplete();
 
@@ -634,7 +634,7 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
         $packageA->setConflicts(array(
-            'b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'conflicts'),
+            'b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_CONFLICT),
         ));
 
         $this->reposComplete();
@@ -668,7 +668,7 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
 
         $packageA->setRequires(array(
-            'b' => new Link('A', 'B', $this->getVersionConstraint('>=', '2.0'), 'requires'),
+            'b' => new Link('A', 'B', $this->getVersionConstraint('>=', '2.0'), Link::TYPE_REQUIRE),
         ));
 
         $this->reposComplete();
@@ -701,16 +701,16 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageD = $this->getPackage('D', '1.0'));
 
         $packageA->setRequires(array(
-            'b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            'b' => new Link('A', 'B', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE),
         ));
         $packageB->setRequires(array(
-            'c' => new Link('B', 'C', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            'c' => new Link('B', 'C', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE),
         ));
         $packageC->setRequires(array(
-            'd' => new Link('C', 'D', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            'd' => new Link('C', 'D', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE),
         ));
         $packageD->setRequires(array(
-            'b' => new Link('D', 'B', $this->getVersionConstraint('<', '1.0'), 'requires'),
+            'b' => new Link('D', 'B', $this->getVersionConstraint('<', '1.0'), Link::TYPE_REQUIRE),
         ));
 
         $this->reposComplete();
@@ -749,11 +749,11 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageTwigBridge = $this->getPackage('symfony/twig-bridge', '2.0'));
 
         $packageTwigBridge->setRequires(array(
-            'twig/twig' => new Link('symfony/twig-bridge', 'twig/twig', $this->getVersionConstraint('<', '2.0'), 'requires'),
+            'twig/twig' => new Link('symfony/twig-bridge', 'twig/twig', $this->getVersionConstraint('<', '2.0'), Link::TYPE_REQUIRE),
         ));
 
         $packageSymfony->setReplaces(array(
-            'symfony/twig-bridge' => new Link('symfony/symfony', 'symfony/twig-bridge', $this->getVersionConstraint('==', '2.0'), 'replaces'),
+            'symfony/twig-bridge' => new Link('symfony/symfony', 'symfony/twig-bridge', $this->getVersionConstraint('==', '2.0'), Link::TYPE_REPLACE),
         ));
 
         $this->reposComplete();
@@ -774,10 +774,10 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
 
         $packageA2->setRequires(array(
-            'b' => new Link('A', 'B', $this->getVersionConstraint('==', '2.0'), 'requires', '== 2.0'),
+            'b' => new Link('A', 'B', $this->getVersionConstraint('==', '2.0'), Link::TYPE_REQUIRE, '== 2.0'),
         ));
         $packageB->setRequires(array(
-            'a' => new Link('B', 'A', $this->getVersionConstraint('>=', '2.0'), 'requires'),
+            'a' => new Link('B', 'A', $this->getVersionConstraint('>=', '2.0'), Link::TYPE_REQUIRE),
         ));
 
         $this->repo->addPackage($packageA2Alias = $this->getAliasPackage($packageA2, '1.1'));
@@ -799,7 +799,7 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
 
         $packageB->setRequires(array(
-            'a' => new Link('B', 'A', $this->getVersionConstraint('<', '2.0'), 'requires'),
+            'a' => new Link('B', 'A', $this->getVersionConstraint('<', '2.0'), Link::TYPE_REQUIRE),
         ));
 
         $this->repo->addPackage($packageAAlias = $this->getAliasPackage($packageA, '1.1'));
@@ -840,29 +840,29 @@ class SolverTest extends TestCase
         $this->repo->addPackage($packageG3 = $this->getPackage('G', '3.0'));
 
         $packageA->setRequires(array(
-            'b' => new Link('A', 'B', $this->getVersionConstraint('==', '1.0'), 'requires'),
-            'c' => new Link('A', 'C', $this->getVersionConstraint('>=', '1.0'), 'requires'),
-            'd' => new Link('A', 'D', $this->getVersionConstraint('==', '1.0'), 'requires'),
+            'b' => new Link('A', 'B', $this->getVersionConstraint('==', '1.0'), Link::TYPE_REQUIRE),
+            'c' => new Link('A', 'C', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE),
+            'd' => new Link('A', 'D', $this->getVersionConstraint('==', '1.0'), Link::TYPE_REQUIRE),
         ));
 
         $packageB->setRequires(array(
-            'e' => new Link('B', 'E', $this->getVersionConstraint('==', '1.0'), 'requires'),
+            'e' => new Link('B', 'E', $this->getVersionConstraint('==', '1.0'), Link::TYPE_REQUIRE),
         ));
 
         $packageC1->setRequires(array(
-            'f' => new Link('C', 'F', $this->getVersionConstraint('==', '1.0'), 'requires'),
+            'f' => new Link('C', 'F', $this->getVersionConstraint('==', '1.0'), Link::TYPE_REQUIRE),
         ));
         $packageC2->setRequires(array(
-            'f' => new Link('C', 'F', $this->getVersionConstraint('==', '1.0'), 'requires'),
-            'g' => new Link('C', 'G', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            'f' => new Link('C', 'F', $this->getVersionConstraint('==', '1.0'), Link::TYPE_REQUIRE),
+            'g' => new Link('C', 'G', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE),
         ));
 
         $packageD->setRequires(array(
-            'f' => new Link('D', 'F', $this->getVersionConstraint('>=', '1.0'), 'requires'),
+            'f' => new Link('D', 'F', $this->getVersionConstraint('>=', '1.0'), Link::TYPE_REQUIRE),
         ));
 
         $packageE->setRequires(array(
-            'g' => new Link('E', 'G', $this->getVersionConstraint('<=', '2.0'), 'requires'),
+            'g' => new Link('E', 'G', $this->getVersionConstraint('<=', '2.0'), Link::TYPE_REQUIRE),
         ));
 
         $this->reposComplete();

@@ -264,14 +264,6 @@ class Factory
     }
 
     /**
-     * @deprecated Use Composer\Repository\RepositoryFactory::defaultRepos instead
-     */
-    public static function createDefaultRepositories(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
-    {
-        return RepositoryFactory::defaultRepos($io, $config, $rm);
-    }
-
-    /**
      * Creates a Composer instance
      *
      * @param  IOInterface               $io             IO instance
@@ -608,7 +600,11 @@ class Factory
     {
         static $warned = false;
         $disableTls = false;
-        if ($config && $config->get('disable-tls') === true) {
+        // allow running the config command if disable-tls is in the arg list, even if openssl is missing, to allow disabling it via the config command
+        if (isset($_SERVER['argv']) && in_array('disable-tls', $_SERVER['argv']) && (in_array('conf', $_SERVER['argv']) || in_array('config', $_SERVER['argv']))) {
+            $warned = true;
+            $disableTls = !extension_loaded('openssl');
+        } elseif ($config && $config->get('disable-tls') === true) {
             if (!$warned) {
                 $io->writeError('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
             }

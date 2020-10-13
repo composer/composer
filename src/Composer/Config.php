@@ -253,6 +253,11 @@ class Config
             case 'secure-http':
             case 'use-github-api':
             case 'lock':
+                // special case for secure-http
+                if ($key === 'secure-http' && $this->get('disable-tls') === true) {
+                    return false;
+                }
+
                 return $this->config[$key] !== 'false' && (bool) $this->config[$key];
 
             // ints without env var support
