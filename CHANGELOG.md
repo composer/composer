@@ -1,3 +1,10 @@
+### [1.10.14] 2020-10-13
+
+  * Fixed version guesser to look at remote branches as well as local ones
+  * Fixed path repositories version guessing to handle edge cases where version is different from the VCS-guessed version
+  * Fixed COMPOSER env var causing issues when combined with the `global ` command
+  * Fixed a few issues dealing with PHP without openssl extension (not recommended at all but sometimes needed for testing)
+
 ### [1.10.13] 2020-09-09
 
   * Fixed regressions with old version validation
@@ -894,6 +901,7 @@
 
   * Initial release
 
+[1.10.14]: https://github.com/composer/composer/compare/1.10.13...1.10.14
 [1.10.13]: https://github.com/composer/composer/compare/1.10.12...1.10.13
 [1.10.12]: https://github.com/composer/composer/compare/1.10.11...1.10.12
 [1.10.11]: https://github.com/composer/composer/compare/1.10.10...1.10.11
