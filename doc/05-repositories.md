@@ -318,8 +318,8 @@ Please note:
 
 > **Note that the repository endpoint for BitBucket needs to be https rather than git.**
 
-After setting up your bitbucket repository, you will also need to set up authentication.
-Documentation for that [has moved here](articles/authentication-for-private-packages.md#bitbucket-oauth)
+After setting up your bitbucket repository, you will also need to
+[set up authentication](articles/authentication-for-private-packages.md#bitbucket-oauth).
 
 #### Subversion Options
 
