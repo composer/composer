@@ -199,6 +199,10 @@ abstract class Rule
             case self::RULE_FIXED:
                 $package = $this->deduplicateDefaultBranchAlias($this->reasonData['package']);
 
+                if ($request->isLockedPackage($package)) {
+                    return $package->getPrettyName().' is locked to version '.$package->getPrettyVersion().' and an update of this package was not requested.';
+                }
+
                 return $package->getPrettyName().' is present at version '.$package->getPrettyVersion() . ' and cannot be modified by Composer';
 
             case self::RULE_PACKAGE_CONFLICT:

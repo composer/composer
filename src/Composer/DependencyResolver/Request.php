@@ -45,6 +45,7 @@ class Request
     protected $requires = array();
     protected $fixedPackages = array();
     protected $lockedPackages = array();
+    protected $fixedLockedPackages = array();
     protected $updateAllowList = array();
     protected $updateAllowTransitiveDependencies = false;
 
@@ -82,6 +83,15 @@ class Request
     public function lockPackage(PackageInterface $package)
     {
         $this->lockedPackages[spl_object_hash($package)] = $package;
+    }
+
+    /**
+     * Mark a package fixed, but also keep track it is from the lock file (needed for composer install error reporting)
+     */
+    public function fixLockedPackage(PackageInterface $package)
+    {
+        $this->fixedPackages[spl_object_hash($package)] = $package;
+        $this->fixedLockedPackages[spl_object_hash($package)] = $package;
     }
 
     public function unlockPackage(PackageInterface $package)
@@ -132,7 +142,7 @@ class Request
 
     public function isLockedPackage(PackageInterface $package)
     {
-        return isset($this->lockedPackages[spl_object_hash($package)]);
+        return isset($this->lockedPackages[spl_object_hash($package)]) || isset($this->fixedLockedPackages[spl_object_hash($package)]);
     }
 
     public function getFixedOrLockedPackages()
