@@ -25,7 +25,6 @@ class UpdateOperation extends Operation implements OperationInterface
     const TYPE = 'update';
 
     protected $initialPackage;
-    protected $targetPackage;
 
     /**
      * Initializes update operation.
@@ -64,7 +63,7 @@ class UpdateOperation extends Operation implements OperationInterface
      */
     public function show($lock)
     {
-        return self::format($this->initialPackage, $this->targetPackage, $lock);
+        return self::format($this->initialPackage, $this->package, $lock);
     }
 
     public static function format(PackageInterface $initialPackage, PackageInterface $targetPackage, $lock = false)
