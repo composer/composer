@@ -633,7 +633,7 @@ class Installer
             }
 
             foreach ($lockedRepository->getPackages() as $package) {
-                $request->fixPackage($package);
+                $request->fixLockedPackage($package);
             }
 
             foreach ($this->locker->getPlatformRequirements($this->devMode) as $link) {
@@ -651,7 +651,6 @@ class Installer
                 // installing the locked packages on this platform resulted in lock modifying operations, there wasn't a conflict, but the lock file as-is seems to not work on this system
                 if (0 !== count($lockTransaction->getOperations())) {
                     $this->io->writeError('<error>Your lock file cannot be installed on this system without changes. Please run composer update.</error>', true, IOInterface::QUIET);
-                    // TODO actually display operations to explain what happened?
                     return 1;
                 }
             } catch (SolverProblemsException $e) {
@@ -821,9 +820,9 @@ class Installer
     {
         $request = new Request($lockedRepository);
 
-        $request->fixPackage($rootPackage, false);
+        $request->fixPackage($rootPackage);
         if ($rootPackage instanceof RootAliasPackage) {
-            $request->fixPackage($rootPackage->getAliasOf(), false);
+            $request->fixPackage($rootPackage->getAliasOf());
         }
 
         $fixedPackages = $platformRepo->getPackages();
@@ -841,7 +840,7 @@ class Installer
                 || !isset($provided[$package->getName()])
                 || !$provided[$package->getName()]->getConstraint()->matches(new Constraint('=', $package->getVersion()))
             ) {
-                $request->fixPackage($package, false);
+                $request->fixPackage($package);
             }
         }
 

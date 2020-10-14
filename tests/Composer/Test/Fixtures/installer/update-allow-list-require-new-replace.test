@@ -1,5 +1,5 @@
 --TEST--
-If a new requirement cannot be installed on a partial update due to replace, there should be a suggestion to use --with-all-dependencies
+A partial update for a new package yet to be installed should remove another dependency it replaces if that allows installation.
 --COMPOSER--
 {
     "repositories": [
@@ -39,17 +39,6 @@ If a new requirement cannot be installed on a partial update due to replace, the
 }
 --RUN--
 update new/pkg
---EXPECT-EXIT-CODE--
-2
---EXPECT-OUTPUT--
-Loading composer repositories with package information
-Updating dependencies
-Your requirements could not be resolved to an installable set of packages.
-
-  Problem 1
-    - current/dep is locked to version 1.0.0 and an update of this package was not requested.
-    - new/pkg[1.0.0] cannot be installed as that would require removing current/dep[1.0.0]. new/pkg replaces current/dep and thus cannot coexist with it.
-    - Root composer.json requires new/pkg 1.* -> satisfiable by new/pkg[1.0.0].
-
-Use the option --with-all-dependencies to allow upgrades, downgrades and removals for packages currently locked to specific versions.
 --EXPECT--
+Removing current/dep (1.0.0)
+Installing new/pkg (1.0.0)

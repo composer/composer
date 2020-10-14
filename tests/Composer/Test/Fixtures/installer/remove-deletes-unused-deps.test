@@ -1,0 +1,46 @@
+--TEST--
+Removing a package deletes unused dependencies and does not update other dependencies
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "root/a", "version": "1.0.0", "require": { "dep/c": "*", "dep/d": "*"} },
+                { "name": "remove/b", "version": "1.0.0", "require": { "dep/c": "*", "dep/e": "*"} },
+                { "name": "dep/c", "version": "1.0.0" },
+                { "name": "dep/c", "version": "1.2.0" },
+                { "name": "dep/d", "version": "1.0.0" },
+                { "name": "dep/d", "version": "1.2.0" },
+                { "name": "dep/e", "version": "1.0.0" },
+                { "name": "unrelated/f", "version": "1.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "root/a": "*"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        { "name": "root/a", "version": "1.0.0", "require": { "dep/c": "*", "dep/d": "*"} },
+        { "name": "remove/b", "version": "1.0.0", "require": { "dep/c": "*", "dep/e": "*"} },
+        { "name": "dep/c", "version": "1.0.0" },
+        { "name": "dep/d", "version": "1.0.0" },
+        { "name": "dep/e", "version": "1.0.0" },
+        { "name": "unrelated/f", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false
+}
+--RUN--
+update remove/b
+--EXPECT--
+Installing dep/d (1.0.0)
+Installing dep/c (1.0.0)
+Installing root/a (1.0.0)

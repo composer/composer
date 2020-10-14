@@ -62,6 +62,7 @@ class LockTransaction extends Transaction
 
             if ($literal > 0) {
                 $package = $pool->literalToPackage($literal);
+
                 $this->resultPackages['all'][] = $package;
                 if (!isset($this->unlockableMap[$package->id])) {
                     $this->resultPackages['non-dev'][] = $package;

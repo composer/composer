@@ -44,7 +44,8 @@ class Request
     protected $lockedRepository;
     protected $requires = array();
     protected $fixedPackages = array();
-    protected $unlockables = array();
+    protected $lockedPackages = array();
+    protected $fixedLockedPackages = array();
     protected $updateAllowList = array();
     protected $updateAllowTransitiveDependencies = false;
 
@@ -67,22 +68,47 @@ class Request
     }
 
     /**
-     * Mark an existing package as being installed and having to remain installed
+     * Mark a package as currently present and having to remain installed
      *
-     * @param bool $lockable if set to false, the package will not be written to the lock file
+     * This is used for platform packages which cannot be modified by Composer. A rule enforcing their installation is
+     * generated for dependency resolution. Partial updates with dependencies cannot in any way modify these packages.
      */
-    public function fixPackage(PackageInterface $package, $lockable = true)
+    public function fixPackage(PackageInterface $package)
     {
         $this->fixedPackages[spl_object_hash($package)] = $package;
-
-        if (!$lockable) {
-            $this->unlockables[spl_object_hash($package)] = $package;
-        }
     }
 
-    public function unfixPackage(PackageInterface $package)
+    /**
+     * Mark a package as locked to a specific version but removable
+     *
+     * This is used for lock file packages which need to be treated similar to fixed packages by the pool builder in
+     * that by default they should really only have the currently present version loaded and no remote alternatives.
+     *
+     * However unlike fixed packages there will not be a special rule enforcing their installation for the solver, so
+     * if nothing requires these packages they will be removed. Additionally in a partial update these packages can be
+     * unlocked, meaning other versions can be installed if explicitly requested as part of the update.
+     */
+    public function lockPackage(PackageInterface $package)
     {
-        unset($this->fixedPackages[spl_object_hash($package)], $this->unlockables[spl_object_hash($package)]);
+        $this->lockedPackages[spl_object_hash($package)] = $package;
+    }
+
+    /**
+     * Marks a locked package fixed. So it's treated irremovable like a platform package.
+     *
+     * This is necessary for the composer install step which verifies the lock file integrity and should not allow
+     * removal of any packages. At the same time lock packages there cannot simply be marked fixed, as error reporting
+     * would then report them as platform packages, so this still marks them as locked packages at the same time.
+     */
+    public function fixLockedPackage(PackageInterface $package)
+    {
+        $this->fixedPackages[spl_object_hash($package)] = $package;
+        $this->fixedLockedPackages[spl_object_hash($package)] = $package;
+    }
+
+    public function unlockPackage(PackageInterface $package)
+    {
+        unset($this->lockedPackages[spl_object_hash($package)]);
     }
 
     public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies)
@@ -121,6 +147,21 @@ class Request
         return isset($this->fixedPackages[spl_object_hash($package)]);
     }
 
+    public function getLockedPackages()
+    {
+        return $this->lockedPackages;
+    }
+
+    public function isLockedPackage(PackageInterface $package)
+    {
+        return isset($this->lockedPackages[spl_object_hash($package)]) || isset($this->fixedLockedPackages[spl_object_hash($package)]);
+    }
+
+    public function getFixedOrLockedPackages()
+    {
+        return array_merge($this->fixedPackages, $this->lockedPackages);
+    }
+
     // TODO look into removing the packageIds option, the only place true is used is for the installed map in the solver problems
     // some locked packages may not be in the pool so they have a package->id of -1
     public function getPresentMap($packageIds = false)
@@ -140,15 +181,15 @@ class Request
         return $presentMap;
     }
 
-    public function getUnlockableMap()
+    public function getFixedPackagesMap()
     {
-        $unlockableMap = array();
+        $fixedPackagesMap = array();
 
-        foreach ($this->unlockables as $package) {
-            $unlockableMap[$package->id] = $package;
+        foreach ($this->fixedPackages as $package) {
+            $fixedPackagesMap[$package->id] = $package;
         }
 
-        return $unlockableMap;
+        return $fixedPackagesMap;
     }
 
     public function getLockedRepository()
