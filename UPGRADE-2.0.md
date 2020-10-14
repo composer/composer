@@ -90,7 +90,7 @@ This new metadata-url should serve all packages which are in the repository.
 - Whenever Composer looks for a package, it will replace `%package%` by the package name, and fetch that URL.
 - If dev stability is allowed for the package, it will also load the URL again with `$packageName~dev` (e.g. `/p2/foo/bar~dev.json` to look for `foo/bar`'s dev versions).
 - Caching is done via the use of If-Modified-Since header, so make sure you return Last-Modified headers and that they are accurate.
-- Any requested package which does not exist MUST return a 404 status code, which will indicate to Composer that this package does not exist in your repository.
+- Any requested package which does not exist MUST return a 404 status code, which will indicate to Composer that this package does not exist in your repository. Make sure the 404 response is fast to avoid blocking Composer. Avoid redirects to alternative 404 pages.
 - The `foo/bar.json` and `foo/bar~dev.json` files containing package versions MUST contain only versions for the foo/bar package, as `{"packages":{"foo/bar":[ ... versions here ... ]}}`.
 - The array of versions can also optionally be minified using `Composer\Util\MetadataMinifier::minify()`. If you do that, you should add a `"minified": "composer/2.0"` key at the top level to indicate to Composer it must expand the version list back into the original data. See https://repo.packagist.org/p2/monolog/monolog.json for an example.
 
