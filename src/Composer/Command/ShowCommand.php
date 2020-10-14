@@ -196,8 +196,7 @@ EOT
             }
             $locker = $composer->getLocker();
             $lockedRepo = $locker->getLockedRepository(true);
-            $installedRepo = new InstalledRepository(array($lockedRepo));
-            $repos = new CompositeRepository(array_merge(array($installedRepo), $composer->getRepositoryManager()->getRepositories()));
+            $repos = $installedRepo = new InstalledRepository(array($lockedRepo));
         } else {
             // --installed / default case
             if (!$composer) {
@@ -349,7 +348,7 @@ EOT
         foreach ($repos as $repo) {
             if ($repo === $platformRepo) {
                 $type = 'platform';
-            } elseif($lockedRepo !== null && $repo === $lockedRepo) {
+            } elseif ($lockedRepo !== null && $repo === $lockedRepo) {
                 $type = 'locked';
             } elseif ($repo === $installedRepo || in_array($repo, $installedRepo->getRepositories(), true)) {
                 $type = 'installed';
