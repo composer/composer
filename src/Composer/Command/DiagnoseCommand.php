@@ -173,6 +173,8 @@ EOT
         }
 
         $io->write('OpenSSL version: ' . (defined('OPENSSL_VERSION_TEXT') ? '<comment>'.OPENSSL_VERSION_TEXT.'</comment>' : '<error>missing</error>'));
+        $io->write('cURL version: ' . $this->getCurlVersion());
+        $io->write('zip extension: ' . (extension_loaded('zip') ? '<info>OK</info>' : '<info>not loaded</info>'));
 
         return $this->exitCode;
     }
@@ -442,6 +444,19 @@ EOT
         }
 
         return true;
+    }
+
+    private function getCurlVersion()
+    {
+        if (function_exists('curl_version')) {
+            $version = curl_version();
+
+            return '<comment>'.$version['version'].'</comment> '.
+                'libz <comment>'.(isset($version['libz_version']) ? $version['libz_version'] : 'missing').'</comment> '.
+                'ssl <comment>'.(isset($version['ssl_version']) ? $version['ssl_version'] : 'missing').'</comment>';
+        }
+
+        return '<error>missing, using php streams fallback</error>';
     }
 
     /**
