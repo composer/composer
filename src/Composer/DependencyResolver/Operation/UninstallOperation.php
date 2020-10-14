@@ -19,39 +19,9 @@ use Composer\Package\PackageInterface;
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class UninstallOperation implements OperationInterface
+class UninstallOperation extends Operation implements OperationInterface
 {
-    protected $package;
-
-    /**
-     * Initializes operation.
-     *
-     * @param PackageInterface $package package instance
-     */
-    public function __construct(PackageInterface $package)
-    {
-        $this->package = $package;
-    }
-
-    /**
-     * Returns package instance.
-     *
-     * @return PackageInterface
-     */
-    public function getPackage()
-    {
-        return $this->package;
-    }
-
-    /**
-     * Returns operation type.
-     *
-     * @return string
-     */
-    public function getOperationType()
-    {
-        return 'uninstall';
-    }
+    const TYPE = 'uninstall';
 
     /**
      * {@inheritDoc}
@@ -64,13 +34,5 @@ class UninstallOperation implements OperationInterface
     public static function format(PackageInterface $package, $lock = false)
     {
         return 'Removing <info>'.$package->getPrettyName().'</info> (<comment>'.$package->getFullPrettyVersion().'</comment>)';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function __toString()
-    {
-        return $this->show(false);
     }
 }

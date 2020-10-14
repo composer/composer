@@ -20,9 +20,9 @@ use Composer\Package\PackageInterface;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class MarkAliasUninstalledOperation implements OperationInterface
+class MarkAliasUninstalledOperation extends Operation implements OperationInterface
 {
-    protected $package;
+    const TYPE = 'markAliasUninstalled';
 
     /**
      * Initializes operation.
@@ -31,27 +31,7 @@ class MarkAliasUninstalledOperation implements OperationInterface
      */
     public function __construct(AliasPackage $package)
     {
-        $this->package = $package;
-    }
-
-    /**
-     * Returns package instance.
-     *
-     * @return PackageInterface
-     */
-    public function getPackage()
-    {
-        return $this->package;
-    }
-
-    /**
-     * Returns operation type.
-     *
-     * @return string
-     */
-    public function getOperationType()
-    {
-        return 'markAliasUninstalled';
+        parent::__construct($package);
     }
 
     /**
@@ -60,13 +40,5 @@ class MarkAliasUninstalledOperation implements OperationInterface
     public function show($lock)
     {
         return 'Marking <info>'.$this->package->getPrettyName().'</info> (<comment>'.$this->package->getFullPrettyVersion().'</comment>) as uninstalled, alias of <info>'.$this->package->getAliasOf()->getPrettyName().'</info> (<comment>'.$this->package->getAliasOf()->getFullPrettyVersion().'</comment>)';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function __toString()
-    {
-        return $this->show(false);
     }
 }
