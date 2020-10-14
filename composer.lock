@@ -83,16 +83,16 @@
         },
         {
             "name": "composer/semver",
-            "version": "3.2.1",
+            "version": "3.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/semver.git",
-                "reference": "ebb714493b3a54f1dbbec6b15ab7bc9b3440e17b"
+                "reference": "4089fddb67bcf6bf860d91b979e95be303835002"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/ebb714493b3a54f1dbbec6b15ab7bc9b3440e17b",
-                "reference": "ebb714493b3a54f1dbbec6b15ab7bc9b3440e17b",
+                "url": "https://api.github.com/repos/composer/semver/zipball/4089fddb67bcf6bf860d91b979e95be303835002",
+                "reference": "4089fddb67bcf6bf860d91b979e95be303835002",
                 "shasum": ""
             },
             "require": {
@@ -144,7 +144,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/semver/issues",
-                "source": "https://github.com/composer/semver/tree/3.2.1"
+                "source": "https://github.com/composer/semver/tree/3.2.2"
             },
             "funding": [
                 {
@@ -160,7 +160,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-09-27T13:14:03+00:00"
+            "time": "2020-10-14T08:51:15+00:00"
         },
         {
             "name": "composer/spdx-licenses",
