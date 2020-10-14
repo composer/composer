@@ -19,15 +19,15 @@ use Composer\Package\PackageInterface;
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class InstallOperation implements OperationInterface
+class InstallOperation extends SolverOperation implements OperationInterface
 {
-    protected $package;
+    const TYPE = 'install';
 
     /**
-     * Initializes operation.
-     *
-     * @param PackageInterface $package package instance
+     * @var PackageInterface
      */
+    protected $package;
+
     public function __construct(PackageInterface $package)
     {
         $this->package = $package;
@@ -44,16 +44,6 @@ class InstallOperation implements OperationInterface
     }
 
     /**
-     * Returns operation type.
-     *
-     * @return string
-     */
-    public function getOperationType()
-    {
-        return 'install';
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function show($lock)
@@ -64,13 +54,5 @@ class InstallOperation implements OperationInterface
     public static function format(PackageInterface $package, $lock = false)
     {
         return ($lock ? 'Locking ' : 'Installing ').'<info>'.$package->getPrettyName().'</info> (<comment>'.$package->getFullPrettyVersion().'</comment>)';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function __toString()
-    {
-        return $this->show(false);
     }
 }

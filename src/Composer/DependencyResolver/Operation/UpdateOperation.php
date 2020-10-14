@@ -20,14 +20,21 @@ use Composer\Package\Version\VersionParser;
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class UpdateOperation implements OperationInterface
+class UpdateOperation extends SolverOperation implements OperationInterface
 {
+    const TYPE = 'update';
+
+    /**
+     * @var PackageInterface
+     */
     protected $initialPackage;
+
+    /**
+     * @var PackageInterface
+     */
     protected $targetPackage;
 
     /**
-     * Initializes update operation.
-     *
      * @param PackageInterface $initial initial package
      * @param PackageInterface $target  target package (updated)
      */
@@ -58,16 +65,6 @@ class UpdateOperation implements OperationInterface
     }
 
     /**
-     * Returns operation type.
-     *
-     * @return string
-     */
-    public function getOperationType()
-    {
-        return 'update';
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function show($lock)
@@ -91,13 +88,5 @@ class UpdateOperation implements OperationInterface
         $actionName = VersionParser::isUpgrade($initialPackage->getVersion(), $targetPackage->getVersion()) ? 'Upgrading' : 'Downgrading';
 
         return $actionName.' <info>'.$initialPackage->getPrettyName().'</info> (<comment>'.$fromVersion.'</comment> => <comment>'.$toVersion.'</comment>)';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function __toString()
-    {
-        return $this->show(false);
     }
 }

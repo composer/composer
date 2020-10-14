@@ -20,15 +20,15 @@ use Composer\Package\PackageInterface;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class MarkAliasInstalledOperation implements OperationInterface
+class MarkAliasInstalledOperation extends SolverOperation implements OperationInterface
 {
-    protected $package;
+    const TYPE = 'markAliasInstalled';
 
     /**
-     * Initializes operation.
-     *
-     * @param AliasPackage $package package instance
+     * @var AliasPackage
      */
+    protected $package;
+
     public function __construct(AliasPackage $package)
     {
         $this->package = $package;
@@ -37,21 +37,11 @@ class MarkAliasInstalledOperation implements OperationInterface
     /**
      * Returns package instance.
      *
-     * @return PackageInterface
+     * @return AliasPackage
      */
     public function getPackage()
     {
         return $this->package;
-    }
-
-    /**
-     * Returns operation type.
-     *
-     * @return string
-     */
-    public function getOperationType()
-    {
-        return 'markAliasInstalled';
     }
 
     /**
@@ -60,13 +50,5 @@ class MarkAliasInstalledOperation implements OperationInterface
     public function show($lock)
     {
         return 'Marking <info>'.$this->package->getPrettyName().'</info> (<comment>'.$this->package->getFullPrettyVersion().'</comment>) as installed, alias of <info>'.$this->package->getAliasOf()->getPrettyName().'</info> (<comment>'.$this->package->getAliasOf()->getFullPrettyVersion().'</comment>)';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function __toString()
-    {
-        return $this->show(false);
     }
 }
