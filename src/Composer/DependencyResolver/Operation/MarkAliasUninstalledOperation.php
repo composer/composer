@@ -20,18 +20,28 @@ use Composer\Package\PackageInterface;
  *
  * @author Nils Adermann <naderman@naderman.de>
  */
-class MarkAliasUninstalledOperation extends Operation implements OperationInterface
+class MarkAliasUninstalledOperation extends SolverOperation implements OperationInterface
 {
     const TYPE = 'markAliasUninstalled';
 
     /**
-     * Initializes operation.
-     *
-     * @param AliasPackage $package package instance
+     * @var AliasPackage
      */
+    protected $package;
+
     public function __construct(AliasPackage $package)
     {
-        parent::__construct($package);
+        $this->package = $package;
+    }
+
+    /**
+     * Returns package instance.
+     *
+     * @return AliasPackage
+     */
+    public function getPackage()
+    {
+        return $this->package;
     }
 
     /**

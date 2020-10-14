@@ -19,34 +19,9 @@ use Composer\Package\PackageInterface;
  *
  * @author Aleksandr Bezpiatov <aleksandr.bezpiatov@spryker.com>
  */
-abstract class Operation implements OperationInterface
+abstract class SolverOperation implements OperationInterface
 {
     const TYPE = null;
-
-    /**
-     * @var PackageInterface
-     */
-    protected $package;
-
-    /**
-     * Initializes operation.
-     *
-     * @param PackageInterface $package package instance
-     */
-    public function __construct(PackageInterface $package)
-    {
-        $this->package = $package;
-    }
-
-    /**
-     * Returns package instance.
-     *
-     * @return PackageInterface
-     */
-    public function getPackage()
-    {
-        return $this->package;
-    }
 
     /**
      * Returns operation type.

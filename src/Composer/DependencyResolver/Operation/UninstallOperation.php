@@ -19,9 +19,29 @@ use Composer\Package\PackageInterface;
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class UninstallOperation extends Operation implements OperationInterface
+class UninstallOperation extends SolverOperation implements OperationInterface
 {
     const TYPE = 'uninstall';
+
+    /**
+     * @var PackageInterface
+     */
+    protected $package;
+
+    public function __construct(PackageInterface $package)
+    {
+        $this->package = $package;
+    }
+
+    /**
+     * Returns package instance.
+     *
+     * @return PackageInterface
+     */
+    public function getPackage()
+    {
+        return $this->package;
+    }
 
     /**
      * {@inheritDoc}

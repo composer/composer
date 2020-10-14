@@ -20,22 +20,28 @@ use Composer\Package\Version\VersionParser;
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class UpdateOperation extends Operation implements OperationInterface
+class UpdateOperation extends SolverOperation implements OperationInterface
 {
     const TYPE = 'update';
 
+    /**
+     * @var PackageInterface
+     */
     protected $initialPackage;
 
     /**
-     * Initializes update operation.
-     *
+     * @var PackageInterface
+     */
+    protected $targetPackage;
+
+    /**
      * @param PackageInterface $initial initial package
      * @param PackageInterface $target  target package (updated)
      */
     public function __construct(PackageInterface $initial, PackageInterface $target)
     {
         $this->initialPackage = $initial;
-        parent::__construct($target);
+        $this->targetPackage = $target;
     }
 
     /**
@@ -55,7 +61,7 @@ class UpdateOperation extends Operation implements OperationInterface
      */
     public function getTargetPackage()
     {
-        return $this->getPackage();
+        return $this->targetPackage;
     }
 
     /**
@@ -63,7 +69,7 @@ class UpdateOperation extends Operation implements OperationInterface
      */
     public function show($lock)
     {
-        return self::format($this->initialPackage, $this->package, $lock);
+        return self::format($this->initialPackage, $this->targetPackage, $lock);
     }
 
     public static function format(PackageInterface $initialPackage, PackageInterface $targetPackage, $lock = false)
