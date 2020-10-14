@@ -189,7 +189,7 @@ abstract class Rule
                 }));
                 if (count($packagesNonAlias) === 1) {
                     $package = $packagesNonAlias[0];
-                    if (!($package instanceof AliasPackage) && $request->isLockedPackage($package)) {
+                    if ($request->isLockedPackage($package)) {
                         return $package->getPrettyName().' is locked to version '.$package->getPrettyVersion()." and an update of this package was not requested.";
                     }
                 }

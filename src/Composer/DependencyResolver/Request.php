@@ -68,9 +68,10 @@ class Request
     }
 
     /**
-     * Mark an existing package as being installed and having to remain installed
+     * Mark a package as currently present and having to remain installed
      *
-     * @param bool $lockable if set to false, the package will not be written to the lock file
+     * This is used for platform packages which cannot be modified by Composer. A rule enforcing their installation is
+     * generated for dependency resolution. Partial updates with dependencies cannot in any way modify these packages.
      */
     public function fixPackage(PackageInterface $package)
     {
@@ -78,7 +79,14 @@ class Request
     }
 
     /**
-     * Mark an existing package as installed but removable
+     * Mark a package as locked to a specific version but removable
+     *
+     * This is used for lock file packages which need to be treated similar to fixed packages by the pool builder in
+     * that by default they should really only have the currently present version loaded and no remote alternatives.
+     *
+     * However unlike fixed packages there will not be a special rule enforcing their installation for the solver, so
+     * if nothing requires these packages they will be removed. Additionally in a partial update these packages can be
+     * unlocked, meaning other versions can be installed if explicitly requested as part of the update.
      */
     public function lockPackage(PackageInterface $package)
     {
@@ -86,7 +94,11 @@ class Request
     }
 
     /**
-     * Mark a package fixed, but also keep track it is from the lock file (needed for composer install error reporting)
+     * Marks a locked package fixed. So it's treated irremovable like a platform package.
+     *
+     * This is necessary for the composer install step which verifies the lock file integrity and should not allow
+     * removal of any packages. At the same time lock packages there cannot simply be marked fixed, as error reporting
+     * would then report them as platform packages, so this still marks them as locked packages at the same time.
      */
     public function fixLockedPackage(PackageInterface $package)
     {

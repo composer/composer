@@ -130,7 +130,6 @@ class PoolBuilder
             foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
                 if (!$this->isUpdateAllowed($lockedPackage)) {
                     $request->lockPackage($lockedPackage);
-                    $fixedOrLockedPackages[] = $lockedPackage;
                     $lockedName = $lockedPackage->getName();
                     // remember which packages we skipped loading remote content for in this partial update
                     $this->skippedLoad[$lockedName] = $lockedName;
