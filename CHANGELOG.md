@@ -1,3 +1,17 @@
+### [2.0.0-RC2] 2020-10-14
+
+  * Breaking: Removed `OperationInterface::getReason` as the data was not accurate
+  * Added automatic removal of packages which are not required anymore whenever an update is done, this will purge packages previously left over by partial updates and `require`/`remove`
+  * Added shorthand aliases `-w` for `--with-dependencies` and `-W` for `--with-all-dependencies` on `update`/`require`/`remove` commands
+  * Added `COMPOSER_DEBUG_EVENTS=1` env var support for plugin authors to figure out which events are triggered when
+  * Added `setCustomCacheKey` to `PreFileDownloadEvent` and fixed a cache bug for integrations changing the processed url of package archives
+  * Added `Composer\Util\SyncHelper` for plugin authors to deal with async Promises more easily
+  * Added `$composer->getLoop()->getHttpDownloader()` to get access to the main HttpDownloader instance in plugins
+  * Added a non-zero exit code (2) and warning to `remove` command when a package to be removed could not be removed
+  * Added `--apcu-autoloader-prefix` (or `--apcu-prefix` for `dump-autoload` command) flag to let people use apcu autoloading in a deterministic output way if that is needed
+  * Fixed version guesser to look at remote branches as well as local ones
+  * Lots of minor bug fixes and improvements
+
 ### [2.0.0-RC1] 2020-09-10
 
   * Added more advanced filtering to avoid loading all versions of all referenced packages when resolving dependencies, which should reduce memory usage further in some cases
@@ -976,6 +990,7 @@
 
   * Initial release
 
+[2.0.0-RC2]: https://github.com/composer/composer/compare/2.0.0-RC1...2.0.0-RC2
 [2.0.0-RC1]: https://github.com/composer/composer/compare/2.0.0-alpha3...2.0.0-RC1
 [2.0.0-alpha3]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-alpha3
 [2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
