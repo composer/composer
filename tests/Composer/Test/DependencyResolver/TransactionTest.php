@@ -58,8 +58,8 @@ class TransactionTest extends TestCase
             array('job' => 'update', 'from' => $packageB, 'to' => $packageBnew),
             array('job' => 'install', 'package' => $packageG),
             array('job' => 'install', 'package' => $packageF),
-            array('job' => 'markAliasInstalled', 'package' => $packageFalias1),
             array('job' => 'markAliasInstalled', 'package' => $packageFalias2),
+            array('job' => 'markAliasInstalled', 'package' => $packageFalias1),
             array('job' => 'install', 'package' => $packageD),
         );
 
