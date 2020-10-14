@@ -1,13 +1,12 @@
 <!--
-    tagline: Access privately hosted packages
+    tagline: Access privately hosted packages/repositories
 -->
 
-# Authentication for privately hosted packages
+# Authentication for privately hosted packages and repositories
 
-Your [private package server](handling-private-packages.md) is probably secured with one
+Your [private package server](handling-private-packages.md) or version control system is probably secured with one
 or more authentication options. In order to allow your project to have access to these
-packages you will have to tell Composer how to authenticate with the server that hosts the
-package(s).
+packages and repositories you will have to tell Composer how to authenticate with the server that hosts them.
 
 # Authentication principles
 
@@ -22,6 +21,8 @@ for credentials and save them (or a token if Composer is able to retrieve one).
 |[Custom header](#custom-token-authentication)|no|
 |[gitlab-oauth](#gitlab-oauth)|yes|
 |[gitlab-token](#gitlab-token)|yes|
+|[github-oauth](#github-oauth)|yes|
+|[bitbucket-oauth](#bitbucket-oauth)|yes|
 
 Sometimes automatic authentication is not possible, or you may want to predefine
 authentication credentials.
@@ -51,6 +52,8 @@ For all authentication methods it is possible to edit them using the command lin
  - [Inline http-basic](#command-line-inline-http-basic)
  - [gitlab-oauth](#command-line-gitlab-oauth)
  - [gitlab-token](#command-line-gitlab-token)
+ - [github-oauth](#command-line-github-oauth)
+ - [bitbucket-oauth](#command-line-bitbucket-oauth)
 
 ### Manually editing global authentication credentials
 
@@ -69,6 +72,8 @@ For specific authentication implementations, see their sections;
  - [custom header](#manual-custom-token-authentication)
  - [gitlab-oauth](#manual-gitlab-oauth)
  - [gitlab-token](#manual-gitlab-token)
+ - [github-oauth](#manual-github-oauth)
+ - [bitbucket-oauth](#manual-bitbucket-oauth)
 
 Manually editing this file instead of using the command line may result in invalid json errors.
 To fix this you need to open the file in an editor and fix the error. To find the location of
@@ -92,6 +97,17 @@ You can open this file in your favorite editor and fix the error.
 
 It is also possible to add credentials to a `composer.json` on a per-project basis in the `config`
 section or directly in the repository definition.
+
+## Authentication using the COMPOSER_AUTH environment variable
+
+> **Note:** Using the command line environment variable method also has security implications.
+> These credentials will most likely be stored in memory,
+> and on be persisted to a file like ```~/.bash_history```(linux) or ```ConsoleHost_history.txt```
+> (PowerShell on Windows) when closing a session.
+
+The final option to supply Composer with credentials is to use the ```COMPOSER_AUTH``` environment variable.
+These variables can be either passed as command line variables or set in actual environment variables.
+Read more about the usage of this environment variable [here](../03-cli.md#COMPOSER_AUTH).
 
 # Authentication methods
 
@@ -205,6 +221,8 @@ composer config [--global] --editor --auth
 > **Note:** For the gitlab authentication to work on private gitlab instances, the
 > [`gitlab-domains`](../06-config.md#gitlab-domains) section should also contain the url.
 
+When creating a gitlab token manually, make sure it has either the ```read_api``` or ```api``` scope.
+
 ### Command line gitlab-token
 
 ```sh
@@ -221,6 +239,58 @@ composer config [--global] --editor --auth
 {
     "gitlab-token": {
         "example.org": "token"
+    }
+}
+```
+
+## github-oauth
+
+To create a new access token, head to your [token settings section on Github](https://github.com/settings/tokens) and [generate a new token](https://github.com/settings/tokens/new). For public repositories when rate limited, the ```public_repo``` scope is required, for private repositories the ```repo:status``` scope is needed.
+Read more about it [here](https://github.com/blog/1509-personal-api-tokens).
+
+### Command line github-oauth
+
+```sh
+composer config [--global] github-oauth.github.com token
+```
+
+### Manual github-oauth
+
+```sh
+composer config [--global] --editor --auth
+```
+
+```json
+{
+    "github-oauth": {
+        "github.com": "token"
+    }
+}
+```
+
+## bitbucket-oauth
+
+The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs, and you will need to create an OAuth consumer to use the driver, please refer to [Atlassian's Documentation](https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/). You will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and is not used by Composer.
+
+### Command line bitbucket-oauth
+
+```sh
+composer config [--global] bitbucket-oauth.bitbucket.org cosumer-key consumer-secret
+```
+
+### Manual bitbucket-oauth
+
+```sh
+composer config [--global] --editor --auth
+```
+
+```json
+{
+    "bitbucket-oauth": {
+        "bitbucket.org": {
+             "consumer-key": "key",
+             "consumer-secret": "secret"
+        }
     }
 }
 ```

@@ -900,9 +900,10 @@ If set to 1, this env allows running Composer when the Xdebug extension is enabl
 ### COMPOSER_AUTH
 
 The `COMPOSER_AUTH` var allows you to set up authentication as an environment variable.
-The contents of the variable should be a JSON formatted object containing http-basic,
-github-oauth, bitbucket-oauth, ... objects as needed, and following the
-[spec from the config](06-config.md#gitlab-oauth).
+The contents of the variable should be a JSON formatted object containing [http-basic,
+github-oauth, bitbucket-oauth, ... objects as needed](articles/authentication-for-private-packages.md),
+and following the
+[spec from the config](06-config.md).
 
 ### COMPOSER_BIN_DIR
 
