@@ -14,11 +14,9 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
 use Composer\Config;
-use Composer\Downloader\TransportException;
+use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
-use Composer\Util\BitbucketServer;
-use Composer\Util\Http\Response;
 
 /**
  * @author Oleg Andreyev <oleg@andreyev.lv>
@@ -49,15 +47,28 @@ class BitbucketServerDriver extends VcsDriver
     protected $vcsType;
 
     /**
+     * @param string $url
+     *
+     * @return array
+     */
+    private static function matchDomain($url)
+    {
+        if (strpos($url, 'ssh:') === 0) {
+            preg_match('#^ssh://(?:[^@]+)@([^/]+)/([^/]+)/([^/]+?)(\.git|/?)$#i', $url, $matches);
+        } else {
+            preg_match('#^https?://([^/]+)/scm/([^/]+)/([^/]+?)(\.git|/?)$#i', $url, $matches);
+        }
+
+        return $matches;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function initialize()
     {
-        if (strpos($this->url, 'ssh:') === 0) {
-            preg_match('#^ssh://(?:[^@]+)@([^/]+)/([^/]+)/([^/]+?)(\.git|/?)$#i', $this->url, $match);
-        } else {
-            preg_match('#^https?://([^/]+)/scm/([^/]+)/([^/]+?)(\.git|/?)$#i', $this->url, $match);
-        }
+        $match = self::matchDomain($this->url);
+
         $this->owner = $match[2];
         $this->repository = $match[3];
         $this->originUrl = $match[1];
@@ -101,7 +112,7 @@ class BitbucketServerDriver extends VcsDriver
             $this->repository
         );
 
-        $repoData = $this->fetchWithOAuthCredentials($resource, true)->decodeJson();
+        $repoData = $this->getContents($resource, true)->decodeJson();
         if ($this->fallbackDriver) {
             return false;
         }
@@ -207,7 +218,7 @@ class BitbucketServerDriver extends VcsDriver
             $identifier
         );
 
-        return $this->fetchWithOAuthCredentials($resource)->getBody();
+        return $this->getContents($resource)->getBody();
     }
 
     /**
@@ -235,7 +246,7 @@ class BitbucketServerDriver extends VcsDriver
             $this->repository,
             $identifier
         );
-        $commit = $this->fetchWithOAuthCredentials($resource)->decodeJson();
+        $commit = $this->getContents($resource)->decodeJson();
 
         $dateTime = new \DateTime();
         return $dateTime->setTimestamp($commit['authorTimestamp'] / 1000);
@@ -305,7 +316,7 @@ class BitbucketServerDriver extends VcsDriver
             );
             $hasNext = true;
             while ($hasNext) {
-                $tagsData = $this->fetchWithOAuthCredentials($resource)->decodeJson();
+                $tagsData = $this->getContents($resource)->decodeJson();
                 foreach ($tagsData['values'] as $data) {
                     $this->tags[$data['displayId']] = $data['latestCommit'];
                 }
@@ -365,7 +376,7 @@ class BitbucketServerDriver extends VcsDriver
             );
             $hasNext = true;
             while ($hasNext) {
-                $branchData = $this->fetchWithOAuthCredentials($resource)->decodeJson();
+                $branchData = $this->getContents($resource)->decodeJson();
                 foreach ($branchData['values'] as $data) {
                     $this->branches[$data['displayId']] = $data['latestCommit'];
                 }
@@ -392,39 +403,6 @@ class BitbucketServerDriver extends VcsDriver
         }
 
         return $this->branches;
-    }
-
-    /**
-     * Get the remote content.
-     *
-     * @param string $url              The URL of content
-     * @param bool   $fetchingRepoData
-     *
-     * @return Response The result
-     */
-    protected function fetchWithOAuthCredentials($url, $fetchingRepoData = false)
-    {
-        try {
-            return parent::getContents($url);
-        } catch (TransportException $e) {
-            $bitbucketUtil = new BitbucketServer($this->io, $this->config, $this->process, $this->httpDownloader);
-
-            if (403 === $e->getCode() || (401 === $e->getCode() && strpos($e->getMessage(), 'URL required authentication.') !== false)) {
-                if (!$this->io->hasAuthentication($this->originUrl)
-                    && $bitbucketUtil->authorizeOAuth($this->originUrl)
-                ) {
-                    return parent::getContents($url);
-                }
-
-                if (!$this->io->isInteractive() && $fetchingRepoData) {
-                    if ($this->attemptCloneFallback()) {
-                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
-                    }
-                }
-            }
-
-            throw $e;
-        }
     }
 
     protected function attemptCloneFallback()
@@ -471,7 +449,7 @@ class BitbucketServerDriver extends VcsDriver
             $this->repository
         );
 
-        $data = $this->fetchWithOAuthCredentials($resource)->decodeJson();
+        $data = $this->getContents($resource)->decodeJson();
         if (isset($data['displayId'])) {
             return array('name' => $data['displayId']);
         }
@@ -503,9 +481,27 @@ class BitbucketServerDriver extends VcsDriver
         return $this->rootIdentifier;
     }
 
+    /**
+     * @see https://docs.atlassian.com/bitbucket-server/rest/6.4.0/bitbucket-rest.html#idp73
+     */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        return true;
+        $match = self::matchDomain($url);
+        if (!$match) {
+            return false;
+        }
+
+        $originUrl = $match[1];
+
+        try {
+            $http = Factory::createHttpDownloader($io, $config);
+            $response = $http->get(sprintf('https://%s/rest/api/1.0/application-properties', $originUrl))->decodeJson();
+        } catch (\Exception $e) {
+            $io->writeError($e->getMessage());
+            return false;
+        }
+
+        return $response['displayName'] === 'Bitbucket' && version_compare($response['version'], '6.4', '>=');
     }
 
     /**
