@@ -142,6 +142,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $reject = null;
         $download = function () use ($io, $output, $httpDownloader, $cache, $cacheKeyGenerator, $eventDispatcher, $package, $fileName, &$urls, &$accept, &$reject) {
             $url = reset($urls);
+            $index = key($urls);
 
             if ($eventDispatcher) {
                 $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $httpDownloader, $url['processed'], 'package', $package);
@@ -153,6 +154,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 }
                 $url['processed'] = $preFileDownloadEvent->getProcessedUrl();
             }
+
+            $urls[$index] = $url;
 
             $checksum = $package->getDistSha1Checksum();
             $cacheKey = $url['cacheKey'];
