@@ -150,7 +150,7 @@ class PluginManager
                 return;
             }
 
-            if ($package->getName() === 'symfony/flex' && version_compare($package->getVersion(), '1.9.8', '<')) {
+            if ($package->getName() === 'symfony/flex' && version_compare($package->getVersion(), '1.9.8', '<') && $package->getVersion() !== 'dev-main') {
                 $this->io->writeError('<warning>The "' . $package->getName() . '" plugin was skipped because it is not compatible with Composer 2+. Make sure to update it to version 1.9.8 or greater.</warning>');
 
                 return;
