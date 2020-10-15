@@ -81,6 +81,7 @@ class BitbucketServerDriver extends VcsDriver
                 $this->repository,
             ))
         );
+        $this->cache->setReadOnly($this->config->get('cache-read-only'));
     }
 
     /**
@@ -112,7 +113,7 @@ class BitbucketServerDriver extends VcsDriver
             $this->repository
         );
 
-        $repoData = $this->getContents($resource, true)->decodeJson();
+        $repoData = $this->getContents($resource)->decodeJson();
         if ($this->fallbackDriver) {
             return false;
         }
