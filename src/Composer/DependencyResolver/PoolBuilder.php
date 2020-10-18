@@ -380,7 +380,7 @@ class PoolBuilder
                         $this->markPackageNameForLoading($request, $require, $linkConstraint);
                     } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $require) && !isset($this->updateAllowWarned[$require])) {
                         $this->updateAllowWarned[$require] = true;
-                        $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
+                        $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>');
                     }
                 } else {
                     $this->markPackageNameForLoading($request, $require, $linkConstraint);
@@ -405,7 +405,7 @@ class PoolBuilder
                         $this->markPackageNameForLoading($request, $replace, $link->getConstraint());
                     } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$replace])) {
                         $this->updateAllowWarned[$replace] = true;
-                        $this->io->writeError('<warning>Dependency "'.$replace.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>');
+                        $this->io->writeError('<warning>Dependency "'.$replace.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>');
                     }
                 }
             }

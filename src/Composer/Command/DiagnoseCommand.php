@@ -456,7 +456,7 @@ EOT
                 'ssl <comment>'.(isset($version['ssl_version']) ? $version['ssl_version'] : 'missing').'</comment>';
         }
 
-        return '<error>missing, using php streams fallback</error>';
+        return '<error>missing, using php streams fallback, which reduces performance</error>';
     }
 
     /**

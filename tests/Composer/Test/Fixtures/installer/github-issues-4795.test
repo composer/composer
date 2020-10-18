@@ -51,7 +51,7 @@ update b/b --with-dependencies
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
 Updating dependencies
-<warning>Dependency "a/a" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies to include root dependencies.</warning>
+<warning>Dependency "a/a" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>
 Nothing to modify in lock file
 Writing lock file
 Installing dependencies from lock file (including require-dev)

@@ -64,7 +64,7 @@ class SolverProblemsException extends \RuntimeException
         }
 
         if ($isCausedByLock && !$isDevExtraction) {
-            $hints[] = "Use the option --with-all-dependencies to allow upgrades, downgrades and removals for packages currently locked to specific versions.";
+            $hints[] = "Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.";
         }
 
         if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match') && strpos($text, '- ocramius/package-versions')) {
