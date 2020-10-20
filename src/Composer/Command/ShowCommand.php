@@ -584,7 +584,11 @@ EOT
 
         $matchedPackage = null;
         $versions = array();
-        $pool = $repositorySet->createPoolWithAllPackages();
+        if (PlatformRepository::isPlatformPackage($name)) {
+            $pool = $repositorySet->createPoolWithAllPackages();
+        } else {
+            $pool = $repositorySet->createPoolForPackage($name);
+        }
         $matches = $pool->whatProvides($name, $constraint);
         foreach ($matches as $index => $package) {
             // select an exact match if it is in the installed repo and no specific version was required

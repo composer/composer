@@ -280,6 +280,10 @@ class RepositorySet
         $request = new Request($lockedRepo);
 
         foreach ($packageNames as $packageName) {
+            if (PlatformRepository::isPlatformPackage($packageName)) {
+                throw new \LogicException('createPoolForPackage(s) can not be used for platform packages, as they are never loaded by the PoolBuilder which expects them to be fixed. Use createPoolWithAllPackages or pass in a proper request with the platform packages you need fixed in it.');
+            }
+
             $request->requireName($packageName);
         }
 
