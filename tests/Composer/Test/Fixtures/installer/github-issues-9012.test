@@ -1,0 +1,325 @@
+--TEST--
+
+See Github issue #9012 ( https://github.com/composer/composer/issues/9012 and https://gist.github.com/Seldaek/4e2dbc2cea4b4fd7a8207bb310ec8e34).
+
+Recursive analysis of the same learnt rules can lead to infinite recursion in solver.
+
+--COMPOSER--
+{
+    "require": {
+        "php": ">=7.1.7",
+        "laravel/framework": "^6.0",
+        "nunomaduro/collision": "^4.0"
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "process-timeout": 0
+    },
+    "repositories": {
+        "laravel/framework": {
+            "type": "package",
+            "package": [
+                {
+                    "name": "laravel/framework",
+                    "version": "v6.0.0",
+                    "type": "library",
+                    "extra": {
+                        "branch-alias": {
+                            "dev-master": "6.x-dev"
+                        }
+                    },
+                    "require": {
+                        "symfony/console": "^4.3.4"
+                    }
+                }
+            ]
+        },
+        "nunomaduro/collision": {
+            "type": "package",
+            "package": [
+                {
+                    "name": "nunomaduro/collision",
+                    "version": "v4.2.0",
+                    "type": "library",
+                    "extra": {
+                        "laravel": {
+                            "providers": [
+                                "NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider"
+                            ]
+                        }
+                    },
+                    "require": {
+                        "symfony/console": "^5.0"
+                    }
+                }
+            ]
+        },
+        "symfony/console": {
+            "type": "package",
+            "package": [
+                {
+                    "name": "symfony/console",
+                    "version": "v5.1.7",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.1.6",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.1.5",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.1.4",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.1.3",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.1.2",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.1.1",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.1.0",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.1.0-RC2",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.1.0-RC1",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.1.0-BETA1",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.11",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.10",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.9",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.8",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.7",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.6",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.5",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.4",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.3",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.2",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.1",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v5.0.0",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.15",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.14",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.13",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.12",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.11",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.10",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.9",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.8",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.7",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.6",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.5",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.4",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.3",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.2",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.1",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.0",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.0-RC1",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.0-BETA2",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.4.0-BETA1",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.3.11",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.3.10",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.3.9",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.3.8",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.3.7",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.3.6",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.3.5",
+                    "type": "library"
+                },
+                {
+                    "name": "symfony/console",
+                    "version": "v4.3.4",
+                    "type": "library"
+                }
+            ]
+        }
+    }
+}
+
+--RUN--
+update
+
+--EXPECT--
+
+--EXPECT-OUTPUT--
+
+--EXPECT-EXIT-CODE--
+2
