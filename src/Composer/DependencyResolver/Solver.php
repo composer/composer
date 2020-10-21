@@ -465,35 +465,35 @@ class Solver
                     // only level 1 marks left
                     $l1num++;
                     $l1retry = true;
-                }
+                } else {
+                    $decision = $this->decisions->atOffset($decisionId);
+                    $rule = $decision[Decisions::DECISION_REASON];
 
-                $decision = $this->decisions->atOffset($decisionId);
-                $rule = $decision[Decisions::DECISION_REASON];
+                    if ($rule instanceof MultiConflictRule) {
+                        // there is only ever exactly one positive decision in a multiconflict rule
+                        foreach ($rule->getLiterals() as $literal) {
+                            if (!isset($seen[abs($literal)]) && $this->decisions->satisfy(-$literal)) {
+                                $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
+                                $l = $this->decisions->decisionLevel($literal);
+                                if (1 === $l) {
+                                    $l1num++;
+                                } elseif ($level === $l) {
+                                    $num++;
+                                } else {
+                                    // not level1 or conflict level, add to new rule
+                                    $learnedLiterals[] = $literal;
 
-                if ($rule instanceof MultiConflictRule) {
-                    // there is only ever exactly one positive decision in a multiconflict rule
-                    foreach ($rule->getLiterals() as $literal) {
-                        if (!isset($seen[abs($literal)]) && $this->decisions->satisfy(-$literal)) {
-                            $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
-                            $l = $this->decisions->decisionLevel($literal);
-                            if (1 === $l) {
-                                $l1num++;
-                            } elseif ($level === $l) {
-                                $num++;
-                            } else {
-                                // not level1 or conflict level, add to new rule
-                                $learnedLiterals[] = $literal;
-
-                                if ($l > $ruleLevel) {
-                                    $ruleLevel = $l;
+                                    if ($l > $ruleLevel) {
+                                        $ruleLevel = $l;
+                                    }
                                 }
+                                $seen[abs($literal)] = true;
+                                break;
                             }
-                            $seen[abs($literal)] = true;
-                            break;
                         }
-                    }
 
-                    $l1retry = true;
+                        $l1retry = true;
+                    }
                 }
             }
 
