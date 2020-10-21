@@ -514,16 +514,12 @@ class Solver
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
 
-    /**
-     * @param Problem $problem
-     * @param Rule    $conflictRule
-     */
-    private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, &$ruleSeen)
+    private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen)
     {
-        $ruleSeen[spl_object_hash($conflictRule)] = true;
+        $why = spl_object_hash($conflictRule);
+        $ruleSeen[$why] = true;
 
         if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
-            $why = spl_object_hash($conflictRule);
             $learnedWhy = $this->learnedWhy[$why];
             $problemRules = $this->learnedPool[$learnedWhy];
 
