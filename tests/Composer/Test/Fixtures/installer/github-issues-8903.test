@@ -1,0 +1,216 @@
+--TEST--
+
+See Github issue #8903 ( https://github.com/composer/composer/issues/8903 ).
+
+Recursive output of learnt rules can lead to infinite loop.
+
+--COMPOSER--
+{
+    "name": "nomorehours/knowmore-api",
+    "description": "Reported at https://github.com/composer/composer/issues/8903 (OP)",
+    "require": {
+        "laravel/lumen-framework": "^7.0",
+        "irazasyed/telegram-bot-sdk": "^2.0"
+    },
+    "repositories": {
+        "laravel/lumen-framework": {
+            "type": "package",
+            "package": [
+                {
+                    "name": "laravel/lumen-framework",
+                    "version": "v7.0.0",
+                    "type": "library",
+                    "require": {
+                        "illuminate/support": "^7.0"
+                    }
+                }
+            ]
+        },
+        "irazasyed/telegram-bot-sdk": {
+            "type": "package",
+            "package": [
+                {
+                    "name": "irazasyed/telegram-bot-sdk",
+                    "version": "v2.1.0",
+                    "type": "library",
+                    "require": {
+                        "illuminate/support": "5.0.*|5.1.*|5.2.*"
+                    }
+                },
+                {
+                    "name": "irazasyed/telegram-bot-sdk",
+                    "version": "v2.0.0",
+                    "type": "library",
+                    "require": {
+                        "illuminate/support": "5.0.*|5.1.*|5.2.*"
+                    }
+                }
+            ]
+        },
+        "illuminate/support": {
+            "type": "package",
+            "package": [
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.14.0",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.2.2",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.2.1",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.1.0",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.0.8",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.0.7",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.0.6",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.0.5",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.0.4",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.0.3",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.0.2",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.0.1",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v7.0.0",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.3.23",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.3.16",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.3.4",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.3.0",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.2.45",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.2.43",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.2.37",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.2.32",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.2.31",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.2.28",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.2.27",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.2.26",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.2.25",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.2.24",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.2.0",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.1.41",
+                    "type": "library"
+                },
+                {
+                    "name": "illuminate/support",
+                    "version": "v5.0.0",
+                    "type": "library"
+                }
+            ]
+        }
+    }
+}
+
+--RUN--
+update
+
+--EXPECT--
+
+--EXPECT-OUTPUT--
+
+--EXPECT-EXIT-CODE--
+2
