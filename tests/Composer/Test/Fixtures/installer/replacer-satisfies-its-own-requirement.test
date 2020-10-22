@@ -14,7 +14,7 @@ Test that a package requiring something it replaces itself, satisfies itself eve
     "require": {
         "replaced/pkg": "1.0.0"
     },
-    "provide": {
+    "replace": {
         "replaced/pkg": "1.0.0"
     }
 }
