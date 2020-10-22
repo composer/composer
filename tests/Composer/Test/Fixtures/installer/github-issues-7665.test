@@ -30,9 +30,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^2.1 || ^3.0"
-                    },
-                    "conflict": {
-                        "hhvm": "<3.9"
                     }
                 },
                 {
@@ -41,9 +38,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^2.1 || ^3.0"
-                    },
-                    "conflict": {
-                        "hhvm": "<3.9"
                     }
                 },
                 {
@@ -52,9 +46,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^2.1 || ^3.0"
-                    },
-                    "conflict": {
-                        "hhvm": "<3.9"
                     }
                 },
                 {
@@ -68,9 +59,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     },
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -79,9 +67,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -90,9 +75,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -101,9 +83,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -112,9 +91,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -123,9 +99,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -134,9 +107,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -145,9 +115,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -169,9 +136,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     },
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -180,9 +144,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -191,9 +152,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -202,9 +160,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -218,9 +173,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     },
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
@@ -229,9 +181,6 @@ Solver Bug Exception GitHub issue 7665 https://github.com/composer/composer/issu
                     "type": "application",
                     "require": {
                         "symfony/finder": "^3.0 || ^4.0"
-                    },
-                    "conflict": {
-                        "hhvm": "*"
                     }
                 },
                 {
