@@ -202,6 +202,7 @@ To enable the swap you can use for example:
 ```sh
 /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
 /sbin/mkswap /var/swap.1
+/bin/chmod 0600 /var/swap.1
 /sbin/swapon /var/swap.1
 ```
 You can make a permanent swap file following this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04).
