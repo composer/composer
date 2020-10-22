@@ -5,7 +5,8 @@ This chapter will describe the `config` section of the `composer.json`
 
 ## process-timeout
 
-Defaults to `300`. The duration processes like git clones can run before
+The timeout in seconds for process executions, defaults to 300 (5mins).
+The duration processes like git clones can run before
 Composer assumes they died out. You may need to make this higher if you have a
 slow connection or huge vendors.
 
