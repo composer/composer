@@ -45,4 +45,23 @@ class ConfigValidatorTest extends TestCase
             $warnings
         );
     }
+
+    public function testConfigValidatorWarnsOnUnnecessaryProvideReplace()
+    {
+        $configValidator = new ConfigValidator(new NullIO());
+        list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_provide-replace-requirements.json');
+
+        $this->assertContains(
+            'The package a/a in require is also listed in provide which satisfies the requirement. Remove it from provide if you wish to install it.',
+            $warnings
+        );
+        $this->assertContains(
+            'The package b/b in require is also listed in replace which satisfies the requirement. Remove it from replace if you wish to install it.',
+            $warnings
+        );
+        $this->assertContains(
+            'The package c/c in require-dev is also listed in provide which satisfies the requirement. Remove it from provide if you wish to install it.',
+            $warnings
+        );
+    }
 }
