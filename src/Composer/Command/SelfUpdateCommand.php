@@ -176,11 +176,12 @@ EOT
             return 1;
         }
 
+        $channelString = $versionsUtil->getChannel();
+        if (is_numeric($channelString)) {
+            $channelString .= '.x';
+        }
+
         if (Composer::VERSION === $updateVersion) {
-            $channelString = $versionsUtil->getChannel();
-            if (is_numeric($channelString)) {
-                $channelString .= '.x';
-            }
             $io->writeError(
                 sprintf(
                     '<info>You are already using composer version %s (%s channel).</info>',
@@ -208,7 +209,7 @@ EOT
 
         $updatingToTag = !preg_match('{^[0-9a-f]{40}$}', $updateVersion);
 
-        $io->write(sprintf("Updating to version <info>%s</info> (%s channel).", $updateVersion, $versionsUtil->getChannel()));
+        $io->write(sprintf("Updating to version <info>%s</info> (%s channel).", $updateVersion, $channelString));
         $remoteFilename = $baseUrl . ($updatingToTag ? "/download/{$updateVersion}/composer.phar" : '/composer.phar');
         $signature = $remoteFilesystem->getContents(self::HOMEPAGE, $remoteFilename.'.sig', false);
         $io->writeError('   ', false);
