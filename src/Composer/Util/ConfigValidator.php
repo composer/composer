@@ -138,6 +138,22 @@ class ConfigValidator
             }
         }
 
+
+        // check for meaningless provide/replace satisfying requirements
+        foreach (array('provide', 'replace') as $linkType) {
+            if (isset($manifest[$linkType])) {
+                foreach (array('require', 'require-dev') as $requireType) {
+                    if (isset($manifest[$requireType])) {
+                        foreach ($manifest[$linkType] as $provide => $constraint) {
+                            if (isset($manifest[$requireType][$provide])) {
+                                $warnings[] = 'The package ' . $provide . ' in '.$requireType.' is also listed in '.$linkType.' which satisfies the requirement. Remove it from '.$linkType.' if you wish to install it.';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // check for commit references
         $require = isset($manifest['require']) ? $manifest['require'] : array();
         $requireDev = isset($manifest['require-dev']) ? $manifest['require-dev'] : array();
