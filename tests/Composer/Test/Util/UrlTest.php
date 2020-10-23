@@ -70,6 +70,7 @@ class UrlTest extends TestCase
     public static function sanitizeProvider()
     {
         return array(
+            // with scheme
             array('https://foo:***@example.org/', 'https://foo:bar@example.org/'),
             array('https://foo@example.org/', 'https://foo@example.org/'),
             array('https://example.org/', 'https://example.org/'),
@@ -77,6 +78,14 @@ class UrlTest extends TestCase
             array('https://foo:***@example.org:123/', 'https://foo:bar@example.org:123/'),
             array('https://example.org/foo/bar?access_token=***', 'https://example.org/foo/bar?access_token=abcdef'),
             array('https://example.org/foo/bar?foo=bar&access_token=***', 'https://example.org/foo/bar?foo=bar&access_token=abcdef'),
+            // without scheme
+            array('foo:***@example.org/', 'foo:bar@example.org/'),
+            array('foo@example.org/', 'foo@example.org/'),
+            array('example.org/', 'example.org/'),
+            array('***:***@example.org', '10a8f08e8d7b7b9:foo@example.org'),
+            array('foo:***@example.org:123/', 'foo:bar@example.org:123/'),
+            array('example.org/foo/bar?access_token=***', 'example.org/foo/bar?access_token=abcdef'),
+            array('example.org/foo/bar?foo=bar&access_token=***', 'example.org/foo/bar?foo=bar&access_token=abcdef'),
         );
     }
 }
