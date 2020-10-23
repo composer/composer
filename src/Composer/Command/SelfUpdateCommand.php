@@ -176,8 +176,19 @@ EOT
             return 1;
         }
 
+        $channelString = $versionsUtil->getChannel();
+        if (is_numeric($channelString)) {
+            $channelString .= '.x';
+        }
+
         if (Composer::VERSION === $updateVersion) {
-            $io->writeError(sprintf('<info>You are already using composer version %s (%s channel).</info>', $updateVersion, $versionsUtil->getChannel()));
+            $io->writeError(
+                sprintf(
+                    '<info>You are already using composer version %s (%s channel).</info>',
+                    $updateVersion,
+                    $channelString
+                )
+            );
 
             // remove all backups except for the most recent, if any
             if ($input->getOption('clean-backups')) {
@@ -198,7 +209,7 @@ EOT
 
         $updatingToTag = !preg_match('{^[0-9a-f]{40}$}', $updateVersion);
 
-        $io->write(sprintf("Upgrading to version <info>%s</info> (%s channel).", $updateVersion, $versionsUtil->getChannel()));
+        $io->write(sprintf("Upgrading to version <info>%s</info> (%s channel).", $updateVersion, $channelString));
         $remoteFilename = $baseUrl . ($updatingToTag ? "/download/{$updateVersion}/composer.phar" : '/composer.phar');
         $signature = $httpDownloader->get($remoteFilename.'.sig')->getBody();
         $io->writeError('   ', false);

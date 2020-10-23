@@ -442,9 +442,15 @@ that exact version, and not any other version, which would be incorrect.
 #### provide
 
 List of other packages that are provided by this package. This is mostly
-useful for common interfaces. A package could depend on some virtual
-`logger` package, any library that implements this logger interface would
-simply list it in `provide`.
+useful for implementations of common interfaces. A package could depend on
+some virtual `logger-implementation` package, any library that implements
+this logger interface would simply list it in `provide`.
+Using `provide` with the name of an actual package rather than a virtual one
+implies that the code of that package is also shipped, in which case `replace`
+is generally a better choice. A common convention for packages providing an
+interface and relying on other packages to provide an implementation (for
+instance the PSR interfaces) is to use a `-implementation` suffix for the
+name of the virtual package corresponding to the interface package.
 
 #### suggest
 
