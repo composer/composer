@@ -3,7 +3,7 @@
 You've already learned how to use the command-line interface to do some
 things. This chapter documents all the available commands.
 
-To get help from the command-line, simply call `composer` or `composer list`
+To get help from the command-line, call `composer` or `composer list`
 to see the complete list of commands, then `--help` combined with any of those
 can give you more information.
 
@@ -39,8 +39,7 @@ The following options are available with every command:
 ## init
 
 In the [Libraries](02-libraries.md) chapter we looked at how to create a
-`composer.json` by hand. There is also an `init` command available that makes
-it a bit easier to do this.
+`composer.json` by hand. There is also an `init` command available to do this.
 
 When you run the command it will interactively ask you to fill in the fields,
 while using some smart defaults.
@@ -297,8 +296,8 @@ php composer.phar global update
 ## search
 
 The search command allows you to search through the current project's package
-repositories. Usually this will be packagist. You simply pass it the
-terms you want to search for.
+repositories. Usually this will be packagist. You pass it the terms you want
+to search for.
 
 ```sh
 php composer.phar search monolog
@@ -540,7 +539,7 @@ command. It will replace your `composer.phar` with the latest version.
 php composer.phar self-update
 ```
 
-If you would like to instead update to a specific release simply specify it:
+If you would like to instead update to a specific release specify it:
 
 ```sh
 php composer.phar self-update 1.0.0-alpha7
@@ -915,7 +914,7 @@ directory other than `vendor`.
 ### http_proxy or HTTP_PROXY
 
 If you are using Composer from behind an HTTP proxy, you can use the standard
-`http_proxy` or `HTTP_PROXY` env vars. Simply set it to the URL of your proxy.
+`http_proxy` or `HTTP_PROXY` env vars. Set it to the URL of your proxy.
 Many operating systems already set this variable for you.
 
 Using `http_proxy` (lowercased) or even defining both might be preferable since
@@ -947,7 +946,7 @@ If set, makes the self-update command write the new Composer phar file into that
 ### no_proxy or NO_PROXY
 
 If you are behind a proxy and would like to disable it for certain domains, you
-can use the `no_proxy` or `NO_PROXY` env var. Simply set it to a comma separated list of
+can use the `no_proxy` or `NO_PROXY` env var. Set it to a comma separated list of
 domains the proxy should *not* be used for.
 
 The env var accepts domains, IP addresses, and IP address blocks in CIDR

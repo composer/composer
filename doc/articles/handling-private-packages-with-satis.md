@@ -13,7 +13,7 @@ files which makes installs faster and independent from third party systems - e.g
 you can deploy even if GitHub is down because your zip files are mirrored.
 
 Private Packagist is available as a hosted SaaS solution or as an on-premise self-hosted
-package, providing an easy interactive set up experience.
+package, providing an interactive set up experience.
 
 Some of Private Packagist's revenue is used to pay for Composer and Packagist.org
 development and hosting so using it is a good way to support the maintenance of

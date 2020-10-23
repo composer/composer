@@ -37,7 +37,7 @@ Composer requires PHP 5.3.2+ to run. A few sensitive php settings and compile
 flags are also required, but when using the installer you will be warned about
 any incompatibilities.
 
-To install packages from sources instead of simple zip archives, you will need
+To install packages from sources instead of plain zip archives, you will need
 git, svn, fossil or hg depending on how the package is version-controlled.
 
 Composer is multi-platform and we strive to make it run equally well on Windows,
@@ -161,6 +161,6 @@ Composer version 1.0.0 2016-01-10 20:34:53
 ## Using Composer
 
 Now that you've installed Composer, you are ready to use it! Head on over to the
-next chapter for a short and simple demonstration.
+next chapter for a short demonstration.
 
 [Basic usage](01-basic-usage.md) &rarr;

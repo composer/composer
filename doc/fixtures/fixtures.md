@@ -4,7 +4,7 @@ This directory contains some examples of what `composer` type repositories can
 look like. They serve as illustrating examples accompanying the docs, but can
 also be used as (initial) fixtures for tests.
 
-* `repo-composer-plain` is a simple, plain `packages.json` file
+* `repo-composer-plain` is a basic, plain `packages.json` file
 * `repo-composer-with-includes` uses the `includes` mechanism
 * `repo-composer-with-providers` uses the `providers` mechanism
 

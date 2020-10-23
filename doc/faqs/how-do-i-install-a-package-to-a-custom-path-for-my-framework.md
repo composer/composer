@@ -6,7 +6,7 @@ the default `vendor` folder by using
 [composer/installers](https://github.com/composer/installers).
 
 If you are a **package author** and want your package installed to a custom
-directory, simply require `composer/installers` and set the appropriate `type`.
+directory, require `composer/installers` and set the appropriate `type`.
 Specifying the package type, will override the default installer path. 
 This is common if your package is intended for a specific framework such as
 CakePHP, Drupal or WordPress. Here is an example composer.json file for a
