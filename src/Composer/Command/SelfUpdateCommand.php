@@ -159,7 +159,7 @@ EOT
                 $latestVersion = $latest['version'];
                 $updateVersion = $latestVersion;
 
-                $io->writeError('<warning>A new stable major version of Composer is available ('.$skippedVersion.'), run "composer self-update --'.$updateMajorVersion.'" to update to it. See also https://github.com/composer/composer/releases for changelogs.</warning>');
+                $io->writeError('<warning>A new stable major version of Composer is available ('.$skippedVersion.'), run "composer self-update --'.$updateMajorVersion.'" to update to it. See also https://getcomposer.org/'.$updateMajorVersion.'</warning>');
             } elseif ($currentMajorVersion < $previewMajorVersion) {
                 // promote next major version if available in preview
                 $io->writeError('<warning>A preview release of the next major version of Composer is available ('.$latestPreview['version'].'), run "composer self-update --preview" to give it a try. See also https://github.com/composer/composer/releases for changelogs.</warning>');
