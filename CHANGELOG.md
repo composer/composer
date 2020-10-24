@@ -1,3 +1,11 @@
+### [2.0.0] 2020-10-24
+
+  * Fixed proxy handling issues when combined with our new curl-based downloader
+  * Fixed solver bug resulting in endless loops in some cases
+  * Fixed solver output being extremely long due to learnt rules
+  * Fixed solver bug with multi literals
+  * Fixed a couple minor regressions
+
 ### [2.0.0-RC2] 2020-10-14
 
   * Breaking: Removed `OperationInterface::getReason` as the data was not accurate
@@ -996,6 +1004,7 @@
 
   * Initial release
 
+[2.0.0]: https://github.com/composer/composer/compare/2.0.0-RC2...2.0.0
 [2.0.0-RC2]: https://github.com/composer/composer/compare/2.0.0-RC1...2.0.0-RC2
 [2.0.0-RC1]: https://github.com/composer/composer/compare/2.0.0-alpha3...2.0.0-RC1
 [2.0.0-alpha3]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-alpha3
