@@ -1,3 +1,7 @@
+### [2.0.1] 2020-10-24
+
+  * Fixed crash on PHP8
+
 ### [2.0.0] 2020-10-24
 
   * Fixed proxy handling issues when combined with our new curl-based downloader
@@ -1004,6 +1008,7 @@
 
   * Initial release
 
+[2.0.1]: https://github.com/composer/composer/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/composer/composer/compare/2.0.0-RC2...2.0.0
 [2.0.0-RC2]: https://github.com/composer/composer/compare/2.0.0-RC1...2.0.0-RC2
 [2.0.0-RC1]: https://github.com/composer/composer/compare/2.0.0-alpha3...2.0.0-RC1
