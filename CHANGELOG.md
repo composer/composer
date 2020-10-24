@@ -1,3 +1,9 @@
+### [1.10.16] 2020-10-24
+
+  * Added warning to `validate` command for cases where packages provide/replace a package that they also require
+  * Fixed JSON schema validation issue with PHPStorm
+  * Fixed symlink handling in `archive` command
+
 ### [1.10.15] 2020-10-13
 
   * Fixed path repo version guessing issue
@@ -905,6 +911,7 @@
 
   * Initial release
 
+[1.10.16]: https://github.com/composer/composer/compare/1.10.15...1.10.16
 [1.10.15]: https://github.com/composer/composer/compare/1.10.14...1.10.15
 [1.10.14]: https://github.com/composer/composer/compare/1.10.13...1.10.14
 [1.10.13]: https://github.com/composer/composer/compare/1.10.12...1.10.13
