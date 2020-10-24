@@ -102,10 +102,10 @@ section or directly in the repository definition.
 
 > **Note:** Using the command line environment variable method also has security implications.
 > These credentials will most likely be stored in memory,
-> and on be persisted to a file like ```~/.bash_history```(linux) or ```ConsoleHost_history.txt```
+> and on be persisted to a file like `~/.bash_history`(linux) or `ConsoleHost_history.txt`
 > (PowerShell on Windows) when closing a session.
 
-The final option to supply Composer with credentials is to use the ```COMPOSER_AUTH``` environment variable.
+The final option to supply Composer with credentials is to use the `COMPOSER_AUTH` environment variable.
 These variables can be either passed as command line variables or set in actual environment variables.
 Read more about the usage of this environment variable [here](../03-cli.md#COMPOSER_AUTH).
 
@@ -221,7 +221,7 @@ composer config [--global] --editor --auth
 > **Note:** For the gitlab authentication to work on private gitlab instances, the
 > [`gitlab-domains`](../06-config.md#gitlab-domains) section should also contain the url.
 
-When creating a gitlab token manually, make sure it has either the ```read_api``` or ```api``` scope.
+When creating a gitlab token manually, make sure it has either the `read_api` or `api` scope.
 
 ### Command line gitlab-token
 
@@ -245,7 +245,7 @@ composer config [--global] --editor --auth
 
 ## github-oauth
 
-To create a new access token, head to your [token settings section on Github](https://github.com/settings/tokens) and [generate a new token](https://github.com/settings/tokens/new). For public repositories when rate limited, the ```public_repo``` scope is required, for private repositories the ```repo:status``` scope is needed.
+To create a new access token, head to your [token settings section on Github](https://github.com/settings/tokens) and [generate a new token](https://github.com/settings/tokens/new). For public repositories when rate limited, the `public_repo` scope is required, for private repositories the `repo:status` scope is needed.
 Read more about it [here](https://github.com/blog/1509-personal-api-tokens).
 
 ### Command line github-oauth

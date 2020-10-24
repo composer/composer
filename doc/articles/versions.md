@@ -126,7 +126,7 @@ with a wildcard. For example `1.0 - 2.0` is equivalent to `>=1.0.0 <2.1` as the
 
 Example: `1.0 - 2.0`
 
-### Wildcard Version Range (.*)
+### Wildcard Version Range (`.*`)
 
 You can specify a pattern with a `*` wildcard. `1.0.*` is the equivalent of
 `>=1.0 <1.1`.
@@ -135,7 +135,7 @@ Example: `1.0.*`
 
 ## Next Significant Release Operators
 
-### Tilde Version Range (~)
+### Tilde Version Range (`~`)
 
 The `~` operator is best explained by example: `~1.2` is equivalent to
 `>=1.2 <2.0.0`, while `~1.2.3` is equivalent to `>=1.2.3 <1.3.0`. As you can see

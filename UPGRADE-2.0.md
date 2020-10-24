@@ -5,7 +5,7 @@
 - The new platform-check feature means that Composer checks the runtime PHP version and available extensions to ensure they match the project dependencies. If a mismatch is found, it exits with error details to make sure problems are not overlooked. To avoid issues when deploying to production it is recommended to run `composer check-platform-reqs` with the production PHP process as part of your build or deployment process.
 - If a package exists in a higher priority repository, it will now be entirely ignored in lower priority repositories. See [repository priorities](https://getcomposer.org/repoprio) for details.
 - Invalid PSR-0 / PSR-4 class configurations will not autoload anymore in optimized-autoloader mode, as per the warnings introduced in 1.10
-- On linux systems supporting the XDG Base Directory Specification, Composer will now prefer using XDG_CONFIG_DIR/composer over ~/.composer if both are available (1.x used ~/.composer first)
+- On linux systems supporting the XDG Base Directory Specification, Composer will now prefer using XDG_CONFIG_DIR/composer over `~/.composer` if both are available (1.x used `~/.composer` first)
 - Package names now must comply to our [naming guidelines](doc/04-schema.md#name) or Composer will abort, as per the warnings introduced in 1.8.1
 - Deprecated --no-suggest flag as it is not needed anymore
 - PEAR support (repository, downloader, etc.) has been removed
@@ -55,7 +55,7 @@
 #### Composer v1
 
 - Composer resolves dependencies (dispatching PRE/POST_DEPENDENCIES_SOLVING)
-- It then iterates over all packages one by one (dispatching PRE_PACKAGE_INSTALL/UPDATE/UNINSTALL, then PRE_FILE_DOWNLOAD if needed, then POST_PACKAGE_*)
+- It then iterates over all packages one by one (dispatching PRE_PACKAGE_INSTALL/UPDATE/UNINSTALL, then PRE_FILE_DOWNLOAD if needed, then POST_PACKAGE_\*)
 - And finally writes the lock file at the end
 
 #### Composer v2
@@ -71,7 +71,7 @@ Install then does:
 
 - Dispatches PRE_OPERATIONS_EXEC with the full list of operations to be executed
 - Downloads all the packages not in cache yet in parallel (dispatching PRE_FILE_DOWNLOAD for those not in cache yet)
-- It then iterates over all packages and executes updates/installs/uninstalls in parallel (dispatching PRE_PACKAGE_INSTALL/UPDATE/UNINSTALL then POST_PACKAGE_* but one package started last may finish installing before another is done for example).
+- It then iterates over all packages and executes updates/installs/uninstalls in parallel (dispatching PRE_PACKAGE_INSTALL/UPDATE/UNINSTALL then POST_PACKAGE_\* but one package started last may finish installing before another is done for example).
 
 ## For Composer repository implementors
 

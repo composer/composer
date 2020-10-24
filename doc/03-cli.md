@@ -433,7 +433,7 @@ including their current and latest versions. This is basically an alias for
 The color coding is as such:
 
 - **green (=)**: Dependency is in the latest version and is up to date.
-- **yellow (~)**: Dependency has a new version available that includes backwards compatibility breaks according to semver, so upgrade when
+- **yellow (`~`)**: Dependency has a new version available that includes backwards compatibility breaks according to semver, so upgrade when
   you can but it may involve work.
 - **red (!)**: Dependency has a new version that is semver-compatible and you should upgrade it.
 
@@ -658,7 +658,7 @@ See the [Config](06-config.md) chapter for valid configuration options.
   option this lists the global configuration only.
 * **--file="..." (-f):** Operate on a specific file instead of composer.json. Note
   that this cannot be used in conjunction with the `--global` option.
-* **--absolute:** Returns absolute paths when fetching *-dir config values
+* **--absolute:** Returns absolute paths when fetching `*-dir` config values
   instead of relative.
 * **--json:** JSON decode the setting value, to be used with `extra.*` keys.
 * **--merge:** Merge the setting value with the current value, to be used with `extra.*` keys in combination with `--json`.
