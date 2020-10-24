@@ -41,6 +41,9 @@ class CurlDownloader
     private $authHelper;
     private $selectTimeout = 5.0;
     private $maxRedirects = 20;
+    /** @var ProxyManager */
+    private $proxyManager;
+    private $supportsSecureProxy;
     protected $multiErrors = array(
         CURLM_BAD_HANDLE      => array('CURLM_BAD_HANDLE', 'The passed-in handle is not a valid CURLM handle.'),
         CURLM_BAD_EASY_HANDLE => array('CURLM_BAD_EASY_HANDLE', "An easy handle was not good/valid. It could mean that it isn't an easy handle at all, or possibly that the handle already is in used by this or another multi handle."),
@@ -92,6 +95,11 @@ class CurlDownloader
         }
 
         $this->authHelper = new AuthHelper($io, $config);
+        $this->proxyManager = ProxyManager::getInstance();
+
+        $version = curl_version();
+        $features = $version['features'];
+        $this->supportsSecureProxy = defined('CURL_VERSION_HTTPS_PROXY') && ($features & CURL_VERSION_HTTPS_PROXY);
     }
 
     /**
@@ -176,7 +184,8 @@ class CurlDownloader
         }
 
         $options['http']['header'] = $this->authHelper->addAuthenticationHeader($options['http']['header'], $origin, $url);
-        $options = StreamContextFactory::initOptions($url, $options);
+        // Merge in headers - we don't get any proxy values
+        $options = StreamContextFactory::initOptions($url, $options, true);
 
         foreach (self::$options as $type => $curlOptions) {
             foreach ($curlOptions as $name => $curlOption) {
@@ -187,6 +196,25 @@ class CurlDownloader
                         curl_setopt($curlHandle, $curlOption, $options[$type][$name]);
                     }
                 }
+            }
+        }
+
+        // Always set CURLOPT_PROXY to enable/disable proxy handling
+        // Any proxy authorization is included in the proxy url
+        $proxy = $this->proxyManager->getProxyForRequest($url);
+        curl_setopt($curlHandle, CURLOPT_PROXY, $proxy->getUrl());
+
+        // Curl needs certificate locations for secure proxies.
+        // CURLOPT_PROXY_SSL_VERIFY_PEER/HOST are enabled by default
+        if ($proxy->isSecure()) {
+            if (!$this->supportsSecureProxy) {
+                throw new TransportException('Connecting to a secure proxy using curl is not supported on PHP versions below 7.3.0.');
+            }
+            if (!empty($options['ssl']['cafile'])) {
+                curl_setopt($curlHandle, CURLOPT_PROXY_CAINFO, $options['ssl']['cafile']);
+            }
+            if (!empty($options['ssl']['capath'])) {
+                curl_setopt($curlHandle, CURLOPT_PROXY_CAPATH, $options['ssl']['capath']);
             }
         }
 
@@ -206,7 +234,7 @@ class CurlDownloader
             'reject' => $reject,
         );
 
-        $usingProxy = !empty($options['http']['proxy']) ? ' using proxy ' . $options['http']['proxy'] : '';
+        $usingProxy = $proxy->getLastProxy(' using proxy (%s)');
         $ifModified = false !== stripos(implode(',', $options['http']['header']), 'if-modified-since:') ? ' if modified' : '';
         if ($attributes['redirects'] === 0) {
             $this->io->writeError('Downloading ' . Url::sanitize($url) . $usingProxy . $ifModified, true, IOInterface::DEBUG);

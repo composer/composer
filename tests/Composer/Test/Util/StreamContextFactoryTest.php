@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Util\Http\ProxyManager;
 use Composer\Util\StreamContextFactory;
 use Composer\Test\TestCase;
 
@@ -20,11 +21,13 @@ class StreamContextFactoryTest extends TestCase
     protected function setUp()
     {
         unset($_SERVER['HTTP_PROXY'], $_SERVER['http_proxy'], $_SERVER['HTTPS_PROXY'], $_SERVER['https_proxy'], $_SERVER['NO_PROXY'], $_SERVER['no_proxy']);
+        ProxyManager::reset();
     }
 
     protected function tearDown()
     {
         unset($_SERVER['HTTP_PROXY'], $_SERVER['http_proxy'], $_SERVER['HTTPS_PROXY'], $_SERVER['https_proxy'], $_SERVER['NO_PROXY'], $_SERVER['no_proxy']);
+        ProxyManager::reset();
     }
 
     /**
@@ -147,16 +150,9 @@ class StreamContextFactoryTest extends TestCase
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
         $_SERVER['https_proxy'] = 'https://woopproxy.net';
 
+        // Pointless test replaced by ProxyHelperTest.php
+        $this->setExpectedException('Composer\Downloader\TransportException');
         $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET', 'header' => 'User-Agent: foo')));
-        $options = stream_context_get_options($context);
-
-        $this->assertEquals(array('http' => array(
-            'proxy' => 'ssl://woopproxy.net:443',
-            'method' => 'GET',
-            'max_redirects' => 20,
-            'follow_location' => 1,
-            'header' => array('User-Agent: foo'),
-        )), $options);
     }
 
     /**
@@ -182,7 +178,7 @@ class StreamContextFactoryTest extends TestCase
                 StreamContextFactory::getContext('http://example.org');
                 $this->fail();
             } catch (\RuntimeException $e) {
-                $this->assertInstanceOf('RuntimeException', $e);
+                $this->assertInstanceOf('Composer\Downloader\TransportException', $e);
             }
         }
     }
@@ -215,5 +211,27 @@ class StreamContextFactoryTest extends TestCase
         $context = StreamContextFactory::getContext('http://example.org', $options);
         $ctxoptions = stream_context_get_options($context);
         $this->assertEquals(end($expectedOptions['http']['header']), end($ctxoptions['http']['header']));
+    }
+
+    public function testInitOptionsDoesIncludeProxyAuthHeaders()
+    {
+        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
+
+        $options = array();
+        $options = StreamContextFactory::initOptions('https://example.org', $options);
+        $headers = implode(' ', $options['http']['header']);
+
+        $this->assertTrue(false !== stripos($headers, 'Proxy-Authorization'));
+    }
+
+    public function testInitOptionsForCurlDoesNotIncludeProxyAuthHeaders()
+    {
+        $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
+
+        $options = array();
+        $options = StreamContextFactory::initOptions('https://example.org', $options, true);
+        $headers = implode(' ', $options['http']['header']);
+
+        $this->assertFalse(stripos($headers, 'Proxy-Authorization'));
     }
 }
