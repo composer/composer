@@ -88,7 +88,7 @@ installer capable of installing packages of that type.
 
 Out of the box, Composer supports four types:
 
-- **library:** This is the default. It will simply copy the files to `vendor`.
+- **library:** This is the default. It will copy the files to `vendor`.
 - **project:** This denotes a project rather than a library. For example
   application shells like the [Symfony standard edition](https://github.com/symfony/symfony-standard),
   CMSs like the [SilverStripe installer](https://github.com/silverstripe/silverstripe-installer)
@@ -444,7 +444,7 @@ that exact version, and not any other version, which would be incorrect.
 List of other packages that are provided by this package. This is mostly
 useful for implementations of common interfaces. A package could depend on
 some virtual `logger-implementation` package, any library that implements
-this logger interface would simply list it in `provide`.
+this logger interface would list it in `provide`.
 Using `provide` with the name of an actual package rather than a virtual one
 implies that the code of that package is also shipped, in which case `replace`
 is generally a better choice. A common convention for packages providing an
@@ -781,7 +781,7 @@ ignored.
 
 The following repository types are supported:
 
-* **composer:** A Composer repository is simply a `packages.json` file served
+* **composer:** A Composer repository is a `packages.json` file served
   via the network (HTTP, FTP, SSH), that contains a list of `composer.json`
   objects with additional `dist` and/or `source` information. The `packages.json`
   file is loaded using a PHP stream. You can set extra options on that stream

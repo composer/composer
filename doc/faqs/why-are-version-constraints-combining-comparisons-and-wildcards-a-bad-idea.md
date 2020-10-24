@@ -17,5 +17,5 @@ of a package in version 3.0.0 or not. Should it match because you asked for
 `>=2` or should it not match because you asked for a `2.*`?
 
 For this reason, Composer throws an error and says that this is invalid.
-The easy way to fix it is to think about what you really mean, and use only
+The way to fix it is to think about what you really mean, and use only
 one of those rules.

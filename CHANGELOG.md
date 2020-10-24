@@ -83,6 +83,12 @@
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
 
+### [1.10.16] 2020-10-24
+
+  * Added warning to `validate` command for cases where packages provide/replace a package that they also require
+  * Fixed JSON schema validation issue with PHPStorm
+  * Fixed symlink handling in `archive` command
+
 ### [1.10.15] 2020-10-13
 
   * Fixed path repo version guessing issue
@@ -995,6 +1001,7 @@
 [2.0.0-alpha3]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-alpha3
 [2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
+[1.10.16]: https://github.com/composer/composer/compare/1.10.15...1.10.16
 [1.10.15]: https://github.com/composer/composer/compare/1.10.14...1.10.15
 [1.10.14]: https://github.com/composer/composer/compare/1.10.13...1.10.14
 [1.10.13]: https://github.com/composer/composer/compare/1.10.12...1.10.13

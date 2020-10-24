@@ -16,6 +16,6 @@ For example instead of using `>=3.4` you should use `~3.4` which allows all
 versions up to `3.999` but does not include `4.0` and above. The `^` operator
 works very well with libraries following [semantic versioning](https://semver.org).
 
-**Note:** As a package maintainer, you can make the life of your users easier
+**Note:** As a package maintainer, you can make the help your users
 by providing an [alias version](../articles/aliases.md) for your development
 branch to allow it to match bound constraints.

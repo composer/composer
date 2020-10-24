@@ -188,6 +188,16 @@ class InstalledRepository extends CompositeRepository
                         }
 
                         $version = new Constraint('=', $pkg->getVersion());
+
+                        if ($link->getTarget() !== $pkg->getName()) {
+                            foreach (array_merge($pkg->getReplaces(), $pkg->getProvides()) as $prov) {
+                                if ($link->getTarget() === $prov->getTarget()) {
+                                    $version = $prov->getConstraint();
+                                    break;
+                                }
+                            }
+                        }
+
                         if (!$link->getConstraint()->matches($version)) {
                             // if we have a root package (we should but can not guarantee..) we show
                             // the root requires as well to perhaps allow to find an issue there
@@ -199,6 +209,7 @@ class InstalledRepository extends CompositeRepository
                                         continue 3;
                                     }
                                 }
+
                                 $results[] = array($package, $link, false);
                                 $results[] = array($rootPackage, new Link($rootPackage->getName(), $link->getTarget(), new MatchAllConstraint, 'does not require', 'but ' . $pkg->getPrettyVersion() . ' is installed'), false);
                             } else {
