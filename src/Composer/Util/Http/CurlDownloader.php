@@ -234,7 +234,7 @@ class CurlDownloader
             'reject' => $reject,
         );
 
-        $usingProxy = $proxy->getLastProxy(' using proxy (%s)');
+        $usingProxy = $proxy->getFormattedUrl(' using proxy (%s)');
         $ifModified = false !== stripos(implode(',', $options['http']['header']), 'if-modified-since:') ? ' if modified' : '';
         if ($attributes['redirects'] === 0) {
             $this->io->writeError('Downloading ' . Url::sanitize($url) . $usingProxy . $ifModified, true, IOInterface::DEBUG);

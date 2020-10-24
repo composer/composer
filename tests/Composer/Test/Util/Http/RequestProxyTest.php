@@ -38,17 +38,17 @@ class RequestProxyTest extends TestCase
     }
 
     /**
-     * @dataProvider dataLastProxy
+     * @dataProvider dataProxyUrl
      */
-    public function testGetLastProxyFormat($url, $format, $expected)
+    public function testGetFormattedUrlFormat($url, $format, $expected)
     {
         $proxy = new RequestProxy($url, array(), $url);
 
-        $message = $proxy->getLastProxy($format);
+        $message = $proxy->getFormattedUrl($format);
         $this->assertSame($expected, $message);
     }
 
-    public function dataLastProxy()
+    public function dataProxyUrl()
     {
         $format = 'proxy (%s)';
 

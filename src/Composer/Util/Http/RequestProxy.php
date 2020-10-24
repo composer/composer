@@ -22,21 +22,19 @@ class RequestProxy
 {
     private $contextOptions;
     private $isSecure;
-    private $lastProxy;
-    private $safeUrl;
+    private $formattedUrl;
     private $url;
 
     /**
      * @param string $url
      * @param array $contextOptions
-     * @param string $lastProxy
+     * @param string $formattedUrl
      */
-    public function __construct($url, array $contextOptions, $lastProxy)
+    public function __construct($url, array $contextOptions, $formattedUrl)
     {
         $this->url = $url;
         $this->contextOptions = $contextOptions;
-        $this->lastProxy = $lastProxy;
-        $this->safeUrl = Url::sanitize($url);
+        $this->formattedUrl = $formattedUrl;
         $this->isSecure = 0 === strpos($url, 'https://');
     }
 
@@ -56,12 +54,12 @@ class RequestProxy
      * @param string|null $format Output format specifier
      * @return string Safe proxy, no proxy or empty
      */
-    public function getLastProxy($format = '')
+    public function getFormattedUrl($format = '')
     {
         $result = '';
-        if ($this->lastProxy) {
+        if ($this->formattedUrl) {
             $format = $format ?: '%s';
-            $result = sprintf($format, $this->lastProxy);
+            $result = sprintf($format, $this->formattedUrl);
         }
 
         return $result;

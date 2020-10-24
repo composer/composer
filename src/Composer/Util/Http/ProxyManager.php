@@ -85,32 +85,40 @@ class ProxyManager
         $scheme = parse_url($requestUrl, PHP_URL_SCHEME) ?: 'http';
         $proxyUrl = '';
         $options = array();
-        $lastProxy = '';
+        $formattedProxyUrl = '';
 
         if ($this->hasProxy && $this->fullProxy[$scheme]) {
             if ($this->noProxy($requestUrl)) {
-                $lastProxy = 'excluded by no_proxy';
+                $formattedProxyUrl = 'excluded by no_proxy';
             } else {
                 $proxyUrl = $this->fullProxy[$scheme];
                 $options = $this->streams[$scheme]['options'];
                 ProxyHelper::setRequestFullUri($requestUrl, $options);
-                $lastProxy = $this->safeProxy[$scheme];
+                $formattedProxyUrl = $this->safeProxy[$scheme];
             }
         }
 
-        return new RequestProxy($proxyUrl, $options, $lastProxy);
+        return new RequestProxy($proxyUrl, $options, $formattedProxyUrl);
     }
 
     /**
      * Returns true if a proxy is being used
      *
-     * @param string|null $message Set to safe proxy values
      * @return bool If false any error will be in $message
      */
-    public function getStatus(&$message)
+    public function isProxying()
     {
-        $message = $this->hasProxy ? $this->info : $this->error;
         return $this->hasProxy;
+    }
+
+    /**
+     * Returns proxy configuration info which can be shown to the user
+     *
+     * @return string|null Safe proxy URL or an error message if setting up proxy failed or null if no proxy was configured
+     */
+    public function getFormattedProxy()
+    {
+        return $this->hasProxy ? $this->info : $this->error;
     }
 
     /**

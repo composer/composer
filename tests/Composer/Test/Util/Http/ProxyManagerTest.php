@@ -82,7 +82,7 @@ class ProxyManagerTest extends TestCase
         $this->assertSame($expectedOptions, $proxy->getContextOptions());
         $this->assertSame($expectedSecure, $proxy->isSecure());
 
-        $message = $proxy->getLastProxy();
+        $message = $proxy->getFormattedUrl();
 
         if ($expectedMessage) {
             $condition = stripos($message, $expectedMessage) !== false;
@@ -134,7 +134,8 @@ class ProxyManagerTest extends TestCase
     {
         $_SERVER = array_merge($_SERVER, $server);
         $proxyManager = ProxyManager::getInstance();
-        $status = $proxyManager->getStatus($message);
+        $status = $proxyManager->isProxying();
+        $message = $proxyManager->getFormattedProxy();
 
         $this->assertSame($expectedStatus, $status);
 
