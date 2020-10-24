@@ -117,7 +117,7 @@ Examples:
 * `>=1.0 <2.0`
 * `>=1.0 <1.1 || >=1.2`
 
-### Hyphenated Version Range ( - )
+### Hyphenated Version Range (` - `)
 
 Inclusive set of versions. Partial versions on the right include are completed
 with a wildcard. For example `1.0 - 2.0` is equivalent to `>=1.0.0 <2.1` as the
@@ -157,7 +157,7 @@ Example: `~1.2`
 > it will not allow the major number to increase trying to keep backwards
 > compatibility.
 
-### Caret Version Range (^)
+### Caret Version Range (`^`)
 
 The `^` operator behaves very similarly, but it sticks closer to semantic
 versioning, and will always allow non-breaking updates. For example `^1.2.3`
