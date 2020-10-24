@@ -202,7 +202,7 @@ There are a few use cases for this. The most common one is maintaining your
 own fork of a third party library. If you are using a certain library for your
 project and you decide to change something in the library, you will want your
 project to use the patched version. If the library is on GitHub (this is the
-case most of the time), you can simply fork it there and push your changes to
+case most of the time), you can fork it there and push your changes to
 your fork. After that you update the project's `composer.json`. All you have
 to do is add your fork as a repository and update the version constraint to
 point to your custom branch. In `composer.json`, you should prefix your custom
@@ -582,9 +582,9 @@ information.
 ### Artifact
 
 There are some cases, when there is no ability to have one of the previously
-mentioned repository types online, even the VCS one. Typical example could be
-cross-organisation library exchange through built artifacts. Of course, most
-of the times they are private. To simplify maintenance, one can simply use a
+mentioned repository types online, even the VCS one. A typical example could be
+cross-organisation library exchange through build artifacts. Of course, most
+of the time these are private. To use these archives as-is, one can use a
 repository of type `artifact` with a folder containing ZIP archives of those
 private packages:
 

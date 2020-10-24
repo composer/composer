@@ -18,7 +18,7 @@ In Composer, what's often referred to casually as a version -- that is,
 the string that follows the package name in a require line (e.g., `~1.1` or
 `1.2.*`) -- is actually more specifically a version constraint. Composer
 uses version constraints to figure out which refs in a VCS it should be
-checking out (or simply to verify that a given library is acceptable in
+checking out (or to verify that a given library is acceptable in
 the case of a statically-maintained library with a `version` specification
 in `composer.json`).
 

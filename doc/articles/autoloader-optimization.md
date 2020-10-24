@@ -12,7 +12,7 @@ it can immediately be discovered/used without having to rebuild the autoloader
 configuration.
 
 The problem however is in production you generally want things to happen as fast
-as possible, as you can simply rebuild the configuration every time you deploy and
+as possible, as you can rebuild the configuration every time you deploy and
 new classes do not appear at random between deploys.
 
 For this reason, Composer offers a few strategies to optimize the autoloader.
@@ -67,7 +67,7 @@ There are a few options to enable this:
 
 Enabling this automatically enables Level 1 class map optimizations.
 
-This option is very simple, it says that if something is not found in the classmap,
+This option says that if something is not found in the classmap,
 then it does not exist and the autoloader should not attempt to look on the
 filesystem according to PSR-4 rules.
 
