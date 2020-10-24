@@ -23,7 +23,7 @@
 ### [2.0.0-RC1] 2020-09-10
 
   * Added more advanced filtering to avoid loading all versions of all referenced packages when resolving dependencies, which should reduce memory usage further in some cases
-  * Added support for many new lib-* packages in the platform repository and improved version detection for some ext-* and lib-* packages
+  * Added support for many new lib-\* packages in the platform repository and improved version detection for some ext-\* and lib-\* packages
   * Added an `--ask` flag to `create-project` command to make Composer prompt for the install dir name, [useful for project install instructions](https://github.com/composer/composer/pull/9181)
   * Added support for tar in artifact repositories
   * Added a `cache-read-only` config option to make the cache usable in read only mode for containers and such
@@ -212,7 +212,7 @@
   * Fixed archive command to persist file permissions inside the zip files
   * Fixed init/require command to avoid suggesting packages which are already selected in the search results
   * Fixed create-project UX issues
-  * Fixed filemtime for vendor/composer/* files is now only changing when the files actually change
+  * Fixed filemtime for vendor/composer/\* files is now only changing when the files actually change
   * Fixed issues detecting docker environment with an active open_basedir
 
 ### [1.9.3] 2020-02-04
@@ -222,7 +222,7 @@
 ### [1.9.2] 2020-01-14
 
   * Fixed minor git driver bugs
-  * Fixed schema validation for version field to allow dev-* versions too
+  * Fixed schema validation for version field to allow dev-\* versions too
   * Fixed external processes' output being formatted even though it should not
   * Fixed issue with path repositories when trying to install feature branches
 
@@ -523,7 +523,7 @@
   * Fixed dist downloads from Bitbucket
   * Fixed some regressions related to xdebug disabling
   * Fixed `--minor-only` flag in `outdated` command
-  * Fixed handling of config.platform.php which did not replace other php-* package's versions
+  * Fixed handling of config.platform.php which did not replace other php-\* package's versions
 
 ### [1.3.0] - 2016-12-24
 
@@ -945,7 +945,7 @@
   * Added a recommendation for package names to be `lower-cased/with-dashes`, it will be enforced for new packages on Pacakgist
   * Added `require` command to add a package to your requirements and install it
   * Added a whitelist to `update`. Calling `composer update foo/bar foo/baz` allows you to update only those packages
-  * Added support for overriding repositories in the system config (define repositories in ~/.composer/config.json)
+  * Added support for overriding repositories in the system config (define repositories in `~/.composer/config.json`)
   * Added `lib-*` packages to the platform repository, e.g. `lib-pcre` contains the pcre version
   * Added caching of GitHub metadata (faster startup time with custom GitHub VCS repos)
   * Added caching of SVN metadata (faster startup time with custom SVN VCS repos)

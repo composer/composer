@@ -621,7 +621,7 @@ variables are parsed in both Windows and Linux/Mac notations. For example
 `/home/<username>/git/mypackage`, equivalent to `$HOME/git/mypackage` or
 `%USERPROFILE%/git/mypackage`.
 
-> **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
+> **Note:** Repository paths can also contain wildcards like `*` and `?`.
 > For details, see the [PHP glob function](https://php.net/glob).
 
 ## Disabling Packagist.org
