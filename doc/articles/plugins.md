@@ -320,8 +320,8 @@ and it does not get a chance to update the URLs on time.
 
 Specifying `{"extra": {"plugin-modifies-downloads": true}}` in your composer.json will
 hint to Composer that the plugin should be installed on its own before proceeding with
-the rest of the package installs. This slightly slows down installations however so do
-not use it in plugins which do not absolutely require it.
+the rest of the package downloads. This slightly slows down the overall installation
+process however, so do not use it in plugins which do not absolutely require it.
 
 [1]: ../04-schema.md#type
 [2]: ../04-schema.md#extra
