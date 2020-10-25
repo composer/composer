@@ -15,6 +15,7 @@ namespace Composer\Test\Package\Loader;
 use Composer\Config;
 use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\BasePackage;
+use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
@@ -90,7 +91,7 @@ class RootPackageLoaderTest extends TestCase
         $package = $loader->load(array());
 
         $this->assertEquals("1.0.0.0", $package->getVersion());
-        $this->assertEquals("No version set (parsed as 1.0.0)", $package->getPrettyVersion());
+        $this->assertEquals(RootPackage::DEFAULT_PRETTY_VERSION, $package->getPrettyVersion());
     }
 
     public function testPrettyVersionForRootPackageInVersionBranch()

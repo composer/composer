@@ -20,6 +20,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryFactory;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
+use Composer\Package\RootPackage;
 use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 
@@ -112,7 +113,7 @@ class RootPackageLoader extends ArrayLoader
         }
 
         if ($autoVersioned) {
-            $realPackage->replaceVersion($realPackage->getVersion(), 'No version set (parsed as 1.0.0)');
+            $realPackage->replaceVersion($realPackage->getVersion(), RootPackage::DEFAULT_PRETTY_VERSION);
         }
 
         if (isset($config['minimum-stability'])) {

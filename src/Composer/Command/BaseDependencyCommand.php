@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
+use Composer\Package\RootPackage;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RootPackageRepository;
@@ -167,7 +168,7 @@ class BaseDependencyCommand extends BaseCommand
                     continue;
                 }
                 $doubles[$unique] = true;
-                $version = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '-' : $package->getPrettyVersion();
+                $version = $package->getPrettyVersion() === RootPackage::DEFAULT_PRETTY_VERSION ? '-' : $package->getPrettyVersion();
                 $rows[] = array($package->getPrettyName(), $version, $link->getDescription(), sprintf('%s (%s)', $link->getTarget(), $link->getPrettyConstraint()));
                 if ($children) {
                     $queue = array_merge($queue, $children);
@@ -223,7 +224,7 @@ class BaseDependencyCommand extends BaseCommand
             $color = $this->colors[$level % count($this->colors)];
             $prevColor = $this->colors[($level - 1) % count($this->colors)];
             $isLast = (++$idx == $count);
-            $versionText = (strpos($package->getPrettyVersion(), 'No version set') === 0) ? '' : $package->getPrettyVersion();
+            $versionText = $package->getPrettyVersion() === RootPackage::DEFAULT_PRETTY_VERSION ? '' : $package->getPrettyVersion();
             $packageText = rtrim(sprintf('<%s>%s</%1$s> %s', $color, $package->getPrettyName(), $versionText));
             $linkText = sprintf('%s <%s>%s</%2$s> %s', $link->getDescription(), $prevColor, $link->getTarget(), $link->getPrettyConstraint());
             $circularWarn = $children === false ? '(circular dependency aborted here)' : '';
