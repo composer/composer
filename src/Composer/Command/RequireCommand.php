@@ -314,7 +314,7 @@ EOT
 
         // if no lock is present, or the file is brand new, we do not do a
         // partial update as this is not supported by the Installer
-        if (!$this->firstRequire && $composer->getConfig()->get('lock')) {
+        if (!$this->firstRequire && $composer->getLocker()->isLocked()) {
             $install->setUpdateAllowList(array_keys($requirements));
         }
 
