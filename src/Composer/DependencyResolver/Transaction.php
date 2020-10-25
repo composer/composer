@@ -274,7 +274,7 @@ class Transaction
                 });
 
                 // is this a plugin with no meaningful dependencies?
-                if ($isPlugin && !count($requires)) {
+                if ($isDownloadsModifyingPlugin && !count($requires)) {
                     // plugins with no dependencies go to the very front
                     array_unshift($dlModyingPluginsNoDeps, $op);
                 } else {
