@@ -58,7 +58,7 @@ final class StreamContextFactory
     /**
      * @param string $url
      * @param array $options
-     * @param bool $forCurl
+     * @param bool $forCurl When true, will not add proxy values as these are handled separately
      * @psalm-return array{http:{header: string[], proxy?: string, request_fulluri: bool}, ssl: array}
      * @return array formatted as a stream context array
      */
@@ -75,23 +75,27 @@ final class StreamContextFactory
         // Add stream proxy options if there is a proxy
         if (!$forCurl) {
             $proxy = ProxyManager::getInstance()->getProxyForRequest($url);
-            if ($proxy->isSecure()) {
-                if (!extension_loaded('openssl')) {
-                    throw new TransportException('You must enable the openssl extension to use a proxy over https.');
-                }
-                if (0 === strpos($url, 'https://')) {
-                    throw new TransportException('PHP does not support https requests to a secure proxy.');
-                }
-            }
+            if ($proxyOptions = $proxy->getContextOptions()) {
+                $isHttpsRequest = 0 === strpos($url, 'https://');
 
-            $proxyOptions = $proxy->getContextOptions();
+                if ($proxy->isSecure()) {
+                    if (!extension_loaded('openssl')) {
+                        throw new TransportException('You must enable the openssl extension to use a secure proxy.');
+                    }
+                    if ($isHttpsRequest) {
+                        throw new TransportException('You must enable the curl extension to make https requests through a secure proxy.');
+                    }
+                } elseif ($isHttpsRequest && !extension_loaded('openssl')) {
+                    throw new TransportException('You must enable the openssl extension to make https requests through a proxy.');
+                }
 
-            // Header will be a Proxy-Authorization string or not set
-            if (isset($proxyOptions['http']['header'])) {
-                $options['http']['header'][] = $proxyOptions['http']['header'];
-                unset($proxyOptions['http']['header']);
+                // Header will be a Proxy-Authorization string or not set
+                if (isset($proxyOptions['http']['header'])) {
+                    $options['http']['header'][] = $proxyOptions['http']['header'];
+                    unset($proxyOptions['http']['header']);
+                }
+                $options = array_replace_recursive($options, $proxyOptions);
             }
-            $options = array_replace_recursive($options, $proxyOptions);
         }
 
         if (defined('HHVM_VERSION')) {

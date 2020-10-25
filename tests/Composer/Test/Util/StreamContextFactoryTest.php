@@ -226,6 +226,10 @@ class StreamContextFactoryTest extends TestCase
 
     public function testInitOptionsForCurlDoesNotIncludeProxyAuthHeaders()
     {
+        if (!extension_loaded('curl')) {
+            $this->markTestSkipped('The curl is not available.');
+        }
+
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
 
         $options = array();
