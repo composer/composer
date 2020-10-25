@@ -275,7 +275,7 @@ The BitBucket driver uses OAuth to access your private repositories via the BitB
 ### Command line bitbucket-oauth
 
 ```sh
-composer config [--global] bitbucket-oauth.bitbucket.org cosumer-key consumer-secret
+composer config [--global] bitbucket-oauth.bitbucket.org consumer-key consumer-secret
 ```
 
 ### Manual bitbucket-oauth
