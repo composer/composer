@@ -240,7 +240,7 @@ class InstallationManager
             foreach ($operations as $index => $operation) {
                 if (in_array($operation->getOperationType(), array('update', 'install'), true)) {
                     $package = $operation->getOperationType() === 'update' ? $operation->getTargetPackage() : $operation->getPackage();
-                    if ($package->getType() === 'composer-plugin' && $extra = $package->getExtra() && isset($extra['plugin-modifies-downloads']) && $extra['plugin-modifies-downloads'] === true) {
+                    if ($package->getType() === 'composer-plugin' && ($extra = $package->getExtra()) && isset($extra['plugin-modifies-downloads']) && $extra['plugin-modifies-downloads'] === true) {
                         if ($batch) {
                             $batches[] = $batch;
                         }

@@ -248,6 +248,9 @@ class Transaction
      */
     private function movePluginsToFront(array $operations)
     {
+        $dlModyingPluginsNoDeps = array();
+        $dlModyingPluginsWithDeps = array();
+        $dlModyingPluginRequires = array();
         $pluginsNoDeps = array();
         $pluginsWithDeps = array();
         $pluginRequires = array();
@@ -258,6 +261,30 @@ class Transaction
             } elseif ($op instanceof Operation\UpdateOperation) {
                 $package = $op->getTargetPackage();
             } else {
+                continue;
+            }
+
+            $isDownloadsModifyingPlugin = $package->getType() === 'composer-plugin' && ($extra = $package->getExtra()) && isset($extra['plugin-modifies-downloads']) && $extra['plugin-modifies-downloads'] === true;
+
+            // is this a downloads modifying plugin or a dependency of one?
+            if ($isDownloadsModifyingPlugin || count(array_intersect($package->getNames(), $dlModyingPluginRequires))) {
+                // get the package's requires, but filter out any platform requirements
+                $requires = array_filter(array_keys($package->getRequires()), function ($req) {
+                    return !PlatformRepository::isPlatformPackage($req);
+                });
+
+                // is this a plugin with no meaningful dependencies?
+                if ($isPlugin && !count($requires)) {
+                    // plugins with no dependencies go to the very front
+                    array_unshift($dlModyingPluginsNoDeps, $op);
+                } else {
+                    // capture the requirements for this package so those packages will be moved up as well
+                    $dlModyingPluginRequires = array_merge($dlModyingPluginRequires, $requires);
+                    // move the operation to the front
+                    array_unshift($dlModyingPluginsWithDeps, $op);
+                }
+
+                unset($operations[$idx]);
                 continue;
             }
 
@@ -286,7 +313,7 @@ class Transaction
             }
         }
 
-        return array_merge($pluginsNoDeps, $pluginsWithDeps, $operations);
+        return array_merge($dlModyingPluginsNoDeps, $dlModyingPluginsWithDeps, $pluginsNoDeps, $pluginsWithDeps, $operations);
     }
 
     /**
