@@ -302,6 +302,27 @@ As of Composer 2, due to the fact that DownloaderInterface can sometimes return 
 and have been split up in more steps than they used to, we provide a [SyncHelper][11]
 to make downloading and installing packages easier.
 
+## Plugin Extra Attributes
+
+A few special plugin capabilities can be unlocked using extra attributes in the plugin's composer.json.
+
+### class
+
+[See above](#plugin-package) for an explanation of the class attribute and how it works.
+
+### plugin-modifies-downloads
+
+Some special plugins need to update package download URLs before they get downloaded.
+
+As of Composer 2.0, all packages are downloaded before they get installed. This means
+on the first installation, your plugin is not yet installed when the download occurs,
+and it does not get a chance to update the URLs on time.
+
+Specifying `{"extra": {"plugin-modifies-downloads": true}}` in your composer.json will
+hint to Composer that the plugin should be installed on its own before proceeding with
+the rest of the package installs. This slightly slows down installations however so do
+not use it in plugins which do not absolutely require it.
+
 [1]: ../04-schema.md#type
 [2]: ../04-schema.md#extra
 [3]: https://github.com/composer/composer/blob/master/src/Composer/Plugin/PluginInterface.php
