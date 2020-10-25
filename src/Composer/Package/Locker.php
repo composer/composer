@@ -254,7 +254,17 @@ class Locker
     {
         $lockData = $this->getLockData();
 
-        return isset($lockData['aliases']) ? $lockData['aliases'] : array();
+        if (!isset($lockData['aliases'])) {
+            return array();
+        }
+
+        foreach ($lockData['aliases'] as $index => $alias) {
+            if (in_array($alias['version'], array('dev-master', 'dev-default', 'dev-trunk'), true)) {
+                $lockData['aliases'][$index]['version'] = '9999999-dev';
+            }
+        }
+
+        return $lockData['aliases'];
     }
 
     public function getLockData()
