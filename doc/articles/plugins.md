@@ -9,7 +9,7 @@
 You may wish to alter or expand Composer's functionality with your own. For
 example if your environment poses special requirements on the behaviour of
 Composer which do not apply to the majority of its users or if you wish to
-accomplish something with composer in a way that is not desired by most users.
+accomplish something with Composer in a way that is not desired by most users.
 
 In these cases you could consider creating a plugin to handle your
 specific logic.
@@ -30,14 +30,19 @@ requirements:
    multiple plugins, this can be array of class names.
 3. You must require the special package called `composer-plugin-api`
    to define which Plugin API versions your plugin is compatible with.
+   Requiring this package doesn't actually include any extra dependencies,
+   it only specifies which version of the plugin API to use.
+
+> **Note:** When developing a plugin, although not required, it's useful to add
+> a require-dev dependency on `composer/composer` to have IDE auto completion on Composer classes.
 
 The required version of the `composer-plugin-api` follows the same [rules][7]
 as a normal package's.
 
-The current composer plugin API version is 1.1.0.
+The current Composer plugin API version is 1.1.0.
 
 An example of a valid plugin `composer.json` file (with the autoloading
-part omitted):
+part omitted and an optional require-dev dependency on `composer/composer` for IDE auto completion):
 
 ```json
 {
@@ -45,6 +50,9 @@ part omitted):
     "type": "composer-plugin",
     "require": {
         "composer-plugin-api": "^1.1"
+    },
+    "require-dev": {
+        "composer/composer": "^2.0"
     },
     "extra": {
         "class": "My\\Plugin"
@@ -279,12 +287,12 @@ Plugins for an event can be run manually by the `run-script` command. This works
 ## Using Plugins
 
 Plugin packages are automatically loaded as soon as they are installed and will
-be loaded when composer starts up if they are found in the current project's
+be loaded when Composer starts up if they are found in the current project's
 list of installed packages. Additionally all plugin packages installed in the
-`COMPOSER_HOME` directory using the composer global command are loaded before
+`COMPOSER_HOME` directory using the Composer global command are loaded before
 local project plugins are loaded.
 
-> You may pass the `--no-plugins` option to composer commands to disable all
+> You may pass the `--no-plugins` option to Composer commands to disable all
 > installed plugins. This may be particularly helpful if any of the plugins
 > causes errors and you wish to update or uninstall it.
 
