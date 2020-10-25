@@ -248,9 +248,9 @@ class Transaction
      */
     private function movePluginsToFront(array $operations)
     {
-        $dlModyingPluginsNoDeps = array();
-        $dlModyingPluginsWithDeps = array();
-        $dlModyingPluginRequires = array();
+        $dlModifyingPluginsNoDeps = array();
+        $dlModifyingPluginsWithDeps = array();
+        $dlModifyingPluginRequires = array();
         $pluginsNoDeps = array();
         $pluginsWithDeps = array();
         $pluginRequires = array();
@@ -267,7 +267,7 @@ class Transaction
             $isDownloadsModifyingPlugin = $package->getType() === 'composer-plugin' && ($extra = $package->getExtra()) && isset($extra['plugin-modifies-downloads']) && $extra['plugin-modifies-downloads'] === true;
 
             // is this a downloads modifying plugin or a dependency of one?
-            if ($isDownloadsModifyingPlugin || count(array_intersect($package->getNames(), $dlModyingPluginRequires))) {
+            if ($isDownloadsModifyingPlugin || count(array_intersect($package->getNames(), $dlModifyingPluginRequires))) {
                 // get the package's requires, but filter out any platform requirements
                 $requires = array_filter(array_keys($package->getRequires()), function ($req) {
                     return !PlatformRepository::isPlatformPackage($req);
@@ -276,12 +276,12 @@ class Transaction
                 // is this a plugin with no meaningful dependencies?
                 if ($isDownloadsModifyingPlugin && !count($requires)) {
                     // plugins with no dependencies go to the very front
-                    array_unshift($dlModyingPluginsNoDeps, $op);
+                    array_unshift($dlModifyingPluginsNoDeps, $op);
                 } else {
                     // capture the requirements for this package so those packages will be moved up as well
-                    $dlModyingPluginRequires = array_merge($dlModyingPluginRequires, $requires);
+                    $dlModifyingPluginRequires = array_merge($dlModifyingPluginRequires, $requires);
                     // move the operation to the front
-                    array_unshift($dlModyingPluginsWithDeps, $op);
+                    array_unshift($dlModifyingPluginsWithDeps, $op);
                 }
 
                 unset($operations[$idx]);
@@ -313,7 +313,7 @@ class Transaction
             }
         }
 
-        return array_merge($dlModyingPluginsNoDeps, $dlModyingPluginsWithDeps, $pluginsNoDeps, $pluginsWithDeps, $operations);
+        return array_merge($dlModifyingPluginsNoDeps, $dlModifyingPluginsWithDeps, $pluginsNoDeps, $pluginsWithDeps, $operations);
     }
 
     /**
