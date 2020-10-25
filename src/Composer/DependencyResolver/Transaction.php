@@ -248,6 +248,9 @@ class Transaction
      */
     private function movePluginsToFront(array $operations)
     {
+        $dlModifyingPluginsNoDeps = array();
+        $dlModifyingPluginsWithDeps = array();
+        $dlModifyingPluginRequires = array();
         $pluginsNoDeps = array();
         $pluginsWithDeps = array();
         $pluginRequires = array();
@@ -258,6 +261,30 @@ class Transaction
             } elseif ($op instanceof Operation\UpdateOperation) {
                 $package = $op->getTargetPackage();
             } else {
+                continue;
+            }
+
+            $isDownloadsModifyingPlugin = $package->getType() === 'composer-plugin' && ($extra = $package->getExtra()) && isset($extra['plugin-modifies-downloads']) && $extra['plugin-modifies-downloads'] === true;
+
+            // is this a downloads modifying plugin or a dependency of one?
+            if ($isDownloadsModifyingPlugin || count(array_intersect($package->getNames(), $dlModifyingPluginRequires))) {
+                // get the package's requires, but filter out any platform requirements
+                $requires = array_filter(array_keys($package->getRequires()), function ($req) {
+                    return !PlatformRepository::isPlatformPackage($req);
+                });
+
+                // is this a plugin with no meaningful dependencies?
+                if ($isDownloadsModifyingPlugin && !count($requires)) {
+                    // plugins with no dependencies go to the very front
+                    array_unshift($dlModifyingPluginsNoDeps, $op);
+                } else {
+                    // capture the requirements for this package so those packages will be moved up as well
+                    $dlModifyingPluginRequires = array_merge($dlModifyingPluginRequires, $requires);
+                    // move the operation to the front
+                    array_unshift($dlModifyingPluginsWithDeps, $op);
+                }
+
+                unset($operations[$idx]);
                 continue;
             }
 
@@ -286,7 +313,7 @@ class Transaction
             }
         }
 
-        return array_merge($pluginsNoDeps, $pluginsWithDeps, $operations);
+        return array_merge($dlModifyingPluginsNoDeps, $dlModifyingPluginsWithDeps, $pluginsNoDeps, $pluginsWithDeps, $operations);
     }
 
     /**
