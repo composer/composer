@@ -1,3 +1,9 @@
+### [2.0.2] 2020-10-25
+
+  * Fixed regression handling `composer show -s` in projects where no version can be guessed from VCS
+  * Fixed regression handling partial updates/`require` when a lock file was missing
+  * Fixed interop issue with plugins that need to update dist URLs of packages, [see docs](https://getcomposer.org/doc/articles/plugins.md#plugin-modifies-downloads) if you need this
+
 ### [2.0.1] 2020-10-24
 
   * Fixed crash on PHP8
@@ -1008,6 +1014,7 @@
 
   * Initial release
 
+[2.0.2]: https://github.com/composer/composer/compare/2.0.1...2.0.2
 [2.0.1]: https://github.com/composer/composer/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/composer/composer/compare/2.0.0-RC2...2.0.0
 [2.0.0-RC2]: https://github.com/composer/composer/compare/2.0.0-RC1...2.0.0-RC2
