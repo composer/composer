@@ -751,7 +751,7 @@ EOT
                 throw new \InvalidArgumentException(sprintf(
                     'Could not find package %s in a version matching %s',
                     $name,
-                    $requiredVersion ?: '*'
+                    $requiredVersion
                 ));
             }
             // Check whether the PHP version was the problem for all versions
