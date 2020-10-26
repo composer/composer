@@ -445,6 +445,7 @@ The color coding is as such:
 * **--minor-only (-m):** Only shows packages that have minor SemVer-compatible updates.
 * **--format (-f):** Lets you pick between text (default) or json output format.
 * **--no-dev:** Do not show outdated dev dependencies.
+* **--locked:** Shows updates for packages from the lock file, regardless of what is currently in vendor dir.
 
 ## browse / home
 
