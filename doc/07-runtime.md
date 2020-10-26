@@ -9,7 +9,7 @@ the `composer-runtime-api` package.
 ## Autoload
 
 The autoloader is the most used one, and is already covered in our
-[basic usage guide](#01-basic-usage.md#autoloading). It is available in all
+[basic usage guide](01-basic-usage.md#autoloading). It is available in all
 Composer versions.
 
 ## Installed versions
