@@ -868,7 +868,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         // Horrible hack to workaround https://github.com/composer/composer/issues/9297 and bad mirrors, should be disabled if possible once they fix things
         if (!empty($data['metadata-url']) && !empty($data['list']) && $data['metadata-url'] === '/p/%package%.json' && $data['list'] === 'https://packagist.org/packages/list.json') {
-            file_put_contents('php://stderr', 'Composer 2 repository support for '.$this->url.' has been disabled due to what seems like a misconfiguration. If this is a packagist.org mirror we recommend removing it as Composer 2 handles network operations much faster and should work fine without.'.PHP_EOL);
+            $this->io->writeError('<warning>Composer 2 repository support for '.$this->url.' has been disabled due to what seems like a misconfiguration. If this is a packagist.org mirror we recommend removing it as Composer 2 handles network operations much faster and should work fine without.</warning>');
             unset($data['metadata-url']);
         }
 
