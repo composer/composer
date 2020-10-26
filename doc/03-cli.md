@@ -607,6 +607,9 @@ you may have to run the command with `root` privileges
 sudo -H composer self-update
 ```
 
+If Composer was not installed as a PHAR, this command is not available.
+(This is sometimes the case when Composer was installed by an operating system package manager.)
+
 ### Options
 
 * **--rollback (-r):** Rollback to the last version you had installed.
