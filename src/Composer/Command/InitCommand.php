@@ -741,9 +741,9 @@ EOT
             // Check whether the PHP version was the problem
             if (true !== $ignorePlatformReqs && $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, true)) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Package %s at version %s has a PHP requirement incompatible with your PHP version, PHP extensions and Composer version',
+                    'Package %s%s has a PHP requirement incompatible with your PHP version, PHP extensions and Composer version',
                     $name,
-                    $requiredVersion
+                    $requiredVersion ? ' at version '.$requiredVersion : '',
                 ));
             }
             // Check whether the required version was the problem
@@ -751,7 +751,7 @@ EOT
                 throw new \InvalidArgumentException(sprintf(
                     'Could not find package %s in a version matching %s',
                     $name,
-                    $requiredVersion
+                    $requiredVersion ?: '*',
                 ));
             }
             // Check whether the PHP version was the problem for all versions
