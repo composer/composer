@@ -50,7 +50,7 @@ abstract class BaseCommand extends Command
      * @param  bool              $required
      * @param  bool|null         $disablePlugins
      * @throws \RuntimeException
-     * @return Composer|null
+     * @return Composer
      */
     public function getComposer($required = true, $disablePlugins = null)
     {
