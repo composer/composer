@@ -16,6 +16,7 @@ use Composer\Installer\InstallationManager;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
+use Composer\IO\IOInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\UpdateOperation;
@@ -114,5 +115,10 @@ class InstallationManagerMock extends InstallationManager
     public function getUninstalledPackages()
     {
         return $this->uninstalled;
+    }
+
+    public function notifyInstalls(IOInterface $io)
+    {
+        // noop
     }
 }
