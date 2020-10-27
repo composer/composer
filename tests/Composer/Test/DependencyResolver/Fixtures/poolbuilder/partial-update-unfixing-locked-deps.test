@@ -32,6 +32,7 @@ locked packages still need to be taking into account for loading all necessary v
         {"name": "dep/pkg1", "version": "1.0.0", "author": "new"},
         {"name": "dep/pkg1", "version": "1.0.1"},
         {"name": "dep/pkg1", "version": "2.0.0"},
+        {"name": "dep/pkg1", "version": "3.0.0"},
         {"name": "dep/pkg2", "version": "1.0.0"},
         {"name": "dep/pkg2", "version": "1.2.0", "require": {"dep/pkg1": "2.*"}}
     ]
