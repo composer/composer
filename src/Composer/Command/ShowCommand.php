@@ -1227,7 +1227,12 @@ EOT
             $targetVersion = '^' . $package->getVersion();
         }
 
-        return $versionSelector->findBestCandidate($name, $targetVersion, $bestStability);
+        $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability);
+        while ($candidate instanceof AliasPackage) {
+            $candidate = $candidate->getAliasOf();
+        }
+
+        return $candidate;
     }
 
     private function getRepositorySet(Composer $composer)
