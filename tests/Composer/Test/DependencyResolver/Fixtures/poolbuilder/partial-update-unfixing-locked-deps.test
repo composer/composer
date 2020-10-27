@@ -11,7 +11,7 @@ locked packages still need to be taking into account for loading all necessary v
     "locked": [
         {"name": "root/req1", "version": "1.0.0", "require": {"dep/pkg1": "1.*"}},
         {"name": "root/req2", "version": "1.0.0", "require": {"dep/pkg2": "1.*"}},
-        {"name": "dep/pkg1", "version": "1.0.0"},
+        {"name": "dep/pkg1", "version": "1.0.0", "author": "old"},
         {"name": "dep/pkg2", "version": "1.0.0"}
     ],
     "allowList": [
@@ -29,7 +29,8 @@ locked packages still need to be taking into account for loading all necessary v
     [
         {"name": "root/req1", "version": "1.0.0", "require": {"dep/pkg1": "1.*"}},
         {"name": "root/req2", "version": "1.0.0", "require": {"dep/pkg2": "1.*"}},
-        {"name": "dep/pkg1", "version": "1.0.0"},
+        {"name": "dep/pkg1", "version": "1.0.0", "author": "new"},
+        {"name": "dep/pkg1", "version": "1.0.1"},
         {"name": "dep/pkg1", "version": "2.0.0"},
         {"name": "dep/pkg2", "version": "1.0.0"},
         {"name": "dep/pkg2", "version": "1.2.0", "require": {"dep/pkg1": "2.*"}}
@@ -43,5 +44,6 @@ locked packages still need to be taking into account for loading all necessary v
     "dep/pkg2-1.0.0.0",
     "dep/pkg2-1.2.0.0",
     "dep/pkg1-1.0.0.0",
+    "dep/pkg1-1.0.1.0",
     "dep/pkg1-2.0.0.0"
 ]
