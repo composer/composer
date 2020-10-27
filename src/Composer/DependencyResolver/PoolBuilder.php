@@ -469,15 +469,6 @@ class PoolBuilder
      */
     private function unlockPackage(Request $request, $name)
     {
-        // remove locked package by this name which was already initialized
-        foreach ($request->getLockedPackages() as $lockedPackage) {
-            if (!($lockedPackage instanceof AliasPackage) && $lockedPackage->getName() === $name) {
-                if (false !== $index = array_search($lockedPackage, $this->packages, true)) {
-                    $request->unlockPackage($lockedPackage);
-                    $this->removeLoadedPackage($request, $lockedPackage, $index);
-                }
-            }
-        }
 
         if (
             // if we unfixed a replaced package name, we also need to unfix the replacer itself
@@ -489,6 +480,29 @@ class PoolBuilder
         }
 
         unset($this->skippedLoad[$name], $this->loadedPackages[$name], $this->maxExtendedReqs[$name]);
+
+        // remove locked package by this name which was already initialized
+        foreach ($request->getLockedPackages() as $lockedPackage) {
+            if (!($lockedPackage instanceof AliasPackage) && $lockedPackage->getName() === $name) {
+                if (false !== $index = array_search($lockedPackage, $this->packages, true)) {
+                    $request->unlockPackage($lockedPackage);
+                    $this->removeLoadedPackage($request, $lockedPackage, $index);
+
+                    // make sure that any requirements for this package by other locked or fixed packages are now
+                    // also loaded, as they were previously ignored because the locked (now unlocked) package already
+                    // satisfied their requirements
+                    foreach ($request->getFixedOrLockedPackages() as $fixedOrLockedPackage) {
+                        if ($fixedOrLockedPackage !== $lockedPackage && isset($this->skippedLoad[$fixedOrLockedPackage->getName()])) {
+                            foreach ($fixedOrLockedPackage->getRequires() as $requireLink) {
+                                if ($requireLink->getTarget() === $lockedPackage->getName()) {
+                                    $this->markPackageNameForLoading($request, $lockedPackage->getName(), $requireLink->getConstraint());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private function removeLoadedPackage(Request $request, PackageInterface $package, $index)
