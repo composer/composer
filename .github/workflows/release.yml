@@ -57,6 +57,27 @@ jobs:
           asset_name: composer.phar
           asset_content_type: application/octet-stream
 
+      - name: Configure GPG key and sign phar
+        run: |
+          mkdir -p ~/.gnupg/
+          chmod 0700 ~/.gnupg/
+          echo "$GPG_SIGNING_KEY" > ~/.gnupg/private.key
+          gpg --import ~/.gnupg/private.key
+          gpg -u contact@packagist.com --detach-sign --output composer.phar.asc composer.phar
+        env:
+          GPG_SIGNING_KEY: |
+            ${{ secrets.GPG_KEY_161DFBE342889F01DDAC4E61CBB3D576F2A0946F }}
+
+      - name: Upload phar signature
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./composer.phar.asc
+          asset_name: composer.phar.asc
+          asset_content_type: application/octet-stream
+
       # This step requires a secret token with `pull` access to composer/docker. The default
       # secrets.GITHUB_TOKEN is scoped to this repository only which is not sufficient.
       - name: "Open issue @ Docker repository"
