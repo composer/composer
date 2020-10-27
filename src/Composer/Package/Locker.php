@@ -258,6 +258,8 @@ class Locker
             return array();
         }
 
+        // forward compatibility with Composer 2 lock files created
+        // before https://github.com/composer/composer/issues/9337 was fixed
         foreach ($lockData['aliases'] as $index => $alias) {
             if (in_array($alias['version'], array('dev-master', 'dev-default', 'dev-trunk'), true)) {
                 $lockData['aliases'][$index]['version'] = '9999999-dev';
