@@ -550,64 +550,58 @@ class InstallationManager
 
     public function notifyInstalls(IOInterface $io)
     {
-        foreach ($this->notifiablePackages as $repoUrl => $packages) {
-            $repositoryName = parse_url($repoUrl, PHP_URL_HOST);
-            if ($io->hasAuthentication($repositoryName)) {
-                $auth = $io->getAuthentication($repositoryName);
-                $authStr = base64_encode($auth['username'] . ':' . $auth['password']);
-                $authHeader = 'Authorization: Basic '.$authStr;
-            }
+        $promises = array();
 
-            // non-batch API, deprecated
-            if (strpos($repoUrl, '%package%')) {
-                foreach ($packages as $package) {
-                    $url = str_replace('%package%', $package->getPrettyName(), $repoUrl);
+        try {
+            foreach ($this->notifiablePackages as $repoUrl => $packages) {
+                // non-batch API, deprecated
+                if (strpos($repoUrl, '%package%')) {
+                    foreach ($packages as $package) {
+                        $url = str_replace('%package%', $package->getPrettyName(), $repoUrl);
 
-                    $params = array(
-                        'version' => $package->getPrettyVersion(),
-                        'version_normalized' => $package->getVersion(),
-                    );
-                    $opts = array('http' =>
-                        array(
-                            'method' => 'POST',
-                            'header' => array('Content-type: application/x-www-form-urlencoded'),
-                            'content' => http_build_query($params, '', '&'),
-                            'timeout' => 3,
-                        ),
-                    );
-                    if (isset($authHeader)) {
-                        $opts['http']['header'][] = $authHeader;
+                        $params = array(
+                            'version' => $package->getPrettyVersion(),
+                            'version_normalized' => $package->getVersion(),
+                        );
+                        $opts = array(
+                            'retry-auth-failure' => false,
+                            'http' => array(
+                                'method' => 'POST',
+                                'header' => array('Content-type: application/x-www-form-urlencoded'),
+                                'content' => http_build_query($params, '', '&'),
+                                'timeout' => 3,
+                            ),
+                        );
+
+                        $promises[] = $this->loop->getHttpDownloader()->add($url, $opts);
                     }
 
-                    $context = StreamContextFactory::getContext($url, $opts);
-                    @file_get_contents($url, false, $context);
+                    continue;
                 }
 
-                continue;
-            }
+                $postData = array('downloads' => array());
+                foreach ($packages as $package) {
+                    $postData['downloads'][] = array(
+                        'name' => $package->getPrettyName(),
+                        'version' => $package->getVersion(),
+                    );
+                }
 
-            $postData = array('downloads' => array());
-            foreach ($packages as $package) {
-                $postData['downloads'][] = array(
-                    'name' => $package->getPrettyName(),
-                    'version' => $package->getVersion(),
+                $opts = array(
+                    'retry-auth-failure' => false,
+                    'http' => array(
+                        'method' => 'POST',
+                        'header' => array('Content-Type: application/json'),
+                        'content' => json_encode($postData),
+                        'timeout' => 6,
+                    ),
                 );
+
+                $promises[] = $this->loop->getHttpDownloader()->add($repoUrl, $opts);
             }
 
-            $opts = array('http' =>
-                array(
-                    'method' => 'POST',
-                    'header' => array('Content-Type: application/json'),
-                    'content' => json_encode($postData),
-                    'timeout' => 6,
-                ),
-            );
-            if (isset($authHeader)) {
-                $opts['http']['header'][] = $authHeader;
-            }
-
-            $context = StreamContextFactory::getContext($repoUrl, $opts);
-            @file_get_contents($repoUrl, false, $context);
+            $this->loop->wait($promises);
+        } catch (\Exception $e) {
         }
 
         $this->reset();

@@ -56,6 +56,7 @@ class CurlDownloader
             'method' => CURLOPT_CUSTOMREQUEST,
             'content' => CURLOPT_POSTFIELDS,
             'header' => CURLOPT_HTTPHEADER,
+            'timeout' => CURLOPT_TIMEOUT,
         ),
         'ssl' => array(
             'cafile' => CURLOPT_CAINFO,
