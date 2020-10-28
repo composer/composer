@@ -371,26 +371,22 @@ class PoolBuilder
             $require = $link->getTarget();
             $linkConstraint = $link->getConstraint();
 
-            if ($propagateUpdate) {
-                // if this is a partial update with transitive dependencies we need to unlock the package we now know is a
+            // if the required package is loaded as a locked package only and hasn't had its deps analyzed
+            if (isset($this->skippedLoad[$require])) {
+                // if we're doing a full update or this is a partial update with transitive deps and we're currently
+                // looking at a package which needs to be updated we need to unlock the package we now know is a
                 // dependency of another package which we are trying to update, and then attempt to load it again
-                if ($request->getUpdateAllowTransitiveDependencies() && isset($this->skippedLoad[$require])) {
+                if ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies()) {
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$require])) {
                         $this->unlockPackage($request, $require);
                         $this->markPackageNameForLoading($request, $require, $linkConstraint);
-                    } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $require) && !isset($this->updateAllowWarned[$require])) {
-                        $this->updateAllowWarned[$require] = true;
-                        $this->io->writeError('<warning>Dependency "'.$require.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>');
+                    } elseif (!isset($this->updateAllowWarned[$this->skippedLoad[$require]])) {
+                        $this->updateAllowWarned[$this->skippedLoad[$require]] = true;
+                        $this->io->writeError('<warning>Dependency "'.$this->skippedLoad[$require].'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>');
                     }
-                } else {
-                    $this->markPackageNameForLoading($request, $require, $linkConstraint);
                 }
             } else {
-                // We also need to load the requirements of a locked package
-                // unless it was skipped
-                if (!isset($this->skippedLoad[$require])) {
-                    $this->markPackageNameForLoading($request, $require, $linkConstraint);
-                }
+                $this->markPackageNameForLoading($request, $require, $linkConstraint);
             }
         }
 
