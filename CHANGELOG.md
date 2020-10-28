@@ -1,3 +1,10 @@
+### [2.0.3] 2020-10-28
+
+  * Fixed bug in `outdated` command where dev packages with branch-aliases where always shown as being outdated
+  * Fixed issue in lock file interoperability with composer 1.x when using `dev-master as xxx` aliases
+  * Fixed new `--locked` option being missing from `outdated` command, for checking outdated packages directly from the lock file
+  * Fixed a few debug/error reporting strings
+
 ### [2.0.2] 2020-10-25
 
   * Fixed regression handling `composer show -s` in projects where no version can be guessed from VCS
@@ -1014,6 +1021,7 @@
 
   * Initial release
 
+[2.0.3]: https://github.com/composer/composer/compare/2.0.2...2.0.3
 [2.0.2]: https://github.com/composer/composer/compare/2.0.1...2.0.2
 [2.0.1]: https://github.com/composer/composer/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/composer/composer/compare/2.0.0-RC2...2.0.0
