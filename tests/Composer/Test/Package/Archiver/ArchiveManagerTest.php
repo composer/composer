@@ -115,7 +115,7 @@ class ArchiveManagerTest extends ArchiverTest
         chdir($this->testDir);
 
         $output = null;
-        $result = $this->process->execute('git init -q', $output, $this->testDir);
+        $result = $this->process->execute('git init -q -b master', $output, $this->testDir);
         if ($result > 0) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not init: '.$this->process->getErrorOutput());
