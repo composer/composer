@@ -105,10 +105,6 @@ EOT
         if (!empty($opts['http']['proxy'])) {
             $io->write('Checking HTTP proxy: ', false);
             $this->outputResult($this->checkHttpProxy());
-            $io->write('Checking HTTP proxy support for request_fulluri: ', false);
-            $this->outputResult($this->checkHttpProxyFullUriRequestParam());
-            $io->write('Checking HTTPS proxy support for request_fulluri: ', false);
-            $this->outputResult($this->checkHttpsProxyFullUriRequestParam());
         }
 
         if ($oauth = $config->get('github-oauth')) {
@@ -220,26 +216,19 @@ EOT
             return $result;
         }
 
-        $disableTls = false;
         $result = array();
         if ($proto === 'https' && $config->get('disable-tls') === true) {
-            $disableTls = true;
-            $result[] = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
-        }
-        if ($proto === 'https' && !extension_loaded('openssl') && !$disableTls) {
-            $result[] = '<error>Composer is configured to use SSL/TLS protection but the openssl extension is not available.</error>';
+            $tlsWarning = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
         }
 
         try {
             $this->httpDownloader->get($proto . '://repo.packagist.org/packages.json');
         } catch (TransportException $e) {
-            if (false !== strpos($e->getMessage(), 'cafile')) {
-                $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
-                $result[] = '<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>';
-                $result[] = '<error>You can alternatively disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>';
-            } else {
-                array_unshift($result, '[' . get_class($e) . '] ' . $e->getMessage());
-            }
+            $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
+        }
+
+        if (isset($tlsWarning)) {
+            $result[] = $tlsWarning;
         }
 
         if (count($result) > 0) {
@@ -269,70 +258,6 @@ EOT
             }
         } catch (\Exception $e) {
             return $e;
-        }
-
-        return true;
-    }
-
-    /**
-     * Due to various proxy servers configurations, some servers can't handle non-standard HTTP "http_proxy_request_fulluri" parameter,
-     * and will return error 500/501 (as not implemented), see discussion @ https://github.com/composer/composer/pull/1825.
-     * This method will test, if you need to disable this parameter via setting extra environment variable in your system.
-     *
-     * @return bool|string
-     */
-    private function checkHttpProxyFullUriRequestParam()
-    {
-        $result = $this->checkConnectivity();
-        if ($result !== true) {
-            return $result;
-        }
-
-        $url = 'http://repo.packagist.org/packages.json';
-        try {
-            $this->httpDownloader->get($url);
-        } catch (TransportException $e) {
-            try {
-                $this->httpDownloader->get($url, array('http' => array('request_fulluri' => false)));
-            } catch (TransportException $e) {
-                return 'Unable to assess the situation, maybe packagist.org is down ('.$e->getMessage().')';
-            }
-
-            return 'It seems there is a problem with your proxy server, try setting the "HTTP_PROXY_REQUEST_FULLURI" and "HTTPS_PROXY_REQUEST_FULLURI" environment variables to "false"';
-        }
-
-        return true;
-    }
-
-    /**
-     * Due to various proxy servers configurations, some servers can't handle non-standard HTTP "http_proxy_request_fulluri" parameter,
-     * and will return error 500/501 (as not implemented), see discussion @ https://github.com/composer/composer/pull/1825.
-     * This method will test, if you need to disable this parameter via setting extra environment variable in your system.
-     *
-     * @return bool|string
-     */
-    private function checkHttpsProxyFullUriRequestParam()
-    {
-        $result = $this->checkConnectivity();
-        if ($result !== true) {
-            return $result;
-        }
-
-        if (!extension_loaded('openssl')) {
-            return 'You need the openssl extension installed for this check';
-        }
-
-        $url = 'https://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0';
-        try {
-            $this->httpDownloader->get($url);
-        } catch (TransportException $e) {
-            try {
-                $this->httpDownloader->get($url, array('http' => array('request_fulluri' => false)));
-            } catch (TransportException $e) {
-                return 'Unable to assess the situation, maybe github is down ('.$e->getMessage().')';
-            }
-
-            return 'It seems there is a problem with your proxy server, try setting the "HTTPS_PROXY_REQUEST_FULLURI" environment variable to "false"';
         }
 
         return true;
