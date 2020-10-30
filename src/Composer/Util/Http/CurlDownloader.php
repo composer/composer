@@ -63,6 +63,9 @@ class CurlDownloader
             'capath' => CURLOPT_CAPATH,
             'verify_peer' => CURLOPT_SSL_VERIFYPEER,
             'verify_peer_name' => CURLOPT_SSL_VERIFYHOST,
+            'local_cert' => CURLOPT_SSLCERT,
+            'local_pk' => CURLOPT_SSLKEY,
+            'passphrase' => CURLOPT_SSLKEYPASSWD,
         ),
     );
 
