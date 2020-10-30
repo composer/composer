@@ -1,3 +1,10 @@
+### [2.0.4] 2020-10-30
+
+  * Fixed `check-platform-req` command not being clear on what packages are checked, and added a --lock flag to explicitly check the locked packages
+  * Fixed `config` & `create-project` adding of repositories to make sure they are prepended as order is much more important in Composer 2, also added a --append flag to `config` to restore the old behavior in the unlikely case this is needed
+  * Fixed curl downloader failing on old PHP releases or when using self-signed SSL certificates
+  * Fixed Bitbucket API authentication issue
+
 ### [2.0.3] 2020-10-28
 
   * Fixed bug in `outdated` command where dev packages with branch-aliases where always shown as being outdated
