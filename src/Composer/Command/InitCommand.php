@@ -746,8 +746,30 @@ EOT
                     $requiredVersion ? ' at version '.$requiredVersion : ''
                 ));
             }
+            // Check whether the minimum stability was the problem but the package exists
+            if ($package = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $ignorePlatformReqs, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
+                // we must first verify if a valid package would be found in a lower priority repository
+                if ($allReposPackage = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $ignorePlatformReqs, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
+                    throw new \InvalidArgumentException(
+                        'Package '.$name.' exists in '.$allReposPackage->getRepository()->getRepoName().' and '.$package->getRepository()->getRepoName().' which has a higher repository priority. The packages with higher priority do not match your minimum-stability and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.'
+                    );
+                }
+
+                throw new \InvalidArgumentException(sprintf(
+                    'Could not find a version of package %s matching your minimum-stability (%s). Require it with an explicit version constraint allowing its desired stability.',
+                    $name,
+                    $this->getMinimumStability($input)
+                ));
+            }
             // Check whether the required version was the problem
-            if ($requiredVersion && $versionSelector->findBestCandidate($name, null, $preferredStability, $ignorePlatformReqs)) {
+            if ($requiredVersion && $package = $versionSelector->findBestCandidate($name, null, $preferredStability, $ignorePlatformReqs)) {
+                // we must first verify if a valid package would be found in a lower priority repository
+                if ($allReposPackage = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, false, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
+                    throw new \InvalidArgumentException(
+                        'Package '.$name.' exists in '.$allReposPackage->getRepository()->getRepoName().' and '.$package->getRepository()->getRepoName().' which has a higher repository priority. The packages with higher priority do not match your constraint and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.'
+                    );
+                }
+
                 throw new \InvalidArgumentException(sprintf(
                     'Could not find package %s in a version matching %s',
                     $name,
@@ -765,15 +787,6 @@ EOT
             // Check for similar names/typos
             $similar = $this->findSimilar($name);
             if ($similar) {
-                // Check whether the minimum stability was the problem but the package exists
-                if ($requiredVersion === null && in_array($name, $similar, true)) {
-                    throw new \InvalidArgumentException(sprintf(
-                        'Could not find a version of package %s matching your minimum-stability (%s). Require it with an explicit version constraint allowing its desired stability.',
-                        $name,
-                        $this->getMinimumStability($input)
-                    ));
-                }
-
                 throw new \InvalidArgumentException(sprintf(
                     "Could not find package %s.\n\nDid you mean " . (count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
                     $name,

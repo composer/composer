@@ -60,7 +60,7 @@ class VersionSelector
      * @param  bool|array            $ignorePlatformReqs
      * @return PackageInterface|false
      */
-    public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $ignorePlatformReqs = false)
+    public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $ignorePlatformReqs = false, $repoSetFlags = 0)
     {
         if (!isset(BasePackage::$stabilities[$preferredStability])) {
             // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
@@ -68,7 +68,7 @@ class VersionSelector
         }
 
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
-        $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint);
+        $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint, $repoSetFlags);
 
         if ($this->platformConstraints && true !== $ignorePlatformReqs) {
             $platformConstraints = $this->platformConstraints;
