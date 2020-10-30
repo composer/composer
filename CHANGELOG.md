@@ -1,3 +1,8 @@
+### [1.10.17] 2020-10-30
+
+  * Fixed Bitbucket API authentication issue
+  * Fixed parsing of Composer 2 lock files breaking in some rare conditions
+
 ### [1.10.16] 2020-10-24
 
   * Added warning to `validate` command for cases where packages provide/replace a package that they also require
@@ -911,6 +916,7 @@
 
   * Initial release
 
+[1.10.17]: https://github.com/composer/composer/compare/1.10.16...1.10.17
 [1.10.16]: https://github.com/composer/composer/compare/1.10.15...1.10.16
 [1.10.15]: https://github.com/composer/composer/compare/1.10.14...1.10.15
 [1.10.14]: https://github.com/composer/composer/compare/1.10.13...1.10.14
