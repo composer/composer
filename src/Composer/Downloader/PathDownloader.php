@@ -178,17 +178,11 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      */
     public function remove(PackageInterface $package, $path, $output = true)
     {
-        $realUrl = realpath($package->getDistUrl());
-
-        if (realpath($path) === $realUrl) {
-            if ($output) {
-                $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
-            }
-
-            return;
-        }
-
         /**
+         * realpath() may resolve Windows junctions to the source path, so we'll check for a junction first
+         * to prevent a false positive when checking if the dist and install paths are the same.
+         * See https://bugs.php.net/bug.php?id=77639
+         *
          * For junctions don't blindly rely on Filesystem::removeDirectory as it may be overzealous. If a process
          * inadvertently locks the file the removal will fail, but it would fall back to recursive delete which
          * is disastrous within a junction. So in that case we have no other real choice but to fail hard.
@@ -200,6 +194,10 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             if (!$this->filesystem->removeJunction($path)) {
                 $this->io->writeError("    <warning>Could not remove junction at " . $path . " - is another process locking it?</warning>");
                 throw new \RuntimeException('Could not reliably remove junction for package ' . $package->getName());
+            }
+        } elseif (realpath($path) === realpath($package->getDistUrl())) {
+            if ($output) {
+                $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
             }
         } else {
             parent::remove($package, $path, $output);
