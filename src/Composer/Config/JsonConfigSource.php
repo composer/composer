@@ -57,9 +57,9 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * {@inheritdoc}
      */
-    public function addRepository($name, $config)
+    public function addRepository($name, $config, $append = true)
     {
-        $this->manipulateJson('addRepository', $name, $config, function (&$config, $repo, $repoConfig) {
+        $this->manipulateJson('addRepository', $name, $config, $append, function (&$config, $repo, $repoConfig) use ($append) {
             // if converting from an array format to hashmap format, and there is a {"packagist.org":false} repo, we have
             // to convert it to "packagist.org": false key on the hashmap otherwise it fails schema validation
             if (isset($config['repositories'])) {
@@ -75,7 +75,11 @@ class JsonConfigSource implements ConfigSourceInterface
                 }
             }
 
-            $config['repositories'][$repo] = $repoConfig;
+            if ($append) {
+                $config['repositories'][$repo] = $repoConfig;
+            } else {
+                $config['repositories'] = array($repo => $repoConfig) + $config['repositories'];
+            }
         });
     }
 

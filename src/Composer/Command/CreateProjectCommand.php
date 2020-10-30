@@ -199,7 +199,7 @@ EOT
                 ) {
                     $configSource->addRepository('packagist.org', false);
                 } else {
-                    $configSource->addRepository($name, $repoConfig);
+                    $configSource->addRepository($name, $repoConfig, false);
                 }
 
                 $composer = Factory::create($io, null, $disablePlugins);

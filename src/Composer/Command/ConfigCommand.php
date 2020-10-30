@@ -75,6 +75,7 @@ class ConfigCommand extends BaseCommand
                 new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
                 new InputOption('json', 'j', InputOption::VALUE_NONE, 'JSON decode the setting value, to be used with extra.* keys'),
                 new InputOption('merge', 'm', InputOption::VALUE_NONE, 'Merge the setting value with the current value, to be used with extra.* keys in combination with --json'),
+                new InputOption('append', null, InputOption::VALUE_NONE, 'When adding a repository, append it (lowest priority) to the existing ones instead of prepending it (highest priority)'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
@@ -596,7 +597,7 @@ EOT
                 $this->configSource->addRepository($matches[1], array(
                     'type' => $values[0],
                     'url' => $values[1],
-                ));
+                ), $input->getOption('append'));
 
                 return 0;
             }
@@ -605,13 +606,13 @@ EOT
                 $value = strtolower($values[0]);
                 if (true === $booleanValidator($value)) {
                     if (false === $booleanNormalizer($value)) {
-                        $this->configSource->addRepository($matches[1], false);
+                        $this->configSource->addRepository($matches[1], false, $input->getOption('append'));
 
                         return 0;
                     }
                 } else {
                     $value = JsonFile::parseJson($values[0]);
-                    $this->configSource->addRepository($matches[1], $value);
+                    $this->configSource->addRepository($matches[1], $value, $input->getOption('append'));
 
                     return 0;
                 }

@@ -1935,7 +1935,7 @@ class JsonManipulatorTest extends TestCase
 ", $manipulator->getContents());
     }
 
-    public function testAddRepositoryCanAdd()
+    public function testAddRepositoryCanAppend()
     {
         $manipulator = new JsonManipulator('{
     "repositories": {
@@ -1946,7 +1946,7 @@ class JsonManipulatorTest extends TestCase
     }
 }');
 
-        $this->assertTrue($manipulator->addRepository('bar', array('type' => 'composer')));
+        $this->assertTrue($manipulator->addRepository('bar', array('type' => 'composer'), true));
         $this->assertEquals('{
     "repositories": {
         "foo": {
@@ -1955,6 +1955,32 @@ class JsonManipulatorTest extends TestCase
         },
         "bar": {
             "type": "composer"
+        }
+    }
+}
+', $manipulator->getContents());
+    }
+
+    public function testAddRepositoryCanPrepend()
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": {
+        "foo": {
+            "type": "vcs",
+            "url": "lala"
+        }
+    }
+}');
+
+        $this->assertTrue($manipulator->addRepository('bar', array('type' => 'composer'), false));
+        $this->assertEquals('{
+    "repositories": {
+        "bar": {
+            "type": "composer"
+        },
+        "foo": {
+            "type": "vcs",
+            "url": "lala"
         }
     }
 }

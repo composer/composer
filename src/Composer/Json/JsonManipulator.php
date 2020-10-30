@@ -145,9 +145,9 @@ class JsonManipulator
         });
     }
 
-    public function addRepository($name, $config)
+    public function addRepository($name, $config, $append = true)
     {
-        return $this->addSubNode('repositories', $name, $config);
+        return $this->addSubNode('repositories', $name, $config, $append);
     }
 
     public function removeRepository($name)
@@ -199,7 +199,7 @@ class JsonManipulator
         return $this->removeMainKey($name);
     }
 
-    public function addSubNode($mainNode, $name, $value)
+    public function addSubNode($mainNode, $name, $value, $append = true)
     {
         $decoded = JsonFile::parseJson($this->contents);
 
@@ -258,7 +258,7 @@ class JsonManipulator
                 return $matches['start'] . $that->format($value, 1) . $matches['end'];
             }, $children);
         } else {
-            $this->pregMatch('#^{ \s*? (?P<content>\S+.*?)? (?P<trailingspace>\s*) }$#sx', $children, $match);
+            $this->pregMatch('#^{ (?P<leadingspace>\s*?) (?P<content>\S+.*?)? (?P<trailingspace>\s*) }$#sx', $children, $match);
 
             $whitespace = '';
             if (!empty($match['trailingspace'])) {
@@ -271,11 +271,24 @@ class JsonManipulator
                 }
 
                 // child missing but non empty children
-                $children = preg_replace(
-                    '#'.$whitespace.'}$#',
-                    addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $whitespace . '}', '\\$'),
-                    $children
-                );
+                if ($append) {
+                    $children = preg_replace(
+                        '#'.$whitespace.'}$#',
+                        addcslashes(',' . $this->newline . $this->indent . $this->indent . JsonFile::encode($name).': '.$this->format($value, 1) . $whitespace . '}', '\\$'),
+                        $children
+                    );
+                } else {
+                    $whitespace = '';
+                    if (!empty($match['leadingspace'])) {
+                        $whitespace = $match['leadingspace'];
+                    }
+
+                    $children = preg_replace(
+                        '#^{'.$whitespace.'#',
+                        addcslashes('{' . $whitespace . JsonFile::encode($name).': '.$this->format($value, 1) . ',' . $this->newline . $this->indent . $this->indent, '\\$'),
+                        $children
+                    );
+                }
             } else {
                 if ($subName !== null) {
                     $value = array($subName => $value);
