@@ -417,7 +417,7 @@ class HttpDownloader
             return false;
         }
 
-        if (!empty($job['request']['options']['ssl']['local_cert'])) {
+        if (!empty($job['request']['options']['ssl']['allow_self_signed'])) {
             return false;
         }
 
