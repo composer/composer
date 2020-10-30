@@ -59,7 +59,7 @@ abstract class BaseExcludeFilter
                 $path = $relativePath;
             }
 
-            if (preg_match($pattern, $path)) {
+            if (@preg_match($pattern, $path)) {
                 $exclude = !$negate;
             }
         }
