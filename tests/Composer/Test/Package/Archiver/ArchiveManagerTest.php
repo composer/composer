@@ -115,10 +115,16 @@ class ArchiveManagerTest extends ArchiverTest
         chdir($this->testDir);
 
         $output = null;
-        $result = $this->process->execute('git init -q -b master', $output, $this->testDir);
+        $result = $this->process->execute('git init -q', $output, $this->testDir);
         if ($result > 0) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not init: '.$this->process->getErrorOutput());
+        }
+
+        $result = $this->process->execute('git checkout -b master', $output, $this->testDir);
+        if ($result > 0) {
+            chdir($currentWorkDir);
+            throw new \RuntimeException('Could not checkout master branch: '.$this->process->getErrorOutput());
         }
 
         $result = $this->process->execute('git config user.email "you@example.com"', $output, $this->testDir);
