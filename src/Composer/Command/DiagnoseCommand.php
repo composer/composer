@@ -224,6 +224,12 @@ EOT
         try {
             $this->httpDownloader->get($proto . '://repo.packagist.org/packages.json');
         } catch (TransportException $e) {
+            if ($hints = HttpDownloader::getExceptionHints($e)) {
+                foreach ($hints as $hint) {
+                    $result[] = $hint;
+                }
+            }
+
             $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
         }
 

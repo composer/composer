@@ -378,4 +378,32 @@ class HttpDownloader
             $io->writeError('<'.$type.'>'.ucfirst($type).' from '.$url.': '.$data[$type].'</'.$type.'>');
         }
     }
+
+    public static function getExceptionHints(\Exception $e)
+    {
+        if (!$e instanceof TransportException) {
+            return;
+        }
+
+        if (
+            false !== strpos($e->getMessage(), 'Resolving timed out')
+            || false !== strpos($e->getMessage(), 'Could not resolve host')
+        ) {
+            Silencer::suppress();
+            $testConnectivity = file_get_contents('https://8.8.8.8', false, stream_context_create(array(
+                'ssl' => array('verify_peer' => false),
+                'http' => array('follow_location' => false, 'ignore_errors' => true)
+            )));
+            Silencer::restore();
+            if (false !== $testConnectivity) {
+                return array(
+                    '<error>The following exception probably indicates you have misconfigured DNS resolver(s)</error>'
+                );
+            }
+
+            return array(
+                '<error>The following exception probably indicates you are offline or have misconfigured DNS resolver(s)</error>'
+            );
+        }
+    }
 }

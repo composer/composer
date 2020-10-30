@@ -30,6 +30,7 @@ use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Json\JsonValidationException;
 use Composer\Util\ErrorHandler;
+use Composer\Util\HttpDownloader;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Exception\NoSslException;
 
@@ -381,6 +382,12 @@ class Application extends BaseApplication
         if (false !== strpos($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
             $io->writeError('<error>The following exception is caused by a lack of memory or swap, or not having swap configured</error>', true, IOInterface::QUIET);
             $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>', true, IOInterface::QUIET);
+        }
+
+        if ($hints = HttpDownloader::getExceptionHints($exception)) {
+            foreach ($hints as $hint) {
+                $io->writeError($hint, true, IOInterface::QUIET);
+            }
         }
     }
 
