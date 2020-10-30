@@ -90,12 +90,6 @@ class Response
         foreach ($headers as $header) {
             if (preg_match('{^'.preg_quote($name).':\s*(.+?)\s*$}i', $header, $match)) {
                 $value = $match[1];
-            } elseif (preg_match('{^HTTP/}i', $header)) {
-                // TODO ideally redirects would be handled in CurlDownloader/RemoteFilesystem and this becomes unnecessary
-                //
-                // In case of redirects, http_response_headers contains the headers of all responses
-                // so we reset the flag when a new response is being parsed as we are only interested in the last response
-                $value = null;
             }
         }
 
