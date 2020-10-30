@@ -133,7 +133,7 @@ class ZipTest extends TestCase
             return;
         }
 
-        $this->setExpectedException('\RuntimeException', 'Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: foo3/,__MACOSX/');
+        $this->setExpectedException('\RuntimeException', 'Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: foo3/,foo4/');
 
         Zip::getComposerJson(__DIR__.'/Fixtures/Zip/multiple_subfolders.zip');
     }
