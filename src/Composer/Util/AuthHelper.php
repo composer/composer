@@ -125,8 +125,9 @@ class AuthHelper
             ) {
                 throw new TransportException('Could not authenticate against '.$origin, 401);
             }
-        } elseif ($origin === 'bitbucket.org') {
+        } elseif ($origin === 'bitbucket.org' || $origin === 'api.bitbucket.org') {
             $askForOAuthToken = true;
+            $origin = 'bitbucket.org';
             if ($this->io->hasAuthentication($origin)) {
                 $auth = $this->io->getAuthentication($origin);
                 if ($auth['username'] !== 'x-token-auth') {
