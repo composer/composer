@@ -228,9 +228,9 @@ class AuthHelper
                 $authenticationDisplayMessage = 'Using HTTP basic authentication with username "' . $auth['username'] . '"';
             }
 
-            if ($authenticationDisplayMessage && !in_array($origin, $this->displayedOriginAuthentications, true)) {
+            if ($authenticationDisplayMessage && (!isset($this->displayedOriginAuthentications[$origin]) || $this->displayedOriginAuthentications[$origin] !== $authenticationDisplayMessage)) {
                 $this->io->writeError($authenticationDisplayMessage, true, IOInterface::DEBUG);
-                $this->displayedOriginAuthentications[] = $origin;
+                $this->displayedOriginAuthentications[$origin] = $authenticationDisplayMessage;
             }
         } elseif (in_array($origin, array('api.bitbucket.org', 'api.github.com'), true)) {
             return $this->addAuthenticationHeader($headers, str_replace('api.', '', $origin), $url);
