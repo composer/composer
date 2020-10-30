@@ -26,7 +26,7 @@ interface ConfigSourceInterface
      * @param string      $name   Name
      * @param array|false $config Configuration
      */
-    public function addRepository($name, $config/* , $append = true */);
+    public function addRepository($name, $config, $append = true);
 
     /**
      * Remove a repository
