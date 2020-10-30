@@ -81,6 +81,9 @@ class Zip
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = $zip->getNameIndex($i);
             $dirname = dirname($name);
+            if ($dirname === '__MACOSX') {
+                continue;
+            }
 
             // handle archives with proper TOC
             if ($dirname === '.') {
