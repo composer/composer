@@ -29,7 +29,8 @@ class CheckPlatformReqsCommand extends BaseCommand
         $this->setName('check-platform-reqs')
             ->setDescription('Check that platform requirements are satisfied.')
             ->setDefinition(array(
-                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables checking of require-dev packages requirements.'),
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables checking of require-dev packages requirements, implies --lock.'),
+                new InputOption('lock', null, InputOption::VALUE_NONE, 'Checks requirements only from the lock file, not from installed packages.'),
             ))
             ->setHelp(
                 <<<EOT
@@ -48,16 +49,27 @@ EOT
         $composer = $this->getComposer();
 
         $requires = array();
-        if ($input->getOption('no-dev')) {
+        if ($input->getOption('no-dev') || $input->getOption('lock')) {
+            if ($input->getOption('lock')) {
+                $this->getIO()->writeError('<info>Checking '.($input->getOption('no-dev') ? 'non-dev ' : '').'platform requirements using the lock file</info>');
+            } else {
+                $this->getIO()->writeError('<warning>The --no-dev option implies --lock, checking platform requirements from lock file instead of vendor dir</warning>');
+            }
             $installedRepo = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'));
         } else {
             $installedRepo = $composer->getRepositoryManager()->getLocalRepository();
             // fallback to lockfile if installed repo is empty
             if (!$installedRepo->getPackages()) {
+                $this->getIO()->writeError('<warning>No vendor dir present, checking platform requirements from the lock file</warning>');
                 $installedRepo = $composer->getLocker()->getLockedRepository(true);
+            } else {
+                $this->getIO()->writeError('<info>Checking platform requirements for packages in the vendor dir</info>');
             }
+        }
+        if (!$input->getOption('no-dev')) {
             $requires += $composer->getPackage()->getDevRequires();
         }
+
         foreach ($requires as $require => $link) {
             $requires[$require] = array($link);
         }
