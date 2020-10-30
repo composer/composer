@@ -699,8 +699,10 @@ class RemoteFilesystem
             ) {
                 throw new TransportException('Could not authenticate against '.$this->originUrl, 401);
             }
-        } elseif ($this->config && $this->originUrl === 'bitbucket.org') {
+        } elseif ($this->config && ($this->originUrl === 'bitbucket.org' || $this->originUrl === 'api.bitbucket.org')) {
             $askForOAuthToken = true;
+            $this->originUrl = 'bitbucket.org';
+
             if ($this->io->hasAuthentication($this->originUrl)) {
                 $auth = $this->io->getAuthentication($this->originUrl);
                 if ($auth['username'] !== 'x-token-auth') {
