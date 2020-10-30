@@ -168,7 +168,7 @@ class HttpDownloader
 
         $rfs = $this->rfs;
 
-        if ($this->curl && preg_match('{^https?://}i', $job['request']['url'])) {
+        if ($this->canUseCurl($job)) {
             $resolver = function ($resolve, $reject) use (&$job) {
                 $job['status'] = HttpDownloader::STATUS_QUEUED;
                 $job['resolve'] = $resolve;
@@ -405,5 +405,26 @@ class HttpDownloader
                 '<error>The following exception probably indicates you are offline or have misconfigured DNS resolver(s)</error>'
             );
         }
+    }
+
+    private function canUseCurl(array $job)
+    {
+        if (!$this->curl) {
+            return false;
+        }
+
+        if (!preg_match('{^https?://}i', $job['request']['url'])) {
+            return false;
+        }
+
+        if (
+            !empty($job['request']['options']['ssl']['local_cert'])
+            || !empty($job['request']['options']['ssl']['local_pk'])
+            || !empty($job['request']['options']['ssl']['allow_self_signed'])
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }
