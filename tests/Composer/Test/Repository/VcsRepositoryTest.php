@@ -58,7 +58,7 @@ class VcsRepositoryTest extends TestCase
             }
         };
 
-        $exec('git init');
+        $exec('git init -q -b master');
         $exec('git config user.email composertest@example.org');
         $exec('git config user.name ComposerTest');
         $exec('git config commit.gpgsign false');
