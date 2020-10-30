@@ -90,7 +90,7 @@ versions, how versions relate to each other, and on version constraints.
 ## Installing dependencies
 
 To install the defined dependencies for your project, run the
-[`install`](03-cli.md#install) command.
+[`install`](03-cli.md#install-i) command.
 
 ```sh
 php composer.phar install
@@ -152,7 +152,7 @@ still working even if your dependencies released many new versions since then.
 
 As mentioned above, the `composer.lock` file prevents you from automatically getting
 the latest versions of your dependencies. To update to the latest versions, use the
-[`update`](03-cli.md#update) command. This will fetch the latest matching
+[`update`](03-cli.md#update-u) command. This will fetch the latest matching
 versions (according to your `composer.json` file) and update the lock file
 with the new versions. (This is equivalent to deleting the `composer.lock` file
 and running `install` again.)
