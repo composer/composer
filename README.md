@@ -53,7 +53,7 @@ Please send any sensitive issue to [security@packagist.org](mailto:security@pack
 License
 -------
 
-Composer is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+Composer is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 Acknowledgments
 ---------------
