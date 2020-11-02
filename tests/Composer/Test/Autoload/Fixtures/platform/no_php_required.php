@@ -13,6 +13,6 @@ if ($missingExtensions) {
 }
 
 if ($issues) {
-    echo 'Composer detected issues in your platform:' . "\n\n" . implode("\n", $issues);
+    echo 'Composer detected issues in your platform:' . "\n\n" . implode("\n", $issues) . "\n\n";
     exit(104);
 }
