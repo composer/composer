@@ -247,7 +247,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 if ($io->isDebug()) {
                     $io->writeError('    Failed downloading '.$package->getName().': ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
                     $io->writeError('    Trying the next URL for '.$package->getName());
-                } elseif (count($urls)) {
+                } else {
                     $io->writeError('    Failed downloading '.$package->getName().', trying the next URL ('.$e->getCode().': '.$e->getMessage().')');
                 }
 
