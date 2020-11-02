@@ -60,7 +60,11 @@ abstract class ArchiveDownloader extends FileDownloader
         } while (is_dir($temporaryDir));
 
         $this->addCleanupPath($package, $temporaryDir);
-        $this->addCleanupPath($package, $path);
+        // avoid cleaning up $path if installing in "." for eg create-project as we can not
+        // delete the directory we are currently in on windows
+        if (!is_dir($path) || realpath($path) !== getcwd()) {
+            $this->addCleanupPath($package, realpath($path));
+        }
 
         $this->filesystem->ensureDirectoryExists($temporaryDir);
         $fileName = $this->getFileName($package, $path);
@@ -73,10 +77,12 @@ abstract class ArchiveDownloader extends FileDownloader
             $self->clearLastCacheWrite($package);
 
             // clean up
-            $filesystem->removeDirectory($path);
             $filesystem->removeDirectory($temporaryDir);
+            if (is_dir($path) && realpath($path) !== getcwd()) {
+                $filesystem->removeDirectory($path);
+            }
             $self->removeCleanupPath($package, $temporaryDir);
-            $self->removeCleanupPath($package, $path);
+            $self->removeCleanupPath($package, realpath($path));
         };
 
         $promise = null;

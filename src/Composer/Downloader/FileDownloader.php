@@ -293,7 +293,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
 
         foreach ($dirsToCleanUp as $dir) {
-            if (is_dir($dir) && $this->filesystem->isDirEmpty($dir)) {
+            if (is_dir($dir) && $this->filesystem->isDirEmpty($dir) && realpath($dir) !== getcwd()) {
                 $this->filesystem->removeDirectory($dir);
             }
         }
