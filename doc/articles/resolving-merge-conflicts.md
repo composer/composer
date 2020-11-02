@@ -6,7 +6,13 @@
 
 When working as a team on the same Composer project, you'll eventually run into a scenario where multiple people added, updated or removed something in the `composer.json` and `composer.lock` files in multiple branches. When those branches are eventually merged together, you'll get merge conflicts. Resolving these merge conflicts is not as straight forward as on other files, especially not regarding the `composer.lock` file.
 
-## A. Reapplying command line changes
+> **Note:** It might not immediately be obvious why text based merging is not possible for lock files, so let's imagine the following example where we want to merge two branches;
+> - Branch 1 has added package A which requires package B. Package B is locked at version `1.0.0`.
+> - Branch 2 has added package C which conflicts with all versions below `1.2.0` of package B.
+>
+> A text based merge would result in package A version `1.0.0`, package B version `1.0.0` and package C version `1.0.0`. This is an invalid result, as the conflict of package C wasn't considered and would require an upgrade of package B.
+
+## A. Reapplying changes
 
 The safest method to merge Composer files is to accept the version from one branch and apply the changes from the other branch.
 
@@ -18,24 +24,17 @@ To resolve the conflict when we merge these two branches:
 - We choose the branch that has the most changes, and accept the `composer.json` and `composer.lock` files from that branch. In this case, we choose the composer files from branch 2.
 - We reapply the changes from the other branch (branch 1). In this case we have to run ```composer require package/A``` again.
 
-## B. Manually merging the `composer.json` and updating the `composer.lock` file
+## B. Using the [Composer git merge driver](https://github.com/balbuf/composer-git-merge-driver)
 
-Conflicts in the `composer.json` file can also be manually resolved like any other non-binary or non-lock file. An important thing to keep in mind is that the resulting file is valid json. Be especially aware of trailing commas, those are not allowed in JSON.
-
-After manually merging the `composer.json`, we also need to make sure the lock file is valid again. Manually merging the lock file is not recommended. Instead, use the `composer.lock` from one of the branches and apply the updates from the `composer.json` to the lock file using the following command:
-
-```sh
-composer update --lock
-```
-
-This method is easiest when at least one of the braches doesn't have any changes to the `require` and `require-dev` section.
+The [Composer git merge driver](https://github.com/balbuf/composer-git-merge-driver) replaces the default git merge algorithm for Composer files and is able to resolve most merge conflicts on both the `composer.json` file and the `composer.lock` file. Only when a version constraint or presence/absence has been changed in both branches you'll have to manually resolve the conflict using method A.
 
 ## Validating your merged files
 
-Before comitting, make sure the resulting `composer.json` and `composer.lock` files are valid. If you followed method A, you should never encounter an anvalid file, but it is good to still make sure. If you did merge the composer.json manually using method B you should always run this command as that method is more error prone.
+Before committing, make sure the resulting `composer.json` and `composer.lock` files are valid. To do this, run the following commands:
 
 ```sh
 composer validate
+composer install [--dry-run]
 ```
 
 ## Important considerations
