@@ -12,6 +12,8 @@
 
 namespace Composer\Test\Package\Archiver;
 
+use Composer\Util\Platform;
+use ZipArchive;
 use Composer\Package\Archiver\ZipArchiver;
 
 class ZipArchiverTest extends ArchiverTest
@@ -22,8 +24,17 @@ class ZipArchiverTest extends ArchiverTest
             $this->markTestSkipped('Cannot run ZipArchiverTest, missing class "ZipArchive".');
         }
 
+        $files = array(
+            'file.txt',
+            'foo/bar/baz',
+            'x/baz',
+            'x/includeme',
+        );
+        if (!Platform::isWindows()) {
+            $files[] = 'foo' . getcwd() . '/file.txt';
+        }
         // Set up repository
-        $this->setupDummyRepo();
+        $this->setupDummyRepo($files);
         $package = $this->setupPackage();
         $target = sys_get_temp_dir().'/composer_archiver_test.zip';
 
@@ -31,23 +42,28 @@ class ZipArchiverTest extends ArchiverTest
         $archiver = new ZipArchiver();
         $archiver->archive($package->getSourceUrl(), $target, 'zip');
         $this->assertFileExists($target);
+        $zip = new ZipArchive();
+        $res = $zip->open($target);
+        self::assertTrue($res, 'Failed asserting that Zip file can be opened');
+        foreach ($files as $file) {
+            $this->assertSame('content', $zip->getFromName($file), 'Failed asserting that Zip contains ' . $file);
+        }
+        $zip->close();
 
         unlink($target);
     }
 
     /**
      * Create a local dummy repository to run tests against!
+     * @param array $files
      */
-    protected function setupDummyRepo()
+    protected function setupDummyRepo($files)
     {
         $currentWorkDir = getcwd();
         chdir($this->testDir);
-
-        $this->writeFile('file.txt', 'content', $currentWorkDir);
-        $this->writeFile('foo/bar/baz', 'content', $currentWorkDir);
-        $this->writeFile('foo/bar/ignoreme', 'content', $currentWorkDir);
-        $this->writeFile('x/baz', 'content', $currentWorkDir);
-        $this->writeFile('x/includeme', 'content', $currentWorkDir);
+        foreach ($files as $file) {
+            $this->writeFile($file, 'content', $currentWorkDir);
+        }
 
         chdir($currentWorkDir);
     }
@@ -58,7 +74,7 @@ class ZipArchiverTest extends ArchiverTest
             mkdir(dirname($path), 0777, true);
         }
 
-        $result = file_put_contents($path, 'a');
+        $result = file_put_contents($path, $content);
         if (false === $result) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not save file.');
