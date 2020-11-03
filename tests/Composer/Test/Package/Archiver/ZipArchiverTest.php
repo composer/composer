@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Package\Archiver;
 
+use Composer\Util\Platform;
 use ZipArchive;
 use Composer\Package\Archiver\ZipArchiver;
 
@@ -28,8 +29,10 @@ class ZipArchiverTest extends ArchiverTest
             'foo/bar/baz',
             'x/baz',
             'x/includeme',
-            'foo' . getcwd() . '/file.txt',
         );
+        if (!Platform::isWindows()) {
+            $files[] = 'foo' . getcwd() . '/file.txt';
+        }
         // Set up repository
         $this->setupDummyRepo($files);
         $package = $this->setupPackage();
