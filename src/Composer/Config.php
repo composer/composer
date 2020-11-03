@@ -31,6 +31,7 @@ class Config
         'preferred-install' => 'auto',
         'notify-on-install' => true,
         'github-protocols' => array('https', 'ssh', 'git'),
+        'gitlab-protocol' => null,
         'vendor-dir' => 'vendor',
         'bin-dir' => '{$vendor-dir}/bin',
         'cache-dir' => '{$home}/cache',

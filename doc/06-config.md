@@ -76,6 +76,11 @@ of their API. Composer may prompt for credentials when needed, but these can als
 manually set. Read more on how to get an OAuth token for GitHub and cli syntax
 [here](articles/authentication-for-private-packages.md#github-oauth).
 
+## gitlab-domains
+
+Defaults to `["gitlab.com"]`. A list of domains of GitLab servers.
+This is used if you use the `gitlab` repository type.
+
 ## gitlab-oauth
 
 A list of domain names and oauth keys. For example using `{"gitlab.com":
@@ -98,6 +103,16 @@ gitlab.com the domain names must be also specified with the
 [`gitlab-domains`](06-config.md#gitlab-domains) option. The token must have
 `api` or `read_api` scope.
 Further info can also be found [here](articles/authentication-for-private-packages.md#gitlab-token)
+
+## gitlab-protocol
+
+A protocol to force use of when creating a repository URL for the `source`
+value of the package metadata. One of `git` or `http`. (`https` is treated
+as a synonym for `http`.) Helpful when working with projects referencing
+private repositories which will later be cloned in GitLab CI jobs with a
+[GitLab CI job token](https://docs.gitlab.com/ee/user/project/new_ci_build_permissions_model.html#dependent-repositories)
+using HTTP basic auth. By default, Composer will generate a git-over-SSH
+URL for private repositories and HTTP(S) only for public.
 
 ## disable-tls
 
@@ -257,11 +272,6 @@ used for GitHub Enterprise setups.
 
 Defaults to `true`. If `false`, the OAuth tokens created to access the
 github API will have a date instead of the machine hostname.
-
-## gitlab-domains
-
-Defaults to `["gitlab.com"]`. A list of domains of GitLab servers.
-This is used if you use the `gitlab` repository type.
 
 ## use-github-api
 
