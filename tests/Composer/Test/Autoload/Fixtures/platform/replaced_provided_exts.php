@@ -11,7 +11,8 @@ if ($missingExtensions) {
     $issues[] = 'Your Composer dependencies require the following PHP extensions to be installed: ' . implode(', ', $missingExtensions);
 }
 
-if ($issues) {
+if ($issues && !headers_sent()) {
+    header('HTTP/1.1 500 Internal Server Error');
     echo 'Composer detected issues in your platform:' . "\n\n" . implode("\n", $issues) . "\n\n";
     exit(104);
 }
