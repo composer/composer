@@ -823,7 +823,7 @@ class RemoteFilesystem
                     $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
                 }
 
-                if (!$result) {
+                if ($result === false) {
                     throw new TransportException('Failed to decode zlib stream');
                 }
             }
