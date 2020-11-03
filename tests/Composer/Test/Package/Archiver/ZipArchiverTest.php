@@ -31,7 +31,7 @@ class ZipArchiverTest extends ArchiverTest
             'foo' . getcwd() . '/file.txt',
         );
         // Set up repository
-        $this->setupDummyRepo(array_merge($files));
+        $this->setupDummyRepo($files);
         $package = $this->setupPackage();
         $target = sys_get_temp_dir().'/composer_archiver_test.zip';
 
