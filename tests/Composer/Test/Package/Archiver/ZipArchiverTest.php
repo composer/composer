@@ -48,6 +48,7 @@ class ZipArchiverTest extends ArchiverTest
         foreach ($files as $file) {
             $this->assertSame('content', $zip->getFromName($file), 'Failed asserting that Zip contains ' . $file);
         }
+        $zip->close();
 
         unlink($target);
     }
