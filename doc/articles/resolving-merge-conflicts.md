@@ -12,7 +12,7 @@ When working as a team on the same Composer project, you'll eventually run into 
 >
 > A text based merge would result in package A version `1.0.0`, package B version `1.0.0` and package C version `1.0.0`. This is an invalid result, as the conflict of package C wasn't considered and would require an upgrade of package B.
 
-## A. Reapplying changes
+## 1. Reapplying changes
 
 The safest method to merge Composer files is to accept the version from one branch and apply the changes from the other branch.
 
@@ -24,11 +24,7 @@ To resolve the conflict when we merge these two branches:
 - We choose the branch that has the most changes, and accept the `composer.json` and `composer.lock` files from that branch. In this case, we choose the composer files from branch 2.
 - We reapply the changes from the other branch (branch 1). In this case we have to run ```composer require package/A``` again.
 
-## B. Using the [Composer git merge driver](https://github.com/balbuf/composer-git-merge-driver)
-
-The [Composer git merge driver](https://github.com/balbuf/composer-git-merge-driver) replaces the default git merge algorithm for Composer files and is able to resolve most merge conflicts on both the `composer.json` file and the `composer.lock` file. Only when a version constraint or presence/absence has been changed in both branches you'll have to manually resolve the conflict using method A.
-
-## Validating your merged files
+## 2. Validating your merged files
 
 Before committing, make sure the resulting `composer.json` and `composer.lock` files are valid. To do this, run the following commands:
 
