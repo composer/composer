@@ -704,7 +704,7 @@ EOF;
             $requiredPhp = <<<PHP_CHECK
 
 if (!($requiredPhp)) {
-    \$issues[] = 'Your Composer dependencies require a PHP version $requiredPhpError. You are running ' . PHP_VERSION  .  '.';
+    \$issues[] = 'Your Composer dependencies require a PHP version $requiredPhpError. You are running ' . PHP_VERSION . '.';
 }
 
 PHP_CHECK;
@@ -717,7 +717,7 @@ PHP_CHECK;
 \$missingExtensions = array();
 $requiredExtensions
 if (\$missingExtensions) {
-    \$issues[] = 'Your Composer dependencies require the following PHP extensions to be installed: ' . implode(', ', \$missingExtensions);
+    \$issues[] = 'Your Composer dependencies require the following PHP extensions to be installed: ' . implode(', ', \$missingExtensions) . '.';
 }
 
 EXT_CHECKS;
@@ -735,8 +735,15 @@ EXT_CHECKS;
 \$issues = array();
 ${requiredPhp}${requiredExtensions}
 if (\$issues) {
+    if (!ini_get('display_errors')) {
+        if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
+            fwrite(STDERR, 'Composer detected issues in your platform:' . PHP_EOL.PHP_EOL . implode(PHP_EOL, \$issues) . PHP_EOL.PHP_EOL);
+        } elseif (!headers_sent()) {
+            echo 'Composer detected issues in your platform:' . PHP_EOL.PHP_EOL . str_replace('You are running '.PHP_VERSION.'.', '', implode(PHP_EOL, \$issues)) . PHP_EOL.PHP_EOL;
+        }
+    }
     trigger_error(
-        'Composer detected issues in your platform: ' . implode(', ', \$issues),
+        'Composer detected issues in your platform: ' . implode(' ', \$issues),
         E_USER_ERROR
     );
 }
