@@ -734,10 +734,11 @@ EXT_CHECKS;
 
 \$issues = array();
 ${requiredPhp}${requiredExtensions}
-if (\$issues && !headers_sent()) {
-    header('HTTP/1.1 500 Internal Server Error');
-    echo 'Composer detected issues in your platform:' . "\\n\\n" . implode("\\n", \$issues) . "\\n\\n";
-    exit(104);
+if (\$issues) {
+    trigger_error(
+        'Composer detected issues in your platform: ' . implode(', ', \$issues),
+        E_USER_ERROR
+    );
 }
 
 PLATFORM_CHECK;
