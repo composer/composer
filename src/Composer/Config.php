@@ -138,6 +138,8 @@ class Config
             foreach ($config['config'] as $key => $val) {
                 if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer')) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
+                } elseif (in_array($key, array('gitlab-domains', 'github-domains')) && isset($this->config[$key])) {
+                    $this->config[$key] = array_unique(array_merge($this->config[$key], $val));
                 } elseif ('preferred-install' === $key && isset($this->config[$key])) {
                     if (is_array($val) || is_array($this->config[$key])) {
                         if (is_string($val)) {
