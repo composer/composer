@@ -350,7 +350,7 @@ EOF;
         $checkPlatform = $config->get('platform-check') && $this->ignorePlatformReqs !== true;
         $platformCheckContent = null;
         if ($checkPlatform) {
-            $platformCheckContent = $this->getPlatformCheck($packageMap, $this->ignorePlatformReqs ?: array());
+            $platformCheckContent = $this->getPlatformCheck($packageMap, $this->ignorePlatformReqs ?: array(), $config->get('platform-check'));
             if (null === $platformCheckContent) {
                 $checkPlatform = false;
             }
@@ -609,7 +609,7 @@ EOF;
         return $baseDir . (($path !== false) ? var_export($path, true) : "");
     }
 
-    protected function getPlatformCheck($packageMap, array $ignorePlatformReqs)
+    protected function getPlatformCheck($packageMap, array $ignorePlatformReqs, $checkPlatform)
     {
         $lowestPhpVersion = Bound::zero();
         $requiredExtensions = array();
@@ -637,7 +637,7 @@ EOF;
                     }
                 }
 
-                if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
+                if ($checkPlatform === true && preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
                     // skip extension checks if they have a valid provider/replacer
                     if (isset($extensionProviders[$match[1]])) {
                         foreach ($extensionProviders[$match[1]] as $provided) {

@@ -312,8 +312,8 @@
                     "description": "Defaults to true. If set to false, Composer will not create a composer.lock file."
                 },
                 "platform-check": {
-                    "type": "boolean",
-                    "description": "Defaults to true. If set to false, Composer will not create and require a platform_check.php file as part of the autoloader bootstrap."
+                    "type": ["boolean", "string"],
+                    "description": "Defaults to \"php-only\" which checks only the PHP version. Setting to true will also check the presence of required PHP extensions. If set to false, Composer will not create and require a platform_check.php file as part of the autoloader bootstrap."
                 }
             }
         },

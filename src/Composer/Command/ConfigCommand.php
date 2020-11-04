@@ -428,7 +428,18 @@ EOT
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
             'htaccess-protect' => array($booleanValidator, $booleanNormalizer),
             'lock' => array($booleanValidator, $booleanNormalizer),
-            'platform-check' => array($booleanValidator, $booleanNormalizer),
+            'platform-check' => array(
+                function ($val) {
+                    return in_array($val, array('php-only', 'true', 'false', '1', '0'), true);
+                },
+                function ($val) {
+                    if ('php-only' === $val) {
+                        return 'php-only';
+                    }
+
+                    return $val !== 'false' && (bool) $val;
+                },
+            ),
         );
         $multiConfigValues = array(
             'github-protocols' => array(
