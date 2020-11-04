@@ -316,7 +316,8 @@ file.
 
 ## platform-check
 
-Defaults to `true`. If set to `false`, Composer will not create and require a
-`platform_check.php` file as part of the autoloader bootstrap.
+Defaults to `php-only` which only checks the PHP version. Set to `true` to also
+check the presence of extension. If set to `false`, Composer will not create and
+require a `platform_check.php` file as part of the autoloader bootstrap.
 
 &larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;

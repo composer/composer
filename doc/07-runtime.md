@@ -99,11 +99,16 @@ by the PHP process currently running. If the requirements are not met, the scrip
 prints a warning with the missing requirements and exits with code 104.
 
 To avoid an unexpected white page of death with some obscure PHP extension warning in
-production, you can run `composer check-platform-reqs --no-dev` as part of your
+production, you can run `composer check-platform-reqs` as part of your
 deployment/build and if that returns a non-0 code you should abort.
+
+The default value is `php-only` which only checks the PHP version.
 
 If you for some reason do not want to use this safety check, and would rather
 risk runtime errors when your code executes, you can disable this by setting the
 [`platform-check`](06-config.md#platform-check) config option to `false`.
+
+If you want the check to include verifying the presence of PHP extensions,
+set the config option to `true`.
 
 &larr; [Config](06-config.md)  |  [Community](08-community.md) &rarr;
