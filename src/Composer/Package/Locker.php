@@ -199,6 +199,22 @@ class Locker
     }
 
     /**
+     * @return string[] Names of dependencies installed through require-dev
+     */
+    public function getDevPackageNames()
+    {
+        $names = array();
+        $lockData = $this->getLockData();
+        if (isset($lockData['packages-dev'])) {
+            foreach ($lockData['packages-dev'] as $package) {
+                $names[] = strtolower($package['name']);
+            }
+        }
+
+        return $names;
+    }
+
+    /**
      * Returns the platform requirements stored in the lock file
      *
      * @param  bool                     $withDevReqs if true, the platform requirements from the require-dev block are also returned

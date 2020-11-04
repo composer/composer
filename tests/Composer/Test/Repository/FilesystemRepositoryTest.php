@@ -84,7 +84,7 @@ class FilesystemRepositoryTest extends TestCase
         $im = $this->getMockBuilder('Composer\Installer\InstallationManager')
             ->disableOriginalConstructor()
             ->getMock();
-        $im->expects($this->once())
+        $im->expects($this->exactly(2))
             ->method('getInstallPath')
             ->will($this->returnValue('/foo/bar/vendor/woop/woop'));
 
@@ -104,10 +104,16 @@ class FilesystemRepositoryTest extends TestCase
             ->expects($this->once())
             ->method('write')
             ->with(array(
-                'packages' => array(array('name' => 'mypkg', 'type' => 'library', 'version' => '0.1.10', 'version_normalized' => '0.1.10.0', 'install-path' => '../woop/woop')),
+                'packages' => array(
+                    array('name' => 'mypkg', 'type' => 'library', 'version' => '0.1.10', 'version_normalized' => '0.1.10.0', 'install-path' => '../woop/woop'),
+                    array('name' => 'mypkg2', 'type' => 'library', 'version' => '1.2.3', 'version_normalized' => '1.2.3.0', 'install-path' => '../woop/woop'),
+                ),
                 'dev' => true,
+                'dev-package-names' => array('mypkg2'),
             ));
 
+        $repository->setDevPackageNames(array('mypkg2'));
+        $repository->addPackage($this->getPackage('mypkg2', '1.2.3'));
         $repository->addPackage($this->getPackage('mypkg', '0.1.10'));
         $repository->write(true, $im);
     }

@@ -54,4 +54,14 @@ interface WritableRepositoryInterface extends RepositoryInterface
      * Forces a reload of all packages.
      */
     public function reload();
+
+    /**
+     * @param string[] $devPackageNames
+     */
+    public function setDevPackageNames(array $devPackageNames);
+
+    /**
+     * @return string[] Names of dependencies installed through require-dev
+     */
+    public function getDevPackageNames();
 }

@@ -135,6 +135,9 @@ class AutoloadGeneratorTest extends TestCase
                 return $that->vendorDir.'/'.$package->getName() . ($targetDir ? '/'.$targetDir : '');
             }));
         $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
+        $this->repository->expects($this->any())
+            ->method('getDevPackageNames')
+            ->willReturn(array());
 
         $this->eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->disableOriginalConstructor()
@@ -952,15 +955,15 @@ EOF;
         $notAutoloadPackages[] = $b = new Package('b/b', '1.0', '1.0');
         $notAutoloadPackages[] = $c = new Package('c/c', '1.0', '1.0');
 
-        $this->repository->expects($this->at(0))
+        $this->repository->expects($this->at(1))
             ->method('getCanonicalPackages')
             ->will($this->returnValue($autoloadPackages));
 
-        $this->repository->expects($this->at(1))
+        $this->repository->expects($this->at(3))
             ->method('getCanonicalPackages')
             ->will($this->returnValue($notAutoloadPackages));
 
-        $this->repository->expects($this->at(2))
+        $this->repository->expects($this->at(5))
             ->method('getCanonicalPackages')
             ->will($this->returnValue($notAutoloadPackages));
 

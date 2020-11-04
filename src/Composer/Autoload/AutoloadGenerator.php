@@ -192,6 +192,7 @@ return array(
 EOF;
 
         // Collect information from all packages.
+        $devPackageNames = $localRepo->getDevPackageNames();
         $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getCanonicalPackages());
         $autoloads = $this->parseAutoloads($packageMap, $mainPackage, $this->devMode === false);
 
@@ -350,7 +351,7 @@ EOF;
         $checkPlatform = $config->get('platform-check') && $this->ignorePlatformReqs !== true;
         $platformCheckContent = null;
         if ($checkPlatform) {
-            $platformCheckContent = $this->getPlatformCheck($packageMap, $this->ignorePlatformReqs ?: array(), $config->get('platform-check'));
+            $platformCheckContent = $this->getPlatformCheck($packageMap, $this->ignorePlatformReqs ?: array(), $config->get('platform-check'), $devPackageNames);
             if (null === $platformCheckContent) {
                 $checkPlatform = false;
             }
@@ -609,7 +610,7 @@ EOF;
         return $baseDir . (($path !== false) ? var_export($path, true) : "");
     }
 
-    protected function getPlatformCheck($packageMap, array $ignorePlatformReqs, $checkPlatform)
+    protected function getPlatformCheck(array $packageMap, array $ignorePlatformReqs, $checkPlatform, array $devPackageNames)
     {
         $lowestPhpVersion = Bound::zero();
         $requiredExtensions = array();
@@ -626,6 +627,11 @@ EOF;
 
         foreach ($packageMap as $item) {
             $package = $item[0];
+            // skip dev dependencies platform requirements as platform-check really should only be a production safeguard
+            if (in_array($package->getName(), $devPackageNames, true)) {
+                continue;
+            }
+
             foreach ($package->getRequires() as $link) {
                 if (in_array($link->getTarget(), $ignorePlatformReqs, true)) {
                     continue;

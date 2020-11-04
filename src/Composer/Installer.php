@@ -708,6 +708,9 @@ class Installer
         }
 
         if ($this->executeOperations) {
+            if ($localRepo instanceof WritableRepositoryInterface) {
+                $localRepo->setDevPackageNames($this->locker->getDevPackageNames());
+            }
             $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts);
         } else {
             foreach ($localRepoTransaction->getOperations() as $operation) {
