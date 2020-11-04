@@ -621,6 +621,9 @@ If Composer was not installed as a PHAR, this command is not available.
 * **--stable:** Force an update to the stable channel.
 * **--preview:** Force an update to the preview channel.
 * **--snapshot:** Force an update to the snapshot channel.
+* **--1:** Force an update to the stable channel, but only use 1.x versions
+* **--2:** Force an update to the stable channel, but only use 2.x versions
+* **--set-channel-only:** Only store the channel as the default one and then exit
 
 ## config
 
