@@ -166,9 +166,6 @@ class CurlDownloader
         curl_setopt($curlHandle, CURLOPT_FILE, $bodyHandle);
         curl_setopt($curlHandle, CURLOPT_ENCODING, "gzip");
         curl_setopt($curlHandle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
-        if (defined('CURLOPT_SSL_FALSESTART')) {
-            curl_setopt($curlHandle, CURLOPT_SSL_FALSESTART, true);
-        }
         if (function_exists('curl_share_init')) {
             curl_setopt($curlHandle, CURLOPT_SHARE, $this->shareHandle);
         }
