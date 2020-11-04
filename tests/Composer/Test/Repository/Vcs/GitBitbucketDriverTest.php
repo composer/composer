@@ -224,7 +224,8 @@ class GitBitbucketDriverTest extends TestCase
             GitBitbucketDriver::supports($this->io, $this->config, 'https://bitbucket.org/user/repo.git')
         );
 
-        $this->assertTrue(
+        // should not be changed, see https://github.com/composer/composer/issues/9400
+        $this->assertFalse(
             GitBitbucketDriver::supports($this->io, $this->config, 'git@bitbucket.org:user/repo.git')
         );
 
