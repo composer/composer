@@ -741,6 +741,9 @@ EXT_CHECKS;
 \$issues = array();
 ${requiredPhp}${requiredExtensions}
 if (\$issues) {
+    if (!headers_sent()) {
+        header('HTTP/1.1 500 Internal Server Error');
+    }
     if (!ini_get('display_errors')) {
         if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
             fwrite(STDERR, 'Composer detected issues in your platform:' . PHP_EOL.PHP_EOL . implode(PHP_EOL, \$issues) . PHP_EOL.PHP_EOL);
