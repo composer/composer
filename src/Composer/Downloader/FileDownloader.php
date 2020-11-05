@@ -429,6 +429,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $e = null;
         $output = '';
 
+        $targetDir = Filesystem::trimTrailingSlash($targetDir);
         try {
             if (is_dir($targetDir.'_compare')) {
                 $this->filesystem->removeDirectory($targetDir.'_compare');

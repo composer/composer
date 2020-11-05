@@ -507,6 +507,23 @@ class Filesystem
     }
 
     /**
+     * Remove trailing slashes if present to avoid issues with symlinks
+     *
+     * And other possible unforeseen disasters, see https://github.com/composer/composer/pull/9422
+     *
+     * @param  string $path
+     * @return bool
+     */
+    public static function trimTrailingSlash($path)
+    {
+        if (!preg_match('{^[/\\\\]+$}', $path)) {
+            $path = rtrim($path, '/\\');
+        }
+
+        return $path;
+    }
+
+    /**
      * Return if the given path is local
      *
      * @param  string $path

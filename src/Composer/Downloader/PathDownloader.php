@@ -47,6 +47,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      */
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
+        $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
         $realUrl = realpath($url);
         if (false === $realUrl || !file_exists($realUrl) || !is_dir($realUrl)) {
@@ -80,6 +81,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      */
     public function install(PackageInterface $package, $path, $output = true)
     {
+        $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
         $realUrl = realpath($url);
 
@@ -178,6 +180,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      */
     public function remove(PackageInterface $package, $path, $output = true)
     {
+        $path = Filesystem::trimTrailingSlash($path);
         /**
          * realpath() may resolve Windows junctions to the source path, so we'll check for a junction first
          * to prevent a false positive when checking if the dist and install paths are the same.
@@ -209,6 +212,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      */
     public function getVcsReference(PackageInterface $package, $path)
     {
+        $path = Filesystem::trimTrailingSlash($path);
         $parser = new VersionParser;
         $guesser = new VersionGuesser($this->config, $this->process, $parser);
         $dumper = new ArrayDumper;
