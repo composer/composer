@@ -111,6 +111,7 @@ class Compiler
         $finder->files()
             ->ignoreVCS(true)
             ->notPath('/\/(composer\.(json|lock)|[A-Z]+\.md|\.gitignore|phpunit\.xml\.dist|phpstan\.neon\.dist|phpstan-config\.neon)$/')
+            ->notPath('/bin\/(jsonlint|validate-json)(\.bat)?$/')
             ->notPath('symfony/debug/Resources/ext/')
             ->notPath('justinrainbow/json-schema/demo/')
             ->notPath('justinrainbow/json-schema/dist/')
@@ -119,7 +120,6 @@ class Compiler
             ->exclude('Tests')
             ->exclude('tests')
             ->exclude('docs')
-            ->exclude('bin')
             ->in(__DIR__.'/../../vendor/')
             ->sort($finderSort)
         ;
@@ -131,10 +131,13 @@ class Compiler
             realpath(__DIR__ . '/../../vendor/symfony/console/Resources/bin/hiddeninput.exe'),
             realpath(__DIR__ . '/../../vendor/symfony/polyfill-mbstring/Resources/mb_convert_variables.php8'),
         );
+        $unexpectedFiles = array();
 
         foreach ($finder as $file) {
-            if (!preg_match('{(/LICENSE|\.php)$}', $file) && !in_array(realpath($file), $extraFiles, true)) {
-                throw new \RuntimeException('Unexpected file should be added to the allow or deny lists: '.$file);
+            if (in_array(realpath($file), $extraFiles, true)) {
+                unset($extraFiles[array_search(realpath($file), $extraFiles, true)]);
+            } elseif (!preg_match('{(/LICENSE|\.php)$}', $file)) {
+                $unexpectedFiles[] = (string) $file;
             }
 
             if (preg_match('{\.php[\d.]*$}', $file)) {
@@ -142,6 +145,13 @@ class Compiler
             } else {
                 $this->addFile($phar, $file, false);
             }
+        }
+
+        if ($extraFiles) {
+            throw new \RuntimeException('These files were expected but not added to the phar, they might be excluded or gone from the source package:'.PHP_EOL.implode(PHP_EOL, $extraFiles));
+        }
+        if ($unexpectedFiles) {
+            throw new \RuntimeException('These files were unexpectedly added to the phar, make sure they are excluded or listed in $extraFiles:'.PHP_EOL.implode(PHP_EOL, $unexpectedFiles));
         }
 
         // Add bin/composer
