@@ -1,3 +1,15 @@
+### [2.0.5] 2020-11-06
+
+  * Disabled platform-check verification of extensions by default (now defaulting `php-only`), set platform-check to `true` if you want a complete check
+  * Improved platform-check handling of issue reporting
+  * Fixed platform-check to only check non-dev requires even if require-dev dependencies are installed
+  * Fixed issues dealing with custom installers which return trailing slashes in getInstallPath (ideally avoid doing this as there might be other issues left)
+  * Fixed issues when curl functions are disabled
+  * Fixed gitlab-domains/github-domains to make sure if they are overridden the default value remains present
+  * Fixed issues removing/upgrading packages from path repositories on Windows
+  * Fixed regression in 2.0.4 when handling of git@bitbucket.org URLs in vcs repositories
+  * Fixed issue running create-project in current directory on Windows
+
 ### [2.0.4] 2020-10-30
 
   * Fixed `check-platform-req` command not being clear on what packages are checked, and added a --lock flag to explicitly check the locked packages
@@ -1033,6 +1045,7 @@
 
   * Initial release
 
+[2.0.5]: https://github.com/composer/composer/compare/2.0.4...2.0.5
 [2.0.4]: https://github.com/composer/composer/compare/2.0.3...2.0.4
 [2.0.3]: https://github.com/composer/composer/compare/2.0.2...2.0.3
 [2.0.2]: https://github.com/composer/composer/compare/2.0.1...2.0.2
