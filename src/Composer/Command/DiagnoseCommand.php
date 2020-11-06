@@ -379,7 +379,11 @@ EOT
 
     private function getCurlVersion()
     {
-        if (function_exists('curl_version')) {
+        if (extension_loaded('curl')) {
+            if (!HttpDownloader::isCurlEnabled()) {
+                return '<error>disabled via disable_functions, using php streams fallback, which reduces performance</error>';
+            }
+
             $version = curl_version();
 
             return '<comment>'.$version['version'].'</comment> '.

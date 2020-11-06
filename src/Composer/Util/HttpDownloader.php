@@ -67,8 +67,7 @@ class HttpDownloader
         $this->options = array_replace_recursive($this->options, $options);
         $this->config = $config;
 
-        // TODO enable curl only on 5.6+ if older versions cause any problem
-        if (extension_loaded('curl')) {
+        if (self::isCurlEnabled()) {
             $this->curl = new Http\CurlDownloader($io, $config, $options, $disableTls);
         }
 
@@ -422,5 +421,10 @@ class HttpDownloader
         }
 
         return true;
+    }
+
+    public static function isCurlEnabled()
+    {
+        return \extension_loaded('curl') && \function_exists('curl_multi_exec') && \function_exists('curl_multi_init');
     }
 }
