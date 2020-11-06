@@ -310,7 +310,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $this->filesystem->emptyDirectory($path);
         $this->filesystem->ensureDirectoryExists($path);
-        $this->filesystem->rename($this->getFileName($package, $path), $path . pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME));
+        $this->filesystem->rename($this->getFileName($package, $path), $path . '/' . pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME));
     }
 
     /**
