@@ -63,7 +63,7 @@ abstract class ArchiveDownloader extends FileDownloader
         // avoid cleaning up $path if installing in "." for eg create-project as we can not
         // delete the directory we are currently in on windows
         if (!is_dir($path) || realpath($path) !== getcwd()) {
-            $this->addCleanupPath($package, realpath($path));
+            $this->addCleanupPath($package, $path);
         }
 
         $this->filesystem->ensureDirectoryExists($temporaryDir);
