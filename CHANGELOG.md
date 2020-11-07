@@ -1,3 +1,7 @@
+### [2.0.6] 2020-11-07
+
+  * Fixed regression in 2.0.5 dealing with custom installers which do not pass absolute paths
+
 ### [2.0.5] 2020-11-06
 
   * Disabled platform-check verification of extensions by default (now defaulting `php-only`), set platform-check to `true` if you want a complete check
@@ -1045,6 +1049,7 @@
 
   * Initial release
 
+[2.0.6]: https://github.com/composer/composer/compare/2.0.5...2.0.6
 [2.0.5]: https://github.com/composer/composer/compare/2.0.4...2.0.5
 [2.0.4]: https://github.com/composer/composer/compare/2.0.3...2.0.4
 [2.0.3]: https://github.com/composer/composer/compare/2.0.2...2.0.3
