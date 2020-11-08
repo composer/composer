@@ -268,10 +268,14 @@ class HttpDownloader
             return;
         }
 
-        if ($job['request']['copyTo']) {
-            $job['curl_id'] = $this->curl->download($resolve, $reject, $origin, $url, $options, $job['request']['copyTo']);
-        } else {
-            $job['curl_id'] = $this->curl->download($resolve, $reject, $origin, $url, $options);
+        try {
+            if ($job['request']['copyTo']) {
+                $job['curl_id'] = $this->curl->download($resolve, $reject, $origin, $url, $options, $job['request']['copyTo']);
+            } else {
+                $job['curl_id'] = $this->curl->download($resolve, $reject, $origin, $url, $options);
+            }
+        } catch (\Exception $exception) {
+            $reject($exception);
         }
     }
 
