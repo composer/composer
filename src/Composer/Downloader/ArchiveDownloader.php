@@ -28,10 +28,6 @@ use Composer\DependencyResolver\Operation\InstallOperation;
  */
 abstract class ArchiveDownloader extends FileDownloader
 {
-    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
-    {
-        return parent::download($package, $path, $prevPackage, $output);
-    }
 
     /**
      * {@inheritDoc}
