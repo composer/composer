@@ -335,6 +335,11 @@ class Factory
         if ($fullLoad) {
             // load auth configs into the IO instance
             $io->loadConfiguration($config);
+
+            // load existing Composer\InstalledVersions instance if available
+            if (!class_exists('Composer\InstalledVersions', false) && file_exists($installedVersionsPath = $config->get('vendor-dir').'/composer/InstalledVersions.php')) {
+                include $installedVersionsPath;
+            }
         }
 
         $httpDownloader = self::createHttpDownloader($io, $config);

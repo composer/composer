@@ -206,6 +206,14 @@ class FilesystemRepository extends WritableArrayRepository
             $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
             $installedVersionsClass = str_replace('private static $installed;', 'private static $installed = '.var_export($versions, true).';', $installedVersionsClass);
             $fs->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
+
+            // make sure the InstalledVersions class is loaded and has the latest state
+            // not using the autoloader here to avoid loading the one from Composer's vendor dir
+            if (!class_exists('Composer\InstalledVersions', false)) {
+                include $repoDir.'/InstalledVersions.php';
+            } else {
+                \Composer\InstalledVersions::reload($versions);
+            }
         }
     }
 }
