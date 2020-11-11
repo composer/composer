@@ -386,8 +386,6 @@ class Installer
 
         $request = $this->createRequest($this->fixedRootPackage, $platformRepo, $lockedRepository);
 
-        $this->io->writeError('<info>Updating dependencies</info>');
-
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
         if ($this->updateMirrors && $lockedRepository) {
             foreach ($lockedRepository->getPackages() as $lockedPackage) {
@@ -410,6 +408,8 @@ class Installer
         }
 
         $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher);
+
+        $this->io->writeError('<info>Updating dependencies</info>');
 
         // solve dependencies
         $solver = new Solver($policy, $pool, $this->io);
