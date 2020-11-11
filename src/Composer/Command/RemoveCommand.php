@@ -253,12 +253,17 @@ EOT
             ->setApcuAutoloader($apcu, $apcuPrefix)
             ->setUpdate(true)
             ->setInstall(!$input->getOption('no-install'))
-            ->setUpdateAllowList($packages)
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setIgnorePlatformRequirements($ignorePlatformReqs)
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setDryRun($dryRun)
         ;
+
+        // if no lock is present, we do not do a partial update as
+        // this is not supported by the Installer
+        if ($composer->getLocker()->isLocked()) {
+            $install->setUpdateAllowList($packages);
+        }
 
         $status = $install->run();
         if ($status !== 0) {
