@@ -129,7 +129,11 @@ class Application extends BaseApplication
     {
         $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
 
-        if (getenv('COMPOSER_NO_INTERACTION')) {
+        if (
+            getenv('COMPOSER_NO_INTERACTION')
+            || (function_exists('stream_isatty') && !stream_isatty(STDOUT))
+            || (function_exists('posix_isatty') && !posix_isatty(STDOUT))
+        ) {
             $input->setInteractive(false);
         }
 
