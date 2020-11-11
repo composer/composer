@@ -77,6 +77,13 @@ class ProcessExecutor
      */
     public function executeTty($command, $cwd = null)
     {
+        if (
+            (function_exists('stream_isatty') && !stream_isatty(STDOUT))
+            || (function_exists('posix_isatty') && !posix_isatty(STDOUT))
+        ) {
+            return $this->doExecute($command, $cwd, false);
+        }
+
         return $this->doExecute($command, $cwd, true);
     }
 
