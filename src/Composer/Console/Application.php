@@ -131,6 +131,7 @@ class Application extends BaseApplication
 
         if (
             getenv('COMPOSER_NO_INTERACTION')
+            /* @see \Composer\Util\ProcessExecutor::executeTty - tty test */
             || (function_exists('stream_isatty') && !stream_isatty(STDOUT))
             || (function_exists('posix_isatty') && !posix_isatty(STDOUT))
         ) {
