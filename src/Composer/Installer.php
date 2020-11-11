@@ -360,8 +360,17 @@ class Installer
 
         $lockedRepository = null;
 
-        if ($this->locker->isLocked()) {
-            $lockedRepository = $this->locker->getLockedRepository(true);
+        try {
+            if ($this->locker->isLocked()) {
+                $lockedRepository = $this->locker->getLockedRepository(true);
+            }
+        } catch (\Seld\JsonLint\ParsingException $e) {
+            if ($this->updateAllowList || $this->updateMirrors) {
+                // in case we are doing a partial update or updating mirrors, the lock file is needed so we error
+                throw $e;
+            }
+            // otherwise, ignoring parse errors as the lock file will be regenerated from scratch when
+            // doing a full update
         }
 
         if ($this->updateAllowList) {
