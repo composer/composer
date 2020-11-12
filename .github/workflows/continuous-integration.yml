@@ -95,7 +95,7 @@ jobs:
           extensions: "intl, zip"
           ini-values: "memory_limit=-1, phar.readonly=0"
           php-version: "${{ matrix.php-version }}"
-          tools: composer:v2
+          tools: composer
 
       - name: "Handle lowest dependencies update"
         if: "contains(matrix.dependencies, 'lowest')"

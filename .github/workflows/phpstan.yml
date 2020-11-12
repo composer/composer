@@ -9,7 +9,7 @@ on:
       - 'doc/**'
 
 env:
-  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --no-suggest --prefer-dist"
+  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
   SYMFONY_PHPUNIT_VERSION: ""
 
 jobs:
@@ -52,5 +52,5 @@ jobs:
       - name: Run PHPStan
         # Locked to phpunit 7.5 here as newer ones have void return types which break inheritance
         run: |
-          bin/composer require --dev phpstan/phpstan:^0.12.42 phpunit/phpunit:^7.5.20 --with-all-dependencies
+          bin/composer require --dev phpstan/phpstan:^0.12.42 phpunit/phpunit:^7.5.20 --with-all-dependencies ${{ env.COMPOSER_FLAGS }}
           vendor/bin/phpstan analyse --configuration=phpstan/config.neon
