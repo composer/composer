@@ -1,6 +1,4 @@
 {
     "name": "my-vend/my-app",
-    "license": "MIT",
-    "require-dev": {
-    }
+    "license": "MIT"
 }

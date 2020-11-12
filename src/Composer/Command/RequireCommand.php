@@ -226,6 +226,9 @@ EOT
             foreach ($requirements as $package => $version) {
                 $composerDefinition[$requireKey][$package] = $version;
                 unset($composerDefinition[$removeKey][$package]);
+                if (isset($composerDefinition[$removeKey]) && count($composerDefinition[$removeKey]) === 0) {
+                    unset($composerDefinition[$removeKey]);
+                }
             }
             $this->json->write($composerDefinition);
         }
@@ -340,6 +343,8 @@ EOT
                 return false;
             }
         }
+
+        $manipulator->removeMainKeyIfEmpty($removeKey);
 
         file_put_contents($json->getPath(), $manipulator->getContents());
 

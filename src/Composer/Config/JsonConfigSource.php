@@ -196,7 +196,8 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $this->manipulateJson('removeSubNode', $type, $name, function (&$config, $type, $name) {
             unset($config[$type][$name]);
-
+        });
+        $this->manipulateJson('removeMainKeyIfEmpty', $type, function (&$config, $type) {
             if (0 === count($config[$type])) {
                 unset($config[$type]);
             }

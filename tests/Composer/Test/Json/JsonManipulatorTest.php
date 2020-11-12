@@ -2437,6 +2437,48 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
+    public function testRemoveMainKeyIfEmpty()
+    {
+        $manipulator = new JsonManipulator('{
+    "repositories": [
+    ],
+    "require": {
+        "package/a": "*",
+        "package/b": "*",
+        "package/c": "*"
+    },
+    "foo": "bar",
+    "require-dev": {
+    }
+}');
+
+        $this->assertTrue($manipulator->removeMainKeyIfEmpty('repositories'));
+        $this->assertEquals('{
+    "require": {
+        "package/a": "*",
+        "package/b": "*",
+        "package/c": "*"
+    },
+    "foo": "bar",
+    "require-dev": {
+    }
+}
+', $manipulator->getContents());
+
+        $this->assertFalse($manipulator->removeMainKeyIfEmpty('foo'));
+        $this->assertFalse($manipulator->removeMainKeyIfEmpty('require'));
+        $this->assertTrue($manipulator->removeMainKeyIfEmpty('require-dev'));
+        $this->assertEquals('{
+    "require": {
+        "package/a": "*",
+        "package/b": "*",
+        "package/c": "*"
+    },
+    "foo": "bar"
+}
+', $manipulator->getContents());
+    }
+
     public function testRemoveMainKeyRemovesKeyWhereValueIsNull()
     {
         $manipulator = new JsonManipulator(json_encode(array(

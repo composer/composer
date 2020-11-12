@@ -480,6 +480,21 @@ class JsonManipulator
         return false;
     }
 
+    public function removeMainKeyIfEmpty($key)
+    {
+        $decoded = JsonFile::parseJson($this->contents);
+
+        if (!array_key_exists($key, $decoded)) {
+            return true;
+        }
+
+        if (is_array($decoded[$key]) && count($decoded[$key]) === 0) {
+            return $this->removeMainKey($key);
+        }
+
+        return false;
+    }
+
     public function format($data, $depth = 0)
     {
         if (is_array($data)) {
