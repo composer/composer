@@ -123,26 +123,30 @@ abstract class BaseExcludeFilter
     protected function generatePattern($rule)
     {
         $negate = false;
-        $pattern = '{';
+        $pattern = '';
 
-        if (strlen($rule) && $rule[0] === '!') {
+        if ($rule !== '' && $rule[0] === '!') {
             $negate = true;
-            $rule = substr($rule, 1);
+            $rule = ltrim($rule, '!');
         }
 
-        if (strlen($rule) && $rule[0] === '/') {
-            $pattern .= '^/';
-            $rule = substr($rule, 1);
-        } elseif (strlen($rule) - 1 === strpos($rule, '/')) {
-            $pattern .= '/';
-            $rule = substr($rule, 0, -1);
-        } elseif (false === strpos($rule, '/')) {
-            $pattern .= '/';
+        if ($rule !== '') {
+            if ($rule[0] === '/') {
+                $pattern = '^/';
+            } else {
+                $first_slash_position = strpos($rule, '/');
+
+                if (false === $first_slash_position || strlen($rule) - 1 === $first_slash_position) {
+                    $pattern = '/';
+                }
+            }
+
+            $rule = trim($rule, '/');
         }
 
         // remove delimiters as well as caret (^) and dollar sign ($) from the regex
-        $pattern .= substr(Finder\Glob::toRegex($rule), 2, -2) . '(?=$|/)';
+        $rule = substr(Finder\Glob::toRegex($rule), 2, -2);
 
-        return array($pattern . '}', $negate, false);
+        return array('{'.$pattern.$rule.'(?=$|/)}', $negate, false);
     }
 }
