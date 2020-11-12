@@ -195,7 +195,14 @@ EOF;
         // Collect information from all packages.
         $devPackageNames = $localRepo->getDevPackageNames();
         $packageMap = $this->buildPackageMap($installationManager, $rootPackage, $localRepo->getCanonicalPackages());
-        $autoloads = $this->parseAutoloads($packageMap, $rootPackage, $this->devMode === false);
+        if ($this->devMode) {
+            // if dev mode is enabled, then we do not filter any dev packages out so disable this entirely
+            $filteredDevPackages = false;
+        } else {
+            // if the list of dev package names is available we use that straight, otherwise pass true which means use legacy algo to figure them out
+            $filteredDevPackages = $devPackageNames ?: true;
+        }
+        $autoloads = $this->parseAutoloads($packageMap, $rootPackage, $filteredDevPackages);
 
         // Process the 'psr-0' base directories.
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
@@ -444,15 +451,19 @@ EOF;
     /**
      * Compiles an ordered list of namespace => path mappings
      *
-     * @param  array                $packageMap                  array of array(package, installDir-relative-to-composer.json)
-     * @param  RootPackageInterface $rootPackage                 root package instance
-     * @param  bool                 $filterOutRequireDevPackages whether to filter out require-dev packages
+     * @param  array                $packageMap          array of array(package, installDir-relative-to-composer.json)
+     * @param  RootPackageInterface $rootPackage         root package instance
+     * @param  bool|string[]        $filteredDevPackages If an array, the list of packages that must be removed. If bool, whether to filter out require-dev packages
      * @return array                array('psr-0' => array('Ns\\Foo' => array('installDir')))
      */
-    public function parseAutoloads(array $packageMap, PackageInterface $rootPackage, $filterOutRequireDevPackages = false)
+    public function parseAutoloads(array $packageMap, PackageInterface $rootPackage, $filteredDevPackages = false)
     {
         $rootPackageMap = array_shift($packageMap);
-        if ($filterOutRequireDevPackages) {
+        if (is_array($filteredDevPackages)) {
+            $packageMap = array_filter($packageMap, function ($item) use ($filteredDevPackages) {
+                return !in_array($item[0]->getName(), $filteredDevPackages, true);
+            });
+        } elseif ($filteredDevPackages) {
             $packageMap = $this->filterPackageMap($packageMap, $rootPackage);
         }
         $sortedPackageMap = $this->sortPackageMap($packageMap);
