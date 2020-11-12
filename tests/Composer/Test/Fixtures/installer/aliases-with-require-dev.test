@@ -61,12 +61,12 @@ update
         }
     ],
     "aliases": [{
-        "package": "a/aliased2",
+        "package": "a/aliased",
         "version": "dev-next",
         "alias": "4.1.0-RC2",
         "alias_normalized": "4.1.0.0-RC2"
     }, {
-        "package": "a/aliased",
+        "package": "a/aliased2",
         "version": "dev-next",
         "alias": "4.1.0-RC2",
         "alias_normalized": "4.1.0.0-RC2"

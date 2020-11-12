@@ -55,6 +55,11 @@ class Pool implements \Countable
         }
     }
 
+    public function getPackages()
+    {
+        return $this->packages;
+    }
+
     /**
      * Retrieves the package object for a given package id.
      *

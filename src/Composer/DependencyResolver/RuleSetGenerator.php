@@ -231,7 +231,7 @@ class RuleSetGenerator
                 }
 
                 // otherwise, looks like a bug
-                throw new \LogicException("Fixed package ".$package->getName()." ".$package->getVersion().($package instanceof AliasPackage ? " (alias)" : "")." was not added to solver pool.");
+                throw new \LogicException("Fixed package ".$package->getPrettyString()." was not added to solver pool.");
             }
 
             $this->addRulesForPackage($package, $ignorePlatformReqs);
@@ -262,6 +262,17 @@ class RuleSetGenerator
         }
     }
 
+    protected function addRulesForRootAliases()
+    {
+        foreach ($this->pool->getPackages() as $package) {
+            // if it is a root alias, make sure that if the aliased version gets installed
+            // the alias must be installed too
+            if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), array($package), Rule::RULE_PACKAGE_REQUIRES, $package->getAliasOf()));
+            }
+        }
+    }
+
     /**
      * @param bool|array $ignorePlatformReqs
      */
@@ -276,6 +287,8 @@ class RuleSetGenerator
         $this->conflictsForName = array();
 
         $this->addRulesForRequest($request, $ignorePlatformReqs);
+
+        $this->addRulesForRootAliases();
 
         $this->addConflictRules($ignorePlatformReqs);
 
