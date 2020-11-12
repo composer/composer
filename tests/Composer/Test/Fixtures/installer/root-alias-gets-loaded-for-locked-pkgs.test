@@ -1,0 +1,65 @@
+--TEST--
+Root alias gets loaded even if package is loaded from lock file
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "some/dep", "version": "dev-main" },
+                { "name": "foo/pkg", "version": "1.0.0", "require": {"some/dep": "^1"} }
+            ]
+        }
+    ],
+    "require": {
+        "some/dep": "dev-main as 1.0.0",
+        "foo/pkg": "^1.0"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        { "name": "some/dep", "version": "dev-main" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--INSTALLED--
+[
+    { "name": "some/dep", "version": "dev-main" }
+]
+--RUN--
+update foo/pkg
+--EXPECT-LOCK--
+{
+    "packages": [
+        { "name": "foo/pkg", "version": "1.0.0", "require": {"some/dep": "^1"}, "type": "library" },
+        { "name": "some/dep", "version": "dev-main", "type": "library" }
+    ],
+    "packages-dev": [],
+    "aliases": [
+        {
+            "package": "some/dep",
+            "version": "dev-main",
+            "alias": "1.0.0",
+            "alias_normalized": "1.0.0.0"
+        }
+    ],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "some/dep": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Marking some/dep (1.0.0) as installed, alias of some/dep (dev-main)
+Installing foo/pkg (1.0.0)

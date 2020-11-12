@@ -47,6 +47,11 @@ class PoolBuilder
      */
     private $rootAliases;
     /**
+     * Stores a copy of the rootAliases which have not yet been applied to a package
+     * @psalm-var array<string, array<string, array{alias: string, alias_normalized: string}>>
+     */
+    private $unusedRootAliases;
+    /**
      * @psalm-var array<string, string>
      */
     private $rootReferences;
@@ -123,6 +128,8 @@ class PoolBuilder
 
     public function buildPool(array $repositories, Request $request)
     {
+        $this->unusedRootAliases = $this->rootAliases;
+
         if ($request->getUpdateAllowList()) {
             $this->updateAllowList = $request->getUpdateAllowList();
             $this->warnAboutNonMatchingUpdateAllowList($request);
@@ -135,6 +142,17 @@ class PoolBuilder
                     $this->skippedLoad[$lockedName] = $lockedName;
                     foreach ($lockedPackage->getReplaces() as $link) {
                         $this->skippedLoad[$link->getTarget()] = $lockedName;
+                    }
+                }
+            }
+        }
+
+        // make sure already aliased packages from the LockRepository are not aliased again by marking the root aliases as used up
+        foreach ($request->getLockedPackages() as $package) {
+            if (isset($this->unusedRootAliases[$package->getName()])) {
+                foreach ($this->unusedRootAliases[$package->getName()] as $version => $alias) {
+                    if ($alias['alias_normalized'] === $package->getVersion()) {
+                        unset($this->unusedRootAliases[$package->getName()][$version]);
                     }
                 }
             }
@@ -352,8 +370,9 @@ class PoolBuilder
 
         // if propogateUpdate is false we are loading a fixed or locked package, root aliases do not apply as they are
         // manually loaded as separate packages in this case
-        if ($propagateUpdate && isset($this->rootAliases[$name][$package->getVersion()])) {
-            $alias = $this->rootAliases[$name][$package->getVersion()];
+        if (isset($this->unusedRootAliases[$name][$package->getVersion()])) {
+            $alias = $this->unusedRootAliases[$name][$package->getVersion()];
+            unset($this->unusedRootAliases[$name][$package->getVersion()]);
             if ($package instanceof AliasPackage) {
                 $basePackage = $package->getAliasOf();
             } else {
