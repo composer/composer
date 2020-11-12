@@ -54,12 +54,12 @@ use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\InstalledArrayRepository;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
-use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\ScriptEvents;
 
 /**
@@ -353,7 +353,7 @@ class Installer
         return 0;
     }
 
-    protected function doUpdate(RepositoryInterface $localRepo, $doInstall)
+    protected function doUpdate(InstalledRepositoryInterface $localRepo, $doInstall)
     {
         $platformRepo = $this->createPlatformRepo(true);
         $aliases = $this->getRootAliases(true);
@@ -612,11 +612,11 @@ class Installer
     }
 
     /**
-     * @param RepositoryInterface $localRepo
+     * @param InstalledRepositoryInterface $localRepo
      * @param bool $alreadySolved Whether the function is called as part of an update command or independently
      * @return int exit code
      */
-    protected function doInstall(RepositoryInterface $localRepo, $alreadySolved = false)
+    protected function doInstall(InstalledRepositoryInterface $localRepo, $alreadySolved = false)
     {
         $this->io->writeError('<info>Installing dependencies from lock file'.($this->devMode ? ' (including require-dev)' : '').'</info>');
 
@@ -717,9 +717,7 @@ class Installer
         }
 
         if ($this->executeOperations) {
-            if ($localRepo instanceof WritableRepositoryInterface) {
-                $localRepo->setDevPackageNames($this->locker->getDevPackageNames());
-            }
+            $localRepo->setDevPackageNames($this->locker->getDevPackageNames());
             $this->installationManager->execute($localRepo, $localRepoTransaction->getOperations(), $this->devMode, $this->runScripts);
         } else {
             foreach ($localRepoTransaction->getOperations() as $operation) {
