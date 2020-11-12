@@ -18,6 +18,7 @@ use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Bound;
@@ -136,7 +137,7 @@ class AutoloadGenerator
         }
     }
 
-    public function dump(Config $config, InstalledRepositoryInterface $localRepo, PackageInterface $mainPackage, InstallationManager $installationManager, $targetDir, $scanPsrPackages = false, $suffix = '')
+    public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, $targetDir, $scanPsrPackages = false, $suffix = '')
     {
         if ($this->classMapAuthoritative) {
             // Force scanPsrPackages when classmap is authoritative
@@ -193,8 +194,8 @@ EOF;
 
         // Collect information from all packages.
         $devPackageNames = $localRepo->getDevPackageNames();
-        $packageMap = $this->buildPackageMap($installationManager, $mainPackage, $localRepo->getCanonicalPackages());
-        $autoloads = $this->parseAutoloads($packageMap, $mainPackage, $this->devMode === false);
+        $packageMap = $this->buildPackageMap($installationManager, $rootPackage, $localRepo->getCanonicalPackages());
+        $autoloads = $this->parseAutoloads($packageMap, $rootPackage, $this->devMode === false);
 
         // Process the 'psr-0' base directories.
         foreach ($autoloads['psr-0'] as $namespace => $paths) {
@@ -234,9 +235,9 @@ EOF;
 
         // add custom psr-0 autoloading if the root package has a target dir
         $targetDirLoader = null;
-        $mainAutoload = $mainPackage->getAutoload();
-        if ($mainPackage->getTargetDir() && !empty($mainAutoload['psr-0'])) {
-            $levels = substr_count($filesystem->normalizePath($mainPackage->getTargetDir()), '/') + 1;
+        $mainAutoload = $rootPackage->getAutoload();
+        if ($rootPackage->getTargetDir() && !empty($mainAutoload['psr-0'])) {
+            $levels = substr_count($filesystem->normalizePath($rootPackage->getTargetDir()), '/') + 1;
             $prefixes = implode(', ', array_map(function ($prefix) {
                 return var_export($prefix, true);
             }, array_keys($mainAutoload['psr-0'])));
@@ -395,10 +396,13 @@ EOF;
         return ClassMapGenerator::createMap($dir, $excluded, $showAmbiguousWarning ? $this->io : null, $namespaceFilter, $autoloadType, $scannedFiles);
     }
 
-    public function buildPackageMap(InstallationManager $installationManager, PackageInterface $mainPackage, array $packages)
+    /**
+     * @param RootPackageInterface $rootPackage
+     */
+    public function buildPackageMap(InstallationManager $installationManager, PackageInterface $rootPackage, array $packages)
     {
         // build package => install path map
-        $packageMap = array(array($mainPackage, ''));
+        $packageMap = array(array($rootPackage, ''));
 
         foreach ($packages as $package) {
             if ($package instanceof AliasPackage) {
@@ -440,26 +444,26 @@ EOF;
     /**
      * Compiles an ordered list of namespace => path mappings
      *
-     * @param  array            $packageMap                  array of array(package, installDir-relative-to-composer.json)
-     * @param  PackageInterface $mainPackage                 root package instance
-     * @param  bool             $filterOutRequireDevPackages whether to filter out require-dev packages
-     * @return array            array('psr-0' => array('Ns\\Foo' => array('installDir')))
+     * @param  array                $packageMap                  array of array(package, installDir-relative-to-composer.json)
+     * @param  RootPackageInterface $rootPackage                 root package instance
+     * @param  bool                 $filterOutRequireDevPackages whether to filter out require-dev packages
+     * @return array                array('psr-0' => array('Ns\\Foo' => array('installDir')))
      */
-    public function parseAutoloads(array $packageMap, PackageInterface $mainPackage, $filterOutRequireDevPackages = false)
+    public function parseAutoloads(array $packageMap, PackageInterface $rootPackage, $filterOutRequireDevPackages = false)
     {
-        $mainPackageMap = array_shift($packageMap);
+        $rootPackageMap = array_shift($packageMap);
         if ($filterOutRequireDevPackages) {
-            $packageMap = $this->filterPackageMap($packageMap, $mainPackage);
+            $packageMap = $this->filterPackageMap($packageMap, $rootPackage);
         }
         $sortedPackageMap = $this->sortPackageMap($packageMap);
-        $sortedPackageMap[] = $mainPackageMap;
-        array_unshift($packageMap, $mainPackageMap);
+        $sortedPackageMap[] = $rootPackageMap;
+        array_unshift($packageMap, $rootPackageMap);
 
-        $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $mainPackage);
-        $psr4 = $this->parseAutoloadsType($packageMap, 'psr-4', $mainPackage);
-        $classmap = $this->parseAutoloadsType(array_reverse($sortedPackageMap), 'classmap', $mainPackage);
-        $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $mainPackage);
-        $exclude = $this->parseAutoloadsType($sortedPackageMap, 'exclude-from-classmap', $mainPackage);
+        $psr0 = $this->parseAutoloadsType($packageMap, 'psr-0', $rootPackage);
+        $psr4 = $this->parseAutoloadsType($packageMap, 'psr-4', $rootPackage);
+        $classmap = $this->parseAutoloadsType(array_reverse($sortedPackageMap), 'classmap', $rootPackage);
+        $files = $this->parseAutoloadsType($sortedPackageMap, 'files', $rootPackage);
+        $exclude = $this->parseAutoloadsType($sortedPackageMap, 'exclude-from-classmap', $rootPackage);
 
         krsort($psr0);
         krsort($psr4);
@@ -1051,7 +1055,7 @@ $initializer
 INITIALIZER;
     }
 
-    protected function parseAutoloadsType(array $packageMap, $type, PackageInterface $mainPackage)
+    protected function parseAutoloadsType(array $packageMap, $type, RootPackageInterface $rootPackage)
     {
         $autoloads = array();
 
@@ -1059,7 +1063,7 @@ INITIALIZER;
             list($package, $installPath) = $item;
 
             $autoload = $package->getAutoload();
-            if ($this->devMode && $package === $mainPackage) {
+            if ($this->devMode && $package === $rootPackage) {
                 $autoload = array_merge_recursive($autoload, $package->getDevAutoload());
             }
 
@@ -1067,7 +1071,7 @@ INITIALIZER;
             if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
                 continue;
             }
-            if (null !== $package->getTargetDir() && $package !== $mainPackage) {
+            if (null !== $package->getTargetDir() && $package !== $rootPackage) {
                 $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
             }
 
@@ -1075,7 +1079,7 @@ INITIALIZER;
                 foreach ((array) $paths as $path) {
                     if (($type === 'files' || $type === 'classmap' || $type === 'exclude-from-classmap') && $package->getTargetDir() && !is_readable($installPath.'/'.$path)) {
                         // remove target-dir from file paths of the root package
-                        if ($package === $mainPackage) {
+                        if ($package === $rootPackage) {
                             $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
                             $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
                         } else {
@@ -1141,11 +1145,11 @@ INITIALIZER;
     /**
      * Filters out dev-dependencies
      *
-     * @param  array            $packageMap
-     * @param  PackageInterface $mainPackage
+     * @param  array                $packageMap
+     * @param  RootPackageInterface $rootPackage
      * @return array
      */
-    protected function filterPackageMap(array $packageMap, PackageInterface $mainPackage)
+    protected function filterPackageMap(array $packageMap, RootPackageInterface $rootPackage)
     {
         $packages = array();
         $include = array();
@@ -1174,7 +1178,7 @@ INITIALIZER;
                 }
             }
         };
-        $add($mainPackage);
+        $add($rootPackage);
 
         return array_filter(
             $packageMap,

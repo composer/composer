@@ -12,7 +12,7 @@ class ComposerStaticInitFilesAutoloadOrder
         '8bceec6fdc149a1a6acbf7ad3cfed51c' => __DIR__ . '/..' . '/z/foo/testA.php',
         'c5466e580c6c2403f225c43b6a21a96f' => __DIR__ . '/..' . '/b/bar/testB.php',
         '69dfc37c40a853a7cbac6c9d2367c5f4' => __DIR__ . '/..' . '/e/e/testE.php',
-        '334307692417e52db5a08c3271700a7e' => __DIR__ . '/../..' . '/root2.php',
+        'ab280164f4754f5dfdb0721de84d737f' => __DIR__ . '/../..' . '/root2.php',
     );
 
     public static $classMap = array (

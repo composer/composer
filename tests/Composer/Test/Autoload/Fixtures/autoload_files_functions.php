@@ -10,5 +10,5 @@ return array(
     'e56cac94f86c787e1efd645809df361d' => $vendorDir . '/b/b/test2.php',
     'df8470dfa2ebd6b31da05b60fb4ec29a' => $vendorDir . '/c/c/foo/bar/test3.php',
     '68f1e24e6cd39de885cb5a47678e6518' => $vendorDir . '/c/c/foo/bar/test4.php',
-    '61b776fd0ee84fb7d7d958ae46118ded' => $baseDir . '/root.php',
+    '5e70d6595c54512c151823ca0663ab51' => $baseDir . '/root.php',
 );
