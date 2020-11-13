@@ -28,7 +28,6 @@ class RuleSetGenerator
     protected $rules;
     protected $addedMap;
     protected $conflictAddedMap;
-    protected $addedPackages;
     protected $addedPackagesByNames;
     protected $conflictsForName;
 
@@ -157,9 +156,8 @@ class RuleSetGenerator
                 continue;
             }
 
-            $this->addedMap[$package->id] = true;
+            $this->addedMap[$package->id] = $package;
 
-            $this->addedPackages[] = $package;
             if (!$package instanceof AliasPackage) {
                 foreach ($package->getNames(false) as $name) {
                     $this->addedPackagesByNames[$name][] = $package;
@@ -167,6 +165,11 @@ class RuleSetGenerator
             } else {
                 $workQueue->enqueue($package->getAliasOf());
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($package->getAliasOf()), Rule::RULE_PACKAGE_ALIAS, $package));
+
+                // root aliases must be installed with their main package, so create a rule the other way around as well
+                if ($package->isRootPackageAlias()) {
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), array($package), Rule::RULE_PACKAGE_ROOT_ALIAS, $package->getAliasOf()));
+                }
 
                 // if alias package has no self.version requires, its requirements do not
                 // need to be added as the aliased package processing will take care of it
@@ -194,7 +197,7 @@ class RuleSetGenerator
     protected function addConflictRules($ignorePlatformReqs = false)
     {
         /** @var PackageInterface $package */
-        foreach ($this->addedPackages as $package) {
+        foreach ($this->addedMap as $package) {
             foreach ($package->getConflicts() as $link) {
                 if (!isset($this->addedPackagesByNames[$link->getTarget()])) {
                     continue;
@@ -231,7 +234,7 @@ class RuleSetGenerator
                 }
 
                 // otherwise, looks like a bug
-                throw new \LogicException("Fixed package ".$package->getName()." ".$package->getVersion().($package instanceof AliasPackage ? " (alias)" : "")." was not added to solver pool.");
+                throw new \LogicException("Fixed package ".$package->getPrettyString()." was not added to solver pool.");
             }
 
             $this->addRulesForPackage($package, $ignorePlatformReqs);
@@ -262,6 +265,17 @@ class RuleSetGenerator
         }
     }
 
+    protected function addRulesForRootAliases($ignorePlatformReqs)
+    {
+        foreach ($this->pool->getPackages() as $package) {
+            // ensure that rules for root alias packages get loaded even if the root alias itself isn't required
+            // otherwise a package could be installed without its root alias which leads to unexpected behavior
+            if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+                $this->addRulesForPackage($package, $ignorePlatformReqs);
+            }
+        }
+    }
+
     /**
      * @param bool|array $ignorePlatformReqs
      */
@@ -271,16 +285,17 @@ class RuleSetGenerator
 
         $this->addedMap = array();
         $this->conflictAddedMap = array();
-        $this->addedPackages = array();
         $this->addedPackagesByNames = array();
         $this->conflictsForName = array();
 
         $this->addRulesForRequest($request, $ignorePlatformReqs);
 
+        $this->addRulesForRootAliases($ignorePlatformReqs);
+
         $this->addConflictRules($ignorePlatformReqs);
 
         // Remove references to packages
-        $this->addedPackages = $this->addedPackagesByNames = null;
+        $this->addedMap = $this->addedPackagesByNames = null;
 
         return $this->rules;
     }

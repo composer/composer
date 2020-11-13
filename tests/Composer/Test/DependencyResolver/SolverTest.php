@@ -789,7 +789,7 @@ class SolverTest extends TestCase
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageB),
             array('job' => 'install', 'package' => $packageA2),
-            array('job' => 'install', 'package' => $packageA2Alias),
+            array('job' => 'markAliasInstalled', 'package' => $packageA2Alias),
         ));
     }
 
@@ -811,8 +811,37 @@ class SolverTest extends TestCase
 
         $this->checkSolverResult(array(
             array('job' => 'install', 'package' => $packageA),
-            array('job' => 'install', 'package' => $packageAAlias),
+            array('job' => 'markAliasInstalled', 'package' => $packageAAlias),
             array('job' => 'install', 'package' => $packageB),
+        ));
+    }
+
+    public function testInstallRootAliasesIfAliasOfIsInstalled()
+    {
+        // root aliased, required
+        $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
+        $this->repo->addPackage($packageAAlias = $this->getAliasPackage($packageA, '1.1'));
+        $packageAAlias->setRootPackageAlias(true);
+        // root aliased, not required, should still be installed as it is root alias
+        $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
+        $this->repo->addPackage($packageBAlias = $this->getAliasPackage($packageB, '1.1'));
+        $packageBAlias->setRootPackageAlias(true);
+        // regular alias, not required, alias should not be installed
+        $this->repo->addPackage($packageC = $this->getPackage('C', '1.0'));
+        $this->repo->addPackage($packageCAlias = $this->getAliasPackage($packageC, '1.1'));
+
+        $this->reposComplete();
+
+        $this->request->requireName('A', $this->getVersionConstraint('==', '1.1'));
+        $this->request->requireName('B', $this->getVersionConstraint('==', '1.0'));
+        $this->request->requireName('C', $this->getVersionConstraint('==', '1.0'));
+
+        $this->checkSolverResult(array(
+            array('job' => 'install', 'package' => $packageA),
+            array('job' => 'markAliasInstalled', 'package' => $packageAAlias),
+            array('job' => 'install', 'package' => $packageB),
+            array('job' => 'markAliasInstalled', 'package' => $packageBAlias),
+            array('job' => 'install', 'package' => $packageC),
         ));
     }
 
@@ -915,6 +944,11 @@ class SolverTest extends TestCase
                     'from' => $operation->getInitialPackage(),
                     'to' => $operation->getTargetPackage(),
                 );
+            } elseif (in_array($operation->getOperationType(), array('markAliasInstalled', 'markAliasUninstalled'))) {
+                $result[] = array(
+                    'job' => $operation->getOperationType(),
+                    'package' => $operation->getPackage(),
+                );
             } else {
                 $job = ('uninstall' === $operation->getOperationType() ? 'remove' : 'install');
                 $result[] = array(
@@ -924,6 +958,16 @@ class SolverTest extends TestCase
             }
         }
 
+        $expectedReadable = array();
+        foreach ($expected as $op) {
+            $expectedReadable[] = array_map('strval', $op);
+        }
+        $resultReadable = array();
+        foreach ($result as $op) {
+            $resultReadable[] = array_map('strval', $op);
+        }
+
+        $this->assertEquals($expectedReadable, $resultReadable);
         $this->assertEquals($expected, $result);
     }
 }

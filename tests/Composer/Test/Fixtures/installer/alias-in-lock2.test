@@ -1,5 +1,5 @@
 --TEST--
-Root-defined aliases end up in lock file always on full update
+Newly defined root aliases end up in lock file only if the package is updated
 --COMPOSER--
 {
     "repositories": [
@@ -11,22 +11,38 @@ Root-defined aliases end up in lock file always on full update
                 },
                 {
                     "name": "a/aliased2", "version": "3.0.2"
-                },
-                {
-                    "name": "b/requirer", "version": "1.0.0",
-                    "require": { "a/aliased": "^3.0.3", "a/aliased2": "^3.0.0" }
                 }
             ]
         }
     ],
     "require": {
         "a/aliased": "3.0.2 as 3.0.3",
-        "a/aliased2": "3.0.2 as 3.0.3",
-        "b/requirer": "*"
+        "a/aliased2": "3.0.2 as 3.0.3"
     }
 }
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/aliased", "version": "3.0.2",
+            "type": "library"
+        },
+        {
+            "name": "a/aliased2", "version": "3.0.2",
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --RUN--
-update
+update a/aliased
 --EXPECT-LOCK--
 {
     "packages": [
@@ -37,21 +53,11 @@ update
         {
             "name": "a/aliased2", "version": "3.0.2",
             "type": "library"
-        },
-        {
-            "name": "b/requirer", "version": "1.0.0",
-            "require": { "a/aliased": "^3.0.3", "a/aliased2": "^3.0.0" },
-            "type": "library"
         }
     ],
     "packages-dev": [],
     "aliases": [{
         "package": "a/aliased",
-        "version": "3.0.2.0",
-        "alias": "3.0.3",
-        "alias_normalized": "3.0.3.0"
-    },{
-        "package": "a/aliased2",
         "version": "3.0.2.0",
         "alias": "3.0.3",
         "alias_normalized": "3.0.3.0"
@@ -64,8 +70,6 @@ update
     "platform-dev": []
 }
 --EXPECT--
-Installing a/aliased2 (3.0.2)
-Marking a/aliased2 (3.0.3) as installed, alias of a/aliased2 (3.0.2)
 Installing a/aliased (3.0.2)
 Marking a/aliased (3.0.3) as installed, alias of a/aliased (3.0.2)
-Installing b/requirer (1.0.0)
+Installing a/aliased2 (3.0.2)
