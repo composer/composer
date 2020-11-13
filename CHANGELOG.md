@@ -1,3 +1,12 @@
+### [2.0.7] 2020-11-13
+
+  * Fixed detection of TTY mode, made input non-interactive automatically if STDIN is not a TTY
+  * Fixed root aliases not being present in lock file if not required by anything else
+  * Fixed `remove` command requiring a lock file to be present
+  * Fixed `Composer\InstalledVersions` to always contain up to date data during installation
+  * Fixed `status` command breaking on slow networks
+  * Fixed order of POST_PACKAGE_* events to occur together once all installations of a package batch are done
+
 ### [2.0.6] 2020-11-07
 
   * Fixed regression in 2.0.5 dealing with custom installers which do not pass absolute paths
@@ -1049,6 +1058,7 @@
 
   * Initial release
 
+[2.0.7]: https://github.com/composer/composer/compare/2.0.6...2.0.7
 [2.0.6]: https://github.com/composer/composer/compare/2.0.5...2.0.6
 [2.0.5]: https://github.com/composer/composer/compare/2.0.4...2.0.5
 [2.0.4]: https://github.com/composer/composer/compare/2.0.3...2.0.4
