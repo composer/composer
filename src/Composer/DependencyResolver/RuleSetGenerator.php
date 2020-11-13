@@ -166,6 +166,11 @@ class RuleSetGenerator
                 $workQueue->enqueue($package->getAliasOf());
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($package->getAliasOf()), Rule::RULE_PACKAGE_ALIAS, $package));
 
+                // root aliases must be installed with their main package, so create a rule the other way around as well
+                if ($package->isRootPackageAlias()) {
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), array($package), Rule::RULE_PACKAGE_ROOT_ALIAS, $package->getAliasOf()));
+                }
+
                 // if alias package has no self.version requires, its requirements do not
                 // need to be added as the aliased package processing will take care of it
                 if (!$package->hasSelfVersionRequires()) {
@@ -263,11 +268,10 @@ class RuleSetGenerator
     protected function addRulesForRootAliases($ignorePlatformReqs)
     {
         foreach ($this->pool->getPackages() as $package) {
-            // if it is a root alias, make sure that if the aliased version gets installed
-            // the alias must be installed too
-            if ($package instanceof AliasPackage && $package->isRootPackageAlias() && isset($this->addedMap[$package->getAliasOf()->id])) {
+            // ensure that rules for root alias packages get loaded even if the root alias itself isn't required
+            // otherwise a package could be installed without its root alias which leads to unexpected behavior
+            if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
                 $this->addRulesForPackage($package, $ignorePlatformReqs);
-                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), array($package), Rule::RULE_PACKAGE_ALIAS, $package->getAliasOf()));
             }
         }
     }
