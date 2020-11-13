@@ -93,7 +93,7 @@ class Platform
     public static function isTty($fd = null)
     {
         if ($fd === null) {
-            $fd = STDOUT;
+            $fd = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'w');
         }
 
         // modern cross-platform function, includes the fstat

@@ -129,7 +129,7 @@ class Application extends BaseApplication
     {
         $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
 
-        if (getenv('COMPOSER_NO_INTERACTION') || !Platform::isTty(STDIN)) {
+        if (getenv('COMPOSER_NO_INTERACTION') || !Platform::isTty(defined('STDIN') ? STDIN : fopen('php://stdin', 'r'))) {
             $input->setInteractive(false);
         }
 
