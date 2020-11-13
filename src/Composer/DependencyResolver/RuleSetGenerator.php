@@ -28,7 +28,6 @@ class RuleSetGenerator
     protected $rules;
     protected $addedMap;
     protected $conflictAddedMap;
-    protected $addedPackages;
     protected $addedPackagesByNames;
     protected $conflictsForName;
 
@@ -157,9 +156,8 @@ class RuleSetGenerator
                 continue;
             }
 
-            $this->addedMap[$package->id] = true;
+            $this->addedMap[$package->id] = $package;
 
-            $this->addedPackages[] = $package;
             if (!$package instanceof AliasPackage) {
                 foreach ($package->getNames(false) as $name) {
                     $this->addedPackagesByNames[$name][] = $package;
@@ -194,7 +192,7 @@ class RuleSetGenerator
     protected function addConflictRules($ignorePlatformReqs = false)
     {
         /** @var PackageInterface $package */
-        foreach ($this->addedPackages as $package) {
+        foreach ($this->addedMap as $package) {
             foreach ($package->getConflicts() as $link) {
                 if (!isset($this->addedPackagesByNames[$link->getTarget()])) {
                     continue;
@@ -268,8 +266,8 @@ class RuleSetGenerator
             // if it is a root alias, make sure that if the aliased version gets installed
             // the alias must be installed too
             if ($package instanceof AliasPackage && $package->isRootPackageAlias() && isset($this->addedMap[$package->getAliasOf()->id])) {
-                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), array($package), Rule::RULE_PACKAGE_REQUIRES, $package->getAliasOf()));
                 $this->addRulesForPackage($package, $ignorePlatformReqs);
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), array($package), Rule::RULE_PACKAGE_ALIAS, $package->getAliasOf()));
             }
         }
     }
@@ -283,7 +281,6 @@ class RuleSetGenerator
 
         $this->addedMap = array();
         $this->conflictAddedMap = array();
-        $this->addedPackages = array();
         $this->addedPackagesByNames = array();
         $this->conflictsForName = array();
 
@@ -294,7 +291,7 @@ class RuleSetGenerator
         $this->addConflictRules($ignorePlatformReqs);
 
         // Remove references to packages
-        $this->addedPackages = $this->addedPackagesByNames = null;
+        $this->addedMap = $this->addedPackagesByNames = null;
 
         return $this->rules;
     }
