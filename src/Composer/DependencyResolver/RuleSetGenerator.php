@@ -199,6 +199,7 @@ class RuleSetGenerator
         /** @var PackageInterface $package */
         foreach ($this->addedMap as $package) {
             foreach ($package->getConflicts() as $link) {
+                // even if conlict ends up being with an alias, there would be a conflict with at least one actual package by this name
                 if (!isset($this->addedPackagesByNames[$link->getTarget()])) {
                     continue;
                 }
@@ -207,11 +208,10 @@ class RuleSetGenerator
                     continue;
                 }
 
-                /** @var PackageInterface $possibleConflict */
-                foreach ($this->addedPackagesByNames[$link->getTarget()] as $possibleConflict) {
-                    if ($this->pool->match($possibleConflict, $link->getTarget(), $link->getConstraint())) {
-                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $possibleConflict, Rule::RULE_PACKAGE_CONFLICT, $link));
-                    }
+                $conflicts = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
+
+                foreach ($conflicts as $conflict) {
+                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $conflict, Rule::RULE_PACKAGE_CONFLICT, $link));
                 }
             }
         }
