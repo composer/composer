@@ -151,6 +151,21 @@ Lets you fake platform packages (PHP and extensions) so that you can emulate a
 production env or define your target platform in the config. Example: `{"php":
 "7.0.3", "ext-something": "4.0.3"}`.
 
+This will make sure that no package requiring more than PHP 7.0.3 can be installed
+regardless of the actual PHP version you run locally. However it also means
+the dependencies are not checked correctly anymore, if you run PHP 5.6 it will
+install fine as it assumes 7.0.3, but then it will fail at runtime.
+
+Therefore if you use this it is recommended, and safer, to also run the
+[`check-platform-reqs`](03-cli.md#check-platform-reqs) command as part of your
+deployment strategy.
+
+If a dependency requires some extension that you do not have installed locally
+you may ignore it instead by passing `--ignore-platform-req=ext-foo` to `update`,
+`install` or `require`. In the long run though you should install required
+extensions as if you ignore one now and a new package you add a month later also
+requires it, you may introduce issues in production unknowingly.
+
 ## vendor-dir
 
 Defaults to `vendor`. You can install dependencies into a different directory if
