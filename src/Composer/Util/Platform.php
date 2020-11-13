@@ -89,4 +89,26 @@ class Platform
 
         return \strlen($str);
     }
+
+    public static function isTty($fd = null)
+    {
+        if ($fd === null) {
+            $fd = STDOUT;
+        }
+
+        // modern cross-platform function, includes the fstat
+        // fallback so if it is present we trust it
+        if (function_exists('stream_isatty')) {
+            return stream_isatty($fd);
+        }
+
+        // only trusting this if it is positive, otherwise prefer fstat fallback
+        if (function_exists('posix_isatty') && posix_isatty($fd)) {
+            return true;
+        }
+
+        $stat = @fstat($fd);
+        // Check if formatted mode is S_IFCHR
+        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
+    }
 }

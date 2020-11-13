@@ -77,15 +77,11 @@ class ProcessExecutor
      */
     public function executeTty($command, $cwd = null)
     {
-        if (
-            /* @see \Composer\Console\Application::doRun - tty test */
-            (function_exists('stream_isatty') && !stream_isatty(STDOUT))
-            || (function_exists('posix_isatty') && !posix_isatty(STDOUT))
-        ) {
-            return $this->doExecute($command, $cwd, false);
+        if (Platform::isTty()) {
+            return $this->doExecute($command, $cwd, true);
         }
 
-        return $this->doExecute($command, $cwd, true);
+        return $this->doExecute($command, $cwd, false);
     }
 
     private function doExecute($command, $cwd, $tty, &$output = null)
