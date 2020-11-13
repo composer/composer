@@ -174,7 +174,7 @@ class NoProxyPattern
      * @param int $index
      * @param string $hostName
      *
-     * @return {null|stdClass} Null if the hostname is invalid
+     * @return null|stdClass Null if the hostname is invalid
      */
     private function getRule($index, $hostName)
     {

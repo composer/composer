@@ -599,7 +599,7 @@ class PlatformRepository extends ArrayRepository
     /**
      * Check if a package name is a platform package.
      *
-     * @param $name
+     * @param mixed $name
      * @return bool
      */
     public static function isPlatformPackage($name)

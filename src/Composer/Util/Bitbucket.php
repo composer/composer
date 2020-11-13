@@ -90,7 +90,6 @@ class Bitbucket
     }
 
     /**
-     * @param  string $originUrl
      * @return bool
      */
     private function requestAccessToken()

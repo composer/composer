@@ -152,7 +152,7 @@ class ProxyManager
     /**
      * Sets initial data
      *
-     * @param string $proxyUrl Proxy url
+     * @param string $url Proxy url
      * @param string $scheme Environment variable scheme
      */
     private function setData($url, $scheme)

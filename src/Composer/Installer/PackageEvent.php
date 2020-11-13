@@ -66,7 +66,6 @@ class PackageEvent extends Event
      * @param IOInterface          $io
      * @param bool                 $devMode
      * @param RepositoryInterface  $localRepo
-     * @param Request              $request
      * @param OperationInterface[] $operations
      * @param OperationInterface   $operation
      */
