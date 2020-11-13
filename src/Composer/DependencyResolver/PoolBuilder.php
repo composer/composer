@@ -507,6 +507,11 @@ class PoolBuilder
             $this->unlockPackage($request, $this->skippedLoad[$name]);
         }
 
+        // reload the aliases for the package being unlocked
+        if (isset($this->rootAliases[$name])) {
+            $this->unusedRootAliases[$name] = $this->rootAliases[$name];
+        }
+
         unset($this->skippedLoad[$name], $this->loadedPackages[$name], $this->maxExtendedReqs[$name]);
     }
 
