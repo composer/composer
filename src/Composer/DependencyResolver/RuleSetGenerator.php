@@ -211,7 +211,12 @@ class RuleSetGenerator
                 $conflicts = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
 
                 foreach ($conflicts as $conflict) {
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $conflict, Rule::RULE_PACKAGE_CONFLICT, $link));
+                    // define the conflict rule for regular packages, for alias packages it's only needed if the name
+                    // matches the conflict exactly, otherwise the name match is by provide/replace which means the
+                    // package which this is an alias of will conflict anyway, so no need to create additional rules
+                    if (!$conflict instanceof AliasPackage || $conflict->getName() === $link->getTarget()) {
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $conflict, Rule::RULE_PACKAGE_CONFLICT, $link));
+                    }
                 }
             }
         }
