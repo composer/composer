@@ -431,7 +431,7 @@ class AliasPackage extends BasePackage implements CompletePackageInterface
 
     public function __toString()
     {
-        return parent::__toString().' (alias of '.$this->aliasOf->getVersion().')';
+        return parent::__toString().' ('.($this->rootPackageAlias ? 'root ':''). 'alias of '.$this->aliasOf->getVersion().')';
     }
 
     public function setDistUrl($url)
