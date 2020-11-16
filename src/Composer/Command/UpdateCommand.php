@@ -67,6 +67,8 @@ class UpdateCommand extends BaseCommand
                 new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
                 new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
                 new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
+                new InputOption('load-links', null, InputOption::VALUE_NONE, 'Load from local paths packages previously "exported" via `link` command to Composer default links repository.'),
+                new InputOption('links-from', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Similar to `--load-links`, load local packages exported to given link repositories.'),
             ))
             ->setHelp(
                 <<<EOT
@@ -202,6 +204,11 @@ EOT
 
         $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
+        $loadLinksFromPaths = $input->getOption('links-from');
+        if ($input->getOption('load-links')) {
+            $loadLinksFromPaths[] = $config->get('home');
+        }
+
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
@@ -221,6 +228,7 @@ EOT
             ->setIgnorePlatformRequirements($ignorePlatformReqs)
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
+            ->setLinkPackagesRepoPaths($loadLinksFromPaths)
         ;
 
         if ($input->getOption('no-plugins')) {

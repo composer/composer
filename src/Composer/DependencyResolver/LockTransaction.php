@@ -43,20 +43,20 @@ class LockTransaction extends Transaction
      */
     protected $resultPackages;
 
-    public function __construct(Pool $pool, $presentMap, $unlockableMap, $decisions)
+    public function __construct(Pool $pool, $presentMap, $unlockableMap, $decisions, $linkedPackages)
     {
         $this->presentMap = $presentMap;
         $this->unlockableMap = $unlockableMap;
 
-        $this->setResultPackages($pool, $decisions);
+        $this->setResultPackages($pool, $decisions, $linkedPackages);
         parent::__construct($this->presentMap, $this->resultPackages['all']);
 
     }
 
     // TODO make this a bit prettier instead of the two text indexes?
-    public function setResultPackages(Pool $pool, Decisions $decisions)
+    public function setResultPackages(Pool $pool, Decisions $decisions, $linkedPackages)
     {
-        $this->resultPackages = array('all' => array(), 'non-dev' => array(), 'dev' => array());
+        $this->resultPackages = array('all' => array(), 'non-dev' => array(), 'dev' => array(), 'links' => array());
         foreach ($decisions as $i => $decision) {
             $literal = $decision[Decisions::DECISION_LITERAL];
 
@@ -67,6 +67,14 @@ class LockTransaction extends Transaction
                 if (!isset($this->unlockableMap[$package->id])) {
                     $this->resultPackages['non-dev'][] = $package;
                 }
+            }
+        }
+
+        foreach ($linkedPackages as $package) {
+            $this->resultPackages['all'][] = $package;
+            $this->resultPackages['links'][] = $package;
+            if (!isset($this->unlockableMap[$package->id])) {
+                $this->resultPackages['non-dev'][] = $package;
             }
         }
     }

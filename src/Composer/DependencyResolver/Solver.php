@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
+use Composer\Repository\PackageLinks;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\MultiConstraint;
 
@@ -57,16 +58,21 @@ class Solver
     /** @var IOInterface */
     protected $io;
 
+    /** @var PackageLinks|null */
+    private $packageLinks;
+
     /**
      * @param PolicyInterface     $policy
      * @param Pool                $pool
      * @param IOInterface         $io
+     * @param PackageLinks        $packageLinks
      */
-    public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io)
+    public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io, PackageLinks $packageLinks = null)
     {
         $this->io = $io;
         $this->policy = $policy;
         $this->pool = $pool;
+        $this->packageLinks = $packageLinks;
     }
 
     /**
@@ -91,6 +97,11 @@ class Solver
         $rulesCount = \count($this->rules);
         for ($ruleIndex = 0; $ruleIndex < $rulesCount; $ruleIndex++) {
             $rule = $this->rules->ruleById[$ruleIndex];
+
+            if ($this->packageLinks && $this->packageLinks->hasPackage($rule->getRequiredPackage())) {
+                $this->packageLinks->setRequired($rule->getReasonData());
+                continue;
+            }
 
             if (!$rule->isAssertion() || $rule->isDisabled()) {
                 continue;
@@ -173,6 +184,11 @@ class Solver
                 continue;
             }
 
+            if ($this->packageLinks && $this->packageLinks->hasPackage($packageName)) {
+                $this->packageLinks->getPackage($packageName)->checkConstraint($constraint);
+                continue;
+            }
+
             if (!$this->pool->whatProvides($packageName, $constraint)) {
                 $problem = new Problem();
                 $problem->addRule(new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => $packageName, 'constraint' => $constraint)));
@@ -215,7 +231,21 @@ class Solver
             throw new SolverProblemsException($this->problems, $this->learnedPool);
         }
 
-        return new LockTransaction($this->pool, $request->getPresentMap(), $request->getFixedPackagesMap(), $this->decisions);
+        $linkPackages = $this->packageLinks ? $this->packageLinks->getAllRequired() : null;
+        if ($linkPackages) {
+            $countLinkPackages = count($linkPackages);
+            $countLinkPackagesStr = $countLinkPackages === 1 ? 'one linked package': '%d linked packages';
+            $linkPackagesMessages = array('<info>Found '.$countLinkPackagesStr.':</info>');
+            foreach ($linkPackages as $linkPackage) {
+                $linkPackagesMessages[] = sprintf('  - <info>%s</info> from %s', $linkPackage->getName(), $linkPackage->getDistUrl());
+                if ($this->io->isVeryVerbose()) {
+                    $linkPackagesMessages[] = '    (<comment>'.$linkPackage->getConstraintsPrettyString().'</comment>)';
+                }
+            }
+            $this->io->writeError($linkPackagesMessages, true, IOInterface::VERBOSE);
+        }
+
+        return new LockTransaction($this->pool, $request->getPresentMap(), $request->getFixedPackagesMap(), $this->decisions, $linkPackages);
     }
 
     /**
@@ -644,7 +674,7 @@ class Solver
             if (1 === $level) {
                 $conflictRule = $this->propagate($level);
                 if (null !== $conflictRule) {
-                    if ($this->analyzeUnsolvable($conflictRule)) {
+                    if ($this->analyzeUnsolvable($conflictRule) || ($this->packageLinks && $this->packageLinks->hasPackage($conflictRule->getRequiredPackage()))) {
                         continue;
                     }
 
@@ -656,7 +686,7 @@ class Solver
             if ($level < $systemLevel) {
                 $iterator = $this->rules->getIteratorFor(RuleSet::TYPE_REQUEST);
                 foreach ($iterator as $rule) {
-                    if ($rule->isEnabled()) {
+                    if ($rule->isEnabled() && !($this->packageLinks && $this->packageLinks->hasPackage($rule->getRequiredPackage()))) {
                         $decisionQueue = array();
                         $noneSatisfied = true;
 

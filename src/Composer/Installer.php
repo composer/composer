@@ -159,6 +159,12 @@ class Installer
      */
     protected $additionalFixedRepository;
 
+    /** @var string[] */
+    protected $loadLinksFromPaths = array();
+
+    /** @var bool */
+    protected $ignoreLinks;
+
     /**
      * Constructor
      *
@@ -421,7 +427,8 @@ class Installer
         $this->io->writeError('<info>Updating dependencies</info>');
 
         // solve dependencies
-        $solver = new Solver($policy, $pool, $this->io);
+        $packageLinks = $repositorySet->getPackageLinks();
+        $solver = new Solver($policy, $pool, $this->io, $packageLinks);
         try {
             $lockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
             $ruleSetSize = $solver->getRuleSetSize();
@@ -534,7 +541,8 @@ class Installer
             $this->preferStable || $this->package->getPreferStable(),
             $this->preferLowest,
             $this->config->get('platform') ?: array(),
-            $this->writeLock && $this->executeOperations
+            $this->writeLock && $this->executeOperations,
+            $packageLinks
         );
         if ($updatedLock && $this->writeLock && $this->executeOperations) {
             $this->io->writeError('<info>Writing lock file</info>');
@@ -587,7 +595,7 @@ class Installer
 
         $pool = $repositorySet->createPoolWithAllPackages();
 
-        $solver = new Solver($policy, $pool, $this->io);
+        $solver = new Solver($policy, $pool, $this->io, $repositorySet->getPackageLinks());
         try {
             $nonDevLockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
             $solver = null;
@@ -652,7 +660,7 @@ class Installer
             $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher);
 
             // solve dependencies
-            $solver = new Solver($policy, $pool, $this->io);
+            $solver = new Solver($policy, $pool, $this->io, $repositorySet->getPackageLinks());
             try {
                 $lockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
                 $solver = null;
@@ -756,7 +764,9 @@ class Installer
             $stabilityFlags = $this->package->getStabilityFlags();
 
             $requires = array_merge($this->package->getRequires(), $this->package->getDevRequires());
+            $packageLinks = $this->createPackageLinks();
         } else {
+            $packageLinks = $this->ignoreLinks ? Factory::createPackageLinks($this->io) : $this->locker->getPackageLinks();
             $minimumStability = $this->locker->getMinimumStability();
             $stabilityFlags = $this->locker->getStabilityFlags();
 
@@ -787,7 +797,7 @@ class Installer
 
         $stabilityFlags[$this->package->getName()] = BasePackage::$stabilities[VersionParser::parseStability($this->package->getVersion())];
 
-        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $this->package->getReferences(), $rootRequires);
+        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $this->package->getReferences(), $rootRequires, $packageLinks);
         $repositorySet->addRepository(new RootPackageRepository($this->fixedRootPackage));
         $repositorySet->addRepository($platformRepo);
         if ($this->additionalFixedRepository) {
@@ -855,6 +865,22 @@ class Installer
         }
 
         return $request;
+    }
+
+    /**
+     * @return Repository\PackageLinks
+     */
+    private function createPackageLinks()
+    {
+        $packageLinks = Factory::createPackageLinks($this->io);
+        foreach ($this->loadLinksFromPaths as $rawPath) {
+            $path = realpath(rtrim((string) $rawPath, '/\\'));
+            if ($path && is_dir($path)) {
+                $packageLinks->loadLinksFromPath($path);
+            }
+        }
+
+        return $packageLinks;
     }
 
     /**
@@ -1299,6 +1325,28 @@ class Installer
     public function setSuggestedPackagesReporter(SuggestedPackagesReporter $suggestedPackagesReporter)
     {
         $this->suggestedPackagesReporter = $suggestedPackagesReporter;
+
+        return $this;
+    }
+
+    /**
+     * @param array $loadLinksFromPaths
+     * @return Installer
+     */
+    public function setLinkPackagesRepoPaths(array $loadLinksFromPaths)
+    {
+        $this->loadLinksFromPaths = $loadLinksFromPaths;
+
+        return $this;
+    }
+
+    /**
+     * @param bool $ignoreLinks
+     * @return Installer
+     */
+    public function setIgnoreLinks($ignoreLinks)
+    {
+        $this->ignoreLinks = (bool)$ignoreLinks;
 
         return $this;
     }

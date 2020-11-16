@@ -273,10 +273,20 @@ EOT
                     return $exitCode;
                 }
 
+                $linkInfo = array();
+                if ($composer) {
+                    if (!isset($locker)) {
+                        $locker = $composer->getLocker();
+                    }
+                    if ($locker->isLocked()) {
+                        $linkInfo = $locker->getLinkedPackageInfo($package->getName());
+                    }
+                }
+
                 if ('json' === $format) {
-                    $this->printPackageInfoAsJson($package, $versions, $installedRepo, $latestPackage ?: null);
+                    $this->printPackageInfoAsJson($package, $versions, $installedRepo, $latestPackage ?: null, $linkInfo);
                 } else {
-                    $this->printPackageInfo($package, $versions, $installedRepo, $latestPackage ?: null);
+                    $this->printPackageInfo($package, $versions, $installedRepo, $latestPackage ?: null, $linkInfo);
                 }
             }
 
@@ -615,8 +625,9 @@ EOT
      * @param array                    $versions
      * @param InstalledRepository      $installedRepo
      * @param PackageInterface|null    $latestPackage
+     * @param array                    $linkInfo
      */
-    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null)
+    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null, $linkInfo = array())
     {
         $io = $this->getIO();
 
@@ -634,6 +645,12 @@ EOT
         $this->printLinks($package, Link::TYPE_PROVIDE);
         $this->printLinks($package, Link::TYPE_CONFLICT);
         $this->printLinks($package, Link::TYPE_REPLACE);
+
+        if ($linkInfo) {
+            $io->write("\n<info>link</info>");
+            $io->write('path <comment>' . $linkInfo['path'] . '</comment>');
+            $io->write('repository <comment>' . $linkInfo['repository'] . '</comment>');
+        }
     }
 
     /**
@@ -789,8 +806,9 @@ EOT
      * @param array                    $versions
      * @param InstalledRepository      $installedRepo
      * @param PackageInterface|null    $latestPackage
+     * @param array                    $linkInfo
      */
-    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null)
+    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null, $linkInfo = array())
     {
         $json = array(
             'name' => $package->getPrettyName(),
@@ -852,6 +870,10 @@ EOT
         }
 
         $json = $this->appendLinks($json, $package);
+
+        if ($linkInfo) {
+            $json['link'] = array('repository' => $linkInfo['repository'], 'path' => $linkInfo['path']);
+        }
 
         $this->getIO()->write(JsonFile::encode($json));
     }

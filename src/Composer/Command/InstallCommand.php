@@ -52,6 +52,7 @@ class InstallCommand extends BaseCommand
                 new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
+                new InputOption('ignore-links', null, InputOption::VALUE_NONE, 'Ignore all package links in composer.lock.'),
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Should not be provided, use composer require instead to add a given package to composer.json.'),
             ))
             ->setHelp(
@@ -122,6 +123,7 @@ EOT
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu, $apcuPrefix)
             ->setIgnorePlatformRequirements($ignorePlatformReqs)
+            ->setIgnoreLinks($input->getOption('ignore-links'))
         ;
 
         if ($input->getOption('no-plugins')) {

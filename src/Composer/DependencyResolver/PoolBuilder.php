@@ -20,6 +20,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Version\StabilityFilter;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PrePoolCreateEvent;
+use Composer\Repository\PackageLinks;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\CompilingMatcher;
@@ -121,7 +122,7 @@ class PoolBuilder
         $this->io = $io;
     }
 
-    public function buildPool(array $repositories, Request $request)
+    public function buildPool(array $repositories, Request $request, PackageLinks $packageLinks = null)
     {
         if ($request->getUpdateAllowList()) {
             $this->updateAllowList = $request->getUpdateAllowList();
@@ -206,6 +207,14 @@ class PoolBuilder
                         unset($this->packages[$index]);
                     }
                 }
+            }
+        }
+
+        if ($packageLinks) {
+            foreach ($packageLinks->getAllPackages() as $package) {
+                $index = $this->indexCounter++;
+                $this->packages[$index] = $package;
+                $this->stabilityFlags[$package->getName()] = BasePackage::STABILITY_DEV;
             }
         }
 

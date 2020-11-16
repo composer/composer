@@ -77,6 +77,9 @@ class RepositorySet
     /** @var bool */
     private $allowInstalledRepositories = false;
 
+    /** @var PackageLinks|null */
+    private $packageLinks;
+
     /**
      * In most cases if you are looking to use this class as a way to find packages from repositories
      * passing minimumStability is all you need to worry about. The rest is for advanced pool creation including
@@ -90,10 +93,11 @@ class RepositorySet
      * @param string[] $rootReferences an array of package name => source reference
      * @psalm-param array<string, string> $rootReferences
      */
-    public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
+    public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array(), PackageLinks $packageLinks = null)
     {
         $this->rootAliases = self::getRootAliasesPerPackage($rootAliases);
         $this->rootReferences = $rootReferences;
+        $this->packageLinks = $packageLinks;
 
         $this->acceptableStabilities = array();
         foreach (BasePackage::$stabilities as $stability => $value) {
@@ -118,6 +122,11 @@ class RepositorySet
     public function getRootRequires()
     {
         return $this->rootRequires;
+    }
+
+    public function getPackageLinks()
+    {
+        return $this->packageLinks;
     }
 
     /**
@@ -161,7 +170,13 @@ class RepositorySet
         $loadFromAllRepos = ($flags & self::ALLOW_SHADOWED_REPOSITORIES) !== 0;
 
         $packages = array();
-        if ($loadFromAllRepos) {
+        if ($this->packageLinks && $this->packageLinks->hasPackage($name)) {
+            $package = $this->packageLinks->getPackage($name);
+            if ($constraint) {
+                $package->checkConstraint($constraint);
+            }
+            $packages[] = array($package);
+        } elseif ($loadFromAllRepos) {
             foreach ($this->repositories as $repository) {
                 $packages[] = $repository->findPackages($name, $constraint) ?: array();
             }
@@ -220,6 +235,10 @@ class RepositorySet
      */
     public function createPool(Request $request, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {
+        if ($this->packageLinks && $this->packageLinks->hasPackages()) {
+            array_unshift($this->repositories, $this->packageLinks->getRepository());
+        }
+
         $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher);
 
         foreach ($this->repositories as $repo) {
@@ -230,7 +249,7 @@ class RepositorySet
 
         $this->locked = true;
 
-        return $poolBuilder->buildPool($this->repositories, $request);
+        return $poolBuilder->buildPool($this->repositories, $request, $this->packageLinks);
     }
 
     /**

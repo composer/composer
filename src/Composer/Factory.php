@@ -16,8 +16,11 @@ use Composer\Config\JsonConfigSource;
 use Composer\Json\JsonFile;
 use Composer\IO\IOInterface;
 use Composer\Package\Archiver;
+use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\RootPackageInterface;
+use Composer\Repository\PackageLinks;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\WritableRepositoryInterface;
@@ -646,6 +649,20 @@ class Factory
         }
 
         return $httpDownloader;
+    }
+
+    /**
+     * @param IOInterface $io
+     * @param ProcessExecutor|null $process
+     * @param bool $fromLocked
+     * @return PackageLinks
+     */
+    public static function createPackageLinks(IOInterface $io, ProcessExecutor $process = null, $fromLocked = false)
+    {
+        $loader = new ValidatingArrayLoader(new ArrayLoader());
+        $filesystem = new Filesystem($process);
+
+        return new PackageLinks($io, $loader, $filesystem, $fromLocked);
     }
 
     /**

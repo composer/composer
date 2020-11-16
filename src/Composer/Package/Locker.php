@@ -12,10 +12,13 @@
 
 namespace Composer\Package;
 
+use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
 use Composer\Repository\LockArrayRepository;
+use Composer\Repository\PackageLinks;
 use Composer\Repository\RepositoryManager;
+use Composer\Semver\Constraint\Constraint;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
@@ -33,6 +36,8 @@ use Seld\JsonLint\ParsingException;
  */
 class Locker
 {
+    /** @var IOInterface */
+    private $io;
     /** @var JsonFile */
     private $lockFile;
     /** @var InstallationManager */
@@ -67,6 +72,7 @@ class Locker
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
         $this->process = $process ?: new ProcessExecutor($io);
+        $this->io = $io;
     }
 
     /**
@@ -296,6 +302,35 @@ class Locker
         return isset($lockData['aliases']) ? $lockData['aliases'] : array();
     }
 
+    public function getPackageLinks()
+    {
+        $lockData = $this->getLockData();
+
+        $links = isset($lockData['links']) ? $lockData['links'] : array();
+        $repos = isset($links['repositories']) ? $links['repositories'] : array();
+        $packageLinks = Factory::createPackageLinks($this->io, $this->process, true);
+        foreach ($repos as $repo) {
+            $packageLinks->loadLinksFromPath($repo);
+        }
+
+        return $packageLinks;
+    }
+
+    public function getLinkedPackageInfo($packageName)
+    {
+        $lockData = $this->getLockData();
+
+        $links = isset($lockData['links']) ? $lockData['links'] : array();
+        $packages = isset($links['packages']) ? $links['packages'] : array();
+        foreach ($packages as $package) {
+            if ($package['name'] === $packageName) {
+                return $package;
+            }
+        }
+
+        return null;
+    }
+
     public function getLockData()
     {
         if (null !== $this->lockDataCache) {
@@ -326,7 +361,7 @@ class Locker
      *
      * @return bool
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides, $write = true)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides, $write = true, PackageLinks $packageLinks = null)
     {
         // keep old default branch names normalized to DEFAULT_BRANCH_ALIAS for BC as that is how Composer 1 outputs the lock file
         // when loading the lock file the version is anyway ignored in Composer 2, so it has no adverse effect
@@ -354,6 +389,11 @@ class Locker
         $lock['packages'] = $this->lockPackages($packages);
         if (null !== $devPackages) {
             $lock['packages-dev'] = $this->lockPackages($devPackages);
+        }
+
+        $links = $this->lockLinks($packageLinks);
+        if ($links) {
+            $lock['links'] = $links;
         }
 
         $lock['platform'] = $platformReqs;
@@ -434,6 +474,25 @@ class Locker
         });
 
         return $locked;
+    }
+
+    private function lockLinks(PackageLinks $packageLinks = null)
+    {
+        if (!$packageLinks) {
+            return array();
+        }
+
+        $links = array('packages' => array(), 'repositories' => array());
+        foreach ($packageLinks->getAllRequired() as $linkPackage) {
+            $links['packages'][] = array(
+                'name' => $linkPackage->getName(),
+                'path' => $linkPackage->getDistUrl(),
+                'repository' => $linkPackage->getLinkRepoPath(),
+            );
+        }
+        $links['repositories'] = $packageLinks->getLoadedLinkRepoPaths();
+
+        return $links;
     }
 
     /**
