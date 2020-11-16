@@ -23,5 +23,21 @@ Test that conflict on a branch alias is respected
 }
 --RUN--
 update
+--EXPECT-LOCK--
+{
+    "packages": [
+        { "name": "some/dep", "version": "1.2.x-dev", "type": "library" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "some/dep": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
 --EXPECT--
 Installing some/dep (1.2.x-dev)
