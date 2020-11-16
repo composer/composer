@@ -183,6 +183,7 @@ class InstallationManager
         $cleanupPromises = array();
 
         $loop = $this->loop;
+        $io = $this->io;
         $runCleanup = function () use (&$cleanupPromises, $loop) {
             $promises = array();
 
@@ -213,7 +214,8 @@ class InstallationManager
         if ($handleInterruptsUnix) {
             pcntl_async_signals(true);
             $prevHandler = pcntl_signal_get_handler(SIGINT);
-            pcntl_signal(SIGINT, function ($sig) use ($runCleanup, $prevHandler) {
+            pcntl_signal(SIGINT, function ($sig) use ($runCleanup, $prevHandler, $io) {
+                $io->writeError('Received SIGINT, aborting', true, IOInterface::DEBUG);
                 $runCleanup();
 
                 if (!in_array($prevHandler, array(SIG_DFL, SIG_IGN), true)) {
@@ -224,7 +226,11 @@ class InstallationManager
             });
         }
         if ($handleInterruptsWindows) {
-            $windowsHandler = function () use ($runCleanup) {
+            $windowsHandler = function ($event) use ($runCleanup, $io) {
+                if ($event !== PHP_WINDOWS_EVENT_CTRL_C) {
+                    return;
+                }
+                $io->writeError('Received CTRL+C, aborting', true, IOInterface::DEBUG);
                 $runCleanup();
 
                 exit(130);
