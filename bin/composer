@@ -24,7 +24,7 @@ if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '4.0', '>=')) {
 }
 
 if (function_exists('ini_set')) {
-    @ini_set('display_errors', 1);
+    @ini_set('display_errors', '1');
 
     // Set user defined memory limit
     if ($memoryLimit = getenv('COMPOSER_MEMORY_LIMIT')) {
