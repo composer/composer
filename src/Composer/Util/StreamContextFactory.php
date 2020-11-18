@@ -106,7 +106,7 @@ final class StreamContextFactory
 
         if ($forCurl) {
             $curl = curl_version();
-            $httpVersion = 'curl '.$curl['version'];
+            $httpVersion = 'cURL '.$curl['version'];
         } else {
             $httpVersion = 'streams';
         }
