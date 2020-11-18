@@ -299,7 +299,10 @@ class CurlDownloader
             try {
                 // TODO progress
                 if (CURLE_OK !== $errno || $error) {
-                    throw new TransportException('curl error while downloading '.Url::sanitize($progress['url']).': '.($error ?: '#'.$errno));
+                    if (!$error && function_exists('curl_strerror')) {
+                        $error = curl_strerror($errno);
+                    }
+                    throw new TransportException('curl error '.$errno.' while downloading '.Url::sanitize($progress['url']).': '.$error);
                 }
 
                 $statusCode = $progress['http_code'];
