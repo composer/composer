@@ -142,6 +142,9 @@ For the inline http-basic authentication method the credentials are not stored i
 `auth.json` in the project or globally, but in the `composer.json` or global configuration
 in the same place where the Composer repository definition is defined.
 
+Make sure that the username and password are encoded according to [RFC 3986](http://www.faqs.org/rfcs/rfc3986.html) (2.1. Percent-Encoding).
+If the username e.g. is an email address it needs to be passed as `name%40example.com`.
+
 ### Command line inline http-basic
 
 ```sh
