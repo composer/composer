@@ -212,7 +212,6 @@ EOT
 
         $io->write(sprintf("Upgrading to version <info>%s</info> (%s channel).", $updateVersion, $channelString));
         $remoteFilename = $baseUrl . ($updatingToTag ? "/download/{$updateVersion}/composer.phar" : '/composer.phar');
-        $signature = null;
         try {
             $signature = $httpDownloader->get($remoteFilename.'.sig')->getBody();
         } catch (TransportException $e) {
