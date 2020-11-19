@@ -212,12 +212,14 @@ EOT
 
         $io->write(sprintf("Upgrading to version <info>%s</info> (%s channel).", $updateVersion, $channelString));
         $remoteFilename = $baseUrl . ($updatingToTag ? "/download/{$updateVersion}/composer.phar" : '/composer.phar');
+        $signature = null;
         try {
             $signature = $httpDownloader->get($remoteFilename.'.sig')->getBody();
         } catch (TransportException $e) {
             if ($e->getStatusCode() === 404) {
                 throw new \InvalidArgumentException('Version "'.$updateVersion.'" could not be found.', 0, $e);
             }
+            throw $e;
         }
         $io->writeError('   ', false);
         $httpDownloader->copy($remoteFilename, $tempFilename);
