@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Json\JsonFile;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\AliasPackage;
@@ -153,7 +154,7 @@ class FilesystemRepository extends WritableArrayRepository
                     'aliases' => array(),
                     'reference' => $reference,
                     'is_dev' => $package->isDev(),
-                    'is_abandoned' => $package->isAbandoned(),
+                    'is_abandoned' => $package instanceof CompletePackageInterface ? $package->isAbandoned() : false,
                 );
                 if ($package instanceof RootPackageInterface) {
                     $versions['root'] = $versions['versions'][$package->getName()];
