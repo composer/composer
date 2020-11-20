@@ -1073,7 +1073,7 @@ Linked Version => 1.2.11',
      * @param array<string,string|false> $expectations
      * @param array<string,mixed> $functions
      * @param array<string,mixed> $constants
-     * @param array<string,class-string> $classes
+     * @param array<string,class-string> $classDefinitions
      */
     public function testLibraryInformation(
         $extensions,

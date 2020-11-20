@@ -514,8 +514,8 @@ class AuthHelperTest extends TestCase
     }
 
     /**
-     * @param $origin
-     * @param $auth
+     * @param string $origin
+     * @param array $auth
      */
     private function expectsAuthentication($origin, $auth)
     {

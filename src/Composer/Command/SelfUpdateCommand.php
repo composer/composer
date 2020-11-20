@@ -400,7 +400,7 @@ TAGSPUBKEY
      * @param  string $localFilename The composer.phar location
      * @param  string $newFilename The downloaded or backup phar
      * @param  string $backupTarget The filename to use for the backup
-     * @throws \FilesystemException If the file cannot be moved
+     * @throws FilesystemException If the file cannot be moved
      * @return bool Whether the phar is valid and has been moved
      */
     protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
