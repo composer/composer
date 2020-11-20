@@ -172,13 +172,15 @@ class InstalledVersionsTest extends TestCase
     public function testGetRootPackage()
     {
         $this->assertSame(array(
+            'name' => '__root__',
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
             'aliases' => array(
                 '1.10.x-dev',
             ),
             'reference' => 'sourceref-by-default',
-            'name' => '__root__',
+            'is_dev' => true,
+            'is_abandoned' => false,
         ), InstalledVersions::getRootPackage());
     }
 
