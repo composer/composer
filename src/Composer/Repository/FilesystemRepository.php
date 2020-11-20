@@ -147,6 +147,7 @@ class FilesystemRepository extends WritableArrayRepository
                 }
 
                 $versions['versions'][$package->getName()] = array(
+                    'name' => $package->getName(),
                     'pretty_version' => $package->getPrettyVersion(),
                     'version' => $package->getVersion(),
                     'aliases' => array(),
@@ -154,7 +155,6 @@ class FilesystemRepository extends WritableArrayRepository
                 );
                 if ($package instanceof RootPackageInterface) {
                     $versions['root'] = $versions['versions'][$package->getName()];
-                    $versions['root']['name'] = $package->getName();
                 }
             }
 
