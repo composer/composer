@@ -152,6 +152,8 @@ class FilesystemRepository extends WritableArrayRepository
                     'version' => $package->getVersion(),
                     'aliases' => array(),
                     'reference' => $reference,
+                    'is_dev' => $package->isDev(),
+                    'is_abandoned' => $package->isAbandoned(),
                 );
                 if ($package instanceof RootPackageInterface) {
                     $versions['root'] = $versions['versions'][$package->getName()];
