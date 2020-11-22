@@ -2465,8 +2465,8 @@ class JsonManipulatorTest extends TestCase
 }
 ', $manipulator->getContents());
 
-        $this->assertFalse($manipulator->removeMainKeyIfEmpty('foo'));
-        $this->assertFalse($manipulator->removeMainKeyIfEmpty('require'));
+        $this->assertTrue($manipulator->removeMainKeyIfEmpty('foo'));
+        $this->assertTrue($manipulator->removeMainKeyIfEmpty('require'));
         $this->assertTrue($manipulator->removeMainKeyIfEmpty('require-dev'));
         $this->assertEquals('{
     "require": {
