@@ -255,7 +255,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * @param int $max
+     * @param  int         $max
      * @return ProgressBar
      */
     public function getProgressBar($max = 0)

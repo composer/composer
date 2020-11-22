@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Console;
 
 use Composer\IO\IOInterface;
@@ -17,9 +27,9 @@ final class GithubActionError
     }
 
     /**
-     * @param string $message
+     * @param string      $message
      * @param null|string $file
-     * @param null|int $line
+     * @param null|int    $line
      */
     public function emit($message, $file = null, $line = null)
     {

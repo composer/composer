@@ -38,7 +38,7 @@ class ComposerRepositoryTest extends TestCase
                 new NullIO,
                 FactoryMock::createConfig(),
                 $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
-                $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
+                $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock(),
             ))
             ->getMock();
 
@@ -104,7 +104,7 @@ class ComposerRepositoryTest extends TestCase
                 new NullIO,
                 FactoryMock::createConfig(),
                 $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
-                $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
+                $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock(),
             ))
             ->setMethods(array('fetchFile'))
             ->getMock();
@@ -304,7 +304,7 @@ class ComposerRepositoryTest extends TestCase
                 'packages' => array('foo/bar' => array(
                     'dev-branch' => array('name' => 'foo/bar'),
                     'v1.0.0' => array('name' => 'foo/bar'),
-                ))
+                )),
             ))));
 
         $repository = new ComposerRepository(

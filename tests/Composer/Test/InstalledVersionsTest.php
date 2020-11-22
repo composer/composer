@@ -12,7 +12,6 @@
 
 namespace Composer\Test;
 
-use Composer\Test\TestCase;
 use Composer\InstalledVersions;
 use Composer\Semver\VersionParser;
 

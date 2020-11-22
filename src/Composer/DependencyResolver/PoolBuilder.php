@@ -281,6 +281,7 @@ class PoolBuilder
             }
 
             $this->packagesToLoad[$name] = $constraint;
+
             return;
         }
 
@@ -420,6 +421,7 @@ class PoolBuilder
     private function isRootRequire(Request $request, $name)
     {
         $rootRequires = $request->getRequires();
+
         return isset($rootRequires[$name]);
     }
 
@@ -503,4 +505,3 @@ class PoolBuilder
         }
     }
 }
-

@@ -17,7 +17,6 @@ use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\RuleSetIterator;
 use Composer\DependencyResolver\Pool;
-use Composer\Package\BasePackage;
 use Composer\Test\TestCase;
 
 class RuleSetIteratorTest extends TestCase

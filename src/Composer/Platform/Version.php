@@ -18,8 +18,8 @@ namespace Composer\Platform;
 class Version
 {
     /**
-     * @param string $opensslVersion
-     * @param bool $isFips
+     * @param  string      $opensslVersion
+     * @param  bool        $isFips
      * @return string|null
      */
     public static function parseOpenssl($opensslVersion, &$isFips)
@@ -38,7 +38,7 @@ class Version
     }
 
     /**
-     * @param string $libjpegVersion
+     * @param  string      $libjpegVersion
      * @return string|null
      */
     public static function parseLibjpeg($libjpegVersion)
@@ -51,7 +51,7 @@ class Version
     }
 
     /**
-     * @param string $zoneinfoVersion
+     * @param  string      $zoneinfoVersion
      * @return string|null
      */
     public static function parseZoneinfoVersion($zoneinfoVersion)
@@ -66,16 +66,16 @@ class Version
     /**
      * "" => 0, "a" => 1, "zg" => 33
      *
-     * @param string $alpha
+     * @param  string $alpha
      * @return int
      */
     private static function convertAlphaVersionToIntVersion($alpha)
     {
-        return strlen($alpha) * (-ord('a')+1) + array_sum(array_map('ord', str_split($alpha)));
+        return strlen($alpha) * (-ord('a') + 1) + array_sum(array_map('ord', str_split($alpha)));
     }
 
     /**
-     * @param int $versionId
+     * @param  int    $versionId
      * @return string
      */
     public static function convertLibxpmVersionId($versionId)
@@ -84,7 +84,7 @@ class Version
     }
 
     /**
-     * @param int $versionId
+     * @param  int    $versionId
      * @return string
      */
     public static function convertOpenldapVersionId($versionId)

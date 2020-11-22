@@ -12,14 +12,13 @@
 
 namespace Composer\Test {
     use PHPUnit\Framework\TestCase;
-    use PHPUnit\Framework\Constraint\IsEqual;
     use PHPUnit\Framework\Constraint\LogicalNot;
-    use PHPUnit\Framework\Constraint\RegularExpression;
     use PHPUnit\Framework\Constraint\StringContains;
-    use PHPUnit\Framework\Constraint\TraversableContains;
 
     if (method_exists('PHPUnit\Framework\TestCase', 'assertStringContainsString')) {
-        abstract class PolyfillTestCase extends TestCase {}
+        abstract class PolyfillTestCase extends TestCase
+        {
+        }
     } else {
         abstract class PolyfillTestCase extends TestCase
         {
@@ -497,7 +496,6 @@ namespace Composer\Test {
     }
 }
 
-
 namespace {
     foreach (array(
         'PHPUnit\Framework\Constraint\IsEqual',
@@ -531,8 +529,8 @@ namespace {
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace PHPUnit\Framework\Constraint {
-    use Countable;
     use PHPUnit\Framework\ExpectationFailedException;
 
     if (!class_exists('PHPUnit\Framework\Constraint\RegularExpression')) {
@@ -631,7 +629,7 @@ namespace PHPUnit\Framework\Constraint {
                     'starts with ',
                     'ends with ',
                     'reference ',
-                    'not not '
+                    'not not ',
                 );
 
                 $negatives = array(
@@ -644,7 +642,7 @@ namespace PHPUnit\Framework\Constraint {
                     'starts not with ',
                     'ends not with ',
                     'don\'t reference ',
-                    'not '
+                    'not ',
                 );
 
                 \preg_match('/(\'[\w\W]*\')([\w\W]*)("[\w\W]*")/i', $string, $matches);
@@ -686,9 +684,8 @@ namespace PHPUnit\Framework\Constraint {
              * @param string $description  Additional information about the test
              * @param bool   $returnResult Whether to return a result or throw an exception
              *
-             * @return mixed
-             *
              * @throws ExpectationFailedException
+             * @return mixed
              */
             public function evaluate($other, $description = '', $returnResult = false)
             {

@@ -18,7 +18,6 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
-use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
@@ -33,7 +32,6 @@ class InstallationManagerMock extends InstallationManager
 
     public function __construct()
     {
-
     }
 
     public function execute(RepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true)

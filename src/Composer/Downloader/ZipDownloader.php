@@ -12,16 +12,10 @@
 
 namespace Composer\Downloader;
 
-use Composer\Config;
-use Composer\Cache;
-use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Filesystem;
-use Composer\Util\HttpDownloader;
-use Composer\IO\IOInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use ZipArchive;
 
@@ -75,9 +69,9 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * extract $file to $path with "unzip" command
      *
-     * @param  string $file         File to extract
-     * @param  string $path         Path where to extract file
-     * @param  bool   $isLastChance If true it is called as a fallback and should throw an exception
+     * @param string $file         File to extract
+     * @param string $path         Path where to extract file
+     * @param bool   $isLastChance If true it is called as a fallback and should throw an exception
      */
     private function extractWithSystemUnzip(PackageInterface $package, $file, $path, $isLastChance, $async = false)
     {
@@ -160,9 +154,9 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * extract $file to $path with ZipArchive
      *
-     * @param  string $file         File to extract
-     * @param  string $path         Path where to extract file
-     * @param  bool   $isLastChance If true it is called as a fallback and should throw an exception
+     * @param string $file         File to extract
+     * @param string $path         Path where to extract file
+     * @param bool   $isLastChance If true it is called as a fallback and should throw an exception
      *
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @protected

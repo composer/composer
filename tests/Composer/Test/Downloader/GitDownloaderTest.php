@@ -18,8 +18,6 @@ use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Prophecy\Argument;
-use Composer\Util\ProcessExecutor;
-use Composer\Util\Git as GitUtil;
 
 class GitDownloaderTest extends TestCase
 {

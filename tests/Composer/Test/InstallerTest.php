@@ -86,7 +86,7 @@ class InstallerTest extends TestCase
         $lockJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
         $lockJsonMock->expects($this->any())
             ->method('read')
-            ->will($this->returnCallback(function() use (&$lockData) {
+            ->will($this->returnCallback(function () use (&$lockData) {
                 return json_decode($lockData, true);
             }));
         $lockJsonMock->expects($this->any())
@@ -133,6 +133,7 @@ class InstallerTest extends TestCase
         foreach ($packages as $package) {
             $comparable[] = $dumper->dump($package);
         }
+
         return $comparable;
     }
 
@@ -229,11 +230,11 @@ class InstallerTest extends TestCase
         $repositoryManager->setLocalRepository(new InstalledFilesystemRepositoryMock($jsonMock));
 
         // emulate a writable lock file
-        $lockData = $lock ? json_encode($lock, JsonFile::JSON_PRETTY_PRINT): null;
+        $lockData = $lock ? json_encode($lock, JsonFile::JSON_PRETTY_PRINT) : null;
         $lockJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
         $lockJsonMock->expects($this->any())
             ->method('read')
-            ->will($this->returnCallback(function() use (&$lockData) {
+            ->will($this->returnCallback(function () use (&$lockData) {
                 return json_decode($lockData, true);
             }));
         $lockJsonMock->expects($this->any())

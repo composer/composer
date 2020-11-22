@@ -12,10 +12,8 @@
 
 namespace Composer\Package\Version;
 
-use Composer\DependencyResolver\Pool;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
-use Composer\Plugin\PluginInterface;
 use Composer\Composer;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
@@ -54,10 +52,10 @@ class VersionSelector
      * Given a package name and optional version, returns the latest PackageInterface
      * that matches.
      *
-     * @param  string                $packageName
-     * @param  string                $targetPackageVersion
-     * @param  string                $preferredStability
-     * @param  bool|array            $ignorePlatformReqs
+     * @param  string                 $packageName
+     * @param  string                 $targetPackageVersion
+     * @param  string                 $preferredStability
+     * @param  bool|array             $ignorePlatformReqs
      * @return PackageInterface|false
      */
     public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $ignorePlatformReqs = false, $repoSetFlags = 0)

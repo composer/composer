@@ -14,9 +14,7 @@ namespace Composer\Test\DependencyResolver;
 
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\LockArrayRepository;
-use Composer\Repository\RepositoryInterface;
 use Composer\DependencyResolver\DefaultPolicy;
-use Composer\DependencyResolver\Pool;
 use Composer\Package\Link;
 use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;

@@ -15,7 +15,6 @@ namespace Composer\Util;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
-use Composer\CaBundle\CaBundle;
 use Composer\Util\Http\Response;
 use Composer\Composer;
 use Composer\Package\Version\VersionParser;
@@ -231,7 +230,7 @@ class HttpDownloader
 
             throw $e;
         });
-        $this->jobs[$job['id']] =& $job;
+        $this->jobs[$job['id']] = &$job;
 
         if ($this->runningJobs < $this->maxJobs) {
             $this->startJob($job['id']);
@@ -242,7 +241,7 @@ class HttpDownloader
 
     private function startJob($id)
     {
-        $job =& $this->jobs[$id];
+        $job = &$this->jobs[$id];
         if ($job['status'] !== self::STATUS_QUEUED) {
             return;
         }
@@ -265,6 +264,7 @@ class HttpDownloader
                 $e->setStatusCode(499);
                 $reject($e);
             }
+
             return;
         }
 
@@ -395,17 +395,17 @@ class HttpDownloader
             Silencer::suppress();
             $testConnectivity = file_get_contents('https://8.8.8.8', false, stream_context_create(array(
                 'ssl' => array('verify_peer' => false),
-                'http' => array('follow_location' => false, 'ignore_errors' => true)
+                'http' => array('follow_location' => false, 'ignore_errors' => true),
             )));
             Silencer::restore();
             if (false !== $testConnectivity) {
                 return array(
-                    '<error>The following exception probably indicates you have misconfigured DNS resolver(s)</error>'
+                    '<error>The following exception probably indicates you have misconfigured DNS resolver(s)</error>',
                 );
             }
 
             return array(
-                '<error>The following exception probably indicates you are offline or have misconfigured DNS resolver(s)</error>'
+                '<error>The following exception probably indicates you are offline or have misconfigured DNS resolver(s)</error>',
             );
         }
     }

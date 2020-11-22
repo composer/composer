@@ -27,7 +27,7 @@ class RequestProxy
 
     /**
      * @param string $url
-     * @param array $contextOptions
+     * @param array  $contextOptions
      * @param string $formattedUrl
      */
     public function __construct($url, array $contextOptions, $formattedUrl)
@@ -51,8 +51,8 @@ class RequestProxy
     /**
      * Returns the safe proxy url from the last request
      *
-     * @param string|null $format Output format specifier
-     * @return string Safe proxy, no proxy or empty
+     * @param  string|null $format Output format specifier
+     * @return string      Safe proxy, no proxy or empty
      */
     public function getFormattedUrl($format = '')
     {

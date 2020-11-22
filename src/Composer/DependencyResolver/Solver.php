@@ -15,7 +15,6 @@ namespace Composer\DependencyResolver;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
-use Composer\Semver\Constraint\MultiConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -58,9 +57,9 @@ class Solver
     protected $io;
 
     /**
-     * @param PolicyInterface     $policy
-     * @param Pool                $pool
-     * @param IOInterface         $io
+     * @param PolicyInterface $policy
+     * @param Pool            $pool
+     * @param IOInterface     $io
      */
     public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io)
     {
@@ -182,8 +181,8 @@ class Solver
     }
 
     /**
-     * @param  Request    $request
-     * @param  bool|array $ignorePlatformReqs
+     * @param  Request         $request
+     * @param  bool|array      $ignorePlatformReqs
      * @return LockTransaction
      */
     public function solve(Request $request, $ignorePlatformReqs = false)

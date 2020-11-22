@@ -16,7 +16,6 @@ use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Factory;
 use Composer\Downloader\TransportException;
-use Composer\Json\JsonFile;
 
 /**
  * @author Roshan Gautam <roshan.gautam@hotmail.com>
@@ -35,10 +34,10 @@ class GitLab
     /**
      * Constructor.
      *
-     * @param IOInterface      $io               The IO instance
-     * @param Config           $config           The composer configuration
-     * @param ProcessExecutor  $process          Process instance, injectable for mocking
-     * @param HttpDownloader $httpDownloader Remote Filesystem, injectable for mocking
+     * @param IOInterface     $io             The IO instance
+     * @param Config          $config         The composer configuration
+     * @param ProcessExecutor $process        Process instance, injectable for mocking
+     * @param HttpDownloader  $httpDownloader Remote Filesystem, injectable for mocking
      */
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null)
     {
@@ -88,8 +87,8 @@ class GitLab
         if (isset($authTokens[$bcOriginUrl])) {
             $token = $authTokens[$bcOriginUrl];
         }
-        
-        if(isset($token)){
+
+        if (isset($token)) {
             $username = is_array($token) && array_key_exists("username", $token) ? $token["username"] : $token;
             $password = is_array($token) && array_key_exists("token", $token) ? $token["token"] : 'private-token';
             $this->io->setAuthentication($originUrl, $username, $password);

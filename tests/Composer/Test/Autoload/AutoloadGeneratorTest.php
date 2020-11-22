@@ -500,7 +500,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint())
+            new Link('a', 'a/a', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -511,18 +511,18 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $e = new Package('e/e', '1.0', '1.0');
         $a->setAutoload(array('classmap' => array('src/A.php')));
         $a->setRequires(array(
-            new Link('a/a', 'b/b', new MatchAllConstraint())
+            new Link('a/a', 'b/b', new MatchAllConstraint()),
         ));
         $b->setAutoload(array('classmap' => array('src/B.php')));
         $b->setRequires(array(
-            new Link('b/b', 'e/e', new MatchAllConstraint())
+            new Link('b/b', 'e/e', new MatchAllConstraint()),
         ));
         $c->setAutoload(array('classmap' => array('src/C.php')));
         $c->setReplaces(array(
-            new Link('c/c', 'b/b', new MatchAllConstraint())
+            new Link('c/c', 'b/b', new MatchAllConstraint()),
         ));
         $c->setRequires(array(
-            new Link('c/c', 'd/d', new MatchAllConstraint())
+            new Link('c/c', 'd/d', new MatchAllConstraint()),
         ));
         $d->setAutoload(array('classmap' => array('src/D.php')));
         $e->setAutoload(array('classmap' => array('src/E.php')));
@@ -1740,63 +1740,63 @@ EOF;
                 array(
                     new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
                     new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-json', $versionParser->parseConstraints('*'))
+                    new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
                 ),
-                'typical'
+                'typical',
             ),
             'No PHP lower bound' => array(
                 array(
                     new Link('a', 'php', $versionParser->parseConstraints('< 8')),
                 ),
-                null
+                null,
             ),
             'No PHP upper bound' => array(
                 array(
                     new Link('a', 'php', $versionParser->parseConstraints('>= 7.2')),
                 ),
-                'no_php_upper_bound'
+                'no_php_upper_bound',
             ),
             'Specific PHP release version' => array(
                 array(
                     new Link('a', 'php', $versionParser->parseConstraints('^7.2.8')),
                 ),
-                'specific_php_release'
+                'specific_php_release',
             ),
             'No PHP required' => array(
                 array(
                     new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-json', $versionParser->parseConstraints('*'))
+                    new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
                 ),
-                'no_php_required'
+                'no_php_required',
             ),
             'Ignoring all platform requirements skips check completely' => array(
                 array(
                     new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
                     new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-json', $versionParser->parseConstraints('*'))
+                    new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
                 ),
                 null,
                 array(),
                 array(),
-                true
+                true,
             ),
             'Ignored platform requirements are not checked for' => array(
                 array(
                     new Link('a', 'php', $versionParser->parseConstraints('^7.2.8')),
                     new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
                     new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-pdo', $versionParser->parseConstraints('*'))
+                    new Link('a', 'ext-pdo', $versionParser->parseConstraints('*')),
                 ),
                 'no_php_required',
                 array(),
                 array(),
-                array('php', 'ext-pdo')
+                array('php', 'ext-pdo'),
             ),
             'No extensions required' => array(
                 array(
                     new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
                 ),
-                'no_extensions_required'
+                'no_extensions_required',
             ),
             'Replaced/provided extensions are not checked for + checking case insensitivity' => array(
                 array(

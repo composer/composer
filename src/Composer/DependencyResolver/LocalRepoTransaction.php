@@ -12,14 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
-use Composer\DependencyResolver\Operation\UninstallOperation;
-use Composer\Package\AliasPackage;
-use Composer\Package\Link;
-use Composer\Package\PackageInterface;
-use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
-use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>

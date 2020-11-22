@@ -32,7 +32,7 @@ class AuthHelper
     }
 
     /**
-     * @param string $origin
+     * @param string      $origin
      * @param string|bool $storeAuth
      */
     public function storeAuth($origin, $storeAuth)
@@ -68,13 +68,13 @@ class AuthHelper
     }
 
     /**
-     * @param string $url
-     * @param string $origin
-     * @param int $statusCode HTTP status code that triggered this call
-     * @param string|null $reason a message/description explaining why this was called
-     * @param string[] $headers
-     * @return array|null containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
-     *               retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
+     * @param  string      $url
+     * @param  string      $origin
+     * @param  int         $statusCode HTTP status code that triggered this call
+     * @param  string|null $reason     a message/description explaining why this was called
+     * @param  string[]    $headers
+     * @return array|null  containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
+     *                                retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
      */
     public function promptAuthIfNeeded($url, $origin, $statusCode, $reason = null, $headers = array())
     {
@@ -145,8 +145,8 @@ class AuthHelper
             if ($askForOAuthToken) {
                 $message = "\n".'Could not fetch ' . $url . ', please create a bitbucket OAuth token to ' . (($statusCode === 401 || $statusCode === 403) ? 'access private repos' : 'go over the API rate limit');
                 $bitBucketUtil = new Bitbucket($this->io, $this->config);
-                if (! $bitBucketUtil->authorizeOAuth($origin)
-                    && (! $this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($origin, $message))
+                if (!$bitBucketUtil->authorizeOAuth($origin)
+                    && (!$this->io->isInteractive() || !$bitBucketUtil->authorizeOAuthInteractively($origin, $message))
                 ) {
                     throw new TransportException('Could not authenticate against ' . $origin, 401);
                 }
@@ -185,10 +185,10 @@ class AuthHelper
     }
 
     /**
-     * @param array $headers
-     * @param string $origin
-     * @param string $url
-     * @return array updated headers array
+     * @param  array  $headers
+     * @param  string $origin
+     * @param  string $url
+     * @return array  updated headers array
      */
     public function addAuthenticationHeader(array $headers, $origin, $url)
     {

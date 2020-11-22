@@ -122,9 +122,9 @@ class ProcessExecutorTest extends TestCase
         $start = microtime(true);
         /** @var Promise $promise */
         $promise = $process->executeAsync('sleep 2');
-        $this->assertEquals(1,  $process->countActiveJobs());
+        $this->assertEquals(1, $process->countActiveJobs());
         $promise->cancel();
-        $this->assertEquals(0,  $process->countActiveJobs());
+        $this->assertEquals(0, $process->countActiveJobs());
         $end = microtime(true);
         $this->assertTrue($end - $start < 0.5, 'Canceling took longer than it should, lasted '.($end - $start));
     }

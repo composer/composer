@@ -61,7 +61,6 @@ class RuleWatchGraph
                 $this->watchChains[$literal]->unshift($node);
             }
         }
-
     }
 
     /**
@@ -151,8 +150,8 @@ class RuleWatchGraph
      * The rule node's watched literals are updated accordingly.
      *
      * @param int           $fromLiteral A literal the node used to watch
-     * @param int           $toLiteral A literal the node should watch now
-     * @param RuleWatchNode $node The rule node to be moved
+     * @param int           $toLiteral   A literal the node should watch now
+     * @param RuleWatchNode $node        The rule node to be moved
      */
     protected function moveWatch($fromLiteral, $toLiteral, $node)
     {

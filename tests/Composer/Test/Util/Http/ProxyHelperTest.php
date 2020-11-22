@@ -78,8 +78,8 @@ class ProxyHelperTest extends TestCase
         // url, expected
         return array(
             'lowercases-scheme' => array('HTTP://proxy.com:8888', 'http://proxy.com:8888'),
-            'adds-http-port'    => array('http://proxy.com', 'http://proxy.com:80'),
-            'adds-https-port'   => array('https://proxy.com', 'https://proxy.com:443'),
+            'adds-http-port' => array('http://proxy.com', 'http://proxy.com:80'),
+            'adds-https-port' => array('https://proxy.com', 'https://proxy.com:443'),
         );
     }
 
@@ -117,7 +117,7 @@ class ProxyHelperTest extends TestCase
 
     public function dataCGIOverrides()
     {
-         // server, expected, list index
+        // server, expected, list index
         return array(
             array(array('http_proxy' => 'http://http.com', 'CGI_HTTP_PROXY' => 'http://cgi.com'), 'http://cgi.com:80', 0),
             array(array('http_proxy' => 'http://http.com', 'cgi_http_proxy' => 'http://cgi.com'), 'http://http.com:80', 0),
@@ -182,8 +182,8 @@ class ProxyHelperTest extends TestCase
 
         // $requestUrl, expected
         return array(
-            'http'      => array('http://repo.org', $options),
-            'https'     => array('https://repo.org', array()),
+            'http' => array('http://repo.org', $options),
+            'https' => array('https://repo.org', array()),
             'no-scheme' => array('repo.org', array()),
         );
     }

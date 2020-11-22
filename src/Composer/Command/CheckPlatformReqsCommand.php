@@ -13,7 +13,6 @@
 namespace Composer\Command;
 
 use Composer\Package\Link;
-use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;

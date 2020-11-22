@@ -1814,7 +1814,8 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddConfigWithPackage() {
+    public function testAddConfigWithPackage()
+    {
         $manipulator = new JsonManipulator('{
     "repositories": [
         {

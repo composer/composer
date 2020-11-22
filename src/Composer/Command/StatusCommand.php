@@ -82,7 +82,7 @@ EOT
     }
 
     /**
-     * @param  InputInterface  $input
+     * @param  InputInterface $input
      * @return int
      */
     private function doExecute(InputInterface $input)

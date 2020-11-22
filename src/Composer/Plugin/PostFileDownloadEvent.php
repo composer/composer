@@ -22,7 +22,6 @@ use Composer\Package\PackageInterface;
  */
 class PostFileDownloadEvent extends Event
 {
-
     /**
      * @var string
      */
@@ -46,11 +45,11 @@ class PostFileDownloadEvent extends Event
     /**
      * Constructor.
      *
-     * @param string           $name         The event name
-     * @param string           $fileName     The file name
-     * @param string|null      $checksum     The checksum
-     * @param string           $url          The processed url
-     * @param PackageInterface $package      The package.
+     * @param string           $name     The event name
+     * @param string           $fileName The file name
+     * @param string|null      $checksum The checksum
+     * @param string           $url      The processed url
+     * @param PackageInterface $package  The package.
      */
     public function __construct($name, $fileName, $checksum, $url, PackageInterface $package)
     {
@@ -76,7 +75,8 @@ class PostFileDownloadEvent extends Event
      *
      * @return string|null
      */
-    public function getChecksum() {
+    public function getChecksum()
+    {
         return $this->checksum;
     }
 
@@ -85,18 +85,18 @@ class PostFileDownloadEvent extends Event
      *
      * @return string
      */
-    public function getUrl() {
+    public function getUrl()
+    {
         return $this->url;
     }
 
     /**
      * Get the package.
      *
-     * @return \Composer\Package\PackageInterface
-     *   The package.
+     * @return \Composer\Package\PackageInterface The package.
      */
-    public function getPackage() {
+    public function getPackage()
+    {
         return $this->package;
     }
-
 }

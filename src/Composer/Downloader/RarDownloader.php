@@ -12,15 +12,9 @@
 
 namespace Composer\Downloader;
 
-use Composer\Config;
-use Composer\Cache;
-use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\HttpDownloader;
-use Composer\Util\Filesystem;
-use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use RarArchive;
 

@@ -175,6 +175,7 @@ EOT
 
         if ($updateMirrors && !empty($packages)) {
             $io->writeError('<error>You cannot simultaneously update only a selection of packages and regenerate the lock file metadata.</error>');
+
             return -1;
         }
 
@@ -299,6 +300,7 @@ EOT
         $oldPrettyString = $link->getConstraint()->getPrettyString();
         $newConstraint = MultiConstraint::create(array($link->getConstraint(), $parser->parseConstraints($constraint)));
         $newConstraint->setPrettyString($oldPrettyString.', '.$constraint);
+
         return new Link(
             $link->getSource(),
             $link->getTarget(),

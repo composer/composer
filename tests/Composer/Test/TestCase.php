@@ -13,7 +13,6 @@
 namespace Composer\Test;
 
 use Composer\Semver\VersionParser;
-use Composer\Package\AliasPackage;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;

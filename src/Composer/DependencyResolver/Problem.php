@@ -156,7 +156,7 @@ class Problem
      * Store a reason descriptor but ignore duplicates
      *
      * @param string $id     A canonical identifier for the reason
-     * @param Rule $reason The reason descriptor
+     * @param Rule   $reason The reason descriptor
      */
     protected function addReason($id, Rule $reason)
     {
@@ -304,11 +304,13 @@ class Problem
             $maxProviders = 20;
             $providersStr = implode(array_map(function ($p) {
                 $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
+
                 return "      - ${p['name']}".$description."\n";
-            }, count($providers) > $maxProviders+1 ? array_slice($providers, 0, $maxProviders) : $providers));
-            if (count($providers) > $maxProviders+1) {
-                $providersStr .= '      ... and '.(count($providers)-$maxProviders).' more.'."\n";
+            }, count($providers) > $maxProviders + 1 ? array_slice($providers, 0, $maxProviders) : $providers));
+            if (count($providers) > $maxProviders + 1) {
+                $providersStr .= '      ... and '.(count($providers) - $maxProviders).' more.'."\n";
             }
+
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint).", it ", "could not be found in any version, but the following packages provide it:\n".$providersStr."      Consider requiring one of these to satisfy the $packageName requirement.");
         }
 
@@ -347,7 +349,7 @@ class Problem
     }
 
     /**
-     * @param string[] $versions an array of pretty versions, with normalized versions as keys
+     * @param  string[]     $versions an array of pretty versions, with normalized versions as keys
      * @return list<string> a list of pretty versions and '...' where versions were removed
      */
     private static function condenseVersionList(array $versions, $max)
@@ -403,7 +405,6 @@ class Problem
         }
 
         return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your '.$reason.' and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');
-
     }
 
     /**

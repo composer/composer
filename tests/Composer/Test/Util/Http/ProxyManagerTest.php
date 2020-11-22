@@ -12,7 +12,6 @@
 
 namespace Composer\Test\Util\Http;
 
-use Composer\Util\Http\ProxyHelper;
 use Composer\Util\Http\ProxyManager;
 use Composer\Test\TestCase;
 
@@ -109,8 +108,7 @@ class ProxyManagerTest extends TestCase
                     'proxy' => 'tcp://proxy.com:80',
                     'header' => 'Proxy-Authorization: Basic dXNlcjpwQHNz',
                     'request_fulluri' => true,
-                    )
-                ),
+                )),
                 false,
                 'http://user:***@proxy.com:80',
             ),
@@ -118,8 +116,7 @@ class ProxyManagerTest extends TestCase
                 $server, 'https://repo.org', 'https://proxy.com:443',
                 array('http' => array(
                     'proxy' => 'ssl://proxy.com:443',
-                    )
-                ),
+                )),
                 true,
                 'https://proxy.com:443',
             ),
@@ -156,12 +153,12 @@ class ProxyManagerTest extends TestCase
             array(
                 array('http_proxy' => 'http://user:p%40ss@proxy.com:80'),
                 true,
-                'http=http://user:***@proxy.com:80'
+                'http=http://user:***@proxy.com:80',
             ),
             array(
                 array('http_proxy' => 'proxy.com:80', 'https_proxy' => 'proxy.com:80'),
                 true,
-                'http=proxy.com:80, https=proxy.com:80'
+                'http=proxy.com:80, https=proxy.com:80',
             ),
         );
     }

@@ -12,7 +12,6 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
@@ -279,14 +278,13 @@ abstract class Rule
 
                 return 'You can only install one version of a package, so only one of these can be installed: ' . $this->formatPackagesUnique($pool, $literals, $isVerbose) . '.';
             case self::RULE_LEARNED:
-                /** @TODO currently still generates way too much output to be helpful, and in some cases can even lead to endless recursion
-                    if (isset($learnedPool[$this->reasonData])) {
-                        echo $this->reasonData."\n";
-                        $learnedString = ', learned rules:' . Problem::formatDeduplicatedRules($learnedPool[$this->reasonData], '        ', $repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
-                    } else {
-                        $learnedString = ' (reasoning unavailable)';
-                    }
-                */
+                /** @TODO currently still generates way too much output to be helpful, and in some cases can even lead to endless recursion */
+                // if (isset($learnedPool[$this->reasonData])) {
+                //     echo $this->reasonData."\n";
+                //     $learnedString = ', learned rules:' . Problem::formatDeduplicatedRules($learnedPool[$this->reasonData], '        ', $repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
+                // } else {
+                //     $learnedString = ' (reasoning unavailable)';
+                // }
                 $learnedString = ' (conflict analysis result)';
 
                 if (count($literals) === 1) {

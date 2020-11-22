@@ -12,7 +12,6 @@
 
 namespace Composer\Test;
 
-use Composer\Test\TestCase;
 use Composer\Cache;
 use Composer\Util\Filesystem;
 

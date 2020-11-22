@@ -16,9 +16,7 @@ use Composer\DependencyResolver\GenericRule;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\Pool;
-use Composer\Package\BasePackage;
 use Composer\Package\Link;
-use Composer\Repository\ArrayRepository;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 

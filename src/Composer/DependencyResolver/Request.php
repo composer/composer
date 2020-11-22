@@ -14,7 +14,6 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\Package;
 use Composer\Package\PackageInterface;
-use Composer\Package\RootAliasPackage;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MatchAllConstraint;

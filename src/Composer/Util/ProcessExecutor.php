@@ -136,8 +136,8 @@ class ProcessExecutor
     /**
      * starts a process on the commandline in async mode
      *
-     * @param  string $command the command to execute
-     * @param  string $cwd     the working directory
+     * @param  string  $command the command to execute
+     * @param  string  $cwd     the working directory
      * @return Promise
      */
     public function executeAsync($command, $cwd = null)
@@ -198,7 +198,7 @@ class ProcessExecutor
 
             throw $e;
         });
-        $this->jobs[$job['id']] =& $job;
+        $this->jobs[$job['id']] = &$job;
 
         if ($this->runningJobs < $this->maxJobs) {
             $this->startJob($job['id']);
@@ -209,7 +209,7 @@ class ProcessExecutor
 
     private function startJob($id)
     {
-        $job =& $this->jobs[$id];
+        $job = &$this->jobs[$id];
         if ($job['status'] !== self::STATUS_QUEUED) {
             return;
         }

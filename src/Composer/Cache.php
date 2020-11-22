@@ -209,6 +209,7 @@ class Cache
     {
         if ($this->enabled) {
             $this->filesystem->emptyDirectory($this->root);
+
             return true;
         }
 

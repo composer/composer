@@ -206,6 +206,7 @@ class Decisions implements \Iterator, \Countable
             $str .= $packageId.':'.$level.',';
         }
         $str .= ']';
+
         return $str;
     }
 }

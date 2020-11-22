@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
-use Composer\Installer\InstallationManager;
 use Composer\Installer\SuggestedPackagesReporter;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
@@ -39,9 +38,7 @@ use Composer\Json\JsonFile;
 use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\Loop;
 use Composer\Package\Version\VersionParser;
-use Composer\EventDispatcher\EventDispatcher;
 
 /**
  * Install a package as new project into new directory.

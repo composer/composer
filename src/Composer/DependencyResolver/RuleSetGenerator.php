@@ -12,11 +12,9 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\LinkConstraint\VersionConstraint;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Repository\PlatformRepository;
-use Composer\Semver\Constraint\Constraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -49,7 +47,7 @@ class RuleSetGenerator
      *                                      reason for generating this rule
      * @param  mixed            $reasonData Any data, e.g. the requirement name,
      *                                      that goes with the reason
-     * @return Rule|null             The generated rule or null if tautological
+     * @return Rule|null        The generated rule or null if tautological
      */
     protected function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
     {
@@ -72,9 +70,9 @@ class RuleSetGenerator
      * The rule is (A|B|C) with A, B and C different packages. If the given
      * set of packages is empty an impossible rule is generated.
      *
-     * @param  array $packages The set of packages to choose from
-     * @param  int   $reason   A RULE_* constant describing the reason for
-     *                         generating this rule
+     * @param  array $packages   The set of packages to choose from
+     * @param  int   $reason     A RULE_* constant describing the reason for
+     *                           generating this rule
      * @param  array $reasonData Additional data like the root require or fix request info
      * @return Rule  The generated rule
      */
@@ -100,7 +98,7 @@ class RuleSetGenerator
      *                                      reason for generating this rule
      * @param  mixed            $reasonData Any data, e.g. the package name, that
      *                                      goes with the reason
-     * @return Rule|null             The generated rule
+     * @return Rule|null        The generated rule
      */
     protected function createRule2Literals(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
     {

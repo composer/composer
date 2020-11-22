@@ -252,7 +252,7 @@ class JsonConfigSource implements ConfigSourceInterface
             $this->arrayUnshiftRef($args, $config);
             call_user_func_array($fallback, $args);
             // avoid ending up with arrays for keys that should be objects
-            foreach (array('require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'support', ) as $prop) {
+            foreach (array('require', 'require-dev', 'conflict', 'provide', 'replace', 'suggest', 'config', 'autoload', 'autoload-dev', 'scripts', 'scripts-descriptions', 'support') as $prop) {
                 if (isset($config[$prop]) && $config[$prop] === array()) {
                     $config[$prop] = new \stdClass;
                 }

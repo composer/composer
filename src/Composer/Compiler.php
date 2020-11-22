@@ -13,7 +13,6 @@
 namespace Composer;
 
 use Composer\Json\JsonFile;
-use Composer\Spdx\SpdxLicenses;
 use Composer\CaBundle\CaBundle;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
@@ -208,7 +207,7 @@ class Compiler
                 array(
                     '@package_version@' => $this->version,
                     '@package_branch_alias_version@' => $this->branchAliasVersion,
-                    '@release_date@' => $this->versionDate->format('Y-m-d H:i:s')
+                    '@release_date@' => $this->versionDate->format('Y-m-d H:i:s'),
                 )
             );
             $content = preg_replace('{SOURCE_VERSION = \'[^\']+\';}', 'SOURCE_VERSION = \'\';', $content);

@@ -25,7 +25,6 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\Util\StreamContextFactory;
 use Composer\Util\Loop;
 use React\Promise\PromiseInterface;
 
@@ -293,7 +292,7 @@ class InstallationManager
     }
 
     /**
-     * @param array $operations List of operations to execute in this batch
+     * @param array $operations    List of operations to execute in this batch
      * @param array $allOperations Complete list of operations to be executed in the install job, used for event listeners
      */
     private function downloadAndExecuteBatch(RepositoryInterface $repo, array $operations, array &$cleanupPromises, $devMode, $runScripts, array $allOperations)
@@ -370,7 +369,7 @@ class InstallationManager
     }
 
     /**
-     * @param array $operations List of operations to execute in this batch
+     * @param array $operations    List of operations to execute in this batch
      * @param array $allOperations Complete list of operations to be executed in the install job, used for event listeners
      */
     private function executeBatch(RepositoryInterface $repo, array $operations, array $cleanupPromises, $devMode, $runScripts, array $allOperations)

@@ -68,6 +68,7 @@ class MultiConflictRule extends Rule
         if ($rule instanceof MultiConflictRule) {
             return $this->literals === $rule->getLiterals();
         }
+
         return false;
     }
 

@@ -14,7 +14,6 @@ namespace Composer\Installer;
 
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
-use Composer\Package\Version\VersionParser;
 use Composer\IO\IOInterface;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;

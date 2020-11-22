@@ -29,7 +29,6 @@ class PerforceDownloader extends VcsDownloader
      */
     protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
     {
-
     }
 
     /**

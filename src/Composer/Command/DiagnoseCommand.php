@@ -677,7 +677,6 @@ EOT
         return !$warnings && !$errors ? true : $output;
     }
 
-
     /**
      * Check if allow_url_fopen is ON
      *

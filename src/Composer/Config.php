@@ -248,6 +248,7 @@ class Config
                 if (false === $val) {
                     $val = $this->config[$key];
                 }
+
                 return $val !== 'false' && (bool) $val;
 
             // booleans without env var support

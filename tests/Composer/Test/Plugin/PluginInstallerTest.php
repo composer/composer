@@ -19,7 +19,6 @@ use Composer\Package\CompletePackage;
 use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Plugin\PluginManager;
-use Symfony\Component\Console\Output\OutputInterface;
 use Composer\IO\BufferIO;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;

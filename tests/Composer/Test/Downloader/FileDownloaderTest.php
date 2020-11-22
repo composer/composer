@@ -188,7 +188,7 @@ class FileDownloaderTest extends TestCase
             ->method('getConfig')
             ->will($this->returnValue($config));
 
-        $expectedUrl      = 'foobar';
+        $expectedUrl = 'foobar';
         $expectedCacheKey = '/'.sha1($expectedUrl).'.';
 
         $dispatcher = new EventDispatcher(
@@ -196,7 +196,7 @@ class FileDownloaderTest extends TestCase
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
             $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock()
         );
-        $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function ( PreFileDownloadEvent $event ) use ($expectedUrl) {
+        $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function (PreFileDownloadEvent $event) use ($expectedUrl) {
             $event->setProcessedUrl($expectedUrl);
         });
 
@@ -281,8 +281,8 @@ class FileDownloaderTest extends TestCase
             ->method('getConfig')
             ->will($this->returnValue($config));
 
-        $expectedUrl      = 'url';
-        $customCacheKey   = 'xyzzy';
+        $expectedUrl = 'url';
+        $customCacheKey = 'xyzzy';
         $expectedCacheKey = '/'.sha1($customCacheKey).'.';
 
         $dispatcher = new EventDispatcher(
@@ -290,7 +290,7 @@ class FileDownloaderTest extends TestCase
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
             $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock()
         );
-        $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function ( PreFileDownloadEvent $event ) use ($customCacheKey) {
+        $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function (PreFileDownloadEvent $event) use ($customCacheKey) {
             $event->setCustomCacheKey($customCacheKey);
         });
 
