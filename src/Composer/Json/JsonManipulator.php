@@ -492,7 +492,7 @@ class JsonManipulator
             return $this->removeMainKey($key);
         }
 
-        return false;
+        return true;
     }
 
     public function format($data, $depth = 0)
