@@ -305,14 +305,14 @@ class CurlDownloader
                     }
                     throw new TransportException('curl error '.$errno.' while downloading '.Url::sanitize($progress['url']).': '.$error);
                 }
-                if ($progress['http_code'] === 0) {
-                    throw new \LogicException('Received unexpected http status code 0 without error for '.Url::sanitize($progress['url']).': '.var_export($progress, true));
-                }
-
                 $statusCode = $progress['http_code'];
                 rewind($job['headerHandle']);
                 $headers = explode("\r\n", rtrim(stream_get_contents($job['headerHandle'])));
                 fclose($job['headerHandle']);
+
+                if ($statusCode === 0) {
+                    throw new \LogicException('Received unexpected http status code 0 without error for '.Url::sanitize($progress['url']).': headers '.var_export($headers, true).' curl info '.var_export($progress, true));
+                }
 
                 // prepare response object
                 if ($job['filename']) {
