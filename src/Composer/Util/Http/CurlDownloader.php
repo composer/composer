@@ -279,17 +279,18 @@ class CurlDownloader
 
         while ($progress = curl_multi_info_read($this->multiHandle)) {
             $curlHandle = $progress['handle'];
+            $result = $progress['result'];
             $i = (int) $curlHandle;
             if (!isset($this->jobs[$i])) {
                 continue;
             }
 
-            $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
+            $progress = curl_getinfo($curlHandle);
             $job = $this->jobs[$i];
             unset($this->jobs[$i]);
-            curl_multi_remove_handle($this->multiHandle, $curlHandle);
             $error = curl_error($curlHandle);
             $errno = curl_errno($curlHandle);
+            curl_multi_remove_handle($this->multiHandle, $curlHandle);
             curl_close($curlHandle);
 
             $headers = null;
@@ -297,11 +298,15 @@ class CurlDownloader
             $response = null;
             try {
                 // TODO progress
-                if (CURLE_OK !== $errno || $error) {
+                if (CURLE_OK !== $errno || $error || $result !== CURLE_OK) {
+                    $errno = $errno ?: $result;
                     if (!$error && function_exists('curl_strerror')) {
                         $error = curl_strerror($errno);
                     }
                     throw new TransportException('curl error '.$errno.' while downloading '.Url::sanitize($progress['url']).': '.$error);
+                }
+                if ($progress['http_code'] === 0) {
+                    throw new \LogicException('Received unexpected http status code 0 without error for '.Url::sanitize($progress['url']).': '.var_export($progress, true));
                 }
 
                 $statusCode = $progress['http_code'];
