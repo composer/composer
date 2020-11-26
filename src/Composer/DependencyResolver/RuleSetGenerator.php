@@ -164,10 +164,8 @@ class RuleSetGenerator
                 $workQueue->enqueue($package->getAliasOf());
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, array($package->getAliasOf()), Rule::RULE_PACKAGE_ALIAS, $package));
 
-                // root aliases must be installed with their main package, so create a rule the other way around as well
-                if ($package->isRootPackageAlias()) {
-                    $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), array($package), Rule::RULE_PACKAGE_ROOT_ALIAS, $package->getAliasOf()));
-                }
+                // aliases must be installed with their main package, so create a rule the other way around as well
+                $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package->getAliasOf(), array($package), Rule::RULE_PACKAGE_INVERSE_ALIAS, $package->getAliasOf()));
 
                 // if alias package has no self.version requires, its requirements do not
                 // need to be added as the aliased package processing will take care of it
@@ -197,6 +195,7 @@ class RuleSetGenerator
         /** @var PackageInterface $package */
         foreach ($this->addedMap as $package) {
             foreach ($package->getConflicts() as $link) {
+                // even if conlict ends up being with an alias, there would be at least one actual package by this name
                 if (!isset($this->addedPackagesByNames[$link->getTarget()])) {
                     continue;
                 }
@@ -205,10 +204,14 @@ class RuleSetGenerator
                     continue;
                 }
 
-                /** @var PackageInterface $possibleConflict */
-                foreach ($this->addedPackagesByNames[$link->getTarget()] as $possibleConflict) {
-                    if ($this->pool->match($possibleConflict, $link->getTarget(), $link->getConstraint())) {
-                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $possibleConflict, Rule::RULE_PACKAGE_CONFLICT, $link));
+                $conflicts = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
+
+                foreach ($conflicts as $conflict) {
+                    // define the conflict rule for regular packages, for alias packages it's only needed if the name
+                    // matches the conflict exactly, otherwise the name match is by provide/replace which means the
+                    // package which this is an alias of will conflict anyway, so no need to create additional rules
+                    if (!$conflict instanceof AliasPackage || $conflict->getName() === $link->getTarget()) {
+                        $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRule2Literals($package, $conflict, Rule::RULE_PACKAGE_CONFLICT, $link));
                     }
                 }
             }
@@ -266,9 +269,13 @@ class RuleSetGenerator
     protected function addRulesForRootAliases($ignorePlatformReqs)
     {
         foreach ($this->pool->getPackages() as $package) {
-            // ensure that rules for root alias packages get loaded even if the root alias itself isn't required
-            // otherwise a package could be installed without its root alias which leads to unexpected behavior
-            if ($package instanceof AliasPackage && $package->isRootPackageAlias()) {
+            // ensure that rules for root alias packages and aliases of packages which were loaded are also loaded
+            // even if the alias itself isn't required, otherwise a package could be installed without its alias which
+            // leads to unexpected behavior
+            if (!isset($this->addedMap[$package->id]) &&
+                $package instanceof AliasPackage &&
+                ($package->isRootPackageAlias() || isset($this->addedMap[$package->getAliasOf()->id]))
+            ) {
                 $this->addRulesForPackage($package, $ignorePlatformReqs);
             }
         }

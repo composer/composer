@@ -1,0 +1,43 @@
+--TEST--
+Test that conflict on a branch alias is respected
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "some/dep", "version": "1.0.0" },
+                { "name": "some/dep", "version": "1.1.0" },
+                { "name": "some/dep", "version": "1.2.0" },
+                { "name": "some/dep", "version": "dev-main", "extra": {"branch-alias": {"dev-main": "1.3.x-dev"} } },
+                { "name": "some/dep", "version": "1.2.x-dev" }
+            ]
+        }
+    ],
+    "require": {
+        "some/dep": "^1.0@dev"
+    },
+    "conflict": {
+        "some/dep": ">=1.3"
+    }
+}
+--RUN--
+update
+--EXPECT-LOCK--
+{
+    "packages": [
+        { "name": "some/dep", "version": "1.2.x-dev", "type": "library" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "some/dep": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Installing some/dep (1.2.x-dev)

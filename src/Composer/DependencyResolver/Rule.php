@@ -34,7 +34,7 @@ abstract class Rule
     const RULE_PACKAGE_SAME_NAME = 10;
     const RULE_LEARNED = 12;
     const RULE_PACKAGE_ALIAS = 13;
-    const RULE_PACKAGE_ROOT_ALIAS = 14;
+    const RULE_PACKAGE_INVERSE_ALIAS = 14;
 
     // bitfield defs
     const BITFIELD_TYPE = 0;
@@ -311,22 +311,26 @@ abstract class Rule
 
                 return 'Conclusion: '.$ruleText.$learnedString;
             case self::RULE_PACKAGE_ALIAS:
-            case self::RULE_PACKAGE_ROOT_ALIAS:
-                if ($this->getReason() === self::RULE_PACKAGE_ALIAS) {
-                    $aliasPackage = $pool->literalToPackage($literals[0]);
-                    $otherLiteral = 1;
-                } else {
-                    // root alias rules work the other way around
-                    $aliasPackage = $pool->literalToPackage($literals[1]);
-                    $otherLiteral = 0;
-                }
+                $aliasPackage = $pool->literalToPackage($literals[0]);
+
                 // avoid returning content like "9999999-dev is an alias of dev-master" as it is useless
                 if ($aliasPackage->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
                     return '';
                 }
-                $package = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[$otherLiteral]));
+                $package = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[1]));
 
                 return $aliasPackage->getPrettyString() .' is an alias of '.$package->getPrettyString().' and thus requires it to be installed too.';
+            case self::RULE_PACKAGE_INVERSE_ALIAS:
+                // inverse alias rules work the other way around than above
+                $aliasPackage = $pool->literalToPackage($literals[1]);
+
+                // avoid returning content like "9999999-dev is an alias of dev-master" as it is useless
+                if ($aliasPackage->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                    return '';
+                }
+                $package = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[0]));
+
+                return $aliasPackage->getPrettyString() .' is an alias of '.$package->getPrettyString().' and must be installed with it.';
             default:
                 $ruleText = '';
                 foreach ($literals as $i => $literal) {

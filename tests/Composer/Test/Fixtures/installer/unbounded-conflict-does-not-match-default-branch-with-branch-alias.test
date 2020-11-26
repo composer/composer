@@ -1,5 +1,5 @@
 --TEST--
-Test that a conflict against >=5 does not include dev-master or other dev-x
+Test that a conflict against >=5 does not include the default branch if it has a branch alias defined.
 --COMPOSER--
 {
     "repositories": [
@@ -7,7 +7,7 @@ Test that a conflict against >=5 does not include dev-master or other dev-x
             "type": "package",
             "package": [
                 { "name": "conflicter/pkg", "version": "1.0.0", "conflict": { "victim/pkg": ">=5", "victim/pkg2": ">=5" } },
-                { "name": "victim/pkg", "version": "dev-master", "default-branch": true },
+                { "name": "victim/pkg", "version": "dev-master", "default-branch": true, "extra": { "branch-alias": { "dev-master": "2.x-dev" } } },
                 { "name": "victim/pkg2", "version": "dev-foo" }
             ]
         }
@@ -27,5 +27,5 @@ update
 --EXPECT--
 Installing conflicter/pkg (1.0.0)
 Installing victim/pkg (dev-master)
-Marking victim/pkg (9999999-dev) as installed, alias of victim/pkg (dev-master)
+Marking victim/pkg (2.x-dev) as installed, alias of victim/pkg (dev-master)
 Installing victim/pkg2 (dev-foo)
