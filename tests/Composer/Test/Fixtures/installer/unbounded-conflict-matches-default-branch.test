@@ -1,5 +1,5 @@
 --TEST--
-Test that a conflict against >=5 includes the default branch if it has a branch alias defined.
+Test that a conflict against >=5 includes the default branch if it has no branch alias defined (and then uses the default 9999999-dev alias).
 --COMPOSER--
 {
     "repositories": [
