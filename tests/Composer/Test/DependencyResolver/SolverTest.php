@@ -842,6 +842,7 @@ class SolverTest extends TestCase
             array('job' => 'install', 'package' => $packageB),
             array('job' => 'markAliasInstalled', 'package' => $packageBAlias),
             array('job' => 'install', 'package' => $packageC),
+            array('job' => 'markAliasInstalled', 'package' => $packageCAlias),
         ));
     }
 

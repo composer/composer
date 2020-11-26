@@ -1,5 +1,5 @@
 --TEST--
-Test that a conflict against >=5 does not include dev-master or other dev-x
+Test that a conflict against >=5 includes the default branch if it has a branch alias defined.
 --COMPOSER--
 {
     "repositories": [
@@ -24,8 +24,16 @@ Test that a conflict against >=5 does not include dev-master or other dev-x
 --RUN--
 update
 
+--EXPECT-EXIT-CODE--
+2
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - conflicter/pkg 1.0.0 conflicts with victim/pkg dev-master.
+    - Root composer.json requires conflicter/pkg 1.0.0 -> satisfiable by conflicter/pkg[1.0.0].
+    - Root composer.json requires victim/pkg * -> satisfiable by victim/pkg[dev-master].
+
 --EXPECT--
-Installing conflicter/pkg (1.0.0)
-Installing victim/pkg (dev-master)
-Marking victim/pkg (9999999-dev) as installed, alias of victim/pkg (dev-master)
-Installing victim/pkg2 (dev-foo)
