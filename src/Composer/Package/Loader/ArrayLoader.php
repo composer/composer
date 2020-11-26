@@ -346,7 +346,11 @@ class ArrayLoader implements LoaderInterface
                 }
 
                 // normalize without -dev and ensure it's a numeric branch that is parseable
-                $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+                if ($targetBranch === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                    $validatedTargetBranch = VersionParser::DEFAULT_BRANCH_ALIAS;
+                } else {
+                    $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+                }
                 if ('-dev' !== substr($validatedTargetBranch, -4)) {
                     continue;
                 }

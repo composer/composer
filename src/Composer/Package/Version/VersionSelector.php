@@ -13,6 +13,7 @@
 namespace Composer\Package\Version;
 
 use Composer\Package\BasePackage;
+use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Composer;
 use Composer\Package\Loader\ArrayLoader;
@@ -127,11 +128,16 @@ class VersionSelector
             }
         }
 
+        // if we end up with 9999999-dev as selected package, make sure we use the original version instead of the alias
+        if ($package instanceof AliasPackage && $package->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
+            $package = $package->getAliasOf();
+        }
+
         return $package;
     }
 
     /**
-     * Given a concrete version, this returns a ~ constraint (when possible)
+     * Given a concrete version, this returns a ^ constraint (when possible)
      * that should be used, for example, in composer.json.
      *
      * For example:
@@ -155,7 +161,7 @@ class VersionSelector
         $loader = new ArrayLoader($this->getParser());
         $dumper = new ArrayDumper();
         $extra = $loader->getBranchAlias($dumper->dump($package));
-        if ($extra) {
+        if ($extra && $extra !== VersionParser::DEFAULT_BRANCH_ALIAS) {
             $extra = preg_replace('{^(\d+\.\d+\.\d+)(\.9999999)-dev$}', '$1.0', $extra, -1, $count);
             if ($count) {
                 $extra = str_replace('.9999999', '.0', $extra);
