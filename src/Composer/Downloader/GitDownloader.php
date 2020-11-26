@@ -239,6 +239,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         // use the first match as branch name for now
         $branch = $candidateBranches[0];
         $unpushedChanges = null;
+        $branchNotFoundError = false;
 
         // do two passes, as if we find anything we want to fetch and then re-try
         for ($i = 0; $i <= 1; $i++) {
@@ -259,8 +260,14 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             // this is bad as we have no reference point to do a diff so we just bail listing
             // the branch as being unpushed
             if (!$remoteBranches) {
-                $unpushedChanges = 'Branch ' . $branch . ' could not be found on the origin remote and appears to be unpushed';
+                $unpushedChanges = 'Branch ' . $branch . ' could not be found on any remote and appears to be unpushed';
+                $branchNotFoundError = true;
             } else {
+                // if first iteration found no remote branch but it has now found some, reset $unpushedChanges
+                // so we get the real diff output no matter its length
+                if ($branchNotFoundError) {
+                    $unpushedChanges = null;
+                }
                 foreach ($remoteBranches as $remoteBranch) {
                     $command = sprintf('git diff --name-status %s...%s --', $remoteBranch, $branch);
                     if (0 !== $this->process->execute($command, $output, $path)) {
@@ -270,7 +277,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                     $output = trim($output);
                     // keep the shortest diff from all remote branches we compare against
                     if ($unpushedChanges === null || strlen($output) < strlen($unpushedChanges)) {
-                        $unpushedChanges = $output ?: null;
+                        $unpushedChanges = $output;
                     }
                 }
             }
