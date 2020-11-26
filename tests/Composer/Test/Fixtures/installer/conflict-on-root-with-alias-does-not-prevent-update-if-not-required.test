@@ -1,9 +1,5 @@
 --TEST--
-Test that conflict on a branch alias is ignored if the alias is not required for installation.
-
-The alias ends up being marked installed anyway because the install step doesn't know that the branch alias which is
-present in the lock file was ignored during resolution. This is acceptable as deps were resolvable without the alias
-and we don't want to modify branch alias meta data in the lock file.
+Test that root package conflict on a branch alias is ignored if the alias is not required for installation.
 --COMPOSER--
 {
     "repositories": [

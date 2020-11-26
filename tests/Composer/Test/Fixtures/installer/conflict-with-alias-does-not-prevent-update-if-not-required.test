@@ -1,5 +1,5 @@
 --TEST--
-Test that conflict on a branch alias is ignored if the alias is not required for installation.
+Test that conflict of a dependency with a branch alias of another dependency is ignored if the alias is not required for installation.
 --COMPOSER--
 {
     "repositories": [
