@@ -796,9 +796,6 @@ class Installer
     }
 
     /**
-     * @param  RootPackageInterface     $rootPackage
-     * @param  PlatformRepository       $platformRepo
-     * @param  RepositoryInterface|null $lockedRepository
      * @return Request
      */
     private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo, LockArrayRepository $lockedRepository = null)
@@ -838,13 +835,13 @@ class Installer
         if ($this->updateMirrors) {
             $excludedPackages = array();
             if (!$includeDevRequires) {
-                $excludedPackages = $this->locker->getDevPackageNames();
+                $excludedPackages = array_flip($this->locker->getDevPackageNames());
             }
 
             foreach ($lockedRepository->getPackages() as $lockedPackage) {
                 // exclude alias packages here as for root aliases, both alias and aliased are
                 // present in the lock repo and we only want to require the aliased version
-                if (!$lockedPackage instanceof AliasPackage && !in_array($lockedPackage->getName(), $excludedPackages, true)) {
+                if (!$lockedPackage instanceof AliasPackage && !isset($excludedPackages[$lockedPackage->getName()])) {
                     $request->requireName($lockedPackage->getName(), new Constraint('==', $lockedPackage->getVersion()));
                 }
             }
