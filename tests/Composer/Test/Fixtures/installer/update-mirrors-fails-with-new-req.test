@@ -1,0 +1,65 @@
+--TEST--
+Update mirrors with a new root require which is not yet in lock should simply ignore it
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {"name": "a/a", "version": "1.0.0"},
+                {"name": "a/a", "version": "1.1.0"},
+                {"name": "b/b", "version": "1.0.0"},
+                {"name": "b/b", "version": "1.1.0"},
+                {"name": "new/req", "version": "1.0.0"},
+                {"name": "new/req", "version": "1.1.0"}
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.*",
+        "new/req": "1.*"
+    },
+    "require-dev": {
+        "b/b": "1.*"
+    }
+}
+--INSTALLED--
+[
+    {"name": "a/a", "version": "1.0.0"},
+    {"name": "b/b", "version": "1.0.0"}
+]
+--LOCK--
+{
+    "packages": [
+        {"name": "a/a", "version": "1.0.0", "type": "library"}
+    ],
+    "packages-dev": [
+        {"name": "b/b", "version": "1.0.0", "type": "library"}
+    ],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update mirrors
+--EXPECT-LOCK--
+{
+    "packages": [
+        {"name": "a/a", "version": "1.0.0", "type": "library"}
+    ],
+    "packages-dev": [
+        {"name": "b/b", "version": "1.0.0", "type": "library"}
+    ],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
