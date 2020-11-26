@@ -31,7 +31,7 @@ Partial update without lock file should error
 --RUN--
 update b/unstable
 --EXPECT-OUTPUT--
-Cannot update only a partial set of packages without a lock file present.
+Cannot update only a partial set of packages without a lock file present. Run `composer update` to generate a lock file.
 --EXPECT-EXIT-CODE--
 1
 --EXPECT--

@@ -367,12 +367,10 @@ class Installer
             // doing a full update
         }
 
-        if ($this->updateAllowList) {
-            if (!$lockedRepository) {
-                $this->io->writeError('<error>Cannot update only a partial set of packages without a lock file present.</error>', true, IOInterface::QUIET);
+        if (($this->updateAllowList || $this->updateMirrors) && !$lockedRepository) {
+            $this->io->writeError('<error>Cannot update ' . ($this->updateMirrors ? 'lock file information' : 'only a partial set of packages') . ' without a lock file present. Run `composer update` to generate a lock file.</error>', true, IOInterface::QUIET);
 
-                return 1;
-            }
+            return 1;
         }
 
         $this->io->writeError('<info>Loading composer repositories with package information</info>');
