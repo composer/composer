@@ -1,3 +1,8 @@
+<!--
+The information we ask for below is IMPORTANT. It will help us help you faster.
+Please FOLLOW THE ISSUE TEMPLATE unless you have a good reason not to, and help avoid wasting everyone's time.
+-->
+
 My `composer.json`:
 
 ```json
