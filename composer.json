@@ -22,7 +22,7 @@
         }
     ],
     "require": {
-        "php": "^5.3.2 || ^7.0",
+        "php": "^5.3.2 || ^7.0 || ^8.0",
         "composer/ca-bundle": "^1.0",
         "composer/semver": "^1.0",
         "composer/spdx-licenses": "^1.2",
