@@ -601,7 +601,12 @@ class Filesystem
 
         $relativePath = $this->findShortestPath($link, $target);
         chdir(\dirname($link));
-        $result = @symlink($relativePath, $link);
+        
+        if (function_exists('symlink')) {
+            $result = @symlink($relativePath, $link);
+        } else {
+            $result = false;
+        }
 
         chdir($cwd);
 
