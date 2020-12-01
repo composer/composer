@@ -1,0 +1,62 @@
+--TEST--
+Ensure a partial update of a dependency updates dependencies which replace one of its requirements.
+
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {"name": "root/req1", "version": "1.0.0", "require": {"replaced/pkg1": "1.*"}},
+                {"name": "root/req1", "version": "2.0.0", "require": {"replaced/pkg1": "2.*"}},
+                {"name": "root/req2", "version": "1.0.0", "require": {"dep/pkg1": "1.*"}},
+                {"name": "replaced/pkg1", "version": "1.0.0"},
+                {"name": "replaced/pkg1", "version": "2.0.0"},
+                {"name": "dep/pkg1", "version": "1.0.0", "replace": {"replaced/pkg1": "1.0.0"}},
+                {"name": "dep/pkg1", "version": "1.2.0", "replace": {"replaced/pkg1": "2.0.0"}}
+            ]
+        }
+    ],
+    "require": {
+        "root/req1": "*",
+        "root/req2": "*"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        {"name": "dep/pkg1", "version": "1.0.0", "type": "library", "replace": {"replaced/pkg1": "1.0.0"}},
+        {"name": "root/req1", "version": "1.0.0", "type": "library", "require": {"replaced/pkg1": "1.*"}},
+        {"name": "root/req2", "version": "1.0.0", "type": "library", "require": {"dep/pkg1": "1.*"}}
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update root/req1 --with-dependencies
+--EXPECT-LOCK--
+{
+    "packages": [
+        {"name": "dep/pkg1", "version": "1.2.0", "type": "library", "replace": {"replaced/pkg1": "2.0.0"}},
+        {"name": "root/req1", "version": "2.0.0", "type": "library", "require": {"replaced/pkg1": "2.*"}},
+        {"name": "root/req2", "version": "1.0.0", "type": "library", "require": {"dep/pkg1": "1.*"}}
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Installing dep/pkg1 (1.2.0)
+Installing root/req1 (2.0.0)
+Installing root/req2 (1.0.0)
