@@ -139,7 +139,7 @@ class Git
                     //We already have an access_token from a previous request.
                     if ($auth['username'] !== 'x-token-auth') {
                         $accessToken = $bitbucketUtil->requestToken($match[1], $auth['username'], $auth['password']);
-                        if (! empty($accessToken)) {
+                        if (!empty($accessToken)) {
                             $this->io->setAuthentication($match[1], 'x-token-auth', $accessToken);
                         }
                     }
@@ -261,7 +261,7 @@ class Git
                 $commandCallable = function ($url) {
                     $sanitizedUrl = preg_replace('{://([^@]+?):(.+?)@}', '://', $url);
 
-                    return sprintf('git remote set-url origin %s && git remote update --prune origin && git remote set-url origin %s', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
+                    return sprintf('git remote set-url origin %s && git remote update --prune origin && git remote set-url origin %s && git gc --auto', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
                 };
                 $this->runCommand($commandCallable, $url, $dir);
             } catch (\Exception $e) {

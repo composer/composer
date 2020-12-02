@@ -51,7 +51,7 @@ class ClassMapGenerator
      * Iterate over all files in the given directory searching for classes
      *
      * @param \Iterator|string $path         The path to search in or an iterator
-     * @param string           $excluded    Regex that matches against the file path that exclude from the classmap.
+     * @param string           $excluded     Regex that matches against the file path that exclude from the classmap.
      * @param IOInterface      $io           IO object
      * @param string           $namespace    Optional namespace prefix to filter by
      * @param string           $autoloadType psr-0|psr-4 Optional autoload standard to use mapping rules
@@ -147,13 +147,13 @@ class ClassMapGenerator
     /**
      * Remove classes which could not have been loaded by namespace autoloaders
      *
-     * @param array       $classes       found classes in given file
-     * @param string      $filePath      current file
-     * @param string      $baseNamespace prefix of given autoload mapping
-     * @param string      $namespaceType psr-0|psr-4
-     * @param string      $basePath      root directory of given autoload mapping
-     * @param IOInterface $io            IO object
-     * @return array      valid classes
+     * @param  array       $classes       found classes in given file
+     * @param  string      $filePath      current file
+     * @param  string      $baseNamespace prefix of given autoload mapping
+     * @param  string      $namespaceType psr-0|psr-4
+     * @param  string      $basePath      root directory of given autoload mapping
+     * @param  IOInterface $io            IO object
+     * @return array       valid classes
      */
     private static function filterByNamespace($classes, $filePath, $baseNamespace, $namespaceType, $basePath, $io)
     {
@@ -176,8 +176,7 @@ class ClassMapGenerator
                     $className = substr($class, $namespaceLength + 1);
                     $subPath = str_replace('\\', DIRECTORY_SEPARATOR, $namespace)
                         . str_replace('_', DIRECTORY_SEPARATOR, $className);
-                }
-                else {
+                } else {
                     $subPath = str_replace('_', DIRECTORY_SEPARATOR, $class);
                 }
             } elseif ('psr-4' === $namespaceType) {

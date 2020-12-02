@@ -15,8 +15,9 @@ namespace Composer\Test\Package\Version;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\Package;
 use Composer\Package\Link;
+use Composer\Package\AliasPackage;
 use Composer\Repository\PlatformRepository;
-use Composer\Semver\VersionParser;
+use Composer\Package\Version\VersionParser;
 use Composer\Test\TestCase;
 
 class VersionSelectorTest extends TestCase
@@ -233,6 +234,27 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }
 
+    public function testDefaultBranchAliasIsNeverReturned()
+    {
+        $packageName = 'foobar';
+
+        $package = $this->createPackage('1.1.0-beta');
+        $package2 = $this->createPackage('dev-main');
+        $package2Alias = new AliasPackage($package2, VersionParser::DEFAULT_BRANCH_ALIAS, VersionParser::DEFAULT_BRANCH_ALIAS);
+        $packages = array($package, $package2Alias);
+
+        $repositorySet = $this->createMockRepositorySet();
+        $repositorySet->expects($this->once())
+            ->method('findPackages')
+            ->with($packageName, null)
+            ->will($this->returnValue($packages));
+
+        $versionSelector = new VersionSelector($repositorySet);
+        $best = $versionSelector->findBestCandidate($packageName, null, 'dev');
+
+        $this->assertSame($package2, $best, 'Latest version should be returned (dev-main)');
+    }
+
     public function testFalseReturnedOnNoPackages()
     {
         $repositorySet = $this->createMockRepositorySet();
@@ -316,6 +338,7 @@ class VersionSelectorTest extends TestCase
             array('dev-master', true, 'dev', '^2.0@dev', '2.x-dev'),
             array('dev-master', true, 'dev', '^0.3.0@dev', '0.3.x-dev'),
             array('dev-master', true, 'dev', '^0.0.3@dev', '0.0.3.x-dev'),
+            array('dev-master', true, 'dev', 'dev-master', VersionParser::DEFAULT_BRANCH_ALIAS),
             // numeric alias
             array('3.x-dev', true, 'dev', '^3.0@dev', '3.0.x-dev'),
             array('3.x-dev', true, 'dev', '^3.0@dev', '3.0-dev'),

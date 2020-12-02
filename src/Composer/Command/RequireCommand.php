@@ -269,7 +269,6 @@ EOT
             $rootPackage->setDevRequires($links['require-dev']);
         }
 
-
         $updateDevMode = !$input->getOption('update-no-dev');
         $optimize = $input->getOption('optimize-autoloader') || $composer->getConfig()->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $composer->getConfig()->get('classmap-authoritative');

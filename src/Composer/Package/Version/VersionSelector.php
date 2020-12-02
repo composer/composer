@@ -12,10 +12,9 @@
 
 namespace Composer\Package\Version;
 
-use Composer\DependencyResolver\Pool;
 use Composer\Package\BasePackage;
+use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
-use Composer\Plugin\PluginInterface;
 use Composer\Composer;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
@@ -54,10 +53,10 @@ class VersionSelector
      * Given a package name and optional version, returns the latest PackageInterface
      * that matches.
      *
-     * @param  string                $packageName
-     * @param  string                $targetPackageVersion
-     * @param  string                $preferredStability
-     * @param  bool|array            $ignorePlatformReqs
+     * @param  string                 $packageName
+     * @param  string                 $targetPackageVersion
+     * @param  string                 $preferredStability
+     * @param  bool|array             $ignorePlatformReqs
      * @return PackageInterface|false
      */
     public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $ignorePlatformReqs = false, $repoSetFlags = 0)
@@ -129,11 +128,16 @@ class VersionSelector
             }
         }
 
+        // if we end up with 9999999-dev as selected package, make sure we use the original version instead of the alias
+        if ($package instanceof AliasPackage && $package->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
+            $package = $package->getAliasOf();
+        }
+
         return $package;
     }
 
     /**
-     * Given a concrete version, this returns a ~ constraint (when possible)
+     * Given a concrete version, this returns a ^ constraint (when possible)
      * that should be used, for example, in composer.json.
      *
      * For example:
@@ -157,7 +161,7 @@ class VersionSelector
         $loader = new ArrayLoader($this->getParser());
         $dumper = new ArrayDumper();
         $extra = $loader->getBranchAlias($dumper->dump($package));
-        if ($extra) {
+        if ($extra && $extra !== VersionParser::DEFAULT_BRANCH_ALIAS) {
             $extra = preg_replace('{^(\d+\.\d+\.\d+)(\.9999999)-dev$}', '$1.0', $extra, -1, $count);
             if ($count) {
                 $extra = str_replace('.9999999', '.0', $extra);

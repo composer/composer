@@ -20,9 +20,9 @@ use Composer\Config;
 class Url
 {
     /**
-     * @param Config $config
-     * @param string $url
-     * @param string $ref
+     * @param  Config $config
+     * @param  string $url
+     * @param  string $ref
      * @return string the updated URL
      */
     public static function updateDistReference(Config $config, $url, $ref)
@@ -60,7 +60,7 @@ class Url
     }
 
     /**
-     * @param string $url
+     * @param  string $url
      * @return string
      */
     public static function getOrigin(Config $config, $url)

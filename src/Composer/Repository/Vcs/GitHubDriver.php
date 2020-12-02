@@ -58,7 +58,7 @@ class GitHubDriver extends VcsDriver
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->owner.'/'.$this->repository);
         $this->cache->setReadOnly($this->config->get('cache-read-only'));
 
-        if ( $this->config->get('use-github-api') === false || (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api'] ) ){
+        if ($this->config->get('use-github-api') === false || (isset($this->repoConfig['no-api']) && $this->repoConfig['no-api'])) {
             $this->setupGitDriver($this->url);
 
             return;
@@ -150,7 +150,7 @@ class GitHubDriver extends VcsDriver
 
         if (!isset($this->infoCache[$identifier])) {
             if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
-                $composer =  JsonFile::parseJson($res);
+                $composer = JsonFile::parseJson($res);
             } else {
                 $composer = $this->getBaseComposerInformation($identifier);
 
@@ -193,7 +193,6 @@ class GitHubDriver extends VcsDriver
         }
 
         foreach (array($this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/.github/FUNDING.yml', $this->getApiUrl() . '/repos/'.$this->owner.'/.github/contents/FUNDING.yml') as $file) {
-
             try {
                 $response = $this->httpDownloader->get($file, array(
                     'retry-auth-failure' => false,

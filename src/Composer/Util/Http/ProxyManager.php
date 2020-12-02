@@ -51,7 +51,7 @@ class ProxyManager
     }
 
     /**
-     * @return ProxyManager     *
+     * @return ProxyManager
      */
     public static function getInstance()
     {
@@ -73,7 +73,7 @@ class ProxyManager
     /**
      * Returns a RequestProxy instance for the request url
      *
-     * @param string $requestUrl
+     * @param  string       $requestUrl
      * @return RequestProxy
      */
     public function getProxyForRequest($requestUrl)
@@ -130,6 +130,7 @@ class ProxyManager
             list($httpProxy, $httpsProxy, $noProxy) = ProxyHelper::getProxyData();
         } catch (\RuntimeException $e) {
             $this->error = $e->getMessage();
+
             return;
         }
 
@@ -152,7 +153,7 @@ class ProxyManager
     /**
      * Sets initial data
      *
-     * @param string $proxyUrl Proxy url
+     * @param string $url    Proxy url
      * @param string $scheme Environment variable scheme
      */
     private function setData($url, $scheme)
@@ -169,7 +170,7 @@ class ProxyManager
     /**
      * Returns true if a url matches no_proxy value
      *
-     * @param string $requestUrl
+     * @param  string $requestUrl
      * @return bool
      */
     private function noProxy($requestUrl)
@@ -177,6 +178,7 @@ class ProxyManager
         if ($this->noProxyHandler) {
             if (call_user_func($this->noProxyHandler, $requestUrl)) {
                 $this->lastProxy = 'excluded by no_proxy';
+
                 return true;
             }
         }

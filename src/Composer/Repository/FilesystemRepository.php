@@ -35,9 +35,9 @@ class FilesystemRepository extends WritableArrayRepository
     /**
      * Initializes filesystem repository.
      *
-     * @param JsonFile $repositoryFile repository json file
-     * @param bool $dumpVersions
-     * @param ?RootPackageInterface $rootPackage Must be provided if $dumpVersions is true
+     * @param JsonFile              $repositoryFile repository json file
+     * @param bool                  $dumpVersions
+     * @param ?RootPackageInterface $rootPackage    Must be provided if $dumpVersions is true
      */
     public function __construct(JsonFile $repositoryFile, $dumpVersions = false, RootPackageInterface $rootPackage = null)
     {

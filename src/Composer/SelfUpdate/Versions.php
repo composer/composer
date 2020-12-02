@@ -14,7 +14,6 @@ namespace Composer\SelfUpdate;
 
 use Composer\Util\HttpDownloader;
 use Composer\Config;
-use Composer\Json\JsonFile;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>

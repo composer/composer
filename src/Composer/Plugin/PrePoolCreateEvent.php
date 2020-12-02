@@ -13,7 +13,6 @@
 namespace Composer\Plugin;
 
 use Composer\EventDispatcher\Event;
-use Symfony\Component\Console\Input\InputInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\DependencyResolver\Request;
 use Composer\Package\PackageInterface;

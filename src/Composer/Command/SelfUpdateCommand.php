@@ -21,6 +21,7 @@ use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
 use Composer\IO\IOInterface;
 use Composer\Downloader\FilesystemException;
+use Composer\Downloader\TransportException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -211,7 +212,14 @@ EOT
 
         $io->write(sprintf("Upgrading to version <info>%s</info> (%s channel).", $updateVersion, $channelString));
         $remoteFilename = $baseUrl . ($updatingToTag ? "/download/{$updateVersion}/composer.phar" : '/composer.phar');
-        $signature = $httpDownloader->get($remoteFilename.'.sig')->getBody();
+        try {
+            $signature = $httpDownloader->get($remoteFilename.'.sig')->getBody();
+        } catch (TransportException $e) {
+            if ($e->getStatusCode() === 404) {
+                throw new \InvalidArgumentException('Version "'.$updateVersion.'" could not be found.', 0, $e);
+            }
+            throw $e;
+        }
         $io->writeError('   ', false);
         $httpDownloader->copy($remoteFilename, $tempFilename);
         $io->writeError('');
@@ -389,11 +397,11 @@ TAGSPUBKEY
     /**
      * Checks if the downloaded/rollback phar is valid then moves it
      *
-     * @param  string $localFilename The composer.phar location
-     * @param  string $newFilename The downloaded or backup phar
-     * @param  string $backupTarget The filename to use for the backup
-     * @throws \FilesystemException If the file cannot be moved
-     * @return bool Whether the phar is valid and has been moved
+     * @param  string              $localFilename The composer.phar location
+     * @param  string              $newFilename   The downloaded or backup phar
+     * @param  string              $backupTarget  The filename to use for the backup
+     * @throws FilesystemException If the file cannot be moved
+     * @return bool                Whether the phar is valid and has been moved
      */
     protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
     {
@@ -474,14 +482,14 @@ TAGSPUBKEY
     /**
      * Validates the downloaded/backup phar file
      *
-     * @param string $pharFile The downloaded or backup phar
-     * @param null|string $error Set by method on failure
+     * @param string      $pharFile The downloaded or backup phar
+     * @param null|string $error    Set by method on failure
      *
      * Code taken from getcomposer.org/installer. Any changes should be made
      * there and replicated here
      *
-     * @return bool If the operation succeeded
      * @throws \Exception
+     * @return bool       If the operation succeeded
      */
     protected function validatePhar($pharFile, &$error)
     {
@@ -528,9 +536,9 @@ TAGSPUBKEY
      *
      * Uses a .vbs script to elevate and run the cmd.exe move command.
      *
-     * @param string $localFilename The composer.phar location
-     * @param string $newFilename The downloaded or backup phar
-     * @return bool Whether composer.phar has been updated
+     * @param  string $localFilename The composer.phar location
+     * @param  string $newFilename   The downloaded or backup phar
+     * @return bool   Whether composer.phar has been updated
      */
     protected function tryAsWindowsAdmin($localFilename, $newFilename)
     {

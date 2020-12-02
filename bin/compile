@@ -20,7 +20,7 @@ require __DIR__.'/../src/bootstrap.php';
 use Composer\Compiler;
 
 error_reporting(-1);
-ini_set('display_errors', 1);
+ini_set('display_errors', '1');
 
 try {
     $compiler = new Compiler();

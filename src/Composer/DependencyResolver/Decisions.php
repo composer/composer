@@ -197,15 +197,21 @@ class Decisions implements \Iterator, \Countable
         }
     }
 
-    public function __toString()
+    public function toString(Pool $pool = null)
     {
         $decisionMap = $this->decisionMap;
         ksort($decisionMap);
         $str = '[';
         foreach ($decisionMap as $packageId => $level) {
-            $str .= $packageId.':'.$level.',';
+            $str .= (($pool) ? $pool->literalToPackage($packageId) : $packageId).':'.$level.',';
         }
         $str .= ']';
+
         return $str;
+    }
+
+    public function __toString()
+    {
+        return $this->toString();
     }
 }

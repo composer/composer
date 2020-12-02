@@ -12,14 +12,8 @@
 
 namespace Composer\Downloader;
 
-use Composer\Config;
-use Composer\Cache;
-use Composer\EventDispatcher\EventDispatcher;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\HttpDownloader;
-use Composer\IO\IOInterface;
-use Composer\Util\Filesystem;
 
 /**
  * Xz archive downloader.

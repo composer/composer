@@ -409,7 +409,7 @@ class PluginManager
         );
 
         foreach ($requires as $requireLink) {
-            foreach ($installedRepo->findPackagesWithReplacersAndProviders($requireLink->getTarget(), $requireLink->getConstraint()) as $requiredPackage) {
+            foreach ($installedRepo->findPackagesWithReplacersAndProviders($requireLink->getTarget()) as $requiredPackage) {
                 if (!isset($collected[$requiredPackage->getName()])) {
                     $collected[$requiredPackage->getName()] = $requiredPackage;
                     $collected = $this->collectDependencies($installedRepo, $collected, $requiredPackage);

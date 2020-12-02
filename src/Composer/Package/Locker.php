@@ -17,8 +17,6 @@ use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
 use Composer\Repository\LockArrayRepository;
 use Composer\Repository\PackageLinks;
-use Composer\Repository\RepositoryManager;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
@@ -369,6 +367,7 @@ class Locker
             if (in_array($alias['version'], array('dev-master', 'dev-trunk', 'dev-default'), true)) {
                 $alias['version'] = VersionParser::DEFAULT_BRANCH_ALIAS;
             }
+
             return $alias;
         }, $aliases);
 

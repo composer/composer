@@ -1,4 +1,16 @@
-<?php return array(
+<?php
+
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+return array(
     'root' => array(
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
@@ -35,13 +47,13 @@
             'pretty_version' => '2.2',
             'version' => '2.2.0.0',
             'aliases' => array(),
-            'reference' => NULL,
+            'reference' => null,
         ),
         'c/c' => array(
             'pretty_version' => '3.0',
             'version' => '3.0.0.0',
             'aliases' => array(),
-            'reference' => NULL,
+            'reference' => null,
         ),
         'foo/impl' => array(
             'provided' => array(
@@ -49,7 +61,7 @@
                 '1.2',
                 '1.4',
                 '2.0',
-            )
+            ),
         ),
         'foo/impl2' => array(
             'provided' => array(

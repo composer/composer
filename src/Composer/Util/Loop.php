@@ -12,7 +12,6 @@
 
 namespace Composer\Util;
 
-use Composer\Util\HttpDownloader;
 use React\Promise\Promise;
 use Symfony\Component\Console\Helper\ProgressBar;
 
@@ -63,7 +62,8 @@ class Loop
         $uncaught = null;
 
         \React\Promise\all($promises)->then(
-            function () { },
+            function () {
+            },
             function ($e) use (&$uncaught) {
                 $uncaught = $e;
             }

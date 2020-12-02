@@ -132,7 +132,7 @@ class GitLabDriver extends VcsDriver
 
         if (!isset($this->infoCache[$identifier])) {
             if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
-                $composer =  JsonFile::parseJson($res);
+                $composer = JsonFile::parseJson($res);
             } else {
                 $composer = $this->getBaseComposerInformation($identifier);
 
@@ -563,6 +563,7 @@ class GitLabDriver extends VcsDriver
             if ($portNumber) {
                 return $guessedDomain.':'.$portNumber;
             }
+
             return $guessedDomain;
         }
 

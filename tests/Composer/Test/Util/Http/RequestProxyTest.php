@@ -31,9 +31,9 @@ class RequestProxyTest extends TestCase
     {
         // url, secure
         return array(
-            'basic'     => array('http://proxy.com:80', false),
-            'secure'    => array('https://proxy.com:443', true),
-            'none'      => array('', false),
+            'basic' => array('http://proxy.com:80', false),
+            'secure' => array('https://proxy.com:443', true),
+            'none' => array('', false),
         );
     }
 

@@ -35,6 +35,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -47,6 +48,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -59,6 +61,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -71,6 +74,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -83,6 +87,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -95,6 +100,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -106,6 +112,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 
@@ -118,6 +125,7 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
+
             return;
         }
 

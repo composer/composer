@@ -1,0 +1,38 @@
+--TEST--
+Test that conflict of a dependency with a branch alias of another dependency is not ignored, even if the alias is not required for installation.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "some/dep", "version": "1.0.0" },
+                { "name": "some/dep", "version": "1.1.0" },
+                { "name": "some/dep", "version": "1.2.0" },
+                { "name": "some/dep", "version": "dev-main", "extra": {"branch-alias": {"dev-main": "1.3.x-dev"} } },
+                { "name": "some/dep", "version": "1.2.x-dev" },
+                { "name": "conflictor/foo", "version": "1.0.0", "conflict": { "some/dep": ">=1.3" } }
+            ]
+        }
+    ],
+    "require": {
+        "some/dep": "dev-main",
+        "conflictor/foo": "1.0.0"
+    }
+}
+--RUN--
+update
+--EXPECT-EXIT-CODE--
+2
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires some/dep dev-main -> satisfiable by some/dep[dev-main].
+    - conflictor/foo 1.0.0 conflicts with some/dep 1.3.x-dev.
+    - some/dep 1.3.x-dev is an alias of some/dep dev-main and must be installed with it.
+    - Root composer.json requires conflictor/foo 1.0.0 -> satisfiable by conflictor/foo[1.0.0].
+
+--EXPECT--

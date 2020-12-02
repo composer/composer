@@ -179,7 +179,7 @@ interface IOInterface extends LoggerInterface
      * @param bool        $multiselect  Select more than one value separated by comma
      *
      * @throws \InvalidArgumentException
-     * @return int|string|array|bool    The selected value or values (the key of the choices array)
+     * @return int|string|array|bool     The selected value or values (the key of the choices array)
      */
     public function select($question, $choices, $default, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false);
 

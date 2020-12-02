@@ -16,12 +16,10 @@ use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\LockArrayRepository;
 use Composer\DependencyResolver\DefaultPolicy;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
 use Composer\Package\Link;
-use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
@@ -842,6 +840,7 @@ class SolverTest extends TestCase
             array('job' => 'install', 'package' => $packageB),
             array('job' => 'markAliasInstalled', 'package' => $packageBAlias),
             array('job' => 'install', 'package' => $packageC),
+            array('job' => 'markAliasInstalled', 'package' => $packageCAlias),
         ));
     }
 

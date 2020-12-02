@@ -158,8 +158,8 @@ class Application extends BaseApplication
             try {
                 $commandName = $this->find($name)->getName();
             } catch (CommandNotFoundException $e) {
-              // we'll check command validity again later after plugins are loaded
-              $commandName = false;
+                // we'll check command validity again later after plugins are loaded
+                $commandName = false;
             } catch (\InvalidArgumentException $e) {
             }
         }

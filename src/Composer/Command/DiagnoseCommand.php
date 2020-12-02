@@ -29,6 +29,7 @@ use Composer\SelfUpdate\Versions;
 use Composer\IO\NullIO;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -170,7 +171,13 @@ EOT
 
         $io->write('OpenSSL version: ' . (defined('OPENSSL_VERSION_TEXT') ? '<comment>'.OPENSSL_VERSION_TEXT.'</comment>' : '<error>missing</error>'));
         $io->write('cURL version: ' . $this->getCurlVersion());
-        $io->write('zip extension: ' . (extension_loaded('zip') ? '<info>OK</info>' : '<info>not loaded</info>'));
+
+        $finder = new ExecutableFinder;
+        $hasSystemUnzip = (bool) $finder->find('unzip');
+        $io->write(
+            'zip: ' . (extension_loaded('zip') ? '<comment>extension present</comment>' : '<comment>extension not loaded</comment>')
+            . ', ' . ($hasSystemUnzip ? '<comment>unzip present</comment>' : '<comment>unzip not available</comment>')
+        );
 
         return $this->exitCode;
     }
@@ -669,7 +676,6 @@ EOT
 
         return !$warnings && !$errors ? true : $output;
     }
-
 
     /**
      * Check if allow_url_fopen is ON

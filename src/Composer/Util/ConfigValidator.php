@@ -141,7 +141,6 @@ class ConfigValidator
             }
         }
 
-
         // check for meaningless provide/replace satisfying requirements
         foreach (array('provide', 'replace') as $linkType) {
             if (isset($manifest[$linkType])) {

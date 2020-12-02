@@ -695,6 +695,7 @@ EOF;
 
             $version = str_replace('-', '.', $bound->getVersion());
             $chunks = array_map('intval', explode('.', $version));
+
             return $chunks[0] * 10000 + $chunks[1] * 100 + $chunks[2];
         };
 
@@ -710,6 +711,7 @@ EOF;
             $version = str_replace('-', '.', $bound->getVersion());
             $chunks = explode('.', $version);
             $chunks = array_slice($chunks, 0, 3);
+
             return implode('.', $chunks);
         };
 

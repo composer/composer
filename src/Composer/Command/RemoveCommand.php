@@ -275,6 +275,7 @@ EOT
             foreach ($packages as $package) {
                 if ($composer->getRepositoryManager()->getLocalRepository()->findPackages($package)) {
                     $io->writeError('<error>Removal failed, '.$package.' is still present, it may be required by another package. See `composer why '.$package.'`.</error>');
+
                     return 2;
                 }
             }

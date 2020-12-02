@@ -13,13 +13,9 @@
 namespace Composer\Installer;
 
 use Composer\Composer;
-use Composer\DependencyResolver\PolicyInterface;
-use Composer\DependencyResolver\Request;
-use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\Transaction;
 use Composer\EventDispatcher\Event;
 use Composer\IO\IOInterface;
-use Composer\Repository\RepositorySet;
 
 class InstallerEvent extends Event
 {
@@ -51,12 +47,12 @@ class InstallerEvent extends Event
     /**
      * Constructor.
      *
-     * @param string               $eventName
-     * @param Composer             $composer
-     * @param IOInterface          $io
-     * @param bool                 $devMode
-     * @param bool                 $executeOperations
-     * @param Transaction          $transaction
+     * @param string      $eventName
+     * @param Composer    $composer
+     * @param IOInterface $io
+     * @param bool        $devMode
+     * @param bool        $executeOperations
+     * @param Transaction $transaction
      */
     public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, $executeOperations, Transaction $transaction)
     {

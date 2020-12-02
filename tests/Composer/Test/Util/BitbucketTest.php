@@ -240,8 +240,7 @@ class BitbucketTest extends TestCase
             ->method('writeError')
             ->withConsecutive(
                 array('<error>Invalid OAuth consumer provided.</error>'),
-                array(
-                    'You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"')
+                array('You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"')
             );
 
         $this->httpDownloader->expects($this->once())
@@ -256,7 +255,7 @@ class BitbucketTest extends TestCase
                     ),
                 )
             )
-            ->willThrowException(new \Composer\Downloader\TransportException('HTTP/1.1 401 UNAUTHORIZED',401));
+            ->willThrowException(new \Composer\Downloader\TransportException('HTTP/1.1 401 UNAUTHORIZED', 401));
 
         $this->assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
     }
@@ -273,7 +272,7 @@ class BitbucketTest extends TestCase
             ->method('setAuthentication')
             ->with($this->origin, $this->username, $this->password);
 
-        $exception = new \Composer\Downloader\TransportException('HTTP/1.1 404 NOT FOUND',404);
+        $exception = new \Composer\Downloader\TransportException('HTTP/1.1 404 NOT FOUND', 404);
         $this->httpDownloader->expects($this->once())
             ->method('get')
             ->with(
@@ -452,7 +451,7 @@ class BitbucketTest extends TestCase
 
     public function testAuthorizeOAuthWithWrongOriginUrl()
     {
-       $this->assertFalse($this->bitbucket->authorizeOAuth('non-' . $this->origin));
+        $this->assertFalse($this->bitbucket->authorizeOAuth('non-' . $this->origin));
     }
 
     public function testAuthorizeOAuthWithoutAvailableGitConfigToken()

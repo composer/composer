@@ -29,7 +29,7 @@ final class StreamContextFactory
     /**
      * Creates a context supporting HTTP proxies
      *
-     * @param  string            $url            URL the context is to be used for
+     * @param string $url URL the context is to be used for
      * @psalm-param array{http: array{follow_location?: int, max_redirects?: int, header?: string|array<string, string|int>}} $defaultOptions
      * @param  array             $defaultOptions Options to merge with the default
      * @param  array             $defaultParams  Parameters to specify on the context
@@ -57,8 +57,8 @@ final class StreamContextFactory
 
     /**
      * @param string $url
-     * @param array $options
-     * @param bool $forCurl When true, will not add proxy values as these are handled separately
+     * @param array  $options
+     * @param bool   $forCurl When true, will not add proxy values as these are handled separately
      * @psalm-return array{http:{header: string[], proxy?: string, request_fulluri: bool}, ssl: array}
      * @return array formatted as a stream context array
      */
@@ -106,7 +106,7 @@ final class StreamContextFactory
 
         if ($forCurl) {
             $curl = curl_version();
-            $httpVersion = 'curl '.$curl['version'];
+            $httpVersion = 'cURL '.$curl['version'];
         } else {
             $httpVersion = 'streams';
         }
@@ -236,7 +236,7 @@ final class StreamContextFactory
      * This method fixes the array by moving the content-type header to the end
      *
      * @link https://bugs.php.net/bug.php?id=61548
-     * @param string|array $header
+     * @param  string|array $header
      * @return array
      */
     private static function fixHttpHeaderField($header)

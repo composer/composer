@@ -139,6 +139,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
 
         $binaryInstaller = $this->binaryInstaller;
         $installPath = $this->getInstallPath($package);
+
         return $promise->then(function () use ($binaryInstaller, $installPath, $package, $repo) {
             $binaryInstaller->installBinaries($package, $installPath);
             if (!$repo->hasPackage($package)) {
@@ -166,6 +167,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
 
         $binaryInstaller = $this->binaryInstaller;
         $installPath = $this->getInstallPath($target);
+
         return $promise->then(function () use ($binaryInstaller, $installPath, $target, $initial, $repo) {
             $binaryInstaller->installBinaries($target, $installPath);
             $repo->removePackage($initial);
@@ -192,6 +194,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $binaryInstaller = $this->binaryInstaller;
         $downloadPath = $this->getPackageBasePath($package);
         $filesystem = $this->filesystem;
+
         return $promise->then(function () use ($binaryInstaller, $filesystem, $downloadPath, $package, $repo) {
             $binaryInstaller->removeBinaries($package);
             $repo->removePackage($package);
@@ -252,6 +255,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     protected function installCode(PackageInterface $package)
     {
         $downloadPath = $this->getInstallPath($package);
+
         return $this->downloadManager->install($package, $downloadPath);
     }
 
@@ -271,6 +275,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
                 }
 
                 $self = $this;
+
                 return $promise->then(function () use ($self, $target) {
                     $reflMethod = new \ReflectionMethod($self, 'installCode');
                     $reflMethod->setAccessible(true);
@@ -283,12 +288,14 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
 
             $this->filesystem->rename($initialDownloadPath, $targetDownloadPath);
         }
+
         return $this->downloadManager->update($initial, $target, $targetDownloadPath);
     }
 
     protected function removeCode(PackageInterface $package)
     {
         $downloadPath = $this->getPackageBasePath($package);
+
         return $this->downloadManager->remove($package, $downloadPath);
     }
 

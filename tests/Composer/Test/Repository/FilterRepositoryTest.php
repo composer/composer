@@ -39,7 +39,9 @@ class FilterRepositoryTest extends TestCase
         $repo = new FilterRepository($this->arrayRepo, $config);
         $packages = $repo->getPackages();
 
-        $this->assertSame($expected, array_map(function ($p) { return $p->getName(); }, $packages));
+        $this->assertSame($expected, array_map(function ($p) {
+            return $p->getName();
+        }, $packages));
     }
 
     public static function repoMatchingTests()

@@ -24,7 +24,7 @@ class ProxyHelper
      * Returns proxy environment values
      *
      * @throws \RuntimeException on malformed url
-     * @return array httpProxy, httpsProxy, noProxy values
+     * @return array             httpProxy, httpsProxy, noProxy values
      */
     public static function getProxyData()
     {
@@ -59,7 +59,7 @@ class ProxyHelper
     /**
      * Returns http context options for the proxy url
      *
-     * @param string $proxyUrl
+     * @param  string $proxyUrl
      * @return array
      */
     public static function getContextOptions($proxyUrl)
@@ -91,7 +91,7 @@ class ProxyHelper
      * Sets/unsets request_fulluri value in http context options array
      *
      * @param string $requestUrl
-     * @param array $options Set by method
+     * @param array  $options    Set by method
      */
     public static function setRequestFullUri($requestUrl, array &$options)
     {
@@ -105,8 +105,8 @@ class ProxyHelper
     /**
      * Searches $_SERVER for case-sensitive values
      *
-     * @param array $names Names to search for
-     * @param mixed $name Name of any found value
+     * @param  array       $names Names to search for
+     * @param  mixed       $name  Name of any found value
      * @return string|null The found value
      */
     private static function getProxyEnv(array $names, &$name)
@@ -121,10 +121,10 @@ class ProxyHelper
     /**
      * Checks and formats a proxy url from the environment
      *
-     * @param string $proxyUrl
-     * @param string $envName
+     * @param  string            $proxyUrl
+     * @param  string            $envName
      * @throws \RuntimeException on malformed url
-     * @return string The formatted proxy url
+     * @return string            The formatted proxy url
      */
     private static function checkProxy($proxyUrl, $envName)
     {
@@ -147,8 +147,8 @@ class ProxyHelper
     /**
      * Formats a url from its component parts
      *
-     * @param array $proxy Values from parse_url
-     * @param bool $includeAuth Whether to include authorization values
+     * @param  array  $proxy       Values from parse_url
+     * @param  bool   $includeAuth Whether to include authorization values
      * @return string The formatted value
      */
     private static function formatParsedUrl(array $proxy, $includeAuth)

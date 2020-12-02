@@ -295,11 +295,11 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param         string       $source        source package name
-     * @param         string       $sourceVersion source package version (pretty version ideally)
-     * @param         string       $description   link description (e.g. requires, replaces, ..)
+     * @param string $source        source package name
+     * @param string $sourceVersion source package version (pretty version ideally)
+     * @param string $description   link description (e.g. requires, replaces, ..)
      * @phpstan-param Link::TYPE_* $description
-     * @param         array        $links         array of package name => constraint mappings
+     * @param  array  $links array of package name => constraint mappings
      * @return Link[]
      */
     public function parseLinks($source, $sourceVersion, $description, $links)
@@ -346,7 +346,11 @@ class ArrayLoader implements LoaderInterface
                 }
 
                 // normalize without -dev and ensure it's a numeric branch that is parseable
-                $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+                if ($targetBranch === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                    $validatedTargetBranch = VersionParser::DEFAULT_BRANCH_ALIAS;
+                } else {
+                    $validatedTargetBranch = $this->versionParser->normalizeBranch(substr($targetBranch, 0, -4));
+                }
                 if ('-dev' !== substr($validatedTargetBranch, -4)) {
                     continue;
                 }

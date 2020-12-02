@@ -18,16 +18,9 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Util\Platform;
-use Composer\IO\IOInterface;
-use Composer\Config;
-use Composer\Cache;
-use Composer\Util\HttpDownloader;
-use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
-use Composer\EventDispatcher\EventDispatcher;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
-use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 

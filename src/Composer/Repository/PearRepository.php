@@ -12,17 +12,6 @@
 
 namespace Composer\Repository;
 
-use Composer\IO\IOInterface;
-use Composer\Semver\VersionParser as SemverVersionParser;
-use Composer\Package\Version\VersionParser;
-use Composer\Package\CompletePackage;
-use Composer\EventDispatcher\EventDispatcher;
-use Composer\Package\Link;
-use Composer\Semver\Constraint\Constraint;
-use Composer\Util\HttpDownloader;
-use Composer\Config;
-use Composer\Factory;
-
 /**
  * Builds list of package from PEAR channel.
  *

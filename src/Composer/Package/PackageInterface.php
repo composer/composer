@@ -203,7 +203,7 @@ interface PackageInterface
      *
      * @see getPrettyVersion
      *
-     * @param  bool   $truncate If the source reference is a sha1 hash, truncate it
+     * @param  bool   $truncate    If the source reference is a sha1 hash, truncate it
      * @param  int    $displayMode One of the DISPLAY_ constants on this interface determining display of references
      * @return string version
      *

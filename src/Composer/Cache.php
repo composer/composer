@@ -115,7 +115,7 @@ class Cache
             $this->io->writeError('Writing '.$this->root . $file.' into cache', true, IOInterface::DEBUG);
 
             try {
-                return file_put_contents($this->root . $file, $contents);
+                return file_put_contents($this->root . $file.'.tmp', $contents) !== false && rename($this->root . $file . '.tmp', $this->root . $file);
             } catch (\ErrorException $e) {
                 $this->io->writeError('<warning>Failed to write into cache: '.$e->getMessage().'</warning>', true, IOInterface::DEBUG);
                 if (preg_match('{^file_put_contents\(\): Only ([0-9]+) of ([0-9]+) bytes written}', $e->getMessage(), $m)) {
@@ -209,6 +209,7 @@ class Cache
     {
         if ($this->enabled) {
             $this->filesystem->emptyDirectory($this->root);
+
             return true;
         }
 

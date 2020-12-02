@@ -186,7 +186,7 @@ class PlatformRepository extends ArrayRepository
                         $library = strtolower($sslMatches['library']);
                         if ($library === 'openssl') {
                             $parsedVersion = Version::parseOpenssl($sslMatches['version'], $isFips);
-                            $this->addLibrary($name.'-openssl'.($isFips ? '-fips': ''), $parsedVersion, 'curl OpenSSL version ('.$parsedVersion.')', array(), $isFips ? array('curl-openssl'): array());
+                            $this->addLibrary($name.'-openssl'.($isFips ? '-fips' : ''), $parsedVersion, 'curl OpenSSL version ('.$parsedVersion.')', array(), $isFips ? array('curl-openssl') : array());
                         } else {
                             $this->addLibrary($name.'-'.$library, $sslMatches['version'], 'curl '.$library.' version ('.$sslMatches['version'].')', array('curl-openssl'));
                         }
@@ -315,7 +315,7 @@ class PlatformRepository extends ArrayRepository
 
                 case 'libxml':
                     // ext/dom, ext/simplexml, ext/xmlreader and ext/xmlwriter use the same libxml as the ext/libxml
-                    $libxmlProvides = array_map(function($extension) {
+                    $libxmlProvides = array_map(function ($extension) {
                         return $extension . '-libxml';
                     }, array_intersect($loadedExtensions, array('dom', 'simplexml', 'xml', 'xmlreader', 'xmlwriter')));
                     $this->addLibrary($name, $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version', array(), $libxmlProvides);
@@ -441,7 +441,7 @@ class PlatformRepository extends ArrayRepository
 
                 case 'zip':
                     if ($this->runtime->hasConstant('LIBZIP_VERSION', 'ZipArchive')) {
-                        $this->addLibrary($name.'-libzip', $this->runtime->getConstant('LIBZIP_VERSION','ZipArchive'), null, array('zip'));
+                        $this->addLibrary($name.'-libzip', $this->runtime->getConstant('LIBZIP_VERSION', 'ZipArchive'), null, array('zip'));
                     }
                     break;
 
@@ -549,7 +549,7 @@ class PlatformRepository extends ArrayRepository
 
         if ($name === 'uuid') {
             $ext->setReplaces(array(
-                new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version), Link::TYPE_REPLACE, $ext->getPrettyVersion())
+                new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version), Link::TYPE_REPLACE, $ext->getPrettyVersion()),
             ));
         }
 
@@ -557,7 +557,7 @@ class PlatformRepository extends ArrayRepository
     }
 
     /**
-     * @param string $name
+     * @param  string $name
      * @return string
      */
     private function buildPackageName($name)
@@ -599,7 +599,7 @@ class PlatformRepository extends ArrayRepository
     /**
      * Check if a package name is a platform package.
      *
-     * @param $name
+     * @param  string $name
      * @return bool
      */
     public static function isPlatformPackage($name)

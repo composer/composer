@@ -15,7 +15,6 @@ namespace Composer\Util;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
-use Composer\CaBundle\CaBundle;
 use Composer\Util\Http\Response;
 use Composer\Composer;
 use Composer\Package\Version\VersionParser;
@@ -74,6 +73,16 @@ class HttpDownloader
         $this->rfs = new RemoteFilesystem($io, $config, $options, $disableTls);
     }
 
+    /**
+     * Download a file synchronously
+     *
+     * @param  string   $url     URL to download
+     * @param  array    $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
+     *                           although not all options are supported when using the default curl downloader
+     * @return Response
+     *
+     * @throws TransportException
+     */
     public function get($url, $options = array())
     {
         list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => false), true);
@@ -102,6 +111,16 @@ class HttpDownloader
         return $response;
     }
 
+    /**
+     * Create an async download operation
+     *
+     * @param  string   $url     URL to download
+     * @param  array    $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
+     *                           although not all options are supported when using the default curl downloader
+     * @return Promise
+     *
+     * @throws TransportException
+     */
     public function add($url, $options = array())
     {
         list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => false));
@@ -109,6 +128,17 @@ class HttpDownloader
         return $promise;
     }
 
+    /**
+     * Copy a file synchronously
+     *
+     * @param  string   $url     URL to download
+     * @param  string   $to      Path to copy to
+     * @param  array    $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
+     *                           although not all options are supported when using the default curl downloader
+     * @return Response
+     *
+     * @throws TransportException
+     */
     public function copy($url, $to, $options = array())
     {
         list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to), true);
@@ -117,6 +147,17 @@ class HttpDownloader
         return $this->getResponse($job['id']);
     }
 
+    /**
+     * Create an async copy operation
+     *
+     * @param  string   $url     URL to download
+     * @param  string   $to      Path to copy to
+     * @param  array    $options Stream context options e.g. https://www.php.net/manual/en/context.http.php
+     *                           although not all options are supported when using the default curl downloader
+     * @return Promise
+     *
+     * @throws TransportException
+     */
     public function addCopy($url, $to, $options = array())
     {
         list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to));
@@ -231,7 +272,7 @@ class HttpDownloader
 
             throw $e;
         });
-        $this->jobs[$job['id']] =& $job;
+        $this->jobs[$job['id']] = &$job;
 
         if ($this->runningJobs < $this->maxJobs) {
             $this->startJob($job['id']);
@@ -242,7 +283,7 @@ class HttpDownloader
 
     private function startJob($id)
     {
-        $job =& $this->jobs[$id];
+        $job = &$this->jobs[$id];
         if ($job['status'] !== self::STATUS_QUEUED) {
             return;
         }
@@ -265,6 +306,7 @@ class HttpDownloader
                 $e->setStatusCode(499);
                 $reject($e);
             }
+
             return;
         }
 
@@ -287,6 +329,11 @@ class HttpDownloader
         $this->runningJobs--;
     }
 
+    /**
+     * Wait for current async download jobs to complete
+     *
+     * @param int|null $index For internal use only, the job id
+     */
     public function wait($index = null)
     {
         while (true) {
@@ -309,7 +356,8 @@ class HttpDownloader
     /**
      * @internal
      *
-     * @return int number of active (queued or started) jobs
+     * @param  int|null $index For internal use only, the job id
+     * @return int      number of active (queued or started) jobs
      */
     public function countActiveJobs($index = null)
     {
@@ -362,6 +410,9 @@ class HttpDownloader
         return $resp;
     }
 
+    /**
+     * @internal
+     */
     public static function outputWarnings(IOInterface $io, $url, $data)
     {
         foreach (array('warning', 'info') as $type) {
@@ -382,6 +433,9 @@ class HttpDownloader
         }
     }
 
+    /**
+     * @internal
+     */
     public static function getExceptionHints(\Exception $e)
     {
         if (!$e instanceof TransportException) {
@@ -395,17 +449,17 @@ class HttpDownloader
             Silencer::suppress();
             $testConnectivity = file_get_contents('https://8.8.8.8', false, stream_context_create(array(
                 'ssl' => array('verify_peer' => false),
-                'http' => array('follow_location' => false, 'ignore_errors' => true)
+                'http' => array('follow_location' => false, 'ignore_errors' => true),
             )));
             Silencer::restore();
             if (false !== $testConnectivity) {
                 return array(
-                    '<error>The following exception probably indicates you have misconfigured DNS resolver(s)</error>'
+                    '<error>The following exception probably indicates you have misconfigured DNS resolver(s)</error>',
                 );
             }
 
             return array(
-                '<error>The following exception probably indicates you are offline or have misconfigured DNS resolver(s)</error>'
+                '<error>The following exception probably indicates you are offline or have misconfigured DNS resolver(s)</error>',
             );
         }
     }
@@ -427,6 +481,9 @@ class HttpDownloader
         return true;
     }
 
+    /**
+     * @internal
+     */
     public static function isCurlEnabled()
     {
         return \extension_loaded('curl') && \function_exists('curl_multi_exec') && \function_exists('curl_multi_init');

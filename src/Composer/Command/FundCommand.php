@@ -18,7 +18,6 @@ use Composer\Package\BasePackage;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Repository\CompositeRepository;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**

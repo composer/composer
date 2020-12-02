@@ -1,5 +1,6 @@
 parameters:
     level: 1
+    checkClassCaseSensitivity: true # Level 2 rule
     excludes_analyse:
        - '../tests/Composer/Test/Fixtures/*'
        - '../tests/Composer/Test/Autoload/Fixtures/*'
@@ -34,3 +35,25 @@ parameters:
 
 rules:
     - Composer\PHPStanRules\AnonymousFunctionWithThisRule
+    # Level 2 rules
+    - PHPStan\Rules\Cast\EchoRule
+    - PHPStan\Rules\Cast\InvalidCastRule
+    - PHPStan\Rules\Cast\InvalidPartOfEncapsedStringRule
+    - PHPStan\Rules\Cast\PrintRule
+    - PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
+    - PHPStan\Rules\Generics\ClassAncestorsRule
+    - PHPStan\Rules\Generics\ClassTemplateTypeRule
+    - PHPStan\Rules\Generics\FunctionTemplateTypeRule
+    - PHPStan\Rules\Generics\FunctionSignatureVarianceRule
+    - PHPStan\Rules\Generics\InterfaceAncestorsRule
+    - PHPStan\Rules\Generics\InterfaceTemplateTypeRule
+    - PHPStan\Rules\Generics\MethodTemplateTypeRule
+    - PHPStan\Rules\Generics\MethodSignatureVarianceRule
+    - PHPStan\Rules\Generics\TraitTemplateTypeRule
+    - PHPStan\Rules\Operators\InvalidBinaryOperationRule
+    - PHPStan\Rules\Operators\InvalidUnaryOperationRule
+    - PHPStan\Rules\Operators\InvalidComparisonOperationRule
+    - PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
+    - PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule
+    - PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
+    - PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule

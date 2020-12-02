@@ -64,8 +64,8 @@ class Zip
     /**
      * Find a file by name, returning the one that has the shortest path.
      *
-     * @param \ZipArchive $zip
-     * @param string      $filename
+     * @param  \ZipArchive       $zip
+     * @param  string            $filename
      * @throws \RuntimeException
      *
      * @return int

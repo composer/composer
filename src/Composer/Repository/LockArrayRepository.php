@@ -26,4 +26,3 @@ class LockArrayRepository extends ArrayRepository
         return 'lock repo';
     }
 }
-

@@ -12,8 +12,6 @@
 
 namespace Composer\DependencyResolver\Operation;
 
-use Composer\Package\PackageInterface;
-
 /**
  * Abstract operation class.
  *

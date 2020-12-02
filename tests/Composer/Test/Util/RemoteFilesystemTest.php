@@ -176,13 +176,10 @@ class RemoteFilesystemTest extends TestCase
 
         $fs->expects($this->once())->method('getRemoteContents')
             ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
-
                 $http_response_header = array('http/1.1 401 unauthorized');
 
                 return '';
-
             });
-
 
         $file = tempnam(sys_get_temp_dir(), 'z');
         unlink($file);
@@ -205,29 +202,24 @@ class RemoteFilesystemTest extends TestCase
             ->method('promptAuthIfNeeded')
             ->willReturn(array(
                 'storeAuth' => true,
-                'retry' => true
+                'retry' => true,
             ));
 
         $fs->expects($this->at(0))
             ->method('getRemoteContents')
             ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
-
                 $http_response_header = array('http/1.1 401 unauthorized');
 
                 return '';
-
             });
 
         $fs->expects($this->at(1))
             ->method('getRemoteContents')
             ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
-
                 $http_response_header = array('http/1.1 200 OK');
 
                 return '<?php $copied = "Copied"; ';
-
             });
-
 
         $file = tempnam(sys_get_temp_dir(), 'z');
 
@@ -411,7 +403,7 @@ class RemoteFilesystemTest extends TestCase
     }
 
     /**
-     * @param array $mockedMethods
+     * @param array      $mockedMethods
      * @param AuthHelper $authHelper
      *
      * @return RemoteFilesystem|MockObject
@@ -424,7 +416,7 @@ class RemoteFilesystemTest extends TestCase
                 $this->getConfigMock(),
                 array(),
                 false,
-                $authHelper
+                $authHelper,
             ))
             ->setMethods($mockedMethods)
             ->getMock();
@@ -440,7 +432,7 @@ class RemoteFilesystemTest extends TestCase
         return $this->getMockBuilder('Composer\Util\AuthHelper')
             ->setConstructorArgs(array(
                 $this->getIOInterfaceMock(),
-                $this->getConfigMock()
+                $this->getConfigMock(),
             ))
             ->setMethods($mockedMethods)
             ->getMock();

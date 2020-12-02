@@ -16,7 +16,6 @@ use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PackageLinks;
 use Composer\Repository\PlatformRepository;
-use Composer\Semver\Constraint\MultiConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -198,8 +197,8 @@ class Solver
     }
 
     /**
-     * @param  Request    $request
-     * @param  bool|array $ignorePlatformReqs
+     * @param  Request         $request
+     * @param  bool|array      $ignorePlatformReqs
      * @return LockTransaction
      */
     public function solve(Request $request, $ignorePlatformReqs = false)

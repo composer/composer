@@ -32,6 +32,7 @@ class HhvmDetectorTest extends TestCase
     {
         if (!defined('HHVM_VERSION_ID')) {
             self::markTestSkipped('Not running with HHVM');
+
             return;
         }
         $version = $this->hhvmDetector->getVersion();
@@ -42,14 +43,17 @@ class HhvmDetectorTest extends TestCase
     {
         if (defined('HHVM_VERSION_ID')) {
             self::markTestSkipped('Running with HHVM');
+
             return;
         }
         if (PHP_VERSION_ID < 50400) {
             self::markTestSkipped('Test only works on PHP 5.4+');
+
             return;
         }
         if (Platform::isWindows()) {
             self::markTestSkipped('Test does not run on Windows');
+
             return;
         }
         $finder = new ExecutableFinder();

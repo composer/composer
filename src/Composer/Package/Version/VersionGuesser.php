@@ -21,7 +21,6 @@ use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
 
-
 /**
  * Try to guess the current version number based on different VCS configuration.
  *
