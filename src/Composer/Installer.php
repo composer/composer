@@ -739,19 +739,22 @@ class Installer
      */
     private function createRepositorySet($forUpdate, PlatformRepository $platformRepo, array $rootAliases = array(), $lockedRepository = null)
     {
+        // For `update mirrors` and `install --ignore-links` we remove linked packages from locked repo.
+        // On install this likely turns in a failure, but plugins could change that.
+        if ($lockedRepository && (($forUpdate && $this->updateMirrors) || (!$forUpdate && $this->ignoreLinks))) {
+            /** @var LockArrayRepository $lockedRepository */
+            $lockedLinks = $this->locker->getPackageLinks();
+            foreach ($lockedLinks->getAllPackageNames() as $linkedPackageName) {
+                $lockedRepository->removePackage($lockedLinks->getPackage($linkedPackageName));
+            }
+        }
+
         if ($forUpdate) {
             $minimumStability = $this->package->getMinimumStability();
             $stabilityFlags = $this->package->getStabilityFlags();
 
             $requires = array_merge($this->package->getRequires(), $this->package->getDevRequires());
             $packageLinks = $this->createPackageLinks(!$this->updateMirrors);
-            if ($this->updateMirrors && $lockedRepository) {
-                /** @var LockArrayRepository $lockedRepository */
-                $lockedLinks = $this->locker->getPackageLinks();
-                foreach ($lockedLinks->getAllPackageNames() as $linkedPackageName) {
-                    $lockedRepository->removePackage($lockedLinks->getPackage($linkedPackageName));
-                }
-            }
         } else {
             $packageLinks = $this->ignoreLinks ? $this->createPackageLinks(false) : $this->locker->getPackageLinks();
             $minimumStability = $this->locker->getMinimumStability();
