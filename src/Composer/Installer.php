@@ -377,11 +377,18 @@ class Installer
             return 1;
         }
 
+        // `--load-links`/`--links-from` are mutually exclusive with `update mirrors`/`update nothing`
+        if ($this->updateMirrors && $this->loadLinksFromPaths) {
+            $this->io->writeError('<error>Cannot load links when updating lock file information.</error>', true, IOInterface::QUIET);
+
+            return 1;
+        }
+
         $this->io->writeError('<info>Loading composer repositories with package information</info>');
 
         // creating repository set
         $policy = $this->createPolicy(true);
-        $repositorySet = $this->createRepositorySet(true, $platformRepo, $aliases);
+        $repositorySet = $this->createRepositorySet(true, $platformRepo, $aliases, $lockedRepository);
         $repositories = $this->repositoryManager->getRepositories();
         foreach ($repositories as $repository) {
             $repositorySet->addRepository($repository);
@@ -737,9 +744,16 @@ class Installer
             $stabilityFlags = $this->package->getStabilityFlags();
 
             $requires = array_merge($this->package->getRequires(), $this->package->getDevRequires());
-            $packageLinks = $this->createPackageLinks();
+            $packageLinks = $this->createPackageLinks(!$this->updateMirrors);
+            if ($this->updateMirrors && $lockedRepository) {
+                /** @var LockArrayRepository $lockedRepository */
+                $lockedLinks = $this->locker->getPackageLinks();
+                foreach ($lockedLinks->getAllPackageNames() as $linkedPackageName) {
+                    $lockedRepository->removePackage($lockedLinks->getPackage($linkedPackageName));
+                }
+            }
         } else {
-            $packageLinks = $this->ignoreLinks ? Factory::createPackageLinks($this->io) : $this->locker->getPackageLinks();
+            $packageLinks = $this->ignoreLinks ? $this->createPackageLinks(false) : $this->locker->getPackageLinks();
             $minimumStability = $this->locker->getMinimumStability();
             $stabilityFlags = $this->locker->getStabilityFlags();
 
@@ -865,11 +879,16 @@ class Installer
     }
 
     /**
+     * @param bool $loadLinks
      * @return Repository\PackageLinks
      */
-    private function createPackageLinks()
+    private function createPackageLinks($loadLinks = true)
     {
         $packageLinks = Factory::createPackageLinks($this->io);
+        if (!$loadLinks) {
+            return $packageLinks;
+        }
+
         foreach ($this->loadLinksFromPaths as $rawPath) {
             $path = realpath(rtrim((string) $rawPath, '/\\'));
             if ($path && is_dir($path)) {

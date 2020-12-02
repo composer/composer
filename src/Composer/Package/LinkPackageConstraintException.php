@@ -29,10 +29,11 @@ class LinkPackageConstraintException extends \RuntimeException
         $branchAlias = null
     ) {
 
+        $constraintString = $constraint->getPrettyString();
         $message = sprintf(
-            "Linked package \"%s\"\ncan't replace \"%s\"\nbecause already used to replace\n\"%s\".",
+            "Linked package \"%s\"\ncan't replace %s\nbecause already used to replace\n\"%s\".",
             $package->getName(),
-            $branchAlias ? $branchAlias : $constraint->getPrettyString(),
+            $branchAlias ? "\"$branchAlias\" (alias of $constraintString)" : "\"$constraintString\"",
             $previous->getPrettyString()
         );
 
