@@ -597,6 +597,10 @@ class Filesystem
      */
     public function relativeSymlink($target, $link)
     {
+        if (!function_exists('symlink')) {
+            return false;
+        }
+    
         $cwd = getcwd();
 
         $relativePath = $this->findShortestPath($link, $target);
