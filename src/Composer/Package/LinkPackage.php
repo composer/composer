@@ -82,7 +82,7 @@ class LinkPackage extends CompletePackage implements CompletePackageInterface
     }
 
     /**
-     * @param $repoPath
+     * @param string $repoPath
      */
     public function setLinkRepoPath($repoPath)
     {

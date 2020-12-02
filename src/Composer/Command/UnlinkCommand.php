@@ -56,6 +56,7 @@ EOT
         $filesystem = new Filesystem();
 
         $customPath = $input->getArgument('path');
+        $realPath = null;
         if ($customPath) {
             $realPath = realpath($filesystem->normalizePath(Platform::expandPath($customPath)));
             if (!$realPath || !is_dir($realPath) || !is_writable($realPath)) {
@@ -67,9 +68,6 @@ EOT
 
         $package = $composer->getPackage();
         $name = $package->getName();
-        $configPath = $composer->getConfig()->getConfigSource()->getName();
-        $source = $filesystem->normalizePath(dirname($configPath));
-
         $path = $customPath ? $realPath : $composer->getConfig()->get('home');
         $filepath = $filesystem->normalizePath($path).'/composer-links.json';
 

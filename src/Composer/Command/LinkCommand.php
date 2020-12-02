@@ -58,6 +58,7 @@ EOT
         $filesystem = new Filesystem();
 
         $customPath = $input->getArgument('path');
+        $realPath = null;
         if ($customPath) {
             $realPath = realpath($filesystem->normalizePath(Platform::expandPath($customPath)));
             if (!$realPath || !is_dir($realPath) || !is_writable($realPath)) {

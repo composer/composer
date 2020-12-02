@@ -39,7 +39,7 @@ class PackageLinks
     /** @var LinkPackage[] */
     protected $packages = array();
 
-    /** @var ArrayRepository<LinkPackage> */
+    /** @var ArrayRepository */
     protected $repository;
 
     /** @var LinkPackage[] */
