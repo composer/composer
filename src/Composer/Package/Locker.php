@@ -391,7 +391,7 @@ class Locker
         }
 
         $links = $this->lockLinks($packageLinks);
-        if ($links) {
+        if (!empty($links['packages'])) {
             $lock['links'] = $links;
         }
 
@@ -489,6 +489,7 @@ class Locker
                 'repository' => $linkPackage->getLinkRepoPath(),
             );
         }
+
         $links['repositories'] = $packageLinks->getLoadedLinkRepoPaths();
 
         return $links;
