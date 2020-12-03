@@ -1,3 +1,7 @@
+### [1.10.18] 2020-12-03
+
+  * Allow installation on PHP 8.0
+
 ### [1.10.17] 2020-10-30
 
   * Fixed Bitbucket API authentication issue
@@ -916,6 +920,7 @@
 
   * Initial release
 
+[1.10.18]: https://github.com/composer/composer/compare/1.10.17...1.10.18
 [1.10.17]: https://github.com/composer/composer/compare/1.10.16...1.10.17
 [1.10.16]: https://github.com/composer/composer/compare/1.10.15...1.10.16
 [1.10.15]: https://github.com/composer/composer/compare/1.10.14...1.10.15
