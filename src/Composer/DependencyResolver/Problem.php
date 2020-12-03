@@ -271,7 +271,7 @@ class Problem
                 return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' in lock file but not in remote repositories, make sure you avoid updating this package to keep the one from lock file.');
             }
 
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with another require.');
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.');
         }
 
         // check if the package is found when bypassing stability checks
