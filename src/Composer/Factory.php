@@ -85,7 +85,7 @@ class Factory
 
         // select first dir which exists of: $XDG_CONFIG_HOME/composer or ~/.composer
         foreach ($dirs as $dir) {
-            if (is_dir($dir)) {
+            if (Silencer::call('is_dir', $dir)) {
                 return $dir;
             }
         }
