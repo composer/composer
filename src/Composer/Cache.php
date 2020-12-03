@@ -157,7 +157,19 @@ class Cache
                 $this->io->writeError('Writing '.$this->root . $file.' into cache from '.$source);
             }
 
-            return copy($source, $this->root . $file);
+            try {
+                return copy($source, $this->root . $file);
+            } catch (\ErrorException $e) {
+                // fallback in case the above failed due to incorrect ownership
+                $this->io->error(
+                    sprintf(
+                        'Failed to save cache %s probably due to incorrect ownership, skipping cache',
+                        $this->root . $file
+                    )
+                );
+
+                return false;
+            }
         }
 
         return false;
@@ -176,7 +188,17 @@ class Cache
                 } catch (\ErrorException $e) {
                     // fallback in case the above failed due to incorrect ownership
                     // see https://github.com/composer/composer/issues/4070
-                    Silencer::call('touch', $this->root . $file);
+                    $this->io->error(
+                        sprintf(
+                            'Failed to update utime of %s probably due to incorrect ownership, skipping cache',
+                            $this->root . $file
+                        )
+                    );
+                }
+
+                // cached file is empty
+                if (!file_exists($this->root . $file ) || filesize($this->root . $file) === 0) {
+                    return false;
                 }
 
                 $this->io->writeError('Reading '.$this->root . $file.' from cache', true, IOInterface::DEBUG);
