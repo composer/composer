@@ -211,6 +211,18 @@ EOT
             $versionParser->parseConstraints($constraint);
         }
 
+        $inconsistentRequireKeys = $this->getInconsistentRequireKeys($requirements, $requireKey);
+
+        if (count($inconsistentRequireKeys) > 0) {
+            foreach ($inconsistentRequireKeys as $package => $requireKey) {
+                $io->warning(sprintf('%s is required as a %s dependency', $package, $requireKey === 'require' ? 'non-dev' : 'dev'));
+            }
+
+            if (!$io->askConfirmation('<info>Do you want to override these requirements?</info> [<comment>no</comment>]? ', false)) {
+                return 0;
+            }
+        }
+
         $sortPackages = $input->getOption('sort-packages') || $composer->getConfig()->get('sort-packages');
 
         $this->firstRequire = $this->newlyCreated;
@@ -245,6 +257,40 @@ EOT
             $this->revertComposerFile(false);
             throw $e;
         }
+    }
+
+    private function getInconsistentRequireKeys($requireKey)
+    {
+        $requireKeys = $this->getPackagesByRequireKey();
+        $inconsistentRequirements = array();
+
+        foreach ($requireKeys as $package => $packageRequireKey) {
+            if ($requireKey !== $packageRequireKey) {
+                $inconsistentRequirements[$package] = $packageRequireKey;
+            }
+        }
+
+        return $inconsistentRequirements;
+    }
+
+    private function getPackagesByRequireKey()
+    {
+        $composerDefinition = $this->json->read();
+        $require = array();
+        $requireDev = array();
+
+        if (isset($composerDefinition['require'])) {
+            $require = $composerDefinition['require'];
+        }
+
+        if (isset($composerDefinition['require-dev'])) {
+            $requireDev = $composerDefinition['require-dev'];
+        }
+
+        return array_merge(
+            array_fill_keys(array_keys($require), 'require'),
+            array_fill_keys(array_keys($requireDev), 'require-dev')
+        );
     }
 
     private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, $requireKey, $removeKey)
