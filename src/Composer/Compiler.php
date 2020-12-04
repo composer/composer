@@ -107,6 +107,7 @@ class Compiler
             $this->addFile($phar, $file, false);
         }
         $this->addFile($phar, new \SplFileInfo(__DIR__ . '/../../vendor/symfony/console/Resources/bin/hiddeninput.exe'), false);
+        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/../../vendor/symfony/polyfill-mbstring/Resources/mb_convert_variables.php8'), false);
 
         $finder = new Finder();
         $finder->files()
