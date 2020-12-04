@@ -1,3 +1,7 @@
+### [1.10.19] 2020-12-04
+
+  * Fixed regression on PHP 8.0
+
 ### [1.10.18] 2020-12-03
 
   * Allow installation on PHP 8.0
@@ -920,6 +924,7 @@
 
   * Initial release
 
+[1.10.19]: https://github.com/composer/composer/compare/1.10.18...1.10.19
 [1.10.18]: https://github.com/composer/composer/compare/1.10.17...1.10.18
 [1.10.17]: https://github.com/composer/composer/compare/1.10.16...1.10.17
 [1.10.16]: https://github.com/composer/composer/compare/1.10.15...1.10.16
