@@ -659,7 +659,7 @@ class Factory
             }
         }
 
-        if (is_dir('/etc/xdg')) {
+        if (Silencer::call('is_dir', '/etc/xdg')) {
             return true;
         }
 
