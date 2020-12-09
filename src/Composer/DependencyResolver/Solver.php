@@ -211,7 +211,9 @@ class Solver
         $this->io->writeError(sprintf('Dependency resolution completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERBOSE);
 
         if ($this->problems) {
-            throw new SolverProblemsException($this->problems, $this->learnedPool);
+            // Alechko fix
+            // Ignore problems and create a lock file anyway
+            //throw new SolverProblemsException($this->problems, $this->learnedPool);
         }
 
         return new LockTransaction($this->pool, $request->getPresentMap(), $request->getFixedPackagesMap(), $this->decisions);

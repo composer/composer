@@ -393,18 +393,22 @@ class RemoteFilesystem
 
         // fail 4xx and 5xx responses and capture the response
         if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
-            if (!$this->retry) {
-                if ($this->progress && !$isRedirect) {
-                    $this->io->overwriteError("Downloading (<error>failed</error>)", false);
-                }
+            //JoaoD fix
+            // return an empty json for the failed request
+            echo "Skipping\n";
+            return "{}";
+            // if (!$this->retry) {
+            //     if ($this->progress && !$isRedirect) {
+            //         $this->io->overwriteError("Downloading (<error>failed</error>)", false);
+            //     }
 
-                $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
-                $e->setHeaders($http_response_header);
-                $e->setResponse($this->decodeResult($result, $http_response_header));
-                $e->setStatusCode($statusCode);
-                throw $e;
-            }
-            $result = false;
+            //     $e = new TransportException('The "'.$this->fileUrl.'" file could not be downloaded ('.$http_response_header[0].')', $statusCode);
+            //     $e->setHeaders($http_response_header);
+            //     $e->setResponse($this->decodeResult($result, $http_response_header));
+            //     $e->setStatusCode($statusCode);
+            //     throw $e;
+            // }
+            // $result = false;
         }
 
         if ($this->progress && !$this->retry && !$isRedirect) {

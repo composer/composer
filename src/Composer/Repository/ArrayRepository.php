@@ -52,7 +52,16 @@ class ArrayRepository implements RepositoryInterface
      */
     public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array())
     {
-        $packages = $this->getPackages();
+        // Alechko fix
+        // Instead of throwing an exception on a non-resolved registry, ignore it
+        try{
+            $packages = $this->getPackages();  
+        }
+        catch(\Exception $e){
+            $packages = array();
+            echo "Skipping\n";
+        }
+        //$packages = $this->getPackages();
 
         $result = array();
         $namesFound = array();
