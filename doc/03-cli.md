@@ -45,7 +45,7 @@ When you run the command it will interactively ask you to fill in the fields,
 while using some smart defaults.
 
 ```sh
-php composer.phar init
+composer init
 ```
 
 ### Options
@@ -72,7 +72,7 @@ The `install` command reads the `composer.json` file from the current
 directory, resolves the dependencies, and installs them into `vendor`.
 
 ```sh
-php composer.phar install
+composer install
 ```
 
 If there is a `composer.lock` file in the current directory, it will use the
@@ -129,7 +129,7 @@ aliased as `upgrade` as it does the same as `upgrade` does if you are thinking
 of `apt-get` or similar package managers.
 
 ```sh
-php composer.phar update
+composer update
 ```
 
 This will resolve all dependencies of the project and write the exact versions
@@ -138,13 +138,13 @@ into `composer.lock`.
 If you only want to update a few packages and not all, you can list them as such:
 
 ```sh
-php composer.phar update vendor/package vendor/package2
+composer update vendor/package vendor/package2
 ```
 
 You can also use wildcards to update a bunch of packages at once:
 
 ```sh
-php composer.phar update "vendor/*"
+composer update "vendor/*"
 ```
 
 
@@ -152,7 +152,7 @@ If you want to downgrade a package to a specific version without changing your
 composer.json you can use `--with` and provide a custom version constraint:
 
 ```sh
-php composer.phar update --with vendor/package:2.0.1
+composer update --with vendor/package:2.0.1
 ```
 
 The custom constraint has to be a subset of the existing constraint you have,
@@ -163,7 +163,7 @@ using `--with`, you can skip `--with` and just use constraints with the partial
 update syntax:
 
 ```sh
-php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
+composer update vendor/package:2.0.1 vendor/package2:3.0.*
 ```
 
 
@@ -213,7 +213,7 @@ The `require` command adds new packages to the `composer.json` file from
 the current directory. If no file exists one will be created on the fly.
 
 ```sh
-php composer.phar require
+composer require
 ```
 
 After adding/changing the requirements, the modified requirements will be
@@ -223,7 +223,7 @@ If you do not want to choose requirements interactively, you can pass them
 to the command.
 
 ```sh
-php composer.phar require "vendor/package:2.*" vendor/package2:dev-master
+composer require "vendor/package:2.*" vendor/package2:dev-master
 ```
 
 If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of  matches to require.
@@ -268,7 +268,7 @@ The `remove` command removes packages from the `composer.json` file from
 the current directory.
 
 ```sh
-php composer.phar remove vendor/package vendor/package2
+composer remove vendor/package vendor/package2
 ```
 
 After removing the requirements, the modified requirements will be
@@ -326,7 +326,7 @@ can hold CLI tools or Composer plugins that you want to have available everywher
 This can be used to install CLI utilities globally. Here is an example:
 
 ```sh
-php composer.phar global require friendsofphp/php-cs-fixer
+composer global require friendsofphp/php-cs-fixer
 ```
 
 Now the `php-cs-fixer` binary is available globally. Make sure your global
@@ -334,13 +334,13 @@ Now the `php-cs-fixer` binary is available globally. Make sure your global
 environment variable, you can get its location with the following command :
 
 ```sh
-php composer.phar global config bin-dir --absolute
+composer global config bin-dir --absolute
 ```
 
 If you wish to update the binary later on you can run a global update:
 
 ```sh
-php composer.phar global update
+composer global update
 ```
 
 ## search
@@ -350,7 +350,7 @@ repositories. Usually this will be packagist. You pass it the terms you want
 to search for.
 
 ```sh
-php composer.phar search monolog
+composer search monolog
 ```
 
 You can also search for more than one term by passing multiple arguments.
@@ -365,13 +365,13 @@ You can also search for more than one term by passing multiple arguments.
 To list all of the available packages, you can use the `show` command.
 
 ```sh
-php composer.phar show
+composer show
 ```
 
 To filter the list you can pass a package mask using wildcards.
 
 ```sh
-php composer.phar show monolog/*
+composer show monolog/*
 
 monolog/monolog 1.19.0 Sends your logs to files, sockets, inboxes, databases and various web services
 ```
@@ -380,7 +380,7 @@ If you want to see the details of a certain package, you can pass the package
 name.
 
 ```sh
-php composer.phar show monolog/monolog
+composer show monolog/monolog
 
 name     : monolog/monolog
 versions : master-dev, 1.0.2, 1.0.1, 1.0.0, 1.0.0-RC1
@@ -402,7 +402,7 @@ You can even pass the package version, which will tell you the details of that
 specific version.
 
 ```sh
-php composer.phar show monolog/monolog 1.0.2
+composer show monolog/monolog 1.0.2
 ```
 
 ### Options
@@ -489,7 +489,7 @@ package. As with installation `require-dev` relationships are only considered
 for the root package.
 
 ```sh
-php composer.phar depends doctrine/lexer
+composer depends doctrine/lexer
  doctrine/annotations v1.2.7 requires doctrine/lexer (1.*)
  doctrine/common      v2.6.1 requires doctrine/lexer (1.*)
 ```
@@ -501,7 +501,7 @@ Add the `--tree` or `-t` flag to show a recursive tree of why the package is
 depended upon, for example:
 
 ```sh
-php composer.phar depends psr/log -t
+composer depends psr/log -t
 psr/log 1.0.0 Common interface for logging libraries
 |- aboutyou/app-sdk 2.6.11 (requires psr/log 1.0.*)
 |  `- __root__ (requires aboutyou/app-sdk ^2.6)
@@ -525,7 +525,7 @@ can be performed in your project, and if not why not. See the following
 example:
 
 ```sh
-php composer.phar prohibits symfony/symfony 3.1
+composer prohibits symfony/symfony 3.1
  laravel/framework v5.2.16 requires symfony/var-dumper (2.8.*|3.0.*)
 ```
 
@@ -533,7 +533,7 @@ Note that you can also specify platform requirements, for example to check
 whether you can upgrade your server to PHP 8.0:
 
 ```sh
-php composer.phar prohibits php:8
+composer prohibits php:8
  doctrine/cache        v1.6.0 requires php (~5.5|~7.0)
  doctrine/common       v2.6.1 requires php (~5.5|~7.0)
  doctrine/instantiator 1.0.5  requires php (>=5.3,<8.0-DEV)
@@ -554,7 +554,7 @@ You should always run the `validate` command before you commit your
 `composer.json` is valid.
 
 ```sh
-php composer.phar validate
+composer validate
 ```
 
 ### Options
@@ -572,14 +572,14 @@ installed from source, the `status` command allows you to check if you have
 local changes in any of them.
 
 ```sh
-php composer.phar status
+composer status
 ```
 
 With the `--verbose` option you get some more information about what was
 changed:
 
 ```sh
-php composer.phar status -v
+composer status -v
 
 You have changes in the following dependencies:
 vendor/seld/jsonlint:
@@ -592,13 +592,13 @@ To update Composer itself to the latest version, run the `self-update`
 command. It will replace your `composer.phar` with the latest version.
 
 ```sh
-php composer.phar self-update
+composer self-update
 ```
 
 If you would like to instead update to a specific release specify it:
 
 ```sh
-php composer.phar self-update 1.0.0-alpha7
+composer self-update 1.0.0-alpha7
 ```
 
 If you have installed Composer for your entire system (see [global installation](00-intro.md#globally)),
@@ -633,7 +633,7 @@ in either the local `composer.json` file or the global `config.json` file.
 Additionally it lets you edit most properties in the local `composer.json`.
 
 ```sh
-php composer.phar config --list
+composer config --list
 ```
 
 ### Usage
@@ -676,13 +676,13 @@ In addition to modifying the config section, the `config` command also supports 
 changes to the repositories section by using it the following way:
 
 ```sh
-php composer.phar config repositories.foo vcs https://github.com/foo/bar
+composer config repositories.foo vcs https://github.com/foo/bar
 ```
 
 If your repository requires more configuration options, you can instead pass its JSON representation :
 
 ```sh
-php composer.phar config repositories.foo '{"type": "vcs", "url": "http://svn.example.org/my-project/", "trunk-path": "master"}'
+composer config repositories.foo '{"type": "vcs", "url": "http://svn.example.org/my-project/", "trunk-path": "master"}'
 ```
 
 ### Modifying Extra Values
@@ -691,7 +691,7 @@ In addition to modifying the config section, the `config` command also supports 
 changes to the extra section by using it the following way:
 
 ```sh
-php composer.phar config extra.foo.bar value
+composer config extra.foo.bar value
 ```
 
 The dots indicate array nesting, a max depth of 3 levels is allowed though. The above
@@ -701,7 +701,7 @@ If you have a complex value to add/modify, you can use the `--json` and `--merge
 to edit extra fields as json:
 
 ```sh
-php composer.phar config --json extra.foo.bar '{"baz": true, "qux": []}'
+composer config --json extra.foo.bar '{"baz": true, "qux": []}'
 ```
 
 ## create-project
@@ -724,7 +724,7 @@ provide a version as third argument, otherwise the latest version is used.
 If the directory does not currently exist, it will be created during installation.
 
 ```sh
-php composer.phar create-project doctrine/orm path "2.2.*"
+composer create-project doctrine/orm path "2.2.*"
 ```
 
 It is also possible to run the command without params in a directory with an
@@ -840,7 +840,7 @@ want to run the `diagnose` command to perform automated checks for many common
 problems.
 
 ```sh
-php composer.phar diagnose
+composer diagnose
 ```
 
 ## archive
@@ -850,7 +850,7 @@ given version. It can also be used to archive your entire project without
 excluded/ignored files.
 
 ```sh
-php composer.phar archive vendor/package 2.0.21 --format=zip
+composer archive vendor/package 2.0.21 --format=zip
 ```
 
 ### Options
@@ -865,7 +865,7 @@ php composer.phar archive vendor/package 2.0.21 --format=zip
 To get more information about a certain command, you can use `help`.
 
 ```sh
-php composer.phar help install
+composer help install
 ```
 
 ## Command-line completion
