@@ -190,7 +190,7 @@ EOT
             );
         } catch (\Exception $e) {
             if ($this->newlyCreated) {
-                throw new \RuntimeException('No composer.json present in the current directory, this may be the cause of the following exception.', 0, $e);
+                throw new \RuntimeException('No composer.json present in the current directory ('.$this->file.'), this may be the cause of the following exception.', 0, $e);
             }
 
             throw $e;

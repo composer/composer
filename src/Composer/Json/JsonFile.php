@@ -90,7 +90,12 @@ class JsonFile
                 $json = $this->httpDownloader->get($this->path)->getBody();
             } else {
                 if ($this->io && $this->io->isDebug()) {
-                    $this->io->writeError('Reading ' . $this->path);
+                    $realpathInfo = '';
+                    $realpath = realpath($this->path);
+                    if (false !== $realpath && $realpath !== $this->path) {
+                         $realpathInfo = ' (' . $realpath . ')';
+                    }
+                    $this->io->writeError('Reading ' . $this->path . $realpathInfo);
                 }
                 $json = file_get_contents($this->path);
             }
