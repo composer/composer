@@ -68,10 +68,15 @@ class ClassMapGenerator
             } elseif (is_dir($path) || strpos($path, '*') !== false) {
                 $path = Finder::create()->files()->followLinks()->name('/\.(php|inc|hh)$/')->in($path);
             } else {
-                throw new \RuntimeException(
-                    'Could not scan for classes inside "'.$path.
-                    '" which does not appear to be a file nor a folder'
-                );
+                // David fix
+                // Skip when path is invalid, instead of throwing error, returning empty array
+                echo "Skipping\n";
+                return array();
+
+                // throw new \RuntimeException(
+                //     'Could not scan for classes inside "'.$path.
+                //     '" which does not appear to be a file nor a folder'
+                // );
             }
         } elseif (null !== $autoloadType) {
             throw new \RuntimeException('Path must be a string when specifying an autoload type');

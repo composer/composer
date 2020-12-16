@@ -209,13 +209,18 @@ class Filesystem
             }
 
             if (!$unlinked) {
-                $error = error_get_last();
-                $message = 'Could not delete '.$path.': ' . @$error['message'];
-                if (Platform::isWindows()) {
-                    $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
-                }
+                // David fix
+                // Skip when can not remove file, instead of throwing error
+                echo "Skipping\n";
+                return;
 
-                throw new \RuntimeException($message);
+                // $error = error_get_last();
+                // $message = 'Could not delete '.$path.': ' . @$error['message'];
+                // if (Platform::isWindows()) {
+                //     $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
+                // }
+
+                // throw new \RuntimeException($message);
             }
         }
 
