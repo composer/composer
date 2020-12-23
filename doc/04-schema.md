@@ -439,6 +439,16 @@ above. You should then typically only replace using `self.version` as a version
 constraint, to make sure the main package only replaces the sub-packages of
 that exact version, and not any other version, which would be incorrect.
 
+Example:
+
+```json
+{
+    "replace": {
+        "acme/foo-legacy": "self.version"
+    }
+}
+```
+
 #### provide
 
 List of other packages that are provided by this package. This is mostly
