@@ -154,6 +154,11 @@ class Installer
     protected $additionalFixedRepository;
 
     /**
+     * @var bool
+     */
+    protected $allowInstalledRepositories = false;
+
+    /**
      * Constructor
      *
      * @param IOInterface          $io
@@ -179,6 +184,11 @@ class Installer
         $this->autoloadGenerator = $autoloadGenerator;
 
         $this->writeLock = $config->get('lock');
+    }
+
+    public function allowInstalledRepositories($allow = true)
+    {
+        $this->allowInstalledRepositories = $allow;
     }
 
     /**
@@ -769,6 +779,10 @@ class Installer
             $repositorySet->addRepository($this->additionalFixedRepository);
         }
 
+        if ($this->allowInstalledRepositories) {
+            $repositorySet->allowInstalledRepositories();
+        }
+
         return $repositorySet;
     }
 
@@ -869,6 +883,11 @@ class Installer
         }
 
         return $aliases;
+    }
+
+    public function getPackage()
+    {
+        return $this->package;
     }
 
     /**
