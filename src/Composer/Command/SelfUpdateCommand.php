@@ -185,7 +185,7 @@ EOT
         if (Composer::VERSION === $updateVersion) {
             $io->writeError(
                 sprintf(
-                    '<info>You are already using composer version %s (%s channel).</info>',
+                    '<info>You are already using the latest available composer version %s (%s channel).</info>',
                     $updateVersion,
                     $channelString
                 )
