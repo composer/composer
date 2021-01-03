@@ -290,7 +290,7 @@ class EventDispatcher
         return $this->process->execute($exec);
     }
 
-    protected function getPhpExecCommand()
+    public function getPhpExecCommand()
     {
         $finder = new PhpExecutableFinder();
         $phpPath = $finder->find(false);

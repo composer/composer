@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use Composer\Command\UnzipCommand;
 use Composer\Package\PackageInterface;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
@@ -174,39 +175,38 @@ class ZipDownloader extends ArchiveDownloader
             return $this->extractWithSystemUnzip($package, $file, $path, true);
         }
 
-        $processError = null;
-        $zipArchive = $this->zipArchiveObject ?: new ZipArchive();
+        $command = $this->eventDispatcher->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . ' unzip '. ProcessExecutor::escape($file) . ' '. ProcessExecutor::escape($path);
 
-        try {
-            if (true === ($retval = $zipArchive->open($file))) {
-                $extractResult = $zipArchive->extractTo($path);
+        $promise = $this->process->executeAsync($command);
 
-                if (true === $extractResult) {
-                    $zipArchive->close();
+        $self = $this;
+        return $promise->then(function ($process) use ($self, $package, $file, $path, $isLastChance) {
+            if (!$process->isSuccessful()) {
+                $exitCode = $process->getExitCode();
 
-                    return \React\Promise\resolve();
+                switch($exitCode)
+                {
+                    case UnzipCommand::EXIT_ERROR_WHILE_EXTRACT:
+                        $processError = new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));
+                        break;
+                    case UnzipCommand::EXIT_MAYBE_SAME_FILE_DIFFERENT_CAPS:
+                        $output = $process->getErrorOutput();
+                        $processError = new \RuntimeException('The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): '.$output);
+                        break;
+                    default:
+                        $processError = new \UnexpectedValueException(rtrim($self->getErrorMessage($exitCode, $file)."\n"), $exitCode);
                 }
 
-                $processError = new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));
-            } else {
-                $processError = new \UnexpectedValueException(rtrim($this->getErrorMessage($retval, $file)."\n"), $retval);
+                if ($isLastChance) {
+                    throw $processError;
+                }
+
+                $self->io->writeError('    <warning>'.$processError->getMessage().'</warning>');
+                $self->io->writeError('    Unzip with ZipArchive class failed, falling back to unzip command');
+
+                return $self->extractWithSystemUnzip($package, $file, $path, true);
             }
-        } catch (\ErrorException $e) {
-            $processError = new \RuntimeException('The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): '.$e->getMessage(), 0, $e);
-        } catch (\Exception $e) {
-            $processError = $e;
-        } catch (\Throwable $e) {
-            $processError = $e;
-        }
-
-        if ($isLastChance) {
-            throw $processError;
-        }
-
-        $this->io->writeError('    <warning>'.$processError->getMessage().'</warning>');
-        $this->io->writeError('    Unzip with ZipArchive class failed, falling back to unzip command');
-
-        return $this->extractWithSystemUnzip($package, $file, $path, true);
+        });
     }
 
     /**
