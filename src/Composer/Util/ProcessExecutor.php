@@ -40,6 +40,10 @@ class ProcessExecutor
      * @psalm-var array<int, array<string, mixed>>
      */
     private $jobs = array();
+    /**
+     * @psalm-var array<string, string>
+     */
+    private $env = array();
     private $runningJobs = 0;
     private $maxJobs = 10;
     private $idGen = 0;
@@ -48,6 +52,11 @@ class ProcessExecutor
     public function __construct(IOInterface $io = null)
     {
         $this->io = $io;
+    }
+
+    public function setEnv(array $env)
+    {
+        $this->env = $env;
     }
 
     /**
@@ -84,6 +93,18 @@ class ProcessExecutor
         return $this->doExecute($command, $cwd, false);
     }
 
+    /**
+     * @return array|null
+     */
+    private function getEnv()
+    {
+        if(empty($this->env)){
+            return null;
+        }
+
+        return $this->env;
+    }
+
     private function doExecute($command, $cwd, $tty, &$output = null)
     {
         if ($this->io && $this->io->isDebug()) {
@@ -109,9 +130,9 @@ class ProcessExecutor
 
         // TODO in v3, commands should be passed in as arrays of cmd + args
         if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+            $process = Process::fromShellCommandline($command, $cwd, $this->getEnv(), null, static::getTimeout());
         } else {
-            $process = new Process($command, $cwd, null, null, static::getTimeout());
+            $process = new Process($command, $cwd, $this->getEnv(), null, static::getTimeout());
         }
         if (!Platform::isWindows() && $tty) {
             try {
