@@ -128,7 +128,7 @@ class Cache
                         $tempFileName,
                         $m[1],
                         $m[2],
-                        @disk_free_space($this->root . dirname($tempFileName))
+                        @disk_free_space(dirname($tempFileName))
                     );
 
                     $this->io->writeError($message);
