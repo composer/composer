@@ -303,7 +303,10 @@ class CurlDownloader
                     if (!$error && function_exists('curl_strerror')) {
                         $error = curl_strerror($errno);
                     }
-                    throw new TransportException('curl error '.$errno.' while downloading '.Url::sanitize($progress['url']).': '.$error);
+
+                    $exception = new TransportException('curl error '.$errno.' while downloading '.Url::sanitize($progress['url']).': '.$error);
+                    $exception->setTotalResponseTime($progress['total_time_us']);
+                    throw $exception;
                 }
                 $statusCode = $progress['http_code'];
                 rewind($job['headerHandle']);
@@ -322,11 +325,13 @@ class CurlDownloader
                         $contents = stream_get_contents($job['bodyHandle']);
                     }
                     $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
+                    $response->setTotalResponseTime($progress['total_time_us']);
                     $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
                 } else {
                     rewind($job['bodyHandle']);
                     $contents = stream_get_contents($job['bodyHandle']);
                     $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
+                    $response->setTotalResponseTime($progress['total_time_us']);
                     $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
                 }
                 fclose($job['bodyHandle']);

@@ -20,6 +20,7 @@ class TransportException extends \RuntimeException
     protected $headers;
     protected $response;
     protected $statusCode;
+    protected $totalResponseTime;
 
     public function setHeaders($headers)
     {
@@ -49,5 +50,15 @@ class TransportException extends \RuntimeException
     public function getStatusCode()
     {
         return $this->statusCode;
+    }
+
+    public function getTotalResponseTime()
+    {
+        return $this->totalResponseTime;
+    }
+
+    public function setTotalResponseTime($totalResponseTime)
+    {
+        $this->totalResponseTime = $totalResponseTime;
     }
 }
