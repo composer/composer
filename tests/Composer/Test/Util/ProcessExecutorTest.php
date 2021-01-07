@@ -132,13 +132,13 @@ class ProcessExecutorTest extends TestCase
     public function testSetCustomEnv()
     {
         $process = new ProcessExecutor;
-        $process->execute(array('echo', '$CUSTOM_ENV_VAR'), $firstOutput);
+        $process->execute('echo "$CUSTOM_ENV_VAR"', $firstOutput);
         $this->assertEquals('', trim($firstOutput));
         $process->setEnv(array('CUSTOM_ENV_VAR' => 'env_value'));
-        $process->execute(array('echo', '$CUSTOM_ENV_VAR'), $secondOutput);
+        $process->execute('echo "$CUSTOM_ENV_VAR"', $secondOutput);
         $this->assertEquals('env_value', trim($secondOutput));
         $process->setEnv(array());
-        $process->execute(array('echo', '$CUSTOM_ENV_VAR'), $thirdOutput);
+        $process->execute('echo "$CUSTOM_ENV_VAR"', $thirdOutput);
         $this->assertEquals('', trim($thirdOutput));
     }
 }
