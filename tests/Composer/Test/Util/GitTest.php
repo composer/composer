@@ -18,6 +18,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Git;
 use Composer\Util\ProcessExecutor;
 use Composer\Test\TestCase;
+use PHPUnit\Framework\Assert;
 
 class GitTest extends TestCase
 {
@@ -142,6 +143,48 @@ class GitTest extends TestCase
         return array(
             array('git@github.com:acme/repo.git', 'ssh', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git'),
             array('https://github.com/acme/repo', 'https', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git'),
+        );
+    }
+
+    /**
+     * @dataProvider httpsCloneWithOauthTokenDoesNotAddSecondDotGitProvider
+     */
+    public function testHttpsCloneWithOauthTokenDoesNotAddSecondDotGit($url)
+    {
+
+        $this->mockConfig('https');
+
+        $this->config->merge(array(
+            'config' => array(
+                'github-oauth' => array(
+                    'github.com' => 'config-mock-token'
+                )
+            ),
+        ));
+
+        $this->io->method('hasAuthentication')
+            ->willReturn(true);
+        $this->io->method('getAuthentication')
+            ->willReturn(array('username' => 'io-mock-token', 'password'=> 'io-mock-password'));
+
+        $this->process->method('execute')
+            ->willReturnCallback(function() {
+                static $consecutive = array(1, 1, 1);
+                return (int)array_shift($consecutive); //0s for anything past 3rd consecutive
+            });
+
+        $cmd = function ($url) {
+            Assert::assertStringEndsNotWith('.git.git', $url);
+        };
+
+        $this->git->runCommand($cmd, $url, '');
+    }
+
+    public function httpsCloneWithOauthTokenDoesNotAddSecondDotGitProvider()
+    {
+        return array(
+            array('https://github.com/composer/composer'),
+            array('https://github.com/composer/composer.git')
         );
     }
 

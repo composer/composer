@@ -100,8 +100,10 @@ class Git
         if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
             $errorMsg = $this->process->getErrorOutput();
             // private github repository without ssh key access, try https with auth
+            // published github https urls follow the format https://github.com/<repo>.git
+            // github does not require the trailing .git, so ignore it before re-appending to avoid a duplication
             if (preg_match('{^git@' . self::getGitHubDomainsRegex($this->config) . ':(.+?)\.git$}i', $url, $match)
-                || preg_match('{^https?://' . self::getGitHubDomainsRegex($this->config) . '/(.*)}', $url, $match)
+                || preg_match('{^https?://' . self::getGitHubDomainsRegex($this->config) . '/(.+?)(|\.git)$}', $url, $match)
             ) {
                 if (!$this->io->hasAuthentication($match[1])) {
                     $gitHubUtil = new GitHub($this->io, $this->config, $this->process);
