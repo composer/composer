@@ -20,7 +20,7 @@ class TransportException extends \RuntimeException
     protected $headers;
     protected $response;
     protected $statusCode;
-    protected $responseInfo;
+    protected $responseInfo = array();
 
     public function setHeaders($headers)
     {
@@ -63,7 +63,7 @@ class TransportException extends \RuntimeException
     /**
      * @param array $responseInfo
      */
-    public function setResponseInfo($responseInfo)
+    public function setResponseInfo(array $responseInfo)
     {
         $this->responseInfo = $responseInfo;
     }
