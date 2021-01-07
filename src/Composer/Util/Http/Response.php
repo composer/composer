@@ -20,7 +20,6 @@ class Response
     private $code;
     private $headers;
     private $body;
-    private $totalResponseTime;
 
     public function __construct(array $request, $code, array $headers, $body)
     {
@@ -68,20 +67,6 @@ class Response
     public function getBody()
     {
         return $this->body;
-    }
-
-    /**
-     * Total duration time it took for the response in micro seconds
-     * @return int|null
-     */
-    public function getTotalResponseTime()
-    {
-        return $this->totalResponseTime;
-    }
-
-    public function setTotalResponseTime($totalResponseTime)
-    {
-        $this->totalResponseTime = $totalResponseTime;
     }
 
     public function decodeJson()
