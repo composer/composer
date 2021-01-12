@@ -49,7 +49,6 @@ class CurlDownloader
         CURLM_OUT_OF_MEMORY => array('CURLM_OUT_OF_MEMORY', 'You are doomed.'),
         CURLM_INTERNAL_ERROR => array('CURLM_INTERNAL_ERROR', 'This can only be returned if libcurl bugs. Please report it to us!'),
     );
-    private $lastInfoUpdate = 0;
 
     private static $options = array(
         'http' => array(
@@ -241,7 +240,6 @@ class CurlDownloader
         }
 
         $this->checkCurlResult(curl_multi_add_handle($this->multiHandle, $curlHandle));
-        $this->lastInfoUpdate = 0;
         // TODO progress
 
         return (int) $curlHandle;
@@ -392,35 +390,30 @@ class CurlDownloader
             }
         }
 
-        if (microtime(true) - $this->lastInfoUpdate > 0.1) {
-            $this->lastInfoUpdate = microtime(true);
+        foreach ($this->jobs as $i => $curlHandle) {
+            if (!isset($this->jobs[$i])) {
+                continue;
+            }
+            $curlHandle = $this->jobs[$i]['curlHandle'];
+            $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
 
-            foreach ($this->jobs as $i => $curlHandle) {
-                if (!isset($this->jobs[$i])) {
-                    continue;
-                }
-                $curlHandle = $this->jobs[$i]['curlHandle'];
-                $progress = array_diff_key(curl_getinfo($curlHandle), self::$timeInfo);
+            if ($this->jobs[$i]['progress'] !== $progress) {
+                $this->jobs[$i]['progress'] = $progress;
 
-                if ($this->jobs[$i]['progress'] !== $progress) {
-                    $this->jobs[$i]['progress'] = $progress;
-
-                    if (isset($this->jobs[$i]['options']['max_file_size'])) {
-                        // Compare max_file_size with the content-length header this value will be -1 until the header is parsed
-                        if ($this->jobs[$i]['options']['max_file_size'] < $progress['download_content_length']) {
-                            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Content-length header indicates ' . $progress['download_content_length'] . ' bytes. Allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes');
-                        }
-
-                        // Compare max_file_size with the download size in bytes
-                        if ($this->jobs[$i]['options']['max_file_size'] < $progress['size_download']) {
-                            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . $progress['size_download'] . ' of allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes');
-                        }
+                if (isset($this->jobs[$i]['options']['max_file_size'])) {
+                    // Compare max_file_size with the content-length header this value will be -1 until the header is parsed
+                    if ($this->jobs[$i]['options']['max_file_size'] < $progress['download_content_length']) {
+                        throw new MaxFileSizeExceededException('Maximum allowed download size reached. Content-length header indicates ' . $progress['download_content_length'] . ' bytes. Allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes');
                     }
 
-                    // TODO progress
+                    // Compare max_file_size with the download size in bytes
+                    if ($this->jobs[$i]['options']['max_file_size'] < $progress['size_download']) {
+                        throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . $progress['size_download'] . ' of allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes');
+                    }
                 }
-            }
 
+                // TODO progress
+            }
         }
     }
 
