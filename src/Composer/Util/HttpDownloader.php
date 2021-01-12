@@ -340,8 +340,6 @@ class HttpDownloader
             if (!$this->countActiveJobs($index)) {
                 return;
             }
-
-            usleep(1000);
         }
     }
 
