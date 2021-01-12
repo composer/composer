@@ -130,20 +130,15 @@ abstract class BaseExcludeFilter
             $rule = ltrim($rule, '!');
         }
 
-        if ($rule !== '') {
-            if ($rule[0] === '/') {
-                $pattern = '^/';
-            } else {
-                $first_slash_position = strpos($rule, '/');
-
-                if (false === $first_slash_position || strlen($rule) - 1 === $first_slash_position) {
-                    $pattern = '/';
-                }
-            }
-
-            $rule = trim($rule, '/');
+        $firstSlashPosition = strpos($rule, '/');
+        if (0 === $firstSlashPosition) {
+            $pattern = '^/';
+        } elseif (false === $firstSlashPosition || strlen($rule) - 1 === $firstSlashPosition) {
+            $pattern = '/';
         }
 
+        $rule = trim($rule, '/');
+        
         // remove delimiters as well as caret (^) and dollar sign ($) from the regex
         $rule = substr(Finder\Glob::toRegex($rule), 2, -2);
 
