@@ -175,7 +175,8 @@ class PluginManager
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
 
-        $rootPackageRepo = new RootPackageRepository($this->composer->getPackage());
+        $rootPackage = clone $this->composer->getPackage();
+        $rootPackageRepo = new RootPackageRepository($rootPackage);
         $installedRepo = new InstalledRepository(array($localRepo, $rootPackageRepo));
         if ($globalRepo) {
             $installedRepo->addRepository($globalRepo);
@@ -187,7 +188,7 @@ class PluginManager
         $generator = $this->composer->getAutoloadGenerator();
         $autoloads = array();
         foreach ($autoloadPackages as $autoloadPackage) {
-            if ($autoloadPackage === $this->composer->getPackage()) {
+            if ($autoloadPackage === $rootPackage) {
                 $downloadPath = '';
             } else {
                 $downloadPath = $this->getInstallPath($autoloadPackage, $globalRepo && $globalRepo->hasPackage($autoloadPackage));
@@ -195,7 +196,7 @@ class PluginManager
             $autoloads[] = array($autoloadPackage, $downloadPath);
         }
 
-        $map = $generator->parseAutoloads($autoloads, $this->composer->getPackage());
+        $map = $generator->parseAutoloads($autoloads, $rootPackage);
         $classLoader = $generator->createLoader($map);
         $classLoader->register();
 
