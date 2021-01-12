@@ -31,7 +31,7 @@ in the PHP include path.
 
 ## preferred-install
 
-Defaults to `auto` and can be any of `source`, `dist` or `auto`. This option
+Defaults to `dist` and can be any of `source`, `dist` or `auto`. This option
 allows you to set the install method Composer will prefer to use. Can
 optionally be a hash of patterns for more granular install preferences.
 
@@ -47,6 +47,16 @@ optionally be a hash of patterns for more granular install preferences.
     }
 }
 ```
+
+- `source` means Composer will install packages from their `source` if there
+  is one. This is typically a git clone or equivalent checkout of the version
+  control system the package uses. This is useful if you want to make a bugfix
+  to a project and get a local git clone of the dependency directly.
+- `auto` is the legacy behavior where Composer uses `source` automatically
+  for dev versions, and `dist` otherwise.
+- `dist` (the default as of Composer 2.1) means Composer installs from `dist`,
+  where possible. This is typically a zip file download, which is faster than
+  cloning the entire repository.
 
 > **Note:** Order matters. More specific patterns should be earlier than
 > more relaxed patterns. When mixing the string notation with the hash
