@@ -49,6 +49,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\InstalledRepository;
+use Composer\Repository\FilterRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
@@ -766,7 +767,14 @@ class Installer
         $repositorySet->addRepository(new RootPackageRepository($this->fixedRootPackage));
         $repositorySet->addRepository($platformRepo);
         if ($this->additionalFixedRepository) {
-            $repositorySet->addRepository($this->additionalFixedRepository);
+            $additionalFixedRepository = $this->additionalFixedRepository;
+            // wrap the repository in a FilterRepository if needed to avoid warnings about installed repositories being used in the RepositorySet
+            // see https://github.com/composer/composer/pull/9574
+            if ($additionalFixedRepository instanceof InstalledRepository || $additionalFixedRepository instanceof InstalledRepositoryInterface) {
+                $additionalFixedRepository = new FilterRepository($additionalFixedRepository, array());
+            }
+
+            $repositorySet->addRepository($additionalFixedRepository);
         }
 
         return $repositorySet;
