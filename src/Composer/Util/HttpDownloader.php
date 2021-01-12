@@ -336,11 +336,9 @@ class HttpDownloader
      */
     public function wait($index = null)
     {
-        while (true) {
-            if (!$this->countActiveJobs($index)) {
-                return;
-            }
-        }
+        do {
+            $jobCount = $this->countActiveJobs($index);
+        } while ($jobCount);
     }
 
     /**
