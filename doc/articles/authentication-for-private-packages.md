@@ -80,10 +80,9 @@ To fix this you need to open the file in an editor and fix the error. To find th
 your global `auth.json`, execute:
 
 ```sh
-composer config --global --list
+composer config --global home
 ```
 
-And look for the `[home]` section. (It is by default `~/.composer` or `%APPDATA%/Composer` on Windows)
 The folder will contain your global `auth.json` if it exists.
 
 You can open this file in your favorite editor and fix the error.
