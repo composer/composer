@@ -186,13 +186,13 @@ class PluginManager
         $autoloadPackages = $this->collectDependencies($installedRepo, $autoloadPackages, $package);
 
         $generator = $this->composer->getAutoloadGenerator();
-        $autoloads = array();
+        $autoloads = array(array($rootPackage, ''));
         foreach ($autoloadPackages as $autoloadPackage) {
             if ($autoloadPackage === $rootPackage) {
-                $downloadPath = '';
-            } else {
-                $downloadPath = $this->getInstallPath($autoloadPackage, $globalRepo && $globalRepo->hasPackage($autoloadPackage));
+                continue;
             }
+
+            $downloadPath = $this->getInstallPath($autoloadPackage, $globalRepo && $globalRepo->hasPackage($autoloadPackage));
             $autoloads[] = array($autoloadPackage, $downloadPath);
         }
 
