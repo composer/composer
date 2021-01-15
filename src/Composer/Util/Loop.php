@@ -98,7 +98,6 @@ class Loop
 
             if ($progress && microtime(true) - $lastUpdate > 0.1) {
                 $lastUpdate = microtime(true);
-                echo "setting progress\n";
                 $progress->setProgress($progress->getMaxSteps() - $activeJobs);
             }
 
