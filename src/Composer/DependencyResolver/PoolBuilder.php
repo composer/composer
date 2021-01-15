@@ -474,7 +474,6 @@ class PoolBuilder
 
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$skippedRootRequires) {
                         $this->unlockPackage($request, $repositories, $replace);
-                        $this->markPackageNameForLoading($request, $replace, $link->getConstraint());
                     } else {
                         foreach ($skippedRootRequires as $rootRequire) {
                             if (!isset($this->updateAllowWarned[$rootRequire])) {
