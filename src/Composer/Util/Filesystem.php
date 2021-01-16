@@ -131,7 +131,7 @@ class Filesystem
             $promise = $this->getProcess()->executeAsync($cmd);
 
             $self = $this;
-            return $promise->then(function ($process) use ($directory, $cmd, $self) {
+            return $promise->then(function ($process) use ($directory, $self) {
                 // clear stat cache because external processes aren't tracked by the php stat cache
                 clearstatcache();
 
