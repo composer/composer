@@ -108,7 +108,7 @@ class Filesystem
             return unlink($directory);
         }
 
-        if (!file_exists($directory) || !is_dir($directory)) {
+        if (!is_dir($directory) || !file_exists($directory)) {
             return true;
         }
 
