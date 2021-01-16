@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use React\Promise\Promise;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -92,9 +93,9 @@ class Filesystem
      *
      * @param  string            $directory
      * @throws \RuntimeException
-     * @return bool
+     * @return bool|Promise
      */
-    public function removeDirectory($directory)
+    public function removeDirectory($directory, $async = false  )
     {
         if ($this->isSymlinkedDirectory($directory)) {
             return $this->unlinkSymlinkedDirectory($directory);
@@ -126,16 +127,34 @@ class Filesystem
             $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
         }
 
-        $result = $this->getProcess()->execute($cmd, $output) === 0;
+        if($async) {
+            $promise = $this->getProcess()->executeAsync($cmd);
 
-        // clear stat cache because external processes aren't tracked by the php stat cache
-        clearstatcache();
+            $self = $this;
+            return $promise->then(function ($process) use ($directory, $cmd, $self) {
+                // clear stat cache because external processes aren't tracked by the php stat cache
+                clearstatcache();
 
-        if ($result && !file_exists($directory)) {
-            return true;
+                if ($process->isSuccessful()) {
+                    if (!file_exists($directory)) {
+                        return true;
+                    }
+                }
+
+                return $self->removeDirectoryPhp($directory);
+            });
+        } else {
+            $result = $this->getProcess()->execute($cmd, $output) === 0;
+
+            // clear stat cache because external processes aren't tracked by the php stat cache
+            clearstatcache();
+
+            if ($result && !file_exists($directory)) {
+                return true;
+            }
+
+            return $this->removeDirectoryPhp($directory);
         }
-
-        return $this->removeDirectoryPhp($directory);
     }
 
     /**
@@ -600,7 +619,7 @@ class Filesystem
         if (!function_exists('symlink')) {
             return false;
         }
-    
+
         $cwd = getcwd();
 
         $relativePath = $this->findShortestPath($link, $target);

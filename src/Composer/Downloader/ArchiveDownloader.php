@@ -139,9 +139,11 @@ abstract class ArchiveDownloader extends FileDownloader
                 }
             }
 
-            $filesystem->removeDirectory($temporaryDir);
-            $self->removeCleanupPath($package, $temporaryDir);
-            $self->removeCleanupPath($package, $path);
+            $promise = $filesystem->removeDirectory($temporaryDir, true);
+            return $promise->then(function() use ($self, $package, $path, $temporaryDir) {
+                $self->removeCleanupPath($package, $temporaryDir);
+                $self->removeCleanupPath($package, $path);
+            });
         }, function ($e) use ($cleanup) {
             $cleanup();
 
