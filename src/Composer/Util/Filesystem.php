@@ -63,7 +63,7 @@ class Filesystem
 
     public function emptyDirectory($dir, $ensureDirectoryExists = true)
     {
-        if (file_exists($dir) && is_link($dir)) {
+        if (is_link($dir) && file_exists($dir)) {
             $this->unlink($dir);
         }
 
@@ -600,7 +600,7 @@ class Filesystem
         if (!function_exists('symlink')) {
             return false;
         }
-    
+
         $cwd = getcwd();
 
         $relativePath = $this->findShortestPath($link, $target);
