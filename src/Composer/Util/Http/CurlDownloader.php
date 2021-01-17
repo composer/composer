@@ -515,8 +515,15 @@ class CurlDownloader
             @unlink($job['filename'].'~');
         }
 
-        $exception = new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')', $response->getStatusCode());
+        $details = '';
+        if ($response->getHeader('content-type') === 'application/json') {
+            $details = ':'.PHP_EOL.substr($response->getBody(), 0, 200).(strlen($response->getBody()) > 200 ? '...' : '');
+        }
+
+        $exception = new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')' . $details, $response->getStatusCode());
         $exception->setResponseInfo($responseInfo);
+        $exception->setHeaders($response->getHeaders());
+        $exception->setResponse($response->getBody());
         return $exception;
     }
 
