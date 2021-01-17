@@ -131,7 +131,7 @@ class Filesystem
         // clear stat cache because external processes aren't tracked by the php stat cache
         clearstatcache();
 
-        if ($result && !file_exists($directory)) {
+        if ($result && !is_dir($directory)) {
             return true;
         }
 
@@ -600,7 +600,7 @@ class Filesystem
         if (!function_exists('symlink')) {
             return false;
         }
-    
+
         $cwd = getcwd();
 
         $relativePath = $this->findShortestPath($link, $target);
