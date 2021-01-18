@@ -85,6 +85,7 @@ class Loop
             $progress->start($totalJobs);
         }
 
+        $lastUpdate = 0;
         while (true) {
             $activeJobs = 0;
 
@@ -95,15 +96,19 @@ class Loop
                 $activeJobs += $this->processExecutor->countActiveJobs();
             }
 
-            if ($progress) {
+            if ($progress && microtime(true) - $lastUpdate > 0.1) {
+                $lastUpdate = microtime(true);
                 $progress->setProgress($progress->getMaxSteps() - $activeJobs);
             }
 
             if (!$activeJobs) {
                 break;
             }
+        }
 
-            usleep(5000);
+        // as we skip progress updates if they are too quick, make sure we do one last one here at 100%
+        if ($progress) {
+            $progress->setProgress($progress->getMaxSteps());
         }
 
         unset($this->currentPromises[$waitIndex]);
