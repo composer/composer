@@ -113,7 +113,7 @@ class Filesystem
         // clear stat cache because external processes aren't tracked by the php stat cache
         clearstatcache();
 
-        if ($result && !file_exists($directory)) {
+        if ($result && !is_dir($directory)) {
             return true;
         }
 
@@ -151,7 +151,7 @@ class Filesystem
             clearstatcache();
 
             if ($process->isSuccessful()) {
-                if (!file_exists($directory)) {
+                if (!is_dir($directory)) {
                     return \React\Promise\resolve(true);
                 }
             }
