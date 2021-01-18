@@ -93,10 +93,79 @@ class Filesystem
      *
      * @param  string            $directory
      * @throws \RuntimeException
-     * @return bool|Promise
+     * @return bool
      */
-    public function removeDirectory($directory, $async = false  )
+    public function removeDirectory($directory)
     {
+        $edgeCaseResult = $this->removeEdgeCases($directory);
+        if ($edgeCaseResult !== null) {
+            return $edgeCaseResult;
+        }
+
+        if (Platform::isWindows()) {
+            $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape(realpath($directory)));
+        } else {
+            $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
+        }
+
+        $result = $this->getProcess()->execute($cmd, $output) === 0;
+
+        // clear stat cache because external processes aren't tracked by the php stat cache
+        clearstatcache();
+
+        if ($result && !file_exists($directory)) {
+            return true;
+        }
+
+        return $this->removeDirectoryPhp($directory);
+    }
+
+    /**
+     * Recursively remove a directory asynchronously
+     *
+     * Uses the process component if proc_open is enabled on the PHP
+     * installation.
+     *
+     * @param  string            $directory
+     * @throws \RuntimeException
+     * @return Promise
+     */
+    public function removeDirectoryAsync($directory)
+    {
+        $edgeCaseResult = $this->removeEdgeCases($directory);
+        if ($edgeCaseResult !== null) {
+            return \React\Promise\resolve($edgeCaseResult);
+        }
+
+        if (Platform::isWindows()) {
+            $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape(realpath($directory)));
+        } else {
+            $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
+        }
+
+        $promise = $this->getProcess()->executeAsync($cmd);
+
+        $self = $this;
+        return $promise->then(function ($process) use ($directory, $self) {
+            // clear stat cache because external processes aren't tracked by the php stat cache
+            clearstatcache();
+
+            if ($process->isSuccessful()) {
+                if (!file_exists($directory)) {
+                    return \React\Promise\resolve(true);
+                }
+            }
+
+            return \React\Promise\resolve($self->removeDirectoryPhp($directory));
+        });
+    }
+
+    /**
+     * @param string $directory
+     *
+     * @return bool|null Returns null, when no edge case was hit. Otherwise a bool whether removal was successfull
+     */
+    private function removeEdgeCases($directory) {
         if ($this->isSymlinkedDirectory($directory)) {
             return $this->unlinkSymlinkedDirectory($directory);
         }
@@ -121,40 +190,7 @@ class Filesystem
             return $this->removeDirectoryPhp($directory);
         }
 
-        if (Platform::isWindows()) {
-            $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape(realpath($directory)));
-        } else {
-            $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
-        }
-
-        if($async) {
-            $promise = $this->getProcess()->executeAsync($cmd);
-
-            $self = $this;
-            return $promise->then(function ($process) use ($directory, $self) {
-                // clear stat cache because external processes aren't tracked by the php stat cache
-                clearstatcache();
-
-                if ($process->isSuccessful()) {
-                    if (!file_exists($directory)) {
-                        return true;
-                    }
-                }
-
-                return $self->removeDirectoryPhp($directory);
-            });
-        } else {
-            $result = $this->getProcess()->execute($cmd, $output) === 0;
-
-            // clear stat cache because external processes aren't tracked by the php stat cache
-            clearstatcache();
-
-            if ($result && !file_exists($directory)) {
-                return true;
-            }
-
-            return $this->removeDirectoryPhp($directory);
-        }
+        return null;
     }
 
     /**

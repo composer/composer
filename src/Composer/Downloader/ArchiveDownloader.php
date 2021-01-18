@@ -139,7 +139,7 @@ abstract class ArchiveDownloader extends FileDownloader
                 }
             }
 
-            $promise = $filesystem->removeDirectory($temporaryDir, true);
+            $promise = $filesystem->removeDirectoryAsync($temporaryDir);
             return $promise->then(function() use ($self, $package, $path, $temporaryDir) {
                 $self->removeCleanupPath($package, $temporaryDir);
                 $self->removeCleanupPath($package, $path);
