@@ -838,7 +838,7 @@ PLATFORM_CHECK;
 
         $file .= <<<CLASSLOADER_INIT
         spl_autoload_register(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'), true, $prependAutoloader);
-        self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader();
+        self::\$loader = \$loader = new \\Composer\\Autoload\\ClassLoader(\\dirname(\\dirname(__FILE__)));
         spl_autoload_unregister(array('ComposerAutoloaderInit$suffix', 'loadClassLoader'));
 
 
