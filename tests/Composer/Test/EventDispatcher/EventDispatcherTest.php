@@ -587,6 +587,7 @@ class EventDispatcherTest extends TestCase
     {
         $composer = new Composer;
         $config = new Config;
+        $config->merge(array('config' => array('home' => '~')));
         $composer->setConfig($config);
         $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
         $composer->setPackage($package);

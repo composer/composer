@@ -166,6 +166,7 @@ class FileDownloaderTest extends TestCase
 
         $path = $this->getUniqueTmpDirectory();
         $config = new Config(false, $path);
+        $config->merge(array('config' => array('home' => '~')));
 
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -259,6 +260,7 @@ class FileDownloaderTest extends TestCase
 
         $path = $this->getUniqueTmpDirectory();
         $config = new Config(false, $path);
+        $config->merge(array('config' => array('home' => '~')));
 
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())

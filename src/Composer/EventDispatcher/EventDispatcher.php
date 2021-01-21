@@ -17,6 +17,7 @@ use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\OperationInterface;
+use Composer\Factory;
 use Composer\Repository\RepositoryInterface;
 use Composer\Script;
 use Composer\Installer\PackageEvent;
@@ -155,6 +156,8 @@ class EventDispatcher
         $listeners = $this->getListeners($event);
 
         $this->pushEvent($event);
+
+        $this->setupEnv();
 
         $return = 0;
         foreach ($listeners as $callable) {
@@ -487,6 +490,38 @@ class EventDispatcher
     {
         return array_pop($this->eventStack);
     }
+
+    protected function setupEnv()
+    {
+        $options = array(
+            'home',
+            'vendor-dir',
+            'bin-dir',
+            'data-dir',
+            'cache-dir',
+            'cache-files-dir',
+            'cache-repo-dir',
+            'cache-vcs-dir',
+            'cafile',
+            'capath',
+        );
+
+        $config = $this->composer->getConfig();
+
+        foreach ($options as $key) {
+            $var = $config->get($key);
+
+            if ($var && $var = realpath($config->get($key))) {
+                $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
+                $_SERVER[$env] = $var;
+                putenv($env . '=' . $var);
+            }
+        }
+
+        $_SERVER['COMPOSER'] = realpath(Factory::getComposerFile());
+        putenv('COMPOSER=' . $_SERVER['COMPOSER']);
+    }
+
 
     private function ensureBinDirIsInPath()
     {
