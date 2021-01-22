@@ -303,14 +303,15 @@ class EventDispatcher
             return $this->process->executeTty($exec, null, $scriptEnvVars);
         }
 
-        $outputHandler = function($type, $buffer) {
-            if (null === $this->io) {
+        $io = $this->io;
+        $outputHandler = function($type, $buffer) use ($io) {
+            if (null === $io) {
                 echo $buffer;
             } else {
                 if (Process::ERR === $type) {
-                    $this->io->writeErrorRaw($buffer, false);
+                    $io->writeErrorRaw($buffer, false);
                 } else {
-                    $this->io->writeRaw($buffer, false);
+                    $io->writeRaw($buffer, false);
                 }
             }
         };

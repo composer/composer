@@ -114,8 +114,8 @@ class GitTest extends TestCase
             ->expects($this->atLeast(2))
             ->method('execute')
             ->willReturnMap(array(
-                array('git command failing', null, null, 1),
-                array('git command ok', null, null, 0),
+                array('git command failing', null, null, null, 1),
+                array('git command ok', null, null, null, 0),
             ));
 
         $this->io
