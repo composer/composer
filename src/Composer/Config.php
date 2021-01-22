@@ -66,6 +66,7 @@ class Config
         'use-github-api' => true,
         'lock' => true,
         'platform-check' => 'php-only',
+        'set-script-vars' => false,
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth

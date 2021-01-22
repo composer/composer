@@ -25,6 +25,7 @@ use Composer\Util\ProcessExecutor;
 use Composer\Script\Event as ScriptEvent;
 use Composer\ClassLoader;
 use Symfony\Component\Process\PhpExecutableFinder;
+use Symfony\Component\Process\Process;
 
 /**
  * The Event Dispatcher.
@@ -144,6 +145,21 @@ class EventDispatcher
      */
     protected function doDispatch(Event $event)
     {
+        $scriptEnvVars = array();
+        if ($this->composer->getConfig()->get('set-script-vars')) {
+            $package = $this->composer->getPackage();
+            $packageEnvVars = array(
+                'NAME' => $package->getName(),
+                'VERSION' => $package->getVersion(),
+                'PRETTY_VERSION' => $package->getPrettyVersion(),
+            );
+            foreach ($packageEnvVars as $envVarSuffix => $envVarValue) {
+                $envVarName = "COMPOSER_PACKAGE_{$envVarSuffix}";
+                $scriptEnvVars[$envVarName] = $envVarValue;
+                putenv("{$envVarName}={$envVarValue}");
+            }
+        }
+
         if (getenv('COMPOSER_DEBUG_EVENTS')) {
             $details = null;
             if ($event instanceof PackageEvent) {
@@ -264,7 +280,7 @@ class EventDispatcher
                     $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . substr($exec, 8);
                 }
 
-                if (0 !== ($exitCode = $this->executeTty($exec))) {
+                if (0 !== ($exitCode = $this->executeTty($exec, $scriptEnvVars))) {
                     $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
                     throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
@@ -281,13 +297,24 @@ class EventDispatcher
         return $return;
     }
 
-    protected function executeTty($exec)
+    protected function executeTty($exec, $scriptEnvVars = null)
     {
         if ($this->io->isInteractive()) {
-            return $this->process->executeTty($exec);
+            return $this->process->executeTty($exec, null, $scriptEnvVars);
         }
 
-        return $this->process->execute($exec);
+        $outputHandler = function($type, $buffer) {
+            if (null === $this->io) {
+                echo $buffer;
+            } else {
+                if (Process::ERR === $type) {
+                    $this->io->writeErrorRaw($buffer, false);
+                } else {
+                    $this->io->writeRaw($buffer, false);
+                }
+            }
+        };
+        return $this->process->execute($exec, $outputHandler, null, $scriptEnvVars);
     }
 
     protected function getPhpExecCommand()

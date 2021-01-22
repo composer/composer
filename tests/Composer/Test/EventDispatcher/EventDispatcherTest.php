@@ -17,6 +17,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallerEvents;
 use Composer\Config;
 use Composer\Composer;
+use Composer\Package\RootPackage;
 use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
 use Composer\Script\ScriptEvents;
@@ -566,6 +567,44 @@ class EventDispatcherTest extends TestCase
         $transaction = $this->getMockBuilder('Composer\DependencyResolver\LockTransaction')->disableOriginalConstructor()->getMock();
 
         $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_OPERATIONS_EXEC, true, true, $transaction);
+    }
+
+    public function testDispatcherSetsPackageVarsBeforeDispatch()
+    {
+        $composer = $this->createComposerInstance();
+        $composer->setPackage((new RootPackage('composer/test-package', '1.0.0', '1.0.0')));
+        $composer->getConfig()->merge(array('config' => array('set-script-vars' => true)));
+        $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->setConstructorArgs(array(
+                $composer,
+                $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
+                new ProcessExecutor($io),
+            ))
+            ->setMethods(array('getListeners'))
+            ->getMock();
+
+        $listener = array(
+            'echo $COMPOSER_PACKAGE_NAME',
+            'Composer\\Test\\EventDispatcher\\EventDispatcherTest::handlerWithGeneratedEnvVar',
+        );
+        $dispatcher->expects($this->atLeastOnce())
+            ->method('getListeners')
+            ->will($this->returnValue($listener));
+
+        $dispatcher->dispatchScript('do');
+
+        $expected = "> do: echo \$COMPOSER_PACKAGE_NAME".PHP_EOL.
+            "composer/test-package".PHP_EOL.
+            "> do: Composer\Test\EventDispatcher\EventDispatcherTest::handlerWithGeneratedEnvVar".PHP_EOL;
+        $this->assertEquals($expected, $io->getOutput());
+    }
+
+    public static function handlerWithGeneratedEnvVar()
+    {
+        $val = getenv('COMPOSER_PACKAGE_NAME');
+        if ($val !== 'composer/test-package') {
+            throw new \Exception('getenv() did not return the expected value. expected "composer/test-package" got '. var_export($val, true));
+        }
     }
 
     public static function call()

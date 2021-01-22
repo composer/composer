@@ -364,7 +364,13 @@ To set an environment variable in a cross-platform way, you can use `@putenv`:
 }
 ```
 
-## Custom descriptions.
+## Using values from `composer.json`
+
+You can use environment variables referenced in
+[set-script-vars](../06-config.md#set-script-vars) in your `scripts` if you have
+`set-script-vars` configured to `true`
+
+## Custom descriptions
 
 You can set custom script descriptions with the following in your `composer.json`:
 

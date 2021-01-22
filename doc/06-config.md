@@ -335,4 +335,14 @@ Defaults to `php-only` which only checks the PHP version. Set to `true` to also
 check the presence of extension. If set to `false`, Composer will not create and
 require a `platform_check.php` file as part of the autoloader bootstrap.
 
+## set-script-vars
+
+Defaults to `false`. Sets the following environment variables for use in scripts:
+
+| Name | Description | Example value |
+|------|-------------|---------------|
+| `$COMPOSER_PACKAGE_NAME` | The value of `name` from the package's `composer.json` | `vendor/package` |
+| `$COMPOSER_PACKAGE_VERSION` | The guessed version from VCS, or the value of `version` from the package's `composer.json` | `1.2.9999999.9999999-dev` |
+| `$COMPOSER_PACKAGE_PRETTY_VERSION` | The "pretty" version of `$COMPOSER_PACKAGE_VERSION` | `1.2.x-dev` |
+
 &larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;

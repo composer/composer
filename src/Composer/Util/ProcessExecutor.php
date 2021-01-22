@@ -57,15 +57,16 @@ class ProcessExecutor
      * @param  mixed  $output  the output will be written into this var if passed by ref
      *                         if a callable is passed it will be used as output handler
      * @param  string $cwd     the working directory
+     * @param  array  $env     the environment variables to set for the command
      * @return int    statuscode
      */
-    public function execute($command, &$output = null, $cwd = null)
+    public function execute($command, &$output = null, $cwd = null, $env = null)
     {
         if (func_num_args() > 1) {
-            return $this->doExecute($command, $cwd, false, $output);
+            return $this->doExecute($command, $cwd, $env, false, $output);
         }
 
-        return $this->doExecute($command, $cwd, false);
+        return $this->doExecute($command, $cwd, $env, false);
     }
 
     /**
@@ -73,18 +74,19 @@ class ProcessExecutor
      *
      * @param  string $command the command to execute
      * @param  string $cwd     the working directory
+     * @param  array  $env     the environment variables to set for the command
      * @return int    statuscode
      */
-    public function executeTty($command, $cwd = null)
+    public function executeTty($command, $cwd = null, $env = null)
     {
         if (Platform::isTty()) {
-            return $this->doExecute($command, $cwd, true);
+            return $this->doExecute($command, $cwd, $env, true);
         }
 
-        return $this->doExecute($command, $cwd, false);
+        return $this->doExecute($command, $cwd, $env, false);
     }
 
-    private function doExecute($command, $cwd, $tty, &$output = null)
+    private function doExecute($command, $cwd, $env, $tty, &$output = null)
     {
         if ($this->io && $this->io->isDebug()) {
             $safeCommand = preg_replace_callback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
@@ -104,14 +106,14 @@ class ProcessExecutor
             $cwd = realpath(getcwd());
         }
 
-        $this->captureOutput = func_num_args() > 3;
+        $this->captureOutput = func_num_args() > 4;
         $this->errorOutput = null;
 
         // TODO in v3, commands should be passed in as arrays of cmd + args
         if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+            $process = Process::fromShellCommandline($command, $cwd, $env, null, static::getTimeout());
         } else {
-            $process = new Process($command, $cwd, null, null, static::getTimeout());
+            $process = new Process($command, $cwd, $env, null, static::getTimeout());
         }
         if (!Platform::isWindows() && $tty) {
             try {
