@@ -80,6 +80,19 @@ In the above example, if you wanted to check out the `my-feature` branch, you wo
 
 When branch names look like versions, we have to clarify for composer that we're trying to check out a branch and not a tag. In the above example, we have two version branches: `v1` and `v2`. To get Composer to check out one of these branches, you must specify a version constraint that looks like this: `v1.x-dev`. The `.x` is an arbitrary string that Composer requires to tell it that we're talking about the `v1` branch and not a `v1` tag (alternatively, you can name the branch `v1.x` instead of `v1`). In the case of a branch with a version-like name (`v1`, in this case), you append `-dev` as a suffix, rather than using `dev-` as a prefix.
 
+### Stabilities
+
+Composer recognizes the following stabilities (in order of stability): dev,
+alpha, beta, RC, and stable where RC stands for release candidate. The stability
+of a version is defined by its suffix e.g version `v1.1-BETA` has a stability of
+`beta` and `v1.1-RC1` has a stability of `RC`. If such a suffix is missing
+e.g. version `v1.1` then Composer considers that version `stable`. In addition
+to that Composer automatically adds a `-dev` suffix to all numeric branches and
+prefixes all other branches imported from a VCS repository with `dev-`. In both
+cases the stability `dev` gets assigned.
+
+Keeping this in mind will help you in the next section.
+
 ### Minimum Stability
 
 There's one more thing that will affect which files are checked out of a library's VCS and added to your project: Composer allows you to specify stability constraints to limit which tags are considered valid. In the above example, note that the library released a beta and two release candidates for version `1.1` before the final official release. To receive these versions when running `composer install` or `composer update`, we have to explicitly tell Composer that we are ok with release candidates and beta releases (and alpha releases, if we want those). This can be done using either a project-wide `minimum-stability` value in `composer.json` or using "stability flags" in version constraints. Read more on the [schema page](../04-schema.md#minimum-stability).
