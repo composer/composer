@@ -85,7 +85,7 @@ When branch names look like versions, we have to clarify for composer that we're
 Composer recognizes the following stabilities (in order of stability): dev,
 alpha, beta, RC, and stable where RC stands for release candidate. The stability
 of a version is defined by its suffix e.g version `v1.1-BETA` has a stability of
-`beta` and `v1.1-RC1` has a stability of `rc`. If such a suffix is missing
+`beta` and `v1.1-RC1` has a stability of `RC`. If such a suffix is missing
 e.g. version `v1.1` then Composer considers that version `stable`. In addition
 to that Composer automatically adds a `-dev` suffix to all numeric branches and
 prefixes all other branches imported from a VCS repository with `dev-`. In both
