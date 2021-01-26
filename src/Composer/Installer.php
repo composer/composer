@@ -43,6 +43,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Package\Package;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositorySet;
+use Composer\Repository\CompositeRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Locker;
 use Composer\Package\RootPackageInterface;
@@ -767,14 +768,22 @@ class Installer
         $repositorySet->addRepository(new RootPackageRepository($this->fixedRootPackage));
         $repositorySet->addRepository($platformRepo);
         if ($this->additionalFixedRepository) {
-            $additionalFixedRepository = $this->additionalFixedRepository;
-            // wrap the repository in a FilterRepository if needed to avoid warnings about installed repositories being used in the RepositorySet
+            // allow using installed repos if needed to avoid warnings about installed repositories being used in the RepositorySet
             // see https://github.com/composer/composer/pull/9574
-            if ($additionalFixedRepository instanceof InstalledRepository || $additionalFixedRepository instanceof InstalledRepositoryInterface) {
-                $additionalFixedRepository = new FilterRepository($additionalFixedRepository, array());
+            $additionalFixedRepositories = $this->additionalFixedRepository;
+            if ($additionalFixedRepositories instanceof CompositeRepository) {
+                $additionalFixedRepositories = $additionalFixedRepositories->getRepositories();
+            } else {
+                $additionalFixedRepositories = array($additionalFixedRepositories);
+            }
+            foreach ($additionalFixedRepositories as $additionalFixedRepository) {
+                if ($additionalFixedRepository instanceof InstalledRepository || $additionalFixedRepository instanceof InstalledRepositoryInterface) {
+                    $repositorySet->allowInstalledRepositories();
+                    break;
+                }
             }
 
-            $repositorySet->addRepository($additionalFixedRepository);
+            $repositorySet->addRepository($this->additionalFixedRepository);
         }
 
         return $repositorySet;
