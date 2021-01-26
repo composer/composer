@@ -234,6 +234,8 @@ class EventDispatcher
 
                 if (substr($exec, 0, 8) === '@putenv ') {
                     putenv(substr($exec, 8));
+                    list($var, $value) = explode('=', substr($exec, 8), 2);
+                    $_SERVER[$var] = $value;
 
                     continue;
                 } elseif (substr($exec, 0, 5) === '@php ') {

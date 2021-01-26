@@ -347,7 +347,7 @@ class Git
         // added in git 1.7.1, prevents prompting the user for username/password
         if (getenv('GIT_ASKPASS') !== 'echo') {
             putenv('GIT_ASKPASS=echo');
-            unset($_SERVER['GIT_ASKPASS']);
+            $_SERVER['GIT_ASKPASS'] = 'echo';
         }
 
         // clean up rogue git env vars in case this is running in a git hook
@@ -363,6 +363,7 @@ class Git
         // Run processes with predictable LANGUAGE
         if (getenv('LANGUAGE') !== 'C') {
             putenv('LANGUAGE=C');
+            $_SERVER['LANGUAGE'] = 'C';
         }
 
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
