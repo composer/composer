@@ -309,8 +309,11 @@ class Application extends BaseApplication
 
             $result = parent::doRun($input, $output);
 
+            // chdir back to $oldWorkingDir if set
             if (isset($oldWorkingDir)) {
-                chdir($oldWorkingDir);
+                Silencer::call(function () use ($oldWorkingDir) {
+                    chdir($oldWorkingDir);
+                });
             }
 
             if (isset($startTime)) {
