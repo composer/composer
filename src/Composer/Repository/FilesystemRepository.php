@@ -204,6 +204,9 @@ class FilesystemRepository extends WritableArrayRepository
 
             $fs->filePutContentsIfModified($repoDir.'/installed.php', '<?php return '.var_export($versions, true).';'."\n");
             $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
+            // while not strictly needed since https://github.com/composer/composer/pull/9635 - we keep this for BC
+            // and overall broader compatibility with people that may not use Composer's ClassLoader. They can
+            // simply include InstalledVersions.php manually and have it working in a basic way.
             $installedVersionsClass = str_replace('private static $installed;', 'private static $installed = '.var_export($versions, true).';', $installedVersionsClass);
             $fs->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
 
