@@ -164,10 +164,11 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 'reference' => sha1($json . serialize($this->options)),
             );
             $package['transport-options'] = $this->options;
+            unset($package['transport-options']['versions']);
 
-            // use the branch-version as the package version if available
-            if (!isset($package['version']) && isset($package['extra']['branch-version'])) {
-                $package['version'] = preg_replace('{(\.x)?(-dev)?$}', '', $package['extra']['branch-version']).'.x-dev';
+            // use the version provided as option if available
+            if (isset($package['name'], $this->options['versions'][$package['name']])) {
+                $package['version'] = $this->options['versions'][$package['name']];
             }
 
             // carry over the root package version if this path repo is in the same git repository as root package
