@@ -72,23 +72,6 @@ class PathRepositoryTest extends TestCase
         $this->assertNotEmpty($packageVersion);
     }
 
-    public function testLoadPackageFromFileSystemWithExtraBranchVersion()
-    {
-        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-
-        $config = new \Composer\Config();
-        $versionGuesser = null;
-
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'with-branch-version'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
-        $packages = $repository->getPackages();
-
-        $this->assertEquals(1, $repository->count());
-
-        $this->assertTrue($repository->hasPackage($this->getPackage('test/path-branch-versioned', '1.2.x-dev')));
-    }
-
     public function testLoadPackageFromFileSystemWithWildcard()
     {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
@@ -102,7 +85,7 @@ class PathRepositoryTest extends TestCase
         $packages = $repository->getPackages();
         $names = array();
 
-        $this->assertEquals(3, $repository->count());
+        $this->assertEquals(2, $repository->count());
 
         $package = $packages[0];
         $names[] = $package->getName();
@@ -110,11 +93,8 @@ class PathRepositoryTest extends TestCase
         $package = $packages[1];
         $names[] = $package->getName();
 
-        $package = $packages[2];
-        $names[] = $package->getName();
-
         sort($names);
-        $this->assertEquals(array('test/path-branch-versioned', 'test/path-unversioned', 'test/path-versioned'), $names);
+        $this->assertEquals(array('test/path-unversioned', 'test/path-versioned'), $names);
     }
 
     /**

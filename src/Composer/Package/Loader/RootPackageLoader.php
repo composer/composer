@@ -81,10 +81,8 @@ class RootPackageLoader extends ArrayLoader
         if (!isset($config['version'])) {
             $commit = null;
 
-            if (isset($config['extra']['branch-version'])) {
-                $config['version'] = preg_replace('{(\.x)?(-dev)?$}', '', $config['extra']['branch-version']).'.x-dev';
-            } elseif (getenv('COMPOSER_ROOT_VERSION')) {
-                // override with env var if available
+            // override with env var if available
+            if (getenv('COMPOSER_ROOT_VERSION')) {
                 $config['version'] = getenv('COMPOSER_ROOT_VERSION');
             } else {
                 $versionData = $this->versionGuesser->guessVersion($config, $cwd ?: getcwd());
