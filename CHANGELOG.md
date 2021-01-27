@@ -1,3 +1,8 @@
+### [1.10.20] 2021-01-27
+
+  * Fixed exclude-from-classmap causing regex issues when having too many paths
+  * Fixed compatibility issue with Symfony 4/5
+
 ### [1.10.19] 2020-12-04
 
   * Fixed regression on PHP 8.0
@@ -924,6 +929,7 @@
 
   * Initial release
 
+[1.10.20]: https://github.com/composer/composer/compare/1.10.19...1.10.20
 [1.10.19]: https://github.com/composer/composer/compare/1.10.18...1.10.19
 [1.10.18]: https://github.com/composer/composer/compare/1.10.17...1.10.18
 [1.10.17]: https://github.com/composer/composer/compare/1.10.16...1.10.17
