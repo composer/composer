@@ -311,9 +311,7 @@ class Application extends BaseApplication
 
             // chdir back to $oldWorkingDir if set
             if (isset($oldWorkingDir)) {
-                Silencer::call(function () use ($oldWorkingDir) {
-                    chdir($oldWorkingDir);
-                });
+                Silencer::call('chdir', $oldWorkingDir);
             }
 
             if (isset($startTime)) {
