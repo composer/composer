@@ -231,7 +231,7 @@ EOF;
 
         $excluded = null;
         if (!empty($autoloads['exclude-from-classmap'])) {
-            $excluded = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
+            $excluded = $autoloads['exclude-from-classmap'];
         }
 
         $classMap = array();
@@ -350,8 +350,31 @@ EOF;
         return $classMap;
     }
 
+    /**
+     * @param ?array $excluded
+     */
     private function generateClassMap($dir, $excluded, $namespaceFilter, $autoloadType, $showAmbiguousWarning, array &$scannedFiles)
     {
+        if ($excluded) {
+            // filter excluded patterns here to only use those matching $dir
+            // exclude-from-classmap patterns are all realpath'd so we can only filter them if $dir exists so that realpath($dir) will work
+            // if $dir does not exist, it should anyway not find anything there so no trouble
+            if (file_exists($dir)) {
+                // transform $dir in the same way that exclude-from-classmap patterns are transformed so we can match them against each other
+                $dirMatch = preg_quote(strtr(realpath($dir), '\\', '/'));
+                foreach ($excluded as $index => $pattern) {
+                    // extract the constant string prefix of the pattern here, until we reach a non-escaped regex special character
+                    $pattern = preg_replace('{^(([^.+*?\[^\]$(){}=!<>|:\\\\#-]+|\\\\[.+*?\[^\]$(){}=!<>|:#-])*).*}', '$1', $pattern);
+                    // if the pattern is not a subset or superset of $dir, it is unrelated and we skip it
+                    if (0 !== strpos($pattern, $dirMatch) && 0 !== strpos($dirMatch, $pattern)) {
+                        unset($excluded[$index]);
+                    }
+                }
+            }
+
+            $excluded = $excluded ? '{(' . implode('|', $excluded) . ')}' : null;
+        }
+
         return ClassMapGenerator::createMap($dir, $excluded, $showAmbiguousWarning ? $this->io : null, $namespaceFilter, $autoloadType, $scannedFiles);
     }
 
@@ -458,7 +481,7 @@ EOF;
         if (isset($autoloads['classmap'])) {
             $excluded = null;
             if (!empty($autoloads['exclude-from-classmap'])) {
-                $excluded = '{(' . implode('|', $autoloads['exclude-from-classmap']) . ')}';
+                $excluded = $autoloads['exclude-from-classmap'];
             }
 
             $scannedFiles = array();
