@@ -1447,9 +1447,9 @@ EOF;
         $package->setAutoload(array(
             'psr-0' => array('Foo' => '../path/../src'),
             'psr-4' => array('Acme\Foo\\' => '../path/../src-psr4'),
-            'classmap' => array('../classmap'),
+            'classmap' => array('../classmap', '../classmap2/subdir', 'classmap3', 'classmap4'),
             'files' => array('../test.php'),
-            'exclude-from-classmap' => array('./../classmap/excluded'),
+            'exclude-from-classmap' => array('./../classmap/excluded', '../classmap2', 'classmap3/classes.php', 'classmap4/*/classes.php'),
         ));
 
         $this->repository->expects($this->once())
@@ -1458,9 +1458,15 @@ EOF;
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/src/Foo');
         $this->fs->ensureDirectoryExists($this->workingDir.'/classmap/excluded');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/classmap2/subdir');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/working-dir/classmap3');
+        $this->fs->ensureDirectoryExists($this->workingDir.'/working-dir/classmap4/foo/');
         file_put_contents($this->workingDir.'/src/Foo/Bar.php', '<?php namespace Foo; class Bar {}');
         file_put_contents($this->workingDir.'/classmap/classes.php', '<?php namespace Foo; class Foo {}');
         file_put_contents($this->workingDir.'/classmap/excluded/classes.php', '<?php namespace Foo; class Boo {}');
+        file_put_contents($this->workingDir.'/classmap2/subdir/classes.php', '<?php namespace Foo; class Boo2 {}');
+        file_put_contents($this->workingDir.'/working-dir/classmap3/classes.php', '<?php namespace Foo; class Boo3 {}');
+        file_put_contents($this->workingDir.'/working-dir/classmap4/foo/classes.php', '<?php namespace Foo; class Boo4 {}');
         file_put_contents($this->workingDir.'/test.php', '<?php class Foo {}');
 
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_14');

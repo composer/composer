@@ -576,14 +576,23 @@ the branch or tag that is currently checked out. Otherwise, the version should
 be explicitly defined in the package's `composer.json` file. If the version
 cannot be resolved by these means, it is assumed to be `dev-master`.
 
-When the version cannot be inferred from the local VCS repository, you should use
-the special `branch-version` entry under `extra` instead of `version`:
+When the version cannot be inferred from the local VCS repository, or when you
+want to override the version, you can use the `versions` option when declaring
+the repository:
 
 ```json
 {
-    "extra": {
-        "branch-version": "4.2-dev"
-    }
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/my-package",
+            "options": {
+                "versions": {
+                    "my/package": "4.2-dev"
+                }
+            }
+        }
+    ]
 }
 ```
 
