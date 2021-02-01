@@ -708,7 +708,7 @@ class Installer
         return 0;
     }
 
-    private function createPlatformRepo($forUpdate)
+    protected function createPlatformRepo($forUpdate)
     {
         if ($forUpdate) {
             $platformOverrides = $this->config->get('platform') ?: array();
