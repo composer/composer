@@ -63,7 +63,7 @@ class SolverProblemsException extends \RuntimeException
             $hints[] = $this->createExtensionHint();
         }
 
-        if ($isCausedByLock && !$isDevExtraction) {
+        if ($isCausedByLock && !$isDevExtraction && !$request->getUpdateAllowTransitiveRootDependencies()) {
             $hints[] = "Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.";
         }
 
