@@ -215,7 +215,7 @@ class ClassMapGenerator
     private static function findClasses($path)
     {
         $extraTypes = PHP_VERSION_ID < 50400 ? '' : '|trait';
-        if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>=')) {
+        if (PHP_VERSION_ID >= 80100 || (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>='))) {
             $extraTypes .= '|enum';
         }
 
