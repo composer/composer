@@ -54,9 +54,9 @@ class InstalledVersionsTest extends TestCase
     /**
      * @dataProvider isInstalledProvider
      */
-    public function testIsInstalled($expected, $name, $constraint = null)
+    public function testIsInstalled($expected, $name, $includeDevRequirements = true)
     {
-        $this->assertSame($expected, InstalledVersions::isInstalled($name));
+        $this->assertSame($expected, InstalledVersions::isInstalled($name, $includeDevRequirements));
     }
 
     public static function isInstalledProvider()
@@ -65,10 +65,10 @@ class InstalledVersionsTest extends TestCase
             array(true,  'foo/impl'),
             array(true,  'foo/replaced'),
             array(true,  'c/c'),
+            array(false, 'c/c', false),
             array(true,  '__root__'),
             array(true,  'b/replacer'),
             array(false, 'not/there'),
-            array(false, 'not/there', '^1.0'),
         );
     }
 
@@ -191,6 +191,7 @@ class InstalledVersionsTest extends TestCase
                 '1.10.x-dev',
             ),
             'reference' => 'sourceref-by-default',
+            'dev-requirement' => true,
             'name' => '__root__',
         ), InstalledVersions::getRootPackage());
     }
