@@ -13,11 +13,11 @@
 namespace Composer\Command;
 
 use Composer\Json\JsonFile;
-use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
-use Composer\Semver\Constraint\MatchAllConstraint;
+use Composer\Package\CompletePackageInterface;
 use Composer\Repository\CompositeRepository;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -116,13 +116,13 @@ class FundCommand extends BaseCommand
             $io->write("");
             $io->write("Please consider following these links and sponsoring the work of package authors!");
             $io->write("Thank you!");
-        } elseif ($fundings && $format === 'json') {
+        } elseif ($format === 'json') {
             $fundingJson = array();
             foreach ($fundings as $vendor => $links) {
                 $fundingJson[$vendor] = array();
                 foreach ($links as $url => $packages) {
-                    $fundingJson[$vendor]['packages'] = implode(', ', $packages);
-                    $fundingJson[$vendor]['url'] = $url;
+                    $fundingJson[$vendor]['packages'] = $packages;
+                    $fundingJson[$vendor]['url'][] = $url;
                 }
             }
 
