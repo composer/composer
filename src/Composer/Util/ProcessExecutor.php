@@ -177,6 +177,8 @@ class ProcessExecutor
                 // signal can throw in various conditions, but we don't care if it fails
             }
             $job['process']->stop(1);
+
+            throw new \RuntimeException('Aborted process');
         };
 
         $promise = new Promise($resolver, $canceler);

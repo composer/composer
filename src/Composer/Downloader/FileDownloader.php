@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
+use Composer\Exception\IrrecoverableDownloadException;
 use Composer\Package\Comparer\Comparer;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -218,6 +219,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 $filesystem->unlink($fileName);
             }
             $self->clearLastCacheWrite($package);
+
+            if ($e instanceof IrrecoverableDownloadException) {
+                throw $e;
+            }
 
             if ($e instanceof TransportException) {
                 // if we got an http response with a proper code, then requesting again will probably not help, abort
