@@ -71,10 +71,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             if ($this->gitUtil->fetchRefOrSyncMirror($url, $cachePath, $ref) && is_dir($cachePath)) {
                 $this->cachedPackages[$package->getId()][$ref] = true;
             }
-        } else {
-            if (null === GitUtil::getVersion($this->process)) {
-                throw new \RuntimeException('git was not found in your PATH, skipping source download');
-            }
+        } elseif (null === $gitVersion) {
+            throw new \RuntimeException('git was not found in your PATH, skipping source download');
         }
     }
 
