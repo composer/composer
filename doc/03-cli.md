@@ -1014,6 +1014,13 @@ similar use case), and need to support proxies, please provide the `CGI_HTTP_PRO
 environment variable instead. See [httpoxy.org](https://httpoxy.org/) for further
 details.
 
+### COMPOSER_MAX_PARALLEL_HTTP
+
+Set to an integer to configure how many files can be downloaded in parallel. This
+defaults to 12 and must be between 1 and 50. If your proxy has issues with
+concurrency maybe you want to lower this. Increasing it should generally not result
+in performance gains.
+
 ### HTTP_PROXY_REQUEST_FULLURI
 
 If you use a proxy, but it does not support the request_fulluri flag, then you

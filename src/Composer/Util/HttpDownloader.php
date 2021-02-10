@@ -37,7 +37,7 @@ class HttpDownloader
     private $jobs = array();
     private $options = array();
     private $runningJobs = 0;
-    private $maxJobs = 10;
+    private $maxJobs = 12;
     private $curl;
     private $rfs;
     private $idGen = 0;
@@ -71,6 +71,10 @@ class HttpDownloader
         }
 
         $this->rfs = new RemoteFilesystem($io, $config, $options, $disableTls);
+
+        if (is_numeric($maxJobs = getenv('COMPOSER_MAX_PARALLEL_HTTP'))) {
+            $this->maxJobs = max(1, min(50, (int) $maxJobs));
+        }
     }
 
     /**
