@@ -566,18 +566,18 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if ($cacheKey) {
                 if (!$useLastModifiedCheck && $hash && $this->cache->sha256($cacheKey) === $hash) {
                     $packages = json_decode($this->cache->read($cacheKey), true);
-                    $packagesSource = 'cached file ('.$cacheKey.' originating from '.$url.')';
+                    $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
                 } elseif ($useLastModifiedCheck) {
                     if ($contents = $this->cache->read($cacheKey)) {
                         $contents = json_decode($contents, true);
                         // we already loaded some packages from this file, so assume it is fresh and avoid fetching it again
                         if (isset($alreadyLoaded[$name])) {
                             $packages = $contents;
-                            $packagesSource = 'cached file ('.$cacheKey.' originating from '.$url.')';
+                            $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
                         } elseif (isset($contents['last-modified'])) {
                             $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
                             $packages = true === $response ? $contents : $response;
-                            $packagesSource = true === $response ? 'cached file ('.$cacheKey.' originating from '.$url.')' : 'downloaded file ('.$url.')';
+                            $packagesSource = true === $response ? 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')' : 'downloaded file ('.Url::sanitize($url).')';
                         }
                     }
                 }
@@ -586,12 +586,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (!$packages) {
                 try {
                     $packages = $this->fetchFile($url, $cacheKey, $hash, $useLastModifiedCheck);
-                    $packagesSource = 'downloaded file ('.$url.')';
+                    $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
                 } catch (TransportException $e) {
                     // 404s are acceptable for lazy provider repos
                     if ($this->lazyProvidersUrl && in_array($e->getStatusCode(), array(404, 499), true)) {
                         $packages = array('packages' => array());
-                        $packagesSource = 'not-found file ('.$url.')';
+                        $packagesSource = 'not-found file ('.Url::sanitize($url).')';
                         if ($e->getStatusCode() === 499) {
                             $this->io->error('<warning>' . $e->getMessage() . '</warning>');
                         }
@@ -604,7 +604,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $loadingPartialPackage = false;
         } else {
             $packages = array('packages' => array('versions' => $this->partialPackagesByName[$name]));
-            $packagesSource = 'root file ('.$this->getPackagesJsonUrl().')';
+            $packagesSource = 'root file ('.Url::sanitize($this->getPackagesJsonUrl()).')';
             $loadingPartialPackage = true;
         }
 
@@ -674,7 +674,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $repoData = $this->loadDataFromServer();
 
-        foreach ($this->createPackages($repoData, 'root file ('.$this->getPackagesJsonUrl().')') as $package) {
+        foreach ($this->createPackages($repoData, 'root file ('.Url::sanitize($this->getPackagesJsonUrl()).')') as $package) {
             $this->addPackage($package);
         }
     }
@@ -737,10 +737,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
                 ->then(function ($response) use (&$packages, &$namesFound, $url, $cacheKey, $contents, $realName, $constraint, $repo, $acceptableStabilities, $stabilityFlags, $alreadyLoaded) {
-                    $packagesSource = 'downloaded file ('.$url.')';
+                    $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
 
                     if (true === $response) {
-                        $packagesSource = 'cached file ('.$cacheKey.' originating from '.$url.')';
+                        $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
                         $response = $contents;
                     }
 
