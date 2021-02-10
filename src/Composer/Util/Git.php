@@ -403,15 +403,12 @@ class Git
     /**
      * Retrieves the current git version.
      *
-     * @return string|null The git version number.
+     * @return string|null The git version number, if present.
      */
     public static function getVersion(ProcessExecutor $process)
     {
         if (false === self::$version) {
             self::$version = null;
-            if (!$process) {
-                $process = new ProcessExecutor;
-            }
             if (0 === $process->execute('git --version', $output) && preg_match('/^git version (\d+(?:\.\d+)+)/m', $output, $matches)) {
                 self::$version = $matches[1];
             }
