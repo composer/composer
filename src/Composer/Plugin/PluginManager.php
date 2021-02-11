@@ -23,6 +23,7 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Plugin\Capability\Capability;
@@ -183,7 +184,7 @@ class PluginManager
         }
 
         $autoloadPackages = array($package->getName() => $package);
-        $autoloadPackages = $this->collectDependencies($installedRepo, $autoloadPackages, $package);
+        $autoloadPackages = $this->collectDependencies($installedRepo, $autoloadPackages, $package, $rootPackage);
 
         $generator = $this->composer->getAutoloadGenerator();
         $autoloads = array(array($rootPackage, ''));
@@ -408,18 +409,18 @@ class PluginManager
      *
      * @return array Map of package names to packages
      */
-    private function collectDependencies(InstalledRepository $installedRepo, array $collected, PackageInterface $package)
+    private function collectDependencies(InstalledRepository $installedRepo, array $collected, PackageInterface $package, RootPackageInterface $rootPackage)
     {
-        $requires = array_merge(
-            $package->getRequires(),
-            $package->getDevRequires()
-        );
+        $requires = $package->getRequires();
+        if ($rootPackage->getName() === $package->getName()) {
+            $requires = array_merge($requires, $package->getDevRequires());
+        }
 
         foreach ($requires as $requireLink) {
             foreach ($installedRepo->findPackagesWithReplacersAndProviders($requireLink->getTarget()) as $requiredPackage) {
                 if (!isset($collected[$requiredPackage->getName()])) {
                     $collected[$requiredPackage->getName()] = $requiredPackage;
-                    $collected = $this->collectDependencies($installedRepo, $collected, $requiredPackage);
+                    $collected = $this->collectDependencies($installedRepo, $collected, $requiredPackage, $rootPackage);
                 }
             }
         }
