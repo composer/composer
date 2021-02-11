@@ -78,8 +78,7 @@ class Config
     public static $defaultRepositories = array(
         'packagist.org' => array(
             'type' => 'composer',
-            'url' => 'https?://repo.packagist.org',
-            'allow_ssl_downgrade' => true,
+            'url' => 'https://repo.packagist.org',
         ),
     );
 
@@ -182,6 +181,10 @@ class Config
 
                 // store repo
                 if (is_int($name)) {
+                    // auto-deactivate the default packagist.org repo if it gets redefined
+                    if (isset($repository['type'], $repository['url']) && $repository['type'] === 'composer' && preg_match('{^https?://(?:[a-z0-9-.]+\.)?packagist.org(/|$)}', $repository['url'])) {
+                        $this->disableRepoByName('packagist.org');
+                    }
                     $this->repositories[] = $repository;
                 } else {
                     if ($name === 'packagist') { // BC support for default "packagist" named repo
