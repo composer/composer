@@ -184,7 +184,7 @@ class PluginManager
         }
 
         $autoloadPackages = array($package->getName() => $package);
-        $autoloadPackages = $this->collectDependencies($installedRepo, $autoloadPackages, $package, $rootPackage);
+        $autoloadPackages = $this->collectDependencies($installedRepo, $autoloadPackages, $package);
 
         $generator = $this->composer->getAutoloadGenerator();
         $autoloads = array(array($rootPackage, ''));
@@ -409,18 +409,13 @@ class PluginManager
      *
      * @return array Map of package names to packages
      */
-    private function collectDependencies(InstalledRepository $installedRepo, array $collected, PackageInterface $package, RootPackageInterface $rootPackage)
+    private function collectDependencies(InstalledRepository $installedRepo, array $collected, PackageInterface $package)
     {
-        $requires = $package->getRequires();
-        if ($rootPackage->getName() === $package->getName()) {
-            $requires = array_merge($requires, $package->getDevRequires());
-        }
-
-        foreach ($requires as $requireLink) {
+        foreach ($package->getRequires() as $requireLink) {
             foreach ($installedRepo->findPackagesWithReplacersAndProviders($requireLink->getTarget()) as $requiredPackage) {
                 if (!isset($collected[$requiredPackage->getName()])) {
                     $collected[$requiredPackage->getName()] = $requiredPackage;
-                    $collected = $this->collectDependencies($installedRepo, $collected, $requiredPackage, $rootPackage);
+                    $collected = $this->collectDependencies($installedRepo, $collected, $requiredPackage);
                 }
             }
         }
