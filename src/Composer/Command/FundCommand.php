@@ -117,16 +117,7 @@ class FundCommand extends BaseCommand
             $io->write("Please consider following these links and sponsoring the work of package authors!");
             $io->write("Thank you!");
         } elseif ($format === 'json') {
-            $fundingJson = array();
-            foreach ($fundings as $vendor => $links) {
-                $fundingJson[$vendor] = array();
-                foreach ($links as $url => $packages) {
-                    $fundingJson[$vendor]['packages'] = $packages;
-                    $fundingJson[$vendor]['url'][] = $url;
-                }
-            }
-
-            $io->write(JsonFile::encode($fundingJson));
+            $io->write(JsonFile::encode($fundings));
         } else {
             $io->write("No funding links were found in your package dependencies. This doesn't mean they don't need your support!");
         }
