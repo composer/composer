@@ -61,6 +61,10 @@ class ProcessExecutor
             $cwd = realpath(getcwd());
         }
 
+        if (null !== $cwd && !is_dir($cwd)) {
+            throw new \RuntimeException('The given CWD for the process does not exist: '.$cwd);
+        }
+
         $this->captureOutput = func_num_args() > 1;
         $this->errorOutput = null;
 
