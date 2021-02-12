@@ -198,8 +198,8 @@ class PluginManager
         }
 
         $map = $generator->parseAutoloads($autoloads, $rootPackage);
-        $classLoader = $generator->createLoader($map);
-        $classLoader->register();
+        $classLoader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
+        $classLoader->register(true);
 
         foreach ($classes as $class) {
             if (class_exists($class, false)) {

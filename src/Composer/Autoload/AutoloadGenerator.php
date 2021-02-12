@@ -517,9 +517,9 @@ EOF;
      * @param  array       $autoloads see parseAutoloads return value
      * @return ClassLoader
      */
-    public function createLoader(array $autoloads)
+    public function createLoader(array $autoloads, $vendorDir = null)
     {
-        $loader = new ClassLoader();
+        $loader = new ClassLoader($vendorDir);
 
         if (isset($autoloads['psr-0'])) {
             foreach ($autoloads['psr-0'] as $namespace => $path) {
