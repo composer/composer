@@ -26,6 +26,11 @@ class InstalledVersionsTest extends TestCase
         $prop->setValue(array());
     }
 
+    public static function tearDownAfterClass()
+    {
+        self::setUpBeforeClass();
+    }
+
     public function setUp()
     {
         InstalledVersions::reload(require __DIR__.'/Repository/Fixtures/installed.php');
