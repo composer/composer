@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
+use Composer\Installer\InstallationManager;
 use React\Promise\PromiseInterface;
 
 /**
@@ -62,7 +63,7 @@ class PluginInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package, InstallationManager $installationManager = null)
     {
         $promise = parent::install($repo, $package);
         if (!$promise instanceof PromiseInterface) {
@@ -72,8 +73,11 @@ class PluginInstaller extends LibraryInstaller
         $pluginManager = $this->composer->getPluginManager();
         $self = $this;
 
-        return $promise->then(function () use ($self, $pluginManager, $package, $repo) {
+        return $promise->then(function () use ($self, $pluginManager, $package, $repo, $installationManager) {
             try {
+                if ($installationManager) {
+                    $self->updateInstalledVersions($repo, $installationManager);
+                }
                 $pluginManager->registerPackage($package, true);
             } catch (\Exception $e) {
                 $self->rollbackInstall($e, $repo, $package);
@@ -84,7 +88,7 @@ class PluginInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target, InstallationManager $installationManager = null)
     {
         $promise = parent::update($repo, $initial, $target);
         if (!$promise instanceof PromiseInterface) {
@@ -94,9 +98,12 @@ class PluginInstaller extends LibraryInstaller
         $pluginManager = $this->composer->getPluginManager();
         $self = $this;
 
-        return $promise->then(function () use ($self, $pluginManager, $initial, $target, $repo) {
+        return $promise->then(function () use ($self, $pluginManager, $initial, $target, $repo, $installationManager) {
             try {
                 $pluginManager->deactivatePackage($initial, true);
+                if ($installationManager) {
+                    $self->updateInstalledVersions($repo, $installationManager);
+                }
                 $pluginManager->registerPackage($target, true);
             } catch (\Exception $e) {
                 $self->rollbackInstall($e, $repo, $target);
@@ -120,5 +127,17 @@ class PluginInstaller extends LibraryInstaller
         $this->io->writeError('Plugin initialization failed ('.$e->getMessage().'), uninstalling plugin');
         parent::uninstall($repo, $package);
         throw $e;
+    }
+
+    /**
+     * TODO v3 should make this private once we can drop PHP 5.3 support
+     * @private
+     */
+    public function updateInstalledVersions(InstalledRepositoryInterface $repo, InstallationManager $installationManager)
+    {
+        $versions = $repo->generateInstalledVersions($installationManager);
+        if ($versions) {
+            \Composer\InstalledVersions::reload($versions);
+        }
     }
 }
