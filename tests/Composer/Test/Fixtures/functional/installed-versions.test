@@ -1,3 +1,9 @@
+--TEST--
+Checks that package versions in InstalledVersions are correct on initial install. Noteworthy things:
+
+  - PluginA is already found at the moment where it is first initialized
+  - PluginB is already found at the moment where it is first initialized
+  - Local dependencies (symfony/*) show the local version over the Composer-bundled version once they are installed locally
 --RUN--
 update
 --EXPECT--
@@ -21,9 +27,11 @@ Package operations: 6 installs, 0 updates, 0 removals
   - Installing symfony/console (99999.1.2): Symlinking from symfony-console
   - Installing plugin/a (1.1.1): Symlinking from plugin-a
 !!PluginA:1.1.1.0["root/pkg","symfony/console","composer/ca-bundle","composer/composer","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/debug","symfony/filesystem","symfony/finder","symfony/polyfill-ctype","symfony/polyfill-mbstring","symfony/process","plugin/a"]
+!!PluginB:null
 !!Versions:console:99999.1.2.0;process:%[2-8]\.\d+\.\d+.0%;filesystem:%[2-8]\.\d+\.\d+.0%
   - Installing plugin/b (2.2.2): Symlinking from plugin-b
 !!PluginB:2.2.2.0["plugin/a","root/pkg","symfony/console","composer/ca-bundle","composer/composer","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/debug","symfony/filesystem","symfony/finder","symfony/polyfill-ctype","symfony/polyfill-mbstring","symfony/process","plugin/b"]
+!!PluginA:1.1.1.0
 !!Versions:console:99999.1.2.0;process:%[2-8]\.\d+\.\d+.0%;filesystem:%[2-8]\.\d+\.\d+.0%
   - Installing symfony/polyfill-ctype (%v?[1-8]\.\d+\.\d+%): Extracting archive
   - Installing symfony/filesystem (%v?[2-8]\.\d+\.\d+%): Extracting archive

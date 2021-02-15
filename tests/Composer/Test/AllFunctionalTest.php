@@ -23,6 +23,7 @@ class AllFunctionalTest extends TestCase
 {
     protected $oldcwd;
     protected $oldenv;
+    protected $oldenvCache;
     protected $testDir;
     private static $pharPath;
 
@@ -44,11 +45,27 @@ class AllFunctionalTest extends TestCase
             $this->testDir = null;
         }
 
-        if ($this->oldenv) {
+        if (!is_null($this->oldenv)) {
             $fs->removeDirectory(getenv('COMPOSER_HOME'));
-            $_SERVER['COMPOSER_HOME'] = $this->oldenv;
-            putenv('COMPOSER_HOME='.$_SERVER['COMPOSER_HOME']);
+            if ($this->oldenv === '') {
+                unset($_SERVER['COMPOSER_HOME']);
+                putenv('COMPOSER_HOME');
+            } else {
+                $_SERVER['COMPOSER_HOME'] = $this->oldenv;
+                putenv('COMPOSER_HOME='.$_SERVER['COMPOSER_HOME']);
+            }
             $this->oldenv = null;
+        }
+        if (!is_null($this->oldenvCache)) {
+            $fs->removeDirectory(getenv('COMPOSER_CACHE_DIR'));
+            if ($this->oldenv === '') {
+                unset($_SERVER['COMPOSER_CACHE_DIR']);
+                putenv('COMPOSER_CACHE_DIR');
+            } else {
+                $_SERVER['COMPOSER_CACHE_DIR'] = $this->oldenvCache;
+                putenv('COMPOSER_CACHE_DIR='.$_SERVER['COMPOSER_CACHE_DIR']);
+            }
+            $this->oldenvCache = null;
         }
     }
 
@@ -113,8 +130,11 @@ class AllFunctionalTest extends TestCase
         }
 
         $this->oldenv = getenv('COMPOSER_HOME');
+        $this->oldenvCache = getenv('COMPOSER_CACHE_DIR');
         $_SERVER['COMPOSER_HOME'] = $this->testDir.'home';
         putenv('COMPOSER_HOME='.$_SERVER['COMPOSER_HOME']);
+        $_SERVER['COMPOSER_CACHE_DIR'] = $this->testDir.'cache';
+        putenv('COMPOSER_CACHE_DIR='.$_SERVER['COMPOSER_CACHE_DIR']);
 
         $cmd = 'php '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
         $proc = new Process($cmd, $this->testDir, null, null, 300);
@@ -215,6 +235,9 @@ class AllFunctionalTest extends TestCase
                 case 'EXPECT-REGEX':
                 case 'EXPECT-REGEXES':
                     $sectionData = trim($sectionData);
+                    break;
+
+                case 'TEST':
                     break;
 
                 default:
