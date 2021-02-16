@@ -5,6 +5,13 @@
     "additionalProperties": false,
     "required": [ "name", "description" ],
     "properties": {
+        "$schema": {
+			"type": "string",
+			"description": "The URL to the schema."
+            "enum": [
+                "https://getcomposer.org/schema.json"
+            ]
+		},
         "name": {
             "type": "string",
             "description": "Package name, including 'vendor-name/' prefix.",
