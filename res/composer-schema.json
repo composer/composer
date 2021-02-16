@@ -7,7 +7,7 @@
     "properties": {
         "$schema": {
 			"type": "string",
-			"description": "The URL to the schema."
+			"description": "The URL to the schema.",
             "enum": [
                 "https://getcomposer.org/schema.json"
             ]
