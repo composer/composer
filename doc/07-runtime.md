@@ -87,7 +87,7 @@ possible for safety.
 ----
 
 A few other methods are available for more complex usages, please refer to the
-source/docblocks of the class itself.
+source/docblocks of [the class itself](https://github.com/composer/composer/blob/master/src/Composer/InstalledVersions.php).
 
 ## Platform check
 

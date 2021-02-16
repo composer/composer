@@ -532,6 +532,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     private function whatProvides($name, array $acceptableStabilities = null, array $stabilityFlags = null, array $alreadyLoaded = array())
     {
+        $packagesSource = null;
         if (!$this->hasPartialPackages() || !isset($this->partialPackagesByName[$name])) {
             // skip platform packages, root package and composer-plugin-api
             if (PlatformRepository::isPlatformPackage($name) || '__root__' === $name) {
@@ -565,15 +566,18 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if ($cacheKey) {
                 if (!$useLastModifiedCheck && $hash && $this->cache->sha256($cacheKey) === $hash) {
                     $packages = json_decode($this->cache->read($cacheKey), true);
+                    $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
                 } elseif ($useLastModifiedCheck) {
                     if ($contents = $this->cache->read($cacheKey)) {
                         $contents = json_decode($contents, true);
                         // we already loaded some packages from this file, so assume it is fresh and avoid fetching it again
                         if (isset($alreadyLoaded[$name])) {
                             $packages = $contents;
+                            $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
                         } elseif (isset($contents['last-modified'])) {
                             $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
                             $packages = true === $response ? $contents : $response;
+                            $packagesSource = true === $response ? 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')' : 'downloaded file ('.Url::sanitize($url).')';
                         }
                     }
                 }
@@ -582,10 +586,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (!$packages) {
                 try {
                     $packages = $this->fetchFile($url, $cacheKey, $hash, $useLastModifiedCheck);
+                    $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
                 } catch (TransportException $e) {
                     // 404s are acceptable for lazy provider repos
                     if ($this->lazyProvidersUrl && in_array($e->getStatusCode(), array(404, 499), true)) {
                         $packages = array('packages' => array());
+                        $packagesSource = 'not-found file ('.Url::sanitize($url).')';
                         if ($e->getStatusCode() === 499) {
                             $this->io->error('<warning>' . $e->getMessage() . '</warning>');
                         }
@@ -598,6 +604,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $loadingPartialPackage = false;
         } else {
             $packages = array('packages' => array('versions' => $this->partialPackagesByName[$name]));
+            $packagesSource = 'root file ('.Url::sanitize($this->getPackagesJsonUrl()).')';
             $loadingPartialPackage = true;
         }
 
@@ -637,7 +644,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         // load acceptable packages in the providers
-        $loadedPackages = $this->createPackages($versionsToLoad);
+        $loadedPackages = $this->createPackages($versionsToLoad, $packagesSource);
         $uids = array_keys($versionsToLoad);
 
         foreach ($loadedPackages as $index => $package) {
@@ -667,7 +674,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $repoData = $this->loadDataFromServer();
 
-        foreach ($this->createPackages($repoData) as $package) {
+        foreach ($this->createPackages($repoData, 'root file ('.Url::sanitize($this->getPackagesJsonUrl()).')') as $package) {
             $this->addPackage($package);
         }
     }
@@ -729,8 +736,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
-                ->then(function ($response) use (&$packages, &$namesFound, $contents, $realName, $constraint, $repo, $acceptableStabilities, $stabilityFlags, $alreadyLoaded) {
+                ->then(function ($response) use (&$packages, &$namesFound, $url, $cacheKey, $contents, $realName, $constraint, $repo, $acceptableStabilities, $stabilityFlags, $alreadyLoaded) {
+                    $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
+
                     if (true === $response) {
+                        $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
                         $response = $contents;
                     }
 
@@ -764,7 +774,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         }
                     }
 
-                    $loadedPackages = $repo->createPackages($versionsToLoad);
+                    $loadedPackages = $repo->createPackages($versionsToLoad, $packagesSource);
                     foreach ($loadedPackages as $package) {
                         $package->setRepository($repo);
                         $packages[spl_object_hash($package)] = $package;
@@ -812,6 +822,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return false;
     }
 
+    private function getPackagesJsonUrl()
+    {
+        $jsonUrlParts = parse_url($this->url);
+
+        if (isset($jsonUrlParts['path']) && false !== strpos($jsonUrlParts['path'], '.json')) {
+            return $this->url;
+        }
+
+        return $this->url . '/packages.json';
+    }
+
     protected function loadRootServerFile()
     {
         if (null !== $this->rootData) {
@@ -822,15 +843,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
 
-        $jsonUrlParts = parse_url($this->url);
-
-        if (isset($jsonUrlParts['path']) && false !== strpos($jsonUrlParts['path'], '.json')) {
-            $jsonUrl = $this->url;
-        } else {
-            $jsonUrl = $this->url . '/packages.json';
-        }
-
-        $data = $this->fetchFile($jsonUrl, 'packages.json');
+        $data = $this->fetchFile($this->getPackagesJsonUrl(), 'packages.json');
 
         if (!empty($data['notify-batch'])) {
             $this->notifyUrl = $this->canonicalizeUrl($data['notify-batch']);
@@ -1027,7 +1040,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      *
      * @private
      */
-    public function createPackages(array $packages, $class = 'Composer\Package\CompletePackage')
+    public function createPackages(array $packages, $source = null)
     {
         if (!$packages) {
             return array();
@@ -1040,7 +1053,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
             }
 
-            $packages = $this->loader->loadPackages($packages, $class);
+            $packages = $this->loader->loadPackages($packages, 'Composer\Package\CompletePackage');
 
             foreach ($packages as $package) {
                 if (isset($this->sourceMirrors[$package->getSourceType()])) {
@@ -1052,7 +1065,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             return $packages;
         } catch (\Exception $e) {
-            throw new \RuntimeException('Could not load packages '.(isset($packages[0]['name']) ? $packages[0]['name'] : json_encode($packages)).' in '.$this->url.': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
+            throw new \RuntimeException('Could not load packages '.(isset($packages[0]['name']) ? $packages[0]['name'] : json_encode($packages)).' in '.$this->getRepoName().($source ? ' from '.$source : '').': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
         }
     }
 

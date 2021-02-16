@@ -122,12 +122,7 @@ class GitDownloaderTest extends TestCase
 
         $processExecutor->expects($this->at(2))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git checkout 'master' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
-            ->will($this->returnValue(0));
-
-        $processExecutor->expects($this->at(3))
-            ->method('execute')
-            ->with($this->equalTo($this->winCompat("git reset --hard '1234567890123456789012345678901234567890' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
+            ->with($this->equalTo($this->winCompat("(git checkout 'master' -- || git checkout -B 'master' 'composer/master' --) && git reset --hard '1234567890123456789012345678901234567890' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, null, $processExecutor);
@@ -198,12 +193,7 @@ class GitDownloaderTest extends TestCase
 
         $processExecutor->expects($this->at(5))
             ->method('execute')
-            ->with($this->equalTo($this->winCompat("git checkout 'master' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
-            ->will($this->returnValue(0));
-
-        $processExecutor->expects($this->at(6))
-            ->method('execute')
-            ->with($this->equalTo($this->winCompat("git reset --hard '1234567890123456789012345678901234567890' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
+            ->with($this->equalTo($this->winCompat("(git checkout 'master' -- || git checkout -B 'master' 'composer/master' --) && git reset --hard '1234567890123456789012345678901234567890' --")), $this->equalTo(null), $this->equalTo($this->winCompat('composerPath')))
             ->will($this->returnValue(0));
 
         $downloader = $this->getDownloaderMock(null, $config, $processExecutor);

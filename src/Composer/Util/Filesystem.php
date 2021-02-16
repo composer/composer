@@ -63,7 +63,7 @@ class Filesystem
 
     public function emptyDirectory($dir, $ensureDirectoryExists = true)
     {
-        if (file_exists($dir) && is_link($dir)) {
+        if (is_link($dir) && file_exists($dir)) {
             $this->unlink($dir);
         }
 
@@ -108,7 +108,7 @@ class Filesystem
             return unlink($directory);
         }
 
-        if (!file_exists($directory) || !is_dir($directory)) {
+        if (!is_dir($directory) || !file_exists($directory)) {
             return true;
         }
 
@@ -131,7 +131,7 @@ class Filesystem
         // clear stat cache because external processes aren't tracked by the php stat cache
         clearstatcache();
 
-        if ($result && !file_exists($directory)) {
+        if ($result && !is_dir($directory)) {
             return true;
         }
 
@@ -600,7 +600,7 @@ class Filesystem
         if (!function_exists('symlink')) {
             return false;
         }
-    
+
         $cwd = getcwd();
 
         $relativePath = $this->findShortestPath($link, $target);

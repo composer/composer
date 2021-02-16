@@ -71,6 +71,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             if ($this->gitUtil->fetchRefOrSyncMirror($url, $cachePath, $ref) && is_dir($cachePath)) {
                 $this->cachedPackages[$package->getId()][$ref] = true;
             }
+        } elseif (null === $gitVersion) {
+            throw new \RuntimeException('git was not found in your PATH, skipping source download');
         }
     }
 
@@ -454,13 +456,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
             $command = sprintf('git checkout %s --', ProcessExecutor::escape($branch));
             $fallbackCommand = sprintf('git checkout '.$force.'-B %s %s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$branch));
-            if (0 === $this->process->execute($command, $output, $path)
-                || 0 === $this->process->execute($fallbackCommand, $output, $path)
-            ) {
-                $command = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
-                if (0 === $this->process->execute($command, $output, $path)) {
-                    return null;
-                }
+            $resetCommand = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
+
+            if (0 === $this->process->execute("($command || $fallbackCommand) && $resetCommand", $output, $path)) {
+                return null;
             }
         }
 

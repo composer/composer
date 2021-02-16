@@ -67,23 +67,6 @@ class PathRepositoryTest extends TestCase
         $this->assertNotEmpty($packageVersion);
     }
 
-    public function testLoadPackageFromFileSystemWithExtraBranchVersion()
-    {
-        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-
-        $config = new \Composer\Config();
-        $versionGuesser = null;
-
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'with-branch-version'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
-        $packages = $repository->getPackages();
-
-        $this->assertEquals(1, $repository->count());
-
-        $this->assertTrue($repository->hasPackage($this->getPackage('test/path-branch-versioned', '1.2.x-dev')));
-    }
-
     public function testLoadPackageFromFileSystemWithWildcard()
     {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
@@ -95,16 +78,50 @@ class PathRepositoryTest extends TestCase
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
         $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
         $packages = $repository->getPackages();
-        $result = array();
+        $names = array();
 
-        $this->assertGreaterThanOrEqual(3, $repository->count());
+        $this->assertEquals(2, $repository->count());
 
-        foreach ($packages as $package) {
-            $result[$package->getName()] = $package->getPrettyVersion();
-        }
+        $package = $packages[0];
+        $names[] = $package->getName();
 
-        ksort($result);
-        $this->assertSame(array('test/path-branch-versioned' => '1.2.x-dev', 'test/path-unversioned' => $result['test/path-unversioned'], 'test/path-versioned' => '0.0.2'), $result);
+        $package = $packages[1];
+        $names[] = $package->getName();
+
+        sort($names);
+        $this->assertEquals(array('test/path-unversioned', 'test/path-versioned'), $names);
+    }
+
+    public function testLoadPackageWithExplicitVersions()
+    {
+        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
+            ->getMock();
+
+        $config = new \Composer\Config();
+        $versionGuesser = null;
+
+        $options = array(
+            'versions' => array(
+                'test/path-unversioned' => '4.3.2.1',
+                'test/path-versioned' => '3.2.1.0',
+            ),
+        );
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
+        $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);
+        $packages = $repository->getPackages();
+
+        $versions = array();
+
+        $this->assertEquals(2, $repository->count());
+
+        $package = $packages[0];
+        $versions[$package->getName()] = $package->getVersion();
+
+        $package = $packages[1];
+        $versions[$package->getName()] = $package->getVersion();
+
+        ksort($versions);
+        $this->assertSame(array('test/path-unversioned' => '4.3.2.1', 'test/path-versioned' => '3.2.1.0'), $versions);
     }
 
     /**

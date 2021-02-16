@@ -87,7 +87,7 @@ class ProxyManager
         $options = array();
         $formattedProxyUrl = '';
 
-        if ($this->hasProxy && $this->fullProxy[$scheme]) {
+        if ($this->hasProxy && in_array($scheme, array('http', 'https'), true) && $this->fullProxy[$scheme]) {
             if ($this->noProxy($requestUrl)) {
                 $formattedProxyUrl = 'excluded by no_proxy';
             } else {

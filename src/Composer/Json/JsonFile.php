@@ -80,6 +80,7 @@ class JsonFile
     /**
      * Reads json file.
      *
+     * @throws ParsingException
      * @throws \RuntimeException
      * @return mixed
      */
@@ -172,6 +173,7 @@ class JsonFile
      * @param  int                     $schema     a JsonFile::*_SCHEMA constant
      * @param  string|null             $schemaFile a path to the schema file
      * @throws JsonValidationException
+     * @throws ParsingException
      * @return bool                    true on success
      */
     public function validateSchema($schema = self::STRICT_SCHEMA, $schemaFile = null)
@@ -289,6 +291,7 @@ class JsonFile
      * @param string $json json string
      * @param string $file the json file
      *
+     * @throws ParsingException
      * @return mixed
      */
     public static function parseJson($json, $file = null)

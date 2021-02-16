@@ -18,6 +18,7 @@ use Composer\Installer\PluginInstaller;
 use Composer\Package\CompletePackage;
 use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\RootPackage;
 use Composer\Plugin\PluginManager;
 use Composer\IO\BufferIO;
 use Composer\EventDispatcher\EventDispatcher;
@@ -111,6 +112,7 @@ class PluginInstallerTest extends TestCase
         $this->composer->setInstallationManager($im);
         $this->composer->setAutoloadGenerator($this->autoloadGenerator);
         $this->composer->setEventDispatcher(new EventDispatcher($this->composer, $this->io));
+        $this->composer->setPackage(new RootPackage('dummy/root', '1.0.0.0', '1.0.0'));
 
         $this->pm = new PluginManager($this->io, $this->composer);
         $this->composer->setPluginManager($this->pm);

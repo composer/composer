@@ -943,6 +943,8 @@ The `COMPOSER_HOME` var allows you to change the Composer home directory. This
 is a hidden, global (per-user on the machine) directory that is shared between
 all projects.
 
+Use `composer config --global home` to see the location of the home directory.
+
 By default, it points to `C:\Users\<user>\AppData\Roaming\Composer` on Windows
 and `/Users/<user>/.composer` on macOS. On \*nix systems that follow the [XDG Base
 Directory Specifications](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html),
@@ -1011,6 +1013,13 @@ If you are using Composer in a non-CLI context (i.e. integration into a CMS or
 similar use case), and need to support proxies, please provide the `CGI_HTTP_PROXY`
 environment variable instead. See [httpoxy.org](https://httpoxy.org/) for further
 details.
+
+### COMPOSER_MAX_PARALLEL_HTTP
+
+Set to an integer to configure how many files can be downloaded in parallel. This
+defaults to 12 and must be between 1 and 50. If your proxy has issues with
+concurrency maybe you want to lower this. Increasing it should generally not result
+in performance gains.
 
 ### HTTP_PROXY_REQUEST_FULLURI
 

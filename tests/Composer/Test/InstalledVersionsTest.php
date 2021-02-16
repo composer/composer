@@ -17,6 +17,20 @@ use Composer\Semver\VersionParser;
 
 class InstalledVersionsTest extends TestCase
 {
+    public static function setUpBeforeClass()
+    {
+        // disable multiple-ClassLoader-based checks of InstalledVersions by making it seem like no
+        // class loaders are registered
+        $prop = new \ReflectionProperty('Composer\Autoload\ClassLoader', 'registeredLoaders');
+        $prop->setAccessible(true);
+        $prop->setValue(array());
+    }
+
+    public static function tearDownAfterClass()
+    {
+        self::setUpBeforeClass();
+    }
+
     public function setUp()
     {
         InstalledVersions::reload(require __DIR__.'/Repository/Fixtures/installed.php');

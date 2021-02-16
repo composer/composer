@@ -243,6 +243,8 @@ class EventDispatcher
 
                 if (strpos($exec, '@putenv ') === 0) {
                     putenv(substr($exec, 8));
+                    list($var, $value) = explode('=', substr($exec, 8), 2);
+                    $_SERVER[$var] = $value;
 
                     continue;
                 }

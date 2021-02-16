@@ -26,6 +26,9 @@ class HgDownloader extends VcsDownloader
      */
     protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
     {
+        if (null === HgUtils::getVersion($this->process)) {
+            throw new \RuntimeException('hg was not found in your PATH, skipping source download');
+        }
     }
 
     /**
