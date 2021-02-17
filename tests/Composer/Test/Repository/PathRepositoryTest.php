@@ -80,7 +80,7 @@ class PathRepositoryTest extends TestCase
         $packages = $repository->getPackages();
         $names = array();
 
-        $this->assertEquals(2, $repository->count());
+        $this->assertGreaterThanOrEqual(2, $repository->count());
 
         $package = $packages[0];
         $names[] = $package->getName();
