@@ -38,34 +38,10 @@ class AllFunctionalTest extends TestCase
     {
         chdir($this->oldcwd);
 
-        $fs = new Filesystem;
-
         if ($this->testDir) {
+            $fs = new Filesystem;
             $fs->removeDirectory($this->testDir);
             $this->testDir = null;
-        }
-
-        if (!is_null($this->oldenv)) {
-            $fs->removeDirectory(getenv('COMPOSER_HOME'));
-            if ($this->oldenv === '') {
-                unset($_SERVER['COMPOSER_HOME']);
-                putenv('COMPOSER_HOME');
-            } else {
-                $_SERVER['COMPOSER_HOME'] = $this->oldenv;
-                putenv('COMPOSER_HOME='.$_SERVER['COMPOSER_HOME']);
-            }
-            $this->oldenv = null;
-        }
-        if (!is_null($this->oldenvCache)) {
-            $fs->removeDirectory(getenv('COMPOSER_CACHE_DIR'));
-            if ($this->oldenv === '') {
-                unset($_SERVER['COMPOSER_CACHE_DIR']);
-                putenv('COMPOSER_CACHE_DIR');
-            } else {
-                $_SERVER['COMPOSER_CACHE_DIR'] = $this->oldenvCache;
-                putenv('COMPOSER_CACHE_DIR='.$_SERVER['COMPOSER_CACHE_DIR']);
-            }
-            $this->oldenvCache = null;
         }
     }
 
@@ -129,15 +105,13 @@ class AllFunctionalTest extends TestCase
             $fs->copy($testFileSetupDir, $this->testDir);
         }
 
-        $this->oldenv = getenv('COMPOSER_HOME');
-        $this->oldenvCache = getenv('COMPOSER_CACHE_DIR');
-        $_SERVER['COMPOSER_HOME'] = $this->testDir.'home';
-        putenv('COMPOSER_HOME='.$_SERVER['COMPOSER_HOME']);
-        $_SERVER['COMPOSER_CACHE_DIR'] = $this->testDir.'cache';
-        putenv('COMPOSER_CACHE_DIR='.$_SERVER['COMPOSER_CACHE_DIR']);
+        $env = array(
+            'COMPOSER_HOME' => $this->testDir.'home',
+            'COMPOSER_CACHE_DIR' => $this->testDir.'cache',
+        );
 
         $cmd = 'php '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
-        $proc = new Process($cmd, $this->testDir, null, null, 300);
+        $proc = new Process($cmd, $this->testDir, $env, null, 300);
         $output = '';
 
         $exitcode = $proc->run(function ($type, $buffer) use (&$output) {
