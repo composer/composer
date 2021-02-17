@@ -2,19 +2,20 @@
 Checks that package versions in InstalledVersions are correct during an upgrade. Noteworthy things:
 
   - PluginA sees the old version of PluginB until that upgrade happened
-  - PluginA/PluginB see an old version of themselves as the plugin is marked install InstalledVersions::reload() but that is used as fallback vs what is in vendor dir. This is a quirk which we are unlikely to fix
+  - PluginA/PluginB see an old version of themselves. This is a quirk which we are unlikely to fix
   - Local dependencies (symfony/*) always show the local version over the Composer-bundled version, and show the correct new version as soon as they are done upgrading
 --RUN--
-update
+update plugin/* symfony/console symfony/filesystem symfony/process
 --EXPECT--
 !!PluginA:1.1.1.0["plugin/a","plugin/b","root/pkg","symfony/console","symfony/filesystem","symfony/polyfill-ctype","symfony/process","composer/ca-bundle","composer/composer","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/debug","symfony/finder","symfony/polyfill-mbstring"]
 !!PluginB:2.2.2.0
 !!Versions:console:99999.1.2.0;process:12345.1.2.0;filesystem:2.8.2.0
 !!PluginB:2.2.2.0["plugin/a","plugin/b","root/pkg","symfony/console","symfony/filesystem","symfony/polyfill-ctype","symfony/process","composer/ca-bundle","composer/composer","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/debug","symfony/finder","symfony/polyfill-mbstring"]
 !!PluginA:1.1.1.0
-!!Versions:console:99999.1.2.0;process:12345.1.2.0;filesystem:2.8.2.0%(\n> Hooks::preUpdate)?%
+!!Versions:console:99999.1.2.0;process:12345.1.2.0;filesystem:2.8.2.0
+> Hooks::preUpdate
 !!PreUpdate:["plugin/a","plugin/b","root/pkg","symfony/console","symfony/filesystem","symfony/polyfill-ctype","symfony/process","composer/ca-bundle","composer/composer","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/debug","symfony/finder","symfony/polyfill-mbstring"]
-!!Versions:console:99999.1.2.0;process:12345.1.2.0;filesystem:2.8.2.0%(\n> Hooks::preUpdate)?%
+!!Versions:console:99999.1.2.0;process:12345.1.2.0;filesystem:2.8.2.0
 Loading composer repositories with package information
 Updating dependencies
 Lock file operations: 0 installs, 5 updates, 0 removals
@@ -26,16 +27,19 @@ Lock file operations: 0 installs, 5 updates, 0 removals
 Writing lock file
 Installing dependencies from lock file (including require-dev)
 Package operations: 0 installs, 5 updates, 0 removals
+  - Downloading symfony/filesystem (%v?[2-8]\.\d+\.\d+%)
   - Upgrading symfony/console (99999.1.2 => 99999.1.3): Mirroring from symfony-console
   - Upgrading plugin/a (1.1.1 => 1.1.2): Mirroring from plugin-a
-!!PluginA:1.1.1.0["plugin/a","plugin/b","root/pkg","symfony/console","symfony/filesystem","symfony/polyfill-ctype","symfony/process","composer/ca-bundle","composer/composer","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/debug","symfony/finder","symfony/polyfill-mbstring"]
+!!PluginAInit["plugin/a","plugin/b","root/pkg","symfony/console","symfony/filesystem","symfony/polyfill-ctype","symfony/process","composer/ca-bundle","composer/composer","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/debug","symfony/finder","symfony/polyfill-mbstring"]
+!!PluginA:1.1.1.0
 !!PluginB:2.2.2.0
 !!Versions:console:99999.1.3.0;process:12345.1.2.0;filesystem:%[2-8]\.\d+\.\d+.0%
   - Upgrading plugin/b (2.2.2 => 2.2.3): Mirroring from plugin-b
-!!PluginB:2.2.2.0["plugin/a","plugin/b","root/pkg","symfony/console","symfony/filesystem","symfony/polyfill-ctype","symfony/process","composer/ca-bundle","composer/composer","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/debug","symfony/finder","symfony/polyfill-mbstring"]
+!!PluginBInit["plugin/a","plugin/b","root/pkg","symfony/console","symfony/filesystem","symfony/polyfill-ctype","symfony/process","composer/ca-bundle","composer/composer","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/debug","symfony/finder","symfony/polyfill-mbstring"]
 !!PluginA:1.1.2.0
+!!PluginB:2.2.2.0
 !!Versions:console:99999.1.3.0;process:12345.1.2.0;filesystem:%[2-8]\.\d+\.\d+.0%
-  - Upgrading symfony/filesystem (v2.8.2 => %v?[2-8]\.\d+\.\d+%)
+  - Upgrading symfony/filesystem (v2.8.2 => %v?[2-8]\.\d+\.\d+%): Extracting archive
   - Upgrading symfony/process (12345.1.2 => 12345.1.3): Mirroring from symfony-process
 Generating autoload files
 2 packages you are using are looking for funding.

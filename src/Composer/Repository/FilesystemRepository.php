@@ -141,9 +141,8 @@ class FilesystemRepository extends WritableArrayRepository
 
     /**
      * @return ?array
-     * @internal
      */
-    public function generateInstalledVersions(InstallationManager $installationManager)
+    private function generateInstalledVersions(InstallationManager $installationManager)
     {
         if (!$this->dumpVersions) {
             return null;

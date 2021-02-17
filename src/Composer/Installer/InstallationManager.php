@@ -467,11 +467,7 @@ class InstallationManager
     {
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
-        if ($installer instanceof PluginInstaller) {
-            $promise = $installer->install($repo, $package, $this);
-        } else {
-            $promise = $installer->install($repo, $package);
-        }
+        $promise = $installer->install($repo, $package);
         $this->markForNotification($package);
 
         return $promise;
@@ -493,11 +489,7 @@ class InstallationManager
 
         if ($initialType === $targetType) {
             $installer = $this->getInstaller($initialType);
-            if ($installer instanceof PluginInstaller) {
-                $promise = $installer->update($repo, $initial, $target, $this);
-            } else {
-                $promise = $installer->update($repo, $initial, $target);
-            }
+            $promise = $installer->update($repo, $initial, $target);
             $this->markForNotification($target);
         } else {
             $promise = $this->getInstaller($initialType)->uninstall($repo, $initial);
@@ -505,12 +497,8 @@ class InstallationManager
                 $promise = \React\Promise\resolve();
             }
 
-            $installManager = $this;
             $installer = $this->getInstaller($targetType);
-            $promise->then(function () use ($installer, $repo, $target, $installManager) {
-                if ($installer instanceof PluginInstaller) {
-                    return $installer->install($repo, $target, $installManager);
-                }
+            $promise->then(function () use ($installer, $repo, $target) {
                 return $installer->install($repo, $target);
             });
         }
