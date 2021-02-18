@@ -1,0 +1,245 @@
+{
+    "packages": [
+        {
+            "name": "plugin/a",
+            "version": "1.1.1",
+            "version_normalized": "1.1.1.0",
+            "dist": {
+                "type": "path",
+                "url": "plugin-a",
+                "reference": "da71e7f842e61910f596935057e4690a3546392e"
+            },
+            "require": {
+                "composer-plugin-api": "^2",
+                "symfony/console": "*"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "PluginA"
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "classmap": [
+                    "PluginA.php"
+                ]
+            },
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            },
+            "install-path": "../plugin/a"
+        },
+        {
+            "name": "plugin/b",
+            "version": "2.2.2",
+            "version_normalized": "2.2.2.0",
+            "dist": {
+                "type": "path",
+                "url": "plugin-b",
+                "reference": "398c3abfb6c73bc2bdd4f4f046845ffc180e2229"
+            },
+            "require": {
+                "composer-plugin-api": "^2",
+                "plugin/a": "*"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "PluginB"
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "classmap": [
+                    "PluginB.php"
+                ]
+            },
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            },
+            "install-path": "../plugin/b"
+        },
+        {
+            "name": "symfony/console",
+            "version": "99999.1.2",
+            "version_normalized": "99999.1.2.0",
+            "dist": {
+                "type": "path",
+                "url": "symfony-console",
+                "reference": "53e6291b8b80838b227aa86da61656ea7ba25901"
+            },
+            "type": "library",
+            "installation-source": "dist",
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            },
+            "install-path": "../symfony/console"
+        },
+        {
+            "name": "symfony/filesystem",
+            "version": "v2.8.2",
+            "version_normalized": "2.8.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/filesystem.git",
+                "reference": "262d033b57c73e8b59cd6e68a45c528318b15038"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/262d033b57c73e8b59cd6e68a45c528318b15038",
+                "reference": "262d033b57c73e8b59cd6e68a45c528318b15038",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.5",
+                "symfony/polyfill-ctype": "~1.8"
+            },
+            "time": "2021-01-27T10:01:46+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Filesystem\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides basic utilities for the filesystem",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/filesystem/tree/v2.8.2"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "install-path": "../symfony/filesystem"
+        },
+        {
+            "name": "symfony/polyfill-ctype",
+            "version": "v1.22.0",
+            "version_normalized": "1.22.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-ctype.git",
+                "reference": "c6c942b1ac76c82448322025e084cadc56048b4e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/c6c942b1ac76c82448322025e084cadc56048b4e",
+                "reference": "c6c942b1ac76c82448322025e084cadc56048b4e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "suggest": {
+                "ext-ctype": "For best performance"
+            },
+            "time": "2021-01-07T16:49:33+00:00",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.22-dev"
+                },
+                "thanks": {
+                    "name": "symfony/polyfill",
+                    "url": "https://github.com/symfony/polyfill"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Ctype\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Gert de Pagter",
+                    "email": "BackEndTea@gmail.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for ctype functions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "ctype",
+                "polyfill",
+                "portable"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.22.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "install-path": "../symfony/polyfill-ctype"
+        },
+        {
+            "name": "symfony/process",
+            "version": "12345.1.2",
+            "version_normalized": "12345.1.2.0",
+            "dist": {
+                "type": "path",
+                "url": "symfony-process",
+                "reference": "28ebf252e9e21386d873e48b302b9fa044a96e5f"
+            },
+            "type": "library",
+            "installation-source": "dist",
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            },
+            "install-path": "../symfony/process"
+        }
+    ],
+    "dev": true,
+    "dev-package-names": []
+}

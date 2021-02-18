@@ -435,8 +435,8 @@ class EventDispatcher
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
         $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
         $map = $generator->parseAutoloads($packageMap, $package);
-        $this->loader = $generator->createLoader($map);
-        $this->loader->register();
+        $this->loader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
+        $this->loader->register(true);
 
         return $scripts[$event->getName()];
     }
