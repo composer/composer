@@ -375,7 +375,12 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-        if (isset($config['default-branch']) && $config['default-branch'] === true) {
+
+        if (
+            isset($config['default-branch'])
+            && $config['default-branch'] === true
+            && false === $this->versionParser->parseNumericAliasPrefix($config['version'])
+        ) {
             return VersionParser::DEFAULT_BRANCH_ALIAS;
         }
     }
