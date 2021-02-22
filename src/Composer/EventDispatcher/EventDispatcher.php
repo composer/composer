@@ -226,7 +226,8 @@ class EventDispatcher
                 $exec = $callable . ($args === '' ? '' : ' '.$args);
                 if ($this->io->isVerbose()) {
                     $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
-                } else {
+                } elseif ($event->getName() !== '__exec_command') {
+                    // do not output the command being run when using `composer exec` as it is fairly obvious the user is running it
                     $this->io->writeError(sprintf('> %s', $exec));
                 }
 
