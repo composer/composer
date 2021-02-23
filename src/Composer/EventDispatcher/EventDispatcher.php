@@ -157,8 +157,9 @@ class EventDispatcher
 
         $this->pushEvent($event);
 
-        $return = 0;
+        $returnMax = 0;
         foreach ($listeners as $callable) {
+            $return = 0;
             $this->ensureBinDirIsInPath();
 
             if (!is_string($callable)) {
@@ -287,6 +288,8 @@ class EventDispatcher
                 }
             }
 
+            $returnMax = max($returnMax, $return);
+
             if ($event->isPropagationStopped()) {
                 break;
             }
@@ -294,7 +297,7 @@ class EventDispatcher
 
         $this->popEvent();
 
-        return $return;
+        return $returnMax;
     }
 
     protected function executeTty($exec)
