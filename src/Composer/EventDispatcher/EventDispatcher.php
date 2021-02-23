@@ -265,6 +265,12 @@ class EventDispatcher
                         $_SERVER['PHP_BINARY'] = $phpPath;
                         putenv('PHP_BINARY=' . $_SERVER['PHP_BINARY']);
                     }
+
+                    if (Platform::isWindows()) {
+                        $exec = preg_replace_callback('{^\S+}', function ($path) {
+                            return str_replace('/', '\\', $path[0]);
+                        }, $exec);
+                    }
                 }
 
                 // if composer is being executed, make sure it runs the expected composer from current path
