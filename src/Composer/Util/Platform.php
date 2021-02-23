@@ -96,6 +96,12 @@ class Platform
             $fd = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'w');
         }
 
+        // detect msysgit/mingw and assume this is a tty because detection
+        // does not work correctly, see https://github.com/composer/composer/issues/9690
+        if (in_array(strtoupper(getenv('MSYSTEM')), array('MINGW32', 'MINGW64'), true)) {
+            return true;
+        }
+
         // modern cross-platform function, includes the fstat
         // fallback so if it is present we trust it
         if (function_exists('stream_isatty')) {
