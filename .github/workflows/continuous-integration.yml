@@ -12,7 +12,6 @@ env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
   COMPOSER_UPDATE_FLAGS: ""
   COMPOSER_TESTS_ARE_RUNNING: "1"
-  SYMFONY_PHPUNIT_VERSION: "8.5"
   SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT: "1"
 
 jobs:
@@ -34,6 +33,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
         dependencies: [locked]
         os: [ubuntu-latest]
         experimental: [false]
@@ -46,23 +46,23 @@ jobs:
             dependencies: lowest
             os: ubuntu-latest
             experimental: false
-          - php-version: "7.4"
+          - php-version: "8.0"
             dependencies: highest
             os: ubuntu-latest
             experimental: false
-          - php-version: "7.4"
+          - php-version: "7.4" # 8.0 fails to start the test suite for some reason on windows
             os: windows-latest
             dependencies: locked
             experimental: false
-          - php-version: "7.4"
+          - php-version: "8.0"
             os: macos-latest
             dependencies: locked
             experimental: false
-          - php-version: "8.0"
+          - php-version: "8.1"
             dependencies: lowest-ignore
             os: ubuntu-latest
             experimental: true
-          - php-version: "8.0"
+          - php-version: "8.1"
             dependencies: highest-ignore
             os: ubuntu-latest
             experimental: true
@@ -70,23 +70,6 @@ jobs:
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v2"
-
-      - name: "Choose PHPUnit version"
-        if: "!startsWith(matrix.os, 'windows')"
-        run: |
-          if [ "${{ matrix.php-version }}" = "5.3" ] || [ "${{ matrix.php-version }}" = "5.4" ] || [ "${{ matrix.php-version }}" = "5.5" ]; then
-            echo "SYMFONY_PHPUNIT_VERSION=4.8" >> $GITHUB_ENV;
-          elif [ "${{ matrix.php-version }}" = "5.6" ]; then
-            echo "SYMFONY_PHPUNIT_VERSION=5.7" >> $GITHUB_ENV;
-          elif [ "${{ matrix.php-version }}" = "7.0" ]; then
-            echo "SYMFONY_PHPUNIT_VERSION=6.5" >> $GITHUB_ENV;
-          elif [ "${{ matrix.php-version }}" = "7.1" ]; then
-            echo "SYMFONY_PHPUNIT_VERSION=7.5" >> $GITHUB_ENV;
-          elif [ "${{ matrix.php-version }}" = "8.0" ]; then
-            echo "SYMFONY_PHPUNIT_VERSION=9.4" >> $GITHUB_ENV;
-          else
-            echo "SYMFONY_PHPUNIT_VERSION=8.5" >> $GITHUB_ENV;
-          fi
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
@@ -116,12 +99,12 @@ jobs:
         if: "matrix.dependencies == 'locked'"
         run: "composer install ${{ env.COMPOSER_FLAGS }}"
 
-      - name: "Require latest PHPUnitBridge for PHP 8"
-        if: "matrix.php-version == '8.0'"
-        run: composer require --no-update --dev symfony/phpunit-bridge:^5.1
+      - name: "Require latest PHPUnitBridge for PHP 8.x"
+        if: "startsWith(matrix.php-version, '8.')"
+        run: composer require --no-update --dev symfony/phpunit-bridge:^5.2
 
-      - name: "Update Symfony's PHPUnitBridge to latest available for the current PHP always as it is not really a dependency of the project"
-        run: "composer update ${{ env.COMPOSER_FLAGS }} symfony/phpunit-bridge"
+      - name: "Update dev requirements to latest available for the current PHP even on locked builds as they are not bundled dependencies"
+        run: "composer update ${{ env.COMPOSER_FLAGS }} symfony/phpunit-bridge phpspec/prophecy phpdocumentor/* sebastian/* doctrine/instantiator"
 
       - name: "Run install again using composer binary from source"
         run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"
