@@ -16,6 +16,7 @@ use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Composer;
+use Composer\Util\Platform;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Script;
@@ -250,7 +251,13 @@ class EventDispatcher
                     continue;
                 }
                 if (strpos($exec, '@php ') === 0) {
-                    $exec = $this->getPhpExecCommand() . ' ' . substr($exec, 5);
+                    $pathAndArgs = substr($exec, 5);
+                    if (Platform::isWindows()) {
+                        $pathAndArgs = preg_replace_callback('{^\S+}', function ($path) {
+                            return str_replace('/', '\\', $path[0]);
+                        }, $pathAndArgs);
+                    }
+                    $exec = $this->getPhpExecCommand() . ' ' . $pathAndArgs;
                 } else {
                     $finder = new PhpExecutableFinder();
                     $phpPath = $finder->find(false);
