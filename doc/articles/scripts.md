@@ -162,10 +162,11 @@ class MyClass
 }
 ```
 
-**Note:** During a composer install or update process, a variable named
+**Note:** During a Composer `install` or `update` command run, a variable named
 `COMPOSER_DEV_MODE` will be added to the environment. If the command was run
 with the `--no-dev` flag, this variable will be set to 0, otherwise it will be
-set to 1.
+set to 1. The variable is also available while `dump-autoload` runs, and it
+will be set to same as the last `install` or `update` was run in.
 
 ## Event classes
 

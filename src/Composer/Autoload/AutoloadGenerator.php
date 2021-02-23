@@ -26,6 +26,7 @@ use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Filesystem;
 use Composer\Script\ScriptEvents;
 use Composer\Util\PackageSorter;
+use Composer\Json\JsonFile;
 
 /**
  * @author Igor Wiedler <igor@wiedler.ch>
@@ -44,9 +45,9 @@ class AutoloadGenerator
     private $io;
 
     /**
-     * @var bool
+     * @var ?bool
      */
-    private $devMode = false;
+    private $devMode = null;
 
     /**
      * @var bool
@@ -144,6 +145,23 @@ class AutoloadGenerator
             $scanPsrPackages = true;
         }
         if ($this->runScripts) {
+            $installedJson = new JsonFile($config->get('vendor-dir').'/composer/installed.json');
+            $isDevInstall = null;
+            if ($installedJson->exists()) {
+                $installedJson = $installedJson->read();
+                $isDevInstall = isset($installedJson['dev']) ? $installedJson['dev'] : null;
+            }
+            // auto-set devMode based on whether dev dependencies are installed or not
+            if (null !== $isDevInstall && null === $this->devMode) {
+                $this->devMode = $isDevInstall;
+            }
+
+            // set COMPOSER_DEV_MODE in case not set yet so it is available in the dump-autoload autoload
+            if (!isset($_SERVER['COMPOSER_DEV_MODE'])) {
+                $_SERVER['COMPOSER_DEV_MODE'] = $this->devMode ? '1' : '0';
+                putenv('COMPOSER_DEV_MODE='.$_SERVER['COMPOSER_DEV_MODE']);
+            }
+
             $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode, array(), array(
                 'optimize' => (bool) $scanPsrPackages,
             ));
