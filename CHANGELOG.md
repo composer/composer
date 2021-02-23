@@ -1,3 +1,18 @@
+### [2.0.10] 2021-02-23
+
+  * Added COMPOSER_MAX_PARALLEL_HTTP to let people set a lower amount of parallel requests if needed
+  * Fixed autoloader registration when plugins are loaded, which may impact plugins relying on this bug (if you use `symfony/flex` make sure you upgrade it to 1.12.2+ to fix `dump-env` issues)
+  * Fixed `exec` command suppressing output in some circumstances
+  * Fixed Windows/cmd.exe support for script handlers defined as `path/to/foo`, which are now rewritten internally to `path\to\foo` when needed
+  * Fixed bin handling on Windows for PHP scripts, to more closely match symlinks and allow `@php vendor/bin/foo` to work cross-platform
+  * Fixed Git for Windows/Git Bash not being detected correctly as an interactive shell (regression since 2.0.7)
+  * Fixed regression handling some private Bitbucket repository clones
+  * Fixed Ctrl-C/SIGINT handling during downloads to correctly abort as soon as possible
+  * Fixed runtime autoloader registration (for plugins and script handlers) to prefer the project dependencies over the bundled Composer ones
+  * Fixed numeric default branches being aliased as 9999999-dev internally. This alias now only applies to default branches being non-numeric (e.g. `dev-main`)
+  * Fixed support for older lib-sodium versions
+  * Fixed various minor issues
+
 ### [2.0.9] 2021-01-27
 
   * Added warning if the curl extension is not enabled as it significantly degrades performance
@@ -1095,6 +1110,7 @@
 
   * Initial release
 
+[2.0.10]: https://github.com/composer/composer/compare/2.0.9...2.0.10
 [2.0.9]: https://github.com/composer/composer/compare/2.0.8...2.0.9
 [2.0.8]: https://github.com/composer/composer/compare/2.0.7...2.0.8
 [2.0.7]: https://github.com/composer/composer/compare/2.0.6...2.0.7
