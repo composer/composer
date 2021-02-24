@@ -1,3 +1,7 @@
+### [2.0.11] 2021-02-24
+
+  * Reverted "Fixed runtime autoloader registration (for plugins and script handlers) to prefer the project dependencies over the bundled Composer ones" as it caused more problems than expected
+
 ### [2.0.10] 2021-02-23
 
   * Added COMPOSER_MAX_PARALLEL_HTTP to let people set a lower amount of parallel requests if needed
@@ -1110,6 +1114,7 @@
 
   * Initial release
 
+[2.0.11]: https://github.com/composer/composer/compare/2.0.10...2.0.11
 [2.0.10]: https://github.com/composer/composer/compare/2.0.9...2.0.10
 [2.0.9]: https://github.com/composer/composer/compare/2.0.8...2.0.9
 [2.0.8]: https://github.com/composer/composer/compare/2.0.7...2.0.8
