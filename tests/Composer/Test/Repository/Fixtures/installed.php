@@ -18,6 +18,7 @@ return array(
             '1.10.x-dev',
         ),
         'reference' => 'sourceref-by-default',
+        'dev-requirement' => true,
         'name' => '__root__',
     ),
     'versions' => array(
@@ -28,12 +29,14 @@ return array(
                 '1.10.x-dev',
             ),
             'reference' => 'sourceref-by-default',
+            'dev-requirement' => false,
         ),
         'a/provider' => array(
             'pretty_version' => '1.1',
             'version' => '1.1.0.0',
             'aliases' => array(),
             'reference' => 'distref-as-no-source',
+            'dev-requirement' => false,
         ),
         'a/provider2' => array(
             'pretty_version' => '1.2',
@@ -42,20 +45,24 @@ return array(
               '1.4',
             ),
             'reference' => 'distref-as-installed-from-dist',
+            'dev-requirement' => false,
         ),
         'b/replacer' => array(
             'pretty_version' => '2.2',
             'version' => '2.2.0.0',
             'aliases' => array(),
             'reference' => null,
+            'dev-requirement' => false,
         ),
         'c/c' => array(
             'pretty_version' => '3.0',
             'version' => '3.0.0.0',
             'aliases' => array(),
             'reference' => null,
+            'dev-requirement' => true,
         ),
         'foo/impl' => array(
+            'dev-requirement' => false,
             'provided' => array(
                 '^1.1',
                 '1.2',
@@ -64,6 +71,7 @@ return array(
             ),
         ),
         'foo/impl2' => array(
+            'dev-requirement' => false,
             'provided' => array(
                 '2.0',
             ),
@@ -72,6 +80,7 @@ return array(
             ),
         ),
         'foo/replaced' => array(
+            'dev-requirement' => false,
             'replaced' => array(
                 '^3.0',
             ),
