@@ -284,7 +284,7 @@ uninstalled.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies (-w):** Also update dependencies of the removed packages.
-  (Deprecrated, is now default behavior)
+  (Deprecated, is now default behavior)
 * **--update-with-all-dependencies (-W):** Allows all inherited dependencies to be updated,
   including those that are root requirements.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
@@ -790,7 +790,8 @@ performance.
 * **--apcu:** Use APCu to cache found/not-found classes.
 * **--apcu-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu`.
-* **--no-dev:** Disables autoload-dev rules.
+* **--no-dev:** Disables autoload-dev rules. (Deprecated: Composer now infers this
+  automatically according to the last `install` or `update` run.)
 * **--ignore-platform-reqs:** ignore all `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and skip the [platform check](07-runtime.md#platform-check) for these.
   See also the [`platform`](06-config.md#platform) config option.
