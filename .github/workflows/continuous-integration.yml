@@ -50,7 +50,7 @@ jobs:
             dependencies: highest
             os: ubuntu-latest
             experimental: false
-          - php-version: "7.4" # 8.0 fails to start the test suite for some reason on windows
+          - php-version: "8.0"
             os: windows-latest
             dependencies: locked
             experimental: false
@@ -101,7 +101,8 @@ jobs:
 
       - name: "Require latest PHPUnitBridge for PHP 8.x"
         if: "startsWith(matrix.php-version, '8.')"
-        run: composer require --no-update --dev symfony/phpunit-bridge:^5.2
+        # using ~ here to avoid issues with windows CLI removing the ^
+        run: 'composer require --no-update --dev "symfony/phpunit-bridge:~5.2"'
 
       - name: "Update dev requirements to latest available for the current PHP even on locked builds as they are not bundled dependencies"
         run: "composer update ${{ env.COMPOSER_FLAGS }} symfony/phpunit-bridge phpspec/prophecy phpdocumentor/* sebastian/* doctrine/instantiator"
