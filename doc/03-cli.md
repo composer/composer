@@ -480,7 +480,12 @@ If you only want a list of suggested package names, use `--list`.
 ## fund
 
 Discover how to help fund the maintenance of your dependencies. This lists
-all funding links from the installed dependencies.
+all funding links from the installed dependencies. Use `--format=json` to
+get machine-readable output.
+
+### Options
+
+* **--format:** Format of the output: text, json or summary (default: "text")
 
 ## depends (why)
 
