@@ -469,8 +469,8 @@ class FileDownloaderTest extends TestCase
         $path = $this->getUniqueTmpDirectory();
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $filesystem->expects($this->once())
-            ->method('removeDirectory')
-            ->will($this->returnValue(true));
+            ->method('removeDirectoryAsync')
+            ->will($this->returnValue(\React\Promise\resolve(true)));
 
         $downloader = $this->getDownloader($ioMock, null, null, null, null, $filesystem);
 
