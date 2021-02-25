@@ -29,6 +29,9 @@ parameters:
         - '~^Call to an undefined static method Composer\\Test\\PolyfillTestCase::setExpectedException\(\)\.$~'
         - '~^Call to an undefined method Composer\\Test\\[a-zA-Z0-9\\]+::(assertFileDoesNotExist|assertMatchesRegularExpression)\(\)\.$~'
 
+    bootstrapFiles:
+        - ../tests/bootstrap.php
+
     paths:
         - ../src
         - ../tests

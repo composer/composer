@@ -237,11 +237,11 @@ class Application extends BaseApplication
             }
 
             if (extension_loaded('xdebug') && !getenv('COMPOSER_DISABLE_XDEBUG_WARN')) {
-                $io->writeError('<warning>You are running composer with Xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>');
+                $io->writeError('<warning>Composer is operating slower than normal because you have Xdebug enabled. See https://getcomposer.org/xdebug</warning>');
             }
 
             if (defined('COMPOSER_DEV_WARNING_TIME') && $commandName !== 'self-update' && $commandName !== 'selfupdate' && time() > COMPOSER_DEV_WARNING_TIME) {
-                $io->writeError(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
+                $io->writeError(sprintf('<warning>Warning: This development build of Composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']));
             }
 
             if (
@@ -309,8 +309,9 @@ class Application extends BaseApplication
 
             $result = parent::doRun($input, $output);
 
+            // chdir back to $oldWorkingDir if set
             if (isset($oldWorkingDir)) {
-                chdir($oldWorkingDir);
+                Silencer::call('chdir', $oldWorkingDir);
             }
 
             if (isset($startTime)) {

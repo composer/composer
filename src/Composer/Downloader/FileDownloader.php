@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
+use Composer\Exception\IrrecoverableDownloadException;
 use Composer\Package\Comparer\Comparer;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -224,6 +225,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             }
             $self->clearLastCacheWrite($package);
 
+            if ($e instanceof IrrecoverableDownloadException) {
+                throw $e;
+            }
+
             if ($e instanceof TransportException) {
                 // if we got an http response with a proper code, then requesting again will probably not help, abort
                 if ((0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
@@ -355,18 +360,17 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
-        $this->io->writeError("  - " . UpdateOperation::format($initial, $target) . ": ", false);
+        $this->io->writeError("  - " . UpdateOperation::format($initial, $target) . $this->getInstallOperationAppendix($target, $path));
 
         $promise = $this->remove($initial, $path, false);
-        if ($promise === null || !$promise instanceof PromiseInterface) {
+        if (!$promise instanceof PromiseInterface) {
             $promise = \React\Promise\resolve();
         }
         $self = $this;
         $io = $this->io;
 
-        return $promise->then(function () use ($self, $target, $path, $io) {
+        return $promise->then(function () use ($self, $target, $path) {
             $promise = $self->install($target, $path, false);
-            $io->writeError('');
 
             return $promise;
         });
@@ -380,9 +384,13 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         if ($output) {
             $this->io->writeError("  - " . UninstallOperation::format($package));
         }
-        if (!$this->filesystem->removeDirectory($path)) {
-            throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
-        }
+        $promise = $this->filesystem->removeDirectoryAsync($path);
+
+        return $promise->then(function ($result) use ($path) {
+            if (!$result) {
+                throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
+            }
+        });
     }
 
     /**
@@ -395,6 +403,18 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     protected function getFileName(PackageInterface $package, $path)
     {
         return rtrim($this->config->get('vendor-dir').'/composer/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
+    }
+
+    /**
+     * Gets appendix message to add to the "- Upgrading x" string being output on update
+     *
+     * @param  PackageInterface $package package instance
+     * @param  string           $path    download path
+     * @return string
+     */
+    protected function getInstallOperationAppendix(PackageInterface $package, $path)
+    {
+        return '';
     }
 
     /**

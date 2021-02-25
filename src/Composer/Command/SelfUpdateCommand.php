@@ -126,7 +126,7 @@ EOT
             $composeUser = posix_getpwuid(posix_geteuid());
             $homeOwner = posix_getpwuid(fileowner($home));
             if (isset($composeUser['name'], $homeOwner['name']) && $composeUser['name'] !== $homeOwner['name']) {
-                $io->writeError('<warning>You are running composer as "'.$composeUser['name'].'", while "'.$home.'" is owned by "'.$homeOwner['name'].'"</warning>');
+                $io->writeError('<warning>You are running Composer as "'.$composeUser['name'].'", while "'.$home.'" is owned by "'.$homeOwner['name'].'"</warning>');
             }
         }
 
@@ -185,7 +185,7 @@ EOT
         if (Composer::VERSION === $updateVersion) {
             $io->writeError(
                 sprintf(
-                    '<info>You are already using composer version %s (%s channel).</info>',
+                    '<info>You are already using the latest available Composer version %s (%s channel).</info>',
                     $updateVersion,
                     $channelString
                 )

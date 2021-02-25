@@ -37,6 +37,9 @@ class GitDriver extends VcsDriver
     {
         if (Filesystem::isLocalPath($this->url)) {
             $this->url = preg_replace('{[\\/]\.git/?$}', '', $this->url);
+            if (!is_dir($this->url)) {
+                throw new \RuntimeException('Failed to read package information from '.$this->url.' as the path does not exist');
+            }
             $this->repoDir = $this->url;
             $cacheUrl = realpath($this->url);
         } else {

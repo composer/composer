@@ -402,7 +402,9 @@ class PlatformRepository extends ArrayRepository
 
                 case 'libsodium':
                 case 'sodium':
-                    $this->addLibrary('libsodium', $this->runtime->getConstant('SODIUM_LIBRARY_VERSION'));
+                    if ($this->runtime->hasConstant('SODIUM_LIBRARY_VERSION')) {
+                        $this->addLibrary('libsodium', $this->runtime->getConstant('SODIUM_LIBRARY_VERSION'));
+                    }
                     break;
 
                 case 'sqlite3':

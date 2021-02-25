@@ -16,6 +16,7 @@ use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Composer;
+use Composer\Util\Platform;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\RepositoryInterface;
 use Composer\Script;
@@ -156,8 +157,9 @@ class EventDispatcher
 
         $this->pushEvent($event);
 
-        $return = 0;
+        $returnMax = 0;
         foreach ($listeners as $callable) {
+            $return = 0;
             $this->ensureBinDirIsInPath();
 
             if (!is_string($callable)) {
@@ -226,7 +228,8 @@ class EventDispatcher
                 $exec = $callable . ($args === '' ? '' : ' '.$args);
                 if ($this->io->isVerbose()) {
                     $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
-                } else {
+                } elseif ($event->getName() !== '__exec_command') {
+                    // do not output the command being run when using `composer exec` as it is fairly obvious the user is running it
                     $this->io->writeError(sprintf('> %s', $exec));
                 }
 
@@ -243,17 +246,31 @@ class EventDispatcher
 
                 if (strpos($exec, '@putenv ') === 0) {
                     putenv(substr($exec, 8));
+                    list($var, $value) = explode('=', substr($exec, 8), 2);
+                    $_SERVER[$var] = $value;
 
                     continue;
                 }
                 if (strpos($exec, '@php ') === 0) {
-                    $exec = $this->getPhpExecCommand() . ' ' . substr($exec, 5);
+                    $pathAndArgs = substr($exec, 5);
+                    if (Platform::isWindows()) {
+                        $pathAndArgs = preg_replace_callback('{^\S+}', function ($path) {
+                            return str_replace('/', '\\', $path[0]);
+                        }, $pathAndArgs);
+                    }
+                    $exec = $this->getPhpExecCommand() . ' ' . $pathAndArgs;
                 } else {
                     $finder = new PhpExecutableFinder();
                     $phpPath = $finder->find(false);
                     if ($phpPath) {
                         $_SERVER['PHP_BINARY'] = $phpPath;
                         putenv('PHP_BINARY=' . $_SERVER['PHP_BINARY']);
+                    }
+
+                    if (Platform::isWindows()) {
+                        $exec = preg_replace_callback('{^\S+}', function ($path) {
+                            return str_replace('/', '\\', $path[0]);
+                        }, $exec);
                     }
                 }
 
@@ -271,6 +288,8 @@ class EventDispatcher
                 }
             }
 
+            $returnMax = max($returnMax, $return);
+
             if ($event->isPropagationStopped()) {
                 break;
             }
@@ -278,7 +297,7 @@ class EventDispatcher
 
         $this->popEvent();
 
-        return $return;
+        return $returnMax;
     }
 
     protected function executeTty($exec)
@@ -433,8 +452,8 @@ class EventDispatcher
         $packages = $this->composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
         $packageMap = $generator->buildPackageMap($this->composer->getInstallationManager(), $package, $packages);
         $map = $generator->parseAutoloads($packageMap, $package);
-        $this->loader = $generator->createLoader($map);
-        $this->loader->register();
+        $this->loader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
+        $this->loader->register(false);
 
         return $scripts[$event->getName()];
     }

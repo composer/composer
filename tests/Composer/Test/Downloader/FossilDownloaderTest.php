@@ -156,9 +156,9 @@ class FossilDownloaderTest extends TestCase
             ->with($this->equalTo($expectedResetCommand));
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $filesystem->expects($this->once())
-            ->method('removeDirectory')
+            ->method('removeDirectoryAsync')
             ->with($this->equalTo('composerPath'))
-            ->will($this->returnValue(true));
+            ->will($this->returnValue(\React\Promise\resolve(true)));
 
         $downloader = $this->getDownloaderMock(null, null, $processExecutor, $filesystem);
         $downloader->remove($packageMock, 'composerPath');

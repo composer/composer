@@ -1,0 +1,21 @@
+{
+    "name": "root/pkg",
+    "version": "1.2.3",
+    "require": {
+        "plugin/a": "*",
+        "plugin/b": "*",
+        "symfony/process": "*",
+        "symfony/filesystem": "*"
+    },
+    "repositories": [
+        {"type": "path", "url": "plugin-*"},
+        {"type": "path", "url": "symfony-*"}
+    ],
+    "scripts": {
+        "pre-update-cmd": "Hooks::preUpdate",
+        "post-update-cmd": "Hooks::postUpdate"
+    },
+    "autoload": {
+        "classmap": ["Hooks.php"]
+    }
+}

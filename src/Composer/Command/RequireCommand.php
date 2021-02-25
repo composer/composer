@@ -190,7 +190,7 @@ EOT
             );
         } catch (\Exception $e) {
             if ($this->newlyCreated) {
-                throw new \RuntimeException('No composer.json present in the current directory, this may be the cause of the following exception.', 0, $e);
+                throw new \RuntimeException('No composer.json present in the current directory ('.$this->file.'), this may be the cause of the following exception.', 0, $e);
             }
 
             throw $e;
@@ -209,6 +209,29 @@ EOT
                 return 1;
             }
             $versionParser->parseConstraints($constraint);
+        }
+
+        $inconsistentRequireKeys = $this->getInconsistentRequireKeys($requirements, $requireKey);
+        if (count($inconsistentRequireKeys) > 0) {
+            foreach ($inconsistentRequireKeys as $package) {
+                $io->warning(sprintf(
+                    '%s is currently present in the %s key and you ran the command %s the --dev flag, which would move it to the %s key.',
+                    $package,
+                    $removeKey,
+                    $input->getOption('dev') ? 'with' : 'without',
+                    $requireKey
+                ));
+            }
+
+            if ($io->isInteractive()) {
+                if (!$io->askConfirmation(sprintf('<info>Do you want to move %s?</info> [<comment>no</comment>]? ', count($inconsistentRequireKeys) > 1 ? 'these requirements' : 'this requirement'), false)) {
+                    if (!$io->askConfirmation(sprintf('<info>Do you want to re-run the command %s --dev?</info> [<comment>yes</comment>]? ', $input->getOption('dev') ? 'without' : 'with'), true)) {
+                        return 0;
+                    }
+
+                    list($requireKey, $removeKey) = array($removeKey, $requireKey);
+                }
+            }
         }
 
         $sortPackages = $input->getOption('sort-packages') || $composer->getConfig()->get('sort-packages');
@@ -245,6 +268,42 @@ EOT
             $this->revertComposerFile(false);
             throw $e;
         }
+    }
+
+    private function getInconsistentRequireKeys(array $newRequirements, $requireKey)
+    {
+        $requireKeys = $this->getPackagesByRequireKey();
+        $inconsistentRequirements = array();
+        foreach ($requireKeys as $package => $packageRequireKey) {
+            if (!isset($newRequirements[$package])) {
+                continue;
+            }
+            if ($requireKey !== $packageRequireKey) {
+                $inconsistentRequirements[] = $package;
+            }
+        }
+
+        return $inconsistentRequirements;
+    }
+
+    private function getPackagesByRequireKey()
+    {
+        $composerDefinition = $this->json->read();
+        $require = array();
+        $requireDev = array();
+
+        if (isset($composerDefinition['require'])) {
+            $require = $composerDefinition['require'];
+        }
+
+        if (isset($composerDefinition['require-dev'])) {
+            $requireDev = $composerDefinition['require-dev'];
+        }
+
+        return array_merge(
+            array_fill_keys(array_keys($require), 'require'),
+            array_fill_keys(array_keys($requireDev), 'require-dev')
+        );
     }
 
     private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, $requireKey, $removeKey)

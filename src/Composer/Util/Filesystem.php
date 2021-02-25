@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use React\Promise\Promise;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -63,7 +64,7 @@ class Filesystem
 
     public function emptyDirectory($dir, $ensureDirectoryExists = true)
     {
-        if (file_exists($dir) && is_link($dir)) {
+        if (is_link($dir) && file_exists($dir)) {
             $this->unlink($dir);
         }
 
@@ -96,28 +97,9 @@ class Filesystem
      */
     public function removeDirectory($directory)
     {
-        if ($this->isSymlinkedDirectory($directory)) {
-            return $this->unlinkSymlinkedDirectory($directory);
-        }
-
-        if ($this->isJunction($directory)) {
-            return $this->removeJunction($directory);
-        }
-
-        if (is_link($directory)) {
-            return unlink($directory);
-        }
-
-        if (!file_exists($directory) || !is_dir($directory)) {
-            return true;
-        }
-
-        if (preg_match('{^(?:[a-z]:)?[/\\\\]+$}i', $directory)) {
-            throw new \RuntimeException('Aborting an attempted deletion of '.$directory.', this was probably not intended, if it is a real use case please report it.');
-        }
-
-        if (!\function_exists('proc_open')) {
-            return $this->removeDirectoryPhp($directory);
+        $edgeCaseResult = $this->removeEdgeCases($directory);
+        if ($edgeCaseResult !== null) {
+            return $edgeCaseResult;
         }
 
         if (Platform::isWindows()) {
@@ -131,11 +113,86 @@ class Filesystem
         // clear stat cache because external processes aren't tracked by the php stat cache
         clearstatcache();
 
-        if ($result && !file_exists($directory)) {
+        if ($result && !is_dir($directory)) {
             return true;
         }
 
         return $this->removeDirectoryPhp($directory);
+    }
+
+    /**
+     * Recursively remove a directory asynchronously
+     *
+     * Uses the process component if proc_open is enabled on the PHP
+     * installation.
+     *
+     * @param  string            $directory
+     * @throws \RuntimeException
+     * @return Promise
+     */
+    public function removeDirectoryAsync($directory)
+    {
+        $edgeCaseResult = $this->removeEdgeCases($directory);
+        if ($edgeCaseResult !== null) {
+            return \React\Promise\resolve($edgeCaseResult);
+        }
+
+        if (Platform::isWindows()) {
+            $cmd = sprintf('rmdir /S /Q %s', ProcessExecutor::escape(realpath($directory)));
+        } else {
+            $cmd = sprintf('rm -rf %s', ProcessExecutor::escape($directory));
+        }
+
+        $promise = $this->getProcess()->executeAsync($cmd);
+
+        $self = $this;
+
+        return $promise->then(function ($process) use ($directory, $self) {
+            // clear stat cache because external processes aren't tracked by the php stat cache
+            clearstatcache();
+
+            if ($process->isSuccessful()) {
+                if (!is_dir($directory)) {
+                    return \React\Promise\resolve(true);
+                }
+            }
+
+            return \React\Promise\resolve($self->removeDirectoryPhp($directory));
+        });
+    }
+
+    /**
+     * @param string $directory
+     *
+     * @return bool|null Returns null, when no edge case was hit. Otherwise a bool whether removal was successfull
+     */
+    private function removeEdgeCases($directory)
+    {
+        if ($this->isSymlinkedDirectory($directory)) {
+            return $this->unlinkSymlinkedDirectory($directory);
+        }
+
+        if ($this->isJunction($directory)) {
+            return $this->removeJunction($directory);
+        }
+
+        if (is_link($directory)) {
+            return unlink($directory);
+        }
+
+        if (!is_dir($directory) || !file_exists($directory)) {
+            return true;
+        }
+
+        if (preg_match('{^(?:[a-z]:)?[/\\\\]+$}i', $directory)) {
+            throw new \RuntimeException('Aborting an attempted deletion of '.$directory.', this was probably not intended, if it is a real use case please report it.');
+        }
+
+        if (!\function_exists('proc_open')) {
+            return $this->removeDirectoryPhp($directory);
+        }
+
+        return null;
     }
 
     /**
@@ -605,7 +662,7 @@ class Filesystem
         if (!function_exists('symlink')) {
             return false;
         }
-    
+
         $cwd = getcwd();
 
         $relativePath = $this->findShortestPath($link, $target);

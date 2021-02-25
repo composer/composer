@@ -1,0 +1,30 @@
+--TEST--
+Test that a conflict against >=5 does not include the default branch if it is a numeric branch.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "conflicter/pkg", "version": "1.0.0", "conflict": { "victim/pkg": ">=5", "victim/pkg2": ">=5" } },
+                { "name": "victim/pkg", "version": "3.x-dev", "default-branch": true },
+                { "name": "victim/pkg2", "version": "dev-foo" }
+            ]
+        }
+    ],
+    "require": {
+        "conflicter/pkg": "1.0.0",
+        "victim/pkg": "*",
+        "victim/pkg2": "*"
+    },
+    "minimum-stability": "dev"
+}
+
+
+--RUN--
+update
+
+--EXPECT--
+Installing conflicter/pkg (1.0.0)
+Installing victim/pkg (3.x-dev)
+Installing victim/pkg2 (dev-foo)

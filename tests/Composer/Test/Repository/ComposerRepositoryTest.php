@@ -55,7 +55,7 @@ class ComposerRepositoryTest extends TestCase
         $repository
             ->expects($this->at(2))
             ->method('createPackages')
-            ->with($this->identicalTo($expected), $this->equalTo('Composer\Package\CompletePackage'))
+            ->with($this->identicalTo($expected), $this->equalTo('root file (http://example.org/packages.json)'))
             ->will($this->returnValue($stubs));
 
         // Triggers initialization

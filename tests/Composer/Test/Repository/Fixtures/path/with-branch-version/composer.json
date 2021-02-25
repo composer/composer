@@ -1,6 +1,0 @@
-{
-  "name": "test/path-branch-versioned",
-  "extra": {
-    "branch-version": "1.2"
-  }
-}

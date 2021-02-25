@@ -1,3 +1,36 @@
+### [2.0.11] 2021-02-24
+
+  * Reverted "Fixed runtime autoloader registration (for plugins and script handlers) to prefer the project dependencies over the bundled Composer ones" as it caused more problems than expected
+
+### [2.0.10] 2021-02-23
+
+  * Added COMPOSER_MAX_PARALLEL_HTTP to let people set a lower amount of parallel requests if needed
+  * Fixed autoloader registration when plugins are loaded, which may impact plugins relying on this bug (if you use `symfony/flex` make sure you upgrade it to 1.12.2+ to fix `dump-env` issues)
+  * Fixed `exec` command suppressing output in some circumstances
+  * Fixed Windows/cmd.exe support for script handlers defined as `path/to/foo`, which are now rewritten internally to `path\to\foo` when needed
+  * Fixed bin handling on Windows for PHP scripts, to more closely match symlinks and allow `@php vendor/bin/foo` to work cross-platform
+  * Fixed Git for Windows/Git Bash not being detected correctly as an interactive shell (regression since 2.0.7)
+  * Fixed regression handling some private Bitbucket repository clones
+  * Fixed Ctrl-C/SIGINT handling during downloads to correctly abort as soon as possible
+  * Fixed runtime autoloader registration (for plugins and script handlers) to prefer the project dependencies over the bundled Composer ones
+  * Fixed numeric default branches being aliased as 9999999-dev internally. This alias now only applies to default branches being non-numeric (e.g. `dev-main`)
+  * Fixed support for older lib-sodium versions
+  * Fixed various minor issues
+
+### [2.0.9] 2021-01-27
+
+  * Added warning if the curl extension is not enabled as it significantly degrades performance
+  * Fixed InstalledVersions to report all packages when several vendor dirs are present in the same runtime
+  * Fixed download speed when downloading large files
+  * Fixed `archive` and path repo copies mishandling some .gitignore paths
+  * Fixed root package classes not being available to the plugins/scripts during the initial install
+  * Fixed cache writes to be atomic and better support multiple Composer processes running in parallel
+  * Fixed preg jit issues when `config` or `require` modifies large composer.json files
+  * Fixed compatibility with envs having open_basedir restrictions
+  * Fixed exclude-from-classmap causing regex issues when having too many paths
+  * Fixed compatibility issue with Symfony 4/5
+  * Several small performance and debug output improvements
+
 ### [2.0.8] 2020-12-03
 
   * Fixed packages with aliases not matching conflicts which match the alias
@@ -149,6 +182,11 @@
   * Fixed package ordering when autoloading and especially when loading plugins, to make sure dependencies are loaded before their dependents
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
+
+### [1.10.20] 2021-01-27
+
+  * Fixed exclude-from-classmap causing regex issues when having too many paths
+  * Fixed compatibility issue with Symfony 4/5
 
 ### [1.10.19] 2020-12-04
 
@@ -1076,6 +1114,9 @@
 
   * Initial release
 
+[2.0.11]: https://github.com/composer/composer/compare/2.0.10...2.0.11
+[2.0.10]: https://github.com/composer/composer/compare/2.0.9...2.0.10
+[2.0.9]: https://github.com/composer/composer/compare/2.0.8...2.0.9
 [2.0.8]: https://github.com/composer/composer/compare/2.0.7...2.0.8
 [2.0.7]: https://github.com/composer/composer/compare/2.0.6...2.0.7
 [2.0.6]: https://github.com/composer/composer/compare/2.0.5...2.0.6
@@ -1090,6 +1131,7 @@
 [2.0.0-alpha3]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-alpha3
 [2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
+[1.10.20]: https://github.com/composer/composer/compare/1.10.19...1.10.20
 [1.10.19]: https://github.com/composer/composer/compare/1.10.18...1.10.19
 [1.10.18]: https://github.com/composer/composer/compare/1.10.17...1.10.18
 [1.10.17]: https://github.com/composer/composer/compare/1.10.16...1.10.17

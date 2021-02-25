@@ -23,6 +23,7 @@ class AllFunctionalTest extends TestCase
 {
     protected $oldcwd;
     protected $oldenv;
+    protected $oldenvCache;
     protected $testDir;
     private static $pharPath;
 
@@ -37,18 +38,10 @@ class AllFunctionalTest extends TestCase
     {
         chdir($this->oldcwd);
 
-        $fs = new Filesystem;
-
         if ($this->testDir) {
+            $fs = new Filesystem;
             $fs->removeDirectory($this->testDir);
             $this->testDir = null;
-        }
-
-        if ($this->oldenv) {
-            $fs->removeDirectory(getenv('COMPOSER_HOME'));
-            $_SERVER['COMPOSER_HOME'] = $this->oldenv;
-            putenv('COMPOSER_HOME='.$_SERVER['COMPOSER_HOME']);
-            $this->oldenv = null;
         }
     }
 
@@ -85,7 +78,7 @@ class AllFunctionalTest extends TestCase
             }
         }
 
-        $proc = new Process('php '.escapeshellarg('./bin/compile'), $target);
+        $proc = new Process('php -dphar.readonly=0 '.escapeshellarg('./bin/compile'), $target);
         $exitcode = $proc->run();
 
         if ($exitcode !== 0 || trim($proc->getOutput())) {
@@ -102,26 +95,74 @@ class AllFunctionalTest extends TestCase
     public function testIntegration($testFile)
     {
         $testData = $this->parseTestFile($testFile);
+        $this->testDir = self::getUniqueTmpDirectory();
 
-        $this->oldenv = getenv('COMPOSER_HOME');
-        $_SERVER['COMPOSER_HOME'] = $this->testDir.'home';
-        putenv('COMPOSER_HOME='.$_SERVER['COMPOSER_HOME']);
+        // if a dir is present with the name of the .test file (without .test), we
+        // copy all its contents in the $testDir to be used to run the test with
+        $testFileSetupDir = substr($testFile, 0, -5);
+        if (is_dir($testFileSetupDir)) {
+            $fs = new Filesystem();
+            $fs->copy($testFileSetupDir, $this->testDir);
+        }
+
+        $env = array(
+            'COMPOSER_HOME' => $this->testDir.'home',
+            'COMPOSER_CACHE_DIR' => $this->testDir.'cache',
+        );
 
         $cmd = 'php '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
-        $proc = new Process($cmd, __DIR__.'/Fixtures/functional', null, null, 300);
-        $exitcode = $proc->run();
+        $proc = new Process($cmd, $this->testDir, $env, null, 300);
+        $output = '';
+
+        $exitcode = $proc->run(function ($type, $buffer) use (&$output) {
+            $output .= $buffer;
+        });
 
         if (isset($testData['EXPECT'])) {
-            $this->assertEquals($testData['EXPECT'], $this->cleanOutput($proc->getOutput()), 'Error Output: '.$proc->getErrorOutput());
+            $output = trim($this->cleanOutput($output));
+            $expected = $testData['EXPECT'];
+
+            $line = 1;
+            for ($i = 0, $j = 0; $i < strlen($expected);) {
+                if ($expected[$i] === "\n") {
+                    $line++;
+                }
+                if ($expected[$i] === '%') {
+                    preg_match('{%(.+?)%}', substr($expected, $i), $match);
+                    $regex = $match[1];
+
+                    if (preg_match('{'.$regex.'}', substr($output, $j), $match)) {
+                        $i += strlen($regex) + 2;
+                        $j += strlen($match[0]);
+                        continue;
+                    } else {
+                        $this->fail(
+                            'Failed to match pattern '.$regex.' at line '.$line.' / abs offset '.$i.': '
+                            .substr($output, $j, min(strpos($output, "\n", $j) - $j, 100)).PHP_EOL.PHP_EOL.
+                            'Output:'.PHP_EOL.$output
+                        );
+                    }
+                }
+                if ($expected[$i] !== $output[$j]) {
+                    $this->fail(
+                        'Output does not match expectation at line '.$line.' / abs offset '.$i.': '.PHP_EOL
+                        .'-'.substr($expected, $i, min(strpos($expected, "\n", $i) - $i, 100)).PHP_EOL
+                        .'+'.substr($output, $j, min(strpos($output, "\n", $j) - $j, 100)).PHP_EOL.PHP_EOL
+                        .'Output:'.PHP_EOL.$output
+                    );
+                }
+                $i++;
+                $j++;
+            }
         }
         if (isset($testData['EXPECT-REGEX'])) {
-            $this->assertRegExp($testData['EXPECT-REGEX'], $this->cleanOutput($proc->getOutput()), 'Error Output: '.$proc->getErrorOutput());
+            $this->assertRegExp($testData['EXPECT-REGEX'], $this->cleanOutput($output));
         }
-        if (isset($testData['EXPECT-ERROR'])) {
-            $this->assertEquals($testData['EXPECT-ERROR'], $this->cleanOutput($proc->getErrorOutput()));
-        }
-        if (isset($testData['EXPECT-ERROR-REGEX'])) {
-            $this->assertRegExp($testData['EXPECT-ERROR-REGEX'], $this->cleanOutput($proc->getErrorOutput()));
+        if (isset($testData['EXPECT-REGEXES'])) {
+            $cleanOutput = $this->cleanOutput($output);
+            foreach (explode("\n", $testData['EXPECT-REGEXES']) as $regex) {
+                $this->assertRegExp($regex, $cleanOutput, 'Output: '.$output);
+            }
         }
         if (isset($testData['EXPECT-EXIT-CODE'])) {
             $this->assertSame($testData['EXPECT-EXIT-CODE'], $exitcode);
@@ -132,7 +173,7 @@ class AllFunctionalTest extends TestCase
     {
         $tests = array();
         foreach (Finder::create()->in(__DIR__.'/Fixtures/functional')->name('*.test')->files() as $file) {
-            $tests[] = array($file->getRealPath());
+            $tests[basename($file)] = array($file->getRealPath());
         }
 
         return $tests;
@@ -143,23 +184,6 @@ class AllFunctionalTest extends TestCase
         $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), null, PREG_SPLIT_DELIM_CAPTURE);
         $data = array();
         $section = null;
-
-        $testDir = self::getUniqueTmpDirectory();
-        $this->testDir = $testDir;
-        $varRegex = '#%([a-zA-Z_-]+)%#';
-        $variableReplacer = function ($match) use (&$data, $testDir) {
-            list(, $var) = $match;
-
-            switch ($var) {
-                case 'testDir':
-                    $data['test_dir'] = $testDir;
-
-                    return $testDir;
-
-                default:
-                    throw new \InvalidArgumentException(sprintf('Unknown variable "%s". Supported variables: "testDir"', $var));
-            }
-        };
 
         foreach ($tokens as $token) {
             if ('' === $token && null === $section) {
@@ -176,24 +200,23 @@ class AllFunctionalTest extends TestCase
 
             // Allow sections to validate, or modify their section data.
             switch ($section) {
-                case 'RUN':
-                    $sectionData = preg_replace_callback($varRegex, $variableReplacer, $sectionData);
-                    break;
-
                 case 'EXPECT-EXIT-CODE':
                     $sectionData = (int) $sectionData;
                     break;
 
+                case 'RUN':
                 case 'EXPECT':
                 case 'EXPECT-REGEX':
-                case 'EXPECT-ERROR':
-                case 'EXPECT-ERROR-REGEX':
-                    $sectionData = preg_replace_callback($varRegex, $variableReplacer, $sectionData);
+                case 'EXPECT-REGEXES':
+                    $sectionData = trim($sectionData);
+                    break;
+
+                case 'TEST':
                     break;
 
                 default:
                     throw new \RuntimeException(sprintf(
-                        'Unknown section "%s". Allowed sections: "RUN", "EXPECT", "EXPECT-ERROR", "EXPECT-EXIT-CODE", "EXPECT-REGEX", "EXPECT-ERROR-REGEX". '
+                        'Unknown section "%s". Allowed sections: "RUN", "EXPECT", "EXPECT-EXIT-CODE", "EXPECT-REGEX", "EXPECT-REGEXES". '
                        .'Section headers must be written as "--HEADER_NAME--".',
                         $section
                     ));
@@ -207,8 +230,8 @@ class AllFunctionalTest extends TestCase
         if (!isset($data['RUN'])) {
             throw new \RuntimeException('The test file must have a section named "RUN".');
         }
-        if (!isset($data['EXPECT']) && !isset($data['EXPECT-ERROR']) && !isset($data['EXPECT-REGEX']) && !isset($data['EXPECT-ERROR-REGEX'])) {
-            throw new \RuntimeException('The test file must have a section named "EXPECT", "EXPECT-ERROR", "EXPECT-REGEX", or "EXPECT-ERROR-REGEX".');
+        if (!isset($data['EXPECT']) && !isset($data['EXPECT-REGEX']) && !isset($data['EXPECT-REGEXES'])) {
+            throw new \RuntimeException('The test file must have a section named "EXPECT", "EXPECT-REGEX", or "EXPECT-REGEXES".');
         }
 
         return $data;

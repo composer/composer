@@ -295,7 +295,7 @@ class Factory
                 } else {
                     $message = 'Composer could not find the config file: '.$localConfig;
                 }
-                $instructions = 'To initialize a project, please create a composer.json file as described in the https://getcomposer.org/ "Getting Started" section';
+                $instructions = $fullLoad ? 'To initialize a project, please create a composer.json file as described in the https://getcomposer.org/ "Getting Started" section' : '';
                 throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
             }
 
@@ -315,7 +315,7 @@ class Factory
         $config = static::createConfig($io, $cwd);
         $config->merge($localConfig);
         if (isset($composerFile)) {
-            $io->writeError('Loading config file ' . $composerFile, true, IOInterface::DEBUG);
+            $io->writeError('Loading config file ' . $composerFile .' ('.realpath($composerFile).')', true, IOInterface::DEBUG);
             $config->setConfigSource(new JsonConfigSource(new JsonFile(realpath($composerFile), null, $io)));
 
             $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json', null, $io);

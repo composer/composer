@@ -9,8 +9,9 @@
             "validator"
         ],
         "homepage": "",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "dev-main",
+        "version_normalized": "dev-main",
+        "default-branch": true,
         "license": [
             "MIT"
         ],

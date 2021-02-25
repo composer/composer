@@ -1,4 +1,4 @@
 --RUN--
-create-project --repository=packages.json -v seld/jsonlint %testDir% dev-master
---EXPECT-ERROR-REGEX--
-{^Installing seld/jsonlint \(dev-master [a-f0-9]{40}\)}m
+create-project --repository=packages.json -v seld/jsonlint foo dev-main
+--EXPECT-REGEX--
+{^Installing seld/jsonlint \(dev-main [a-f0-9]{40}\)}m

@@ -492,9 +492,15 @@ class InstallationManager
             $promise = $installer->update($repo, $initial, $target);
             $this->markForNotification($target);
         } else {
-            $this->getInstaller($initialType)->uninstall($repo, $initial);
+            $promise = $this->getInstaller($initialType)->uninstall($repo, $initial);
+            if (!$promise instanceof PromiseInterface) {
+                $promise = \React\Promise\resolve();
+            }
+
             $installer = $this->getInstaller($targetType);
-            $promise = $installer->install($repo, $target);
+            $promise->then(function () use ($installer, $repo, $target) {
+                return $installer->install($repo, $target);
+            });
         }
 
         return $promise;

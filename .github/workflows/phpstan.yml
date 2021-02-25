@@ -52,5 +52,5 @@ jobs:
       - name: Run PHPStan
         # Locked to phpunit 7.5 here as newer ones have void return types which break inheritance
         run: |
-          bin/composer require --dev phpstan/phpstan:^0.12.42 phpunit/phpunit:^7.5.20 --with-all-dependencies ${{ env.COMPOSER_FLAGS }}
+          bin/composer require --dev phpstan/phpstan:^0.12.69 phpunit/phpunit:^7.5.20 --with-all-dependencies ${{ env.COMPOSER_FLAGS }}
           vendor/bin/phpstan analyse --configuration=phpstan/config.neon

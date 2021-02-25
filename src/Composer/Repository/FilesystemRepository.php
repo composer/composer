@@ -124,96 +124,121 @@ class FilesystemRepository extends WritableArrayRepository
         $this->file->write($data);
 
         if ($this->dumpVersions) {
-            $versions = array('versions' => array());
-            $packages = $this->getPackages();
-            $packages[] = $rootPackage = $this->rootPackage;
-            while ($rootPackage instanceof AliasPackage) {
-                $rootPackage = $rootPackage->getAliasOf();
-                $packages[] = $rootPackage;
-            }
-
-            // add real installed packages
-            foreach ($packages as $package) {
-                if ($package instanceof AliasPackage) {
-                    continue;
-                }
-
-                $reference = null;
-                if ($package->getInstallationSource()) {
-                    $reference = $package->getInstallationSource() === 'source' ? $package->getSourceReference() : $package->getDistReference();
-                }
-                if (null === $reference) {
-                    $reference = ($package->getSourceReference() ?: $package->getDistReference()) ?: null;
-                }
-
-                $versions['versions'][$package->getName()] = array(
-                    'pretty_version' => $package->getPrettyVersion(),
-                    'version' => $package->getVersion(),
-                    'aliases' => array(),
-                    'reference' => $reference,
-                );
-                if ($package instanceof RootPackageInterface) {
-                    $versions['root'] = $versions['versions'][$package->getName()];
-                    $versions['root']['name'] = $package->getName();
-                }
-            }
-
-            // add provided/replaced packages
-            foreach ($packages as $package) {
-                foreach ($package->getReplaces() as $replace) {
-                    // exclude platform replaces as when they are really there we can not check for their presence
-                    if (PlatformRepository::isPlatformPackage($replace->getTarget())) {
-                        continue;
-                    }
-                    $replaced = $replace->getPrettyConstraint();
-                    if ($replaced === 'self.version') {
-                        $replaced = $package->getPrettyVersion();
-                    }
-                    if (!isset($versions['versions'][$replace->getTarget()]['replaced']) || !in_array($replaced, $versions['versions'][$replace->getTarget()]['replaced'], true)) {
-                        $versions['versions'][$replace->getTarget()]['replaced'][] = $replaced;
-                    }
-                }
-                foreach ($package->getProvides() as $provide) {
-                    // exclude platform provides as when they are really there we can not check for their presence
-                    if (PlatformRepository::isPlatformPackage($provide->getTarget())) {
-                        continue;
-                    }
-                    $provided = $provide->getPrettyConstraint();
-                    if ($provided === 'self.version') {
-                        $provided = $package->getPrettyVersion();
-                    }
-                    if (!isset($versions['versions'][$provide->getTarget()]['provided']) || !in_array($provided, $versions['versions'][$provide->getTarget()]['provided'], true)) {
-                        $versions['versions'][$provide->getTarget()]['provided'][] = $provided;
-                    }
-                }
-            }
-
-            // add aliases
-            foreach ($packages as $package) {
-                if (!$package instanceof AliasPackage) {
-                    continue;
-                }
-                $versions['versions'][$package->getName()]['aliases'][] = $package->getPrettyVersion();
-                if ($package instanceof RootPackageInterface) {
-                    $versions['root']['aliases'][] = $package->getPrettyVersion();
-                }
-            }
-
-            ksort($versions['versions']);
-            ksort($versions);
+            $versions = $this->generateInstalledVersions($installationManager, $devMode);
 
             $fs->filePutContentsIfModified($repoDir.'/installed.php', '<?php return '.var_export($versions, true).';'."\n");
             $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
+            // while not strictly needed since https://github.com/composer/composer/pull/9635 - we keep this for BC
+            // and overall broader compatibility with people that may not use Composer's ClassLoader. They can
+            // simply include InstalledVersions.php manually and have it working in a basic way.
             $installedVersionsClass = str_replace('private static $installed;', 'private static $installed = '.var_export($versions, true).';', $installedVersionsClass);
             $fs->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
 
-            // make sure the InstalledVersions class is loaded and has the latest state
-            // not using the autoloader here to avoid loading the one from Composer's vendor dir
-            if (!class_exists('Composer\InstalledVersions', false)) {
-                include $repoDir.'/InstalledVersions.php';
-            } else {
-                \Composer\InstalledVersions::reload($versions);
+            \Composer\InstalledVersions::reload($versions);
+        }
+    }
+
+    /**
+     * @return ?array
+     */
+    private function generateInstalledVersions(InstallationManager $installationManager, $devMode)
+    {
+        if (!$this->dumpVersions) {
+            return null;
+        }
+
+        $devPackages = array_flip($this->devPackageNames);
+        $versions = array('versions' => array());
+        $packages = $this->getPackages();
+        $packages[] = $rootPackage = $this->rootPackage;
+        while ($rootPackage instanceof AliasPackage) {
+            $rootPackage = $rootPackage->getAliasOf();
+            $packages[] = $rootPackage;
+        }
+
+        // add real installed packages
+        foreach ($packages as $package) {
+            if ($package instanceof AliasPackage) {
+                continue;
+            }
+
+            $reference = null;
+            if ($package->getInstallationSource()) {
+                $reference = $package->getInstallationSource() === 'source' ? $package->getSourceReference() : $package->getDistReference();
+            }
+            if (null === $reference) {
+                $reference = ($package->getSourceReference() ?: $package->getDistReference()) ?: null;
+            }
+
+            $versions['versions'][$package->getName()] = array(
+                'pretty_version' => $package->getPrettyVersion(),
+                'version' => $package->getVersion(),
+                'aliases' => array(),
+                'reference' => $reference,
+                'dev-requirement' => isset($devPackages[$package->getName()]),
+            );
+            if ($package instanceof RootPackageInterface) {
+                $versions['root'] = $versions['versions'][$package->getName()];
+                $versions['root']['name'] = $package->getName();
+                $versions['root']['dev-requirement'] = $devMode;
             }
         }
+
+        // add provided/replaced packages
+        foreach ($packages as $package) {
+            $isDevPackage = isset($devPackages[$package->getName()]);
+            foreach ($package->getReplaces() as $replace) {
+                // exclude platform replaces as when they are really there we can not check for their presence
+                if (PlatformRepository::isPlatformPackage($replace->getTarget())) {
+                    continue;
+                }
+                if (!isset($versions['versions'][$replace->getTarget()]['dev-requirement'])) {
+                    $versions['versions'][$replace->getTarget()]['dev-requirement'] = $isDevPackage;
+                } elseif (!$isDevPackage) {
+                    $versions['versions'][$replace->getTarget()]['dev-requirement'] = false;
+                }
+                $replaced = $replace->getPrettyConstraint();
+                if ($replaced === 'self.version') {
+                    $replaced = $package->getPrettyVersion();
+                }
+                if (!isset($versions['versions'][$replace->getTarget()]['replaced']) || !in_array($replaced, $versions['versions'][$replace->getTarget()]['replaced'], true)) {
+                    $versions['versions'][$replace->getTarget()]['replaced'][] = $replaced;
+                }
+            }
+            foreach ($package->getProvides() as $provide) {
+                // exclude platform provides as when they are really there we can not check for their presence
+                if (PlatformRepository::isPlatformPackage($provide->getTarget())) {
+                    continue;
+                }
+                if (!isset($versions['versions'][$provide->getTarget()]['dev-requirement'])) {
+                    $versions['versions'][$provide->getTarget()]['dev-requirement'] = $isDevPackage;
+                } elseif (!$isDevPackage) {
+                    $versions['versions'][$provide->getTarget()]['dev-requirement'] = false;
+                }
+                $provided = $provide->getPrettyConstraint();
+                if ($provided === 'self.version') {
+                    $provided = $package->getPrettyVersion();
+                }
+                if (!isset($versions['versions'][$provide->getTarget()]['provided']) || !in_array($provided, $versions['versions'][$provide->getTarget()]['provided'], true)) {
+                    $versions['versions'][$provide->getTarget()]['provided'][] = $provided;
+                }
+            }
+        }
+
+        // add aliases
+        foreach ($packages as $package) {
+            if (!$package instanceof AliasPackage) {
+                continue;
+            }
+            $versions['versions'][$package->getName()]['aliases'][] = $package->getPrettyVersion();
+            if ($package instanceof RootPackageInterface) {
+                $versions['root']['aliases'][] = $package->getPrettyVersion();
+            }
+        }
+
+        ksort($versions['versions']);
+        ksort($versions);
+
+        return $versions;
     }
 }

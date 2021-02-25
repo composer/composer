@@ -43,6 +43,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Package\Package;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositorySet;
+use Composer\Repository\CompositeRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Locker;
 use Composer\Package\RootPackageInterface;
@@ -300,7 +301,6 @@ class Installer
                 $this->io->writeError('<info>Generating autoload files</info>');
             }
 
-            $this->autoloadGenerator->setDevMode($this->devMode);
             $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
             $this->autoloadGenerator->setApcu($this->apcuAutoloader, $this->apcuAutoloaderPrefix);
             $this->autoloadGenerator->setRunScripts($this->runScripts);
@@ -706,7 +706,7 @@ class Installer
         return 0;
     }
 
-    private function createPlatformRepo($forUpdate)
+    protected function createPlatformRepo($forUpdate)
     {
         if ($forUpdate) {
             $platformOverrides = $this->config->get('platform') ?: array();
@@ -766,6 +766,21 @@ class Installer
         $repositorySet->addRepository(new RootPackageRepository($this->fixedRootPackage));
         $repositorySet->addRepository($platformRepo);
         if ($this->additionalFixedRepository) {
+            // allow using installed repos if needed to avoid warnings about installed repositories being used in the RepositorySet
+            // see https://github.com/composer/composer/pull/9574
+            $additionalFixedRepositories = $this->additionalFixedRepository;
+            if ($additionalFixedRepositories instanceof CompositeRepository) {
+                $additionalFixedRepositories = $additionalFixedRepositories->getRepositories();
+            } else {
+                $additionalFixedRepositories = array($additionalFixedRepositories);
+            }
+            foreach ($additionalFixedRepositories as $additionalFixedRepository) {
+                if ($additionalFixedRepository instanceof InstalledRepository || $additionalFixedRepository instanceof InstalledRepositoryInterface) {
+                    $repositorySet->allowInstalledRepositories();
+                    break;
+                }
+            }
+
             $repositorySet->addRepository($this->additionalFixedRepository);
         }
 

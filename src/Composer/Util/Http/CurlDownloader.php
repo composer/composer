@@ -321,12 +321,12 @@ class CurlDownloader
                         rewind($job['bodyHandle']);
                         $contents = stream_get_contents($job['bodyHandle']);
                     }
-                    $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
+                    $response = new CurlResponse(array('url' => $progress['url']), $statusCode, $headers, $contents, $progress);
                     $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
                 } else {
                     rewind($job['bodyHandle']);
                     $contents = stream_get_contents($job['bodyHandle']);
-                    $response = new Response(array('url' => $progress['url']), $statusCode, $headers, $contents);
+                    $response = new CurlResponse(array('url' => $progress['url']), $statusCode, $headers, $contents, $progress);
                     $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
                 }
                 fclose($job['bodyHandle']);
@@ -373,6 +373,9 @@ class CurlDownloader
                 }
                 if ($e instanceof TransportException && $response) {
                     $e->setResponse($response->getBody());
+                }
+                if ($e instanceof TransportException && $progress) {
+                    $e->setResponseInfo($progress);
                 }
 
                 if (is_resource($job['headerHandle'])) {
@@ -511,7 +514,12 @@ class CurlDownloader
             @unlink($job['filename'].'~');
         }
 
-        return new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')', $response->getStatusCode());
+        $details = '';
+        if ($response->getHeader('content-type') === 'application/json') {
+            $details = ':'.PHP_EOL.substr($response->getBody(), 0, 200).(strlen($response->getBody()) > 200 ? '...' : '');
+        }
+
+        return new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')' . $details, $response->getStatusCode());
     }
 
     private function checkCurlResult($code)

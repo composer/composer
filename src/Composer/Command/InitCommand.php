@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\Package;
+use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
 use Composer\Repository\CompositeRepository;
@@ -23,6 +24,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositorySet;
 use Composer\Util\ProcessExecutor;
+use Composer\Semver\Constraint\Constraint;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -745,9 +747,9 @@ EOT
             }
 
             // Check whether the PHP version was the problem
-            if (true !== $ignorePlatformReqs && $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, true)) {
+            if (true !== $ignorePlatformReqs && ($candidate = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, true))) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Package %s%s has a PHP requirement incompatible with your PHP version, PHP extensions and Composer version',
+                    'Package %s%s has a PHP requirement incompatible with your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
                     $name,
                     $requiredVersion ? ' at version '.$requiredVersion : ''
                 ));
@@ -783,9 +785,9 @@ EOT
                 ));
             }
             // Check whether the PHP version was the problem for all versions
-            if (true !== $ignorePlatformReqs && $versionSelector->findBestCandidate($name, null, $preferredStability, true)) {
+            if (true !== $ignorePlatformReqs && ($candidate = $versionSelector->findBestCandidate($name, null, $preferredStability, true))) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Could not find package %s in any version matching your PHP version, PHP extensions and Composer version',
+                    'Could not find package %s in any version matching your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
                     $name
                 ));
             }
@@ -811,6 +813,36 @@ EOT
             $package->getPrettyName(),
             $fixed ? $package->getPrettyVersion() : $versionSelector->findRecommendedRequireVersion($package),
         );
+    }
+
+    private function getPlatformExceptionDetails(PackageInterface $candidate, PlatformRepository $platformRepo = null)
+    {
+        $details = array();
+        if (!$platformRepo) {
+            return '';
+        }
+
+        foreach ($candidate->getRequires() as $link) {
+            $platformPkg = $platformRepo->findPackage($link->getTarget(), '*');
+            if (!$platformPkg) {
+                $details[] = $candidate->getName().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' but it is not present.';
+                continue;
+            }
+            if (!$link->getConstraint()->matches(new Constraint('==', $platformPkg->getVersion()))) {
+                $platformPkgVersion = $platformPkg->getPrettyVersion();
+                $platformExtra = $platformPkg->getExtra();
+                if (isset($platformExtra['config.platform'])) {
+                    $platformPkgVersion .= ' ('.$platformPkg->getDescription().')';
+                }
+                $details[] = $candidate->getName().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' which does not match your installed version '.$platformPkgVersion.'.';
+            }
+        }
+
+        if (!$details) {
+            return '';
+        }
+
+        return ':'.PHP_EOL.'  - ' . implode(PHP_EOL.'  - ', $details);
     }
 
     private function findSimilar($package)

@@ -61,7 +61,7 @@ class ApplicationTest extends TestCase
 
             $outputMock->expects($this->at($index++))
                 ->method("write")
-                ->with($this->equalTo('<warning>You are running composer with Xdebug enabled. This has a major impact on runtime performance. See https://getcomposer.org/xdebug</warning>'));
+                ->with($this->equalTo('<warning>Composer is operating slower than normal because you have Xdebug enabled. See https://getcomposer.org/xdebug</warning>'));
         }
 
         $outputMock->expects($this->at($index++))
@@ -70,7 +70,7 @@ class ApplicationTest extends TestCase
 
         $outputMock->expects($this->at($index++))
             ->method("write")
-            ->with($this->equalTo(sprintf('<warning>Warning: This development build of composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF'])));
+            ->with($this->equalTo(sprintf('<warning>Warning: This development build of Composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF'])));
 
         if (!defined('COMPOSER_DEV_WARNING_TIME')) {
             define('COMPOSER_DEV_WARNING_TIME', time() - 1);

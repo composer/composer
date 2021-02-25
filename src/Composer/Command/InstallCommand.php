@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Util\HttpDownloader;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -92,6 +93,10 @@ EOT
         }
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+
+        if ((!$composer->getLocker() || !$composer->getLocker()->isLocked()) && !HttpDownloader::isCurlEnabled()) {
+            $io->writeError('<warning>Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled.</warning>');
+        }
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'install', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);

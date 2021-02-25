@@ -30,6 +30,11 @@ class SvnDownloader extends VcsDownloader
      */
     protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
     {
+        SvnUtil::cleanEnv();
+        $util = new SvnUtil($url, $this->io, $this->config, $this->process);
+        if (null === $util->binaryVersion()) {
+            throw new \RuntimeException('svn was not found in your PATH, skipping source download');
+        }
     }
 
     /**

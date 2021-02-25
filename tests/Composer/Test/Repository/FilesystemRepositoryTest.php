@@ -130,6 +130,7 @@ class FilesystemRepositoryTest extends TestCase
         $rootPackage = $this->getAliasPackage($rootPackage, '1.10.x-dev');
 
         $repository = new FilesystemRepository($json, true, $rootPackage);
+        $repository->setDevPackageNames(array('c/c'));
         $pkg = $this->getPackage('a/provider', '1.1');
         $this->configureLinks($pkg, array('provide' => array('foo/impl' => '^1.1', 'foo/impl2' => '2.0')));
         $pkg->setDistReference('distref-as-no-source');
