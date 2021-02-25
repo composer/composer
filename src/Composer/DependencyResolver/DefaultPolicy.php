@@ -12,9 +12,9 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 
 /**
@@ -88,7 +88,7 @@ class DefaultPolicy implements PolicyInterface
     /**
      * @protected
      */
-    public function compareByPriority(Pool $pool, PackageInterface $a, PackageInterface $b, $requiredPackage = null, $ignoreReplace = false)
+    public function compareByPriority(Pool $pool, BasePackage $a, BasePackage $b, $requiredPackage = null, $ignoreReplace = false)
     {
         // prefer aliases to the original package
         if ($a->getName() === $b->getName()) {
@@ -139,11 +139,11 @@ class DefaultPolicy implements PolicyInterface
      * Replace constraints are ignored. This method should only be used for
      * prioritisation, not for actual constraint verification.
      *
-     * @param  PackageInterface $source
-     * @param  PackageInterface $target
+     * @param  BasePackage $source
+     * @param  BasePackage $target
      * @return bool
      */
-    protected function replaces(PackageInterface $source, PackageInterface $target)
+    protected function replaces(BasePackage $source, BasePackage $target)
     {
         foreach ($source->getReplaces() as $link) {
             if ($link->getTarget() === $target->getName()

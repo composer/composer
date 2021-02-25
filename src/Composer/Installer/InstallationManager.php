@@ -172,12 +172,12 @@ class InstallationManager
     /**
      * Executes solver operation.
      *
-     * @param RepositoryInterface  $repo       repository in which to add/remove/update packages
-     * @param OperationInterface[] $operations operations to execute
-     * @param bool                 $devMode    whether the install is being run in dev mode
-     * @param bool                 $runScripts whether to dispatch script events
+     * @param InstalledRepositoryInterface $repo       repository in which to add/remove/update packages
+     * @param OperationInterface[]         $operations operations to execute
+     * @param bool                         $devMode    whether the install is being run in dev mode
+     * @param bool                         $runScripts whether to dispatch script events
      */
-    public function execute(RepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true)
+    public function execute(InstalledRepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true)
     {
         $cleanupPromises = array();
 
@@ -243,8 +243,8 @@ class InstallationManager
             $batches = array();
             $batch = array();
             foreach ($operations as $index => $operation) {
-                if (in_array($operation->getOperationType(), array('update', 'install'), true)) {
-                    $package = $operation->getOperationType() === 'update' ? $operation->getTargetPackage() : $operation->getPackage();
+                if ($operation instanceof UpdateOperation || $operation instanceof InstallOperation) {
+                    $package = $operation instanceof UpdateOperation ? $operation->getTargetPackage() : $operation->getPackage();
                     if ($package->getType() === 'composer-plugin' && ($extra = $package->getExtra()) && isset($extra['plugin-modifies-downloads']) && $extra['plugin-modifies-downloads'] === true) {
                         if ($batch) {
                             $batches[] = $batch;
@@ -272,7 +272,7 @@ class InstallationManager
                 pcntl_signal(SIGINT, $prevHandler);
             }
             if ($handleInterruptsWindows) {
-                sapi_windows_set_ctrl_handler($prevHandler, false);
+                sapi_windows_set_ctrl_handler($windowsHandler, false);
             }
 
             throw $e;
@@ -282,7 +282,7 @@ class InstallationManager
             pcntl_signal(SIGINT, $prevHandler);
         }
         if ($handleInterruptsWindows) {
-            sapi_windows_set_ctrl_handler($prevHandler, false);
+            sapi_windows_set_ctrl_handler($windowsHandler, false);
         }
 
         // do a last write so that we write the repository even if nothing changed
@@ -295,7 +295,7 @@ class InstallationManager
      * @param array $operations    List of operations to execute in this batch
      * @param array $allOperations Complete list of operations to be executed in the install job, used for event listeners
      */
-    private function downloadAndExecuteBatch(RepositoryInterface $repo, array $operations, array &$cleanupPromises, $devMode, $runScripts, array $allOperations)
+    private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, $devMode, $runScripts, array $allOperations)
     {
         $promises = array();
 
@@ -372,7 +372,7 @@ class InstallationManager
      * @param array $operations    List of operations to execute in this batch
      * @param array $allOperations Complete list of operations to be executed in the install job, used for event listeners
      */
-    private function executeBatch(RepositoryInterface $repo, array $operations, array $cleanupPromises, $devMode, $runScripts, array $allOperations)
+    private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, $devMode, $runScripts, array $allOperations)
     {
         $promises = array();
         $postExecCallbacks = array();
@@ -460,10 +460,10 @@ class InstallationManager
     /**
      * Executes install operation.
      *
-     * @param RepositoryInterface $repo      repository in which to check
-     * @param InstallOperation    $operation operation instance
+     * @param InstalledRepositoryInterface $repo      repository in which to check
+     * @param InstallOperation             $operation operation instance
      */
-    public function install(RepositoryInterface $repo, InstallOperation $operation)
+    public function install(InstalledRepositoryInterface $repo, InstallOperation $operation)
     {
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
@@ -476,10 +476,10 @@ class InstallationManager
     /**
      * Executes update operation.
      *
-     * @param RepositoryInterface $repo      repository in which to check
-     * @param UpdateOperation     $operation operation instance
+     * @param InstalledRepositoryInterface $repo      repository in which to check
+     * @param UpdateOperation              $operation operation instance
      */
-    public function update(RepositoryInterface $repo, UpdateOperation $operation)
+    public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation)
     {
         $initial = $operation->getInitialPackage();
         $target = $operation->getTargetPackage();
@@ -509,10 +509,10 @@ class InstallationManager
     /**
      * Uninstalls package.
      *
-     * @param RepositoryInterface $repo      repository in which to check
-     * @param UninstallOperation  $operation operation instance
+     * @param InstalledRepositoryInterface $repo      repository in which to check
+     * @param UninstallOperation           $operation operation instance
      */
-    public function uninstall(RepositoryInterface $repo, UninstallOperation $operation)
+    public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation)
     {
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
@@ -523,10 +523,10 @@ class InstallationManager
     /**
      * Executes markAliasInstalled operation.
      *
-     * @param RepositoryInterface         $repo      repository in which to check
-     * @param MarkAliasInstalledOperation $operation operation instance
+     * @param InstalledRepositoryInterface $repo      repository in which to check
+     * @param MarkAliasInstalledOperation  $operation operation instance
      */
-    public function markAliasInstalled(RepositoryInterface $repo, MarkAliasInstalledOperation $operation)
+    public function markAliasInstalled(InstalledRepositoryInterface $repo, MarkAliasInstalledOperation $operation)
     {
         $package = $operation->getPackage();
 
@@ -538,10 +538,10 @@ class InstallationManager
     /**
      * Executes markAlias operation.
      *
-     * @param RepositoryInterface           $repo      repository in which to check
+     * @param InstalledRepositoryInterface  $repo      repository in which to check
      * @param MarkAliasUninstalledOperation $operation operation instance
      */
-    public function markAliasUninstalled(RepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
+    public function markAliasUninstalled(InstalledRepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
     {
         $package = $operation->getPackage();
 

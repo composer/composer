@@ -23,7 +23,7 @@ use Composer\Repository\PlatformRepository;
 abstract class BasePackage implements PackageInterface
 {
     /**
-     * @phpstan-var array<string, array{description: string, method: Link::TYPE_*}>
+     * @psalm-var array<string, array{description: string, method: Link::TYPE_*}>
      */
     public static $supportedLinkTypes = array(
         'require' => array('description' => 'requires', 'method' => Link::TYPE_REQUIRE),
@@ -50,16 +50,16 @@ abstract class BasePackage implements PackageInterface
     /**
      * READ-ONLY: The package id, public for fast access in dependency solver
      * @var int
+     * @internal
+     * @readonly
      */
     public $id;
     /** @var string */
     protected $name;
     /** @var string */
     protected $prettyName;
-    /** @var RepositoryInterface */
-    protected $repository;
-    /** @var array */
-    protected $transportOptions = array();
+    /** @var ?RepositoryInterface */
+    protected $repository = null;
 
     /**
      * All descendants' constructors should call this parent constructor
@@ -144,24 +144,6 @@ abstract class BasePackage implements PackageInterface
     public function getRepository()
     {
         return $this->repository;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getTransportOptions()
-    {
-        return $this->transportOptions;
-    }
-
-    /**
-     * Configures the list of options to download package dist files
-     *
-     * @param array $options
-     */
-    public function setTransportOptions(array $options)
-    {
-        $this->transportOptions = $options;
     }
 
     /**

@@ -74,6 +74,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         } elseif (null === $gitVersion) {
             throw new \RuntimeException('git was not found in your PATH, skipping source download');
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -129,6 +131,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             }
             $package->setSourceReference($newRef);
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -192,6 +196,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         if ($updateOriginUrl) {
             $this->updateOriginUrl($path, $target->getSourceUrl());
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -201,7 +207,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     {
         GitUtil::cleanEnv();
         if (!$this->hasMetadataRepository($path)) {
-            return;
+            return null;
         }
 
         $command = 'git status --porcelain --untracked-files=no';
@@ -217,7 +223,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
         if (!$this->hasMetadataRepository($path)) {
-            return;
+            return null;
         }
 
         $command = 'git show-ref --head -d';
@@ -228,13 +234,13 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $refs = trim($output);
         if (!preg_match('{^([a-f0-9]+) HEAD$}mi', $refs, $match)) {
             // could not match the HEAD for some reason
-            return;
+            return null;
         }
 
         $headRef = $match[1];
         if (!preg_match_all('{^'.$headRef.' refs/heads/(.+)$}mi', $refs, $matches)) {
             // not on a branch, we are either on a not-modified tag or some sort of detached head, so skip this
-            return;
+            return null;
         }
 
         $candidateBranches = $matches[1];

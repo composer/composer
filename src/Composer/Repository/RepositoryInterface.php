@@ -70,16 +70,12 @@ interface RepositoryInterface extends \Countable
      * - The packages returned are the packages found which match the constraints, acceptable stability and stability flags provided
      * - The namesFound returned are names which should be considered as canonically found in this repository, that should not be looked up in any further lower priority repositories
      *
-     * @param ConstraintInterface[] $packageNameMap        package names pointing to constraints
-     * @param int[]                 $acceptableStabilities array of stability => BasePackage::STABILITY_* value
-     * @psalm-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
-     * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
-     * @psalm-param array<string, BasePackage::STABILITY_*> $stabilityFlags
-     * @param array[] $alreadyLoaded an array of package name => package version => package
-     * @psalm-param array<string, array<string, PackageInterface>> $alreadyLoaded
+     * @param ConstraintInterface[]                          $packageNameMap        package names pointing to constraints
+     * @param array<string, BasePackage::STABILITY_*>        $acceptableStabilities array of stability => BasePackage::STABILITY_* value
+     * @param array<string, BasePackage::STABILITY_*>        $stabilityFlags  an array of package name => BasePackage::STABILITY_* value
+     * @param array<string, array<string, PackageInterface>> $alreadyLoaded an array of package name => package version => package
      *
-     * @return array [namesFound => string[], packages => PackageInterface[]]
-     * @psalm-return array{namesFound: string[], packages: PackageInterface[]}
+     * @return array{namesFound: string[], packages: PackageInterface[]}
      */
     public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array());
 

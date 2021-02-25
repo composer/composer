@@ -57,9 +57,9 @@ class Package extends BasePackage
     protected $autoload = array();
     protected $devAutoload = array();
     protected $includePaths = array();
-    protected $archiveName;
-    protected $archiveExcludes = array();
     protected $isDefaultBranch = false;
+    /** @var array */
+    protected $transportOptions = array();
 
     /**
      * Creates a new in memory package.
@@ -125,7 +125,7 @@ class Package extends BasePackage
     public function getTargetDir()
     {
         if (null === $this->targetDir) {
-            return;
+            return null;
         }
 
         return ltrim(preg_replace('{ (?:^|[\\\\/]+) \.\.? (?:[\\\\/]+|$) (?:\.\.? (?:[\\\\/]+|$) )*}x', '/', $this->targetDir), '/');
@@ -228,7 +228,7 @@ class Package extends BasePackage
     }
 
     /**
-     * @param array|null $mirrors
+     * {@inheritDoc}
      */
     public function setSourceMirrors($mirrors)
     {
@@ -316,7 +316,7 @@ class Package extends BasePackage
     }
 
     /**
-     * @param array|null $mirrors
+     * {@inheritDoc}
      */
     public function setDistMirrors($mirrors)
     {
@@ -337,6 +337,22 @@ class Package extends BasePackage
     public function getDistUrls()
     {
         return $this->getUrls($this->distUrl, $this->distMirrors, $this->distReference, $this->distType, 'dist');
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getTransportOptions()
+    {
+        return $this->transportOptions;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setTransportOptions(array $options)
+    {
+        $this->transportOptions = $options;
     }
 
     /**
@@ -551,42 +567,6 @@ class Package extends BasePackage
     public function getNotificationUrl()
     {
         return $this->notificationUrl;
-    }
-
-    /**
-     * Sets default base filename for archive
-     *
-     * @param string $name
-     */
-    public function setArchiveName($name)
-    {
-        $this->archiveName = $name;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getArchiveName()
-    {
-        return $this->archiveName;
-    }
-
-    /**
-     * Sets a list of patterns to be excluded from archives
-     *
-     * @param array $excludes
-     */
-    public function setArchiveExcludes(array $excludes)
-    {
-        $this->archiveExcludes = $excludes;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getArchiveExcludes()
-    {
-        return $this->archiveExcludes;
     }
 
     /**

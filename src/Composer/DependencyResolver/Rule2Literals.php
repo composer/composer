@@ -12,7 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\PackageInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\Link;
 
 /**
@@ -27,7 +27,7 @@ class Rule2Literals extends Rule
      * @param int                   $literal1
      * @param int                   $literal2
      * @param int                   $reason     A RULE_* constant describing the reason for generating this rule
-     * @param Link|PackageInterface $reasonData
+     * @param Link|BasePackage $reasonData
      */
     public function __construct($literal1, $literal2, $reason, $reasonData)
     {

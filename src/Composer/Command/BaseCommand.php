@@ -212,6 +212,8 @@ abstract class BaseCommand extends Command
         if (method_exists($rendererStyle, 'setVerticalBorderChars')) {
             $rendererStyle->setVerticalBorderChars('');
         } else {
+            // TODO remove in composer 2.2
+            // @phpstan-ignore-next-line
             $rendererStyle->setVerticalBorderChar('');
         }
         $rendererStyle->setCellRowContentFormat('%s  ');

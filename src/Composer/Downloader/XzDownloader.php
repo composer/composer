@@ -28,7 +28,7 @@ class XzDownloader extends ArchiveDownloader
         $command = 'tar -xJf ' . ProcessExecutor::escape($file) . ' -C ' . ProcessExecutor::escape($path);
 
         if (0 === $this->process->execute($command, $ignoredOutput)) {
-            return;
+            return \React\Promise\resolve();
         }
 
         $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();

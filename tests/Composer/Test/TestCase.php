@@ -118,7 +118,7 @@ abstract class TestCase extends PolyfillTestCase
      *
      * @param string $executableName The name of the binary to test.
      *
-     * @throws \PHPUnit_Framework_SkippedTestError
+     * @throws \PHPUnit\Framework\SkippedTestError
      */
     protected function skipIfNotExecutable($executableName)
     {

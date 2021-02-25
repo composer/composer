@@ -154,7 +154,7 @@ class AuthHelper
         } else {
             // 404s are only handled for github
             if ($statusCode === 404) {
-                return;
+                return null;
             }
 
             // fail if the console is not interactive

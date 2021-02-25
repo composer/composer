@@ -112,8 +112,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         };
 
         $retries = 3;
-        $urls = $package->getDistUrls();
-        foreach ($urls as $index => $url) {
+        $distUrls = $package->getDistUrls();
+        /** @var array<array{base: string, processed: string, cacheKey: string}> $urls */
+        $urls = array();
+        foreach ($distUrls as $index => $url) {
             $processedUrl = $this->processUrl($package, $url);
             $urls[$index] = array(
                 'base' => $url,
@@ -140,6 +142,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $accept = null;
         $reject = null;
         $download = function () use ($io, $output, $httpDownloader, $cache, $cacheKeyGenerator, $eventDispatcher, $package, $fileName, &$urls, &$accept, &$reject) {
+            /** @var array{base: string, processed: string, cacheKey: string} $url */
             $url = reset($urls);
             $index = key($urls);
 
@@ -271,6 +274,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
+        return \React\Promise\resolve();
     }
 
     /**
@@ -300,6 +304,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 $this->filesystem->removeDirectory($dir);
             }
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -324,6 +330,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 }
             }
         }
+
+        return \React\Promise\resolve();
     }
 
     /**

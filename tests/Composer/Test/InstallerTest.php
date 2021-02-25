@@ -378,6 +378,7 @@ class InstallerTest extends TestCase
             $this->assertSame($expectInstalled, $actualInstalled);
         }
 
+        /** @var InstallationManagerMock $installationManager */
         $installationManager = $composer->getInstallationManager();
         $this->assertSame(rtrim($expect), implode("\n", $installationManager->getTrace()));
 

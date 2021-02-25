@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\Factory;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -31,6 +32,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Console\Helper\FormatterHelper;
 
 /**
  * @author Justin Rainbow <justin.rainbow@gmail.com>
@@ -172,6 +174,7 @@ EOT
     {
         $git = $this->getGitConfig();
         $io = $this->getIO();
+        /** @var FormatterHelper $formatter */
         $formatter = $this->getHelperSet()->get('formatter');
 
         // initialize repos if configured
@@ -831,7 +834,7 @@ EOT
             if (!$link->getConstraint()->matches(new Constraint('==', $platformPkg->getVersion()))) {
                 $platformPkgVersion = $platformPkg->getPrettyVersion();
                 $platformExtra = $platformPkg->getExtra();
-                if (isset($platformExtra['config.platform'])) {
+                if (isset($platformExtra['config.platform']) && $platformPkg instanceof CompletePackageInterface) {
                     $platformPkgVersion .= ' ('.$platformPkg->getDescription().')';
                 }
                 $details[] = $candidate->getName().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' which does not match your installed version '.$platformPkgVersion.'.';

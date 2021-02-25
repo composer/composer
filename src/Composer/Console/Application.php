@@ -44,7 +44,7 @@ use Composer\Exception\NoSslException;
 class Application extends BaseApplication
 {
     /**
-     * @var Composer
+     * @var ?Composer
      */
     protected $composer;
 

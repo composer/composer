@@ -23,13 +23,13 @@ class GitTest extends TestCase
 {
     /** @var Git */
     private $git;
-    /** @var IOInterface&\PHPUnit_Framework_MockObject_MockObject */
+    /** @var IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $io;
-    /** @var Config&\PHPUnit_Framework_MockObject_MockObject */
+    /** @var Config&\PHPUnit\Framework\MockObject\MockObject */
     private $config;
-    /** @var ProcessExecutor&\PHPUnit_Framework_MockObject_MockObject */
+    /** @var ProcessExecutor&\PHPUnit\Framework\MockObject\MockObject */
     private $process;
-    /** @var Filesystem&\PHPUnit_Framework_MockObject_MockObject */
+    /** @var Filesystem&\PHPUnit\Framework\MockObject\MockObject */
     private $fs;
 
     protected function setUp()

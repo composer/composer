@@ -16,6 +16,8 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\CompleteAliasPackage;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\StabilityFilter;
 use Composer\Plugin\PluginEvents;
@@ -43,10 +45,12 @@ class PoolBuilder
      */
     private $stabilityFlags;
     /**
+     * @var array[]
      * @psalm-var array<string, array<string, array{alias: string, alias_normalized: string}>>
      */
     private $rootAliases;
     /**
+     * @var string[]
      * @psalm-var array<string, string>
      */
     private $rootReferences;
@@ -59,27 +63,32 @@ class PoolBuilder
      */
     private $io;
     /**
-     * @psalm-var array<string, AliasPackage>
+     * @var array[]
+     * @psalm-var array<string, AliasPackage[]>
      */
     private $aliasMap = array();
     /**
+     * @var ConstraintInterface[]
      * @psalm-var array<string, ConstraintInterface>
      */
     private $packagesToLoad = array();
     /**
+     * @var ConstraintInterface[]
      * @psalm-var array<string, ConstraintInterface>
      */
     private $loadedPackages = array();
     /**
+     * @var array[]
      * @psalm-var array<int, array<string, array<string, PackageInterface>>>
      */
     private $loadedPerRepo = array();
     /**
-     * @psalm-var Package[]
+     * @var PackageInterface[]
      */
     private $packages = array();
     /**
-     * @psalm-var list<Package>
+     * @var PackageInterface[]
+     * @psalm-var list<PackageInterface>
      */
     private $unacceptableFixedOrLockedPackages = array();
     private $updateAllowList = array();
@@ -95,6 +104,7 @@ class PoolBuilder
      */
     private $maxExtendedReqs = array();
     /**
+     * @var array
      * @psalm-var array<string, bool>
      */
     private $updateAllowWarned = array();
@@ -360,7 +370,11 @@ class PoolBuilder
             } else {
                 $basePackage = $package;
             }
-            $aliasPackage = new AliasPackage($basePackage, $alias['alias_normalized'], $alias['alias']);
+            if ($basePackage instanceof CompletePackageInterface) {
+                $aliasPackage = new CompleteAliasPackage($basePackage, $alias['alias_normalized'], $alias['alias']);
+            } else {
+                $aliasPackage = new AliasPackage($basePackage, $alias['alias_normalized'], $alias['alias']);
+            }
             $aliasPackage->setRootPackageAlias(true);
 
             $newIndex = $this->indexCounter++;

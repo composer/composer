@@ -24,7 +24,7 @@ use Composer\Installer\PackageEvent;
 use Composer\Installer\BinaryInstaller;
 use Composer\Util\ProcessExecutor;
 use Composer\Script\Event as ScriptEvent;
-use Composer\ClassLoader;
+use Composer\Autoload\ClassLoader;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\ExecutableFinder;
 

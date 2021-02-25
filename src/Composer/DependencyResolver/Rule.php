@@ -13,7 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\Link;
-use Composer\Package\PackageInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
@@ -46,8 +46,8 @@ abstract class Rule
     protected $reasonData;
 
     /**
-     * @param int                   $reason     A RULE_* constant describing the reason for generating this rule
-     * @param Link|PackageInterface $reasonData
+     * @param int              $reason     A RULE_* constant describing the reason for generating this rule
+     * @param Link|BasePackage $reasonData
      */
     public function __construct($reason, $reasonData)
     {
@@ -61,6 +61,8 @@ abstract class Rule
     abstract public function getLiterals();
 
     abstract public function getHash();
+
+    abstract public function __toString();
 
     abstract public function equals(Rule $rule);
 
@@ -361,7 +363,7 @@ abstract class Rule
         return Problem::getPackageList($packages, $isVerbose);
     }
 
-    private function deduplicateDefaultBranchAlias(PackageInterface $package)
+    private function deduplicateDefaultBranchAlias(BasePackage $package)
     {
         if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
             $package = $package->getAliasOf();

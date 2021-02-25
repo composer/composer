@@ -105,7 +105,7 @@ interface RootPackageInterface extends CompletePackageInterface
      *
      * @param array $repositories
      */
-    public function setRepositories($repositories);
+    public function setRepositories(array $repositories);
 
     /**
      * Set the autoload mapping

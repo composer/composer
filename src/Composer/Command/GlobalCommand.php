@@ -58,6 +58,10 @@ EOT
 
     public function run(InputInterface $input, OutputInterface $output)
     {
+        if (!method_exists($input, '__toString')) {
+            throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
+        }
+
         // extract real command name
         $tokens = preg_split('{\s+}', $input->__toString());
         $args = array();

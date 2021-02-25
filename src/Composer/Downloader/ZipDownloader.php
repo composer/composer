@@ -17,6 +17,7 @@ use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Process\ExecutableFinder;
+use React\Promise\PromiseInterface;
 use ZipArchive;
 
 /**
@@ -69,9 +70,10 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * extract $file to $path with "unzip" command
      *
-     * @param string $file         File to extract
-     * @param string $path         Path where to extract file
-     * @param bool   $isLastChance If true it is called as a fallback and should throw an exception
+     * @param  string           $file         File to extract
+     * @param  string           $path         Path where to extract file
+     * @param  bool             $isLastChance If true it is called as a fallback and should throw an exception
+     * @return PromiseInterface
      */
     private function extractWithSystemUnzip(PackageInterface $package, $file, $path, $isLastChance, $async = false)
     {
@@ -154,9 +156,10 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * extract $file to $path with ZipArchive
      *
-     * @param string $file         File to extract
-     * @param string $path         Path where to extract file
-     * @param bool   $isLastChance If true it is called as a fallback and should throw an exception
+     * @param  string           $file         File to extract
+     * @param  string           $path         Path where to extract file
+     * @param  bool             $isLastChance If true it is called as a fallback and should throw an exception
+     * @return PromiseInterface
      *
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @protected
@@ -212,8 +215,9 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * extract $file to $path
      *
-     * @param string $file File to extract
-     * @param string $path Path where to extract file
+     * @param  string                $file File to extract
+     * @param  string                $path Path where to extract file
+     * @return PromiseInterface|null
      *
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @protected

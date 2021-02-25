@@ -12,7 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\PackageInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\Link;
 
 /**
@@ -27,7 +27,7 @@ class MultiConflictRule extends Rule
     /**
      * @param array                 $literals
      * @param int                   $reason     A RULE_* constant describing the reason for generating this rule
-     * @param Link|PackageInterface $reasonData
+     * @param Link|BasePackage $reasonData
      */
     public function __construct(array $literals, $reason, $reasonData)
     {

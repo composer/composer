@@ -15,11 +15,29 @@ namespace Composer\Package;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class RootAliasPackage extends AliasPackage implements RootPackageInterface
+class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterface
 {
+    /** @var RootPackageInterface */
+    protected $aliasOf;
+
+    /**
+     * All descendants' constructors should call this parent constructor
+     *
+     * @param RootPackageInterface $aliasOf       The package this package is an alias of
+     * @param string                   $version       The version the alias must report
+     * @param string                   $prettyVersion The alias's non-normalized version
+     */
     public function __construct(RootPackageInterface $aliasOf, $version, $prettyVersion)
     {
         parent::__construct($aliasOf, $version, $prettyVersion);
+    }
+
+    /**
+     * @return RootPackageInterface
+     */
+    public function getAliasOf()
+    {
+        return $this->aliasOf;
     }
 
     /**
@@ -115,14 +133,6 @@ class RootAliasPackage extends AliasPackage implements RootPackageInterface
     {
         $this->replaces = $this->replaceSelfVersionDependencies($replaces, Link::TYPE_REPLACE);
         $this->aliasOf->setReplaces($replaces);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function setRepositories($repositories)
-    {
-        $this->aliasOf->setRepositories($repositories);
     }
 
     /**

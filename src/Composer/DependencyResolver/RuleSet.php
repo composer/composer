@@ -113,6 +113,9 @@ class RuleSet implements \IteratorAggregate, \Countable
         return $this->rules;
     }
 
+    /**
+     * @return RuleSetIterator
+     */
     public function getIterator()
     {
         return new RuleSetIterator($this->getRules());

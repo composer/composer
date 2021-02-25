@@ -164,7 +164,7 @@ class Decisions implements \Iterator, \Countable
 
     public function next()
     {
-        return prev($this->decisionQueue);
+        prev($this->decisionQueue);
     }
 
     public function valid()

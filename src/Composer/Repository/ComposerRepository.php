@@ -16,6 +16,8 @@ use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\CompletePackage;
+use Composer\Package\CompleteAliasPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\StabilityFilter;
 use Composer\Json\JsonFile;
@@ -167,7 +169,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             if ($this->hasAvailablePackageList && !$this->lazyProvidersRepoContains($name)) {
-                return;
+                return null;
             }
 
             $packages = $this->loadAsyncPackages(array($name => $constraint));
@@ -182,7 +184,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
             }
 
-            return;
+            return null;
         }
 
         return parent::findPackage($name, $constraint);
@@ -428,7 +430,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             foreach ($search['results'] as $result) {
                 // do not show virtual packages in results as they are not directly useful from a composer perspective
                 if (empty($result['virtual'])) {
-                    $results[] = $result;
+                    $results[] = array('name' => $result['name'], 'description' => $result['description']);
                 }
             }
 
@@ -441,7 +443,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             foreach ($this->getPackageNames() as $name) {
                 if (preg_match($regex, $name)) {
-                    $results[] = array('name' => $name);
+                    $results[] = array('name' => $name, 'description' => '');
                 }
             }
 
@@ -1039,6 +1041,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * TODO v3 should make this private once we can drop PHP 5.3 support
      *
      * @private
+     * @return list<CompletePackage|CompleteAliasPackage>
      */
     public function createPackages(array $packages, $source = null)
     {
@@ -1053,7 +1056,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
             }
 
-            $packageInstances = $this->loader->loadPackages($packages, 'Composer\Package\CompletePackage');
+            $packageInstances = $this->loader->loadPackages($packages);
 
             foreach ($packageInstances as $package) {
                 if (isset($this->sourceMirrors[$package->getSourceType()])) {

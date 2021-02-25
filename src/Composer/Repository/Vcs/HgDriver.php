@@ -125,7 +125,7 @@ class HgDriver extends VcsDriver
         $this->process->execute($resource, $content, $this->repoDir);
 
         if (!trim($content)) {
-            return;
+            return null;
         }
 
         return $content;

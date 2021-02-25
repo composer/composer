@@ -15,7 +15,7 @@ namespace Composer\Test\Package\Archiver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
-use Composer\Package\Package;
+use Composer\Package\CompletePackage;
 
 abstract class ArchiverTest extends TestCase
 {
@@ -49,11 +49,11 @@ abstract class ArchiverTest extends TestCase
     /**
      * Util method to quickly setup a package using the source path built.
      *
-     * @return \Composer\Package\Package
+     * @return CompletePackage
      */
     protected function setupPackage()
     {
-        $package = new Package('archivertest/archivertest', 'master', 'master');
+        $package = new CompletePackage('archivertest/archivertest', 'master', 'master');
         $package->setSourceUrl(realpath($this->testDir));
         $package->setSourceReference('master');
         $package->setSourceType('git');

@@ -82,7 +82,7 @@ class RootAliasPackageTest extends TestCase
 
     protected function getMockRootPackageInterface()
     {
-        $root = $this->prophesize('Composer\\Package\\RootPackageInterface');
+        $root = $this->prophesize('Composer\\Package\\RootPackage');
         $root->getName()->willReturn('something/something')->shouldBeCalled();
         $root->getRequires()->willReturn(array())->shouldBeCalled();
         $root->getDevRequires()->willReturn(array())->shouldBeCalled();

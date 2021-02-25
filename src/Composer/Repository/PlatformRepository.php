@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Composer;
 use Composer\Package\CompletePackage;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -491,7 +492,9 @@ class PlatformRepository extends ArrayRepository
             } else {
                 $actualText = 'actual: '.$package->getPrettyVersion();
             }
-            $overrider->setDescription($overrider->getDescription().', '.$actualText);
+            if ($overrider instanceof CompletePackageInterface) {
+                $overrider->setDescription($overrider->getDescription().', '.$actualText);
+            }
 
             return;
         }
@@ -512,6 +515,9 @@ class PlatformRepository extends ArrayRepository
         parent::addPackage($package);
     }
 
+    /**
+     * @return CompletePackage
+     */
     private function addOverriddenPackage(array $override, $name = null)
     {
         $version = $this->versionParser->normalize($override['version']);
