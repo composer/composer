@@ -14,6 +14,9 @@ return array(
     'root' => array(
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
+        'type' => 'library',
+        // @phpstan-ignore-next-line
+        'install_path' => $dir . DIRECTORY_SEPARATOR . './',
         'aliases' => array(
             '1.10.x-dev',
         ),
@@ -25,6 +28,9 @@ return array(
         '__root__' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
+            'type' => 'library',
+            // @phpstan-ignore-next-line
+            'install_path' => $dir . DIRECTORY_SEPARATOR . './',
             'aliases' => array(
                 '1.10.x-dev',
             ),
@@ -34,6 +40,9 @@ return array(
         'a/provider' => array(
             'pretty_version' => '1.1',
             'version' => '1.1.0.0',
+            'type' => 'library',
+            // @phpstan-ignore-next-line
+            'install_path' => $dir . DIRECTORY_SEPARATOR . '/foo/bar/vendor/woop/woop',
             'aliases' => array(),
             'reference' => 'distref-as-no-source',
             'dev-requirement' => false,
@@ -41,6 +50,9 @@ return array(
         'a/provider2' => array(
             'pretty_version' => '1.2',
             'version' => '1.2.0.0',
+            'type' => 'library',
+            // @phpstan-ignore-next-line
+            'install_path' => $dir . DIRECTORY_SEPARATOR . '/foo/bar/vendor/woop/woop',
             'aliases' => array(
               '1.4',
             ),
@@ -50,6 +62,9 @@ return array(
         'b/replacer' => array(
             'pretty_version' => '2.2',
             'version' => '2.2.0.0',
+            'type' => 'library',
+            // @phpstan-ignore-next-line
+            'install_path' => $dir . DIRECTORY_SEPARATOR . '/foo/bar/vendor/woop/woop',
             'aliases' => array(),
             'reference' => null,
             'dev-requirement' => false,
@@ -57,6 +72,9 @@ return array(
         'c/c' => array(
             'pretty_version' => '3.0',
             'version' => '3.0.0.0',
+            'type' => 'library',
+            // @phpstan-ignore-next-line
+            'install_path' => $dir . DIRECTORY_SEPARATOR . '/foo/bar/vendor/woop/woop',
             'aliases' => array(),
             'reference' => null,
             'dev-requirement' => true,

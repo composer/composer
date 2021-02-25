@@ -18,6 +18,8 @@ use Composer\Json\JsonFile;
 
 class FilesystemRepositoryTest extends TestCase
 {
+    private $root;
+
     public function testRepositoryRead()
     {
         $json = $this->createJsonFileMock();
@@ -121,6 +123,9 @@ class FilesystemRepositoryTest extends TestCase
     public function testRepositoryWritesInstalledPhp()
     {
         $dir = $this->getUniqueTmpDirectory();
+        $this->root = $dir;
+        chdir($dir);
+
         $json = new JsonFile($dir.'/installed.json');
 
         $rootPackage = $this->getPackage('__root__', 'dev-master', 'Composer\Package\RootPackage');

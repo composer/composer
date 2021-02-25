@@ -119,4 +119,9 @@ class InstallationManagerMock extends InstallationManager
     {
         // noop
     }
+
+    public function getInstalledPackagesByType()
+    {
+        return $this->installed;
+    }
 }

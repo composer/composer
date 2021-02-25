@@ -24,9 +24,14 @@ use Composer\Semver\VersionParser;
  */
 class InstalledVersions
 {
-    private static $installed;
+    private static $installed = array();
     private static $canGetVendors;
     private static $installedByVendor = array();
+
+    /**
+     * Initialize $installed array
+     */
+    public static function initializeInstalled() {}
 
     /**
      * Returns a list of all package names which are present, either by being installed, replaced or provided
@@ -46,6 +51,28 @@ class InstalledVersions
         }
 
         return array_keys(array_flip(\call_user_func_array('array_merge', $packages)));
+    }
+
+    /**
+     * Returns a list of all package names with a specific type e.g. 'library'
+     *
+     * @param  string   $type
+     * @return string[]
+     * @psalm-return list<string>
+     */
+    public static function getInstalledPackagesByType($type)
+    {
+        $packagesByType = array();
+
+        foreach (self::getInstalled() as $installed) {
+            foreach ($installed['versions'] as $name => $package) {
+                if (isset($package['type']) && $package['type'] === $type) {
+                    $packagesByType[] = $name;
+                }
+            }
+        }
+
+        return $packagesByType;
     }
 
     /**
@@ -274,3 +301,5 @@ class InstalledVersions
         return $installed;
     }
 }
+
+InstalledVersions::initializeInstalled();

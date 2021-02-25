@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Dumper\ArrayDumper;
@@ -102,11 +103,15 @@ class FilesystemRepository extends WritableArrayRepository
         $dumper = new ArrayDumper();
         $fs = new Filesystem();
         $repoDir = dirname($fs->normalizePath($this->file->getPath()));
+        $installPaths = array();
 
         foreach ($this->getCanonicalPackages() as $package) {
             $pkgArray = $dumper->dump($package);
             $path = $installationManager->getInstallPath($package);
-            $pkgArray['install-path'] = ('' !== $path && null !== $path) ? $fs->findShortestPath($repoDir, $fs->isAbsolutePath($path) ? $path : getcwd() . '/' . $path, true) : null;
+            $installPath = ('' !== $path && null !== $path) ? $fs->findShortestPath($repoDir, $fs->isAbsolutePath($path) ? $path : getcwd() . '/' . $path, true) : null;
+            $installPaths[$package->getName()] = $installPath;
+
+            $pkgArray['install-path'] = $installPath;
             $data['packages'][] = $pkgArray;
 
             // only write to the files the names which are really installed, as we receive the full list
@@ -124,24 +129,56 @@ class FilesystemRepository extends WritableArrayRepository
         $this->file->write($data);
 
         if ($this->dumpVersions) {
-            $versions = $this->generateInstalledVersions($installationManager, $devMode);
+            $versions = $this->generateInstalledVersions($installationManager, $installPaths, $devMode, $repoDir);
 
-            $fs->filePutContentsIfModified($repoDir.'/installed.php', '<?php return '.var_export($versions, true).';'."\n");
+            $fs->filePutContentsIfModified($repoDir.'/installed.php', '<?php return ' . $this->dumpVersion($versions) . ';'."\n");
             $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
             // while not strictly needed since https://github.com/composer/composer/pull/9635 - we keep this for BC
             // and overall broader compatibility with people that may not use Composer's ClassLoader. They can
             // simply include InstalledVersions.php manually and have it working in a basic way.
-            $installedVersionsClass = str_replace('private static $installed;', 'private static $installed = '.var_export($versions, true).';', $installedVersionsClass);
+            $installedVersionsClass = str_replace('public static function initializeInstalled() {}', 'public static function initializeInstalled() {' . PHP_EOL . 'self::$installed = ' . $this->dumpVersion($versions) . ';' . PHP_EOL . '}', $installedVersionsClass);
             $fs->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
 
             \Composer\InstalledVersions::reload($versions);
         }
     }
 
+    private function dumpVersion(array $array = array(), $level = 0)
+    {
+        $lines = "array(\n";
+        $level++;
+
+        foreach ($array as $key => $value) {
+            $lines .= str_repeat('    ', $level);
+            $lines .= is_int($key) ? $key . ' => ' : '\'' . $key . '\' => ';
+
+            if (is_array($value)) {
+                if (!empty($value)) {
+                    $lines .= self::dumpVersion($value, $level);
+                } else {
+                    $lines .= "array(),\n";
+                }
+            }  elseif (is_null($value)) {
+                $lines .= 'null';
+                $lines .= ",\n";
+            }  elseif (is_bool($value)) {
+                $lines .= $value ? 'true' : 'false';
+                $lines .= ",\n";
+            } else {
+                $stringContent = str_replace(array('\\', '\''), array('\\\\', '\\\''), $value);
+                $folder = $key === 'install_path' ? '__DIR__ . DIRECTORY_SEPARATOR . ' : '';
+                $lines .= $folder . "'" . $stringContent . "',\n";
+            }
+        }
+
+        $lines .= str_repeat('    ', $level - 1) . ')' . ($level - 1 == 0 ? '' : ",\n");
+        return $lines;
+    }
+
     /**
      * @return ?array
      */
-    private function generateInstalledVersions(InstallationManager $installationManager, $devMode)
+    private function generateInstalledVersions(InstallationManager $installationManager, $installPaths, $devMode, $repoDir)
     {
         if (!$this->dumpVersions) {
             return null;
@@ -170,9 +207,19 @@ class FilesystemRepository extends WritableArrayRepository
                 $reference = ($package->getSourceReference() ?: $package->getDistReference()) ?: null;
             }
 
+            if($package instanceof RootPackageInterface) {
+                $fs = new Filesystem();
+                $to = getcwd();
+                $installPath = $fs->findShortestPath($repoDir, $to, true);
+            } else {
+                $installPath = $installPaths[$package->getName()];
+            }
+
             $versions['versions'][$package->getName()] = array(
                 'pretty_version' => $package->getPrettyVersion(),
                 'version' => $package->getVersion(),
+                'type' => $package->getType(),
+                'install_path' => $installPath,
                 'aliases' => array(),
                 'reference' => $reference,
                 'dev-requirement' => isset($devPackages[$package->getName()]),
