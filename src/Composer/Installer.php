@@ -50,7 +50,6 @@ use Composer\Package\RootPackageInterface;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\InstalledRepository;
-use Composer\Repository\FilterRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;

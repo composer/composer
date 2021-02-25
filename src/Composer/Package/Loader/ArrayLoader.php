@@ -375,7 +375,6 @@ class ArrayLoader implements LoaderInterface
             }
         }
 
-
         if (
             isset($config['default-branch'])
             && $config['default-branch'] === true

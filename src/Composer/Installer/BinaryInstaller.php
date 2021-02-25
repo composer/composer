@@ -199,6 +199,7 @@ class BinaryInstaller
                 $proxyCode = "#!/usr/bin/env php";
             }
             $binPathExported = var_export($binPath, true);
+
             return $proxyCode . "\n" . <<<PROXY
 <?php
 

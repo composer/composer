@@ -146,6 +146,7 @@ class Filesystem
         $promise = $this->getProcess()->executeAsync($cmd);
 
         $self = $this;
+
         return $promise->then(function ($process) use ($directory, $self) {
             // clear stat cache because external processes aren't tracked by the php stat cache
             clearstatcache();
@@ -165,7 +166,8 @@ class Filesystem
      *
      * @return bool|null Returns null, when no edge case was hit. Otherwise a bool whether removal was successfull
      */
-    private function removeEdgeCases($directory) {
+    private function removeEdgeCases($directory)
+    {
         if ($this->isSymlinkedDirectory($directory)) {
             return $this->unlinkSymlinkedDirectory($directory);
         }

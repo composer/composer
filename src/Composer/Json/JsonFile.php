@@ -94,7 +94,7 @@ class JsonFile
                     $realpathInfo = '';
                     $realpath = realpath($this->path);
                     if (false !== $realpath && $realpath !== $this->path) {
-                         $realpathInfo = ' (' . $realpath . ')';
+                        $realpathInfo = ' (' . $realpath . ')';
                     }
                     $this->io->writeError('Reading ' . $this->path . $realpathInfo);
                 }

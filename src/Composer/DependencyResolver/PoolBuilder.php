@@ -467,7 +467,6 @@ class PoolBuilder
      */
     private function unlockPackage(Request $request, $name)
     {
-
         if (
             // if we unfixed a replaced package name, we also need to unfix the replacer itself
             $this->skippedLoad[$name] !== $name

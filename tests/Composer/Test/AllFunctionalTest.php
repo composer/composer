@@ -123,7 +123,7 @@ class AllFunctionalTest extends TestCase
             $expected = $testData['EXPECT'];
 
             $line = 1;
-            for ($i = 0, $j = 0; $i < strlen($expected); ) {
+            for ($i = 0, $j = 0; $i < strlen($expected);) {
                 if ($expected[$i] === "\n") {
                     $line++;
                 }
@@ -138,7 +138,7 @@ class AllFunctionalTest extends TestCase
                     } else {
                         $this->fail(
                             'Failed to match pattern '.$regex.' at line '.$line.' / abs offset '.$i.': '
-                            .substr($output, $j, min(strpos($output, "\n", $j)-$j, 100)).PHP_EOL.PHP_EOL.
+                            .substr($output, $j, min(strpos($output, "\n", $j) - $j, 100)).PHP_EOL.PHP_EOL.
                             'Output:'.PHP_EOL.$output
                         );
                     }
@@ -146,8 +146,8 @@ class AllFunctionalTest extends TestCase
                 if ($expected[$i] !== $output[$j]) {
                     $this->fail(
                         'Output does not match expectation at line '.$line.' / abs offset '.$i.': '.PHP_EOL
-                        .'-'.substr($expected, $i, min(strpos($expected, "\n", $i)-$i, 100)).PHP_EOL
-                        .'+'.substr($output, $j, min(strpos($output, "\n", $j)-$j, 100)).PHP_EOL.PHP_EOL
+                        .'-'.substr($expected, $i, min(strpos($expected, "\n", $i) - $i, 100)).PHP_EOL
+                        .'+'.substr($output, $j, min(strpos($output, "\n", $j) - $j, 100)).PHP_EOL.PHP_EOL
                         .'Output:'.PHP_EOL.$output
                     );
                 }

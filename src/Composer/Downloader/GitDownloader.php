@@ -375,7 +375,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
                 case '?':
                 default:
-                    help:
+                    help :
                     $this->io->writeError(array(
                         '    y - discard changes and apply the '.($update ? 'update' : 'uninstall'),
                         '    n - abort the '.($update ? 'update' : 'uninstall').' and let you manually clean things up',

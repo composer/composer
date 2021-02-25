@@ -138,7 +138,7 @@ abstract class BaseExcludeFilter
         }
 
         $rule = trim($rule, '/');
-        
+
         // remove delimiters as well as caret (^) and dollar sign ($) from the regex
         $rule = substr(Finder\Glob::toRegex($rule), 2, -2);
 

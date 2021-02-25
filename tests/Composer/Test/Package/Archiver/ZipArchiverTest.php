@@ -47,14 +47,14 @@ class ZipArchiverTest extends ArchiverTest
 
         if (empty($files)) {
             $files = array(
-                'file.txt' => NULL,
-                'foo/bar/baz' => NULL,
-                'x/baz' => NULL,
-                'x/includeme' => NULL,
+                'file.txt' => null,
+                'foo/bar/baz' => null,
+                'x/baz' => null,
+                'x/includeme' => null,
             );
 
             if (!Platform::isWindows()) {
-                $files['foo' . getcwd() . '/file.txt'] = NULL;
+                $files['foo' . getcwd() . '/file.txt'] = null;
             }
         }
         // Set up repository
@@ -86,7 +86,7 @@ class ZipArchiverTest extends ArchiverTest
         $currentWorkDir = getcwd();
         chdir($this->testDir);
         foreach ($files as $path => $content) {
-            if ($files[$path] === NULL) {
+            if ($files[$path] === null) {
                 $files[$path] = 'content';
             }
             $this->writeFile($path, $files[$path], $currentWorkDir);

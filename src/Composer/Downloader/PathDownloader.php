@@ -218,6 +218,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             if (Platform::isWindows()) {
                 return ': Junctioning from '.$package->getDistUrl();
             }
+
             return ': Symlinking from '.$package->getDistUrl();
         }
 

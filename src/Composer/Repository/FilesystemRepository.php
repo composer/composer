@@ -123,7 +123,6 @@ class FilesystemRepository extends WritableArrayRepository
 
         $this->file->write($data);
 
-
         if ($this->dumpVersions) {
             $versions = $this->generateInstalledVersions($installationManager, $devMode);
 
