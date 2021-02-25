@@ -215,9 +215,14 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     public function remove(PackageInterface $package, $path)
     {
         $this->io->writeError("  - " . UninstallOperation::format($package));
-        if (!$this->filesystem->removeDirectory($path)) {
-            throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
-        }
+
+        $promise = $this->filesystem->removeDirectoryAsync($path);
+
+        return $promise->then(function($result) use ($path) {
+            if (!$result) {
+                throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
+            }
+        });
     }
 
     /**
