@@ -196,7 +196,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
             }
         } else {
-            parent::remove($package, $path, $output);
+            return parent::remove($package, $path, $output);
         }
     }
 
