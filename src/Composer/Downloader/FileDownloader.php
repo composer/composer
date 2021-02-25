@@ -366,7 +366,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         return $promise->then(function () use ($self, $target, $path, $io) {
             $promise = $self->install($target, $path, false);
-            $io->writeError('');
 
             return $promise;
         });
