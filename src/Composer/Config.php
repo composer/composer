@@ -478,7 +478,7 @@ class Config
             if ($this->get('secure-http')) {
                 // David fix
                 // Skip when using http, instead of throwing error
-                echo "Skipping\n";
+                echo "Skipping-Config\n";
 
                 // throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             }

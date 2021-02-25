@@ -118,7 +118,7 @@ class ZipDownloader extends ArchiveDownloader
                     if (!$process->isSuccessful()) {
                         // David fix
                         // Skip when process not successful, instead of throwing error
-                        echo "Skipping\n";
+                        echo "Skipping-ZipDownloader\n";
                         return;
 
                         // $output = $process->getErrorOutput();

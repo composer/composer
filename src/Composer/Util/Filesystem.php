@@ -268,7 +268,7 @@ class Filesystem
             if (!$unlinked) {
                 // David fix
                 // Skip when can not remove file, instead of throwing error
-                echo "Skipping\n";
+                echo "Skipping-FileSystem\n";
                 return;
 
                 // $error = error_get_last();

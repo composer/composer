@@ -59,7 +59,7 @@ class ArrayRepository implements RepositoryInterface
         }
         catch(\Exception $e){
             $packages = array();
-            echo "Skipping\n";
+            echo "Skipping-ArrayRepository\n";
         }
         //$packages = $this->getPackages();
 

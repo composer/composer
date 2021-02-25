@@ -33,7 +33,9 @@ class SvnDownloader extends VcsDownloader
         SvnUtil::cleanEnv();
         $util = new SvnUtil($url, $this->io, $this->config, $this->process);
         if (null === $util->binaryVersion()) {
-            throw new \RuntimeException('svn was not found in your PATH, skipping source download');
+            // JoaoD fix
+            //throw new \RuntimeException('svn was not found in your PATH, skipping source download');
+            echo "Skipping-SvcDownloader-doDownload\n";
         }
     }
 
@@ -114,7 +116,7 @@ class SvnDownloader extends VcsDownloader
         } catch (\RuntimeException $e) {
             // David fix
             // Skip when unable to download, instead of throwing error
-            echo "Skipping\n";
+            echo "Skipping-SvcDownloader-execute\n";
 
             // throw new \RuntimeException(
             //     $package->getPrettyName().' could not be downloaded, '.$e->getMessage()

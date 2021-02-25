@@ -395,7 +395,7 @@ class RemoteFilesystem
         if ($statusCode && $statusCode >= 400 && $statusCode <= 599) {
             //JoaoD fix
             // return an empty json for the failed request
-            echo "Skipping\n";
+            echo "Skipping-RemoteFileSystem\n";
             return "{}";
             // if (!$this->retry) {
             //     if ($this->progress && !$isRedirect) {
