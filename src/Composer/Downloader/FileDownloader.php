@@ -355,10 +355,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
-        $this->io->writeError("  - " . UpdateOperation::format($initial, $target) . ": ", false);
+        $this->io->writeError("  - " . UpdateOperation::format($initial, $target) . $this->getInstallOperationAppendix($target, $path));
 
         $promise = $this->remove($initial, $path, false);
-        if ($promise === null || !$promise instanceof PromiseInterface) {
+        if (!$promise instanceof PromiseInterface) {
             $promise = \React\Promise\resolve();
         }
         $self = $this;
@@ -399,6 +399,18 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     protected function getFileName(PackageInterface $package, $path)
     {
         return rtrim($this->config->get('vendor-dir').'/composer/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
+    }
+
+    /**
+     * Gets appendix message to add to the "- Upgrading x" string being output on update
+     *
+     * @param  PackageInterface $package package instance
+     * @param  string           $path    download path
+     * @return string
+     */
+    protected function getInstallOperationAppendix(PackageInterface $package, $path)
+    {
+        return '';
     }
 
     /**

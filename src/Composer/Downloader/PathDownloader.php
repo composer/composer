@@ -80,9 +80,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         if (realpath($path) === $realUrl) {
             if ($output) {
-                $this->io->writeError("  - " . InstallOperation::format($package).': Source already present');
-            } else {
-                $this->io->writeError('Source already present', false);
+                $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));
             }
 
             return;
@@ -214,6 +212,20 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {
             return $packageVersion['commit'];
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getInstallOperationAppendix(PackageInterface $package, $path)
+    {
+        $realUrl = realpath($package->getDistUrl());
+
+        if (realpath($path) === $realUrl) {
+            return ': Source already present';
+        }
+
+        return '';
     }
 
     /**

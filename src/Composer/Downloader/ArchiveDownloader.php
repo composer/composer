@@ -34,9 +34,7 @@ abstract class ArchiveDownloader extends FileDownloader
     public function install(PackageInterface $package, $path, $output = true)
     {
         if ($output) {
-            $this->io->writeError("  - " . InstallOperation::format($package).": Extracting archive");
-        } else {
-            $this->io->writeError('Extracting archive', false);
+            $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));
         }
 
         $vendorDir = $this->config->get('vendor-dir');
@@ -149,6 +147,14 @@ abstract class ArchiveDownloader extends FileDownloader
 
             throw $e;
         });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getInstallOperationAppendix(PackageInterface $package, $path)
+    {
+        return ': Extracting archive';
     }
 
     /**
