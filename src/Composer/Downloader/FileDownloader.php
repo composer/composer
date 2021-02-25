@@ -182,13 +182,13 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 }
 
                 if (!file_exists($fileName)) {
-                    // David fix
-                    // Skip when file not exists, instead of throwing error
-                    echo "Skipping\n";
-                    return;
+                    // // David fix
+                    // // Skip when file not exists, instead of throwing error
+                    // echo "Skipping\n";
+                    // return;
                     
-                    // throw new \UnexpectedValueException($url['base'].' could not be saved to '.$fileName.', make sure the'
-                    //     .' directory is writable and you have internet connectivity');
+                    throw new \UnexpectedValueException($url['base'].' could not be saved to '.$fileName.', make sure the'
+                        .' directory is writable and you have internet connectivity');
                 }
 
                 if ($checksum && hash_file('sha1', $fileName) !== $checksum) {

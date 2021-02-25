@@ -266,18 +266,18 @@ class Filesystem
             }
 
             if (!$unlinked) {
-                // David fix
-                // Skip when can not remove file, instead of throwing error
-                echo "Skipping\n";
-                return;
+                // // David fix
+                // // Skip when can not remove file, instead of throwing error
+                // echo "Skipping\n";
+                // return;
 
-                // $error = error_get_last();
-                // $message = 'Could not delete '.$path.': ' . @$error['message'];
-                // if (Platform::isWindows()) {
-                //     $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
-                // }
+                $error = error_get_last();
+                $message = 'Could not delete '.$path.': ' . @$error['message'];
+                if (Platform::isWindows()) {
+                    $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
+                }
 
-                // throw new \RuntimeException($message);
+                throw new \RuntimeException($message);
             }
         }
 

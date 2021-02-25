@@ -116,15 +116,15 @@ class ZipDownloader extends ArchiveDownloader
 
                 return $promise->then(function ($process) use ($tryFallback, $command, $package, $file) {
                     if (!$process->isSuccessful()) {
-                        // David fix
-                        // Skip when process not successful, instead of throwing error
-                        echo "Skipping\n";
-                        return;
+                        // // David fix
+                        // // Skip when process not successful, instead of throwing error
+                        // echo "Skipping\n";
+                        // return;
 
-                        // $output = $process->getErrorOutput();
-                        // $output = str_replace(', '.$file.'.zip or '.$file.'.ZIP', '', $output);
+                        $output = $process->getErrorOutput();
+                        $output = str_replace(', '.$file.'.zip or '.$file.'.ZIP', '', $output);
 
-                        // return $tryFallback(new \RuntimeException('Failed to extract '.$package->getName().': ('.$process->getExitCode().') '.$command."\n\n".$output));
+                        return $tryFallback(new \RuntimeException('Failed to extract '.$package->getName().': ('.$process->getExitCode().') '.$command."\n\n".$output));
                     }
                 });
             } catch (\Exception $e) {

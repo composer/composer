@@ -153,12 +153,12 @@ class Cache
             $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
 
             if (!file_exists($source)) {
-                // David fix
-                // Skip when source not exists, instead of write error and copy source
-                echo "Skipping\n";
-                return false;
+                // // David fix
+                // // Skip when source not exists, instead of write error and copy source
+                // echo "Skipping\n";
+                // return false;
                 
-                // $this->io->writeError('<error>'.$source.' does not exist, can not write into cache</error>');
+                $this->io->writeError('<error>'.$source.' does not exist, can not write into cache</error>');
             } elseif ($this->io->isDebug()) {
                 $this->io->writeError('Writing '.$this->root . $file.' into cache from '.$source);
             }

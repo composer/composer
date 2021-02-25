@@ -476,11 +476,10 @@ class Config
         $scheme = parse_url($url, PHP_URL_SCHEME);
         if (in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
             if ($this->get('secure-http')) {
-                // David fix
-                // Skip when using http, instead of throwing error
-                echo "Skipping\n";
-
-                // throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
+                // // David fix
+                // // Skip when using http, instead of throwing error
+                // echo "Skipping\n";
+                throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             }
             if ($io) {
                 $host = parse_url($url, PHP_URL_HOST);
