@@ -112,13 +112,13 @@ class SvnDownloader extends VcsDownloader
         try {
             return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
         } catch (\RuntimeException $e) {
-            // // David fix
-            // // Skip when unable to download, instead of throwing error
-            // echo "Skipping\n";
+            // David fix
+            // Skip when unable to download, instead of throwing error
+            echo "Skipping\n";
 
-            throw new \RuntimeException(
-                $package->getPrettyName().' could not be downloaded, '.$e->getMessage()
-            );
+            // throw new \RuntimeException(
+            //     $package->getPrettyName().' could not be downloaded, '.$e->getMessage()
+            // );
         }
     }
 
