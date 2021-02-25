@@ -25,9 +25,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Package\Version\VersionParser;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -38,24 +36,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 class BaseDependencyCommand extends BaseCommand
 {
     const ARGUMENT_PACKAGE = 'package';
-    const ARGUMENT_CONSTRAINT = 'constraint';
+    const ARGUMENT_CONSTRAINT = 'version';
     const OPTION_RECURSIVE = 'recursive';
     const OPTION_TREE = 'tree';
 
     protected $colors;
-
-    /**
-     * Set common options and arguments.
-     */
-    protected function configure()
-    {
-        $this->setDefinition(array(
-            new InputArgument(self::ARGUMENT_PACKAGE, InputArgument::REQUIRED, 'Package to inspect'),
-            new InputArgument(self::ARGUMENT_CONSTRAINT, InputArgument::OPTIONAL, 'Optional version constraint', '*'),
-            new InputOption(self::OPTION_RECURSIVE, 'r', InputOption::VALUE_NONE, 'Recursively resolves up to the root package'),
-            new InputOption(self::OPTION_TREE, 't', InputOption::VALUE_NONE, 'Prints the results as a nested tree'),
-        ));
-    }
 
     /**
      * Execute the command.
@@ -83,7 +68,7 @@ class BaseDependencyCommand extends BaseCommand
         list($needle, $textConstraint) = array_pad(
             explode(':', $input->getArgument(self::ARGUMENT_PACKAGE)),
             2,
-            $input->getArgument(self::ARGUMENT_CONSTRAINT)
+            $input->hasArgument(self::ARGUMENT_CONSTRAINT) ? $input->getArgument(self::ARGUMENT_CONSTRAINT) : '*'
         );
 
         // Find packages that are or provide the requested package first
