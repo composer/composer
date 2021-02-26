@@ -135,7 +135,7 @@ class Compiler
         foreach ($finder as $file) {
             if (in_array(realpath($file), $extraFiles, true)) {
                 unset($extraFiles[array_search(realpath($file), $extraFiles, true)]);
-            } elseif (!preg_match('{(/LICENSE|\.php)$}', $file)) {
+            } elseif (!preg_match('{([/\\\\]LICENSE|\.php)$}', $file)) {
                 $unexpectedFiles[] = (string) $file;
             }
 
