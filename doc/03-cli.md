@@ -359,6 +359,7 @@ You can also search for more than one term by passing multiple arguments.
 
 * **--only-name (-N):** Search only in name.
 * **--type (-t):** Search for a specific package type.
+* **--format (-f):** Lets you pick between text (default) or json output format.
 
 ## show
 
