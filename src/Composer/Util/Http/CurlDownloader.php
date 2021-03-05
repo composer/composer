@@ -183,7 +183,6 @@ class CurlDownloader
         }
 
         $options['http']['header'] = $this->authHelper->addAuthenticationHeader($options['http']['header'], $origin, $url);
-        // Merge in headers - we don't get any proxy values
         $options = StreamContextFactory::initOptions($url, $options, true);
 
         foreach (self::$options as $type => $curlOptions) {

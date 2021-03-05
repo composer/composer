@@ -254,7 +254,7 @@ class RemoteFilesystem
 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
-        $proxy = ProxyManager::getInstance()->getProxyForRequest($fileUrl);
+        $proxy = $this->proxyManager->getProxyForRequest($fileUrl);
         $usingProxy = $proxy->getFormattedUrl(' using proxy (%s)');
         $this->io->writeError((strpos($origFileUrl, 'http') === 0 ? 'Downloading ' : 'Reading ') . Url::sanitize($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
         unset($origFileUrl, $proxy, $usingProxy);
