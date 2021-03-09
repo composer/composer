@@ -56,9 +56,9 @@ class GitLabDriver extends VcsDriver
     /**
      * Git Driver
      *
-     * @var GitDriver
+     * @var ?GitDriver
      */
-    protected $gitDriver;
+    protected $gitDriver = null;
 
     /**
      * Defaults to true unless we can make sure it is public

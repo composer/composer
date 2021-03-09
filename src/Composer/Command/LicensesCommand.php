@@ -81,6 +81,8 @@ EOT
                 if (method_exists($tableStyle, 'setVerticalBorderChars')) {
                     $tableStyle->setVerticalBorderChars('');
                 } else {
+                    // TODO remove in composer 2.2
+                    // @phpstan-ignore-next-line
                     $tableStyle->setVerticalBorderChar('');
                 }
                 $tableStyle->setCellRowContentFormat('%s  ');

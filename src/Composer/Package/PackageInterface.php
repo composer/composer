@@ -143,6 +143,12 @@ interface PackageInterface
     public function getSourceMirrors();
 
     /**
+     * @param  array|null $mirrors
+     * @return void
+     */
+    public function setSourceMirrors($mirrors);
+
+    /**
      * Returns the type of the distribution archive of this version, e.g. zip, tarball
      *
      * @return string The repository type
@@ -183,6 +189,12 @@ interface PackageInterface
      * @return array|null
      */
     public function getDistMirrors();
+
+    /**
+     * @param  array|null $mirrors
+     * @return void
+     */
+    public function setDistMirrors($mirrors);
 
     /**
      * Returns the version of this package
@@ -358,20 +370,6 @@ interface PackageInterface
     public function getPrettyString();
 
     /**
-     * Returns default base filename for archive
-     *
-     * @return array
-     */
-    public function getArchiveName();
-
-    /**
-     * Returns a list of patterns to exclude from package archives
-     *
-     * @return array
-     */
-    public function getArchiveExcludes();
-
-    /**
      * @return bool
      */
     public function isDefaultBranch();
@@ -382,6 +380,13 @@ interface PackageInterface
      * @return array
      */
     public function getTransportOptions();
+
+    /**
+     * Configures the list of options to download package dist files
+     *
+     * @return void
+     */
+    public function setTransportOptions(array $options);
 
     /**
      * @param string $reference

@@ -27,6 +27,7 @@ use Composer\Util\StreamContextFactory;
 use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
 use Composer\IO\NullIO;
+use Composer\Package\CompletePackageInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\ExecutableFinder;
@@ -159,7 +160,7 @@ EOT
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
         $phpPkg = $platformRepo->findPackage('php', '*');
         $phpVersion = $phpPkg->getPrettyVersion();
-        if (false !== strpos($phpPkg->getDescription(), 'overridden')) {
+        if ($phpPkg instanceof CompletePackageInterface && false !== strpos($phpPkg->getDescription(), 'overridden')) {
             $phpVersion .= ' - ' . $phpPkg->getDescription();
         }
 

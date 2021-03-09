@@ -29,6 +29,8 @@ class HgDownloader extends VcsDownloader
         if (null === HgUtils::getVersion($this->process)) {
             throw new \RuntimeException('hg was not found in your PATH, skipping source download');
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -49,6 +51,8 @@ class HgDownloader extends VcsDownloader
         if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -70,6 +74,8 @@ class HgDownloader extends VcsDownloader
         };
 
         $hgUtils->runCommand($command, $url, $path);
+
+        return \React\Promise\resolve();
     }
 
     /**

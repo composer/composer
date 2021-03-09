@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Package\AliasPackage;
+use Composer\Package\CompleteAliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -27,13 +28,13 @@ use Composer\Semver\Constraint\Constraint;
  */
 class ArrayRepository implements RepositoryInterface
 {
-    /** @var PackageInterface[] */
-    protected $packages;
+    /** @var ?PackageInterface[] */
+    protected $packages = null;
 
     /**
-     * @var PackageInterface[] indexed by package unique name and used to cache hasPackage calls
+     * @var ?PackageInterface[] indexed by package unique name and used to cache hasPackage calls
      */
-    protected $packageMap;
+    protected $packageMap = null;
 
     public function __construct(array $packages = array())
     {
@@ -220,7 +221,7 @@ class ArrayRepository implements RepositoryInterface
                 if ($packageName === $link->getTarget()) {
                     $result[$candidate->getName()] = array(
                         'name' => $candidate->getName(),
-                        'description' => $candidate->getDescription(),
+                        'description' => $candidate instanceof CompletePackageInterface ? $candidate->getDescription() : null,
                         'type' => $candidate->getType(),
                     );
                     continue 2;
@@ -233,7 +234,15 @@ class ArrayRepository implements RepositoryInterface
 
     protected function createAliasPackage(PackageInterface $package, $alias, $prettyAlias)
     {
-        return new AliasPackage($package instanceof AliasPackage ? $package->getAliasOf() : $package, $alias, $prettyAlias);
+        while ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
+        }
+
+        if ($package instanceof CompletePackageInterface) {
+            return new CompleteAliasPackage($package, $alias, $prettyAlias);
+        }
+
+        return new AliasPackage($package, $alias, $prettyAlias);
     }
 
     /**

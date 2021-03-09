@@ -462,15 +462,20 @@ class PluginManager
         ) {
             throw new \UnexpectedValueException('Plugin '.get_class($plugin).' provided invalid capability class name(s), got '.var_export($capabilities[$capability], 1));
         }
+
+        return null;
     }
 
     /**
+     * @template CapabilityClass of Capability
      * @param  PluginInterface $plugin
-     * @param  string          $capabilityClassName The fully qualified name of the API interface which the plugin may provide
-     *                                              an implementation of.
-     * @param  array           $ctorArgs            Arguments passed to Capability's constructor.
-     *                                              Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @param  class-string<CapabilityClass> $capabilityClassName The fully qualified name of the API interface which the plugin may provide
+     *                                                            an implementation of.
+     * @param  array                         $ctorArgs            Arguments passed to Capability's constructor.
+     *                                                            Keeping it an array will allow future values to be passed w\o changing the signature.
      * @return null|Capability
+     * @phpstan-param class-string<CapabilityClass> $capabilityClassName
+     * @phpstan-return null|CapabilityClass
      */
     public function getPluginCapability(PluginInterface $plugin, $capabilityClassName, array $ctorArgs = array())
     {
@@ -491,14 +496,17 @@ class PluginManager
 
             return $capabilityObj;
         }
+
+        return null;
     }
 
-    /**
-     * @param  string       $capabilityClassName The fully qualified name of the API interface which the plugin may provide
-     *                                           an implementation of.
-     * @param  array        $ctorArgs            Arguments passed to Capability's constructor.
-     *                                           Keeping it an array will allow future values to be passed w\o changing the signature.
-     * @return Capability[]
+     /**
+     * @template CapabilityClass of Capability
+     * @param  class-string<CapabilityClass> $capabilityClassName The fully qualified name of the API interface which the plugin may provide
+     *                                                         an implementation of.
+     * @param  array                      $ctorArgs            Arguments passed to Capability's constructor.
+     *                                                         Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @return CapabilityClass[]
      */
     public function getPluginCapabilities($capabilityClassName, array $ctorArgs = array())
     {

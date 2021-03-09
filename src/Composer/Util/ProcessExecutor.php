@@ -17,6 +17,7 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessUtils;
 use Symfony\Component\Process\Exception\RuntimeException;
 use React\Promise\Promise;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -140,9 +141,9 @@ class ProcessExecutor
     /**
      * starts a process on the commandline in async mode
      *
-     * @param  string  $command the command to execute
-     * @param  string  $cwd     the working directory
-     * @return Promise
+     * @param  string           $command the command to execute
+     * @param  string           $cwd     the working directory
+     * @return PromiseInterface
      */
     public function executeAsync($command, $cwd = null)
     {

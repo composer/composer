@@ -12,7 +12,7 @@
 
 namespace Composer\Util;
 
-use React\Promise\Promise;
+use React\Promise\PromiseInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -128,7 +128,7 @@ class Filesystem
      *
      * @param  string            $directory
      * @throws \RuntimeException
-     * @return Promise
+     * @return PromiseInterface
      */
     public function removeDirectoryAsync($directory)
     {
@@ -569,7 +569,7 @@ class Filesystem
      * And other possible unforeseen disasters, see https://github.com/composer/composer/pull/9422
      *
      * @param  string $path
-     * @return bool
+     * @return string
      */
     public static function trimTrailingSlash($path)
     {

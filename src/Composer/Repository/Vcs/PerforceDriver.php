@@ -25,8 +25,8 @@ class PerforceDriver extends VcsDriver
 {
     protected $depot;
     protected $branch;
-    /** @var Perforce */
-    protected $perforce;
+    /** @var ?Perforce */
+    protected $perforce = null;
 
     /**
      * {@inheritDoc}
@@ -147,7 +147,7 @@ class PerforceDriver extends VcsDriver
      */
     public function getContents($url)
     {
-        return false;
+        throw new \BadMethodCallException('Not implemented/used in PerforceDriver');
     }
 
     /**

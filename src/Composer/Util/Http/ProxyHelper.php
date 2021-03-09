@@ -116,6 +116,8 @@ class ProxyHelper
                 return $_SERVER[$name];
             }
         }
+
+        return null;
     }
 
     /**

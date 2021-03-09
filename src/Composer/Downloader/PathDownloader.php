@@ -52,7 +52,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         }
 
         if (realpath($path) === $realUrl) {
-            return;
+            return \React\Promise\resolve();
         }
 
         if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
@@ -67,6 +67,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 $realUrl
             ));
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -83,7 +85,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));
             }
 
-            return;
+            return \React\Promise\resolve();
         }
 
         // Get the transport options with default values
@@ -151,6 +153,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if ($output) {
             $this->io->writeError('');
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -176,13 +180,19 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 $this->io->writeError("    <warning>Could not remove junction at " . $path . " - is another process locking it?</warning>");
                 throw new \RuntimeException('Could not reliably remove junction for package ' . $package->getName());
             }
-        } elseif (realpath($path) === realpath($package->getDistUrl())) {
+
+            return \React\Promise\resolve();
+        }
+
+        if (realpath($path) === realpath($package->getDistUrl())) {
             if ($output) {
                 $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
             }
-        } else {
-            return parent::remove($package, $path, $output);
+
+            return \React\Promise\resolve();
         }
+
+        return parent::remove($package, $path, $output);
     }
 
     /**
@@ -199,6 +209,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {
             return $packageVersion['commit'];
         }
+
+        return null;
     }
 
     /**

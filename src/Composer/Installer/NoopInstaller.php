@@ -45,6 +45,7 @@ class NoopInstaller implements InstallerInterface
      */
     public function download(PackageInterface $package, PackageInterface $prevPackage = null)
     {
+        return \React\Promise\resolve();
     }
 
     /**
@@ -52,6 +53,7 @@ class NoopInstaller implements InstallerInterface
      */
     public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
+        return \React\Promise\resolve();
     }
 
     /**
@@ -59,6 +61,7 @@ class NoopInstaller implements InstallerInterface
      */
     public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
+        return \React\Promise\resolve();
     }
 
     /**
@@ -69,6 +72,8 @@ class NoopInstaller implements InstallerInterface
         if (!$repo->hasPackage($package)) {
             $repo->addPackage(clone $package);
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -84,6 +89,8 @@ class NoopInstaller implements InstallerInterface
         if (!$repo->hasPackage($target)) {
             $repo->addPackage(clone $target);
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -95,6 +102,8 @@ class NoopInstaller implements InstallerInterface
             throw new \InvalidArgumentException('Package is not installed: '.$package);
         }
         $repo->removePackage($package);
+
+        return \React\Promise\resolve();
     }
 
     /**

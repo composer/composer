@@ -42,6 +42,7 @@ class ErrorHandlerTest extends TestCase
         }
 
         $array = array('foo' => 'bar');
+        // @phpstan-ignore-next-line
         $array['baz'];
     }
 

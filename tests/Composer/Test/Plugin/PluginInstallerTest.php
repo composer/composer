@@ -54,17 +54,17 @@ class PluginInstallerTest extends TestCase
     protected $directory;
 
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
+     * @var \PHPUnit\Framework\MockObject\MockObject
      */
     protected $im;
 
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
+     * @var \PHPUnit\Framework\MockObject\MockObject
      */
     protected $repository;
 
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
+     * @var BufferIO
      */
     protected $io;
 
@@ -337,6 +337,7 @@ class PluginInstallerTest extends TestCase
         $installer = new PluginInstaller($this->io, $this->composer);
         $this->pm->loadInstalledPlugins();
 
+        /** @var \Composer\Plugin\Capability\CommandProvider[] $caps */
         $caps = $this->pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', array('composer' => $this->composer, 'io' => $this->io));
         $this->assertCount(1, $caps);
         $this->assertInstanceOf('Composer\Plugin\Capability\CommandProvider', $caps[0]);
@@ -368,6 +369,7 @@ class PluginInstallerTest extends TestCase
                    return array($capabilityApi => $capabilityImplementation);
                }));
 
+        /** @var \Composer\Test\Plugin\Mock\Capability $capability */
         $capability = $this->pm->getPluginCapability($plugin, $capabilityApi, array('a' => 1, 'b' => 2));
 
         $this->assertInstanceOf($capabilityApi, $capability);

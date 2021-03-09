@@ -266,7 +266,13 @@ EOT
                 if ($input->getOption('latest')) {
                     $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $input->getOption('minor-only'));
                 }
-                if ($input->getOption('outdated') && $input->getOption('strict') && $latestPackage && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion() && !$latestPackage->isAbandoned()) {
+                if (
+                    $input->getOption('outdated')
+                    && $input->getOption('strict')
+                    && $latestPackage
+                    && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion()
+                    && (!$latestPackage instanceof CompletePackageInterface || !$latestPackage->isAbandoned())
+                ) {
                     $exitCode = 1;
                 }
                 if ($input->getOption('path')) {
@@ -330,6 +336,8 @@ EOT
             $width = $terminal->getWidth();
         } else {
             // For versions of Symfony console before 3.2
+            // TODO remove in composer 2.2
+            // @phpstan-ignore-next-line
             list($width) = $this->getApplication()->getTerminalDimensions();
         }
         if (null === $width) {
@@ -386,6 +394,7 @@ EOT
         $showMinorOnly = $input->getOption('minor-only');
         $ignoredPackages = array_map('strtolower', $input->getOption('ignore'));
         $indent = $showAllTypes ? '  ' : '';
+        /** @var PackageInterface[] $latestPackages */
         $latestPackages = array();
         $exitCode = 0;
         $viewData = array();
@@ -426,7 +435,7 @@ EOT
                         }
 
                         // Determine if Composer is checking outdated dependencies and if current package should trigger non-default exit code
-                        $packageIsUpToDate = $latestPackage && $latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && !$latestPackage->isAbandoned();
+                        $packageIsUpToDate = $latestPackage && $latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion() && (!$latestPackage instanceof CompletePackageInterface || !$latestPackage->isAbandoned());
                         $packageIsIgnored = \in_array($package->getPrettyName(), $ignoredPackages, true);
                         if ($input->getOption('outdated') && ($packageIsUpToDate || $packageIsIgnored)) {
                             continue;
@@ -454,7 +463,7 @@ EOT
                             $packageViewData['path'] = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
                         }
 
-                        if ($latestPackage && $latestPackage->isAbandoned()) {
+                        if ($latestPackage instanceof CompletePackageInterface && $latestPackage->isAbandoned()) {
                             $replacement = is_string($latestPackage->getReplacementPackage())
                                 ? 'Use ' . $latestPackage->getReplacementPackage() . ' instead'
                                 : 'No replacement was suggested';
@@ -670,7 +679,7 @@ EOT
         }
         $io->write('<info>names</info>    : ' . implode(', ', $package->getNames()));
 
-        if ($latestPackage->isAbandoned()) {
+        if ($latestPackage instanceof CompletePackageInterface && $latestPackage->isAbandoned()) {
             $replacement = ($latestPackage->getReplacementPackage() !== null)
                 ? ' The author suggests using the ' . $latestPackage->getReplacementPackage(). ' package instead.'
                 : null;
@@ -836,7 +845,7 @@ EOT
             }
         }
 
-        if ($latestPackage->isAbandoned()) {
+        if ($latestPackage instanceof CompletePackageInterface && $latestPackage->isAbandoned()) {
             $json['replacement'] = $latestPackage->getReplacementPackage();
         }
 
@@ -1045,7 +1054,7 @@ EOT
         $tree = array(
             'name' => $package->getPrettyName(),
             'version' => $package->getPrettyVersion(),
-            'description' => $package->getDescription(),
+            'description' => $package instanceof CompletePackageInterface ? $package->getDescription() : '',
         );
 
         if ($children) {
@@ -1111,16 +1120,16 @@ EOT
     /**
      * Display a package tree
      *
-     * @param  string                  $name
-     * @param  PackageInterface|string $package
-     * @param  InstalledRepository     $installedRepo
-     * @param  RepositoryInterface     $remoteRepos
-     * @param  array                   $packagesInTree
+     * @param  string              $name
+     * @param  Link                $link
+     * @param  InstalledRepository $installedRepo
+     * @param  RepositoryInterface $remoteRepos
+     * @param  array               $packagesInTree
      * @return array
      */
     protected function addTree(
         $name,
-        $package,
+        Link $link,
         InstalledRepository $installedRepo,
         RepositoryInterface $remoteRepos,
         array $packagesInTree
@@ -1130,7 +1139,7 @@ EOT
             $installedRepo,
             $remoteRepos,
             $name,
-            $package->getPrettyConstraint() === 'self.version' ? $package->getConstraint() : $package->getPrettyConstraint()
+            $link->getPrettyConstraint() === 'self.version' ? $link->getConstraint() : $link->getPrettyConstraint()
         );
         if (is_object($package)) {
             $requires = $package->getRequires();

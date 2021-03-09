@@ -386,12 +386,12 @@ class MockedZipDownloader extends ZipDownloader
 {
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
-        return;
+        return \React\Promise\resolve();
     }
 
     public function install(PackageInterface $package, $path, $output = true)
     {
-        return;
+        return \React\Promise\resolve();
     }
 
     public function extract(PackageInterface $package, $file, $path)

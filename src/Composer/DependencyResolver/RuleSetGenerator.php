@@ -12,7 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\PackageInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Repository\PlatformRepository;
 
@@ -41,15 +41,15 @@ class RuleSetGenerator
      * This rule is of the form (-A|B|C), where B and C are the providers of
      * one requirement of the package A.
      *
-     * @param  PackageInterface $package    The package with a requirement
-     * @param  array            $providers  The providers of the requirement
-     * @param  int              $reason     A RULE_* constant describing the
+     * @param  BasePackage $package    The package with a requirement
+     * @param  array       $providers  The providers of the requirement
+     * @param  int         $reason     A RULE_* constant describing the
      *                                      reason for generating this rule
-     * @param  mixed            $reasonData Any data, e.g. the requirement name,
+     * @param  mixed       $reasonData Any data, e.g. the requirement name,
      *                                      that goes with the reason
-     * @return Rule|null        The generated rule or null if tautological
+     * @return Rule|null   The generated rule or null if tautological
      */
-    protected function createRequireRule(PackageInterface $package, array $providers, $reason, $reasonData = null)
+    protected function createRequireRule(BasePackage $package, array $providers, $reason, $reasonData = null)
     {
         $literals = array(-$package->id);
 
@@ -70,11 +70,11 @@ class RuleSetGenerator
      * The rule is (A|B|C) with A, B and C different packages. If the given
      * set of packages is empty an impossible rule is generated.
      *
-     * @param  array $packages   The set of packages to choose from
-     * @param  int   $reason     A RULE_* constant describing the reason for
-     *                           generating this rule
-     * @param  array $reasonData Additional data like the root require or fix request info
-     * @return Rule  The generated rule
+     * @param  BasePackage[] $packages   The set of packages to choose from
+     * @param  int           $reason     A RULE_* constant describing the reason for
+     *                                   generating this rule
+     * @param  array         $reasonData Additional data like the root require or fix request info
+     * @return Rule          The generated rule
      */
     protected function createInstallOneOfRule(array $packages, $reason, $reasonData)
     {
@@ -92,15 +92,15 @@ class RuleSetGenerator
      * The rule for conflicting packages A and B is (-A|-B). A is called the issuer
      * and B the provider.
      *
-     * @param  PackageInterface $issuer     The package declaring the conflict
-     * @param  PackageInterface $provider   The package causing the conflict
-     * @param  int              $reason     A RULE_* constant describing the
+     * @param  BasePackage $issuer     The package declaring the conflict
+     * @param  BasePackage $provider   The package causing the conflict
+     * @param  int         $reason     A RULE_* constant describing the
      *                                      reason for generating this rule
-     * @param  mixed            $reasonData Any data, e.g. the package name, that
+     * @param  mixed       $reasonData Any data, e.g. the package name, that
      *                                      goes with the reason
-     * @return Rule|null        The generated rule
+     * @return Rule|null   The generated rule
      */
-    protected function createRule2Literals(PackageInterface $issuer, PackageInterface $provider, $reason, $reasonData = null)
+    protected function createRule2Literals(BasePackage $issuer, BasePackage $provider, $reason, $reasonData = null)
     {
         // ignore self conflict
         if ($issuer === $provider) {
@@ -142,13 +142,13 @@ class RuleSetGenerator
         $this->rules->add($newRule, $type);
     }
 
-    protected function addRulesForPackage(PackageInterface $package, $ignorePlatformReqs)
+    protected function addRulesForPackage(BasePackage $package, $ignorePlatformReqs)
     {
         $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
 
         while (!$workQueue->isEmpty()) {
-            /** @var PackageInterface $package */
+            /** @var BasePackage $package */
             $package = $workQueue->dequeue();
             if (isset($this->addedMap[$package->id])) {
                 continue;
@@ -192,7 +192,7 @@ class RuleSetGenerator
 
     protected function addConflictRules($ignorePlatformReqs = false)
     {
-        /** @var PackageInterface $package */
+        /** @var BasePackage $package */
         foreach ($this->addedMap as $package) {
             foreach ($package->getConflicts() as $link) {
                 // even if conlict ends up being with an alias, there would be at least one actual package by this name

@@ -39,7 +39,7 @@ class ErrorHandler
     {
         // error code is not included in error_reporting
         if (!(error_reporting() & $level)) {
-            return;
+            return true;
         }
 
         if (filter_var(ini_get('xdebug.scream'), FILTER_VALIDATE_BOOLEAN)) {

@@ -20,6 +20,8 @@ use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
+use Composer\Package\CompleteAliasPackage;
+use Composer\Package\CompletePackageInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\StabilityFilter;
 
@@ -252,7 +254,11 @@ class RepositorySet
                     while ($package instanceof AliasPackage) {
                         $package = $package->getAliasOf();
                     }
-                    $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
+                    if ($package instanceof CompletePackageInterface) {
+                        $aliasPackage = new CompleteAliasPackage($package, $alias['alias_normalized'], $alias['alias']);
+                    } else {
+                        $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);
+                    }
                     $aliasPackage->setRootPackageAlias(true);
                     $packages[] = $aliasPackage;
                 }

@@ -29,5 +29,7 @@ class TarDownloader extends ArchiveDownloader
         // Can throw an UnexpectedValueException
         $archive = new \PharData($file);
         $archive->extractTo($path, null, true);
+
+        return \React\Promise\resolve();
     }
 }

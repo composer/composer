@@ -119,6 +119,7 @@ class RepositoryManagerTest extends TestCase
         );
 
         $rm->setRepositoryClass('path', 'Composer\Repository\PathRepository');
+        /** @var \Composer\Repository\FilterRepository $repo */
         $repo = $rm->createRepository('path', array('type' => 'path', 'url' => __DIR__, 'only' => array('foo/bar')));
 
         $this->assertInstanceOf('Composer\Repository\FilterRepository', $repo);

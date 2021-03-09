@@ -165,9 +165,9 @@ class FilterRepository implements RepositoryInterface
     public function getProviders($packageName)
     {
         $result = array();
-        foreach ($this->repo->getProviders($packageName) as $provider) {
+        foreach ($this->repo->getProviders($packageName) as $name => $provider) {
             if ($this->isAllowed($provider['name'])) {
-                $result[] = $provider;
+                $result[$name] = $provider;
             }
         }
 

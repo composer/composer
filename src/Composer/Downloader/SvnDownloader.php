@@ -35,6 +35,8 @@ class SvnDownloader extends VcsDownloader
         if (null === $util->binaryVersion()) {
             throw new \RuntimeException('svn was not found in your PATH, skipping source download');
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -55,6 +57,8 @@ class SvnDownloader extends VcsDownloader
 
         $this->io->writeError(" Checking out ".$package->getSourceReference());
         $this->execute($package, $url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -77,6 +81,8 @@ class SvnDownloader extends VcsDownloader
 
         $this->io->writeError(" Checking out " . $ref);
         $this->execute($target, $url, "svn switch" . $flags, sprintf("%s/%s", $url, $ref), $path);
+
+        return \React\Promise\resolve();
     }
 
     /**

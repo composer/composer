@@ -302,7 +302,7 @@ class RemoteFilesystem
                 $e->setStatusCode(self::findStatusCode($http_response_header));
                 try {
                     $e->setResponse($this->decodeResult($result, $http_response_header));
-                } catch (\Exception $e) {
+                } catch (\Exception $discarded) {
                     $e->setResponse($result);
                 }
 

@@ -29,11 +29,11 @@ class ProxyManager
     private $hasProxy;
     private $info;
     private $lastProxy;
-    /** @var NoProxyPattern */
-    private $noProxyHandler;
+    /** @var ?NoProxyPattern */
+    private $noProxyHandler = null;
 
-    /** @var ProxyManager */
-    private static $instance;
+    /** @var ?ProxyManager */
+    private static $instance = null;
 
     private function __construct()
     {
@@ -145,7 +145,7 @@ class ProxyManager
         if ($this->hasProxy) {
             $this->info = implode(', ', $info);
             if ($noProxy) {
-                $this->noProxyHandler = array(new NoProxyPattern($noProxy), 'test');
+                $this->noProxyHandler = new NoProxyPattern($noProxy);
             }
         }
     }
@@ -176,7 +176,7 @@ class ProxyManager
     private function noProxy($requestUrl)
     {
         if ($this->noProxyHandler) {
-            if (call_user_func($this->noProxyHandler, $requestUrl)) {
+            if ($this->noProxyHandler->test($requestUrl)) {
                 $this->lastProxy = 'excluded by no_proxy';
 
                 return true;

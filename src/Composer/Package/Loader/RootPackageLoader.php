@@ -16,7 +16,9 @@ use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Config;
 use Composer\IO\IOInterface;
+use Composer\Package\Package;
 use Composer\Package\RootPackageInterface;
+use Composer\Package\RootAliasPackage;
 use Composer\Repository\RepositoryFactory;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
@@ -58,13 +60,18 @@ class RootPackageLoader extends ArrayLoader
     }
 
     /**
-     * @param  array                $config package data
-     * @param  string               $class  FQCN to be instantiated
-     * @param  string               $cwd    cwd of the root package to be used to guess the version if it is not provided
-     * @return RootPackageInterface
+     * @template PackageClass of RootPackage
+     * @param  array                        $config package data
+     * @param  class-string<PackageClass>   $class  FQCN to be instantiated
+     * @param  string                       $cwd    cwd of the root package to be used to guess the version if it is not provided
+     * @return RootPackage|RootAliasPackage
      */
     public function load(array $config, $class = 'Composer\Package\RootPackage', $cwd = null)
     {
+        if ($class !== 'Composer\Package\RootPackage') {
+            trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
+        }
+
         if (!isset($config['name'])) {
             $config['name'] = '__root__';
         } elseif ($err = ValidatingArrayLoader::hasPackageNamingError($config['name'])) {
@@ -105,9 +112,16 @@ class RootPackageLoader extends ArrayLoader
             }
         }
 
-        $realPackage = $package = parent::load($config, $class);
-        if ($realPackage instanceof AliasPackage) {
+        /** @var RootPackage|RootAliasPackage $package */
+        $package = parent::load($config, $class);
+        if ($package instanceof RootAliasPackage) {
             $realPackage = $package->getAliasOf();
+        } else {
+            $realPackage = $package;
+        }
+
+        if (!$realPackage instanceof RootPackage) {
+            throw new \LogicException('Expecting a Composer\Package\RootPackage at this point');
         }
 
         if ($autoVersioned) {

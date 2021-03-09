@@ -26,7 +26,7 @@ use Composer\Util\Filesystem;
 class PerforceDownloaderTest extends TestCase
 {
     protected $config;
-    /** @var PerforceDownloader */
+    /** @var ?PerforceDownloader */
     protected $downloader;
     protected $io;
     protected $package;

@@ -25,7 +25,7 @@ class NoProxyPattern
     protected $hostNames = array();
 
     /**
-     * @var object[]
+     * @var (null|object)[]
      */
     protected $rules = array();
 
@@ -74,7 +74,7 @@ class NoProxyPattern
      *
      * @param string $url
      *
-     * @return bool|stdclass
+     * @return bool|stdClass
      */
     protected function getUrlData($url)
     {
@@ -108,9 +108,9 @@ class NoProxyPattern
     /**
      * Returns true if the url is matched by a rule
      *
-     * @param int    $index
-     * @param string $hostName
-     * @param string $url
+     * @param int      $index
+     * @param string   $hostName
+     * @param stdClass $url
      *
      * @return bool
      */
@@ -198,7 +198,7 @@ class NoProxyPattern
      * Creates an object containing IP data if the host is an IP address
      *
      * @param string        $host
-     * @param null|stdclass $ipdata      Set by method if IP address found
+     * @param null|stdClass $ipdata      Set by method if IP address found
      * @param bool          $allowPrefix Whether a CIDR prefix-length is expected
      *
      * @return bool False if the host contains invalid data
@@ -334,9 +334,9 @@ class NoProxyPattern
      *
      * @param string        $host
      * @param int           $port
-     * @param null|stdclass $ipdata
+     * @param null|stdClass $ipdata
      *
-     * @return stdclass
+     * @return stdClass
      */
     private function makeData($host, $port, $ipdata)
     {
@@ -355,7 +355,7 @@ class NoProxyPattern
      * @param int         $size    Byte size of in_addr
      * @param null|string $netmask Network mask
      *
-     * @return stdclass
+     * @return stdClass
      */
     private function makeIpData($ip, $size, $netmask)
     {
