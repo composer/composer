@@ -1,0 +1,35 @@
+--TEST--
+
+Test that a package which has a conflict does not get installed and has to be downgraded
+
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "conflicter/pkg", "version": "1.0.1", "conflict": { "victim/pkg": "1.1.0"} },
+                { "name": "victim/pkg", "version": "1.0.0" },
+                { "name": "victim/pkg", "version": "1.0.1" },
+                { "name": "victim/pkg", "version": "1.0.2" },
+                { "name": "victim/pkg", "version": "1.1.0" },
+                { "name": "victim/pkg", "version": "1.2.0" }
+            ]
+        }
+    ],
+    "require": {
+        "conflicter/pkg": "^1.0",
+        "victim/pkg": "^1 <1.2"
+    }
+}
+
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+0
+
+--EXPECT--
+Installing conflicter/pkg (1.0.1)
+Installing victim/pkg (1.0.2)

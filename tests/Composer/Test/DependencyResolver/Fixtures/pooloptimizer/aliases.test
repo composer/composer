@@ -1,0 +1,55 @@
+--TEST--
+Test aliased packages remain untouched.
+
+--REQUEST--
+{
+    "require": {
+        "package/a": "^1.0",
+        "package/b": "dev-master as 1.0.1"
+    }
+}
+
+
+--POOL-BEFORE--
+[
+        {
+            "name": "package/a",
+            "version": "1.0.0",
+            "require": {
+                "package/b": "^1.0"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "dev-master"
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.0"
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.1"
+        }
+]
+
+
+--POOL-AFTER--
+[
+        {
+            "name": "package/a",
+            "version": "1.0.0",
+            "require": {
+                "package/b": "^1.0"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "dev-master"
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.1"
+        }
+]
+

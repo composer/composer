@@ -199,6 +199,27 @@ class InstallerTest extends TestCase
      */
     public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult)
     {
+        $this->doTestIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult);
+    }
+
+    /**
+     * @dataProvider getIntegrationTests
+     */
+    public function testIntegrationWithDisabledPoolOptimizer($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult)
+    {
+        // Disable output comparison
+        $expectOutput = null;
+
+        // Disable pool optimizer
+        putenv('COMPOSER_POOL_OPTIMIZER=0');
+
+        $this->doTestIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult);
+
+        putenv('COMPOSER_POOL_OPTIMIZER');
+    }
+
+    private function doTestIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult)
+    {
         if ($condition) {
             eval('$res = '.$condition.';');
             if (!$res) {
