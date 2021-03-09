@@ -485,7 +485,7 @@ get machine-readable output.
 
 ### Options
 
-* **--format:** Format of the output: text, json or summary (default: "text")
+* **--format (-f):** Lets you pick between text (default) or json output format.
 
 ## depends (why)
 
