@@ -27,6 +27,7 @@ use Composer\Plugin\PostFileDownloadEvent;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
+use Composer\Util\Silencer;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Url as UrlUtil;
 use Composer\Util\ProcessExecutor;
@@ -313,6 +314,16 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $this->filesystem->emptyDirectory($path);
         $this->filesystem->ensureDirectoryExists($path);
         $this->filesystem->rename($this->getFileName($package, $path), $path . '/' . pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME));
+
+        if ($package->getBinaries()) {
+            // Single files can not have a mode set like files in archives
+            // so we make sure if the file is a binary that it is executable
+            foreach ($package->getBinaries() as $bin) {
+                if (file_exists($path . '/' . $bin) && !is_executable($path . '/' . $bin)) {
+                    Silencer::call('chmod', $path . '/' . $bin, 0777 & ~umask());
+                }
+            }
+        }
     }
 
     /**
