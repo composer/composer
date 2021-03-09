@@ -268,7 +268,7 @@ class Problem
             });
 
             if (!$nonLockedPackages) {
-                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' in lock file but not in remote repositories, make sure you avoid updating this package to keep the one from lock file.');
+                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.');
             }
 
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.');
@@ -402,6 +402,13 @@ class Problem
             } else {
                 break;
             }
+        }
+
+        if ($nextRepo instanceof LockArrayRepository) {
+            $singular = count($higherRepoPackages) === 1;
+
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ',
+                'found '.self::getPackageList($nextRepoPackages, $isVerbose).' in the lock file and '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' but ' . ($singular ? 'it does' : 'these do') . ' not match your '.$reason.' and ' . ($singular ? 'is' : 'are') . ' therefore not installable. Make sure you either fix the '.$reason.' or avoid updating this package to keep the one from the lock file.');
         }
 
         return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your '.$reason.' and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');

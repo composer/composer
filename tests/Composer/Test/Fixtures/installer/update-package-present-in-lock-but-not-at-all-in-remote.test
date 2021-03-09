@@ -1,0 +1,52 @@
+--TEST--
+Update package which is in lock file but not in remote repo at all should show this error correctly
+--COMPOSER--
+{
+    "minimum-stability": "dev",
+    "repositories": [
+        {"type": "package", "package": [
+            {"name": "main/dep", "version": "1.0.0", "require": {"locked/dep": "^2.1"}}
+        ]}
+    ],
+    "require": {
+        "main/dep": "*"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "main/dep", "version": "1.0.0",
+            "require": {"locked/dep": "^2.1"},
+            "type": "library"
+        },
+        {
+            "name": "locked/dep", "version": "2.1.0",
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update main/dep --with-all-dependencies
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires main/dep * -> satisfiable by main/dep[1.0.0].
+    - main/dep 1.0.0 requires locked/dep ^2.1 -> found locked/dep[2.1.0] in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.
+
+--EXPECT--
