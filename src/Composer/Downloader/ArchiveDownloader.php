@@ -109,6 +109,34 @@ abstract class ArchiveDownloader extends FileDownloader
 
                 return iterator_to_array($finder);
             };
+            $renameRecursively = null;
+            /**
+             * Renames (and recursively merges if needed) a folder into another one
+             *
+             * For custom installers, where packages may share paths, and given Composer 2's parallelism, we need to make sure
+             * that the source directory gets merged into the target one if the target exists. Otherwise rename() by default would
+             * put the source into the target e.g. src/ => target/src/ (assuming target exists) instead of src/ => target/
+             *
+             * @param string $from Directory
+             * @param string $to Directory
+             * @return void
+             */
+            $renameRecursively = function ($from, $to) use ($filesystem, $getFolderContent, $package, &$renameRecursively) {
+                $contentDir = $getFolderContent($from);
+
+                // move files back out of the temp dir
+                foreach ($contentDir as $file) {
+                    $file = (string) $file;
+                    if (is_dir($to . '/' . basename($file))) {
+                        if (!is_dir($file)) {
+                            throw new \RuntimeException('Installing '.$package.' would lead to overwriting the '.$to.'/'.basename($file).' directory with a file from the package, invalid operation.');
+                        }
+                        $renameRecursively($file, $to . '/' . basename($file));
+                    } else {
+                        $filesystem->rename($file, $to . '/' . basename($file));
+                    }
+                }
+            };
 
             $renameAsOne = false;
             if (!file_exists($path) || ($filesystem->isDirEmpty($path) && $filesystem->removeDirectory($path))) {
@@ -128,15 +156,12 @@ abstract class ArchiveDownloader extends FileDownloader
                 $filesystem->rename($extractedDir, $path);
             } else {
                 // only one dir in the archive, extract its contents out of it
+                $from = $temporaryDir;
                 if ($singleDirAtTopLevel) {
-                    $contentDir = $getFolderContent((string) reset($contentDir));
+                    $from = (string) reset($contentDir);
                 }
 
-                // move files back out of the temp dir
-                foreach ($contentDir as $file) {
-                    $file = (string) $file;
-                    $filesystem->rename($file, $path . '/' . basename($file));
-                }
+                $renameRecursively($from, $path);
             }
 
             $filesystem->removeDirectory($temporaryDir);
