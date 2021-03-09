@@ -125,6 +125,8 @@ abstract class BaseIO implements IOInterface, LoggerInterface
         }
 
         foreach ($githubOauth as $domain => $token) {
+            // allowed chars for GH tokens are from https://github.blog/changelog/2021-03-04-authentication-token-format-updates/
+            // plus dots which were at some point used for GH app integration tokens
             if (!preg_match('{^[.A-Za-z0-9_]+$}', $token)) {
                 throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
             }
