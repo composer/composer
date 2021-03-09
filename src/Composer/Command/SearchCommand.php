@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Factory;
+use Composer\Json\JsonFile;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -42,6 +43,7 @@ class SearchCommand extends BaseCommand
             ->setDefinition(array(
                 new InputOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in name'),
                 new InputOption('type', 't', InputOption::VALUE_REQUIRED, 'Search for a specific package type'),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
                 new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
             ))
             ->setHelp(
@@ -60,6 +62,14 @@ EOT
         // init repos
         $platformRepo = new PlatformRepository;
         $io = $this->getIO();
+
+        $format = $input->getOption('format');
+        if (!in_array($format, array('text', 'json'))) {
+            $io->writeError(sprintf('Unsupported format "%s". See help for supported formats.', $format));
+
+            return 1;
+        }
+
         if (!($composer = $this->getComposer(false))) {
             $composer = Factory::create($this->getIO(), array(), $input->hasParameterOption('--no-plugins'));
         }
@@ -76,8 +86,12 @@ EOT
         $flags = $onlyName ? RepositoryInterface::SEARCH_NAME : RepositoryInterface::SEARCH_FULLTEXT;
         $results = $repos->search(implode(' ', $input->getArgument('tokens')), $flags, $type);
 
-        foreach ($results as $result) {
-            $io->write($result['name'] . (isset($result['description']) ? ' '. $result['description'] : ''));
+        if ($results && $format === 'text') {
+            foreach ($results as $result) {
+                $io->write($result['name'] . (isset($result['description']) ? ' '. $result['description'] : ''));
+            }
+        } elseif ($format === 'json') {
+            $io->write(JsonFile::encode($results));
         }
 
         return 0;
