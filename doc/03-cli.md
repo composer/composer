@@ -360,6 +360,10 @@ You can also search for more than one term by passing multiple arguments.
 * **--only-name (-N):** Search only in name.
 * **--type (-t):** Search for a specific package type.
 * **--format (-f):** Lets you pick between text (default) or json output format.
+  Note that in the json, only the name and description keys are guaranteed to be
+  present. The rest (`url`, `repository`, `downloads` and `favers`) are available
+  for Packagist.org search results and other repositories may return more or less
+  data.
 
 ## show
 
