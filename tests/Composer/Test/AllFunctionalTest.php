@@ -78,7 +78,7 @@ class AllFunctionalTest extends TestCase
             }
         }
 
-        $proc = new Process('php -dphar.readonly=0 '.escapeshellarg('./bin/compile'), $target);
+        $proc = new Process((defined('PHP_BINARY') ? escapeshellcmd(PHP_BINARY) : 'php').' -dphar.readonly=0 '.escapeshellarg('./bin/compile'), $target);
         $exitcode = $proc->run();
 
         if ($exitcode !== 0 || trim($proc->getOutput())) {
@@ -110,7 +110,7 @@ class AllFunctionalTest extends TestCase
             'COMPOSER_CACHE_DIR' => $this->testDir.'cache',
         );
 
-        $cmd = 'php '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
+        $cmd = (defined('PHP_BINARY') ? escapeshellcmd(PHP_BINARY) : 'php') .' '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
         $proc = new Process($cmd, $this->testDir, $env, null, 300);
         $output = '';
 

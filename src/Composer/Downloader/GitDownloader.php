@@ -519,7 +519,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     {
         $path = $this->normalizePath($path);
         if (0 !== $this->process->execute('git clean -df && git reset --hard', $output, $path)) {
-            throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
+            throw new \RuntimeException("Could not reset changes\n\n:".$output);
         }
 
         $this->hasDiscardedChanges[$path] = true;
@@ -533,7 +533,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     {
         $path = $this->normalizePath($path);
         if (0 !== $this->process->execute('git stash --include-untracked', $output, $path)) {
-            throw new \RuntimeException("Could not stash changes\n\n:".$this->process->getErrorOutput());
+            throw new \RuntimeException("Could not stash changes\n\n:".$output);
         }
 
         $this->hasStashedChanges[$path] = true;
@@ -547,7 +547,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     {
         $path = $this->normalizePath($path);
         if (0 !== $this->process->execute('git diff HEAD', $output, $path)) {
-            throw new \RuntimeException("Could not view diff\n\n:".$this->process->getErrorOutput());
+            throw new \RuntimeException("Could not view diff\n\n:".$output);
         }
 
         $this->io->writeError($output);
