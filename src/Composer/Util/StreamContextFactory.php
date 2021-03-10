@@ -59,7 +59,7 @@ final class StreamContextFactory
      * @param string $url
      * @param array  $options
      * @param bool   $forCurl When true, will not add proxy values as these are handled separately
-     * @phpstan-return array{http:{header: string[], proxy?: string, request_fulluri: bool}, ssl: array}
+     * @phpstan-return array{http: array{header: string[], proxy?: string, request_fulluri: bool}, ssl: array}
      * @return array formatted as a stream context array
      */
     public static function initOptions($url, array $options, $forCurl = false)
