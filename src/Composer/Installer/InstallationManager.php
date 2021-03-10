@@ -26,6 +26,7 @@ use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Loop;
+use Composer\Util\Platform;
 use React\Promise\PromiseInterface;
 
 /**
@@ -439,6 +440,8 @@ class InstallationManager
         if (count($promises)) {
             $this->waitOnPromises($promises);
         }
+
+        Platform::workaroundFilesystemIssues();
 
         foreach ($postExecCallbacks as $cb) {
             $cb();

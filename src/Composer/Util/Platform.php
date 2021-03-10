@@ -19,6 +19,9 @@ namespace Composer\Util;
  */
 class Platform
 {
+    /** @var ?bool */
+    private static $isVagrantGuest = null;
+
     /**
      * Parses tildes and environment variables in paths.
      *
@@ -116,5 +119,38 @@ class Platform
         $stat = @fstat($fd);
         // Check if formatted mode is S_IFCHR
         return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
+    }
+
+    public static function workaroundFilesystemIssues()
+    {
+        if (self::isVagrantGuest()) {
+            usleep(200000);
+        }
+    }
+
+    /**
+     * Attempts detection of vagrant guest VMs
+     *
+     * This works based on the process' user being "vagrant", or the COMPOSER_RUNTIME_ENV env var being set to "vagrant"
+     *
+     * @return bool
+     */
+    private static function isVagrantGuest()
+    {
+        if (null === self::$isVagrantGuest) {
+            self::$isVagrantGuest = false;
+            if (!self::isWindows() && function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
+                $processUser = posix_getpwuid(posix_geteuid());
+                if ($processUser && $processUser['name'] === 'vagrant') {
+                    return self::$isVagrantGuest = true;
+                }
+            }
+
+            if (getenv('COMPOSER_RUNTIME_ENV') === 'vagrant') {
+                return self::$isVagrantGuest = true;
+            }
+        }
+
+        return self::$isVagrantGuest;
     }
 }
