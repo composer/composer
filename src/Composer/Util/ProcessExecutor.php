@@ -38,7 +38,7 @@ class ProcessExecutor
     protected $io;
 
     /**
-     * @psalm-var array<int, array<string, mixed>>
+     * @phpstan-var array<int, array<string, mixed>>
      */
     private $jobs = array();
     private $runningJobs = 0;

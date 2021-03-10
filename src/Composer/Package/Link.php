@@ -63,7 +63,7 @@ class Link
 
     /**
      * @var string
-     * @psalm-var self::TYPE_* $description
+     * @phpstan-var self::TYPE_* $description
      */
     protected $description;
 

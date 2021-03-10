@@ -29,12 +29,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 {
     /**
      * @var bool[]
-     * @psalm-var array<string, bool>
+     * @phpstan-var array<string, bool>
      */
     private $hasStashedChanges = array();
     /**
      * @var bool[]
-     * @psalm-var array<string, bool>
+     * @phpstan-var array<string, bool>
      */
     private $hasDiscardedChanges = array();
     /**
@@ -43,7 +43,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     private $gitUtil;
     /**
      * @var array
-     * @psalm-var array<int, array<string, bool>>
+     * @phpstan-var array<int, array<string, bool>>
      */
     private $cachedPackages = array();
 

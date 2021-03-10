@@ -46,12 +46,12 @@ class PoolBuilder
     private $stabilityFlags;
     /**
      * @var array[]
-     * @psalm-var array<string, array<string, array{alias: string, alias_normalized: string}>>
+     * @phpstan-var array<string, array<string, array{alias: string, alias_normalized: string}>>
      */
     private $rootAliases;
     /**
      * @var string[]
-     * @psalm-var array<string, string>
+     * @phpstan-var array<string, string>
      */
     private $rootReferences;
     /**
@@ -64,22 +64,22 @@ class PoolBuilder
     private $io;
     /**
      * @var array[]
-     * @psalm-var array<string, AliasPackage[]>
+     * @phpstan-var array<string, AliasPackage[]>
      */
     private $aliasMap = array();
     /**
      * @var ConstraintInterface[]
-     * @psalm-var array<string, ConstraintInterface>
+     * @phpstan-var array<string, ConstraintInterface>
      */
     private $packagesToLoad = array();
     /**
      * @var ConstraintInterface[]
-     * @psalm-var array<string, ConstraintInterface>
+     * @phpstan-var array<string, ConstraintInterface>
      */
     private $loadedPackages = array();
     /**
      * @var array[]
-     * @psalm-var array<int, array<string, array<string, PackageInterface>>>
+     * @phpstan-var array<int, array<string, array<string, PackageInterface>>>
      */
     private $loadedPerRepo = array();
     /**
@@ -88,7 +88,7 @@ class PoolBuilder
     private $packages = array();
     /**
      * @var PackageInterface[]
-     * @psalm-var list<PackageInterface>
+     * @phpstan-var list<PackageInterface>
      */
     private $unacceptableFixedOrLockedPackages = array();
     private $updateAllowList = array();
@@ -105,7 +105,7 @@ class PoolBuilder
     private $maxExtendedReqs = array();
     /**
      * @var array
-     * @psalm-var array<string, bool>
+     * @phpstan-var array<string, bool>
      */
     private $updateAllowWarned = array();
 
@@ -113,13 +113,13 @@ class PoolBuilder
 
     /**
      * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
-     * @psalm-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
+     * @phpstan-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
      * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
-     * @psalm-param array<string, BasePackage::STABILITY_*> $stabilityFlags
+     * @phpstan-param array<string, BasePackage::STABILITY_*> $stabilityFlags
      * @param array[] $rootAliases
-     * @psalm-param array<string, array<string, array{alias: string, alias_normalized: string}>> $rootAliases
+     * @phpstan-param array<string, array<string, array{alias: string, alias_normalized: string}>> $rootAliases
      * @param string[] $rootReferences an array of package name => source reference
-     * @psalm-param array<string, string> $rootReferences
+     * @phpstan-param array<string, string> $rootReferences
      */
     public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, EventDispatcher $eventDispatcher = null)
     {

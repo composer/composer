@@ -23,7 +23,7 @@ use Composer\Repository\PlatformRepository;
 abstract class BasePackage implements PackageInterface
 {
     /**
-     * @psalm-var array<string, array{description: string, method: Link::TYPE_*}>
+     * @phpstan-var array<string, array{description: string, method: Link::TYPE_*}>
      */
     public static $supportedLinkTypes = array(
         'require' => array('description' => 'requires', 'method' => Link::TYPE_REQUIRE),

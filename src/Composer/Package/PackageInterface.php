@@ -219,7 +219,7 @@ interface PackageInterface
      * @param  int    $displayMode One of the DISPLAY_ constants on this interface determining display of references
      * @return string version
      *
-     * @psalm-param self::DISPLAY_SOURCE_REF_IF_DEV|self::DISPLAY_SOURCE_REF|self::DISPLAY_DIST_REF $displayMode
+     * @phpstan-param self::DISPLAY_SOURCE_REF_IF_DEV|self::DISPLAY_SOURCE_REF|self::DISPLAY_DIST_REF $displayMode
      */
     public function getFullPrettyVersion($truncate = true, $displayMode = self::DISPLAY_SOURCE_REF_IF_DEV);
 
@@ -282,7 +282,7 @@ interface PackageInterface
      * combination with this package.
      *
      * @return array An array of package suggestions with descriptions
-     * @psalm-return array<string, string>
+     * @phpstan-return array<string, string>
      */
     public function getSuggests();
 
@@ -295,7 +295,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
-     * @psalm-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, files?: list<string>}
+     * @phpstan-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, files?: list<string>}
      */
     public function getAutoload();
 
@@ -308,7 +308,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of dev autoloading rules
-     * @psalm-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, files?: list<string>}
+     * @phpstan-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, files?: list<string>}
      */
     public function getDevAutoload();
 
