@@ -1,0 +1,63 @@
+--TEST--
+Partial updates always update path repos which are symlinked, but not those which are not
+
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "Fixtures/functional/installed-versions/plugin-a"
+        },
+        {
+            "type": "path",
+            "url": "Fixtures/functional/installed-versions/plugin-b",
+            "options": {
+                "symlink": false
+            }
+       },
+       {
+            "type": "package",
+            "package": [
+                { "name": "symfony/console", "version": "1.0.0" },
+                { "name": "c/uptodate", "version": "2.0.0" }
+            ]
+        }
+    ],
+    "require": {
+        "plugin/a": "*",
+        "plugin/b": "*",
+        "c/uptodate": "*"
+    }
+}
+
+--LOCK--
+{
+    "packages": [
+        { "name": "plugin/a", "version": "1.0.0", "dist": { "type": "path", "url": "..." }, "transport-options": {} },
+        { "name": "plugin/b", "version": "1.0.0", "dist": { "type": "path", "url": "..." }, "transport-options": {"symlink": false} },
+        { "name": "c/uptodate", "version": "2.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+
+--INSTALLED--
+[
+    { "name": "plugin/a", "version": "1.0.0" },
+    { "name": "plugin/b", "version": "1.0.0" },
+    { "name": "c/uptodate", "version": "2.0.0" }
+]
+
+--RUN--
+update c/uptodate
+
+--EXPECT--
+Installing symfony/console (1.0.0)
+Upgrading plugin/a (1.0.0 => 1.1.1)
