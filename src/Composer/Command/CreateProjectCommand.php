@@ -405,7 +405,7 @@ EOT
             }
         }
         // handler Ctrl+C for Windows on PHP 7.4+
-        if (function_exists('sapi_windows_set_ctrl_handler')) {
+        if (function_exists('sapi_windows_set_ctrl_handler') && PHP_SAPI === 'cli') {
             @mkdir($directory, 0777, true);
             if ($realDir = realpath($directory)) {
                 sapi_windows_set_ctrl_handler(function () use ($realDir) {
