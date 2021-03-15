@@ -225,6 +225,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 throw $e;
             }
 
+            if ($e instanceof MaxFileSizeExceededException) {
+                throw $e;
+            }
+
             if ($e instanceof TransportException) {
                 // if we got an http response with a proper code, then requesting again will probably not help, abort
                 if ((0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
