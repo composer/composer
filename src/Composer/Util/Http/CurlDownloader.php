@@ -377,16 +377,7 @@ class CurlDownloader
                     $e->setResponseInfo($progress);
                 }
 
-                if (is_resource($job['headerHandle'])) {
-                    fclose($job['headerHandle']);
-                }
-                if (is_resource($job['bodyHandle'])) {
-                    fclose($job['bodyHandle']);
-                }
-                if ($job['filename']) {
-                    @unlink($job['filename'].'~');
-                }
-                call_user_func($job['reject'], $e);
+                $this->rejectJob($job, $e);
             }
         }
 
@@ -403,12 +394,12 @@ class CurlDownloader
                 if (isset($this->jobs[$i]['options']['max_file_size'])) {
                     // Compare max_file_size with the content-length header this value will be -1 until the header is parsed
                     if ($this->jobs[$i]['options']['max_file_size'] < $progress['download_content_length']) {
-                        throw new MaxFileSizeExceededException('Maximum allowed download size reached. Content-length header indicates ' . $progress['download_content_length'] . ' bytes. Allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes');
+                        $this->rejectJob($this->jobs[$i], new MaxFileSizeExceededException('Maximum allowed download size reached. Content-length header indicates ' . $progress['download_content_length'] . ' bytes. Allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes'));
                     }
 
                     // Compare max_file_size with the download size in bytes
                     if ($this->jobs[$i]['options']['max_file_size'] < $progress['size_download']) {
-                        throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . $progress['size_download'] . ' of allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes');
+                        $this->rejectJob($this->jobs[$i], new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . $progress['size_download'] . ' of allowed ' .  $this->jobs[$i]['options']['max_file_size'] . ' bytes'));
                     }
                 }
 
@@ -519,6 +510,20 @@ class CurlDownloader
         }
 
         return new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')' . $details, $response->getStatusCode());
+    }
+
+    private function rejectJob(array $job, \Exception $e)
+    {
+        if (is_resource($job['headerHandle'])) {
+            fclose($job['headerHandle']);
+        }
+        if (is_resource($job['bodyHandle'])) {
+            fclose($job['bodyHandle']);
+        }
+        if ($job['filename']) {
+            @unlink($job['filename'].'~');
+        }
+        call_user_func($job['reject'], $e);
     }
 
     private function checkCurlResult($code)
