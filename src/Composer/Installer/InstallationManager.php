@@ -208,7 +208,7 @@ class InstallationManager
         };
 
         $handleInterruptsUnix = function_exists('pcntl_async_signals') && function_exists('pcntl_signal');
-        $handleInterruptsWindows = function_exists('sapi_windows_set_ctrl_handler');
+        $handleInterruptsWindows = function_exists('sapi_windows_set_ctrl_handler') && PHP_SAPI === 'cli';
         $prevHandler = null;
         $windowsHandler = null;
         if ($handleInterruptsUnix) {

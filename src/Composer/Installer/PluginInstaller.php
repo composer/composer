@@ -75,6 +75,7 @@ class PluginInstaller extends LibraryInstaller
 
         return $promise->then(function () use ($self, $pluginManager, $package, $repo) {
             try {
+                Platform::workaroundFilesystemIssues();
                 $pluginManager->registerPackage($package, true);
             } catch (\Exception $e) {
                 $self->rollbackInstall($e, $repo, $package);
