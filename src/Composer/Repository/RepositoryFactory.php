@@ -135,6 +135,7 @@ class RepositoryFactory
         $rm->setRepositoryClass('hg-bitbucket', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
         $rm->setRepositoryClass('path', 'Composer\Repository\PathRepository');
+        $rm->setRepositoryClass('app', 'Composer\Repository\AppRepository');
 
         return $rm;
     }
