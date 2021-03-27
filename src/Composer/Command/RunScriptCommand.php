@@ -103,6 +103,9 @@ EOT
             ProcessExecutor::setTimeout((int) $timeout);
         }
 
+        $_SERVER['COMPOSER_DEV_MODE'] = $devMode ? '1' : '0';
+        putenv('COMPOSER_DEV_MODE='.$_SERVER['COMPOSER_DEV_MODE']);
+
         return $composer->getEventDispatcher()->dispatchScript($script, $devMode, $args);
     }
 
