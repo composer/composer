@@ -19,6 +19,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 
 /**
  * @author Fabien Potencier <fabien.potencier@gmail.com>
@@ -106,7 +107,11 @@ EOT
         $_SERVER['COMPOSER_DEV_MODE'] = $devMode ? '1' : '0';
         putenv('COMPOSER_DEV_MODE='.$_SERVER['COMPOSER_DEV_MODE']);
 
-        return $composer->getEventDispatcher()->dispatchScript($script, $devMode, $args);
+        try {
+            return $composer->getEventDispatcher()->dispatchScript($script, $devMode, $args);
+        }  catch( ProcessTimedOutException $e) {
+            throw new \RuntimeException($e->getMessage() ."\nsee https://getcomposer.org/doc/06-config.md#process-timeout");
+        }
     }
 
     protected function listScripts(OutputInterface $output)

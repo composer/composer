@@ -16,6 +16,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -61,6 +62,10 @@ EOT
 
         $args = $input->getArguments();
 
-        return $composer->getEventDispatcher()->dispatchScript($this->script, $input->getOption('dev') || !$input->getOption('no-dev'), $args['args']);
+        try {
+            return $composer->getEventDispatcher()->dispatchScript($this->script, $input->getOption('dev') || !$input->getOption('no-dev'), $args['args']);
+        }  catch( ProcessTimedOutException $e) {
+            throw new \RuntimeException($e->getMessage() ."\nsee https://getcomposer.org/doc/06-config.md#process-timeout");
+        }
     }
 }
