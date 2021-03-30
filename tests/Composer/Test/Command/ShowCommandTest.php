@@ -22,15 +22,22 @@ class ShowCommandTest extends TestCase
     public function testThatNoDevFlagIsUsedInConjunctionWithLockedFlag()
     {
         $input = new ArrayInput(array('--locked' => true, '--no-dev' => true));
-        $output = $this->createMock('Symfony\Component\Console\Output\OutputInterface');
+        $output = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')
+            ->getMock();
 
+        $ed = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $repository = $this->createMock('Composer\Repository\LockArrayRepository');
+        $repository = $this->getMockBuilder('Composer\Repository\LockArrayRepository')
+            ->getMock();
         $repository->expects($this->once())
             ->method('getPackages')
             ->willReturn(array());
 
-        $locker = $this->createMock('Composer\Package\Locker');
+        $locker = $this->getMockBuilder('Composer\Package\Locker')
+            ->disableOriginalConstructor()
+            ->getMock();
         $locker->expects($this->once())
             ->method('isLocked')
             ->willReturn(true);
@@ -42,7 +49,7 @@ class ShowCommandTest extends TestCase
         $composer = new Composer;
         $composer->setConfig(new Config);
         $composer->setLocker($locker);
-        $composer->setEventDispatcher($this->createMock('Composer\EventDispatcher\EventDispatcher'));
+        $composer->setEventDispatcher($ed);
 
         $command = $this->getMockBuilder('Composer\Command\ShowCommand')
             ->setMethods(array('getComposer', 'getApplication'))
@@ -53,7 +60,7 @@ class ShowCommandTest extends TestCase
             ->willReturn($composer);
 
         $command->method('getApplication')
-            ->willReturn($this->createMock('Symfony\Component\Console\Application'));
+            ->willReturn($this->getMockBuilder('Symfony\Component\Console\Application')->getMock());
 
         $command->run($input, $output);
     }
