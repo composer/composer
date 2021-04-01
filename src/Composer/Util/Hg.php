@@ -92,7 +92,7 @@ class Hg
     {
         if (false === self::$version) {
             self::$version = null;
-            if (0 === $process->execute('hg --version', $output) && preg_match('/version (\d+(?:\.\d+)+)/m', $output, $matches)) {
+            if (0 === $process->execute('hg --version', $output) && preg_match('/^.+? (\d+(?:\.\d+)+)\)?\r?\n/', $output, $matches)) {
                 self::$version = $matches[1];
             }
         }

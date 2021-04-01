@@ -20,7 +20,7 @@ namespace Composer\Util;
 class Platform
 {
     /** @var ?bool */
-    private static $isVagrantGuest = null;
+    private static $isVirtualBoxGuest = null;
 
     /**
      * Parses tildes and environment variables in paths.
@@ -123,34 +123,49 @@ class Platform
 
     public static function workaroundFilesystemIssues()
     {
-        if (self::isVagrantGuest()) {
+        if (self::isVirtualBoxGuest()) {
             usleep(200000);
         }
     }
 
     /**
-     * Attempts detection of vagrant guest VMs
+     * Attempts detection of VirtualBox guest VMs
      *
-     * This works based on the process' user being "vagrant", or the COMPOSER_RUNTIME_ENV env var being set to "vagrant"
+     * This works based on the process' user being "vagrant", the COMPOSER_RUNTIME_ENV env var being set to "virtualbox", or lsmod showing the virtualbox guest additions are loaded
      *
      * @return bool
      */
-    private static function isVagrantGuest()
+    private static function isVirtualBoxGuest()
     {
-        if (null === self::$isVagrantGuest) {
-            self::$isVagrantGuest = false;
-            if (!self::isWindows() && function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
+        if (null === self::$isVirtualBoxGuest) {
+            self::$isVirtualBoxGuest = false;
+            if (self::isWindows()) {
+                return self::$isVirtualBoxGuest;
+            }
+
+            if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
                 $processUser = posix_getpwuid(posix_geteuid());
                 if ($processUser && $processUser['name'] === 'vagrant') {
-                    return self::$isVagrantGuest = true;
+                    return self::$isVirtualBoxGuest = true;
                 }
             }
 
-            if (getenv('COMPOSER_RUNTIME_ENV') === 'vagrant') {
-                return self::$isVagrantGuest = true;
+            if (getenv('COMPOSER_RUNTIME_ENV') === 'virtualbox') {
+                return self::$isVirtualBoxGuest = true;
+            }
+
+            if (defined('PHP_OS_FAMILY') && PHP_OS_FAMILY === 'Linux') {
+                $process = new ProcessExecutor();
+                try {
+                    if (0 === $process->execute('lsmod | grep vboxguest', $ignoredOutput)) {
+                        return self::$isVirtualBoxGuest = true;
+                    }
+                } catch (\Exception $e) {
+                    // noop
+                }
             }
         }
 
-        return self::$isVagrantGuest;
+        return self::$isVirtualBoxGuest;
     }
 }
