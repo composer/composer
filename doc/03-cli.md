@@ -998,6 +998,15 @@ cannot be guessed from VCS info and is not present in `composer.json`.
 By setting this var you can make Composer install the dependencies into a
 directory other than `vendor`.
 
+### COMPOSER_RUNTIME_ENV
+
+This lets you hint under which environment Composer is running, which can help Composer
+work around some environment specific issues. The only value currently supported is
+`virtualbox`, which then enables some short `sleep()` calls to wait for the filesystem
+to have written files properly before we attempt reading them. You can set the
+environment variable if you use Vagrant or VirtualBox and experience issues with files not
+being found during installation even though they should be present.
+
 ### http_proxy or HTTP_PROXY
 
 If you are using Composer from behind an HTTP proxy, you can use the standard
