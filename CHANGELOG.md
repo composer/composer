@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ### [2.0.11] 2021-02-24
 
   * Reverted "Fixed runtime autoloader registration (for plugins and script handlers) to prefer the project dependencies over the bundled Composer ones" as it caused more problems than expected
@@ -182,6 +183,12 @@
   * Fixed package ordering when autoloading and especially when loading plugins, to make sure dependencies are loaded before their dependents
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
+=======
+### [1.10.21] 2021-04-01
+
+  * Fixed support for new GitHub OAuth token format
+  * Fixed processes silently ignoring the CWD when it does not exist
+>>>>>>> 1.10
 
 ### [1.10.20] 2021-01-27
 
@@ -1131,6 +1138,7 @@
 [2.0.0-alpha3]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-alpha3
 [2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
+[1.10.21]: https://github.com/composer/composer/compare/1.10.20...1.10.21
 [1.10.20]: https://github.com/composer/composer/compare/1.10.19...1.10.20
 [1.10.19]: https://github.com/composer/composer/compare/1.10.18...1.10.19
 [1.10.18]: https://github.com/composer/composer/compare/1.10.17...1.10.18
