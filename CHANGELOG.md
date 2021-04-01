@@ -1,3 +1,8 @@
+### [1.10.21] 2021-04-01
+
+  * Fixed support for new GitHub OAuth token format
+  * Fixed processes silently ignoring the CWD when it does not exist
+
 ### [1.10.20] 2021-01-27
 
   * Fixed exclude-from-classmap causing regex issues when having too many paths
@@ -929,6 +934,7 @@
 
   * Initial release
 
+[1.10.21]: https://github.com/composer/composer/compare/1.10.20...1.10.21
 [1.10.20]: https://github.com/composer/composer/compare/1.10.19...1.10.20
 [1.10.19]: https://github.com/composer/composer/compare/1.10.18...1.10.19
 [1.10.18]: https://github.com/composer/composer/compare/1.10.17...1.10.18
