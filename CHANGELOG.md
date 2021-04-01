@@ -1,13 +1,14 @@
 ### [2.0.12] 2021-04-01
 
   * Fixed support for new GitHub OAuth token format (#9757)
-  * Fixed support for Vagrant/VirtualBox filesystem slowness by adding short sleeps in some places (#9627) 
+  * Fixed support for Vagrant/VirtualBox filesystem slowness by adding short sleeps in some places (#9627)
   * Fixed unclear error reporting when a package is in the lock file but not in the remote repositories (#9750)
   * Fixed processes silently ignoring the CWD when it does not exist
   * Fixed new Windows bin handling to avoid proxying phar files (#9742)
   * Fixed issue extracting archives into paths that already exist, fixing problems with some custom installers (composer/installers#479)
   * Fixed support for branch names starting with master/trunk/default (#9739)
   * Fixed self-update to preserve phar file permissions on Windows (#9733)
+  * Fixed detection of hg version when localized (#9753)
   * Fixed git execution failures to also include the stdout output (#9720)
 
 ### [2.0.11] 2021-02-24
