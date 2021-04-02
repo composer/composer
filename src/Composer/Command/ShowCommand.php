@@ -196,7 +196,7 @@ EOT
                 throw new \UnexpectedValueException('A valid composer.json and composer.lock files is required to run this command with --locked');
             }
             $locker = $composer->getLocker();
-            $lockedRepo = $locker->getLockedRepository(true);
+            $lockedRepo = $locker->getLockedRepository(!$input->getOption('no-dev'));
             $repos = $installedRepo = new InstalledRepository(array($lockedRepo));
         } else {
             // --installed / default case
