@@ -31,7 +31,7 @@ Note that this can not be used to check whether platform packages are installed.
 
 ### Knowing whether package X is installed in version Y
 
-> **Note:** To use this, your package must require `"composer/semver": "^2.0"`.
+> **Note:** To use this, your package must require `"composer/semver": "^3.0"`.
 
 ```php
 use Composer\Semver\VersionParser;

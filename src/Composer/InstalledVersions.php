@@ -18,6 +18,8 @@ use Composer\Semver\VersionParser;
 /**
  * This class is copied in every Composer installed project and available to all
  *
+ * See also https://getcomposer.org/doc/07-runtime.md#installed-versions
+ *
  * To require it's presence, you can require `composer-runtime-api ^2.0`
  */
 class InstalledVersions
@@ -38,7 +40,6 @@ class InstalledVersions
         foreach (self::getInstalled() as $installed) {
             $packages[] = array_keys($installed['versions']);
         }
-
 
         if (1 === \count($packages)) {
             return $packages[0];
@@ -234,6 +235,7 @@ class InstalledVersions
 
     /**
      * @return array[]
+     * @psalm-return list<array{root: array{name: string, version: string, reference: string, pretty_version: string, aliases: string[]}, versions: list<string, array{pretty_version: ?string, version: ?string, aliases: ?string[], reference: ?string, replaced: ?string[], provided: ?string[]}>}>
      */
     private static function getInstalled()
     {
