@@ -1226,7 +1226,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
     }
 
-    private function asyncFetchFile($filename, $cacheKey, $lastModifiedTime = null)
+    protected function asyncFetchFile($filename, $cacheKey, $lastModifiedTime = null)
     {
         $retries = 3;
 
