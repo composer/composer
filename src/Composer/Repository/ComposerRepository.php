@@ -1166,7 +1166,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return $data;
     }
 
-    private function fetchFileIfLastModified($filename, $cacheKey, $lastModifiedTime)
+    protected function fetchFileIfLastModified($filename, $cacheKey, $lastModifiedTime)
     {
         $retries = 3;
         while ($retries--) {
