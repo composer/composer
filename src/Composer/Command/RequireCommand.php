@@ -57,7 +57,8 @@ class RequireCommand extends InitCommand
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
-                new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist even for dev versions.'),
+                new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),
+                new InputOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).'),
                 new InputOption('fixed', null, InputOption::VALUE_NONE, 'Write fixed version to the composer.json.'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
@@ -354,12 +355,13 @@ EOT
         $install = Installer::create($io, $composer);
 
         $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
+        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($composer->getConfig(), $input);
 
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
-            ->setPreferSource($input->getOption('prefer-source'))
-            ->setPreferDist($input->getOption('prefer-dist'))
+            ->setPreferSource($preferSource)
+            ->setPreferDist($preferDist)
             ->setDevMode($updateDevMode)
             ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($optimize)

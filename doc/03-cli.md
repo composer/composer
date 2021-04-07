@@ -84,17 +84,14 @@ resolution.
 
 ### Options
 
-* **--prefer-source:** There are two ways of downloading a package: `source`
-  and `dist`. For stable versions Composer will use the `dist` by default.
-  The `source` is a version control repository. If `--prefer-source` is
-  enabled, Composer will install from `source` if there is one. This is
-  useful if you want to make a bugfix to a project and get a local git
-  clone of the dependency directly.
-* **--prefer-dist:** Reverse of `--prefer-source`, Composer will install
-  from `dist` if possible. This can speed up installs substantially on build
-  servers and other use cases where you typically do not run updates of the
-  vendors. It is also a way to circumvent problems with git if you do not
-  have a proper setup.
+* **--prefer-install:** There are two ways of downloading a package: `source`
+  and `dist`. Composer uses `dist` by default. If you pass
+  `--prefer-install=source` (or `--prefer-source`) Composer will install from
+  `source` if there is one. This is useful if you want to make a bugfix to a
+  project and get a local git clone of the dependency directly.
+  To get the legacy behavior where Composer use `source` automatically for dev
+  versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
+  Passing this flag will override the config value.
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
@@ -169,8 +166,14 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 
 ### Options
 
-* **--prefer-source:** Install packages from `source` when available.
-* **--prefer-dist:** Install packages from `dist` when available.
+* **--prefer-install:** There are two ways of downloading a package: `source`
+  and `dist`. Composer uses `dist` by default. If you pass
+  `--prefer-install=source` (or `--prefer-source`) Composer will install from
+  `source` if there is one. This is useful if you want to make a bugfix to a
+  project and get a local git clone of the dependency directly.
+  To get the legacy behavior where Composer use `source` automatically for dev
+  versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
+  Passing this flag will override the config value.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
@@ -232,8 +235,14 @@ If you do not specify a package, composer will prompt you to search for a packag
 
 * **--dev:** Add packages to `require-dev`.
 * **--dry-run:** Simulate the command without actually doing anything.
-* **--prefer-source:** Install packages from `source` when available.
-* **--prefer-dist:** Install packages from `dist` when available.
+* **--prefer-install:** There are two ways of downloading a package: `source`
+  and `dist`. Composer uses `dist` by default. If you pass
+  `--prefer-install=source` (or `--prefer-source`) Composer will install from
+  `source` if there is one. This is useful if you want to make a bugfix to a
+  project and get a local git clone of the dependency directly.
+  To get the legacy behavior where Composer use `source` automatically for dev
+  versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
+  Passing this flag will override the config value.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
@@ -745,8 +754,14 @@ By default the command checks for the packages on packagist.org.
 ### Options
 
 * **--stability (-s):** Minimum stability of package. Defaults to `stable`.
-* **--prefer-source:** Install packages from `source` when available.
-* **--prefer-dist:** Install packages from `dist` when available.
+* **--prefer-install:** There are two ways of downloading a package: `source`
+  and `dist`. Composer uses `dist` by default. If you pass
+  `--prefer-install=source` (or `--prefer-source`) Composer will install from
+  `source` if there is one. This is useful if you want to make a bugfix to a
+  project and get a local git clone of the dependency directly.
+  To get the legacy behavior where Composer use `source` automatically for dev
+  versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
+  Passing this flag will override the config value.
 * **--repository:** Provide a custom repository to search for the package,
   which will be used instead of packagist. Can be either an HTTP URL pointing
   to a `composer` repository, a path to a local `packages.json` file, or a

@@ -175,6 +175,29 @@ abstract class BaseCommand extends Command
                 break;
         }
 
+        if ($input->hasOption('prefer-install') && $input->getOption('prefer-install')) {
+            if ($input->getOption('prefer-source')) {
+                throw new \InvalidArgumentException('--prefer-source can not be used together with --prefer-install');
+            }
+            if ($input->getOption('prefer-dist')) {
+                throw new \InvalidArgumentException('--prefer-dist can not be used together with --prefer-install');
+            }
+            switch ($input->getOption('prefer-install')) {
+                case 'dist':
+                    $input->setOption('prefer-dist', true);
+                    break;
+                case 'source':
+                    $input->setOption('prefer-source', true);
+                    break;
+                case 'auto':
+                    $preferDist = false;
+                    $preferSource = false;
+                    break;
+                default:
+                    throw new \UnexpectedValueException('--prefer-install accepts one of "dist", "source" or "auto", got '.$input->getOption('prefer-install'));
+            }
+        }
+
         if ($input->getOption('prefer-source') || $input->getOption('prefer-dist') || ($keepVcsRequiresPreferSource && $input->hasOption('keep-vcs') && $input->getOption('keep-vcs'))) {
             $preferSource = $input->getOption('prefer-source') || ($keepVcsRequiresPreferSource && $input->hasOption('keep-vcs') && $input->getOption('keep-vcs'));
             $preferDist = (bool) $input->getOption('prefer-dist');
