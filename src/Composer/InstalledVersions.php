@@ -18,6 +18,8 @@ use Composer\Semver\VersionParser;
 /**
  * This class is copied in every Composer installed project and available to all
  *
+ * See also https://getcomposer.org/doc/07-runtime.md#installed-versions
+ *
  * To require it's presence, you can require `composer-runtime-api ^2.0`
  */
 class InstalledVersions
@@ -200,7 +202,7 @@ class InstalledVersions
      * Returns the raw installed.php data for custom implementations
      *
      * @return array[]
-     * @psalm-return array{root: array{name: string, version: string, reference: string, pretty_version: string, aliases: string[]}, versions: list<string, array{pretty_version: ?string, version: ?string, aliases: ?string[], reference: ?string, replaced: ?string[], provided: ?string[]}>}
+     * @psalm-return array{root: array{name: string, version: string, reference: string, pretty_version: string, aliases: string[]}, versions: array<string, array{pretty_version?: string, version?: string, aliases?: string[], reference?: string, replaced?: string[], provided?: string[]}>}
      */
     public static function getRawData()
     {
@@ -223,7 +225,7 @@ class InstalledVersions
      * @param  array[] $data A vendor/composer/installed.php data set
      * @return void
      *
-     * @psalm-param array{root: array{name: string, version: string, reference: string, pretty_version: string, aliases: string[]}, versions: list<string, array{pretty_version: ?string, version: ?string, aliases: ?string[], reference: ?string, replaced: ?string[], provided: ?string[]}>} $data
+     * @psalm-param array{root: array{name: string, version: string, reference: string, pretty_version: string, aliases: string[]}, versions: array<string, array{pretty_version?: string, version?: string, aliases?: string[], reference?: string, replaced?: string[], provided?: string[]}>} $data
      */
     public static function reload($data)
     {
@@ -233,6 +235,7 @@ class InstalledVersions
 
     /**
      * @return array[]
+     * @psalm-return list<array{root: array{name: string, version: string, reference: string, pretty_version: string, aliases: string[]}, versions: array<string, array{pretty_version?: string, version?: string, aliases?: string[], reference?: string, replaced?: string[], provided?: string[]}>}>
      */
     private static function getInstalled()
     {
