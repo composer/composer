@@ -191,8 +191,8 @@ class InstalledVersionsTest extends TestCase
                 '1.10.x-dev',
             ),
             'reference' => 'sourceref-by-default',
-            'dev-requirement' => true,
             'name' => '__root__',
+            'dev' => true,
         ), InstalledVersions::getRootPackage());
     }
 
