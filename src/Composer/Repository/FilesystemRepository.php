@@ -179,8 +179,9 @@ class FilesystemRepository extends WritableArrayRepository
             );
             if ($package instanceof RootPackageInterface) {
                 $versions['root'] = $versions['versions'][$package->getName()];
+                unset($versions['root']['dev-requirement']);
                 $versions['root']['name'] = $package->getName();
-                $versions['root']['dev-requirement'] = $devMode;
+                $versions['root']['dev'] = $devMode;
             }
         }
 
