@@ -93,12 +93,13 @@ class LockTransaction extends Transaction
                 // we do not reset references if the currently present package didn't have any, or if the type of VCS has changed
                 if ($updateMirrors && !isset($this->presentMap[spl_object_hash($package)])) {
                     foreach ($this->presentMap as $presentPackage) {
-                        if ($package->getName() == $presentPackage->getName() &&
-                            $package->getVersion() == $presentPackage->getVersion() &&
-                            $presentPackage->getSourceReference() &&
-                            $presentPackage->getSourceType() === $package->getSourceType()
-                        ) {
-                            $package->setSourceDistReferences($presentPackage->getSourceReference());
+                        if ($package->getName() == $presentPackage->getName() && $package->getVersion() == $presentPackage->getVersion()) {
+                            if ($presentPackage->getSourceReference() && $presentPackage->getSourceType() === $package->getSourceType()) {
+                                $package->setSourceDistReferences($presentPackage->getSourceReference());
+                            }
+                            if ($presentPackage->getReleaseDate()) {
+                                $package->setReleaseDate($presentPackage->getReleaseDate());
+                            }
                         }
                     }
                 }

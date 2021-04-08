@@ -17,7 +17,8 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
                 {
                     "name": "a/a", "version": "dev-master",
                     "source": { "reference": "2222222222222222222222222222222222222222", "url": "https://github.com/a/newa", "type": "git" },
-                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/a/newa/zipball/2222222222222222222222222222222222222222", "type": "zip" }
+                    "dist": { "reference": "2222222222222222222222222222222222222222", "url": "https://api.github.com/repos/a/newa/zipball/2222222222222222222222222222222222222222", "type": "zip" },
+                    "time": "2021-03-27T14:32:16+00:00"
                 },
                 {
                     "name": "b/b", "version": "2.0.3",
@@ -67,7 +68,8 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
     {
         "name": "a/a", "version": "dev-master",
         "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/a/a", "type": "git" },
-        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/a/zipball/1111111111111111111111111111111111111111", "type": "zip" }
+        "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/a/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+        "time": "2021-03-14T16:24:37+00:00"
     },
     {
         "name": "b/b", "version": "2.0.3",
@@ -102,6 +104,7 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
             "name": "a/a", "version": "dev-master",
             "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/a/a", "type": "git" },
             "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/a/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "time": "2021-03-14T16:24:37+00:00",
             "type": "library"
         },
         {
@@ -151,6 +154,7 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
             "name": "a/a", "version": "dev-master",
             "source": { "reference": "1111111111111111111111111111111111111111", "url": "https://github.com/a/newa", "type": "git" },
             "dist": { "reference": "1111111111111111111111111111111111111111", "url": "https://api.github.com/repos/a/newa/zipball/1111111111111111111111111111111111111111", "type": "zip" },
+            "time": "2021-03-14T16:24:37+00:00",
             "type": "library"
         },
         {
@@ -202,3 +206,12 @@ g/g is dev and installed in a different ref than the #ref, so it gets updated an
 --RUN--
 update mirrors
 --EXPECT--
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 0 installs, 0 updates, 0 removals
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Nothing to install, update or remove
+Generating autoload files
