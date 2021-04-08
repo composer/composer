@@ -446,6 +446,15 @@ class Installer
                     $installsUpdates[] = $operation;
                     $installNames[] = $operation->getPackage()->getPrettyName().':'.$operation->getPackage()->getFullPrettyVersion();
                 } elseif ($operation instanceof UpdateOperation) {
+                    // when mirrors/metadata from a package gets updated we do not want to list it as an
+                    // update in the output as it is only an internal lock file metadata update
+                    if ($this->updateMirrors
+                        && $operation->getInitialPackage()->getName() == $operation->getTargetPackage()->getName()
+                        && $operation->getInitialPackage()->getVersion() == $operation->getTargetPackage()->getVersion()
+                    ) {
+                        continue;
+                    }
+
                     $installsUpdates[] = $operation;
                     $updateNames[] = $operation->getTargetPackage()->getPrettyName().':'.$operation->getTargetPackage()->getFullPrettyVersion();
                 } elseif ($operation instanceof UninstallOperation) {
