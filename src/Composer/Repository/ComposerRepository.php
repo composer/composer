@@ -24,6 +24,7 @@ use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
+use Composer\Plugin\PostFileDownloadEvent;
 use Composer\Semver\CompilingMatcher;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Loop;
@@ -1088,7 +1089,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         while ($retries--) {
             try {
                 if ($this->eventDispatcher) {
-                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata');
+                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                     $filename = $preFileDownloadEvent->getProcessedUrl();
                 }
@@ -1111,6 +1112,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                     // TODO use scarier wording once we know for sure it doesn't do false positives anymore
                     throw new RepositorySecurityException('The contents of '.$filename.' do not match its signature. This could indicate a man-in-the-middle attack or e.g. antivirus software corrupting files. Try running composer again and report this if you think it is a mistake.');
+                }
+
+                if ($this->eventDispatcher) {
+                    $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, $sha256, $filename, 'metadata', array('response' => $response, 'repository' => $this));
+                    $this->eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
                 }
 
                 $data = $response->decodeJson();
@@ -1175,7 +1181,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         while ($retries--) {
             try {
                 if ($this->eventDispatcher) {
-                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata');
+                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                     $filename = $preFileDownloadEvent->getProcessedUrl();
                 }
@@ -1189,6 +1195,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $json = $response->getBody();
                 if ($json === '' && $response->getStatusCode() === 304) {
                     return true;
+                }
+
+                if ($this->eventDispatcher) {
+                    $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $filename, 'metadata', array('response' => $response, 'repository' => $this));
+                    $this->eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
                 }
 
                 $data = $response->decodeJson();
@@ -1244,7 +1255,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $httpDownloader = $this->httpDownloader;
         if ($this->eventDispatcher) {
-            $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata');
+            $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
             $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
             $filename = $preFileDownloadEvent->getProcessedUrl();
         }
@@ -1261,9 +1272,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $url = $this->url;
         $cache = $this->cache;
         $degradedMode = &$this->degradedMode;
+        $eventDispatcher = $this->eventDispatcher;
         $repo = $this;
 
-        $accept = function ($response) use ($io, $url, $filename, $cache, $cacheKey, $repo) {
+        $accept = function ($response) use ($io, $url, $filename, $cache, $cacheKey, $eventDispatcher, $repo) {
             // package not found is acceptable for a v2 protocol repository
             if ($response->getStatusCode() === 404) {
                 $repo->packagesNotFoundCache[$filename] = true;
@@ -1276,6 +1288,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $repo->freshMetadataUrls[$filename] = true;
 
                 return true;
+            }
+
+            if ($eventDispatcher) {
+                $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $url, 'metadata', array('response' => $response, 'repository' => $repo));
+                $eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
             }
 
             $data = $response->decodeJson();
