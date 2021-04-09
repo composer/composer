@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Composer;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -83,6 +84,10 @@ EOT
 
         if ($input->getOption('dev')) {
             $io->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
+        }
+
+        if (version_compare(Composer::RUNTIME_API_VERSION, '2.0.0', '<')) {
+            $io->writeError('<warning>You are using Composer v1. Consider upgrading to Composer v2 (http://getcomposer.org/2).</warning>');
         }
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
