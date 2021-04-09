@@ -127,6 +127,7 @@ class PreFileDownloadEvent extends Event
      * Returns the context of this download, if any.
      *
      * If this download is of type package, the package object is returned.
+     * If the type is metadata, an array{repository: RepositoryInterface} is returned.
      *
      * @return mixed
      */
