@@ -1086,7 +1086,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         while ($retries--) {
             try {
                 if ($this->eventDispatcher) {
-                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata');
+                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                     $filename = $preFileDownloadEvent->getProcessedUrl();
                 }
@@ -1112,7 +1112,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 if ($this->eventDispatcher) {
-                    $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, $sha256, $filename, 'metadata', $response);
+                    $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, $sha256, $filename, 'metadata', array('response' => $response, 'repository' => $this));
                     $this->eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
                 }
 
@@ -1178,7 +1178,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         while ($retries--) {
             try {
                 if ($this->eventDispatcher) {
-                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata');
+                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                     $filename = $preFileDownloadEvent->getProcessedUrl();
                 }
@@ -1195,7 +1195,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 if ($this->eventDispatcher) {
-                    $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $filename, 'metadata', $response);
+                    $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $filename, 'metadata', array('response' => $response, 'repository' => $this));
                     $this->eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
                 }
 
@@ -1252,7 +1252,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $httpDownloader = $this->httpDownloader;
         if ($this->eventDispatcher) {
-            $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata');
+            $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
             $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
             $filename = $preFileDownloadEvent->getProcessedUrl();
         }
@@ -1288,7 +1288,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             if ($eventDispatcher) {
-                $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $url, 'metadata', $response);
+                $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $url, 'metadata', array('response' => $response, 'repository' => $repo));
                 $eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
             }
 

@@ -109,7 +109,7 @@ class PostFileDownloadEvent extends Event
      * Returns the context of this download, if any.
      *
      * If this download is of type package, the package object is returned. If
-     * this download is of type metadata, the HTTP response is returned.
+     * this download is of type metadata, an array{response: Response, repository: RepositoryInterface} is returned.
      *
      * @return mixed
      */
