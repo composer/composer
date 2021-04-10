@@ -107,11 +107,7 @@ EOT
         $_SERVER['COMPOSER_DEV_MODE'] = $devMode ? '1' : '0';
         putenv('COMPOSER_DEV_MODE='.$_SERVER['COMPOSER_DEV_MODE']);
 
-        try {
-            return $composer->getEventDispatcher()->dispatchScript($script, $devMode, $args);
-        }  catch( ProcessTimedOutException $e) {
-            throw new \RuntimeException($e->getMessage() ."\nsee https://getcomposer.org/doc/06-config.md#process-timeout");
-        }
+        return $composer->getEventDispatcher()->dispatchScript($script, $devMode, $args);
     }
 
     protected function listScripts(OutputInterface $output)

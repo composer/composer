@@ -62,10 +62,6 @@ EOT
 
         $args = $input->getArguments();
 
-        try {
-            return $composer->getEventDispatcher()->dispatchScript($this->script, $input->getOption('dev') || !$input->getOption('no-dev'), $args['args']);
-        }  catch( ProcessTimedOutException $e) {
-            throw new \RuntimeException($e->getMessage() ."\nsee https://getcomposer.org/doc/06-config.md#process-timeout");
-        }
+        return $composer->getEventDispatcher()->dispatchScript($this->script, $input->getOption('dev') || !$input->getOption('no-dev'), $args['args']);
     }
 }
