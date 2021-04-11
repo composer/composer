@@ -24,6 +24,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositorySet;
+use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Semver\Constraint\Constraint;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -69,6 +70,7 @@ class InitCommand extends BaseCommand
                 new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
                 new InputOption('license', 'l', InputOption::VALUE_REQUIRED, 'License of package'),
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories, either by URL or using JSON arrays'),
+                new InputOption('autoload', 'a', InputOption::VALUE_OPTIONAL, 'Add PSR-4 autoload'),
             ))
             ->setHelp(
                 <<<EOT
@@ -90,7 +92,7 @@ EOT
     {
         $io = $this->getIO();
 
-        $allowlist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license');
+        $allowlist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license', 'autoload');
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)));
 
         if (isset($options['author'])) {
@@ -123,6 +125,18 @@ EOT
             }
         }
 
+        // --autoload - create autoload object
+        $autoloadPath = null;
+        if (isset($options['autoload'])) {
+            $autoloadPath = $options['autoload'];
+            $namespace = $this->namespaceFromPackageName($input->getOption('name'));
+            $options['autoload'] = (object) array(
+                'psr-4' => array(
+                    $namespace . '\\' => $options['autoload'],
+                )
+            );
+        }
+
         $file = new JsonFile(Factory::getComposerFile());
         $json = JsonFile::encode($options);
 
@@ -139,6 +153,12 @@ EOT
             }
 
             $io->writeError('Writing composer.json');
+        }
+
+        // --autoload - Create src folder
+        if ($autoloadPath) {
+            $filesystem = new Filesystem();
+            $filesystem->ensureDirectoryExists($autoloadPath);
         }
 
         $file->write($options);
@@ -162,6 +182,25 @@ EOT
         $question = 'Would you like to install dependencies now [<comment>yes</comment>]? ';
         if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question)) {
             $this->installDependencies($output);
+        }
+
+        // --autoload - Show post-install configuration info
+        if ($input->isInteractive() && $autoloadPath) {
+            $namespace = $this->namespaceFromPackageName($input->getOption('name'));
+            /** @var FormatterHelper $formatter */
+            $formatter = $this->getHelperSet()->get('formatter');
+            $io->writeError(array(
+                '',
+                $formatter->formatBlock(array(
+                    '# PSR-4 autoload configured:',
+                    '# Namespace: "'.$namespace.'"',
+                    '# Path: "'.$autoloadPath.'"',
+                    '',
+                    'namespace '.$namespace.';',
+                    'require \'vendor/autoload.php\';'
+                ), 'bg=yellow;fg=black', true),
+                '',
+            ));
         }
 
         return 0;
@@ -381,6 +420,37 @@ EOT
             $devRequirements = $this->determineRequirements($input, $output, $requireDev, $platformRepo, $preferredStability);
         }
         $input->setOption('require-dev', $devRequirements);
+
+        // --autoload - input and validation
+        $autoload = $input->getOption('autoload');
+        $autoloadPath = $autoload ?: 'src/';
+        $autoload = $io->askAndValidate(
+            'Would you like to set PSR-4 autoload for the "'.$this->namespaceFromPackageName($input->getOption('name')).'\\\" namespace? [<comment>'.$autoloadPath.'</comment>, n to skip]: ',
+            function ($value) use ($autoload, $autoloadPath) {
+                if (null === $value) {
+                    return $autoloadPath;
+                }
+
+                if ($value === 'n' || $value === 'no') {
+                    return;
+                }
+
+                $value = $value ?: $autoload;
+
+                if (!preg_match('{^[^/][A-Za-z0-9\-_/]+/$}', $value)) {
+                    throw new \InvalidArgumentException(sprintf(
+                        'The src folder name "%s" is invalid. Please add a relative path with tailing forward slash. [A-Za-z0-9_-/]+/',
+                        $value
+                    ));
+                }
+
+                return $value;
+            },
+            null,
+            $autoload
+        );
+        $input->setOption('autoload', $autoload);
+
     }
 
     /**
@@ -591,6 +661,31 @@ EOT
     protected function formatAuthors($author)
     {
         return array($this->parseAuthorString($author));
+    }
+
+    /**
+     * Extract namespace from package's vendor name.
+     *
+     * new_projects.acme-extra/package-name becomes "NewProjectsAcmeExtra"
+     *
+     * @param string $packageName
+     *
+     * @return string|null
+     */
+    public function namespaceFromPackageName($packageName)
+    {
+        if (!$packageName || strpos($packageName, '/') === false) {
+            return null;
+        }
+
+        $allowedVendorSeparator = array('-', '.', '_');
+
+        $namespace = explode('/', $packageName);
+        $namespace = str_replace($allowedVendorSeparator, ' ', $namespace[0]);
+        $namespace = ucwords($namespace);
+        $namespace = str_replace(' ', '', $namespace);
+
+        return $namespace;
     }
 
     protected function getGitConfig()
