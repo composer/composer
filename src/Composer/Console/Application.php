@@ -33,6 +33,7 @@ use Composer\Util\ErrorHandler;
 use Composer\Util\HttpDownloader;
 use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Exception\NoSslException;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 
 /**
  * The console application that handles the commands
@@ -383,6 +384,11 @@ class Application extends BaseApplication
         if (false !== strpos($exception->getMessage(), 'fork failed - Cannot allocate memory')) {
             $io->writeError('<error>The following exception is caused by a lack of memory or swap, or not having swap configured</error>', true, IOInterface::QUIET);
             $io->writeError('<error>Check https://getcomposer.org/doc/articles/troubleshooting.md#proc-open-fork-failed-errors for details</error>', true, IOInterface::QUIET);
+        }
+
+        if ($exception instanceof ProcessTimedOutException) {
+            $io->writeError('<error>The following exception is caused by a process timeout</error>', true, IOInterface::QUIET);
+            $io->writeError('<error>Check https://getcomposer.org/doc/06-config.md#process-timeout for details</error>', true, IOInterface::QUIET);
         }
 
         if ($hints = HttpDownloader::getExceptionHints($exception)) {

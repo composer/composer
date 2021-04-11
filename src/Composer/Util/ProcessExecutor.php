@@ -367,11 +367,17 @@ class ProcessExecutor
         }
     }
 
+    /**
+     * @return int the timeout in seconds
+     */
     public static function getTimeout()
     {
         return static::$timeout;
     }
 
+    /**
+     * @param int $timeout the timeout in seconds
+     */
     public static function setTimeout($timeout)
     {
         static::$timeout = $timeout;
