@@ -1291,7 +1291,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             if ($eventDispatcher) {
-                $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $url, 'metadata', array('response' => $response, 'repository' => $repo));
+                $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $filename, 'metadata', array('response' => $response, 'repository' => $repo));
                 $eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
             }
 
