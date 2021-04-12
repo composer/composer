@@ -155,13 +155,18 @@ EOT
             $io->writeError('Writing composer.json');
         }
 
+        $file->write($options);
+
         // --autoload - Create src folder
         if ($autoloadPath) {
             $filesystem = new Filesystem();
             $filesystem->ensureDirectoryExists($autoloadPath);
-        }
 
-        $file->write($options);
+            // dump-autoload only for projects without added dependencies.
+            if (!$this->hasDependencies($options)) {
+                $this->runDumpAutoloadCommand($output);
+            }
+        }
 
         if ($input->isInteractive() && is_dir('.git')) {
             $ignoreFile = realpath('.gitignore');
@@ -974,6 +979,16 @@ EOT
             $installCommand->run(new ArrayInput(array()), $output);
         } catch (\Exception $e) {
             $this->getIO()->writeError('Could not install dependencies. Run `composer install` to see more information.');
+        }
+    }
+
+    private function runDumpAutoloadCommand($output)
+    {
+        try {
+            $installCommand = $this->getApplication()->find('dump-autoload');
+            $installCommand->run(new ArrayInput(array()), $output);
+        } catch (\Exception $e) {
+            $this->getIO()->writeError('Could not run dump-autoload.');
         }
     }
 
