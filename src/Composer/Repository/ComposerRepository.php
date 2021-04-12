@@ -1088,13 +1088,15 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $retries = 3;
         while ($retries--) {
             try {
+                $options = $this->options;
                 if ($this->eventDispatcher) {
                     $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                     $filename = $preFileDownloadEvent->getProcessedUrl();
+                    $options = array_merge_recursive($options, $preFileDownloadEvent->getOptions());
                 }
 
-                $response = $this->httpDownloader->get($filename, $this->options);
+                $response = $this->httpDownloader->get($filename, $options);
                 $json = $response->getBody();
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     // undo downgrade before trying again if http seems to be hijacked or modifying content somehow
@@ -1180,13 +1182,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $retries = 3;
         while ($retries--) {
             try {
+                $options = $this->options;
                 if ($this->eventDispatcher) {
                     $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                     $filename = $preFileDownloadEvent->getProcessedUrl();
+                    $options = array_merge_recursive($this->options, $preFileDownloadEvent->getOptions());
                 }
 
-                $options = $this->options;
                 if (isset($options['http']['header'])) {
                     $options['http']['header'] = (array) $options['http']['header'];
                 }
@@ -1254,13 +1257,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         $httpDownloader = $this->httpDownloader;
+        $options = $this->options;
         if ($this->eventDispatcher) {
             $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
             $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
             $filename = $preFileDownloadEvent->getProcessedUrl();
+            $options = array_merge_recursive($options, $preFileDownloadEvent->getOptions());
         }
 
-        $options = $this->options;
         if ($lastModifiedTime) {
             if (isset($options['http']['header'])) {
                 $options['http']['header'] = (array) $options['http']['header'];
