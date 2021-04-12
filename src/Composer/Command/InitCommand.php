@@ -158,7 +158,7 @@ EOT
         $file->write($options);
 
         // --autoload - Create src folder
-        if ($autoloadPath) {
+        if ($input->isInteractive() && $autoloadPath) {
             $filesystem = new Filesystem();
             $filesystem->ensureDirectoryExists($autoloadPath);
 
