@@ -14,7 +14,7 @@ use Composer\XdebugHandler\XdebugHandler;
 error_reporting(-1);
 
 // Restart without Xdebug
-$xdebug = new XdebugHandler('Composer', '--ansi');
+$xdebug = new XdebugHandler('Composer');
 $xdebug->check();
 unset($xdebug);
 
