@@ -132,7 +132,7 @@ EOT
             $namespace = $this->namespaceFromPackageName($input->getOption('name'));
             $options['autoload'] = (object) array(
                 'psr-4' => array(
-                    $namespace . '\\' => $options['autoload'],
+                    $namespace . '\\' => $autoloadPath,
                 )
             );
         }
@@ -427,13 +427,12 @@ EOT
         $input->setOption('require-dev', $devRequirements);
 
         // --autoload - input and validation
-        $autoload = $input->getOption('autoload');
-        $autoloadPath = $autoload ?: 'src/';
+        $autoload = $input->getOption('autoload') ?: 'src/';
         $autoload = $io->askAndValidate(
-            'Would you like to set PSR-4 autoload for the "'.$this->namespaceFromPackageName($input->getOption('name')).'\\\" namespace? [<comment>'.$autoloadPath.'</comment>, n to skip]: ',
-            function ($value) use ($autoload, $autoloadPath) {
+            'Would you like to set PSR-4 autoload for the "'.$this->namespaceFromPackageName($input->getOption('name')).'\\\" namespace? [<comment>'.$autoload.'</comment>, n to skip]: ',
+            function ($value) use ($autoload) {
                 if (null === $value) {
-                    return $autoloadPath;
+                    return $autoload;
                 }
 
                 if ($value === 'n' || $value === 'no') {
@@ -985,8 +984,8 @@ EOT
     private function runDumpAutoloadCommand($output)
     {
         try {
-            $installCommand = $this->getApplication()->find('dump-autoload');
-            $installCommand->run(new ArrayInput(array()), $output);
+            $command = $this->getApplication()->find('dump-autoload');
+            $command->run(new ArrayInput(array()), $output);
         } catch (\Exception $e) {
             $this->getIO()->writeError('Could not run dump-autoload.');
         }
