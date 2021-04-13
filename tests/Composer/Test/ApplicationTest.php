@@ -13,6 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Console\Application;
+use Composer\XdebugHandler\XdebugHandler;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ApplicationTest extends TestCase
@@ -54,7 +55,7 @@ class ApplicationTest extends TestCase
         $outputMock->expects($this->at($index++))
             ->method("write");
 
-        if (extension_loaded('xdebug')) {
+        if (XdebugHandler::isXdebugActive()) {
             $outputMock->expects($this->at($index++))
                 ->method("getVerbosity")
                 ->willReturn(OutputInterface::VERBOSITY_NORMAL);
