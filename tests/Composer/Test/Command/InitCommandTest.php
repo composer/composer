@@ -97,7 +97,7 @@ class InitCommandTest extends TestCase
     {
         $command = new InitCommand;
         $namespace = $command->namespaceFromPackageName('new_projects.acme-extra/package-name');
-        $this->assertEquals('NewProjectsAcmeExtra', $namespace);
+        $this->assertEquals('NewProjectsAcmeExtra\PackageName', $namespace);
     }
 
     public function testNamespaceFromInvalidPackageName()

@@ -429,7 +429,7 @@ EOT
         // --autoload - input and validation
         $autoload = $input->getOption('autoload') ?: 'src/';
         $autoload = $io->askAndValidate(
-            'Would you like to set PSR-4 autoload for the "'.$this->namespaceFromPackageName($input->getOption('name')).'\\\" namespace? [<comment>'.$autoload.'</comment>, n to skip]: ',
+            'Would you like to set PSR-4 autoload for the "'.$this->namespaceFromPackageName($input->getOption('name')).'" namespace? [<comment>'.$autoload.'</comment>, n to skip]: ',
             function ($value) use ($autoload) {
                 if (null === $value) {
                     return $autoload;
@@ -670,7 +670,7 @@ EOT
     /**
      * Extract namespace from package's vendor name.
      *
-     * new_projects.acme-extra/package-name becomes "NewProjectsAcmeExtra"
+     * new_projects.acme-extra/package-name becomes "NewProjectsAcmeExtra\PackageName"
      *
      * @param string $packageName
      *
@@ -682,14 +682,16 @@ EOT
             return null;
         }
 
-        $allowedVendorSeparator = array('-', '.', '_');
+        $namespace = array_map(
+            function($part) {
+                $part = preg_replace('/[^a-z0-9]/i', ' ', $part);
+                $part = ucwords($part);
+                return str_replace(' ', '', $part);
+            },
+            explode('/', $packageName)
+        );
 
-        $namespace = explode('/', $packageName);
-        $namespace = str_replace($allowedVendorSeparator, ' ', $namespace[0]);
-        $namespace = ucwords($namespace);
-        $namespace = str_replace(' ', '', $namespace);
-
-        return $namespace;
+        return join('\\', $namespace);
     }
 
     protected function getGitConfig()
