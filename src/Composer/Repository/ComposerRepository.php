@@ -1091,9 +1091,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $options = $this->options;
                 if ($this->eventDispatcher) {
                     $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
+                    $preFileDownloadEvent->setTransportOptions($this->options);
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                     $filename = $preFileDownloadEvent->getProcessedUrl();
-                    $options = array_merge_recursive($options, $preFileDownloadEvent->getTransportOptions());
+                    $options = $preFileDownloadEvent->getTransportOptions();
                 }
 
                 $response = $this->httpDownloader->get($filename, $options);
@@ -1185,9 +1186,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $options = $this->options;
                 if ($this->eventDispatcher) {
                     $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
+                    $preFileDownloadEvent->setTransportOptions($this->options);
                     $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
                     $filename = $preFileDownloadEvent->getProcessedUrl();
-                    $options = array_merge_recursive($this->options, $preFileDownloadEvent->getTransportOptions());
+                    $options = $preFileDownloadEvent->getTransportOptions();
                 }
 
                 if (isset($options['http']['header'])) {
@@ -1260,9 +1262,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $options = $this->options;
         if ($this->eventDispatcher) {
             $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
+            $preFileDownloadEvent->setTransportOptions($this->options);
             $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
             $filename = $preFileDownloadEvent->getProcessedUrl();
-            $options = array_merge_recursive($options, $preFileDownloadEvent->getTransportOptions());
+            $options = $preFileDownloadEvent->getTransportOptions();
         }
 
         if ($lastModifiedTime) {
