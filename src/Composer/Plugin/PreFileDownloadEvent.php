@@ -50,7 +50,7 @@ class PreFileDownloadEvent extends Event
     /**
      * @var array
      */
-    private $options = array();
+    private $transportOptions = array();
 
     /**
      * Constructor.
@@ -142,22 +142,26 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Returns the transfer options for the download.
+     * Returns the additional transport options for the download.
+     *
+     * Only available for events with type metadata, for packages set the transport options on the package itself.
      *
      * @return array
      */
-    public function getOptions()
+    public function getTransportOptions()
     {
-        return $this->options;
+        return $this->transportOptions;
     }
 
     /**
-     * Sets transfer options for the download.
+     * Sets additional transport options for the download.
+     *
+     * Only available for events with type metadata, for packages set the transport options on the package itself.
      *
      * @param array $options
      */
-    public function setOptions(array $options)
+    public function setTransportOptions(array $options)
     {
-        $this->options = $options;
+        $this->transportOptions = $options;
     }
 }
