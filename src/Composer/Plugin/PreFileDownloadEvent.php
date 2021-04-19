@@ -142,7 +142,7 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Returns the additional transport options for the download.
+     * Returns transport options for the download.
      *
      * Only available for events with type metadata, for packages set the transport options on the package itself.
      *
@@ -154,7 +154,7 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
-     * Sets additional transport options for the download.
+     * Sets transport options for the download.
      *
      * Only available for events with type metadata, for packages set the transport options on the package itself.
      *
