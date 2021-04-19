@@ -48,6 +48,11 @@ class PreFileDownloadEvent extends Event
     private $context;
 
     /**
+     * @var array
+     */
+    private $transportOptions = array();
+
+    /**
      * Constructor.
      *
      * @param string         $name           The event name
@@ -134,5 +139,29 @@ class PreFileDownloadEvent extends Event
     public function getContext()
     {
         return $this->context;
+    }
+
+    /**
+     * Returns transport options for the download.
+     *
+     * Only available for events with type metadata, for packages set the transport options on the package itself.
+     *
+     * @return array
+     */
+    public function getTransportOptions()
+    {
+        return $this->transportOptions;
+    }
+
+    /**
+     * Sets transport options for the download.
+     *
+     * Only available for events with type metadata, for packages set the transport options on the package itself.
+     *
+     * @param array $options
+     */
+    public function setTransportOptions(array $options)
+    {
+        $this->transportOptions = $options;
     }
 }
