@@ -70,7 +70,7 @@ class InitCommand extends BaseCommand
                 new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
                 new InputOption('license', 'l', InputOption::VALUE_REQUIRED, 'License of package'),
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories, either by URL or using JSON arrays'),
-                new InputOption('autoload', 'a', InputOption::VALUE_REQUIRED, 'Add PSR-4 autoload'),
+                new InputOption('autoload', 'a', InputOption::VALUE_REQUIRED, 'Add PSR-4 autoload mapping. Maps your package\'s namespace to the provided directory. (Expects a relative path, e.g. src/)'),
             ))
             ->setHelp(
                 <<<EOT
@@ -428,8 +428,9 @@ EOT
 
         // --autoload - input and validation
         $autoload = $input->getOption('autoload') ?: 'src/';
+        $namespace = $this->namespaceFromPackageName($input->getOption('name'));
         $autoload = $io->askAndValidate(
-            'Would you like to set PSR-4 autoload for the "'.$this->namespaceFromPackageName($input->getOption('name')).'" namespace? [<comment>'.$autoload.'</comment>, n to skip]: ',
+            'Add PSR-4 autoload mapping? Map namespace "'.$namespace.'" to the entered relative path. [<comment>'.$autoload.'</comment>, n to skip]: ',
             function ($value) use ($autoload) {
                 if (null === $value) {
                     return $autoload;
