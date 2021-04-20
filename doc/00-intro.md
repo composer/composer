@@ -155,7 +155,7 @@ Close your current terminal. Test usage with a new terminal:
 
 ```sh
 C:\Users\username>composer -V
-Composer version 1.0.0 2016-01-10 20:34:53
+Composer version 2.0.12 2021-04-01 10:14:59
 ```
 
 ## Using Composer
