@@ -65,6 +65,7 @@ php composer.phar init
   the list of requires. Every repository can be either an HTTP URL pointing
   to a `composer` repository or a JSON string which similar to what the
   [repositories](04-schema.md#repositories) key accepts.
+* **--autoload (-a):** Add a PSR-4 autoload mapping to the composer.json. Automatically maps your package's namespace to the provided directory. (Expects a relative path, e.g. src/) See also [PSR-4 autoload](04-schema.md#psr-4).
 
 ## install / i
 

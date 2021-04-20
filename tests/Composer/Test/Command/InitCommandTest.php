@@ -92,4 +92,26 @@ class InitCommandTest extends TestCase
         $this->setExpectedException('InvalidArgumentException');
         $command->parseAuthorString('John Smith <john>');
     }
+
+    public function testNamespaceFromValidPackageName()
+    {
+        $command = new InitCommand;
+        $namespace = $command->namespaceFromPackageName('new_projects.acme-extra/package-name');
+        $this->assertEquals('NewProjectsAcmeExtra\PackageName', $namespace);
+    }
+
+    public function testNamespaceFromInvalidPackageName()
+    {
+        $command = new InitCommand;
+        $namespace = $command->namespaceFromPackageName('invalid-package-name');
+        $this->assertNull($namespace);
+    }
+
+    public function testNamespaceFromMissingPackageName()
+    {
+        $command = new InitCommand;
+        $namespace = $command->namespaceFromPackageName(null);
+        $this->assertNull($namespace);
+    }
+
 }
