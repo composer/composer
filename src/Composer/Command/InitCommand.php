@@ -193,8 +193,8 @@ EOT
         if ($autoloadPath) {
             $namespace = $this->namespaceFromPackageName($input->getOption('name'));
 
-            $io->writeError('PSR-4 autoloading configured. Use "namespace '.$namespace.';" in '.$autoloadPath);
-            $io->writeError('Include the Composer autoloader with: require \'vendor/autoload.php\';');
+            $io->writeError('PSR-4 autoloading configured. Use "<comment>namespace '.$namespace.';</comment>" in '.$autoloadPath);
+            $io->writeError('Include the Composer autoloader with: <comment>require \'vendor/autoload.php\';</comment>');
         }
 
         return 0;
