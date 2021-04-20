@@ -158,7 +158,7 @@ EOT
         $file->write($options);
 
         // --autoload - Create src folder
-        if ($input->isInteractive() && $autoloadPath) {
+        if ($autoloadPath) {
             $filesystem = new Filesystem();
             $filesystem->ensureDirectoryExists($autoloadPath);
 
@@ -190,22 +190,11 @@ EOT
         }
 
         // --autoload - Show post-install configuration info
-        if ($input->isInteractive() && $autoloadPath) {
+        if ($autoloadPath) {
             $namespace = $this->namespaceFromPackageName($input->getOption('name'));
-            /** @var FormatterHelper $formatter */
-            $formatter = $this->getHelperSet()->get('formatter');
-            $io->writeError(array(
-                '',
-                $formatter->formatBlock(array(
-                    '# PSR-4 autoload configured:',
-                    '# Namespace: "'.$namespace.'"',
-                    '# Path: "'.$autoloadPath.'"',
-                    '',
-                    'namespace '.$namespace.';',
-                    'require \'vendor/autoload.php\';'
-                ), 'bg=yellow;fg=black', true),
-                '',
-            ));
+
+            $io->writeError('PSR-4 autoloading configured. Use "namespace '.$namespace.';" in '.$autoloadPath);
+            $io->writeError('Include the Composer autoloader with: require \'vendor/autoload.php\';');
         }
 
         return 0;
@@ -430,7 +419,7 @@ EOT
         $autoload = $input->getOption('autoload') ?: 'src/';
         $namespace = $this->namespaceFromPackageName($input->getOption('name'));
         $autoload = $io->askAndValidate(
-            'Add PSR-4 autoload mapping? Map namespace "'.$namespace.'" to the entered relative path. [<comment>'.$autoload.'</comment>, n to skip]: ',
+            'Add PSR-4 autoload mapping? Maps namespace "'.$namespace.'" to the entered relative path. [<comment>'.$autoload.'</comment>, n to skip]: ',
             function ($value) use ($autoload) {
                 if (null === $value) {
                     return $autoload;
