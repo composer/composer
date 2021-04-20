@@ -157,7 +157,7 @@ EOT
 
         $question = 'Would you like to install dependencies now [<comment>yes</comment>]? ';
         if ($input->isInteractive() && $this->hasDependencies($options) && $io->askConfirmation($question)) {
-            $this->installDependencies($output);
+            $this->updateDependencies($output);
         }
 
         return 0;
@@ -837,13 +837,14 @@ EOT
         return array_keys(array_slice($similarPackages, 0, 5));
     }
 
-    private function installDependencies($output)
+    private function updateDependencies($output)
     {
         try {
-            $installCommand = $this->getApplication()->find('install');
-            $installCommand->run(new ArrayInput(array()), $output);
+            $updateCommand = $this->getApplication()->find('update');
+            $this->getApplication()->resetComposer();
+            $updateCommand->run(new ArrayInput(array()), $output);
         } catch (\Exception $e) {
-            $this->getIO()->writeError('Could not install dependencies. Run `composer install` to see more information.');
+            $this->getIO()->writeError('Could not update dependencies. Run `composer update` to see more information.');
         }
     }
 
