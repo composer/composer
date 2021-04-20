@@ -214,7 +214,7 @@ setting. All available stability flags are listed on the minimum-stability
 section of the [schema page](../04-schema.md#minimum-stability).
 
 ## Summary
-```json
+```jsonc
 "require": {
     "vendor/package": "1.3.2", // exactly 1.3.2
 
