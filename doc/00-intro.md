@@ -158,6 +158,22 @@ C:\Users\username>composer -V
 Composer version 2.0.12 2021-04-01 10:14:59
 ```
 
+## Installation - Termux (Android)
+
+Run
+
+```sh
+pkg install composer
+composer self-update
+```
+
+Then close your current terminal. Test usage with a new terminal:
+
+```sh
+$ composer -V
+Composer version 2.0.12 2021-04-01 10:14:59
+```
+
 ## Using Composer
 
 Now that you've installed Composer, you are ready to use it! Head on over to the
