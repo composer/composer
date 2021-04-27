@@ -306,7 +306,7 @@ class SvnDriver extends VcsDriver
 
         $process = new ProcessExecutor($io);
         $exit = $process->execute(
-            "svn info --non-interactive ".ProcessExecutor::escape($url),
+            "svn info --non-interactive -- ".ProcessExecutor::escape($url),
             $ignoredOutput
         );
 
