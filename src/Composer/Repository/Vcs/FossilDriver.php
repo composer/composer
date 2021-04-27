@@ -95,13 +95,13 @@ class FossilDriver extends VcsDriver
 
             $fs->ensureDirectoryExists($this->checkoutDir);
 
-            if (0 !== $this->process->execute(sprintf('fossil clone %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoFile)), $output)) {
+            if (0 !== $this->process->execute(sprintf('fossil clone -- %s %s', ProcessExecutor::escape($this->url), ProcessExecutor::escape($this->repoFile)), $output)) {
                 $output = $this->process->getErrorOutput();
 
                 throw new \RuntimeException('Failed to clone '.$this->url.' to repository ' . $this->repoFile . "\n\n" .$output);
             }
 
-            if (0 !== $this->process->execute(sprintf('fossil open %s --nested', ProcessExecutor::escape($this->repoFile)), $output, $this->checkoutDir)) {
+            if (0 !== $this->process->execute(sprintf('fossil open --nested -- %s', ProcessExecutor::escape($this->repoFile)), $output, $this->checkoutDir)) {
                 $output = $this->process->getErrorOutput();
 
                 throw new \RuntimeException('Failed to open repository '.$this->repoFile.' in ' . $this->checkoutDir . "\n\n" .$output);
@@ -150,7 +150,7 @@ class FossilDriver extends VcsDriver
      */
     public function getFileContent($file, $identifier)
     {
-        $command = sprintf('fossil cat -r %s %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
+        $command = sprintf('fossil cat -r %s -- %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
         $this->process->execute($command, $content, $this->checkoutDir);
 
         if (!trim($content)) {

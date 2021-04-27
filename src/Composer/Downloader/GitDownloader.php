@@ -51,7 +51,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $gitVersion = GitUtil::getVersion($this->process);
         $msg = "Cloning ".$this->getShortHash($ref);
 
-        $command = 'git clone --no-checkout %url% %path% && cd '.$flag.'%path% && git remote add composer %url% && git fetch composer && git remote set-url origin %sanitizedUrl% && git remote set-url composer %sanitizedUrl%';
+        $command = 'git clone --no-checkout -- %url% %path% && cd '.$flag.'%path% && git remote add composer -- %url% && git fetch composer && git remote set-url origin -- %sanitizedUrl% && git remote set-url composer -- %sanitizedUrl%';
         if ($gitVersion && version_compare($gitVersion, '2.3.0-rc0', '>=') && Cache::isUsable($cachePath)) {
             $this->io->writeError('', true, IOInterface::DEBUG);
             $this->io->writeError(sprintf('    Cloning to cache at %s', ProcessExecutor::escape($cachePath)), true, IOInterface::DEBUG);
@@ -63,7 +63,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                     $command =
                         'git clone --no-checkout %cachePath% %path% --dissociate --reference %cachePath% '
                         . '&& cd '.$flag.'%path% '
-                        . '&& git remote set-url origin %sanitizedUrl% && git remote add composer %sanitizedUrl%';
+                        . '&& git remote set-url origin -- %sanitizedUrl% && git remote add composer -- %sanitizedUrl%';
                     $msg = "Cloning ".$this->getShortHash($ref).' from cache';
                 }
             } catch (\RuntimeException $e) {
@@ -125,7 +125,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $ref = $target->getSourceReference();
         $this->io->writeError(" Checking out ".$this->getShortHash($ref));
-        $command = '(git remote set-url composer %s && git rev-parse --quiet --verify %s || (git fetch composer && git fetch --tags composer)) && git remote set-url composer %s';
+        $command = '(git remote set-url composer -- %s && git rev-parse --quiet --verify %s || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- %s';
 
         $commandCallable = function ($url) use ($command, $ref) {
             return sprintf(
@@ -411,7 +411,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
     protected function updateOriginUrl($path, $url)
     {
-        $this->process->execute(sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
+        $this->process->execute(sprintf('git remote set-url origin -- %s', ProcessExecutor::escape($url)), $output, $path);
         $this->setPushUrl($path, $url);
     }
 
@@ -424,7 +424,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             if (!in_array('ssh', $protocols, true)) {
                 $pushUrl = 'https://' . $match[1] . '/'.$match[2].'/'.$match[3].'.git';
             }
-            $cmd = sprintf('git remote set-url --push origin %s', ProcessExecutor::escape($pushUrl));
+            $cmd = sprintf('git remote set-url --push origin -- %s', ProcessExecutor::escape($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);
         }
     }

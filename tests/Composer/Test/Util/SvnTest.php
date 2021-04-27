@@ -60,7 +60,7 @@ class SvnTest extends TestCase
         $reflMethod->setAccessible(true);
 
         $this->assertEquals(
-            $this->getCmd("svn ls --non-interactive  'http://svn.example.org'"),
+            $this->getCmd("svn ls --non-interactive  -- 'http://svn.example.org'"),
             $reflMethod->invokeArgs($svn, array('svn ls', $url))
         );
     }

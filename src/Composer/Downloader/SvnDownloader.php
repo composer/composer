@@ -172,7 +172,7 @@ class SvnDownloader extends VcsDownloader
     {
         if (preg_match('{.*@(\d+)$}', $fromReference) && preg_match('{.*@(\d+)$}', $toReference)) {
             // retrieve the svn base url from the checkout folder
-            $command = sprintf('svn info --non-interactive --xml %s', ProcessExecutor::escape($path));
+            $command = sprintf('svn info --non-interactive --xml -- %s', ProcessExecutor::escape($path));
             if (0 !== $this->process->execute($command, $output, $path)) {
                 throw new \RuntimeException(
                     'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()

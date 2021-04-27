@@ -29,13 +29,13 @@ class HgDownloader extends VcsDownloader
         $hgUtils = new HgUtils($this->io, $this->config, $this->process);
 
         $cloneCommand = function ($url) use ($path) {
-            return sprintf('hg clone %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($path));
+            return sprintf('hg clone -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($path));
         };
 
         $hgUtils->runCommand($cloneCommand, $url, $path);
 
         $ref = ProcessExecutor::escape($package->getSourceReference());
-        $command = sprintf('hg up %s', $ref);
+        $command = sprintf('hg up -- %s', $ref);
         if (0 !== $this->process->execute($command, $ignoredOutput, realpath($path))) {
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
@@ -56,7 +56,7 @@ class HgDownloader extends VcsDownloader
         }
 
         $command = function ($url) use ($ref) {
-            return sprintf('hg pull %s && hg up %s', ProcessExecutor::escape($url), ProcessExecutor::escape($ref));
+            return sprintf('hg pull -- %s && hg up -- %s', ProcessExecutor::escape($url), ProcessExecutor::escape($ref));
         };
 
         $hgUtils->runCommand($command, $url, $path);
