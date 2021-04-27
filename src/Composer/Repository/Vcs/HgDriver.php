@@ -67,7 +67,7 @@ class HgDriver extends VcsDriver
 
                 $repoDir = $this->repoDir;
                 $command = function ($url) use ($repoDir) {
-                    return sprintf('hg clone --noupdate %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($repoDir));
+                    return sprintf('hg clone --noupdate -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($repoDir));
                 };
 
                 $hgUtils->runCommand($command, $this->url, null);
@@ -228,7 +228,7 @@ class HgDriver extends VcsDriver
         }
 
         $process = new ProcessExecutor($io);
-        $exit = $process->execute(sprintf('hg identify %s', ProcessExecutor::escape($url)), $ignored);
+        $exit = $process->execute(sprintf('hg identify -- %s', ProcessExecutor::escape($url)), $ignored);
 
         return $exit === 0;
     }

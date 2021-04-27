@@ -30,7 +30,7 @@ class GzipDownloader extends ArchiveDownloader
 
         // Try to use gunzip on *nix
         if (!Platform::isWindows()) {
-            $command = 'gzip -cd ' . ProcessExecutor::escape($file) . ' > ' . ProcessExecutor::escape($targetFilepath);
+            $command = 'gzip -cd -- ' . ProcessExecutor::escape($file) . ' > ' . ProcessExecutor::escape($targetFilepath);
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {
                 return \React\Promise\resolve();

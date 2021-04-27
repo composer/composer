@@ -69,19 +69,19 @@ class FossilDownloaderTest extends TestCase
             ->will($this->returnValue(array('http://fossil.kd2.org/kd2fw/')));
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
-        $expectedFossilCommand = $this->getCmd('fossil clone \'http://fossil.kd2.org/kd2fw/\' \'repo.fossil\'');
+        $expectedFossilCommand = $this->getCmd('fossil clone -- \'http://fossil.kd2.org/kd2fw/\' \'repo.fossil\'');
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedFossilCommand))
             ->will($this->returnValue(0));
 
-        $expectedFossilCommand = $this->getCmd('fossil open \'repo.fossil\' --nested');
+        $expectedFossilCommand = $this->getCmd('fossil open --nested -- \'repo.fossil\'');
         $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedFossilCommand))
             ->will($this->returnValue(0));
 
-        $expectedFossilCommand = $this->getCmd('fossil update \'trunk\'');
+        $expectedFossilCommand = $this->getCmd('fossil update -- \'trunk\'');
         $processExecutor->expects($this->at(2))
             ->method('execute')
             ->with($this->equalTo($expectedFossilCommand))

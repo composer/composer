@@ -69,13 +69,13 @@ class HgDownloaderTest extends TestCase
             ->will($this->returnValue(array('https://mercurial.dev/l3l0/composer')));
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
-        $expectedGitCommand = $this->getCmd('hg clone \'https://mercurial.dev/l3l0/composer\' \'composerPath\'');
+        $expectedGitCommand = $this->getCmd('hg clone -- \'https://mercurial.dev/l3l0/composer\' \'composerPath\'');
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
             ->will($this->returnValue(0));
 
-        $expectedGitCommand = $this->getCmd('hg up \'ref\'');
+        $expectedGitCommand = $this->getCmd('hg up -- \'ref\'');
         $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
@@ -122,7 +122,7 @@ class HgDownloaderTest extends TestCase
             ->method('execute')
             ->with($this->equalTo($expectedHgCommand))
             ->will($this->returnValue(0));
-        $expectedHgCommand = $this->getCmd("hg pull 'https://github.com/l3l0/composer' && hg up 'ref'");
+        $expectedHgCommand = $this->getCmd("hg pull -- 'https://github.com/l3l0/composer' && hg up -- 'ref'");
         $processExecutor->expects($this->at(1))
             ->method('execute')
             ->with($this->equalTo($expectedHgCommand))
