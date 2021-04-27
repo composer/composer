@@ -1,3 +1,10 @@
+### [2.0.13] 2021-04-27
+
+  * Security: Fixed command injection vulnerability in HgDriver/HgDownloader and hardened other VCS drivers and downloaders (GHSA-h5h8-pc6h-jvvx / CVE-2021-29472)
+  * Fixed install step at the end of the init command to take new dependencies into account correctly
+  * Fixed `update --lock` listing updates which were not really happening (#9812)
+  * Fixed support for --no-dev combined with --locked in outdated and show commands (#9788)
+
 ### [2.0.12] 2021-04-01
 
   * Fixed support for new GitHub OAuth token format (#9757)
@@ -1132,6 +1139,7 @@
 
   * Initial release
 
+[2.0.13]: https://github.com/composer/composer/compare/2.0.12...2.0.13
 [2.0.12]: https://github.com/composer/composer/compare/2.0.11...2.0.12
 [2.0.11]: https://github.com/composer/composer/compare/2.0.10...2.0.11
 [2.0.10]: https://github.com/composer/composer/compare/2.0.9...2.0.10
