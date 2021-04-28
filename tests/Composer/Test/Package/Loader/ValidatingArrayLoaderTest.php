@@ -322,6 +322,19 @@ class ValidatingArrayLoaderTest extends TestCase
                     'transport-options : should be an array, string given',
                 ),
             ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'source' => array('url' => '--foo', 'reference' => ' --bar', 'type' => 'baz'),
+                    'dist' => array('url' => ' --foox', 'reference' => '--barx', 'type' => 'baz'),
+                ),
+                array(
+                    'dist.reference : must not start with a "-", "--barx" given',
+                    'dist.url : must not start with a "-", " --foox" given',
+                    'source.reference : must not start with a "-", " --bar" given',
+                    'source.url : must not start with a "-", "--foo" given',
+                ),
+            ),
         ));
     }
 

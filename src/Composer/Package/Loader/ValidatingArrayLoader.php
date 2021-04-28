@@ -306,8 +306,34 @@ class ValidatingArrayLoader implements LoaderInterface
             unset($this->config['autoload']['psr-4']);
         }
 
-        // TODO validate dist
-        // TODO validate source
+        foreach (array('source', 'dist') as $srcType) {
+            if ($this->validateArray($srcType) && !empty($this->config[$srcType])) {
+                if (!isset($this->config[$srcType]['type'])) {
+                    $this->errors[] = $srcType . '.type : must be present';
+                }
+                if (!isset($this->config[$srcType]['url'])) {
+                    $this->errors[] = $srcType . '.url : must be present';
+                }
+                if ($srcType === 'source' && !isset($this->config[$srcType]['reference'])) {
+                    $this->errors[] = $srcType . '.reference : must be present';
+                }
+                if (!is_string($this->config[$srcType]['type'])) {
+                    $this->errors[] = $srcType . '.type : should be a string, '.gettype($this->config[$srcType]['type']).' given';
+                }
+                if (!is_string($this->config[$srcType]['url'])) {
+                    $this->errors[] = $srcType . '.url : should be a string, '.gettype($this->config[$srcType]['url']).' given';
+                }
+                if (isset($this->config[$srcType]['reference']) && !is_string($this->config[$srcType]['reference'])) {
+                    $this->errors[] = $srcType . '.reference : should be a string, '.gettype($this->config[$srcType]['reference']).' given';
+                }
+                if (isset($this->config[$srcType]['reference']) && preg_match('{^\s*-}', $this->config[$srcType]['reference'])) {
+                    $this->errors[] = $srcType . '.reference : must not start with a "-", "'.$this->config[$srcType]['reference'].'" given';
+                }
+                if (preg_match('{^\s*-}', $this->config[$srcType]['url'])) {
+                    $this->errors[] = $srcType . '.url : must not start with a "-", "'.$this->config[$srcType]['url'].'" given';
+                }
+            }
+        }
 
         // TODO validate repositories
         // TODO validate package repositories' packages using this recursively
