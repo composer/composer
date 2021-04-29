@@ -75,6 +75,11 @@ class Platform
     public static function isWindowsSubsystemForLinux() {
         if (null === self::$isWindowsSubsystemForLinux) {
             self::$isWindowsSubsystemForLinux = false;
+            
+            // while WSL will be hosted within windows, WSL itself cannot be windows based itself.
+            if (self::isWindows()) {
+                return self::$isWindowsSubsystemForLinux = false;
+            }
 
             $process = new ProcessExecutor();
             try {
