@@ -21,6 +21,8 @@ class Platform
 {
     /** @var ?bool */
     private static $isVirtualBoxGuest = null;
+    /** @var ?bool */
+    private static $isWindowsSubsystemForLinux = null;
 
     /**
      * Parses tildes and environment variables in paths.
@@ -65,6 +67,26 @@ class Platform
         }
 
         throw new \RuntimeException('Could not determine user directory');
+    }
+
+    /**
+     * @return bool Whether the host machine is running on the Windows Subsystem for Linux (WSL)
+     */
+    public static function isWindowsSubsystemForLinux() {
+        if (null === self::$isWindowsSubsystemForLinux) {
+            self::$isWindowsSubsystemForLinux = false;
+
+            $process = new ProcessExecutor();
+            try {
+                if (0 === $process->execute('cat /proc/version | grep "Microsoft"', $ignoredOutput)) {
+                    return self::$isWindowsSubsystemForLinux = true;
+                }
+            } catch (\Exception $e) {
+                // noop
+            }
+        }
+
+        return self::$isWindowsSubsystemForLinux;
     }
 
     /**
