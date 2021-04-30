@@ -194,6 +194,13 @@ class ValidatingArrayLoaderTest extends TestCase
                     'name' => 'npm-asset/angular--core',
                 ),
             ),
+            array( // refs as int or string
+                array(
+                    'name' => 'foo/bar',
+                    'source' => array('url' => 'https://example.org', 'reference' => 1234, 'type' => 'baz'),
+                    'dist' => array('url' => 'https://example.org', 'reference' => 'foobar', 'type' => 'baz'),
+                ),
+            ),
         );
     }
 

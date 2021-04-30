@@ -323,8 +323,8 @@ class ValidatingArrayLoader implements LoaderInterface
                 if (!is_string($this->config[$srcType]['url'])) {
                     $this->errors[] = $srcType . '.url : should be a string, '.gettype($this->config[$srcType]['url']).' given';
                 }
-                if (isset($this->config[$srcType]['reference']) && !is_string($this->config[$srcType]['reference'])) {
-                    $this->errors[] = $srcType . '.reference : should be a string, '.gettype($this->config[$srcType]['reference']).' given';
+                if (isset($this->config[$srcType]['reference']) && !is_string($this->config[$srcType]['reference']) && !is_int($this->config[$srcType]['reference'])) {
+                    $this->errors[] = $srcType . '.reference : should be a string or int, '.gettype($this->config[$srcType]['reference']).' given';
                 }
                 if (isset($this->config[$srcType]['reference']) && preg_match('{^\s*-}', $this->config[$srcType]['reference'])) {
                     $this->errors[] = $srcType . '.reference : must not start with a "-", "'.$this->config[$srcType]['reference'].'" given';
