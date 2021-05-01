@@ -225,7 +225,7 @@ class ClassMapGenerator
         if (!$contents) {
             if (!file_exists($path)) {
                 $message = 'File at "%s" does not exist, check your classmap definitions';
-            } elseif (!is_readable($path)) {
+            } elseif (!Filesystem::isReadable($path)) {
                 $message = 'File at "%s" is not readable, check its permissions';
             } elseif ('' === trim(file_get_contents($path))) {
                 // The input file was really empty and thus contains no classes

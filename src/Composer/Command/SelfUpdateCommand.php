@@ -381,7 +381,7 @@ TAGSPUBKEY
         if (!is_file($oldFile)) {
             throw new FilesystemException('Composer rollback failed: "'.$oldFile.'" could not be found');
         }
-        if (!is_readable($oldFile)) {
+        if (!Filesystem::isReadable($oldFile)) {
             throw new FilesystemException('Composer rollback failed: "'.$oldFile.'" could not be read');
         }
 
@@ -582,7 +582,7 @@ EOT;
         @unlink($script);
 
         // see if the file was moved and is still accessible
-        if ($result = is_readable($localFilename) && (hash_file('sha256', $localFilename) === $checksum)) {
+        if ($result = Filesystem::isReadable($localFilename) && (hash_file('sha256', $localFilename) === $checksum)) {
             $io->writeError('<info>Operation succeeded.</info>');
             @unlink($newFilename);
         } else {
