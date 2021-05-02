@@ -559,7 +559,7 @@ class Filesystem
         }
 
         if (is_file($path)) {
-            return false !== Silencer::call('file_get_contents', $path);
+            return false !== Silencer::call('file_get_contents', $path, false, null, 0, 1);
         }
 
         if (is_dir($path)) {
