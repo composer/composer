@@ -72,7 +72,8 @@ class Platform
     /**
      * @return bool Whether the host machine is running on the Windows Subsystem for Linux (WSL)
      */
-    public static function isWindowsSubsystemForLinux() {
+    public static function isWindowsSubsystemForLinux()
+    {
         if (null === self::$isWindowsSubsystemForLinux) {
             self::$isWindowsSubsystemForLinux = false;
             
@@ -81,13 +82,8 @@ class Platform
                 return self::$isWindowsSubsystemForLinux = false;
             }
 
-            $process = new ProcessExecutor();
-            try {
-                if (0 === $process->execute('cat /proc/version | grep "Microsoft"', $ignoredOutput)) {
-                    return self::$isWindowsSubsystemForLinux = true;
-                }
-            } catch (\Exception $e) {
-                // noop
+            if (is_readable('/proc/version') && false !== stripos(file_get_contents('/proc/version'), 'microsoft')) {
+                return self::$isWindowsSubsystemForLinux = true;
             }
         }
 
