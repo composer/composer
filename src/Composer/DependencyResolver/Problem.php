@@ -291,7 +291,17 @@ class Problem
                 return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, $packages, $allReposPackages, 'constraint');
             }
 
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.');
+            $suffix = '';
+            if ($constraint instanceof Constraint && $constraint->getVersion() === 'dev-master') {
+                foreach ($packages as $candidate) {
+                    if (in_array($candidate->getVersion(), array('dev-default', 'dev-main'), true)) {
+                        $suffix = ' Perhaps dev-master was renamed to '.$candidate->getPrettyVersion().'?';
+                        break;
+                    }
+                }
+            }
+
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.' . $suffix);
         }
 
         if (!preg_match('{^[A-Za-z0-9_./-]+$}', $packageName)) {
