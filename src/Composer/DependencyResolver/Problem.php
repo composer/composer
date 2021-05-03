@@ -362,7 +362,7 @@ class Problem
      * @param  string[]     $versions an array of pretty versions, with normalized versions as keys
      * @return list<string> a list of pretty versions and '...' where versions were removed
      */
-    private static function condenseVersionList(array $versions, $max)
+    private static function condenseVersionList(array $versions, $max, $maxDev = 16)
     {
         if (count($versions) <= $max) {
             return $versions;
@@ -371,10 +371,16 @@ class Problem
         $filtered = array();
         $byMajor = array();
         foreach ($versions as $version => $pretty) {
-            $byMajor[preg_replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
+            if (0 === stripos($version, 'dev-')) {
+                $byMajor['dev'][] = $pretty;
+            } else {
+                $byMajor[preg_replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
+            }
         }
-        foreach ($byMajor as $versionsForMajor) {
-            if (count($versionsForMajor) > $max) {
+        foreach ($byMajor as $majorVersion => $versionsForMajor) {
+            $maxVersions = $majorVersion === 'dev' ? $maxDev : $max;
+            if (count($versionsForMajor) > $maxVersions) {
+                // output only 1st and last versions
                 $filtered[] = $versionsForMajor[0];
                 $filtered[] = '...';
                 $filtered[] = $versionsForMajor[count($versionsForMajor) - 1];
