@@ -162,6 +162,46 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * {@inheritDoc}
      */
+    public function setMinimumStability($minimumStability)
+    {
+        $this->aliasOf->setMinimumStability($minimumStability);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setPreferStable($preferStable)
+    {
+        $this->aliasOf->setPreferStable($preferStable);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setConfig(array $config)
+    {
+        $this->aliasOf->setConfig($config);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setReferences(array $references)
+    {
+        $this->aliasOf->setReferences($references);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setAliases(array $aliases)
+    {
+        $this->aliasOf->setAliases($aliases);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function setSuggests(array $suggests)
     {
         $this->aliasOf->setSuggests($suggests);

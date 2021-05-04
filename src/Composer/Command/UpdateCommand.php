@@ -17,7 +17,6 @@ use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Package\Loader\RootPackageLoader;
-use Composer\Package\RootPackage;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\Version\VersionParser;
@@ -156,9 +155,7 @@ EOT
         }
         $rootPackage->setRequires($rootRequires);
         $rootPackage->setDevRequires($rootDevRequires);
-        if ($rootPackage instanceof RootPackage) {
-            $rootPackage->setReferences(RootPackageLoader::extractReferences($reqs, $rootPackage->getReferences()));
-        }
+        $rootPackage->setReferences(RootPackageLoader::extractReferences($reqs, $rootPackage->getReferences()));
         $rootPackage->setStabilityFlags(RootPackageLoader::extractStabilityFlags($reqs, $rootPackage->getMinimumStability(), $rootPackage->getStabilityFlags()));
 
         if ($input->getOption('interactive')) {
