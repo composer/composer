@@ -291,7 +291,17 @@ class Problem
                 return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, $packages, $allReposPackages, 'constraint');
             }
 
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.');
+            $suffix = '';
+            if ($constraint instanceof Constraint && $constraint->getVersion() === 'dev-master') {
+                foreach ($packages as $candidate) {
+                    if (in_array($candidate->getVersion(), array('dev-default', 'dev-main'), true)) {
+                        $suffix = ' Perhaps dev-master was renamed to '.$candidate->getPrettyVersion().'?';
+                        break;
+                    }
+                }
+            }
+
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.' . $suffix);
         }
 
         if (!preg_match('{^[A-Za-z0-9_./-]+$}', $packageName)) {
@@ -352,7 +362,7 @@ class Problem
      * @param  string[]     $versions an array of pretty versions, with normalized versions as keys
      * @return list<string> a list of pretty versions and '...' where versions were removed
      */
-    private static function condenseVersionList(array $versions, $max)
+    private static function condenseVersionList(array $versions, $max, $maxDev = 16)
     {
         if (count($versions) <= $max) {
             return $versions;
@@ -361,10 +371,16 @@ class Problem
         $filtered = array();
         $byMajor = array();
         foreach ($versions as $version => $pretty) {
-            $byMajor[preg_replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
+            if (0 === stripos($version, 'dev-')) {
+                $byMajor['dev'][] = $pretty;
+            } else {
+                $byMajor[preg_replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
+            }
         }
-        foreach ($byMajor as $versionsForMajor) {
-            if (count($versionsForMajor) > $max) {
+        foreach ($byMajor as $majorVersion => $versionsForMajor) {
+            $maxVersions = $majorVersion === 'dev' ? $maxDev : $max;
+            if (count($versionsForMajor) > $maxVersions) {
+                // output only 1st and last versions
                 $filtered[] = $versionsForMajor[0];
                 $filtered[] = '...';
                 $filtered[] = $versionsForMajor[count($versionsForMajor) - 1];

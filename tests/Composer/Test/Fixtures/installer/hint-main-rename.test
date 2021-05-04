@@ -1,0 +1,64 @@
+--TEST--
+Test that master branches renamed to main is hinted to the user. This also covers minification of dev-x branches in output.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "package/a", "version": "2.0.0" },
+                { "name": "package/a", "version": "2.0.1" },
+                { "name": "package/a", "version": "2.0.2" },
+                { "name": "package/a", "version": "2.0.3" },
+                { "name": "package/a", "version": "2.1.0" },
+                { "name": "package/a", "version": "2.2.0" },
+                { "name": "package/a", "version": "2.3.1" },
+                { "name": "package/a", "version": "2.3.2" },
+                { "name": "package/a", "version": "2.3.3" },
+                { "name": "package/a", "version": "2.3.4" },
+                { "name": "package/a", "version": "2.3.5" },
+                { "name": "package/a", "version": "2.4.0" },
+                { "name": "package/a", "version": "2.5.0" },
+                { "name": "package/a", "version": "2.6.0" },
+                { "name": "package/a", "version": "dev-main" },
+                { "name": "package/a", "version": "dev-foo-1" },
+                { "name": "package/a", "version": "dev-foo-2" },
+                { "name": "package/a", "version": "dev-foo-3" },
+                { "name": "package/a", "version": "dev-foo-4" },
+                { "name": "package/a", "version": "dev-foo-5" },
+                { "name": "package/a", "version": "dev-foo-6" },
+                { "name": "package/a", "version": "dev-foo-7" },
+                { "name": "package/a", "version": "dev-foo-8" },
+                { "name": "package/a", "version": "dev-foo-9" },
+                { "name": "package/a", "version": "dev-foo-10" },
+                { "name": "package/a", "version": "dev-foo-11" },
+                { "name": "package/a", "version": "dev-foo-12" },
+                { "name": "package/a", "version": "dev-foo-13" },
+                { "name": "package/a", "version": "dev-foo-14" },
+                { "name": "package/a", "version": "dev-foo-15" },
+                { "name": "package/a", "version": "dev-foo-16" },
+                { "name": "package/a", "version": "dev-foo-17" },
+                { "name": "package/a", "version": "dev-foo-18" }
+            ]
+        }
+    ],
+    "require": {
+        "package/a": "dev-master"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires package/a dev-master, found package/a[dev-main, ..., dev-foo-18, 2.0.0, ..., 2.6.0] but it does not match the constraint. Perhaps dev-master was renamed to dev-main?
+
+--EXPECT--
