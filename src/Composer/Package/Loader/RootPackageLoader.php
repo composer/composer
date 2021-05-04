@@ -130,8 +130,8 @@ class RootPackageLoader extends ArrayLoader
                     $links[$link->getTarget()] = $link->getConstraint()->getPrettyString();
                 }
                 $aliases = $this->extractAliases($links, $aliases);
-                $stabilityFlags = $this->extractStabilityFlags($links, $stabilityFlags, $realPackage->getMinimumStability());
-                $references = $this->extractReferences($links, $references);
+                $stabilityFlags = self::extractStabilityFlags($links, $realPackage->getMinimumStability(), $stabilityFlags);
+                $references = self::extractReferences($links, $references);
 
                 if (isset($links[$config['name']])) {
                     throw new \RuntimeException(sprintf('Root package \'%s\' cannot require itself in its composer.json' . PHP_EOL .
@@ -189,7 +189,10 @@ class RootPackageLoader extends ArrayLoader
         return $aliases;
     }
 
-    private function extractStabilityFlags(array $requires, array $stabilityFlags, $minimumStability)
+    /**
+     * @internal
+     */
+    public static function extractStabilityFlags(array $requires, $minimumStability, array $stabilityFlags)
     {
         $stabilities = BasePackage::$stabilities;
         $minimumStability = $stabilities[$minimumStability];
@@ -242,7 +245,10 @@ class RootPackageLoader extends ArrayLoader
         return $stabilityFlags;
     }
 
-    private function extractReferences(array $requires, array $references)
+    /**
+     * @internal
+     */
+    public static function extractReferences(array $requires, array $references)
     {
         foreach ($requires as $reqName => $reqVersion) {
             $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
