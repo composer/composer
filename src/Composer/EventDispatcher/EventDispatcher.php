@@ -158,151 +158,157 @@ class EventDispatcher
 
         $this->pushEvent($event);
 
-        $returnMax = 0;
-        foreach ($listeners as $callable) {
-            $return = 0;
-            $this->ensureBinDirIsInPath();
+        try {
+            $returnMax = 0;
+            foreach ($listeners as $callable) {
+                $return = 0;
+                $this->ensureBinDirIsInPath();
 
-            if (!is_string($callable)) {
-                if (!is_callable($callable)) {
-                    $className = is_object($callable[0]) ? get_class($callable[0]) : $callable[0];
+                if (!is_string($callable)) {
+                    if (!is_callable($callable)) {
+                        $className = is_object($callable[0]) ? get_class($callable[0]) : $callable[0];
 
-                    throw new \RuntimeException('Subscriber '.$className.'::'.$callable[1].' for event '.$event->getName().' is not callable, make sure the function is defined and public');
-                }
-                if (is_array($callable) && (is_string($callable[0]) || is_object($callable[0])) && is_string($callable[1])) {
-                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1]), true, IOInterface::VERBOSE);
-                }
-                $return = false === call_user_func($callable, $event) ? 1 : 0;
-            } elseif ($this->isComposerScript($callable)) {
-                $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable), true, IOInterface::VERBOSE);
+                        throw new \RuntimeException('Subscriber '.$className.'::'.$callable[1].' for event '.$event->getName().' is not callable, make sure the function is defined and public');
+                    }
+                    if (is_array($callable) && (is_string($callable[0]) || is_object($callable[0])) && is_string($callable[1])) {
+                        $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1]), true, IOInterface::VERBOSE);
+                    }
+                    $return = false === call_user_func($callable, $event) ? 1 : 0;
+                } elseif ($this->isComposerScript($callable)) {
+                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable), true, IOInterface::VERBOSE);
 
-                $script = explode(' ', substr($callable, 1));
-                $scriptName = $script[0];
-                unset($script[0]);
+                    $script = explode(' ', substr($callable, 1));
+                    $scriptName = $script[0];
+                    unset($script[0]);
 
-                $args = array_merge($script, $event->getArguments());
-                $flags = $event->getFlags();
-                if (strpos($callable, '@composer ') === 0) {
-                    $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
+                    $args = array_merge($script, $event->getArguments());
+                    $flags = $event->getFlags();
+                    if (strpos($callable, '@composer ') === 0) {
+                        $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . ' ' . implode(' ', $args);
+                        if (0 !== ($exitCode = $this->executeTty($exec))) {
+                            $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
+
+                            throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
+                        }
+                    } else {
+                        if (!$this->getListeners(new Event($scriptName))) {
+                            $this->io->writeError(sprintf('<warning>You made a reference to a non-existent script %s</warning>', $callable), true, IOInterface::QUIET);
+                        }
+
+                        try {
+                            /** @var InstallerEvent $event */
+                            $scriptEvent = new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode(), $args, $flags);
+                            $scriptEvent->setOriginatingEvent($event);
+                            $return = $this->dispatch($scriptName, $scriptEvent);
+                        } catch (ScriptExecutionException $e) {
+                            $this->io->writeError(sprintf('<error>Script %s was called via %s</error>', $callable, $event->getName()), true, IOInterface::QUIET);
+                            throw $e;
+                        }
+                    }
+                } elseif ($this->isPhpScript($callable)) {
+                    $className = substr($callable, 0, strpos($callable, '::'));
+                    $methodName = substr($callable, strpos($callable, '::') + 2);
+
+                    if (!class_exists($className)) {
+                        $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
+                        continue;
+                    }
+                    if (!is_callable($callable)) {
+                        $this->io->writeError('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
+                        continue;
+                    }
+
+                    try {
+                        $return = false === $this->executeEventPhpScript($className, $methodName, $event) ? 1 : 0;
+                    } catch (\Exception $e) {
+                        $message = "Script %s handling the %s event terminated with an exception";
+                        $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
+                        throw $e;
+                    }
+                } else {
+                    $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
+                    $exec = $callable . ($args === '' ? '' : ' '.$args);
+                    if ($this->io->isVerbose()) {
+                        $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
+                    } elseif ($event->getName() !== '__exec_command') {
+                        // do not output the command being run when using `composer exec` as it is fairly obvious the user is running it
+                        $this->io->writeError(sprintf('> %s', $exec));
+                    }
+
+                    $possibleLocalBinaries = $this->composer->getPackage()->getBinaries();
+                    if ($possibleLocalBinaries) {
+                        foreach ($possibleLocalBinaries as $localExec) {
+                            if (preg_match('{\b'.preg_quote($callable).'$}', $localExec)) {
+                                $caller = BinaryInstaller::determineBinaryCaller($localExec);
+                                $exec = preg_replace('{^'.preg_quote($callable).'}', $caller . ' ' . $localExec, $exec);
+                                break;
+                            }
+                        }
+                    }
+
+                    if (strpos($exec, '@putenv ') === 0) {
+                        putenv(substr($exec, 8));
+                        list($var, $value) = explode('=', substr($exec, 8), 2);
+                        $_SERVER[$var] = $value;
+
+                        continue;
+                    }
+                    if (strpos($exec, '@php ') === 0) {
+                        $pathAndArgs = substr($exec, 5);
+                        if (Platform::isWindows()) {
+                            $pathAndArgs = preg_replace_callback('{^\S+}', function ($path) {
+                                return str_replace('/', '\\', $path[0]);
+                            }, $pathAndArgs);
+                        }
+                        // match somename (not in quote, and not a qualified path) and if it is not a valid path from CWD then try to find it
+                        // in $PATH. This allows support for `@php foo` where foo is a binary name found in PATH but not an actual relative path
+                        preg_match('{^[^\'"\s/\\\\]+}', $pathAndArgs, $match);
+                        if (!file_exists($match[0])) {
+                            $finder = new ExecutableFinder;
+                            if ($pathToExec = $finder->find($match[0])) {
+                                $pathAndArgs = $pathToExec . substr($pathAndArgs, strlen($match[0]));
+                            }
+                        }
+                        $exec = $this->getPhpExecCommand() . ' ' . $pathAndArgs;
+                    } else {
+                        $finder = new PhpExecutableFinder();
+                        $phpPath = $finder->find(false);
+                        if ($phpPath) {
+                            $_SERVER['PHP_BINARY'] = $phpPath;
+                            putenv('PHP_BINARY=' . $_SERVER['PHP_BINARY']);
+                        }
+
+                        if (Platform::isWindows()) {
+                            $exec = preg_replace_callback('{^\S+}', function ($path) {
+                                return str_replace('/', '\\', $path[0]);
+                            }, $exec);
+                        }
+                    }
+
+                    // if composer is being executed, make sure it runs the expected composer from current path
+                    // resolution, even if bin-dir contains composer too because the project requires composer/composer
+                    // see https://github.com/composer/composer/issues/8748
+                    if (strpos($exec, 'composer ') === 0) {
+                        $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . substr($exec, 8);
+                    }
+
                     if (0 !== ($exitCode = $this->executeTty($exec))) {
                         $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
 
                         throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
                     }
-                } else {
-                    if (!$this->getListeners(new Event($scriptName))) {
-                        $this->io->writeError(sprintf('<warning>You made a reference to a non-existent script %s</warning>', $callable), true, IOInterface::QUIET);
-                    }
-
-                    try {
-                        /** @var InstallerEvent $event */
-                        $scriptEvent = new Script\Event($scriptName, $event->getComposer(), $event->getIO(), $event->isDevMode(), $args, $flags);
-                        $scriptEvent->setOriginatingEvent($event);
-                        $return = $this->dispatch($scriptName, $scriptEvent);
-                    } catch (ScriptExecutionException $e) {
-                        $this->io->writeError(sprintf('<error>Script %s was called via %s</error>', $callable, $event->getName()), true, IOInterface::QUIET);
-                        throw $e;
-                    }
-                }
-            } elseif ($this->isPhpScript($callable)) {
-                $className = substr($callable, 0, strpos($callable, '::'));
-                $methodName = substr($callable, strpos($callable, '::') + 2);
-
-                if (!class_exists($className)) {
-                    $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
-                    continue;
-                }
-                if (!is_callable($callable)) {
-                    $this->io->writeError('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
-                    continue;
                 }
 
-                try {
-                    $return = false === $this->executeEventPhpScript($className, $methodName, $event) ? 1 : 0;
-                } catch (\Exception $e) {
-                    $message = "Script %s handling the %s event terminated with an exception";
-                    $this->io->writeError('<error>'.sprintf($message, $callable, $event->getName()).'</error>', true, IOInterface::QUIET);
-                    throw $e;
-                }
-            } else {
-                $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
-                $exec = $callable . ($args === '' ? '' : ' '.$args);
-                if ($this->io->isVerbose()) {
-                    $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
-                } elseif ($event->getName() !== '__exec_command') {
-                    // do not output the command being run when using `composer exec` as it is fairly obvious the user is running it
-                    $this->io->writeError(sprintf('> %s', $exec));
-                }
+                $returnMax = max($returnMax, $return);
 
-                $possibleLocalBinaries = $this->composer->getPackage()->getBinaries();
-                if ($possibleLocalBinaries) {
-                    foreach ($possibleLocalBinaries as $localExec) {
-                        if (preg_match('{\b'.preg_quote($callable).'$}', $localExec)) {
-                            $caller = BinaryInstaller::determineBinaryCaller($localExec);
-                            $exec = preg_replace('{^'.preg_quote($callable).'}', $caller . ' ' . $localExec, $exec);
-                            break;
-                        }
-                    }
-                }
-
-                if (strpos($exec, '@putenv ') === 0) {
-                    putenv(substr($exec, 8));
-                    list($var, $value) = explode('=', substr($exec, 8), 2);
-                    $_SERVER[$var] = $value;
-
-                    continue;
-                }
-                if (strpos($exec, '@php ') === 0) {
-                    $pathAndArgs = substr($exec, 5);
-                    if (Platform::isWindows()) {
-                        $pathAndArgs = preg_replace_callback('{^\S+}', function ($path) {
-                            return str_replace('/', '\\', $path[0]);
-                        }, $pathAndArgs);
-                    }
-                    // match somename (not in quote, and not a qualified path) and if it is not a valid path from CWD then try to find it
-                    // in $PATH. This allows support for `@php foo` where foo is a binary name found in PATH but not an actual relative path
-                    preg_match('{^[^\'"\s/\\\\]+}', $pathAndArgs, $match);
-                    if (!file_exists($match[0])) {
-                        $finder = new ExecutableFinder;
-                        if ($pathToExec = $finder->find($match[0])) {
-                            $pathAndArgs = $pathToExec . substr($pathAndArgs, strlen($match[0]));
-                        }
-                    }
-                    $exec = $this->getPhpExecCommand() . ' ' . $pathAndArgs;
-                } else {
-                    $finder = new PhpExecutableFinder();
-                    $phpPath = $finder->find(false);
-                    if ($phpPath) {
-                        $_SERVER['PHP_BINARY'] = $phpPath;
-                        putenv('PHP_BINARY=' . $_SERVER['PHP_BINARY']);
-                    }
-
-                    if (Platform::isWindows()) {
-                        $exec = preg_replace_callback('{^\S+}', function ($path) {
-                            return str_replace('/', '\\', $path[0]);
-                        }, $exec);
-                    }
-                }
-
-                // if composer is being executed, make sure it runs the expected composer from current path
-                // resolution, even if bin-dir contains composer too because the project requires composer/composer
-                // see https://github.com/composer/composer/issues/8748
-                if (strpos($exec, 'composer ') === 0) {
-                    $exec = $this->getPhpExecCommand() . ' ' . ProcessExecutor::escape(getenv('COMPOSER_BINARY')) . substr($exec, 8);
-                }
-
-                if (0 !== ($exitCode = $this->executeTty($exec))) {
-                    $this->io->writeError(sprintf('<error>Script %s handling the %s event returned with error code '.$exitCode.'</error>', $callable, $event->getName()), true, IOInterface::QUIET);
-
-                    throw new ScriptExecutionException('Error Output: '.$this->process->getErrorOutput(), $exitCode);
+                if ($event->isPropagationStopped()) {
+                    break;
                 }
             }
+        } catch (\Exception $e) {
+            $this->popEvent();
 
-            $returnMax = max($returnMax, $return);
-
-            if ($event->isPropagationStopped()) {
-                break;
-            }
+            throw $e;
         }
 
         $this->popEvent();
