@@ -600,6 +600,33 @@ class Filesystem
         return preg_replace('{^file://}i', '', $path);
     }
 
+    /**
+     * Cross-platform safe version of is_readable()
+     *
+     * This will also check for readability by reading the file as is_readable can not be trusted on network-mounts
+     * and \\wsl$ paths. See https://github.com/composer/composer/issues/8231 and https://bugs.php.net/bug.php?id=68926
+     *
+     * @param string $path
+     * @return bool
+     */
+    public static function isReadable($path)
+    {
+        if (is_readable($path)) {
+            return true;
+        }
+
+        if (is_file($path)) {
+            return false !== Silencer::call('file_get_contents', $path, false, null, 0, 1);
+        }
+
+        if (is_dir($path)) {
+            return false !== Silencer::call('opendir', $path);
+        }
+
+        // assume false otherwise
+        return false;
+    }
+
     protected function directorySize($directory)
     {
         $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);

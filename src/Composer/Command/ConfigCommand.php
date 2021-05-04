@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\InputInterface;
@@ -411,7 +412,7 @@ EOT
             'secure-http' => array($booleanValidator, $booleanNormalizer),
             'cafile' => array(
                 function ($val) {
-                    return file_exists($val) && is_readable($val);
+                    return file_exists($val) && Filesystem::isReadable($val);
                 },
                 function ($val) {
                     return $val === 'null' ? null : $val;
@@ -419,7 +420,7 @@ EOT
             ),
             'capath' => array(
                 function ($val) {
-                    return is_dir($val) && is_readable($val);
+                    return is_dir($val) && Filesystem::isReadable($val);
                 },
                 function ($val) {
                     return $val === 'null' ? null : $val;

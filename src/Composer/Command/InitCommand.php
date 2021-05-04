@@ -796,7 +796,7 @@ EOT
         }
 
         $file = Factory::getComposerFile();
-        if (is_file($file) && is_readable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
+        if (is_file($file) && Filesystem::isReadable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
             if (!empty($composer['minimum-stability'])) {
                 return VersionParser::normalizeStability($composer['minimum-stability']);
             }

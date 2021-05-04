@@ -17,6 +17,7 @@ use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\ConfigValidator;
+use Composer\Util\Filesystem;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -77,7 +78,7 @@ EOT
 
             return 3;
         }
-        if (!is_readable($file)) {
+        if (!Filesystem::isReadable($file)) {
             $io->writeError('<error>' . $file . ' is not readable.</error>');
 
             return 3;

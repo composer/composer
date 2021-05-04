@@ -211,11 +211,11 @@ final class StreamContextFactory
             }
         }
 
-        if (isset($defaults['ssl']['cafile']) && (!is_readable($defaults['ssl']['cafile']) || !CaBundle::validateCaFile($defaults['ssl']['cafile'], $logger))) {
+        if (isset($defaults['ssl']['cafile']) && (!Filesystem::isReadable($defaults['ssl']['cafile']) || !CaBundle::validateCaFile($defaults['ssl']['cafile'], $logger))) {
             throw new TransportException('The configured cafile was not valid or could not be read.');
         }
 
-        if (isset($defaults['ssl']['capath']) && (!is_dir($defaults['ssl']['capath']) || !is_readable($defaults['ssl']['capath']))) {
+        if (isset($defaults['ssl']['capath']) && (!is_dir($defaults['ssl']['capath']) || !Filesystem::isReadable($defaults['ssl']['capath']))) {
             throw new TransportException('The configured capath was not valid or could not be read.');
         }
 

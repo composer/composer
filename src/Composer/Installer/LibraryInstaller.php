@@ -79,7 +79,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
 
         $installPath = $this->getInstallPath($package);
 
-        if (is_readable($installPath)) {
+        if (Filesystem::isReadable($installPath)) {
             return true;
         }
 
@@ -128,7 +128,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $downloadPath = $this->getInstallPath($package);
 
         // remove the binaries if it appears the package files are missing
-        if (!is_readable($downloadPath) && $repo->hasPackage($package)) {
+        if (!Filesystem::isReadable($downloadPath) && $repo->hasPackage($package)) {
             $this->binaryInstaller->removeBinaries($package);
         }
 
