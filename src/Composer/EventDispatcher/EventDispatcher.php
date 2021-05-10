@@ -295,7 +295,11 @@ class EventDispatcher
                     break;
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Exception $e) { // TODO Composer 2.2 turn all this into a finally
+            $this->popEvent();
+
+            throw $e;
+        } catch (\Throwable $e) {
             $this->popEvent();
 
             throw $e;
