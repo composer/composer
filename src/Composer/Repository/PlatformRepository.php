@@ -34,6 +34,11 @@ class PlatformRepository extends ArrayRepository
     const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-(?:plugin|runtime)-api)$}iD';
 
     /**
+     * @var ?string
+     */
+    private static $lastSeenPlatformPhp = null;
+
+    /**
      * @var VersionParser
      */
     private $versionParser;
@@ -526,6 +531,10 @@ class PlatformRepository extends ArrayRepository
         $package->setExtra(array('config.platform' => true));
         parent::addPackage($package);
 
+        if ($package->getName() === 'php') {
+            self::$lastSeenPlatformPhp = implode('.', array_slice(explode('.', $package->getVersion()), 0, 3));
+        }
+
         return $package;
     }
 
@@ -619,5 +628,19 @@ class PlatformRepository extends ArrayRepository
         }
 
         return $cache[$name] = (bool) preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name);
+    }
+
+    /**
+     * Returns the last seen config.platform.php version if defined
+     *
+     * This is a best effort attempt for internal purposes, retrieve the real
+     * packages from a PlatformRepository instance if you need a version guaranteed to
+     * be correct.
+     *
+     * @internal
+     */
+    public static function getPlatformPhpVersion()
+    {
+        return self::$lastSeenPlatformPhp;
     }
 }
