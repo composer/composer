@@ -38,12 +38,12 @@ class JsonLoader
             $config = $json->read();
         } elseif (file_exists($json)) {
             $config = JsonFile::parseJson(file_get_contents($json), $json);
-        } elseif (is_string($json)) {
+        } elseif (\is_string($json)) {
             $config = JsonFile::parseJson($json);
         } else {
             throw new \InvalidArgumentException(sprintf(
                 "JsonLoader: Unknown \$json parameter %s. Please report at https://github.com/composer/composer/issues/new.",
-                gettype($json)
+                \gettype($json)
             ));
         }
 

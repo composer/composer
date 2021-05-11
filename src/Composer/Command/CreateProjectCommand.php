@@ -162,7 +162,7 @@ EOT
     {
         $oldCwd = getcwd();
 
-        if ($repositories !== null && !is_array($repositories)) {
+        if ($repositories !== null && !\is_array($repositories)) {
             $repositories = (array) $repositories;
         }
 
@@ -323,13 +323,13 @@ EOT
         // if no directory was specified, use the 2nd part of the package name
         if (null === $directory) {
             $parts = explode("/", $name, 2);
-            $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
+            $directory = getcwd() . \DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
         $process = new ProcessExecutor($io);
         $fs = new Filesystem($process);
         if (!$fs->isAbsolutePath($directory)) {
-            $directory = getcwd() . DIRECTORY_SEPARATOR . $directory;
+            $directory = getcwd() . \DIRECTORY_SEPARATOR . $directory;
         }
 
         $io->writeError('<info>Creating a "' . $packageName . '" project at "' . $fs->findShortestPath(getcwd(), $directory, true) . '"</info>');
@@ -396,7 +396,7 @@ EOT
         }
 
         // handler Ctrl+C for unix-like systems
-        if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
+        if (\function_exists('pcntl_async_signals') && \function_exists('pcntl_signal')) {
             @mkdir($directory, 0777, true);
             if ($realDir = realpath($directory)) {
                 pcntl_async_signals(true);
@@ -408,7 +408,7 @@ EOT
             }
         }
         // handler Ctrl+C for Windows on PHP 7.4+
-        if (function_exists('sapi_windows_set_ctrl_handler') && PHP_SAPI === 'cli') {
+        if (\function_exists('sapi_windows_set_ctrl_handler') && \PHP_SAPI === 'cli') {
             @mkdir($directory, 0777, true);
             if ($realDir = realpath($directory)) {
                 sapi_windows_set_ctrl_handler(function () use ($realDir) {

@@ -13,11 +13,9 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package\BasePackage;
-use Composer\Package\AliasPackage;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Package\Package;
-use Composer\Package\RootPackageInterface;
 use Composer\Package\RootAliasPackage;
 use Composer\Repository\RepositoryFactory;
 use Composer\Package\Version\VersionGuesser;
@@ -69,7 +67,7 @@ class RootPackageLoader extends ArrayLoader
     public function load(array $config, $class = 'Composer\Package\RootPackage', $cwd = null)
     {
         if ($class !== 'Composer\Package\RootPackage') {
-            trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
+            trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', \E_USER_DEPRECATED);
         }
 
         if (!isset($config['name'])) {
@@ -148,7 +146,7 @@ class RootPackageLoader extends ArrayLoader
                 $references = self::extractReferences($links, $references);
 
                 if (isset($links[$config['name']])) {
-                    throw new \RuntimeException(sprintf('Root package \'%s\' cannot require itself in its composer.json' . PHP_EOL .
+                    throw new \RuntimeException(sprintf('Root package \'%s\' cannot require itself in its composer.json' . \PHP_EOL .
                                 'Did you accidentally name your root package after an external package?', $config['name']));
                 }
             }

@@ -133,18 +133,18 @@ class Config
     public function merge($config)
     {
         // override defaults with given config
-        if (!empty($config['config']) && is_array($config['config'])) {
+        if (!empty($config['config']) && \is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer')) && isset($this->config[$key])) {
+                if (\in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer')) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
-                } elseif (in_array($key, array('gitlab-domains', 'github-domains')) && isset($this->config[$key])) {
+                } elseif (\in_array($key, array('gitlab-domains', 'github-domains')) && isset($this->config[$key])) {
                     $this->config[$key] = array_unique(array_merge($this->config[$key], $val));
                 } elseif ('preferred-install' === $key && isset($this->config[$key])) {
-                    if (is_array($val) || is_array($this->config[$key])) {
-                        if (is_string($val)) {
+                    if (\is_array($val) || \is_array($this->config[$key])) {
+                        if (\is_string($val)) {
                             $val = array('*' => $val);
                         }
-                        if (is_string($this->config[$key])) {
+                        if (\is_string($this->config[$key])) {
                             $this->config[$key] = array('*' => $this->config[$key]);
                         }
                         $this->config[$key] = array_merge($this->config[$key], $val);
@@ -163,7 +163,7 @@ class Config
             }
         }
 
-        if (!empty($config['repositories']) && is_array($config['repositories'])) {
+        if (!empty($config['repositories']) && \is_array($config['repositories'])) {
             $this->repositories = array_reverse($this->repositories, true);
             $newRepos = array_reverse($config['repositories'], true);
             foreach ($newRepos as $name => $repository) {
@@ -174,7 +174,7 @@ class Config
                 }
 
                 // disable a repository with an anonymous {"name": false} repo
-                if (is_array($repository) && 1 === count($repository) && false === current($repository)) {
+                if (\is_array($repository) && 1 === \count($repository) && false === current($repository)) {
                     $this->disableRepoByName(key($repository));
                     continue;
                 }
@@ -185,7 +185,7 @@ class Config
                 }
 
                 // store repo
-                if (is_int($name)) {
+                if (\is_int($name)) {
                     $this->repositories[] = $repository;
                 } else {
                     if ($name === 'packagist') { // BC support for default "packagist" named repo
@@ -313,7 +313,7 @@ class Config
             case 'bin-compat':
                 $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
 
-                if (!in_array($value, array('auto', 'full'))) {
+                if (!\in_array($value, array('auto', 'full'))) {
                     throw new \RuntimeException(
                         "Invalid value for 'bin-compat': {$value}. Expected auto, full"
                     );
@@ -323,7 +323,7 @@ class Config
 
             case 'discard-changes':
                 if ($env = $this->getComposerEnv('COMPOSER_DISCARD_CHANGES')) {
-                    if (!in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
+                    if (!\in_array($env, array('stash', 'true', 'false', '1', '0'), true)) {
                         throw new \RuntimeException(
                             "Invalid value for COMPOSER_DISCARD_CHANGES: {$env}. Expected 1, 0, true, false or stash"
                         );
@@ -336,7 +336,7 @@ class Config
                     return $env !== 'false' && (bool) $env;
                 }
 
-                if (!in_array($this->config[$key], array(true, false, 'stash'), true)) {
+                if (!\in_array($this->config[$key], array(true, false, 'stash'), true)) {
                     throw new \RuntimeException(
                         "Invalid value for 'discard-changes': {$this->config[$key]}. Expected true, false or stash"
                     );
@@ -392,7 +392,7 @@ class Config
      */
     public function has($key)
     {
-        return array_key_exists($key, $this->config);
+        return \array_key_exists($key, $this->config);
     }
 
     /**
@@ -406,7 +406,7 @@ class Config
     {
         $config = $this;
 
-        if (!is_string($value)) {
+        if (!\is_string($value)) {
             return $value;
         }
 
@@ -468,18 +468,18 @@ class Config
     public function prohibitUrlByConfig($url, IOInterface $io = null)
     {
         // Return right away if the URL is malformed or custom (see issue #5173)
-        if (false === filter_var($url, FILTER_VALIDATE_URL)) {
+        if (false === filter_var($url, \FILTER_VALIDATE_URL)) {
             return;
         }
 
         // Extract scheme and throw exception on known insecure protocols
-        $scheme = parse_url($url, PHP_URL_SCHEME);
-        if (in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
+        $scheme = parse_url($url, \PHP_URL_SCHEME);
+        if (\in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
             if ($this->get('secure-http')) {
                 throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             }
             if ($io) {
-                $host = parse_url($url, PHP_URL_HOST);
+                $host = parse_url($url, \PHP_URL_HOST);
                 if (!isset($this->warnedHosts[$host])) {
                     $io->writeError("<warning>Warning: Accessing $host over $scheme which is an insecure protocol.</warning>");
                 }

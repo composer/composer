@@ -109,7 +109,7 @@ class PoolBuilderTest extends TestCase
 
         $pool = $repositorySet->createPool($request, new NullIO());
         $result = array();
-        for ($i = 1, $count = count($pool); $i <= $count; $i++) {
+        for ($i = 1, $count = \count($pool); $i <= $count; $i++) {
             $result[] = $pool->packageById($i);
         }
 
@@ -175,7 +175,7 @@ class PoolBuilderTest extends TestCase
 
     protected function readTestFile(\SplFileInfo $file, $fixturesDir)
     {
-        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), null, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), null, \PREG_SPLIT_DELIM_CAPTURE);
 
         $sectionInfo = array(
             'TEST' => true,

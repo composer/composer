@@ -137,8 +137,8 @@ abstract class BaseIO implements IOInterface
         }
 
         foreach ($gitlabToken as $domain => $token) {
-            $username = is_array($token) && array_key_exists("username", $token) ? $token["username"] : $token;
-            $password = is_array($token) && array_key_exists("token", $token) ? $token["token"] : 'private-token';
+            $username = \is_array($token) && \array_key_exists("username", $token) ? $token["username"] : $token;
+            $password = \is_array($token) && \array_key_exists("token", $token) ? $token["token"] : 'private-token';
             $this->checkAndSetAuthentication($domain, $username, $password);
         }
 
@@ -224,7 +224,7 @@ abstract class BaseIO implements IOInterface
      */
     public function log($level, $message, array $context = array())
     {
-        if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
+        if (\in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
             $this->writeError('<error>'.$message.'</error>');
         } elseif ($level === LogLevel::WARNING) {
             $this->writeError('<warning>'.$message.'</warning>');

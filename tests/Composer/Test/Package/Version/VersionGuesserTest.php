@@ -23,7 +23,7 @@ class VersionGuesserTest extends TestCase
 {
     public function setUp()
     {
-        if (!function_exists('proc_open')) {
+        if (!\function_exists('proc_open')) {
             $this->markTestSkipped('proc_open() is not available');
         }
     }

@@ -178,9 +178,9 @@ EOT
         // the arguments lock/nothing/mirrors are not package names but trigger a mirror update instead
         // they are further mutually exclusive with listing actual package names
         $filteredPackages = array_filter($packages, function ($package) {
-            return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
+            return !\in_array($package, array('lock', 'nothing', 'mirrors'), true);
         });
-        $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
+        $updateMirrors = $input->getOption('lock') || \count($filteredPackages) != \count($packages);
         $packages = $filteredPackages;
 
         if ($updateMirrors && !empty($packages)) {
@@ -272,12 +272,12 @@ EOT
             $question->setAutocompleterValues($autocompleterValues);
             $addedPackage = $helper->ask($input, $output, $question);
 
-            if (!is_string($addedPackage) || empty($addedPackage)) {
+            if (!\is_string($addedPackage) || empty($addedPackage)) {
                 break;
             }
 
             $addedPackage = strtolower($addedPackage);
-            if (!in_array($addedPackage, $packages)) {
+            if (!\in_array($addedPackage, $packages)) {
                 $packages[] = $addedPackage;
             }
         } while (true);
@@ -296,7 +296,7 @@ EOT
 
         if ($io->askConfirmation(sprintf(
             'Would you like to continue and update the above package%s [<comment>yes</comment>]? ',
-            1 === count($packages) ? '' : 's'
+            1 === \count($packages) ? '' : 's'
         ))) {
             return $packages;
         }

@@ -106,7 +106,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $repoConfig['url'] = rtrim($repoConfig['url'], '/');
 
         if (strpos($repoConfig['url'], 'https?') === 0) {
-            $repoConfig['url'] = (extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
+            $repoConfig['url'] = (\extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
         }
 
         $urlBits = parse_url($repoConfig['url']);
@@ -267,7 +267,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $hasProviders = $this->hasProviders();
 
         if ($this->lazyProvidersUrl) {
-            if (is_array($this->availablePackages) && !$this->availablePackagePatterns) {
+            if (\is_array($this->availablePackages) && !$this->availablePackagePatterns) {
                 $packageMap = array();
                 foreach ($this->availablePackages as $name) {
                     $packageMap[$name] = new MatchAllConstraint();
@@ -307,7 +307,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if ($this->lazyProvidersUrl) {
-            if (is_array($this->availablePackages)) {
+            if (\is_array($this->availablePackages)) {
                 return array_filter(array_keys($this->availablePackages), $packageFilterCb);
             }
 
@@ -394,7 +394,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
         }
 
-        if ($this->lazyProvidersUrl && count($packageNameMap)) {
+        if ($this->lazyProvidersUrl && \count($packageNameMap)) {
             if ($this->hasAvailablePackageList) {
                 foreach ($packageNameMap as $name => $constraint) {
                     if (!$this->lazyProvidersRepoContains(strtolower($name))) {
@@ -592,7 +592,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
                 } catch (TransportException $e) {
                     // 404s are acceptable for lazy provider repos
-                    if ($this->lazyProvidersUrl && in_array($e->getStatusCode(), array(404, 499), true)) {
+                    if ($this->lazyProvidersUrl && \in_array($e->getStatusCode(), array(404, 499), true)) {
                         $packages = array('packages' => array());
                         $packagesSource = 'not-found file ('.Url::sanitize($url).')';
                         if ($e->getStatusCode() === 499) {
@@ -715,7 +715,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $packageNames[$name.'~dev'] = $constraint;
             }
             // if only dev stability is requested, we skip loading the non dev file
-            if (isset($acceptableStabilities['dev']) && count($acceptableStabilities) === 1 && count($stabilityFlags) === 0) {
+            if (isset($acceptableStabilities['dev']) && \count($acceptableStabilities) === 1 && \count($stabilityFlags) === 0) {
                 unset($packageNames[$name]);
             }
         }
@@ -842,7 +842,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $this->rootData;
         }
 
-        if (!extension_loaded('openssl') && strpos($this->url, 'https') === 0) {
+        if (!\extension_loaded('openssl') && strpos($this->url, 'https') === 0) {
             throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
 
@@ -879,7 +879,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->lazyProvidersUrl = $this->canonicalizeUrl($data['providers-lazy-url']);
             $this->hasProviders = true;
 
-            $this->hasPartialPackages = !empty($data['packages']) && is_array($data['packages']);
+            $this->hasPartialPackages = !empty($data['packages']) && \is_array($data['packages']);
         }
 
         // Horrible hack to workaround https://github.com/composer/composer/issues/9297 and bad mirrors, should be disabled if possible once they fix things
@@ -895,7 +895,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->lazyProvidersUrl = $this->canonicalizeUrl($data['metadata-url']);
             $this->providersUrl = null;
             $this->hasProviders = false;
-            $this->hasPartialPackages = !empty($data['packages']) && is_array($data['packages']);
+            $this->hasPartialPackages = !empty($data['packages']) && \is_array($data['packages']);
             $this->allowSslDowngrade = false;
 
             // provides a list of package names that are available in this repo
@@ -979,7 +979,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private function loadProviderListings($data)
     {
         if (isset($data['providers'])) {
-            if (!is_array($this->providerListing)) {
+            if (!\is_array($this->providerListing)) {
                 $this->providerListing = array();
             }
             $this->providerListing = array_merge($this->providerListing, $data['providers']);
@@ -1069,7 +1069,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             return $packageInstances;
         } catch (\Exception $e) {
-            throw new \RuntimeException('Could not load packages '.(isset($packages[0]['name']) ? $packages[0]['name'] : json_encode($packages)).' in '.$this->getRepoName().($source ? ' from '.$source : '').': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
+            throw new \RuntimeException('Could not load packages '.(isset($packages[0]['name']) ? $packages[0]['name'] : json_encode($packages)).' in '.$this->getRepoName().($source ? ' from '.$source : '').': ['.\get_class($e).'] '.$e->getMessage(), 0, $e);
         }
     }
 
@@ -1385,11 +1385,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             throw new \LogicException('lazyProvidersRepoContains should not be called unless hasAvailablePackageList is true');
         }
 
-        if (is_array($this->availablePackages) && isset($this->availablePackages[$name])) {
+        if (\is_array($this->availablePackages) && isset($this->availablePackages[$name])) {
             return true;
         }
 
-        if (is_array($this->availablePackagePatterns)) {
+        if (\is_array($this->availablePackagePatterns)) {
             foreach ($this->availablePackagePatterns as $providerRegex) {
                 if (preg_match($providerRegex, $name)) {
                     return true;

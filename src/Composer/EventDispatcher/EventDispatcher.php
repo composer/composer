@@ -164,16 +164,16 @@ class EventDispatcher
                 $return = 0;
                 $this->ensureBinDirIsInPath();
 
-                if (!is_string($callable)) {
-                    if (!is_callable($callable)) {
-                        $className = is_object($callable[0]) ? get_class($callable[0]) : $callable[0];
+                if (!\is_string($callable)) {
+                    if (!\is_callable($callable)) {
+                        $className = \is_object($callable[0]) ? \get_class($callable[0]) : $callable[0];
 
                         throw new \RuntimeException('Subscriber '.$className.'::'.$callable[1].' for event '.$event->getName().' is not callable, make sure the function is defined and public');
                     }
-                    if (is_array($callable) && (is_string($callable[0]) || is_object($callable[0])) && is_string($callable[1])) {
-                        $this->io->writeError(sprintf('> %s: %s', $event->getName(), (is_object($callable[0]) ? get_class($callable[0]) : $callable[0]).'->'.$callable[1]), true, IOInterface::VERBOSE);
+                    if (\is_array($callable) && (\is_string($callable[0]) || \is_object($callable[0])) && \is_string($callable[1])) {
+                        $this->io->writeError(sprintf('> %s: %s', $event->getName(), (\is_object($callable[0]) ? \get_class($callable[0]) : $callable[0]).'->'.$callable[1]), true, IOInterface::VERBOSE);
                     }
-                    $return = false === call_user_func($callable, $event) ? 1 : 0;
+                    $return = false === \call_user_func($callable, $event) ? 1 : 0;
                 } elseif ($this->isComposerScript($callable)) {
                     $this->io->writeError(sprintf('> %s: %s', $event->getName(), $callable), true, IOInterface::VERBOSE);
 
@@ -213,7 +213,7 @@ class EventDispatcher
                         $this->io->writeError('<warning>Class '.$className.' is not autoloadable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
                         continue;
                     }
-                    if (!is_callable($callable)) {
+                    if (!\is_callable($callable)) {
                         $this->io->writeError('<warning>Method '.$callable.' is not callable, can not call '.$event->getName().' script</warning>', true, IOInterface::QUIET);
                         continue;
                     }
@@ -266,7 +266,7 @@ class EventDispatcher
                         if (!file_exists($match[0])) {
                             $finder = new ExecutableFinder;
                             if ($pathToExec = $finder->find($match[0])) {
-                                $pathAndArgs = $pathToExec . substr($pathAndArgs, strlen($match[0]));
+                                $pathAndArgs = $pathToExec . substr($pathAndArgs, \strlen($match[0]));
                             }
                         }
                         $exec = $this->getPhpExecCommand() . ' ' . $pathAndArgs;
@@ -381,7 +381,7 @@ class EventDispatcher
         foreach ($this->listeners as $eventName => $priorities) {
             foreach ($priorities as $priority => $listeners) {
                 foreach ($listeners as $index => $candidate) {
-                    if ($listener === $candidate || (is_array($candidate) && is_object($listener) && $candidate[0] === $listener)) {
+                    if ($listener === $candidate || (\is_array($candidate) && \is_object($listener) && $candidate[0] === $listener)) {
                         unset($this->listeners[$eventName][$priority][$index]);
                     }
                 }
@@ -399,9 +399,9 @@ class EventDispatcher
     public function addSubscriber(EventSubscriberInterface $subscriber)
     {
         foreach ($subscriber->getSubscribedEvents() as $eventName => $params) {
-            if (is_string($params)) {
+            if (\is_string($params)) {
                 $this->addListener($eventName, array($subscriber, $params));
-            } elseif (is_string($params[0])) {
+            } elseif (\is_string($params[0])) {
                 $this->addListener($eventName, array($subscriber, $params[0]), isset($params[1]) ? $params[1] : 0);
             } else {
                 foreach ($params as $listener) {
@@ -429,7 +429,7 @@ class EventDispatcher
         $listeners = $this->listeners;
         $listeners[$event->getName()][0] = array_merge($listeners[$event->getName()][0], $scriptListeners);
 
-        return call_user_func_array('array_merge', $listeners[$event->getName()]);
+        return \call_user_func_array('array_merge', $listeners[$event->getName()]);
     }
 
     /**
@@ -442,7 +442,7 @@ class EventDispatcher
     {
         $listeners = $this->getListeners($event);
 
-        return count($listeners) > 0;
+        return \count($listeners) > 0;
     }
 
     /**
@@ -510,7 +510,7 @@ class EventDispatcher
     protected function pushEvent(Event $event)
     {
         $eventName = $event->getName();
-        if (in_array($eventName, $this->eventStack)) {
+        if (\in_array($eventName, $this->eventStack)) {
             throw new \RuntimeException(sprintf("Circular call to script handler '%s' detected", $eventName));
         }
 
@@ -538,8 +538,8 @@ class EventDispatcher
         $binDir = $this->composer->getConfig()->get('bin-dir');
         if (is_dir($binDir)) {
             $binDir = realpath($binDir);
-            if (isset($_SERVER[$pathStr]) && !preg_match('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $_SERVER[$pathStr])) {
-                $_SERVER[$pathStr] = $binDir.PATH_SEPARATOR.getenv($pathStr);
+            if (isset($_SERVER[$pathStr]) && !preg_match('{(^|'.\PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.\PATH_SEPARATOR.')}', $_SERVER[$pathStr])) {
+                $_SERVER[$pathStr] = $binDir.\PATH_SEPARATOR.getenv($pathStr);
                 putenv($pathStr.'='.$_SERVER[$pathStr]);
             }
         }

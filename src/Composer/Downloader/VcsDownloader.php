@@ -77,11 +77,11 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     throw $e;
                 }
                 if ($this->io->isDebug()) {
-                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
-                } elseif (count($urls)) {
+                    $this->io->writeError('Failed: ['.\get_class($e).'] '.$e->getMessage());
+                } elseif (\count($urls)) {
                     $this->io->writeError('    Failed, trying the next URL');
                 }
-                if (!count($urls)) {
+                if (!\count($urls)) {
                     throw $e;
                 }
             }
@@ -142,11 +142,11 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     throw $e;
                 }
                 if ($this->io->isDebug()) {
-                    $this->io->writeError('Failed: ['.get_class($e).'] '.$e->getMessage());
-                } elseif (count($urls)) {
+                    $this->io->writeError('Failed: ['.\get_class($e).'] '.$e->getMessage());
+                } elseif (\count($urls)) {
                     $this->io->writeError('    Failed, trying the next URL');
                 }
-                if (!count($urls)) {
+                if (!\count($urls)) {
                     throw $e;
                 }
             }
@@ -181,8 +181,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                     throw $exception;
                 }
                 if ($this->io->isDebug()) {
-                    $this->io->writeError('Failed: ['.get_class($exception).'] '.$exception->getMessage());
-                } elseif (count($urls)) {
+                    $this->io->writeError('Failed: ['.\get_class($exception).'] '.$exception->getMessage());
+                } elseif (\count($urls)) {
                     $this->io->writeError('    Failed, trying the next URL');
                 }
             }
@@ -347,7 +347,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 $fileProtocol = 'file://';
                 $isFileProtocol = false;
                 if (0 === strpos($url, $fileProtocol)) {
-                    $url = substr($url, strlen($fileProtocol));
+                    $url = substr($url, \strlen($fileProtocol));
                     $isFileProtocol = true;
                 }
 

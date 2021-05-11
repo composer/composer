@@ -129,7 +129,7 @@ class AutoloadGenerator
      */
     public function setIgnorePlatformRequirements($ignorePlatformReqs)
     {
-        if (is_array($ignorePlatformReqs)) {
+        if (\is_array($ignorePlatformReqs)) {
             $this->ignorePlatformReqs = array_filter($ignorePlatformReqs, function ($req) {
                 return PlatformRepository::isPlatformPackage($req);
             });
@@ -334,7 +334,7 @@ EOF;
 
             $this->io->writeError(
                 '<warning>Warning: Ambiguous class resolution, "'.$className.'"'.
-                ' was found '. (count($ambigiousPaths) + 1) .'x: in "'.$cleanPath.'" and "'. implode('", "', $ambigiousPaths) .'", the first will be used.</warning>'
+                ' was found '. (\count($ambigiousPaths) + 1) .'x: in "'.$cleanPath.'" and "'. implode('", "', $ambigiousPaths) .'", the first will be used.</warning>'
             );
         }
 
@@ -399,7 +399,7 @@ EOF;
             ));
         }
 
-        return count($classMap);
+        return \count($classMap);
     }
 
     private function addClassMapCode($filesystem, $basePath, $vendorPath, $dir, $excluded, $namespaceFilter, $autoloadType, array $classMap, array &$ambiguousClasses, array &$scannedFiles)
@@ -500,9 +500,9 @@ EOF;
     public function parseAutoloads(array $packageMap, PackageInterface $rootPackage, $filteredDevPackages = false)
     {
         $rootPackageMap = array_shift($packageMap);
-        if (is_array($filteredDevPackages)) {
+        if (\is_array($filteredDevPackages)) {
             $packageMap = array_filter($packageMap, function ($item) use ($filteredDevPackages) {
-                return !in_array($item[0]->getName(), $filteredDevPackages, true);
+                return !\in_array($item[0]->getName(), $filteredDevPackages, true);
             });
         } elseif ($filteredDevPackages) {
             $packageMap = $this->filterPackageMap($packageMap, $rootPackage);
@@ -577,8 +577,8 @@ EOF;
         foreach ($packageMap as $item) {
             list($package, $installPath) = $item;
 
-            if (null !== $package->getTargetDir() && strlen($package->getTargetDir()) > 0) {
-                $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
+            if (null !== $package->getTargetDir() && \strlen($package->getTargetDir()) > 0) {
+                $installPath = substr($installPath, 0, -\strlen('/'.$package->getTargetDir()));
             }
 
             foreach ($package->getIncludePaths() as $includePath) {
@@ -645,7 +645,7 @@ EOF;
 
         $baseDir = '';
         if (strpos($path.'/', $vendorPath.'/') === 0) {
-            $path = substr($path, strlen($vendorPath));
+            $path = substr($path, \strlen($vendorPath));
             $baseDir = '$vendorDir';
 
             if ($path !== false) {
@@ -684,12 +684,12 @@ EOF;
         foreach ($packageMap as $item) {
             $package = $item[0];
             // skip dev dependencies platform requirements as platform-check really should only be a production safeguard
-            if (in_array($package->getName(), $devPackageNames, true)) {
+            if (\in_array($package->getName(), $devPackageNames, true)) {
                 continue;
             }
 
             foreach ($package->getRequires() as $link) {
-                if (in_array($link->getTarget(), $ignorePlatformReqs, true)) {
+                if (\in_array($link->getTarget(), $ignorePlatformReqs, true)) {
                     continue;
                 }
 
@@ -751,7 +751,7 @@ EOF;
 
             $version = str_replace('-', '.', $bound->getVersion());
             $chunks = explode('.', $version);
-            $chunks = array_slice($chunks, 0, 3);
+            $chunks = \array_slice($chunks, 0, 3);
 
             return implode('.', $chunks);
         };
@@ -820,7 +820,7 @@ PLATFORM_CHECK;
 
     protected function getAutoloadFile($vendorPathToTargetDirCode, $suffix)
     {
-        $lastChar = $vendorPathToTargetDirCode[strlen($vendorPathToTargetDirCode) - 1];
+        $lastChar = $vendorPathToTargetDirCode[\strlen($vendorPathToTargetDirCode) - 1];
         if ("'" === $lastChar || '"' === $lastChar) {
             $vendorPathToTargetDirCode = substr($vendorPathToTargetDirCode, 0, -1).'/autoload_real.php'.$lastChar;
         } else {
@@ -1061,7 +1061,7 @@ HEADER;
 
         $initializer = '';
         $prefix = "\0Composer\Autoload\ClassLoader\0";
-        $prefixLen = strlen($prefix);
+        $prefixLen = \strlen($prefix);
         if (file_exists($targetDir . '/autoload_files.php')) {
             $maps = array('files' => require $targetDir . '/autoload_files.php');
         } else {
@@ -1075,7 +1075,7 @@ HEADER;
         }
 
         foreach ($maps as $prop => $value) {
-            if (count($value) > 32767) {
+            if (\count($value) > 32767) {
                 // Static arrays are limited to 32767 values on PHP 5.6
                 // See https://bugs.php.net/68057
                 $staticPhpVersion = 70000;
@@ -1122,11 +1122,11 @@ INITIALIZER;
             }
 
             // skip misconfigured packages
-            if (!isset($autoload[$type]) || !is_array($autoload[$type])) {
+            if (!isset($autoload[$type]) || !\is_array($autoload[$type])) {
                 continue;
             }
             if (null !== $package->getTargetDir() && $package !== $rootPackage) {
-                $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
+                $installPath = substr($installPath, 0, -\strlen('/'.$package->getTargetDir()));
             }
 
             foreach ($autoload[$type] as $namespace => $paths) {

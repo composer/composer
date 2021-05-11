@@ -334,7 +334,7 @@ class Locker
         // keep old default branch names normalized to DEFAULT_BRANCH_ALIAS for BC as that is how Composer 1 outputs the lock file
         // when loading the lock file the version is anyway ignored in Composer 2, so it has no adverse effect
         $aliases = array_map(function ($alias) {
-            if (in_array($alias['version'], array('dev-master', 'dev-trunk', 'dev-default'), true)) {
+            if (\in_array($alias['version'], array('dev-master', 'dev-trunk', 'dev-default'), true)) {
                 $alias['version'] = VersionParser::DEFAULT_BRANCH_ALIAS;
             }
 
@@ -448,7 +448,7 @@ class Locker
      */
     private function getPackageTime(PackageInterface $package)
     {
-        if (!function_exists('proc_open')) {
+        if (!\function_exists('proc_open')) {
             return null;
         }
 
@@ -456,7 +456,7 @@ class Locker
         $sourceType = $package->getSourceType();
         $datetime = null;
 
-        if ($path && in_array($sourceType, array('git', 'hg'))) {
+        if ($path && \in_array($sourceType, array('git', 'hg'))) {
             $sourceRef = $package->getSourceReference() ?: $package->getDistReference();
             switch ($sourceType) {
                 case 'git':
@@ -475,6 +475,6 @@ class Locker
             }
         }
 
-        return $datetime ? $datetime->format(DATE_RFC3339) : null;
+        return $datetime ? $datetime->format(\DATE_RFC3339) : null;
     }
 }

@@ -59,7 +59,7 @@ class GitLab
         // before composer 1.9, origin URLs had no port number in them
         $bcOriginUrl = preg_replace('{:\d+}', '', $originUrl);
 
-        if (!in_array($originUrl, $this->config->get('gitlab-domains'), true) && !in_array($bcOriginUrl, $this->config->get('gitlab-domains'), true)) {
+        if (!\in_array($originUrl, $this->config->get('gitlab-domains'), true) && !\in_array($bcOriginUrl, $this->config->get('gitlab-domains'), true)) {
             return false;
         }
 
@@ -89,8 +89,8 @@ class GitLab
         }
 
         if (isset($token)) {
-            $username = is_array($token) && array_key_exists("username", $token) ? $token["username"] : $token;
-            $password = is_array($token) && array_key_exists("token", $token) ? $token["token"] : 'private-token';
+            $username = \is_array($token) && \array_key_exists("username", $token) ? $token["username"] : $token;
+            $password = \is_array($token) && \array_key_exists("token", $token) ? $token["token"] : 'private-token';
             $this->io->setAuthentication($originUrl, $username, $password);
 
             return true;
@@ -128,7 +128,7 @@ class GitLab
             } catch (TransportException $e) {
                 // 401 is bad credentials,
                 // 403 is max login attempts exceeded
-                if (in_array($e->getCode(), array(403, 401))) {
+                if (\in_array($e->getCode(), array(403, 401))) {
                     if (401 === $e->getCode()) {
                         $response = json_decode($e->getResponse(), true);
                         if (isset($response['error']) && $response['error'] === 'invalid_grant') {

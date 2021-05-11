@@ -41,7 +41,7 @@ class ZipArchiver implements ArchiverInterface
                 $filepath = strtr($file->getPath()."/".$file->getFilename(), '\\', '/');
                 $localname = $filepath;
                 if (strpos($localname, $sources . '/') === 0) {
-                    $localname = substr($localname, strlen($sources . '/'));
+                    $localname = substr($localname, \strlen($sources . '/'));
                 }
                 if ($file->isDir()) {
                     $zip->addEmptyDir($localname);
@@ -52,7 +52,7 @@ class ZipArchiver implements ArchiverInterface
                 /**
                  * ZipArchive::setExternalAttributesName is available from >= PHP 5.6
                  */
-                if (PHP_VERSION_ID >= 50600) {
+                if (\PHP_VERSION_ID >= 50600) {
                     $perms = fileperms($filepath);
 
                     /**

@@ -108,13 +108,13 @@ class InstalledVersions
             if (isset($installed['versions'][$packageName]['pretty_version'])) {
                 $ranges[] = $installed['versions'][$packageName]['pretty_version'];
             }
-            if (array_key_exists('aliases', $installed['versions'][$packageName])) {
+            if (\array_key_exists('aliases', $installed['versions'][$packageName])) {
                 $ranges = array_merge($ranges, $installed['versions'][$packageName]['aliases']);
             }
-            if (array_key_exists('replaced', $installed['versions'][$packageName])) {
+            if (\array_key_exists('replaced', $installed['versions'][$packageName])) {
                 $ranges = array_merge($ranges, $installed['versions'][$packageName]['replaced']);
             }
-            if (array_key_exists('provided', $installed['versions'][$packageName])) {
+            if (\array_key_exists('provided', $installed['versions'][$packageName])) {
                 $ranges = array_merge($ranges, $installed['versions'][$packageName]['provided']);
             }
 

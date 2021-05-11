@@ -269,14 +269,14 @@ class Transaction
             $isDownloadsModifyingPlugin = $package->getType() === 'composer-plugin' && ($extra = $package->getExtra()) && isset($extra['plugin-modifies-downloads']) && $extra['plugin-modifies-downloads'] === true;
 
             // is this a downloads modifying plugin or a dependency of one?
-            if ($isDownloadsModifyingPlugin || count(array_intersect($package->getNames(), $dlModifyingPluginRequires))) {
+            if ($isDownloadsModifyingPlugin || \count(array_intersect($package->getNames(), $dlModifyingPluginRequires))) {
                 // get the package's requires, but filter out any platform requirements
                 $requires = array_filter(array_keys($package->getRequires()), function ($req) {
                     return !PlatformRepository::isPlatformPackage($req);
                 });
 
                 // is this a plugin with no meaningful dependencies?
-                if ($isDownloadsModifyingPlugin && !count($requires)) {
+                if ($isDownloadsModifyingPlugin && !\count($requires)) {
                     // plugins with no dependencies go to the very front
                     array_unshift($dlModifyingPluginsNoDeps, $op);
                 } else {
@@ -294,14 +294,14 @@ class Transaction
             $isPlugin = $package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer';
 
             // is this a plugin or a dependency of a plugin?
-            if ($isPlugin || count(array_intersect($package->getNames(), $pluginRequires))) {
+            if ($isPlugin || \count(array_intersect($package->getNames(), $pluginRequires))) {
                 // get the package's requires, but filter out any platform requirements
                 $requires = array_filter(array_keys($package->getRequires()), function ($req) {
                     return !PlatformRepository::isPlatformPackage($req);
                 });
 
                 // is this a plugin with no meaningful dependencies?
-                if ($isPlugin && !count($requires)) {
+                if ($isPlugin && !\count($requires)) {
                     // plugins with no dependencies go to the very front
                     array_unshift($pluginsNoDeps, $op);
                 } else {

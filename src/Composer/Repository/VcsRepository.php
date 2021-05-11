@@ -83,7 +83,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
     public function getRepoName()
     {
-        $driverClass = get_class($this->getDriver());
+        $driverClass = \get_class($this->getDriver());
         $driverType = array_search($driverClass, $this->drivers);
         if (!$driverType) {
             $driverType = $driverClass;

@@ -200,7 +200,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
             $repo->removePackage($package);
 
             if (strpos($package->getName(), '/')) {
-                $packageVendorDir = dirname($downloadPath);
+                $packageVendorDir = \dirname($downloadPath);
                 if (is_dir($packageVendorDir) && $filesystem->isDirEmpty($packageVendorDir)) {
                     Silencer::call('rmdir', $packageVendorDir);
                 }

@@ -61,7 +61,7 @@ final class TlsHelper
      */
     public static function getCertificateNames($certificate)
     {
-        if (is_array($certificate)) {
+        if (\is_array($certificate)) {
             $info = $certificate;
         } elseif (CaBundle::isOpensslParseSafe()) {
             $info = openssl_x509_parse($certificate, false);
@@ -138,7 +138,7 @@ final class TlsHelper
         //Convert PEM to DER before SHA1'ing
         $start = '-----BEGIN PUBLIC KEY-----';
         $end = '-----END PUBLIC KEY-----';
-        $pemtrim = substr($pubkeypem, strpos($pubkeypem, $start) + strlen($start), (strlen($pubkeypem) - strpos($pubkeypem, $end)) * (-1));
+        $pemtrim = substr($pubkeypem, strpos($pubkeypem, $start) + \strlen($start), (\strlen($pubkeypem) - strpos($pubkeypem, $end)) * (-1));
         $der = base64_decode($pemtrim);
 
         return sha1($der);
@@ -178,7 +178,7 @@ final class TlsHelper
         if (1 === $wildcards) {
             $components = explode('.', $certName);
 
-            if (3 > count($components)) {
+            if (3 > \count($components)) {
                 // Must have 3+ components
                 return;
             }
@@ -186,7 +186,7 @@ final class TlsHelper
             $firstComponent = $components[0];
 
             // Wildcard must be the last character.
-            if ('*' !== $firstComponent[strlen($firstComponent) - 1]) {
+            if ('*' !== $firstComponent[\strlen($firstComponent) - 1]) {
                 return;
             }
 

@@ -310,8 +310,8 @@ class GitLabDriver extends VcsDriver
         $encoded = '';
         for ($i = 0; isset($string[$i]); $i++) {
             $character = $string[$i];
-            if (!ctype_alnum($character) && !in_array($character, array('-', '_'), true)) {
-                $character = '%' . sprintf('%02X', ord($character));
+            if (!ctype_alnum($character) && !\in_array($character, array('-', '_'), true)) {
+                $character = '%' . sprintf('%02X', \ord($character));
             }
             $encoded .= $character;
         }
@@ -342,7 +342,7 @@ class GitLabDriver extends VcsDriver
                 $this->commits[$datum['commit']['id']] = $datum['commit'];
             }
 
-            if (count($data) >= $perPage) {
+            if (\count($data) >= $perPage) {
                 $resource = $this->getNextPage($response);
             } else {
                 $resource = false;
@@ -528,7 +528,7 @@ class GitLabDriver extends VcsDriver
             return false;
         }
 
-        if ('https' === $scheme && !extension_loaded('openssl')) {
+        if ('https' === $scheme && !\extension_loaded('openssl')) {
             $io->writeError('Skipping GitLab driver for '.$url.' because the OpenSSL PHP extension is missing.', true, IOInterface::VERBOSE);
 
             return false;
@@ -559,7 +559,7 @@ class GitLabDriver extends VcsDriver
     {
         $guessedDomain = strtolower($guessedDomain);
 
-        if (in_array($guessedDomain, $configuredDomains) || ($portNumber && in_array($guessedDomain.':'.$portNumber, $configuredDomains))) {
+        if (\in_array($guessedDomain, $configuredDomains) || ($portNumber && \in_array($guessedDomain.':'.$portNumber, $configuredDomains))) {
             if ($portNumber) {
                 return $guessedDomain.':'.$portNumber;
             }
@@ -574,7 +574,7 @@ class GitLabDriver extends VcsDriver
         while (null !== ($part = array_shift($urlParts))) {
             $guessedDomain .= '/' . $part;
 
-            if (in_array($guessedDomain, $configuredDomains) || ($portNumber && in_array(preg_replace('{:\d+}', '', $guessedDomain), $configuredDomains))) {
+            if (\in_array($guessedDomain, $configuredDomains) || ($portNumber && \in_array(preg_replace('{:\d+}', '', $guessedDomain), $configuredDomains))) {
                 return $guessedDomain;
             }
         }

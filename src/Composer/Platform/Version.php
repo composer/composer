@@ -71,7 +71,7 @@ class Version
      */
     private static function convertAlphaVersionToIntVersion($alpha)
     {
-        return strlen($alpha) * (-ord('a') + 1) + array_sum(array_map('ord', str_split($alpha)));
+        return \strlen($alpha) * (-\ord('a') + 1) + array_sum(array_map('ord', str_split($alpha)));
     }
 
     /**

@@ -126,7 +126,7 @@ EOT
                 }
 
                 // Sort licenses so that the most used license will appear first
-                arsort($usedLicenses, SORT_NUMERIC);
+                arsort($usedLicenses, \SORT_NUMERIC);
 
                 $rows = array();
                 foreach ($usedLicenses as $usedLicense => $numberOfDependencies) {
@@ -162,7 +162,7 @@ EOT
         $packages = array_filter(
             $repo->getPackages(),
             function ($package) use ($requires, $packageListNames) {
-                return in_array($package->getName(), $requires) && !in_array($package->getName(), $packageListNames);
+                return \in_array($package->getName(), $requires) && !\in_array($package->getName(), $packageListNames);
             }
         );
 

@@ -116,7 +116,7 @@ class InstalledRepository extends CompositeRepository
                         if ($link->getSource() === $needle) {
                             if ($constraint === null || ($link->getConstraint()->matches($constraint) === !$invert)) {
                                 // already displayed this node's dependencies, cutting short
-                                if (in_array($link->getTarget(), $packagesInTree)) {
+                                if (\in_array($link->getTarget(), $packagesInTree)) {
                                     $results[] = array($package, $link, false);
                                     continue;
                                 }
@@ -141,7 +141,7 @@ class InstalledRepository extends CompositeRepository
                     if ($link->getTarget() === $needle) {
                         if ($constraint === null || ($link->getConstraint()->matches($constraint) === !$invert)) {
                             // already displayed this node's dependencies, cutting short
-                            if (in_array($link->getSource(), $packagesInTree)) {
+                            if (\in_array($link->getSource(), $packagesInTree)) {
                                 $results[] = array($package, $link, false);
                                 continue;
                             }
@@ -154,7 +154,7 @@ class InstalledRepository extends CompositeRepository
             }
 
             // When inverting, we need to check for conflicts of the needles against installed packages
-            if ($invert && in_array($package->getName(), $needles)) {
+            if ($invert && \in_array($package->getName(), $needles)) {
                 foreach ($package->getConflicts() as $link) {
                     foreach ($this->findPackages($link->getTarget()) as $pkg) {
                         $version = new Constraint('=', $pkg->getVersion());
@@ -167,7 +167,7 @@ class InstalledRepository extends CompositeRepository
 
             // List conflicts against X as they may explain why the current version was selected, or explain why it is rejected if the conflict matched when inverting
             foreach ($package->getConflicts() as $link) {
-                if (in_array($link->getTarget(), $needles)) {
+                if (\in_array($link->getTarget(), $needles)) {
                     foreach ($this->findPackages($link->getTarget()) as $pkg) {
                         $version = new Constraint('=', $pkg->getVersion());
                         if ($link->getConstraint()->matches($version) === $invert) {
@@ -178,7 +178,7 @@ class InstalledRepository extends CompositeRepository
             }
 
             // When inverting, we need to check for conflicts of the needles' requirements against installed packages
-            if ($invert && $constraint && in_array($package->getName(), $needles) && $constraint->matches(new Constraint('=', $package->getVersion()))) {
+            if ($invert && $constraint && \in_array($package->getName(), $needles) && $constraint->matches(new Constraint('=', $package->getVersion()))) {
                 foreach ($package->getRequires() as $link) {
                     if (PlatformRepository::isPlatformPackage($link->getTarget())) {
                         if ($this->findPackage($link->getTarget(), $link->getConstraint())) {
@@ -193,7 +193,7 @@ class InstalledRepository extends CompositeRepository
                     }
 
                     foreach ($this->getPackages() as $pkg) {
-                        if (!in_array($link->getTarget(), $pkg->getNames())) {
+                        if (!\in_array($link->getTarget(), $pkg->getNames())) {
                             continue;
                         }
 
@@ -213,7 +213,7 @@ class InstalledRepository extends CompositeRepository
                             // the root requires as well to perhaps allow to find an issue there
                             if ($rootPackage) {
                                 foreach (array_merge($rootPackage->getRequires(), $rootPackage->getDevRequires()) as $rootReq) {
-                                    if (in_array($rootReq->getTarget(), $pkg->getNames()) && !$rootReq->getConstraint()->matches($link->getConstraint())) {
+                                    if (\in_array($rootReq->getTarget(), $pkg->getNames()) && !$rootReq->getConstraint()->matches($link->getConstraint())) {
                                         $results[] = array($package, $link, false);
                                         $results[] = array($rootPackage, $rootReq, false);
                                         continue 3;
@@ -261,6 +261,6 @@ class InstalledRepository extends CompositeRepository
             return parent::addRepository($repository);
         }
 
-        throw new \LogicException('An InstalledRepository can not contain a repository of type '.get_class($repository).' ('.$repository->getRepoName().')');
+        throw new \LogicException('An InstalledRepository can not contain a repository of type '.\get_class($repository).' ('.$repository->getRepoName().')');
     }
 }

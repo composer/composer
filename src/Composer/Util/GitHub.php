@@ -55,7 +55,7 @@ class GitHub
      */
     public function authorizeOAuth($originUrl)
     {
-        if (!in_array($originUrl, $this->config->get('github-domains'))) {
+        if (!\in_array($originUrl, $this->config->get('github-domains'))) {
             return false;
         }
 
@@ -112,7 +112,7 @@ class GitHub
                 'retry-auth-failure' => false,
             ));
         } catch (TransportException $e) {
-            if (in_array($e->getCode(), array(403, 401))) {
+            if (\in_array($e->getCode(), array(403, 401))) {
                 $this->io->writeError('<error>Invalid token provided.</error>');
                 $this->io->writeError('You can also add it manually later by using "composer config --global --auth github-oauth.github.com <token>"');
 

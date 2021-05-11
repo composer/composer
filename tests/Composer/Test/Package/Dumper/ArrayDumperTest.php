@@ -117,7 +117,7 @@ class ArrayDumperTest extends TestCase
                 'time',
                 $datetime = new \DateTime('2012-02-01'),
                 'ReleaseDate',
-                $datetime->format(DATE_RFC3339),
+                $datetime->format(\DATE_RFC3339),
             ),
             array(
                 'authors',

@@ -58,7 +58,7 @@ class CacheTest extends TestCase
 
     public function testRemoveOutdatedFiles()
     {
-        $outdated = array_slice($this->files, 1);
+        $outdated = \array_slice($this->files, 1);
         $this->finder
             ->expects($this->once())
             ->method('getIterator')

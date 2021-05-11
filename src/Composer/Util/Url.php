@@ -27,7 +27,7 @@ class Url
      */
     public static function updateDistReference(Config $config, $url, $ref)
     {
-        $host = parse_url($url, PHP_URL_HOST);
+        $host = parse_url($url, \PHP_URL_HOST);
 
         if ($host === 'api.github.com' || $host === 'github.com' || $host === 'www.github.com') {
             if (preg_match('{^https?://(?:www\.)?github\.com/([^/]+)/([^/]+)/(zip|tar)ball/(.+)$}i', $url, $match)) {
@@ -50,9 +50,9 @@ class Url
                 // update Gitlab archives to the proper reference
                 $url = 'https://gitlab.com/api/v4/projects/' . $match[1] . '/repository/archive.' . $match[2] . '?sha=' . $ref;
             }
-        } elseif (in_array($host, $config->get('github-domains'), true)) {
+        } elseif (\in_array($host, $config->get('github-domains'), true)) {
             $url = preg_replace('{(/repos/[^/]+/[^/]+/(zip|tar)ball)(?:/.+)?$}i', '$1/'.$ref, $url);
-        } elseif (in_array($host, $config->get('gitlab-domains'), true)) {
+        } elseif (\in_array($host, $config->get('gitlab-domains'), true)) {
             $url = preg_replace('{(/api/v[34]/projects/[^/]+/repository/archive\.(?:zip|tar\.gz|tar\.bz2|tar)\?sha=).+$}i', '${1}'.$ref, $url);
         }
 
@@ -69,12 +69,12 @@ class Url
             return $url;
         }
 
-        $origin = (string) parse_url($url, PHP_URL_HOST);
-        if ($port = parse_url($url, PHP_URL_PORT)) {
+        $origin = (string) parse_url($url, \PHP_URL_HOST);
+        if ($port = parse_url($url, \PHP_URL_PORT)) {
             $origin .= ':'.$port;
         }
 
-        if (strpos($origin, '.github.com') === (strlen($origin) - 11)) {
+        if (strpos($origin, '.github.com') === (\strlen($origin) - 11)) {
             return 'github.com';
         }
 
@@ -89,9 +89,9 @@ class Url
         // Gitlab can be installed in a non-root context (i.e. gitlab.com/foo). When downloading archives the originUrl
         // is the host without the path, so we look for the registered gitlab-domains matching the host here
         if (
-            is_array($config->get('gitlab-domains'))
+            \is_array($config->get('gitlab-domains'))
             && false === strpos($origin, '/')
-            && !in_array($origin, $config->get('gitlab-domains'))
+            && !\in_array($origin, $config->get('gitlab-domains'))
         ) {
             foreach ($config->get('gitlab-domains') as $gitlabDomain) {
                 if (0 === strpos($gitlabDomain, $origin)) {

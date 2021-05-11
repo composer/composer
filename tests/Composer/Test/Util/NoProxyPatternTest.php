@@ -124,7 +124,7 @@ class NoProxyPatternTest extends TestCase
      */
     private function getUrl($url)
     {
-        if (parse_url($url, PHP_URL_SCHEME)) {
+        if (parse_url($url, \PHP_URL_SCHEME)) {
             return $url;
         }
 

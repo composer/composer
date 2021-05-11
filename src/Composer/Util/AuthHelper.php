@@ -46,7 +46,7 @@ class AuthHelper
                 'Do you want to store credentials for '.$origin.' in '.$configSource->getName().' ? [Yn] ',
                 function ($value) {
                     $input = strtolower(substr(trim($value), 0, 1));
-                    if (in_array($input, array('y','n'))) {
+                    if (\in_array($input, array('y','n'))) {
                         return $input;
                     }
                     throw new \RuntimeException('Please answer (y)es or (n)o');
@@ -80,7 +80,7 @@ class AuthHelper
     {
         $storeAuth = false;
 
-        if (in_array($origin, $this->config->get('github-domains'), true)) {
+        if (\in_array($origin, $this->config->get('github-domains'), true)) {
             $gitHubUtil = new GitHub($this->io, $this->config, null);
             $message = "\n";
 
@@ -112,16 +112,16 @@ class AuthHelper
             ) {
                 throw new TransportException('Could not authenticate against '.$origin, 401);
             }
-        } elseif (in_array($origin, $this->config->get('gitlab-domains'), true)) {
+        } elseif (\in_array($origin, $this->config->get('gitlab-domains'), true)) {
             $message = "\n".'Could not fetch '.$url.', enter your ' . $origin . ' credentials ' .($statusCode === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
 
-            if ($this->io->hasAuthentication($origin) && ($auth = $this->io->getAuthentication($origin)) && in_array($auth['password'], array('gitlab-ci-token', 'private-token', 'oauth2'), true)) {
+            if ($this->io->hasAuthentication($origin) && ($auth = $this->io->getAuthentication($origin)) && \in_array($auth['password'], array('gitlab-ci-token', 'private-token', 'oauth2'), true)) {
                 throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
             }
 
             if (!$gitLabUtil->authorizeOAuth($origin)
-                && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively(parse_url($url, PHP_URL_SCHEME), $origin, $message))
+                && (!$this->io->isInteractive() || !$gitLabUtil->authorizeOAuthInteractively(parse_url($url, \PHP_URL_SCHEME), $origin, $message))
             ) {
                 throw new TransportException('Could not authenticate against '.$origin, 401);
             }
@@ -204,8 +204,8 @@ class AuthHelper
                     $authenticationDisplayMessage = 'Using GitHub token authentication';
                 }
             } elseif (
-                in_array($origin, $this->config->get('gitlab-domains'), true)
-                && in_array($auth['password'], array('oauth2', 'private-token', 'gitlab-ci-token'), true)
+                \in_array($origin, $this->config->get('gitlab-domains'), true)
+                && \in_array($auth['password'], array('oauth2', 'private-token', 'gitlab-ci-token'), true)
             ) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
@@ -233,7 +233,7 @@ class AuthHelper
                 $this->io->writeError($authenticationDisplayMessage, true, IOInterface::DEBUG);
                 $this->displayedOriginAuthentications[$origin] = $authenticationDisplayMessage;
             }
-        } elseif (in_array($origin, array('api.bitbucket.org', 'api.github.com'), true)) {
+        } elseif (\in_array($origin, array('api.bitbucket.org', 'api.github.com'), true)) {
             return $this->addAuthenticationHeader($headers, str_replace('api.', '', $origin), $url);
         }
 
@@ -249,19 +249,19 @@ class AuthHelper
      */
     public function isPublicBitBucketDownload($urlToBitBucketFile)
     {
-        $domain = parse_url($urlToBitBucketFile, PHP_URL_HOST);
+        $domain = parse_url($urlToBitBucketFile, \PHP_URL_HOST);
         if (strpos($domain, 'bitbucket.org') === false) {
             // Bitbucket downloads are hosted on amazonaws.
             // We do not need to authenticate there at all
             return true;
         }
 
-        $path = parse_url($urlToBitBucketFile, PHP_URL_PATH);
+        $path = parse_url($urlToBitBucketFile, \PHP_URL_PATH);
 
         // Path for a public download follows this pattern /{user}/{repo}/downloads/{whatever}
         // {@link https://blog.bitbucket.org/2009/04/12/new-feature-downloads/}
         $pathParts = explode('/', $path);
 
-        return count($pathParts) >= 4 && $pathParts[3] == 'downloads';
+        return \count($pathParts) >= 4 && $pathParts[3] == 'downloads';
     }
 }

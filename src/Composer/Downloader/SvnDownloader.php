@@ -50,7 +50,7 @@ class SvnDownloader extends VcsDownloader
         $repo = $package->getRepository();
         if ($repo instanceof VcsRepository) {
             $repoConfig = $repo->getRepoConfig();
-            if (array_key_exists('svn-cache-credentials', $repoConfig)) {
+            if (\array_key_exists('svn-cache-credentials', $repoConfig)) {
                 $this->cacheCredentials = (bool) $repoConfig['svn-cache-credentials'];
             }
         }
@@ -144,9 +144,9 @@ class SvnDownloader extends VcsDownloader
         $changes = array_map(function ($elem) {
             return '    '.$elem;
         }, preg_split('{\s*\r?\n\s*}', $changes));
-        $countChanges = count($changes);
+        $countChanges = \count($changes);
         $this->io->writeError(sprintf('    <error>'.$package->getPrettyName().' has modified file%s:</error>', $countChanges === 1 ? '' : 's'));
-        $this->io->writeError(array_slice($changes, 0, 10));
+        $this->io->writeError(\array_slice($changes, 0, 10));
         if ($countChanges > 10) {
             $remainingChanges = $countChanges - 10;
             $this->io->writeError(

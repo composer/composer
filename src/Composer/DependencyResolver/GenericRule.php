@@ -23,8 +23,8 @@ class GenericRule extends Rule
     protected $literals;
 
     /**
-     * @param array                          $literals
-     * @param int|null                       $reason     A RULE_* constant describing the reason for generating this rule
+     * @param array                     $literals
+     * @param int|null                  $reason     A RULE_* constant describing the reason for generating this rule
      * @param Link|BasePackage|int|null $reasonData
      */
     public function __construct(array $literals, $reason, $reasonData)

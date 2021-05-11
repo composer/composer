@@ -143,7 +143,7 @@ class StreamContextFactoryTest extends TestCase
 
     public function testHttpsProxyOverride()
     {
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
         }
 
@@ -162,7 +162,7 @@ class StreamContextFactoryTest extends TestCase
     {
         $_SERVER['http_proxy'] = $proxy;
 
-        if (extension_loaded('openssl')) {
+        if (\extension_loaded('openssl')) {
             $context = StreamContextFactory::getContext('http://example.org', array('http' => array('header' => 'User-Agent: foo')));
             $options = stream_context_get_options($context);
 
@@ -226,7 +226,7 @@ class StreamContextFactoryTest extends TestCase
 
     public function testInitOptionsForCurlDoesNotIncludeProxyAuthHeaders()
     {
-        if (!extension_loaded('curl')) {
+        if (!\extension_loaded('curl')) {
             $this->markTestSkipped('The curl is not available.');
         }
 

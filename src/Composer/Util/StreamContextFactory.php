@@ -68,7 +68,7 @@ final class StreamContextFactory
         if (!isset($options['http']['header'])) {
             $options['http']['header'] = array();
         }
-        if (is_string($options['http']['header'])) {
+        if (\is_string($options['http']['header'])) {
             $options['http']['header'] = explode("\r\n", $options['http']['header']);
         }
 
@@ -79,13 +79,13 @@ final class StreamContextFactory
                 $isHttpsRequest = 0 === strpos($url, 'https://');
 
                 if ($proxy->isSecure()) {
-                    if (!extension_loaded('openssl')) {
+                    if (!\extension_loaded('openssl')) {
                         throw new TransportException('You must enable the openssl extension to use a secure proxy.');
                     }
                     if ($isHttpsRequest) {
                         throw new TransportException('You must enable the curl extension to make https requests through a secure proxy.');
                     }
-                } elseif ($isHttpsRequest && !extension_loaded('openssl')) {
+                } elseif ($isHttpsRequest && !\extension_loaded('openssl')) {
                     throw new TransportException('You must enable the openssl extension to make https requests through a proxy.');
                 }
 
@@ -98,10 +98,10 @@ final class StreamContextFactory
             }
         }
 
-        if (defined('HHVM_VERSION')) {
+        if (\defined('HHVM_VERSION')) {
             $phpVersion = 'HHVM ' . HHVM_VERSION;
         } else {
-            $phpVersion = 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
+            $phpVersion = 'PHP ' . \PHP_MAJOR_VERSION . '.' . \PHP_MINOR_VERSION . '.' . \PHP_RELEASE_VERSION;
         }
 
         if ($forCurl) {
@@ -115,8 +115,8 @@ final class StreamContextFactory
             $options['http']['header'][] = sprintf(
                 'User-Agent: Composer/%s (%s; %s; %s; %s%s)',
                 Composer::getVersion(),
-                function_exists('php_uname') ? php_uname('s') : 'Unknown',
-                function_exists('php_uname') ? php_uname('r') : 'Unknown',
+                \function_exists('php_uname') ? php_uname('s') : 'Unknown',
+                \function_exists('php_uname') ? php_uname('r') : 'Unknown',
                 $phpVersion,
                 $httpVersion,
                 getenv('CI') ? '; CI' : ''
@@ -222,7 +222,7 @@ final class StreamContextFactory
         /**
          * Disable TLS compression to prevent CRIME attacks where supported.
          */
-        if (PHP_VERSION_ID >= 50413) {
+        if (\PHP_VERSION_ID >= 50413) {
             $defaults['ssl']['disable_compression'] = true;
         }
 
@@ -241,7 +241,7 @@ final class StreamContextFactory
      */
     private static function fixHttpHeaderField($header)
     {
-        if (!is_array($header)) {
+        if (!\is_array($header)) {
             $header = explode("\r\n", $header);
         }
         uasort($header, function ($el) {

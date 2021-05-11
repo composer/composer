@@ -94,7 +94,7 @@ class AutoloadGeneratorTest extends TestCase
         $that = $this;
 
         $this->workingDir = $this->getUniqueTmpDirectory();
-        $this->vendorDir = $this->workingDir.DIRECTORY_SEPARATOR.'composer-test-autoload';
+        $this->vendorDir = $this->workingDir.\DIRECTORY_SEPARATOR.'composer-test-autoload';
         $this->ensureDirectoryExistsAndClear($this->vendorDir);
 
         $this->config = $this->getMockBuilder('Composer\Config')->getMock();
@@ -114,7 +114,7 @@ class AutoloadGeneratorTest extends TestCase
                 $ret = null;
                 if (isset($that->configValueMap[$arg])) {
                     $ret = $that->configValueMap[$arg];
-                    if (is_callable($ret)) {
+                    if (\is_callable($ret)) {
                         $ret = $ret();
                     }
                 }
@@ -916,11 +916,11 @@ EOF;
 
         $loader = require $this->vendorDir . '/autoload.php';
         $loader->unregister();
-        $this->assertTrue(function_exists('testFilesAutoloadGeneration1'));
-        $this->assertTrue(function_exists('testFilesAutoloadGeneration2'));
-        $this->assertTrue(function_exists('testFilesAutoloadGeneration3'));
-        $this->assertTrue(function_exists('testFilesAutoloadGeneration4'));
-        $this->assertTrue(function_exists('testFilesAutoloadGenerationRoot'));
+        $this->assertTrue(\function_exists('testFilesAutoloadGeneration1'));
+        $this->assertTrue(\function_exists('testFilesAutoloadGeneration2'));
+        $this->assertTrue(\function_exists('testFilesAutoloadGeneration3'));
+        $this->assertTrue(\function_exists('testFilesAutoloadGeneration4'));
+        $this->assertTrue(\function_exists('testFilesAutoloadGenerationRoot'));
     }
 
     public function testFilesAutoloadGenerationRemoveExtraEntitiesFromAutoloadFiles()
@@ -1054,12 +1054,12 @@ EOF;
         $loader = require $this->vendorDir . '/autoload.php';
         $loader->unregister();
 
-        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency1'));
-        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency2'));
-        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency3'));
-        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency4'));
-        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependency5'));
-        $this->assertTrue(function_exists('testFilesAutoloadOrderByDependencyRoot'));
+        $this->assertTrue(\function_exists('testFilesAutoloadOrderByDependency1'));
+        $this->assertTrue(\function_exists('testFilesAutoloadOrderByDependency2'));
+        $this->assertTrue(\function_exists('testFilesAutoloadOrderByDependency3'));
+        $this->assertTrue(\function_exists('testFilesAutoloadOrderByDependency4'));
+        $this->assertTrue(\function_exists('testFilesAutoloadOrderByDependency5'));
+        $this->assertTrue(\function_exists('testFilesAutoloadOrderByDependencyRoot'));
     }
 
     /**
@@ -1224,7 +1224,7 @@ EOF;
         $loader->unregister();
 
         $this->assertEquals(
-            $this->vendorDir."/a/a/lib".PATH_SEPARATOR.$oldIncludePath,
+            $this->vendorDir."/a/a/lib".\PATH_SEPARATOR.$oldIncludePath,
             get_include_path()
         );
 
@@ -1253,7 +1253,7 @@ EOF;
         $loader->unregister();
 
         $this->assertEquals(
-            $this->workingDir."/lib".PATH_SEPARATOR.$this->workingDir."/src".PATH_SEPARATOR.$this->vendorDir."/a/a/lib".PATH_SEPARATOR.$oldIncludePath,
+            $this->workingDir."/lib".\PATH_SEPARATOR.$this->workingDir."/src".\PATH_SEPARATOR.$this->vendorDir."/a/a/lib".\PATH_SEPARATOR.$oldIncludePath,
             get_include_path()
         );
 

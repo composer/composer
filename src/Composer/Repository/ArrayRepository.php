@@ -58,7 +58,7 @@ class ArrayRepository implements RepositoryInterface
         $result = array();
         $namesFound = array();
         foreach ($packages as $package) {
-            if (array_key_exists($package->getName(), $packageMap)) {
+            if (\array_key_exists($package->getName(), $packageMap)) {
                 if (
                     (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
                     && StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, $package->getNames(), $package->getStability())
@@ -289,7 +289,7 @@ class ArrayRepository implements RepositoryInterface
             $this->initialize();
         }
 
-        return count($this->packages);
+        return \count($this->packages);
     }
 
     /**

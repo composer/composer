@@ -86,7 +86,7 @@ abstract class BaseExcludeFilter
                         return null;
                     }
 
-                    return call_user_func($lineParser, $line);
+                    return \call_user_func($lineParser, $line);
                 },
                 $lines
             ),
@@ -133,7 +133,7 @@ abstract class BaseExcludeFilter
         $firstSlashPosition = strpos($rule, '/');
         if (0 === $firstSlashPosition) {
             $pattern = '^/';
-        } elseif (false === $firstSlashPosition || strlen($rule) - 1 === $firstSlashPosition) {
+        } elseif (false === $firstSlashPosition || \strlen($rule) - 1 === $firstSlashPosition) {
             $pattern = '/';
         }
 

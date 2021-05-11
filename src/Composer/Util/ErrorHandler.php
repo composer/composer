@@ -42,12 +42,12 @@ class ErrorHandler
             return true;
         }
 
-        if (filter_var(ini_get('xdebug.scream'), FILTER_VALIDATE_BOOLEAN)) {
+        if (filter_var(ini_get('xdebug.scream'), \FILTER_VALIDATE_BOOLEAN)) {
             $message .= "\n\nWarning: You have xdebug.scream enabled, the warning above may be".
             "\na legitimately suppressed error that you were not supposed to see.";
         }
 
-        if ($level !== E_DEPRECATED && $level !== E_USER_DEPRECATED) {
+        if ($level !== \E_DEPRECATED && $level !== \E_USER_DEPRECATED) {
             throw new \ErrorException($message, 0, $level, $file, $line);
         }
 
@@ -61,7 +61,7 @@ class ErrorHandler
                     }
 
                     return null;
-                }, array_slice(debug_backtrace(), 2))));
+                }, \array_slice(debug_backtrace(), 2))));
             }
         }
 
@@ -76,7 +76,7 @@ class ErrorHandler
     public static function register(IOInterface $io = null)
     {
         set_error_handler(array(__CLASS__, 'handle'));
-        error_reporting(E_ALL | E_STRICT);
+        error_reporting(\E_ALL | \E_STRICT);
         self::$io = $io;
     }
 }

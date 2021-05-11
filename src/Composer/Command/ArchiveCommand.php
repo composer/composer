@@ -136,7 +136,7 @@ EOT
         $shortPath = $fs->findShortestPath(getcwd(), $packagePath, true);
 
         $io->writeError('Created: ', false);
-        $io->write(strlen($shortPath) < strlen($packagePath) ? $shortPath : $packagePath);
+        $io->write(\strlen($shortPath) < \strlen($packagePath) ? $shortPath : $packagePath);
 
         return 0;
     }
@@ -159,7 +159,7 @@ EOT
 
         $packages = $repo->findPackages($packageName, $version);
 
-        if (count($packages) > 1) {
+        if (\count($packages) > 1) {
             $package = reset($packages);
             $io->writeError('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
             $io->writeError('Alternatives were '.implode(', ', array_map(function ($p) {
@@ -176,7 +176,7 @@ EOT
         }
 
         if (!$package instanceof CompletePackageInterface) {
-            throw new \LogicException('Expected a CompletePackageInterface instance but found '.get_class($package));
+            throw new \LogicException('Expected a CompletePackageInterface instance but found '.\get_class($package));
         }
 
         return $package;

@@ -35,7 +35,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerCaptureNotice()
     {
-        if (PHP_VERSION_ID >= 80000) {
+        if (\PHP_VERSION_ID >= 80000) {
             $this->setExpectedException('\ErrorException', 'Undefined array key "baz"');
         } else {
             $this->setExpectedException('\ErrorException', 'Undefined index: baz');
@@ -51,7 +51,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerCaptureWarning()
     {
-        if (PHP_VERSION_ID >= 80000) {
+        if (\PHP_VERSION_ID >= 80000) {
             $this->setExpectedException('TypeError', 'array_merge');
         } else {
             $this->setExpectedException('ErrorException', 'array_merge');
@@ -66,6 +66,6 @@ class ErrorHandlerTest extends TestCase
      */
     public function testErrorHandlerRespectsAtOperator()
     {
-        @trigger_error('test', E_USER_NOTICE);
+        @trigger_error('test', \E_USER_NOTICE);
     }
 }

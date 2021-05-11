@@ -26,7 +26,7 @@ class Zip
      */
     public static function getComposerJson($pathToZip)
     {
-        if (!extension_loaded('zip')) {
+        if (!\extension_loaded('zip')) {
             throw new \RuntimeException('The Zip Util requires PHP\'s zip extension');
         }
 
@@ -80,7 +80,7 @@ class Zip
         $topLevelPaths = array();
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = $zip->getNameIndex($i);
-            $dirname = dirname($name);
+            $dirname = \dirname($name);
 
             // ignore OSX specific resource fork folder
             if (strpos($name, '__MACOSX') !== false) {

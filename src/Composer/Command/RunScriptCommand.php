@@ -79,8 +79,8 @@ EOT
         }
 
         $script = $input->getArgument('script');
-        if (!in_array($script, $this->scriptEvents)) {
-            if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
+        if (!\in_array($script, $this->scriptEvents)) {
+            if (\defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                 throw new \InvalidArgumentException(sprintf('Script "%s" cannot be run with this command', $script));
             }
         }
@@ -113,7 +113,7 @@ EOT
     {
         $scripts = $this->getComposer()->getPackage()->getScripts();
 
-        if (!count($scripts)) {
+        if (!\count($scripts)) {
             return 0;
         }
 

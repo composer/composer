@@ -50,19 +50,19 @@ class PostFileDownloadEvent extends Event
     /**
      * Constructor.
      *
-     * @param string           $name     The event name
-     * @param string|null      $fileName The file name
-     * @param string|null      $checksum The checksum
-     * @param string           $url      The processed url
-     * @param string           $type     The type (package or metadata).
-     * @param mixed            $context  Additional context for the download.
+     * @param string      $name     The event name
+     * @param string|null $fileName The file name
+     * @param string|null $checksum The checksum
+     * @param string      $url      The processed url
+     * @param string      $type     The type (package or metadata).
+     * @param mixed       $context  Additional context for the download.
      */
     public function __construct($name, $fileName, $checksum, $url, $type, $context = null)
     {
         if ($context === null && $type instanceof PackageInterface) {
             $context = $type;
             $type = 'package';
-            trigger_error('PostFileDownloadEvent::__construct should receive a $type=package and the package object in $context since Composer 2.1.', E_USER_DEPRECATED);
+            trigger_error('PostFileDownloadEvent::__construct should receive a $type=package and the package object in $context since Composer 2.1.', \E_USER_DEPRECATED);
         }
 
         parent::__construct($name);
@@ -128,7 +128,7 @@ class PostFileDownloadEvent extends Event
      */
     public function getPackage()
     {
-        trigger_error('PostFileDownloadEvent::getPackage is deprecated since Composer 2.1, use getContext instead.', E_USER_DEPRECATED);
+        trigger_error('PostFileDownloadEvent::getPackage is deprecated since Composer 2.1, use getContext instead.', \E_USER_DEPRECATED);
         $context = $this->getContext();
 
         return $context instanceof PackageInterface ? $context : null;

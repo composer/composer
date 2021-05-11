@@ -281,7 +281,7 @@ class Installer
                 continue;
             }
 
-            $replacement = is_string($package->getReplacementPackage())
+            $replacement = \is_string($package->getReplacementPackage())
                 ? 'Use ' . $package->getReplacementPackage() . ' instead'
                 : 'No replacement was suggested';
 
@@ -341,7 +341,7 @@ class Installer
         }
 
         // re-enable GC except on HHVM which triggers a warning here
-        if (!defined('HHVM_VERSION')) {
+        if (!\defined('HHVM_VERSION')) {
             gc_enable();
         }
 
@@ -421,7 +421,7 @@ class Installer
             return max(1, $e->getCode());
         }
 
-        $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
+        $this->io->writeError("Analyzed ".\count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
         $this->io->writeError("Analyzed ".$ruleSetSize." rules to resolve dependencies", true, IOInterface::VERBOSE);
 
         if (!$lockTransaction->getOperations()) {
@@ -464,12 +464,12 @@ class Installer
 
             $this->io->writeError(sprintf(
                 "<info>Lock file operations: %d install%s, %d update%s, %d removal%s</info>",
-                count($installNames),
-                1 === count($installNames) ? '' : 's',
-                count($updateNames),
-                1 === count($updateNames) ? '' : 's',
-                count($uninstalls),
-                1 === count($uninstalls) ? '' : 's'
+                \count($installNames),
+                1 === \count($installNames) ? '' : 's',
+                \count($updateNames),
+                1 === \count($updateNames) ? '' : 's',
+                \count($uninstalls),
+                1 === \count($uninstalls) ? '' : 's'
             ));
             if ($installNames) {
                 $this->io->writeError("Installs: ".implode(', ', $installNames), true, IOInterface::VERBOSE);
@@ -529,7 +529,7 @@ class Installer
         }
 
         // see https://github.com/composer/composer/issues/2764
-        if ($this->executeOperations && count($lockTransaction->getOperations()) > 0) {
+        if ($this->executeOperations && \count($lockTransaction->getOperations()) > 0) {
             $vendorDir = $this->config->get('vendor-dir');
             if (is_dir($vendorDir)) {
                 // suppress errors as this fails sometimes on OSX for no apparent reason
@@ -642,7 +642,7 @@ class Installer
                 $solver = null;
 
                 // installing the locked packages on this platform resulted in lock modifying operations, there wasn't a conflict, but the lock file as-is seems to not work on this system
-                if (0 !== count($lockTransaction->getOperations())) {
+                if (0 !== \count($lockTransaction->getOperations())) {
                     $this->io->writeError('<error>Your lock file cannot be installed on this system without changes. Please run composer update.</error>', true, IOInterface::QUIET);
 
                     return 1;
@@ -683,12 +683,12 @@ class Installer
 
             $this->io->writeError(sprintf(
                 "<info>Package operations: %d install%s, %d update%s, %d removal%s</info>",
-                count($installs),
-                1 === count($installs) ? '' : 's',
-                count($updates),
-                1 === count($updates) ? '' : 's',
-                count($uninstalls),
-                1 === count($uninstalls) ? '' : 's'
+                \count($installs),
+                1 === \count($installs) ? '' : 's',
+                \count($updates),
+                1 === \count($updates) ? '' : 's',
+                \count($uninstalls),
+                1 === \count($uninstalls) ? '' : 's'
             ));
             if ($installs) {
                 $this->io->writeError("Installs: ".implode(', ', $installs), true, IOInterface::VERBOSE);
@@ -756,7 +756,7 @@ class Installer
         $rootRequires = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
-            if ((true === $this->ignorePlatformReqs || (is_array($this->ignorePlatformReqs) && in_array($req, $this->ignorePlatformReqs, true))) && PlatformRepository::isPlatformPackage($req)) {
+            if ((true === $this->ignorePlatformReqs || (\is_array($this->ignorePlatformReqs) && \in_array($req, $this->ignorePlatformReqs, true))) && PlatformRepository::isPlatformPackage($req)) {
                 continue;
             }
             if ($constraint instanceof Link) {
@@ -928,7 +928,7 @@ class Installer
         foreach ($packages as $key => $package) {
             if ($package instanceof AliasPackage) {
                 $alias = (string) $package->getAliasOf();
-                $className = get_class($package);
+                $className = \get_class($package);
                 $packages[$key] = new $className($packages[$alias], $package->getVersion(), $package->getPrettyVersion());
             }
         }
@@ -1187,7 +1187,7 @@ class Installer
      */
     public function setIgnorePlatformRequirements($ignorePlatformReqs)
     {
-        if (is_array($ignorePlatformReqs)) {
+        if (\is_array($ignorePlatformReqs)) {
             $this->ignorePlatformReqs = array_filter($ignorePlatformReqs, function ($req) {
                 return PlatformRepository::isPlatformPackage($req);
             });
@@ -1236,7 +1236,7 @@ class Installer
      */
     public function setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
     {
-        if (!in_array($updateAllowTransitiveDependencies, array(Request::UPDATE_ONLY_LISTED, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS), true)) {
+        if (!\in_array($updateAllowTransitiveDependencies, array(Request::UPDATE_ONLY_LISTED, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE, Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS), true)) {
             throw new \RuntimeException("Invalid value for updateAllowTransitiveDependencies supplied");
         }
 

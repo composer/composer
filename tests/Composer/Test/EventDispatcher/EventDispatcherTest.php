@@ -195,20 +195,20 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatch('ev1');
         $dispatcher->dispatch('ev2');
 
-        $expected = '> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL
-            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod2'.PHP_EOL
-            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL
-            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
-            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
-            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.PHP_EOL;
+        $expected = '> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.\PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod2'.\PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.\PHP_EOL
+            .'> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.\PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.\PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest->someMethod'.\PHP_EOL;
         $this->assertEquals($expected, $io->getOutput());
 
         $dispatcher->removeListener($this);
         $dispatcher->dispatch('ev1');
         $dispatcher->dispatch('ev2');
 
-        $expected .= '> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL
-            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL;
+        $expected .= '> ev1: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.\PHP_EOL
+            .'> ev2: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.\PHP_EOL;
         $this->assertEquals($expected, $io->getOutput());
     }
 
@@ -242,9 +242,9 @@ class EventDispatcherTest extends TestCase
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
 
-        $expected = '> post-install-cmd: echo -n foo'.PHP_EOL.
-            '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL.
-            '> post-install-cmd: echo -n bar'.PHP_EOL;
+        $expected = '> post-install-cmd: echo -n foo'.\PHP_EOL.
+            '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.\PHP_EOL.
+            '> post-install-cmd: echo -n bar'.\PHP_EOL;
         $this->assertEquals($expected, $io->getOutput());
     }
 
@@ -273,8 +273,8 @@ class EventDispatcherTest extends TestCase
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
 
-        $expected = '> post-install-cmd: @putenv ABC=123'.PHP_EOL.
-            '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::getTestEnv'.PHP_EOL;
+        $expected = '> post-install-cmd: @putenv ABC=123'.\PHP_EOL.
+            '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::getTestEnv'.\PHP_EOL;
         $this->assertEquals($expected, $io->getOutput());
     }
 
@@ -283,7 +283,7 @@ class EventDispatcherTest extends TestCase
         $currentDirectoryBkp = getcwd();
         $composerBinDirBkp = getenv('COMPOSER_BIN_DIR');
         chdir(__DIR__);
-        putenv('COMPOSER_BIN_DIR=' . __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
+        putenv('COMPOSER_BIN_DIR=' . __DIR__ . sprintf('%svendor%sbin', \DIRECTORY_SEPARATOR, \DIRECTORY_SEPARATOR));
 
         $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->setConstructorArgs(array(
@@ -302,8 +302,8 @@ class EventDispatcherTest extends TestCase
         $dispatcher->expects($this->atLeastOnce())->method('getListeners')->will($this->returnValue($listeners));
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
-        rmdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
-        rmdir(__DIR__ . sprintf('%svendor', DIRECTORY_SEPARATOR));
+        rmdir(__DIR__ . sprintf('%svendor%sbin', \DIRECTORY_SEPARATOR, \DIRECTORY_SEPARATOR));
+        rmdir(__DIR__ . sprintf('%svendor', \DIRECTORY_SEPARATOR));
 
         chdir($currentDirectoryBkp);
         putenv('COMPOSER_BIN_DIR' . ($composerBinDirBkp === false ? '' : '=' . $composerBinDirBkp));
@@ -311,14 +311,14 @@ class EventDispatcherTest extends TestCase
 
     public static function createsVendorBinFolderChecksEnvDoesNotContainsBin()
     {
-        mkdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR), 0700, true);
+        mkdir(__DIR__ . sprintf('%svendor%sbin', \DIRECTORY_SEPARATOR, \DIRECTORY_SEPARATOR), 0700, true);
         $val = getenv('PATH');
 
         if (!$val) {
             $val = getenv('Path');
         }
 
-        self::assertFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
+        self::assertFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', \DIRECTORY_SEPARATOR, \DIRECTORY_SEPARATOR)));
     }
 
     public static function createsVendorBinFolderChecksEnvContainsBin()
@@ -329,7 +329,7 @@ class EventDispatcherTest extends TestCase
             $val = getenv('Path');
         }
 
-        self::assertNotFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
+        self::assertNotFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', \DIRECTORY_SEPARATOR, \DIRECTORY_SEPARATOR)));
     }
 
     public static function getTestEnv()
@@ -377,11 +377,11 @@ class EventDispatcherTest extends TestCase
             }));
 
         $dispatcher->dispatch('root', new ScriptEvent('root', $composer, $io));
-        $expected = '> root: @group'.PHP_EOL.
-            '> group: echo -n foo'.PHP_EOL.
-            '> group: @subgroup'.PHP_EOL.
-            '> subgroup: echo -n baz'.PHP_EOL.
-            '> group: echo -n bar'.PHP_EOL;
+        $expected = '> root: @group'.\PHP_EOL.
+            '> group: echo -n foo'.\PHP_EOL.
+            '> group: @subgroup'.\PHP_EOL.
+            '> subgroup: echo -n baz'.\PHP_EOL.
+            '> group: echo -n bar'.\PHP_EOL;
         $this->assertEquals($expected, $io->getOutput());
     }
 
@@ -418,8 +418,8 @@ class EventDispatcherTest extends TestCase
             }));
 
         $dispatcher->dispatch('helloWorld', new ScriptEvent('helloWorld', $composer, $io));
-        $expected = "> helloWorld: @hello World".PHP_EOL.
-            "> hello: echo Hello " .escapeshellarg('World').PHP_EOL;
+        $expected = "> helloWorld: @hello World".\PHP_EOL.
+            "> hello: echo Hello " .escapeshellarg('World').\PHP_EOL;
 
         $this->assertEquals($expected, $io->getOutput());
     }
@@ -505,7 +505,7 @@ class EventDispatcherTest extends TestCase
 
         $io->expects($this->once())
             ->method('writeRaw')
-            ->with($this->equalTo('foo'.PHP_EOL), false);
+            ->with($this->equalTo('foo'.\PHP_EOL), false);
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }

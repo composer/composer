@@ -49,7 +49,7 @@ class VersionParser extends SemverVersionParser
         $pairs = array_values($pairs);
         $result = array();
 
-        for ($i = 0, $count = count($pairs); $i < $count; $i++) {
+        for ($i = 0, $count = \count($pairs); $i < $count; $i++) {
             $pair = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
             if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/') && !PlatformRepository::isPlatformPackage($pairs[$i + 1])) {
                 $pair .= ' '.$pairs[$i + 1];
@@ -76,10 +76,10 @@ class VersionParser extends SemverVersionParser
             return true;
         }
 
-        if (in_array($normalizedFrom, array('dev-master', 'dev-trunk', 'dev-default'), true)) {
+        if (\in_array($normalizedFrom, array('dev-master', 'dev-trunk', 'dev-default'), true)) {
             $normalizedFrom = VersionParser::DEFAULT_BRANCH_ALIAS;
         }
-        if (in_array($normalizedTo, array('dev-master', 'dev-trunk', 'dev-default'), true)) {
+        if (\in_array($normalizedTo, array('dev-master', 'dev-trunk', 'dev-default'), true)) {
             $normalizedTo = VersionParser::DEFAULT_BRANCH_ALIAS;
         }
 

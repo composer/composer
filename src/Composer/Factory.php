@@ -237,7 +237,7 @@ class Factory
 
     public static function getLockFile($composerFile)
     {
-        return "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
+        return "json" === pathinfo($composerFile, \PATHINFO_EXTENSION)
                 ? substr($composerFile, 0, -4).'lock'
                 : $composerFile . '.lock';
     }
@@ -284,7 +284,7 @@ class Factory
             $localConfig = static::getComposerFile();
         }
 
-        if (is_string($localConfig)) {
+        if (\is_string($localConfig)) {
             $composerFile = $localConfig;
 
             $file = new JsonFile($localConfig, null, $io);
@@ -296,7 +296,7 @@ class Factory
                     $message = 'Composer could not find the config file: '.$localConfig;
                 }
                 $instructions = $fullLoad ? 'To initialize a project, please create a composer.json file as described in the https://getcomposer.org/ "Getting Started" section' : '';
-                throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
+                throw new \InvalidArgumentException($message.\PHP_EOL.$instructions);
             }
 
             $file->validateSchema(JsonFile::LAX_SCHEMA);
@@ -318,7 +318,7 @@ class Factory
             $io->writeError('Loading config file ' . $composerFile .' ('.realpath($composerFile).')', true, IOInterface::DEBUG);
             $config->setConfigSource(new JsonConfigSource(new JsonFile(realpath($composerFile), null, $io)));
 
-            $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json', null, $io);
+            $localAuthFile = new JsonFile(\dirname(realpath($composerFile)) . '/auth.json', null, $io);
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
                 $config->merge(array('config' => $localAuthFile->read()));
@@ -493,7 +493,7 @@ class Factory
                 break;
         }
 
-        if (is_array($preferred)) {
+        if (\is_array($preferred)) {
             $dm->setPreferences($preferred);
         }
 
@@ -608,16 +608,16 @@ class Factory
         static $warned = false;
         $disableTls = false;
         // allow running the config command if disable-tls is in the arg list, even if openssl is missing, to allow disabling it via the config command
-        if (isset($_SERVER['argv']) && in_array('disable-tls', $_SERVER['argv']) && (in_array('conf', $_SERVER['argv']) || in_array('config', $_SERVER['argv']))) {
+        if (isset($_SERVER['argv']) && \in_array('disable-tls', $_SERVER['argv']) && (\in_array('conf', $_SERVER['argv']) || \in_array('config', $_SERVER['argv']))) {
             $warned = true;
-            $disableTls = !extension_loaded('openssl');
+            $disableTls = !\extension_loaded('openssl');
         } elseif ($config && $config->get('disable-tls') === true) {
             if (!$warned) {
                 $io->writeError('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
             }
             $warned = true;
             $disableTls = true;
-        } elseif (!extension_loaded('openssl')) {
+        } elseif (!\extension_loaded('openssl')) {
             throw new Exception\NoSslException('The openssl extension is required for SSL/TLS protection but is not available. '
                 . 'If you can not enable the openssl extension, you can disable this error, at your own risk, by setting the \'disable-tls\' option to true.');
         }
@@ -637,7 +637,7 @@ class Factory
             if (false !== strpos($e->getMessage(), 'cafile')) {
                 $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
                 $io->write('<error>A valid CA certificate file is required for SSL/TLS protection.</error>');
-                if (PHP_VERSION_ID < 50600) {
+                if (\PHP_VERSION_ID < 50600) {
                     $io->write('<error>It is recommended you upgrade to PHP 5.6+ which can detect your system CA file automatically.</error>');
                 }
                 $io->write('<error>You can disable this error, at your own risk, by setting the \'disable-tls\' option to true.</error>');

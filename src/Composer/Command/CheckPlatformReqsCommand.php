@@ -76,7 +76,7 @@ EOT
 
         $installedRepo = new InstalledRepository(array($installedRepo, new RootPackageRepository($composer->getPackage())));
         foreach ($installedRepo->getPackages() as $package) {
-            if (in_array($package->getName(), $removePackages, true)) {
+            if (\in_array($package->getName(), $removePackages, true)) {
                 continue;
             }
             foreach ($package->getRequires() as $require => $link) {

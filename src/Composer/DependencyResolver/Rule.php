@@ -189,7 +189,7 @@ abstract class Rule
                 $packagesNonAlias = array_values(array_filter($packages, function ($p) {
                     return !($p instanceof AliasPackage);
                 }));
-                if (count($packagesNonAlias) === 1) {
+                if (\count($packagesNonAlias) === 1) {
                     $package = $packagesNonAlias[0];
                     if ($request->isLockedPackage($package)) {
                         return $package->getPrettyName().' is locked to version '.$package->getPrettyVersion()." and an update of this package was not requested.";
@@ -243,17 +243,17 @@ abstract class Rule
                 }
                 $replacedName = $this->reasonData;
 
-                if (count($packageNames) > 1) {
+                if (\count($packageNames) > 1) {
                     $reason = null;
 
                     if (!isset($packageNames[$replacedName])) {
-                        $reason = 'They '.(count($literals) == 2 ? 'both' : 'all').' replace '.$replacedName.' and thus cannot coexist.';
+                        $reason = 'They '.(\count($literals) == 2 ? 'both' : 'all').' replace '.$replacedName.' and thus cannot coexist.';
                     } else {
                         $replacerNames = $packageNames;
                         unset($replacerNames[$replacedName]);
                         $replacerNames = array_keys($replacerNames);
 
-                        if (count($replacerNames) == 1) {
+                        if (\count($replacerNames) == 1) {
                             $reason = $replacerNames[0] . ' replaces ';
                         } else {
                             $reason = '['.implode(', ', $replacerNames).'] replace ';
@@ -289,7 +289,7 @@ abstract class Rule
                 // }
                 $learnedString = ' (conflict analysis result)';
 
-                if (count($literals) === 1) {
+                if (\count($literals) === 1) {
                     $ruleText = $pool->literalToPrettyString($literals[0], $installedMap);
                 } else {
                     $groups = array();
@@ -305,7 +305,7 @@ abstract class Rule
                     }
                     $ruleTexts = array();
                     foreach ($groups as $group => $packages) {
-                        $ruleTexts[] = $group . (count($packages) > 1 ? ' one of' : '').' ' . $this->formatPackagesUnique($pool, $packages, $isVerbose);
+                        $ruleTexts[] = $group . (\count($packages) > 1 ? ' one of' : '').' ' . $this->formatPackagesUnique($pool, $packages, $isVerbose);
                     }
 
                     $ruleText = implode(' | ', $ruleTexts);

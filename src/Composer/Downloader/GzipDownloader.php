@@ -25,8 +25,8 @@ class GzipDownloader extends ArchiveDownloader
 {
     protected function extract(PackageInterface $package, $file, $path)
     {
-        $filename = pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_FILENAME);
-        $targetFilepath = $path . DIRECTORY_SEPARATOR . $filename;
+        $filename = pathinfo(parse_url($package->getDistUrl(), \PHP_URL_PATH), \PATHINFO_FILENAME);
+        $targetFilepath = $path . \DIRECTORY_SEPARATOR . $filename;
 
         // Try to use gunzip on *nix
         if (!Platform::isWindows()) {
@@ -36,7 +36,7 @@ class GzipDownloader extends ArchiveDownloader
                 return \React\Promise\resolve();
             }
 
-            if (extension_loaded('zlib')) {
+            if (\extension_loaded('zlib')) {
                 // Fallback to using the PHP extension.
                 $this->extractUsingExt($file, $targetFilepath);
 

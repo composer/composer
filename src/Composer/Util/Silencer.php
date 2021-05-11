@@ -33,7 +33,7 @@ class Silencer
     public static function suppress($mask = null)
     {
         if (!isset($mask)) {
-            $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT;
+            $mask = \E_WARNING | \E_NOTICE | \E_USER_WARNING | \E_USER_NOTICE | \E_DEPRECATED | \E_USER_DEPRECATED | \E_STRICT;
         }
         $old = error_reporting();
         self::$stack[] = $old;
@@ -65,7 +65,7 @@ class Silencer
     {
         try {
             self::suppress();
-            $result = call_user_func_array($callable, array_slice(func_get_args(), 1));
+            $result = \call_user_func_array($callable, \array_slice(\func_get_args(), 1));
             self::restore();
 
             return $result;

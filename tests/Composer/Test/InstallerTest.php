@@ -73,7 +73,7 @@ class InstallerTest extends TestCase
         $repositoryManager = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher);
         $repositoryManager->setLocalRepository(new InstalledArrayRepository());
 
-        if (!is_array($repositories)) {
+        if (!\is_array($repositories)) {
             $repositories = array($repositories);
         }
         foreach ($repositories as $repository) {
@@ -209,8 +209,8 @@ class InstallerTest extends TestCase
         $io = new BufferIO('', OutputInterface::VERBOSITY_NORMAL, new OutputFormatter(false));
 
         // Prepare for exceptions
-        if (!is_int($expectResult)) {
-            $normalizedOutput = rtrim(str_replace("\n", PHP_EOL, $expect));
+        if (!\is_int($expectResult)) {
+            $normalizedOutput = rtrim(str_replace("\n", \PHP_EOL, $expect));
             $this->setExpectedException($expectResult, $normalizedOutput);
         }
 
@@ -308,9 +308,9 @@ class InstallerTest extends TestCase
         $update->setCode(function ($input, $output) use ($installer) {
             $packages = $input->getArgument('packages');
             $filteredPackages = array_filter($packages, function ($package) {
-                return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
+                return !\in_array($package, array('lock', 'nothing', 'mirrors'), true);
             });
-            $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
+            $updateMirrors = $input->getOption('lock') || \count($filteredPackages) != \count($packages);
             $packages = $filteredPackages;
 
             $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
@@ -350,7 +350,7 @@ class InstallerTest extends TestCase
         fseek($appOutput, 0);
 
         // Shouldn't check output and results if an exception was expected by this point
-        if (!is_int($expectResult)) {
+        if (!\is_int($expectResult)) {
             return;
         }
 
@@ -483,7 +483,7 @@ class InstallerTest extends TestCase
 
     protected function readTestFile(\SplFileInfo $file, $fixturesDir)
     {
-        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), null, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), null, \PREG_SPLIT_DELIM_CAPTURE);
 
         $sectionInfo = array(
             'TEST' => true,

@@ -411,7 +411,7 @@ class FileDownloaderTest extends TestCase
         $method = new \ReflectionMethod($downloader, 'getFileName');
         $method->setAccessible(true);
         $dlFile = $method->invoke($downloader, $packageMock, $path);
-        mkdir(dirname($dlFile), 0777, true);
+        mkdir(\dirname($dlFile), 0777, true);
         touch($dlFile);
 
         try {
@@ -483,7 +483,7 @@ class FileDownloaderTest extends TestCase
         $method = new \ReflectionMethod($downloader, 'getFileName');
         $method->setAccessible(true);
         $dlFile = $method->invoke($downloader, $newPackage, $path);
-        mkdir(dirname($dlFile), 0777, true);
+        mkdir(\dirname($dlFile), 0777, true);
         touch($dlFile);
 
         $loop = new Loop($this->httpDownloader);

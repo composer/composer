@@ -284,7 +284,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
                     $output = trim($output);
                     // keep the shortest diff from all remote branches we compare against
-                    if ($unpushedChanges === null || strlen($output) < strlen($unpushedChanges)) {
+                    if ($unpushedChanges === null || \strlen($output) < \strlen($unpushedChanges)) {
                         $unpushedChanges = $output;
                     }
                 }
@@ -349,9 +349,9 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             return '    '.$elem;
         }, preg_split('{\s*\r?\n\s*}', $changes));
         $this->io->writeError('    <error>'.$package->getPrettyName().' has modified files:</error>');
-        $this->io->writeError(array_slice($changes, 0, 10));
-        if (count($changes) > 10) {
-            $this->io->writeError('    <info>' . (count($changes) - 10) . ' more files modified, choose "v" to view the full list</info>');
+        $this->io->writeError(\array_slice($changes, 0, 10));
+        if (\count($changes) > 10) {
+            $this->io->writeError('    <info>' . (\count($changes) - 10) . ' more files modified, choose "v" to view the full list</info>');
         }
 
         while (true) {
@@ -494,7 +494,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         if (preg_match('{^(?:https?|git)://'.GitUtil::getGitHubDomainsRegex($this->config).'/([^/]+)/([^/]+?)(?:\.git)?$}', $url, $match)) {
             $protocols = $this->config->get('github-protocols');
             $pushUrl = 'git@'.$match[1].':'.$match[2].'/'.$match[3].'.git';
-            if (!in_array('ssh', $protocols, true)) {
+            if (!\in_array('ssh', $protocols, true)) {
                 $pushUrl = 'https://' . $match[1] . '/'.$match[2].'/'.$match[3].'.git';
             }
             $cmd = sprintf('git remote set-url --push origin -- %s', ProcessExecutor::escape($pushUrl));
@@ -561,13 +561,13 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
     protected function normalizePath($path)
     {
-        if (Platform::isWindows() && strlen($path) > 0) {
+        if (Platform::isWindows() && \strlen($path) > 0) {
             $basePath = $path;
             $removed = array();
 
             while (!is_dir($basePath) && $basePath !== '\\') {
                 array_unshift($removed, basename($basePath));
-                $basePath = dirname($basePath);
+                $basePath = \dirname($basePath);
             }
 
             if ($basePath === '\\') {

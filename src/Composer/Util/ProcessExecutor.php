@@ -62,7 +62,7 @@ class ProcessExecutor
      */
     public function execute($command, &$output = null, $cwd = null)
     {
-        if (func_num_args() > 1) {
+        if (\func_num_args() > 1) {
             return $this->doExecute($command, $cwd, false, $output);
         }
 
@@ -110,7 +110,7 @@ class ProcessExecutor
             throw new \RuntimeException('The given CWD for the process does not exist: '.$cwd);
         }
 
-        $this->captureOutput = func_num_args() > 3;
+        $this->captureOutput = \func_num_args() > 3;
         $this->errorOutput = null;
 
         // TODO in v3, commands should be passed in as arrays of cmd + args
@@ -127,10 +127,10 @@ class ProcessExecutor
             }
         }
 
-        $callback = is_callable($output) ? $output : array($this, 'outputHandler');
+        $callback = \is_callable($output) ? $output : array($this, 'outputHandler');
         $process->run($callback);
 
-        if ($this->captureOutput && !is_callable($output)) {
+        if ($this->captureOutput && !\is_callable($output)) {
             $output = $process->getOutput();
         }
 
@@ -176,7 +176,7 @@ class ProcessExecutor
             }
             $job['status'] = ProcessExecutor::STATUS_ABORTED;
             try {
-                if (defined('SIGINT')) {
+                if (\defined('SIGINT')) {
                     $job['process']->signal(SIGINT);
                 }
             } catch (\Exception $e) {
@@ -293,7 +293,7 @@ class ProcessExecutor
         foreach ($this->jobs as $job) {
             if ($job['status'] === self::STATUS_STARTED) {
                 if (!$job['process']->isRunning()) {
-                    call_user_func($job['resolve'], $job['process']);
+                    \call_user_func($job['resolve'], $job['process']);
                 }
             }
 
@@ -408,14 +408,14 @@ class ProcessExecutor
         //Fix for PHP bug #49446 escapeshellarg doesn't work on Windows
         //@see https://bugs.php.net/bug.php?id=43784
         //@see https://bugs.php.net/bug.php?id=49446
-        if ('\\' === DIRECTORY_SEPARATOR) {
+        if ('\\' === \DIRECTORY_SEPARATOR) {
             if ((string) $argument === '') {
                 return escapeshellarg($argument);
             }
 
             $escapedArgument = '';
             $quote = false;
-            foreach (preg_split('/(")/', $argument, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE) as $part) {
+            foreach (preg_split('/(")/', $argument, -1, \PREG_SPLIT_NO_EMPTY | \PREG_SPLIT_DELIM_CAPTURE) as $part) {
                 if ('"' === $part) {
                     $escapedArgument .= '\\"';
                 } elseif (self::isSurroundedBy($part, '%')) {
@@ -442,6 +442,6 @@ class ProcessExecutor
 
     private static function isSurroundedBy($arg, $char)
     {
-        return 2 < strlen($arg) && $char === $arg[0] && $char === $arg[strlen($arg) - 1];
+        return 2 < \strlen($arg) && $char === $arg[0] && $char === $arg[\strlen($arg) - 1];
     }
 }

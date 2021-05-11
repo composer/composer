@@ -13,7 +13,6 @@
 namespace Composer\Package\Archiver;
 
 use Composer\Downloader\DownloadManager;
-use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Loop;
@@ -179,7 +178,7 @@ class ArchiveManager
         // Archive filename
         $filesystem->ensureDirectoryExists($targetDir);
         $target = realpath($targetDir).'/'.$packageName.'.'.$format;
-        $filesystem->ensureDirectoryExists(dirname($target));
+        $filesystem->ensureDirectoryExists(\dirname($target));
 
         if (!$this->overwriteFiles && file_exists($target)) {
             return $target;
@@ -187,7 +186,7 @@ class ArchiveManager
 
         // Create the archive
         $tempTarget = sys_get_temp_dir().'/composer_archive'.uniqid().'.'.$format;
-        $filesystem->ensureDirectoryExists(dirname($tempTarget));
+        $filesystem->ensureDirectoryExists(\dirname($tempTarget));
 
         $archivePath = $usableArchiver->archive($sourcePath, $tempTarget, $format, $package->getArchiveExcludes(), $ignoreFilters);
         $filesystem->rename($archivePath, $target);

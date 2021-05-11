@@ -143,7 +143,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             if (preg_match('{[*{}]}', $this->url)) {
                 $url = $this->url;
                 while (preg_match('{[*{}]}', $url)) {
-                    $url = dirname($url);
+                    $url = \dirname($url);
                 }
                 // the parent directory before any wildcard exists, so we assume it is correctly configured but simply empty
                 if (is_dir($url)) {
@@ -155,7 +155,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         }
 
         foreach ($urlMatches as $url) {
-            $path = realpath($url) . DIRECTORY_SEPARATOR;
+            $path = realpath($url) . \DIRECTORY_SEPARATOR;
             $composerFilePath = $path.'composer.json';
 
             if (!file_exists($composerFilePath)) {
@@ -189,13 +189,13 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             }
 
             $output = '';
-            if (is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H'.GitUtil::getNoShowSignatureFlag($this->process), $output, $path)) {
+            if (is_dir($path . \DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H'.GitUtil::getNoShowSignatureFlag($this->process), $output, $path)) {
                 $package['dist']['reference'] = trim($output);
             }
 
             if (!isset($package['version'])) {
                 $versionData = $this->versionGuesser->guessVersion($package, $path);
-                if (is_array($versionData) && $versionData['pretty_version']) {
+                if (\is_array($versionData) && $versionData['pretty_version']) {
                     // if there is a feature branch detected, we add a second packages with the feature branch version
                     if (!empty($versionData['feature_pretty_version'])) {
                         $package['version'] = $versionData['feature_pretty_version'];
@@ -220,17 +220,17 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      */
     private function getUrlMatches()
     {
-        $flags = GLOB_MARK | GLOB_ONLYDIR;
+        $flags = \GLOB_MARK | \GLOB_ONLYDIR;
 
-        if (defined('GLOB_BRACE')) {
-            $flags |= GLOB_BRACE;
+        if (\defined('GLOB_BRACE')) {
+            $flags |= \GLOB_BRACE;
         } elseif (strpos($this->url, '{') !== false || strpos($this->url, '}') !== false) {
             throw new \RuntimeException('The operating system does not support GLOB_BRACE which is required for the url '. $this->url);
         }
 
         // Ensure environment-specific path separators are normalized to URL separators
         return array_map(function ($val) {
-            return rtrim(str_replace(DIRECTORY_SEPARATOR, '/', $val), '/');
+            return rtrim(str_replace(\DIRECTORY_SEPARATOR, '/', $val), '/');
         }, glob($this->url, $flags));
     }
 }

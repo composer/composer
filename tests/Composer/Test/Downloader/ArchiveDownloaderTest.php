@@ -42,7 +42,7 @@ class ArchiveDownloaderTest extends TestCase
 
     public function testProcessUrl()
     {
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
         }
 
@@ -58,7 +58,7 @@ class ArchiveDownloaderTest extends TestCase
 
     public function testProcessUrl2()
     {
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
         }
 
@@ -74,7 +74,7 @@ class ArchiveDownloaderTest extends TestCase
 
     public function testProcessUrl3()
     {
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
         }
 
@@ -93,7 +93,7 @@ class ArchiveDownloaderTest extends TestCase
      */
     public function testProcessUrlRewriteDist($url)
     {
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
         }
 
@@ -130,7 +130,7 @@ class ArchiveDownloaderTest extends TestCase
      */
     public function testProcessUrlRewriteBitbucketDist($url, $extension)
     {
-        if (!extension_loaded('openssl')) {
+        if (!\extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
         }
 

@@ -39,7 +39,7 @@ class HhvmDetector
             return self::$hhvmVersion ?: null;
         }
 
-        self::$hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;
+        self::$hhvmVersion = \defined('HHVM_VERSION') ? HHVM_VERSION : null;
         if (self::$hhvmVersion === null && !Platform::isWindows()) {
             self::$hhvmVersion = false;
             $this->executableFinder = $this->executableFinder ?: new ExecutableFinder();

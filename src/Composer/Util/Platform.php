@@ -76,7 +76,7 @@ class Platform
     {
         if (null === self::$isWindowsSubsystemForLinux) {
             self::$isWindowsSubsystemForLinux = false;
-            
+
             // while WSL will be hosted within windows, WSL itself cannot be windows based itself.
             if (self::isWindows()) {
                 return self::$isWindowsSubsystemForLinux = false;
@@ -119,23 +119,23 @@ class Platform
     public static function isTty($fd = null)
     {
         if ($fd === null) {
-            $fd = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'w');
+            $fd = \defined('STDOUT') ? \STDOUT : fopen('php://stdout', 'w');
         }
 
         // detect msysgit/mingw and assume this is a tty because detection
         // does not work correctly, see https://github.com/composer/composer/issues/9690
-        if (in_array(strtoupper(getenv('MSYSTEM') ?: ''), array('MINGW32', 'MINGW64'), true)) {
+        if (\in_array(strtoupper(getenv('MSYSTEM') ?: ''), array('MINGW32', 'MINGW64'), true)) {
             return true;
         }
 
         // modern cross-platform function, includes the fstat
         // fallback so if it is present we trust it
-        if (function_exists('stream_isatty')) {
+        if (\function_exists('stream_isatty')) {
             return stream_isatty($fd);
         }
 
         // only trusting this if it is positive, otherwise prefer fstat fallback
-        if (function_exists('posix_isatty') && posix_isatty($fd)) {
+        if (\function_exists('posix_isatty') && posix_isatty($fd)) {
             return true;
         }
 
@@ -166,7 +166,7 @@ class Platform
                 return self::$isVirtualBoxGuest;
             }
 
-            if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
+            if (\function_exists('posix_getpwuid') && \function_exists('posix_geteuid')) {
                 $processUser = posix_getpwuid(posix_geteuid());
                 if ($processUser && $processUser['name'] === 'vagrant') {
                     return self::$isVirtualBoxGuest = true;
@@ -177,7 +177,7 @@ class Platform
                 return self::$isVirtualBoxGuest = true;
             }
 
-            if (defined('PHP_OS_FAMILY') && PHP_OS_FAMILY === 'Linux') {
+            if (\defined('PHP_OS_FAMILY') && \PHP_OS_FAMILY === 'Linux') {
                 $process = new ProcessExecutor();
                 try {
                     if (0 === $process->execute('lsmod | grep vboxguest', $ignoredOutput)) {

@@ -640,8 +640,8 @@ class DownloadManagerTest extends TestCase
         }
 
         $target = $this->prophesize('Composer\Package\PackageInterface');
-        $target->getSourceType()->willReturn(in_array('source', $targetAvailable, true) ? 'git' : null);
-        $target->getDistType()->willReturn(in_array('dist', $targetAvailable, true) ? 'zip' : null);
+        $target->getSourceType()->willReturn(\in_array('source', $targetAvailable, true) ? 'git' : null);
+        $target->getDistType()->willReturn(\in_array('dist', $targetAvailable, true) ? 'zip' : null);
         $target->isDev()->willReturn($targetIsDev);
 
         $manager = new DownloadManager($this->io, false, $this->filesystem);

@@ -42,7 +42,7 @@ abstract class ArchiveDownloader extends FileDownloader
         // clean up the target directory, unless it contains the vendor dir, as the vendor dir contains
         // the archive to be extracted. This is the case when installing with create-project in the current directory
         // but in that case we ensure the directory is empty already in ProjectInstaller so no need to empty it here.
-        if (false === strpos($this->filesystem->normalizePath($vendorDir), $this->filesystem->normalizePath($path.DIRECTORY_SEPARATOR))) {
+        if (false === strpos($this->filesystem->normalizePath($vendorDir), $this->filesystem->normalizePath($path.\DIRECTORY_SEPARATOR))) {
             $this->filesystem->emptyDirectory($path);
         }
 
@@ -115,8 +115,8 @@ abstract class ArchiveDownloader extends FileDownloader
              * that the source directory gets merged into the target one if the target exists. Otherwise rename() by default would
              * put the source into the target e.g. src/ => target/src/ (assuming target exists) instead of src/ => target/
              *
-             * @param string $from Directory
-             * @param string $to Directory
+             * @param  string $from Directory
+             * @param  string $to   Directory
              * @return void
              */
             $renameRecursively = function ($from, $to) use ($filesystem, $getFolderContent, $package, &$renameRecursively) {
@@ -142,7 +142,7 @@ abstract class ArchiveDownloader extends FileDownloader
             }
 
             $contentDir = $getFolderContent($temporaryDir);
-            $singleDirAtTopLevel = 1 === count($contentDir) && is_dir(reset($contentDir));
+            $singleDirAtTopLevel = 1 === \count($contentDir) && is_dir(reset($contentDir));
 
             if ($renameAsOne) {
                 // if the target $path is clear, we can rename the whole package in one go instead of looping over the contents

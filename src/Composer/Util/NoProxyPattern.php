@@ -39,7 +39,7 @@ class NoProxyPattern
      */
     public function __construct($pattern)
     {
-        $this->hostNames = preg_split('{[\s,]+}', $pattern, null, PREG_SPLIT_NO_EMPTY);
+        $this->hostNames = preg_split('{[\s,]+}', $pattern, null, \PREG_SPLIT_NO_EMPTY);
         $this->noproxy = empty($this->hostNames) || '*' === $this->hostNames[0];
     }
 
@@ -78,14 +78,14 @@ class NoProxyPattern
      */
     protected function getUrlData($url)
     {
-        if (!$host = parse_url($url, PHP_URL_HOST)) {
+        if (!$host = parse_url($url, \PHP_URL_HOST)) {
             return false;
         }
 
-        $port = parse_url($url, PHP_URL_PORT);
+        $port = parse_url($url, \PHP_URL_PORT);
 
         if (empty($port)) {
-            switch (parse_url($url, PHP_URL_SCHEME)) {
+            switch (parse_url($url, \PHP_URL_SCHEME)) {
                 case 'http':
                     $port = 80;
                     break;
@@ -134,7 +134,7 @@ class NoProxyPattern
             $match = $rule->ipdata->ip === $url->ipdata->ip;
         } else {
             // Match host and port
-            $haystack = substr($url->name, -strlen($rule->name));
+            $haystack = substr($url->name, -\strlen($rule->name));
             $match = stripos($haystack, $rule->name) === 0;
         }
 
@@ -178,7 +178,7 @@ class NoProxyPattern
      */
     private function getRule($index, $hostName)
     {
-        if (array_key_exists($index, $this->rules)) {
+        if (\array_key_exists($index, $this->rules)) {
             return $this->rules[$index];
         }
 
@@ -222,7 +222,7 @@ class NoProxyPattern
         }
 
         // See if this is an ip address
-        if (!filter_var($host, FILTER_VALIDATE_IP)) {
+        if (!filter_var($host, \FILTER_VALIDATE_IP)) {
             return !$modified;
         }
 
@@ -255,7 +255,7 @@ class NoProxyPattern
     private function ipGetAddr($host)
     {
         $ip = inet_pton($host);
-        $size = strlen($ip);
+        $size = \strlen($ip);
         $mapped = $this->ipMapTo6($ip, $size);
 
         return array($mapped, $size);
@@ -274,14 +274,14 @@ class NoProxyPattern
         $mask = '';
 
         if ($ones = floor($prefix / 8)) {
-            $mask = str_repeat(chr(255), $ones);
+            $mask = str_repeat(\chr(255), $ones);
         }
 
         if ($remainder = $prefix % 8) {
-            $mask .= chr(0xff ^ (0xff >> $remainder));
+            $mask .= \chr(0xff ^ (0xff >> $remainder));
         }
 
-        $mask = str_pad($mask, $size, chr(0));
+        $mask = str_pad($mask, $size, \chr(0));
 
         return $this->ipMapTo6($mask, $size);
     }
@@ -305,7 +305,7 @@ class NoProxyPattern
         $net = '';
 
         for ($i = 1; $i < 17; ++$i) {
-            $net .= chr($ip[$i] & $mask[$i]);
+            $net .= \chr($ip[$i] & $mask[$i]);
         }
 
         return array($net, $netmask);
@@ -322,7 +322,7 @@ class NoProxyPattern
     private function ipMapTo6($binary, $size)
     {
         if ($size === 4) {
-            $prefix = str_repeat(chr(0), 10) . str_repeat(chr(255), 2);
+            $prefix = str_repeat(\chr(0), 10) . str_repeat(\chr(255), 2);
             $binary = $prefix . $binary;
         }
 
@@ -430,6 +430,6 @@ class NoProxyPattern
             ),
         );
 
-        return false !== filter_var($int, FILTER_VALIDATE_INT, $options);
+        return false !== filter_var($int, \FILTER_VALIDATE_INT, $options);
     }
 }

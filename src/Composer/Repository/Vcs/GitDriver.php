@@ -52,10 +52,10 @@ class GitDriver extends VcsDriver
             GitUtil::cleanEnv();
 
             $fs = new Filesystem();
-            $fs->ensureDirectoryExists(dirname($this->repoDir));
+            $fs->ensureDirectoryExists(\dirname($this->repoDir));
 
-            if (!is_writable(dirname($this->repoDir))) {
-                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.dirname($this->repoDir).'" directory is not writable by the current user.');
+            if (!is_writable(\dirname($this->repoDir))) {
+                throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.\dirname($this->repoDir).'" directory is not writable by the current user.');
             }
 
             if (preg_match('{^ssh://[^@]+@[^:]+:[^0-9]+}', $this->url)) {
@@ -91,7 +91,7 @@ class GitDriver extends VcsDriver
             // select currently checked out branch if master is not available
             $this->process->execute('git branch --no-color', $output, $this->repoDir);
             $branches = $this->process->splitLines($output);
-            if (!in_array('* master', $branches)) {
+            if (!\in_array('* master', $branches)) {
                 foreach ($branches as $branch) {
                     if ($branch && preg_match('{^\* +(\S+)}', $branch, $match)) {
                         $this->rootIdentifier = $match[1];

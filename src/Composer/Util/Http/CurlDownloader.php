@@ -44,27 +44,27 @@ class CurlDownloader
     private $proxyManager;
     private $supportsSecureProxy;
     protected $multiErrors = array(
-        CURLM_BAD_HANDLE => array('CURLM_BAD_HANDLE', 'The passed-in handle is not a valid CURLM handle.'),
-        CURLM_BAD_EASY_HANDLE => array('CURLM_BAD_EASY_HANDLE', "An easy handle was not good/valid. It could mean that it isn't an easy handle at all, or possibly that the handle already is in used by this or another multi handle."),
-        CURLM_OUT_OF_MEMORY => array('CURLM_OUT_OF_MEMORY', 'You are doomed.'),
-        CURLM_INTERNAL_ERROR => array('CURLM_INTERNAL_ERROR', 'This can only be returned if libcurl bugs. Please report it to us!'),
+        \CURLM_BAD_HANDLE => array('CURLM_BAD_HANDLE', 'The passed-in handle is not a valid CURLM handle.'),
+        \CURLM_BAD_EASY_HANDLE => array('CURLM_BAD_EASY_HANDLE', "An easy handle was not good/valid. It could mean that it isn't an easy handle at all, or possibly that the handle already is in used by this or another multi handle."),
+        \CURLM_OUT_OF_MEMORY => array('CURLM_OUT_OF_MEMORY', 'You are doomed.'),
+        \CURLM_INTERNAL_ERROR => array('CURLM_INTERNAL_ERROR', 'This can only be returned if libcurl bugs. Please report it to us!'),
     );
 
     private static $options = array(
         'http' => array(
-            'method' => CURLOPT_CUSTOMREQUEST,
-            'content' => CURLOPT_POSTFIELDS,
-            'header' => CURLOPT_HTTPHEADER,
-            'timeout' => CURLOPT_TIMEOUT,
+            'method' => \CURLOPT_CUSTOMREQUEST,
+            'content' => \CURLOPT_POSTFIELDS,
+            'header' => \CURLOPT_HTTPHEADER,
+            'timeout' => \CURLOPT_TIMEOUT,
         ),
         'ssl' => array(
-            'cafile' => CURLOPT_CAINFO,
-            'capath' => CURLOPT_CAPATH,
-            'verify_peer' => CURLOPT_SSL_VERIFYPEER,
-            'verify_peer_name' => CURLOPT_SSL_VERIFYHOST,
-            'local_cert' => CURLOPT_SSLCERT,
-            'local_pk' => CURLOPT_SSLKEY,
-            'passphrase' => CURLOPT_SSLKEYPASSWD,
+            'cafile' => \CURLOPT_CAINFO,
+            'capath' => \CURLOPT_CAPATH,
+            'verify_peer' => \CURLOPT_SSL_VERIFYPEER,
+            'verify_peer_name' => \CURLOPT_SSL_VERIFYHOST,
+            'local_cert' => \CURLOPT_SSLCERT,
+            'local_pk' => \CURLOPT_SSLKEY,
+            'passphrase' => \CURLOPT_SSLKEYPASSWD,
         ),
     );
 
@@ -83,18 +83,18 @@ class CurlDownloader
         $this->config = $config;
 
         $this->multiHandle = $mh = curl_multi_init();
-        if (function_exists('curl_multi_setopt')) {
-            curl_multi_setopt($mh, CURLMOPT_PIPELINING, PHP_VERSION_ID >= 70400 ? /* CURLPIPE_MULTIPLEX */ 2 : /*CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX*/ 3);
-            if (defined('CURLMOPT_MAX_HOST_CONNECTIONS') && !defined('HHVM_VERSION')) {
-                curl_multi_setopt($mh, CURLMOPT_MAX_HOST_CONNECTIONS, 8);
+        if (\function_exists('curl_multi_setopt')) {
+            curl_multi_setopt($mh, \CURLMOPT_PIPELINING, \PHP_VERSION_ID >= 70400 ? /* CURLPIPE_MULTIPLEX */ 2 : /*CURLPIPE_HTTP1 | CURLPIPE_MULTIPLEX*/ 3);
+            if (\defined('CURLMOPT_MAX_HOST_CONNECTIONS') && !\defined('HHVM_VERSION')) {
+                curl_multi_setopt($mh, \CURLMOPT_MAX_HOST_CONNECTIONS, 8);
             }
         }
 
-        if (function_exists('curl_share_init')) {
+        if (\function_exists('curl_share_init')) {
             $this->shareHandle = $sh = curl_share_init();
-            curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_COOKIE);
-            curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_DNS);
-            curl_share_setopt($sh, CURLSHOPT_SHARE, CURL_LOCK_DATA_SSL_SESSION);
+            curl_share_setopt($sh, \CURLSHOPT_SHARE, \CURL_LOCK_DATA_COOKIE);
+            curl_share_setopt($sh, \CURLSHOPT_SHARE, \CURL_LOCK_DATA_DNS);
+            curl_share_setopt($sh, \CURLSHOPT_SHARE, \CURL_LOCK_DATA_SSL_SESSION);
         }
 
         $this->authHelper = new AuthHelper($io, $config);
@@ -102,7 +102,7 @@ class CurlDownloader
 
         $version = curl_version();
         $features = $version['features'];
-        $this->supportsSecureProxy = defined('CURL_VERSION_HTTPS_PROXY') && ($features & CURL_VERSION_HTTPS_PROXY);
+        $this->supportsSecureProxy = \defined('CURL_VERSION_HTTPS_PROXY') && ($features & \CURL_VERSION_HTTPS_PROXY);
     }
 
     /**
@@ -157,16 +157,16 @@ class CurlDownloader
             $bodyHandle = @fopen('php://temp/maxmemory:524288', 'w+b');
         }
 
-        curl_setopt($curlHandle, CURLOPT_URL, $url);
-        curl_setopt($curlHandle, CURLOPT_FOLLOWLOCATION, false);
-        curl_setopt($curlHandle, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($curlHandle, CURLOPT_TIMEOUT, 300);
-        curl_setopt($curlHandle, CURLOPT_WRITEHEADER, $headerHandle);
-        curl_setopt($curlHandle, CURLOPT_FILE, $bodyHandle);
-        curl_setopt($curlHandle, CURLOPT_ENCODING, "gzip");
-        curl_setopt($curlHandle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
-        if (function_exists('curl_share_init')) {
-            curl_setopt($curlHandle, CURLOPT_SHARE, $this->shareHandle);
+        curl_setopt($curlHandle, \CURLOPT_URL, $url);
+        curl_setopt($curlHandle, \CURLOPT_FOLLOWLOCATION, false);
+        curl_setopt($curlHandle, \CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($curlHandle, \CURLOPT_TIMEOUT, 300);
+        curl_setopt($curlHandle, \CURLOPT_WRITEHEADER, $headerHandle);
+        curl_setopt($curlHandle, \CURLOPT_FILE, $bodyHandle);
+        curl_setopt($curlHandle, \CURLOPT_ENCODING, "gzip");
+        curl_setopt($curlHandle, \CURLOPT_PROTOCOLS, \CURLPROTO_HTTP | \CURLPROTO_HTTPS);
+        if (\function_exists('curl_share_init')) {
+            curl_setopt($curlHandle, \CURLOPT_SHARE, $this->shareHandle);
         }
 
         if (!isset($options['http']['header'])) {
@@ -178,8 +178,8 @@ class CurlDownloader
 
         $version = curl_version();
         $features = $version['features'];
-        if (0 === strpos($url, 'https://') && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (CURL_VERSION_HTTP2 & $features)) {
-            curl_setopt($curlHandle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+        if (0 === strpos($url, 'https://') && \defined('CURL_VERSION_HTTP2') && \defined('CURL_HTTP_VERSION_2_0') && (\CURL_VERSION_HTTP2 & $features)) {
+            curl_setopt($curlHandle, \CURLOPT_HTTP_VERSION, \CURL_HTTP_VERSION_2_0);
         }
 
         $options['http']['header'] = $this->authHelper->addAuthenticationHeader($options['http']['header'], $origin, $url);
@@ -200,7 +200,7 @@ class CurlDownloader
         // Always set CURLOPT_PROXY to enable/disable proxy handling
         // Any proxy authorization is included in the proxy url
         $proxy = $this->proxyManager->getProxyForRequest($url);
-        curl_setopt($curlHandle, CURLOPT_PROXY, $proxy->getUrl());
+        curl_setopt($curlHandle, \CURLOPT_PROXY, $proxy->getUrl());
 
         // Curl needs certificate locations for secure proxies.
         // CURLOPT_PROXY_SSL_VERIFY_PEER/HOST are enabled by default
@@ -209,10 +209,10 @@ class CurlDownloader
                 throw new TransportException('Connecting to a secure proxy using curl is not supported on PHP versions below 7.3.0.');
             }
             if (!empty($options['ssl']['cafile'])) {
-                curl_setopt($curlHandle, CURLOPT_PROXY_CAINFO, $options['ssl']['cafile']);
+                curl_setopt($curlHandle, \CURLOPT_PROXY_CAINFO, $options['ssl']['cafile']);
             }
             if (!empty($options['ssl']['capath'])) {
-                curl_setopt($curlHandle, CURLOPT_PROXY_CAPATH, $options['ssl']['capath']);
+                curl_setopt($curlHandle, \CURLOPT_PROXY_CAPATH, $options['ssl']['capath']);
             }
         }
 
@@ -250,10 +250,10 @@ class CurlDownloader
             $job = $this->jobs[$id];
             curl_multi_remove_handle($this->multiHandle, $job['handle']);
             curl_close($job['handle']);
-            if (is_resource($job['headerHandle'])) {
+            if (\is_resource($job['headerHandle'])) {
                 fclose($job['headerHandle']);
             }
-            if (is_resource($job['bodyHandle'])) {
+            if (\is_resource($job['bodyHandle'])) {
                 fclose($job['bodyHandle']);
             }
             if ($job['filename']) {
@@ -297,9 +297,9 @@ class CurlDownloader
             $response = null;
             try {
                 // TODO progress
-                if (CURLE_OK !== $errno || $error || $result !== CURLE_OK) {
+                if (\CURLE_OK !== $errno || $error || $result !== \CURLE_OK) {
                     $errno = $errno ?: $result;
-                    if (!$error && function_exists('curl_strerror')) {
+                    if (!$error && \function_exists('curl_strerror')) {
                         $error = curl_strerror($errno);
                     }
                     throw new TransportException('curl error '.$errno.' while downloading '.Url::sanitize($progress['url']).': '.$error);
@@ -361,9 +361,9 @@ class CurlDownloader
                 // resolve promise
                 if ($job['filename']) {
                     rename($job['filename'].'~', $job['filename']);
-                    call_user_func($job['resolve'], $response);
+                    \call_user_func($job['resolve'], $response);
                 } else {
-                    call_user_func($job['resolve'], $response);
+                    \call_user_func($job['resolve'], $response);
                 }
             } catch (\Exception $e) {
                 if ($e instanceof TransportException && $headers) {
@@ -411,15 +411,15 @@ class CurlDownloader
     private function handleRedirect(array $job, Response $response)
     {
         if ($locationHeader = $response->getHeader('location')) {
-            if (parse_url($locationHeader, PHP_URL_SCHEME)) {
+            if (parse_url($locationHeader, \PHP_URL_SCHEME)) {
                 // Absolute URL; e.g. https://example.com/composer
                 $targetUrl = $locationHeader;
-            } elseif (parse_url($locationHeader, PHP_URL_HOST)) {
+            } elseif (parse_url($locationHeader, \PHP_URL_HOST)) {
                 // Scheme relative; e.g. //example.com/foo
-                $targetUrl = parse_url($job['url'], PHP_URL_SCHEME).':'.$locationHeader;
+                $targetUrl = parse_url($job['url'], \PHP_URL_SCHEME).':'.$locationHeader;
             } elseif ('/' === $locationHeader[0]) {
                 // Absolute path; e.g. /foo
-                $urlHost = parse_url($job['url'], PHP_URL_HOST);
+                $urlHost = parse_url($job['url'], \PHP_URL_HOST);
 
                 // Replace path using hostname as an anchor.
                 $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $job['url']);
@@ -441,7 +441,7 @@ class CurlDownloader
 
     private function isAuthenticatedRetryNeeded(array $job, Response $response)
     {
-        if (in_array($response->getStatusCode(), array(401, 403)) && $job['attributes']['retryAuthFailure']) {
+        if (\in_array($response->getStatusCode(), array(401, 403)) && $job['attributes']['retryAuthFailure']) {
             $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $response->getHeaders());
 
             if ($result['retry']) {
@@ -466,7 +466,7 @@ class CurlDownloader
         // check for gitlab 404 when downloading archives
         if (
             $response->getStatusCode() === 404
-            && $this->config && in_array($job['origin'], $this->config->get('gitlab-domains'), true)
+            && $this->config && \in_array($job['origin'], $this->config->get('gitlab-domains'), true)
             && false !== strpos($job['url'], 'archive.zip')
         ) {
             $needsAuthRetry = 'GitLab requires authentication and it was not provided';
@@ -506,7 +506,7 @@ class CurlDownloader
 
         $details = '';
         if ($response->getHeader('content-type') === 'application/json') {
-            $details = ':'.PHP_EOL.substr($response->getBody(), 0, 200).(strlen($response->getBody()) > 200 ? '...' : '');
+            $details = ':'.\PHP_EOL.substr($response->getBody(), 0, 200).(\strlen($response->getBody()) > 200 ? '...' : '');
         }
 
         return new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')' . $details, $response->getStatusCode());
@@ -514,21 +514,21 @@ class CurlDownloader
 
     private function rejectJob(array $job, \Exception $e)
     {
-        if (is_resource($job['headerHandle'])) {
+        if (\is_resource($job['headerHandle'])) {
             fclose($job['headerHandle']);
         }
-        if (is_resource($job['bodyHandle'])) {
+        if (\is_resource($job['bodyHandle'])) {
             fclose($job['bodyHandle']);
         }
         if ($job['filename']) {
             @unlink($job['filename'].'~');
         }
-        call_user_func($job['reject'], $e);
+        \call_user_func($job['reject'], $e);
     }
 
     private function checkCurlResult($code)
     {
-        if ($code != CURLM_OK && $code != CURLM_CALL_MULTI_PERFORM) {
+        if ($code != \CURLM_OK && $code != \CURLM_CALL_MULTI_PERFORM) {
             throw new \RuntimeException(
                 isset($this->multiErrors[$code])
                 ? "cURL error: {$code} ({$this->multiErrors[$code][0]}): cURL message: {$this->multiErrors[$code][1]}"

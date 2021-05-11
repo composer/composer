@@ -330,7 +330,7 @@ class Svn
 
         $authConfig = $this->config->get('http-basic');
 
-        $host = parse_url($this->url, PHP_URL_HOST);
+        $host = parse_url($this->url, \PHP_URL_HOST);
         if (isset($authConfig[$host])) {
             $this->credentials['username'] = $authConfig[$host]['username'];
             $this->credentials['password'] = $authConfig[$host]['password'];

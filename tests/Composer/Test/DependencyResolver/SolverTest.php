@@ -943,7 +943,7 @@ class SolverTest extends TestCase
                     'from' => $operation->getInitialPackage(),
                     'to' => $operation->getTargetPackage(),
                 );
-            } elseif (in_array($operation->getOperationType(), array('markAliasInstalled', 'markAliasUninstalled'))) {
+            } elseif (\in_array($operation->getOperationType(), array('markAliasInstalled', 'markAliasUninstalled'))) {
                 $result[] = array(
                     'job' => $operation->getOperationType(),
                     'package' => $operation->getPackage(),

@@ -116,7 +116,7 @@ abstract class VcsDriver implements VcsDriverInterface
         $composer = JsonFile::parseJson($composerFileContent, $identifier . ':composer.json');
 
         if (empty($composer['time']) && $changeDate = $this->getChangeDate($identifier)) {
-            $composer['time'] = $changeDate->format(DATE_RFC3339);
+            $composer['time'] = $changeDate->format(\DATE_RFC3339);
         }
 
         return $composer;
@@ -144,7 +144,7 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     protected function getScheme()
     {
-        if (extension_loaded('openssl')) {
+        if (\extension_loaded('openssl')) {
             return 'https';
         }
 

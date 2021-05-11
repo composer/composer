@@ -55,7 +55,7 @@ class JsonFileTest extends TestCase
 
     public function testParseErrorDetectSingleQuotes()
     {
-        if (defined('JSON_PARSER_NOTSTRICT') && version_compare(phpversion('json'), '1.3.9', '<')) {
+        if (\defined('JSON_PARSER_NOTSTRICT') && version_compare(phpversion('json'), '1.3.9', '<')) {
             $this->markTestSkipped('jsonc issue, see https://github.com/remicollet/pecl-json-c/issues/23');
         }
         $json = '{
@@ -154,7 +154,7 @@ class JsonFileTest extends TestCase
 
     public function testUnicode()
     {
-        if (!function_exists('mb_convert_encoding') && PHP_VERSION_ID < 50400) {
+        if (!\function_exists('mb_convert_encoding') && \PHP_VERSION_ID < 50400) {
             $this->markTestSkipped('Test requires the mbstring extension');
         }
 
@@ -168,7 +168,7 @@ class JsonFileTest extends TestCase
 
     public function testOnlyUnicode()
     {
-        if (!function_exists('mb_convert_encoding') && PHP_VERSION_ID < 50400) {
+        if (!\function_exists('mb_convert_encoding') && \PHP_VERSION_ID < 50400) {
             $this->markTestSkipped('Test requires the mbstring extension');
         }
 

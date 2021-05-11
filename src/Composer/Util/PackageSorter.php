@@ -12,7 +12,6 @@
 
 namespace Composer\Util;
 
-use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 
 class PackageSorter

@@ -32,7 +32,7 @@ class ProxyHelper
         $httpsProxy = null;
 
         // Handle http_proxy/HTTP_PROXY on CLI only for security reasons
-        if (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg') {
+        if (\PHP_SAPI === 'cli' || \PHP_SAPI === 'phpdbg') {
             if ($env = self::getProxyEnv(array('http_proxy', 'HTTP_PROXY'), $name)) {
                 $httpProxy = self::checkProxy($env, $name);
             }
@@ -95,7 +95,7 @@ class ProxyHelper
      */
     public static function setRequestFullUri($requestUrl, array &$options)
     {
-        if ('http' === parse_url($requestUrl, PHP_URL_SCHEME)) {
+        if ('http' === parse_url($requestUrl, \PHP_URL_SCHEME)) {
             $options['http']['request_fulluri'] = true;
         } else {
             unset($options['http']['request_fulluri']);
@@ -141,7 +141,7 @@ class ProxyHelper
         $proxyUrl = self::formatParsedUrl($proxy, true);
 
         // We need a port because streams and curl use different defaults
-        if (!parse_url($proxyUrl, PHP_URL_PORT)) {
+        if (!parse_url($proxyUrl, \PHP_URL_PORT)) {
             throw new \RuntimeException($error);
         }
 

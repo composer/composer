@@ -55,7 +55,7 @@ class BufferIO extends ConsoleIO
         $output = preg_replace_callback("{(?<=^|\n|\x08)(.+?)(\x08+)}", function ($matches) {
             $pre = strip_tags($matches[1]);
 
-            if (strlen($pre) === strlen($matches[2])) {
+            if (\strlen($pre) === \strlen($matches[2])) {
                 return '';
             }
 
@@ -81,7 +81,7 @@ class BufferIO extends ConsoleIO
         $stream = fopen('php://memory', 'r+');
 
         foreach ($inputs as $input) {
-            fwrite($stream, $input.PHP_EOL);
+            fwrite($stream, $input.\PHP_EOL);
         }
 
         rewind($stream);

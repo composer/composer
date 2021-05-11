@@ -16,7 +16,6 @@ use Composer\IO\IOInterface;
 use Composer\IO\ConsoleIO;
 use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
-use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -207,8 +206,8 @@ class InstallationManager
             }
         };
 
-        $handleInterruptsUnix = function_exists('pcntl_async_signals') && function_exists('pcntl_signal');
-        $handleInterruptsWindows = function_exists('sapi_windows_set_ctrl_handler') && PHP_SAPI === 'cli';
+        $handleInterruptsUnix = \function_exists('pcntl_async_signals') && \function_exists('pcntl_signal');
+        $handleInterruptsWindows = \function_exists('sapi_windows_set_ctrl_handler') && \PHP_SAPI === 'cli';
         $prevHandler = null;
         $windowsHandler = null;
         if ($handleInterruptsUnix) {
@@ -218,8 +217,8 @@ class InstallationManager
                 $io->writeError('Received SIGINT, aborting', true, IOInterface::DEBUG);
                 $runCleanup();
 
-                if (!in_array($prevHandler, array(SIG_DFL, SIG_IGN), true)) {
-                    call_user_func($prevHandler, $sig);
+                if (!\in_array($prevHandler, array(SIG_DFL, SIG_IGN), true)) {
+                    \call_user_func($prevHandler, $sig);
                 }
 
                 exit(130);
@@ -227,7 +226,7 @@ class InstallationManager
         }
         if ($handleInterruptsWindows) {
             $windowsHandler = function ($event) use ($runCleanup, $io) {
-                if ($event !== PHP_WINDOWS_EVENT_CTRL_C) {
+                if ($event !== \PHP_WINDOWS_EVENT_CTRL_C) {
                     return;
                 }
                 $io->writeError('Received CTRL+C, aborting', true, IOInterface::DEBUG);
@@ -304,7 +303,7 @@ class InstallationManager
             $opType = $operation->getOperationType();
 
             // ignoring alias ops as they don't need to execute anything at this stage
-            if (!in_array($opType, array('update', 'install', 'uninstall'))) {
+            if (!\in_array($opType, array('update', 'install', 'uninstall'))) {
                 continue;
             }
 
@@ -336,7 +335,7 @@ class InstallationManager
         }
 
         // execute all downloads first
-        if (count($promises)) {
+        if (\count($promises)) {
             $this->waitOnPromises($promises);
         }
 
@@ -345,7 +344,7 @@ class InstallationManager
         $batches = array();
         $batch = array();
         foreach ($operations as $index => $operation) {
-            if (in_array($operation->getOperationType(), array('update', 'install'), true)) {
+            if (\in_array($operation->getOperationType(), array('update', 'install'), true)) {
                 $package = $operation->getOperationType() === 'update' ? $operation->getTargetPackage() : $operation->getPackage();
                 if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
                     if ($batch) {
@@ -382,7 +381,7 @@ class InstallationManager
             $opType = $operation->getOperationType();
 
             // ignoring alias ops as they don't need to execute anything
-            if (!in_array($opType, array('update', 'install', 'uninstall'))) {
+            if (!\in_array($opType, array('update', 'install', 'uninstall'))) {
                 // output alias ops in debug verbosity as they have no output otherwise
                 if ($this->io->isDebug()) {
                     $this->io->writeError('  - ' . $operation->show(false));
@@ -402,8 +401,8 @@ class InstallationManager
             $installer = $this->getInstaller($package->getType());
 
             $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($opType);
-            if (defined($event) && $runScripts && $this->eventDispatcher) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $allOperations, $operation);
+            if (\defined($event) && $runScripts && $this->eventDispatcher) {
+                $this->eventDispatcher->dispatchPackageEvent(\constant($event), $devMode, $repo, $allOperations, $operation);
             }
 
             $dispatcher = $this->eventDispatcher;
@@ -428,8 +427,8 @@ class InstallationManager
 
             $postExecCallbacks[] = function () use ($opType, $runScripts, $dispatcher, $devMode, $repo, $allOperations, $operation) {
                 $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($opType);
-                if (defined($event) && $runScripts && $dispatcher) {
-                    $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $allOperations, $operation);
+                if (\defined($event) && $runScripts && $dispatcher) {
+                    $dispatcher->dispatchPackageEvent(\constant($event), $devMode, $repo, $allOperations, $operation);
                 }
             };
 
@@ -437,7 +436,7 @@ class InstallationManager
         }
 
         // execute all prepare => installs/updates/removes => cleanup steps
-        if (count($promises)) {
+        if (\count($promises)) {
             $this->waitOnPromises($promises);
         }
 
@@ -451,7 +450,7 @@ class InstallationManager
     private function waitOnPromises(array $promises)
     {
         $progress = null;
-        if ($this->outputProgress && $this->io instanceof ConsoleIO && !$this->io->isDebug() && count($promises) > 1) {
+        if ($this->outputProgress && $this->io instanceof ConsoleIO && !$this->io->isDebug() && \count($promises) > 1) {
             $progress = $this->io->getProgressBar();
         }
         $this->loop->wait($promises, $progress);

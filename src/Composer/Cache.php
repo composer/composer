@@ -128,7 +128,7 @@ class Cache
                         $tempFileName,
                         $m[1],
                         $m[2],
-                        @disk_free_space(dirname($tempFileName))
+                        @disk_free_space(\dirname($tempFileName))
                     );
 
                     $this->io->writeError($message);
@@ -150,7 +150,7 @@ class Cache
     {
         if ($this->enabled && !$this->readOnly) {
             $file = preg_replace('{[^'.$this->allowlist.']}i', '-', $file);
-            $this->filesystem->ensureDirectoryExists(dirname($this->root . $file));
+            $this->filesystem->ensureDirectoryExists(\dirname($this->root . $file));
 
             if (!file_exists($source)) {
                 $this->io->writeError('<error>'.$source.' does not exist, can not write into cache</error>');

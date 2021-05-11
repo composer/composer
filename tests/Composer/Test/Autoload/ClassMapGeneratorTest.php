@@ -35,7 +35,7 @@ class ClassMapGeneratorTest extends TestCase
 
     public function getTestCreateMapTests()
     {
-        if (PHP_VERSION_ID == 50303) {
+        if (\PHP_VERSION_ID == 50303) {
             $this->markTestSkipped('Test segfaults on travis 5.3.3 due to ClassMap\LongString');
         }
 
@@ -81,7 +81,7 @@ class ClassMapGeneratorTest extends TestCase
             array(__DIR__ . '/Fixtures/template', array()),
         );
 
-        if (PHP_VERSION_ID >= 50400) {
+        if (\PHP_VERSION_ID >= 50400) {
             $data[] = array(__DIR__ . '/Fixtures/php5.4', array(
                 'TFoo' => __DIR__ . '/Fixtures/php5.4/traits.php',
                 'CFoo' => __DIR__ . '/Fixtures/php5.4/traits.php',
@@ -91,13 +91,13 @@ class ClassMapGeneratorTest extends TestCase
                 'Foo\\CBar' => __DIR__ . '/Fixtures/php5.4/traits.php',
             ));
         }
-        if (PHP_VERSION_ID >= 70000) {
+        if (\PHP_VERSION_ID >= 70000) {
             $data[] = array(__DIR__ . '/Fixtures/php7.0', array(
                 'Dummy\Test\AnonClassHolder' => __DIR__ . '/Fixtures/php7.0/anonclass.php',
             ));
         }
 
-        if (PHP_VERSION_ID >= 80100) {
+        if (\PHP_VERSION_ID >= 80100) {
             $data[] = array(__DIR__ . '/Fixtures/php8.1', array(
                 'RolesBasicEnum' => __DIR__ . '/Fixtures/php8.1/enum_basic.php',
                 'RolesBackedEnum' => __DIR__ . '/Fixtures/php8.1/enum_backed.php',
@@ -106,7 +106,7 @@ class ClassMapGeneratorTest extends TestCase
             ));
         }
 
-        if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>=')) {
+        if (\defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>=')) {
             $data[] = array(__DIR__ . '/Fixtures/hhvm3.3', array(
                 'FooEnum' => __DIR__ . '/Fixtures/hhvm3.3/HackEnum.php',
                 'Foo\BarEnum' => __DIR__ . '/Fixtures/hhvm3.3/NamespacedHackEnum.php',
@@ -231,7 +231,7 @@ class ClassMapGeneratorTest extends TestCase
         $tempDir = self::getUniqueTmpDirectory();
 
         $resultFile = $tempDir . '/result.txt';
-        $fileInDirectory = $tempDir . DIRECTORY_SEPARATOR . 'TestClass.php';
+        $fileInDirectory = $tempDir . \DIRECTORY_SEPARATOR . 'TestClass.php';
 
         file_put_contents($fileInDirectory, "<?php class TestClass {} ?>");
 

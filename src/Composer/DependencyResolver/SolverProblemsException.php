@@ -28,7 +28,7 @@ class SolverProblemsException extends \RuntimeException
         $this->problems = $problems;
         $this->learnedPool = $learnedPool;
 
-        parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', 2);
+        parent::__construct('Failed resolving dependencies with '.\count($problems).' problems, call getPrettyString to get formatted details', 2);
     }
 
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
@@ -93,7 +93,7 @@ class SolverProblemsException extends \RuntimeException
     {
         $paths = IniHelper::getAll();
 
-        if (count($paths) === 1 && empty($paths[0])) {
+        if (\count($paths) === 1 && empty($paths[0])) {
             return '';
         }
 

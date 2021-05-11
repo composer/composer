@@ -351,7 +351,7 @@ class Filesystem
         $result = true;
         /** @var RecursiveDirectoryIterator $ri */
         foreach ($ri as $file) {
-            $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathname();
+            $targetPath = $target . \DIRECTORY_SEPARATOR . $ri->getSubPathname();
             if ($file->isDir()) {
                 $this->ensureDirectoryExists($targetPath);
             } else {
@@ -606,7 +606,7 @@ class Filesystem
      * This will also check for readability by reading the file as is_readable can not be trusted on network-mounts
      * and \\wsl$ paths. See https://github.com/composer/composer/issues/8231 and https://bugs.php.net/bug.php?id=68926
      *
-     * @param string $path
+     * @param  string $path
      * @return bool
      */
     public static function isReadable($path)
@@ -681,7 +681,7 @@ class Filesystem
      */
     public function relativeSymlink($target, $link)
     {
-        if (!function_exists('symlink')) {
+        if (!\function_exists('symlink')) {
             return false;
         }
 
@@ -764,7 +764,7 @@ class Filesystem
         }
         $cmd = sprintf(
             'mklink /J %s %s',
-            ProcessExecutor::escape(str_replace('/', DIRECTORY_SEPARATOR, $junction)),
+            ProcessExecutor::escape(str_replace('/', \DIRECTORY_SEPARATOR, $junction)),
             ProcessExecutor::escape(realpath($target))
         );
         if ($this->getProcess()->execute($cmd, $output) !== 0) {
@@ -823,7 +823,7 @@ class Filesystem
         if (!Platform::isWindows()) {
             return false;
         }
-        $junction = rtrim(str_replace('/', DIRECTORY_SEPARATOR, $junction), DIRECTORY_SEPARATOR);
+        $junction = rtrim(str_replace('/', \DIRECTORY_SEPARATOR, $junction), \DIRECTORY_SEPARATOR);
         if (!$this->isJunction($junction)) {
             throw new IOException(sprintf('%s is not a junction and thus cannot be removed as one', $junction));
         }

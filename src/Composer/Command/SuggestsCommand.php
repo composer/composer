@@ -74,7 +74,7 @@ EOT
         $packages = $installedRepo->getPackages();
         $packages[] = $composer->getPackage();
         foreach ($packages as $package) {
-            if (!empty($filter) && !in_array($package->getName(), $filter)) {
+            if (!empty($filter) && !\in_array($package->getName(), $filter)) {
                 continue;
             }
 

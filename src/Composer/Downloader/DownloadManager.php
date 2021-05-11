@@ -153,7 +153,7 @@ class DownloadManager
         if ($installationSource !== $downloader->getInstallationSource()) {
             throw new \LogicException(sprintf(
                 'Downloader "%s" is a %s type downloader and can not be used to download %s for package %s',
-                get_class($downloader),
+                \get_class($downloader),
                 $downloader->getInstallationSource(),
                 $installationSource,
                 $package
@@ -182,7 +182,7 @@ class DownloadManager
     public function download(PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
-        $this->filesystem->ensureDirectoryExists(dirname($targetDir));
+        $this->filesystem->ensureDirectoryExists(\dirname($targetDir));
 
         $sources = $this->getAvailableSources($package, $prevPackage);
 
@@ -424,7 +424,7 @@ class DownloadManager
         if (
             $prevPackage
             // if we are updating, we want to keep the same source as the previously installed package (if available in the new one)
-            && in_array($prevPackage->getInstallationSource(), $sources, true)
+            && \in_array($prevPackage->getInstallationSource(), $sources, true)
             // unless the previous package was stable dist (by default) and the new package is dev, then we allow the new default to take over
             && !(!$prevPackage->isDev() && $prevPackage->getInstallationSource() === 'dist' && $package->isDev())
         ) {

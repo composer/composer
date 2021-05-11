@@ -82,12 +82,12 @@ class ProxyManager
             throw new TransportException('Unable to use a proxy: '.$this->error);
         }
 
-        $scheme = parse_url($requestUrl, PHP_URL_SCHEME) ?: 'http';
+        $scheme = parse_url($requestUrl, \PHP_URL_SCHEME) ?: 'http';
         $proxyUrl = '';
         $options = array();
         $formattedProxyUrl = '';
 
-        if ($this->hasProxy && in_array($scheme, array('http', 'https'), true) && $this->fullProxy[$scheme]) {
+        if ($this->hasProxy && \in_array($scheme, array('http', 'https'), true) && $this->fullProxy[$scheme]) {
             if ($this->noProxy($requestUrl)) {
                 $formattedProxyUrl = 'excluded by no_proxy';
             } else {

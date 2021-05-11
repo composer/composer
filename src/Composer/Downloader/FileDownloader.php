@@ -130,7 +130,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $fileName = $this->getFileName($package, $path);
         $this->filesystem->ensureDirectoryExists($path);
-        $this->filesystem->ensureDirectoryExists(dirname($fileName));
+        $this->filesystem->ensureDirectoryExists(\dirname($fileName));
 
         $io = $this->io;
         $cache = $this->cache;
@@ -234,7 +234,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
             if ($e instanceof TransportException) {
                 // if we got an http response with a proper code, then requesting again will probably not help, abort
-                if ((0 !== $e->getCode() && !in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
+                if ((0 !== $e->getCode() && !\in_array($e->getCode(), array(500, 502, 503, 504))) || !$retries) {
                     $retries = 0;
                 }
             }
@@ -255,7 +255,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             array_shift($urls);
             if ($urls) {
                 if ($io->isDebug()) {
-                    $io->writeError('    Failed downloading '.$package->getName().': ['.get_class($e).'] '.$e->getCode().': '.$e->getMessage());
+                    $io->writeError('    Failed downloading '.$package->getName().': ['.\get_class($e).'] '.$e->getCode().': '.$e->getMessage());
                     $io->writeError('    Trying the next URL for '.$package->getName());
                 } else {
                     $io->writeError('    Failed downloading '.$package->getName().', trying the next URL ('.$e->getCode().': '.$e->getMessage().')');
@@ -323,7 +323,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         $this->filesystem->emptyDirectory($path);
         $this->filesystem->ensureDirectoryExists($path);
-        $this->filesystem->rename($this->getFileName($package, $path), $path . '/' . pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_BASENAME));
+        $this->filesystem->rename($this->getFileName($package, $path), $path . '/' . pathinfo(parse_url($package->getDistUrl(), \PHP_URL_PATH), \PATHINFO_BASENAME));
 
         if ($package->getBinaries()) {
             // Single files can not have a mode set like files in archives
@@ -420,7 +420,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     protected function getFileName(PackageInterface $package, $path)
     {
-        return rtrim($this->config->get('vendor-dir').'/composer/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
+        return rtrim($this->config->get('vendor-dir').'/composer/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), \PHP_URL_PATH), \PATHINFO_EXTENSION), '.');
     }
 
     /**
@@ -445,7 +445,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     protected function processUrl(PackageInterface $package, $url)
     {
-        if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
+        if (!\extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
             throw new \RuntimeException('You must enable the openssl extension to download files via https');
         }
 

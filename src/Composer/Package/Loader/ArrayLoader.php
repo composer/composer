@@ -53,7 +53,7 @@ class ArrayLoader implements LoaderInterface
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
     {
         if ($class !== 'Composer\Package\CompletePackage' && $class !== 'Composer\Package\RootPackage') {
-            trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
+            trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', \E_USER_DEPRECATED);
         }
 
         $package = $this->createObject($config, $class);
@@ -80,14 +80,14 @@ class ArrayLoader implements LoaderInterface
     /**
      * @template PackageClass of CompletePackageInterface
      * @param  array                                      $versions
-     * @param  string                                      $class    FQCN to be instantiated
+     * @param  string                                     $class    FQCN to be instantiated
      * @return list<CompletePackage|CompleteAliasPackage>
      * @phpstan-param class-string<PackageClass> $class
      */
     public function loadPackages(array $versions, $class = 'Composer\Package\CompletePackage')
     {
         if ($class !== 'Composer\Package\CompletePackage') {
-            trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
+            trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', \E_USER_DEPRECATED);
         }
 
         $packages = array();
@@ -257,7 +257,7 @@ class ArrayLoader implements LoaderInterface
                     $config['scripts'][$event] = (array) $listeners;
                 }
                 if (isset($config['scripts']['composer'])) {
-                    trigger_error('The `composer` script name is reserved for internal use, please avoid defining it', E_USER_DEPRECATED);
+                    trigger_error('The `composer` script name is reserved for internal use, please avoid defining it', \E_USER_DEPRECATED);
                 }
                 $package->setScripts($config['scripts']);
             }

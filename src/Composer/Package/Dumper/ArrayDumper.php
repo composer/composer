@@ -85,7 +85,7 @@ class ArrayDumper
         }
 
         if ($package->getReleaseDate()) {
-            $data['time'] = $package->getReleaseDate()->format(DATE_RFC3339);
+            $data['time'] = $package->getReleaseDate()->format(\DATE_RFC3339);
         }
 
         if ($package->isDefaultBranch()) {

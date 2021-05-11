@@ -21,7 +21,7 @@ class Runtime
      */
     public function hasConstant($constant, $class = null)
     {
-        return defined(ltrim($class.'::'.$constant, ':'));
+        return \defined(ltrim($class.'::'.$constant, ':'));
     }
 
     /**
@@ -31,7 +31,7 @@ class Runtime
      */
     public function getConstant($constant, $class = null)
     {
-        return constant(ltrim($class.'::'.$constant, ':'));
+        return \constant(ltrim($class.'::'.$constant, ':'));
     }
 
     /**
@@ -40,7 +40,7 @@ class Runtime
      */
     public function hasFunction($fn)
     {
-        return function_exists($fn);
+        return \function_exists($fn);
     }
 
     /**
@@ -50,7 +50,7 @@ class Runtime
      */
     public function invoke($callable, array $arguments = array())
     {
-        return call_user_func_array($callable, $arguments);
+        return \call_user_func_array($callable, $arguments);
     }
 
     /**

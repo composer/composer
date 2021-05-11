@@ -55,7 +55,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             return \React\Promise\resolve();
         }
 
-        if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
+        if (strpos(realpath($path) . \DIRECTORY_SEPARATOR, $realUrl . \DIRECTORY_SEPARATOR) === 0) {
             // IMPORTANT NOTICE: If you wish to change this, don't. You are wasting your time and ours.
             //
             // Please see https://github.com/composer/composer/pull/5974 and https://github.com/composer/composer/pull/6174
@@ -112,7 +112,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 } else {
                     $absolutePath = $path;
                     if (!$this->filesystem->isAbsolutePath($absolutePath)) {
-                        $absolutePath = getcwd() . DIRECTORY_SEPARATOR . $path;
+                        $absolutePath = getcwd() . \DIRECTORY_SEPARATOR . $path;
                     }
                     $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
                     $path = rtrim($path, "/");
@@ -126,7 +126,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     }
                 }
             } catch (IOException $e) {
-                if (in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
+                if (\in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
                     if ($output) {
                         $this->io->writeError('');
                         $this->io->writeError('    <error>Symlink failed, fallback to use mirroring!</error>');
@@ -283,8 +283,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     private function safeJunctions()
     {
         // We need to call mklink, and rmdir on Windows 7 (version 6.1)
-        return function_exists('proc_open') &&
-            (PHP_WINDOWS_VERSION_MAJOR > 6 ||
-            (PHP_WINDOWS_VERSION_MAJOR === 6 && PHP_WINDOWS_VERSION_MINOR >= 1));
+        return \function_exists('proc_open') &&
+            (\PHP_WINDOWS_VERSION_MAJOR > 6 ||
+            (\PHP_WINDOWS_VERSION_MAJOR === 6 && \PHP_WINDOWS_VERSION_MINOR >= 1));
     }
 }

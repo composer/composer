@@ -62,7 +62,7 @@ class ClassMapGenerator
     public static function createMap($path, $excluded = null, IOInterface $io = null, $namespace = null, $autoloadType = null, &$scannedFiles = array())
     {
         $basePath = $path;
-        if (is_string($path)) {
+        if (\is_string($path)) {
             if (is_file($path)) {
                 $path = array(new \SplFileInfo($path));
             } elseif (is_dir($path) || strpos($path, '*') !== false) {
@@ -83,7 +83,7 @@ class ClassMapGenerator
 
         foreach ($path as $file) {
             $filePath = $file->getPathname();
-            if (!in_array(pathinfo($filePath, PATHINFO_EXTENSION), array('php', 'inc', 'hh'))) {
+            if (!\in_array(pathinfo($filePath, \PATHINFO_EXTENSION), array('php', 'inc', 'hh'))) {
                 continue;
             }
 
@@ -160,7 +160,7 @@ class ClassMapGenerator
         $validClasses = array();
         $rejectedClasses = array();
 
-        $realSubPath = substr($filePath, strlen($basePath) + 1);
+        $realSubPath = substr($filePath, \strlen($basePath) + 1);
         $realSubPath = substr($realSubPath, 0, strrpos($realSubPath, '.'));
 
         foreach ($classes as $class) {
@@ -174,14 +174,14 @@ class ClassMapGenerator
                 if (false !== $namespaceLength) {
                     $namespace = substr($class, 0, $namespaceLength + 1);
                     $className = substr($class, $namespaceLength + 1);
-                    $subPath = str_replace('\\', DIRECTORY_SEPARATOR, $namespace)
-                        . str_replace('_', DIRECTORY_SEPARATOR, $className);
+                    $subPath = str_replace('\\', \DIRECTORY_SEPARATOR, $namespace)
+                        . str_replace('_', \DIRECTORY_SEPARATOR, $className);
                 } else {
-                    $subPath = str_replace('_', DIRECTORY_SEPARATOR, $class);
+                    $subPath = str_replace('_', \DIRECTORY_SEPARATOR, $class);
                 }
             } elseif ('psr-4' === $namespaceType) {
-                $subNamespace = ('' !== $baseNamespace) ? substr($class, strlen($baseNamespace)) : $class;
-                $subPath = str_replace('\\', DIRECTORY_SEPARATOR, $subNamespace);
+                $subNamespace = ('' !== $baseNamespace) ? substr($class, \strlen($baseNamespace)) : $class;
+                $subPath = str_replace('\\', \DIRECTORY_SEPARATOR, $subNamespace);
             } else {
                 throw new \RuntimeException("namespaceType must be psr-0 or psr-4, $namespaceType given");
             }
@@ -214,8 +214,8 @@ class ClassMapGenerator
      */
     private static function findClasses($path)
     {
-        $extraTypes = PHP_VERSION_ID < 50400 ? '' : '|trait';
-        if (PHP_VERSION_ID >= 80100 || (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>='))) {
+        $extraTypes = \PHP_VERSION_ID < 50400 ? '' : '|trait';
+        if (\PHP_VERSION_ID >= 80100 || (\defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>='))) {
             $extraTypes .= '|enum';
         }
 
@@ -235,7 +235,7 @@ class ClassMapGenerator
             }
             $error = error_get_last();
             if (isset($error['message'])) {
-                $message .= PHP_EOL . 'The following message may be helpful:' . PHP_EOL . $error['message'];
+                $message .= \PHP_EOL . 'The following message may be helpful:' . \PHP_EOL . $error['message'];
             }
             throw new \RuntimeException(sprintf($message, $path));
         }
@@ -278,7 +278,7 @@ class ClassMapGenerator
         $classes = array();
         $namespace = '';
 
-        for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
+        for ($i = 0, $len = \count($matches['type']); $i < $len; $i++) {
             if (!empty($matches['ns'][$i])) {
                 $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
             } else {

@@ -100,7 +100,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
+        if (\function_exists('pcntl_async_signals') && \function_exists('pcntl_signal')) {
             pcntl_async_signals(true);
             pcntl_signal(SIGINT, array($this, 'revertComposerFile'));
             pcntl_signal(SIGTERM, array($this, 'revertComposerFile'));
@@ -212,7 +212,7 @@ EOT
         }
 
         $inconsistentRequireKeys = $this->getInconsistentRequireKeys($requirements, $requireKey);
-        if (count($inconsistentRequireKeys) > 0) {
+        if (\count($inconsistentRequireKeys) > 0) {
             foreach ($inconsistentRequireKeys as $package) {
                 $io->warning(sprintf(
                     '%s is currently present in the %s key and you ran the command %s the --dev flag, which would move it to the %s key.',
@@ -224,7 +224,7 @@ EOT
             }
 
             if ($io->isInteractive()) {
-                if (!$io->askConfirmation(sprintf('<info>Do you want to move %s?</info> [<comment>no</comment>]? ', count($inconsistentRequireKeys) > 1 ? 'these requirements' : 'this requirement'), false)) {
+                if (!$io->askConfirmation(sprintf('<info>Do you want to move %s?</info> [<comment>no</comment>]? ', \count($inconsistentRequireKeys) > 1 ? 'these requirements' : 'this requirement'), false)) {
                     if (!$io->askConfirmation(sprintf('<info>Do you want to re-run the command %s --dev?</info> [<comment>yes</comment>]? ', $input->getOption('dev') ? 'without' : 'with'), true)) {
                         return 0;
                     }
@@ -249,7 +249,7 @@ EOT
             foreach ($requirements as $package => $version) {
                 $composerDefinition[$requireKey][$package] = $version;
                 unset($composerDefinition[$removeKey][$package]);
-                if (isset($composerDefinition[$removeKey]) && count($composerDefinition[$removeKey]) === 0) {
+                if (isset($composerDefinition[$removeKey]) && \count($composerDefinition[$removeKey]) === 0) {
                     unset($composerDefinition[$removeKey]);
                 }
             }

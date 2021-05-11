@@ -30,7 +30,7 @@ class FilterRepository implements RepositoryInterface
     public function __construct(RepositoryInterface $repo, array $options)
     {
         if (isset($options['only'])) {
-            if (!is_array($options['only'])) {
+            if (!\is_array($options['only'])) {
                 throw new \InvalidArgumentException('"only" key for repository '.$repo->getRepoName().' should be an array');
             }
             $this->only = '{^'.implode('|', array_map(function ($val) {
@@ -38,7 +38,7 @@ class FilterRepository implements RepositoryInterface
             }, $options['only'])) .'$}iD';
         }
         if (isset($options['exclude'])) {
-            if (!is_array($options['exclude'])) {
+            if (!\is_array($options['exclude'])) {
                 throw new \InvalidArgumentException('"exclude" key for repository '.$repo->getRepoName().' should be an array');
             }
             $this->exclude = '{^'.implode('|', array_map(function ($val) {
@@ -49,7 +49,7 @@ class FilterRepository implements RepositoryInterface
             throw new \InvalidArgumentException('Only one of "only" and "exclude" can be specified for repository '.$repo->getRepoName());
         }
         if (isset($options['canonical'])) {
-            if (!is_bool($options['canonical'])) {
+            if (!\is_bool($options['canonical'])) {
                 throw new \InvalidArgumentException('"canonical" key for repository '.$repo->getRepoName().' should be a boolean');
             }
             $this->canonical = $options['canonical'];
@@ -188,7 +188,7 @@ class FilterRepository implements RepositoryInterface
     public function count()
     {
         if ($this->repo->count() > 0) {
-            return count($this->getPackages());
+            return \count($this->getPackages());
         }
 
         return 0;

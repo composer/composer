@@ -133,7 +133,7 @@ EOT
             $options['autoload'] = (object) array(
                 'psr-4' => array(
                     $namespace . '\\' => $autoloadPath,
-                )
+                ),
             );
         }
 
@@ -444,7 +444,6 @@ EOT
             $autoload
         );
         $input->setOption('autoload', $autoload);
-
     }
 
     /**
@@ -538,10 +537,10 @@ EOT
         while (null !== $package = $io->ask('Search for a package: ')) {
             $matches = $this->findPackages($package);
 
-            if (count($matches)) {
+            if (\count($matches)) {
                 // Remove existing packages from search results.
                 foreach ($matches as $position => $foundPackage) {
-                    if (in_array($foundPackage['name'], $existingPackages, true)) {
+                    if (\in_array($foundPackage['name'], $existingPackages, true)) {
                         unset($matches[$position]);
                     }
                 }
@@ -552,7 +551,7 @@ EOT
                 foreach ($matches as $position => $foundPackage) {
                     $abandoned = '';
                     if (isset($foundPackage['abandoned'])) {
-                        if (is_string($foundPackage['abandoned'])) {
+                        if (\is_string($foundPackage['abandoned'])) {
                             $replacement = sprintf('Use %s instead', $foundPackage['abandoned']);
                         } else {
                             $replacement = 'No replacement was suggested';
@@ -571,7 +570,7 @@ EOT
                 if (!$exactMatch) {
                     $io->writeError(array(
                         '',
-                        sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
+                        sprintf('Found <info>%s</info> packages matching <info>%s</info>', \count($matches), $package),
                         '',
                     ));
 
@@ -673,9 +672,10 @@ EOT
         }
 
         $namespace = array_map(
-            function($part) {
+            function ($part) {
                 $part = preg_replace('/[^a-z0-9]/i', ' ', $part);
                 $part = ucwords($part);
+
                 return str_replace(' ', '', $part);
             },
             explode('/', $packageName)
@@ -703,7 +703,7 @@ EOT
 
         if ($cmd->isSuccessful()) {
             $this->gitConfig = array();
-            preg_match_all('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches, PREG_SET_ORDER);
+            preg_match_all('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches, \PREG_SET_ORDER);
             foreach ($matches as $match) {
                 $this->gitConfig[$match[1]] = $match[2];
             }
@@ -738,7 +738,7 @@ EOT
 
         $pattern = sprintf('{^/?%s(/\*?)?$}', preg_quote($vendor));
 
-        $lines = file($ignoreFile, FILE_IGNORE_NEW_LINES);
+        $lines = file($ignoreFile, \FILE_IGNORE_NEW_LINES);
         foreach ($lines as $line) {
             if (preg_match($pattern, $line)) {
                 return true;
@@ -765,16 +765,16 @@ EOT
     protected function isValidEmail($email)
     {
         // assume it's valid if we can't validate it
-        if (!function_exists('filter_var')) {
+        if (!\function_exists('filter_var')) {
             return true;
         }
 
         // php <5.3.3 has a very broken email validator, so bypass checks
-        if (PHP_VERSION_ID < 50303) {
+        if (\PHP_VERSION_ID < 50303) {
             return true;
         }
 
-        return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
+        return false !== filter_var($email, \FILTER_VALIDATE_EMAIL);
     }
 
     private function getRepositorySet(InputInterface $input, $minimumStability = null)
@@ -796,7 +796,7 @@ EOT
         }
 
         $file = Factory::getComposerFile();
-        if (is_file($file) && Filesystem::isReadable($file) && is_array($composer = json_decode(file_get_contents($file), true))) {
+        if (is_file($file) && Filesystem::isReadable($file) && \is_array($composer = json_decode(file_get_contents($file), true))) {
             if (!empty($composer['minimum-stability'])) {
                 return VersionParser::normalizeStability($composer['minimum-stability']);
             }
@@ -836,7 +836,7 @@ EOT
         if (!$package) {
             // platform packages can not be found in the pool in versions other than the local platform's has
             // so if platform reqs are ignored we just take the user's word for it
-            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($name, $ignorePlatformReqs))) && PlatformRepository::isPlatformPackage($name)) {
+            if ((true === $ignorePlatformReqs || (\is_array($ignorePlatformReqs) && \in_array($name, $ignorePlatformReqs))) && PlatformRepository::isPlatformPackage($name)) {
                 return array($name, $requiredVersion ?: '*');
             }
 
@@ -890,7 +890,7 @@ EOT
             $similar = $this->findSimilar($name);
             if ($similar) {
                 throw new \InvalidArgumentException(sprintf(
-                    "Could not find package %s.\n\nDid you mean " . (count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
+                    "Could not find package %s.\n\nDid you mean " . (\count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
                     $name,
                     implode("\n    ", $similar)
                 ));
@@ -936,7 +936,7 @@ EOT
             return '';
         }
 
-        return ':'.PHP_EOL.'  - ' . implode(PHP_EOL.'  - ', $details);
+        return ':'.\PHP_EOL.'  - ' . implode(\PHP_EOL.'  - ', $details);
     }
 
     private function findSimilar($package)
@@ -960,7 +960,7 @@ EOT
         }
         asort($similarPackages);
 
-        return array_keys(array_slice($similarPackages, 0, 5));
+        return array_keys(\array_slice($similarPackages, 0, 5));
     }
 
     private function updateDependencies($output)

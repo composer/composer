@@ -133,7 +133,7 @@ class Compiler
         $unexpectedFiles = array();
 
         foreach ($finder as $file) {
-            if (in_array(realpath($file), $extraFiles, true)) {
+            if (\in_array(realpath($file), $extraFiles, true)) {
                 unset($extraFiles[array_search(realpath($file), $extraFiles, true)]);
             } elseif (!preg_match('{([/\\\\]LICENSE|\.php)$}', $file)) {
                 $unexpectedFiles[] = (string) $file;
@@ -147,10 +147,10 @@ class Compiler
         }
 
         if ($extraFiles) {
-            throw new \RuntimeException('These files were expected but not added to the phar, they might be excluded or gone from the source package:'.PHP_EOL.implode(PHP_EOL, $extraFiles));
+            throw new \RuntimeException('These files were expected but not added to the phar, they might be excluded or gone from the source package:'.\PHP_EOL.implode(\PHP_EOL, $extraFiles));
         }
         if ($unexpectedFiles) {
-            throw new \RuntimeException('These files were unexpectedly added to the phar, make sure they are excluded or listed in $extraFiles:'.PHP_EOL.implode(PHP_EOL, $unexpectedFiles));
+            throw new \RuntimeException('These files were unexpectedly added to the phar, make sure they are excluded or listed in $extraFiles:'.\PHP_EOL.implode(\PHP_EOL, $unexpectedFiles));
         }
 
         // Add bin/composer
@@ -183,10 +183,10 @@ class Compiler
     private function getRelativeFilePath($file)
     {
         $realPath = $file->getRealPath();
-        $pathPrefix = dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR;
+        $pathPrefix = \dirname(\dirname(__DIR__)).\DIRECTORY_SEPARATOR;
 
         $pos = strpos($realPath, $pathPrefix);
-        $relativePath = ($pos !== false) ? substr_replace($realPath, '', $pos, strlen($pathPrefix)) : $realPath;
+        $relativePath = ($pos !== false) ? substr_replace($realPath, '', $pos, \strlen($pathPrefix)) : $realPath;
 
         return strtr($relativePath, '\\', '/');
     }
@@ -231,17 +231,17 @@ class Compiler
      */
     private function stripWhitespace($source)
     {
-        if (!function_exists('token_get_all')) {
+        if (!\function_exists('token_get_all')) {
             return $source;
         }
 
         $output = '';
         foreach (token_get_all($source) as $token) {
-            if (is_string($token)) {
+            if (\is_string($token)) {
                 $output .= $token;
-            } elseif (in_array($token[0], array(T_COMMENT, T_DOC_COMMENT))) {
+            } elseif (\in_array($token[0], array(\T_COMMENT, \T_DOC_COMMENT))) {
                 $output .= str_repeat("\n", substr_count($token[1], "\n"));
-            } elseif (T_WHITESPACE === $token[0]) {
+            } elseif (\T_WHITESPACE === $token[0]) {
                 // reduce wide spaces
                 $whitespace = preg_replace('{[ \t]+}', ' ', $token[1]);
                 // normalize newlines to \n

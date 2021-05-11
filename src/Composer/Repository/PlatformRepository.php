@@ -136,7 +136,7 @@ class PlatformRepository extends ArrayRepository
 
         // Extensions scanning
         foreach ($loadedExtensions as $name) {
-            if (in_array($name, array('standard', 'Core'))) {
+            if (\in_array($name, array('standard', 'Core'))) {
                 continue;
             }
 
@@ -144,7 +144,7 @@ class PlatformRepository extends ArrayRepository
         }
 
         // Check for Xdebug in a restarted process
-        if (!in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = XdebugHandler::getSkippedVersion())) {
+        if (!\in_array('xdebug', $loadedExtensions, true) && ($prettyVersion = XdebugHandler::getSkippedVersion())) {
             $this->addExtension('xdebug', $prettyVersion);
         }
 
@@ -217,7 +217,7 @@ class PlatformRepository extends ArrayRepository
                         $external = $zoneinfoSourceMatches['source'] === 'external';
                         if (preg_match('/^"Olson" Timezone Database Version => (?<version>.+?)(\.system)?$/im', $info, $zoneinfoMatches)) {
                             // If the timezonedb is provided by ext/timezonedb, register that version as a replacement
-                            if ($external && in_array('timezonedb', $loadedExtensions, true)) {
+                            if ($external && \in_array('timezonedb', $loadedExtensions, true)) {
                                 $this->addLibrary('timezonedb-zoneinfo', $zoneinfoMatches['version'], 'zoneinfo ("Olson") database for date (replaced by timezonedb)', array($name.'-zoneinfo'));
                             } else {
                                 $this->addLibrary($name.'-zoneinfo', $zoneinfoMatches['version'], 'zoneinfo ("Olson") database for date');
@@ -289,7 +289,7 @@ class PlatformRepository extends ArrayRepository
                     }
 
                     if ($this->runtime->hasClass('IntlChar')) {
-                        $this->addLibrary('icu-unicode', implode('.', array_slice($this->runtime->invoke(array('IntlChar', 'getUnicodeVersion')), 0, 3)), 'ICU unicode version');
+                        $this->addLibrary('icu-unicode', implode('.', \array_slice($this->runtime->invoke(array('IntlChar', 'getUnicodeVersion')), 0, 3)), 'ICU unicode version');
                     }
                     break;
 

@@ -73,11 +73,11 @@ class FilesystemRepository extends WritableArrayRepository
                 $this->setDevPackageNames($data['dev-package-names']);
             }
 
-            if (!is_array($packages)) {
+            if (!\is_array($packages)) {
                 throw new \UnexpectedValueException('Could not parse package list from the repository');
             }
         } catch (\Exception $e) {
-            throw new InvalidRepositoryException('Invalid repository data in '.$this->file->getPath().', packages could not be loaded: ['.get_class($e).'] '.$e->getMessage());
+            throw new InvalidRepositoryException('Invalid repository data in '.$this->file->getPath().', packages could not be loaded: ['.\get_class($e).'] '.$e->getMessage());
         }
 
         $loader = new ArrayLoader(null, true);
@@ -101,7 +101,7 @@ class FilesystemRepository extends WritableArrayRepository
         $data = array('packages' => array(), 'dev' => $devMode, 'dev-package-names' => array());
         $dumper = new ArrayDumper();
         $fs = new Filesystem();
-        $repoDir = dirname($fs->normalizePath($this->file->getPath()));
+        $repoDir = \dirname($fs->normalizePath($this->file->getPath()));
 
         foreach ($this->getCanonicalPackages() as $package) {
             $pkgArray = $dumper->dump($package);
@@ -111,7 +111,7 @@ class FilesystemRepository extends WritableArrayRepository
 
             // only write to the files the names which are really installed, as we receive the full list
             // of dev package names before they get installed during composer install
-            if (in_array($package->getName(), $this->devPackageNames, true)) {
+            if (\in_array($package->getName(), $this->devPackageNames, true)) {
                 $data['dev-package-names'][] = $package->getName();
             }
         }
@@ -202,7 +202,7 @@ class FilesystemRepository extends WritableArrayRepository
                 if ($replaced === 'self.version') {
                     $replaced = $package->getPrettyVersion();
                 }
-                if (!isset($versions['versions'][$replace->getTarget()]['replaced']) || !in_array($replaced, $versions['versions'][$replace->getTarget()]['replaced'], true)) {
+                if (!isset($versions['versions'][$replace->getTarget()]['replaced']) || !\in_array($replaced, $versions['versions'][$replace->getTarget()]['replaced'], true)) {
                     $versions['versions'][$replace->getTarget()]['replaced'][] = $replaced;
                 }
             }
@@ -220,7 +220,7 @@ class FilesystemRepository extends WritableArrayRepository
                 if ($provided === 'self.version') {
                     $provided = $package->getPrettyVersion();
                 }
-                if (!isset($versions['versions'][$provide->getTarget()]['provided']) || !in_array($provided, $versions['versions'][$provide->getTarget()]['provided'], true)) {
+                if (!isset($versions['versions'][$provide->getTarget()]['provided']) || !\in_array($provided, $versions['versions'][$provide->getTarget()]['provided'], true)) {
                     $versions['versions'][$provide->getTarget()]['provided'][] = $provided;
                 }
             }

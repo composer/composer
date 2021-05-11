@@ -59,7 +59,7 @@ EOT
     public function run(InputInterface $input, OutputInterface $output)
     {
         if (!method_exists($input, '__toString')) {
-            throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
+            throw new \LogicException('Expected an Input instance that is stringable, got '.\get_class($input));
         }
 
         // extract real command name
@@ -68,14 +68,14 @@ EOT
         foreach ($tokens as $token) {
             if ($token && $token[0] !== '-') {
                 $args[] = $token;
-                if (count($args) >= 2) {
+                if (\count($args) >= 2) {
                     break;
                 }
             }
         }
 
         // show help for this command if no command was found
-        if (count($args) < 2) {
+        if (\count($args) < 2) {
             return parent::run($input, $output);
         }
 

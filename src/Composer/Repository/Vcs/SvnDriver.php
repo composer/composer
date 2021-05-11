@@ -62,7 +62,7 @@ class SvnDriver extends VcsDriver
         if (isset($this->repoConfig['tags-path'])) {
             $this->tagsPath = $this->repoConfig['tags-path'];
         }
-        if (array_key_exists('svn-cache-credentials', $this->repoConfig)) {
+        if (\array_key_exists('svn-cache-credentials', $this->repoConfig)) {
             $this->cacheCredentials = (bool) $this->repoConfig['svn-cache-credentials'];
         }
         if (isset($this->repoConfig['package-path'])) {

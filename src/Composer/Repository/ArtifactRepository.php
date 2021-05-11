@@ -34,7 +34,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     public function __construct(array $repoConfig, IOInterface $io)
     {
         parent::__construct();
-        if (!extension_loaded('zip')) {
+        if (!\extension_loaded('zip')) {
             throw new \RuntimeException('The artifact repository requires PHP\'s zip extension');
         }
 
@@ -91,8 +91,8 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     {
         $json = null;
         $fileType = null;
-        $fileExtension = pathinfo($file->getPathname(), PATHINFO_EXTENSION);
-        if (in_array($fileExtension, array('gz', 'tar', 'tgz'), true)) {
+        $fileExtension = pathinfo($file->getPathname(), \PATHINFO_EXTENSION);
+        if (\in_array($fileExtension, array('gz', 'tar', 'tgz'), true)) {
             $fileType = 'tar';
         } elseif ($fileExtension === 'zip') {
             $fileType = 'zip';

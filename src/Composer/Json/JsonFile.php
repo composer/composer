@@ -124,7 +124,7 @@ class JsonFile
             return;
         }
 
-        $dir = dirname($this->path);
+        $dir = \dirname($this->path);
         if (!is_dir($dir)) {
             if (file_exists($dir)) {
                 throw new \UnexpectedValueException(
@@ -226,14 +226,14 @@ class JsonFile
      */
     public static function encode($data, $options = 448)
     {
-        if (PHP_VERSION_ID >= 50400) {
+        if (\PHP_VERSION_ID >= 50400) {
             $json = json_encode($data, $options);
             if (false === $json) {
                 self::throwEncodeError(json_last_error());
             }
 
             //  compact brackets to follow recent php versions
-            if (PHP_VERSION_ID < 50428 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50512) || (defined('JSON_C_VERSION') && version_compare(phpversion('json'), '1.3.6', '<'))) {
+            if (\PHP_VERSION_ID < 50428 || (\PHP_VERSION_ID >= 50500 && \PHP_VERSION_ID < 50512) || (\defined('JSON_C_VERSION') && version_compare(phpversion('json'), '1.3.6', '<'))) {
                 $json = preg_replace('/\[\s+\]/', '[]', $json);
                 $json = preg_replace('/\{\s+\}/', '{}', $json);
             }
@@ -266,16 +266,16 @@ class JsonFile
     private static function throwEncodeError($code)
     {
         switch ($code) {
-            case JSON_ERROR_DEPTH:
+            case \JSON_ERROR_DEPTH:
                 $msg = 'Maximum stack depth exceeded';
                 break;
-            case JSON_ERROR_STATE_MISMATCH:
+            case \JSON_ERROR_STATE_MISMATCH:
                 $msg = 'Underflow or the modes mismatch';
                 break;
-            case JSON_ERROR_CTRL_CHAR:
+            case \JSON_ERROR_CTRL_CHAR:
                 $msg = 'Unexpected control character found';
                 break;
-            case JSON_ERROR_UTF8:
+            case \JSON_ERROR_UTF8:
                 $msg = 'Malformed UTF-8 characters, possibly incorrectly encoded';
                 break;
             default:
@@ -300,7 +300,7 @@ class JsonFile
             return;
         }
         $data = json_decode($json, true);
-        if (null === $data && JSON_ERROR_NONE !== json_last_error()) {
+        if (null === $data && \JSON_ERROR_NONE !== json_last_error()) {
             self::validateSyntax($json, $file);
         }
 
@@ -321,7 +321,7 @@ class JsonFile
         $parser = new JsonParser();
         $result = $parser->lint($json);
         if (null === $result) {
-            if (defined('JSON_ERROR_UTF8') && JSON_ERROR_UTF8 === json_last_error()) {
+            if (\defined('JSON_ERROR_UTF8') && \JSON_ERROR_UTF8 === json_last_error()) {
                 throw new \UnexpectedValueException('"'.$file.'" is not UTF-8, could not parse as JSON');
             }
 

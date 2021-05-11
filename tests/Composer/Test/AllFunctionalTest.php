@@ -53,16 +53,16 @@ class AllFunctionalTest extends TestCase
     public static function tearDownAfterClass()
     {
         $fs = new Filesystem;
-        $fs->removeDirectory(dirname(self::$pharPath));
+        $fs->removeDirectory(\dirname(self::$pharPath));
     }
 
     public function testBuildPhar()
     {
-        if (defined('HHVM_VERSION')) {
+        if (\defined('HHVM_VERSION')) {
             $this->markTestSkipped('Building the phar does not work on HHVM.');
         }
 
-        $target = dirname(self::$pharPath);
+        $target = \dirname(self::$pharPath);
         $fs = new Filesystem();
         chdir($target);
 
@@ -70,7 +70,7 @@ class AllFunctionalTest extends TestCase
         $ri = new \RecursiveIteratorIterator($it, \RecursiveIteratorIterator::SELF_FIRST);
 
         foreach ($ri as $file) {
-            $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathName();
+            $targetPath = $target . \DIRECTORY_SEPARATOR . $ri->getSubPathName();
             if ($file->isDir()) {
                 $fs->ensureDirectoryExists($targetPath);
             } else {
@@ -78,7 +78,7 @@ class AllFunctionalTest extends TestCase
             }
         }
 
-        $proc = new Process((defined('PHP_BINARY') ? escapeshellcmd(PHP_BINARY) : 'php').' -dphar.readonly=0 '.escapeshellarg('./bin/compile'), $target);
+        $proc = new Process((\defined('PHP_BINARY') ? escapeshellcmd(\PHP_BINARY) : 'php').' -dphar.readonly=0 '.escapeshellarg('./bin/compile'), $target);
         $exitcode = $proc->run();
 
         if ($exitcode !== 0 || trim($proc->getOutput())) {
@@ -110,7 +110,7 @@ class AllFunctionalTest extends TestCase
             'COMPOSER_CACHE_DIR' => $this->testDir.'cache',
         );
 
-        $cmd = (defined('PHP_BINARY') ? escapeshellcmd(PHP_BINARY) : 'php') .' '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
+        $cmd = (\defined('PHP_BINARY') ? escapeshellcmd(\PHP_BINARY) : 'php') .' '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
         $proc = new Process($cmd, $this->testDir, $env, null, 300);
         $output = '';
 
@@ -123,7 +123,7 @@ class AllFunctionalTest extends TestCase
             $expected = $testData['EXPECT'];
 
             $line = 1;
-            for ($i = 0, $j = 0; $i < strlen($expected);) {
+            for ($i = 0, $j = 0; $i < \strlen($expected);) {
                 if ($expected[$i] === "\n") {
                     $line++;
                 }
@@ -132,23 +132,23 @@ class AllFunctionalTest extends TestCase
                     $regex = $match[1];
 
                     if (preg_match('{'.$regex.'}', substr($output, $j), $match)) {
-                        $i += strlen($regex) + 2;
-                        $j += strlen($match[0]);
+                        $i += \strlen($regex) + 2;
+                        $j += \strlen($match[0]);
                         continue;
                     } else {
                         $this->fail(
                             'Failed to match pattern '.$regex.' at line '.$line.' / abs offset '.$i.': '
-                            .substr($output, $j, min(strpos($output, "\n", $j) - $j, 100)).PHP_EOL.PHP_EOL.
-                            'Output:'.PHP_EOL.$output
+                            .substr($output, $j, min(strpos($output, "\n", $j) - $j, 100)).\PHP_EOL.\PHP_EOL.
+                            'Output:'.\PHP_EOL.$output
                         );
                     }
                 }
                 if ($expected[$i] !== $output[$j]) {
                     $this->fail(
-                        'Output does not match expectation at line '.$line.' / abs offset '.$i.': '.PHP_EOL
-                        .'-'.substr($expected, $i, min(strpos($expected, "\n", $i) - $i, 100)).PHP_EOL
-                        .'+'.substr($output, $j, min(strpos($output, "\n", $j) - $j, 100)).PHP_EOL.PHP_EOL
-                        .'Output:'.PHP_EOL.$output
+                        'Output does not match expectation at line '.$line.' / abs offset '.$i.': '.\PHP_EOL
+                        .'-'.substr($expected, $i, min(strpos($expected, "\n", $i) - $i, 100)).\PHP_EOL
+                        .'+'.substr($output, $j, min(strpos($output, "\n", $j) - $j, 100)).\PHP_EOL.\PHP_EOL
+                        .'Output:'.\PHP_EOL.$output
                     );
                 }
                 $i++;
@@ -181,7 +181,7 @@ class AllFunctionalTest extends TestCase
 
     private function parseTestFile($file)
     {
-        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), null, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), null, \PREG_SPLIT_DELIM_CAPTURE);
         $data = array();
         $section = null;
 
@@ -241,7 +241,7 @@ class AllFunctionalTest extends TestCase
     {
         $processed = '';
 
-        for ($i = 0; $i < strlen($output); $i++) {
+        for ($i = 0; $i < \strlen($output); $i++) {
             if ($output[$i] === "\x08") {
                 $processed = substr($processed, 0, -1);
             } elseif ($output[$i] !== "\r") {

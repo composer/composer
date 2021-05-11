@@ -97,7 +97,7 @@ class HttpDownloader
         // check for failed curl response (empty body but successful looking response)
         if (
             $this->curl
-            && PHP_VERSION_ID < 70000
+            && \PHP_VERSION_ID < 70000
             && $response->getBody() === null
             && $response->getStatusCode() === 200
             && $response->getHeader('content-length') !== '0'

@@ -23,10 +23,10 @@ class JsonFormatterTest extends TestCase
      */
     public function testUnicodeWithPrependedSlash()
     {
-        if (!extension_loaded('mbstring')) {
+        if (!\extension_loaded('mbstring')) {
             $this->markTestSkipped('Test requires the mbstring extension');
         }
-        $backslash = chr(92);
+        $backslash = \chr(92);
         $data = '"' . $backslash . $backslash . $backslash . 'u0119"';
         $expected = '"' . $backslash . $backslash . 'ę"';
         $this->assertEquals($expected, JsonFormatter::format($data, true, true));
@@ -38,7 +38,7 @@ class JsonFormatterTest extends TestCase
      */
     public function testUtf16SurrogatePair()
     {
-        if (!extension_loaded('mbstring')) {
+        if (!\extension_loaded('mbstring')) {
             $this->markTestSkipped('Test requires the mbstring extension');
         }
 

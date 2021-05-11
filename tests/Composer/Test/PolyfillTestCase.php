@@ -569,7 +569,7 @@ namespace PHPUnit\Framework\Constraint {
              */
             protected function matches($other)
             {
-                return \preg_match($this->pattern, $other) > 0;
+                return preg_match($this->pattern, $other) > 0;
             }
 
             /**
@@ -579,7 +579,7 @@ namespace PHPUnit\Framework\Constraint {
              */
             public function toString()
             {
-                return \sprintf(
+                return sprintf(
                     'matches PCRE pattern "%s"',
                     $this->pattern
                 );
@@ -645,14 +645,14 @@ namespace PHPUnit\Framework\Constraint {
                     'not ',
                 );
 
-                \preg_match('/(\'[\w\W]*\')([\w\W]*)("[\w\W]*")/i', $string, $matches);
+                preg_match('/(\'[\w\W]*\')([\w\W]*)("[\w\W]*")/i', $string, $matches);
 
                 if (\count($matches) > 0) {
                     $nonInput = $matches[2];
 
-                    $negatedString = \str_replace(
+                    $negatedString = str_replace(
                         $nonInput,
-                        \str_replace(
+                        str_replace(
                             $positives,
                             $negatives,
                             $nonInput
@@ -660,7 +660,7 @@ namespace PHPUnit\Framework\Constraint {
                         $string
                     );
                 } else {
-                    $negatedString = \str_replace(
+                    $negatedString = str_replace(
                         $positives,
                         $negatives,
                         $string

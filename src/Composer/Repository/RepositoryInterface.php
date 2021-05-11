@@ -72,8 +72,8 @@ interface RepositoryInterface extends \Countable
      *
      * @param ConstraintInterface[]                          $packageNameMap        package names pointing to constraints
      * @param array<string, BasePackage::STABILITY_*>        $acceptableStabilities array of stability => BasePackage::STABILITY_* value
-     * @param array<string, BasePackage::STABILITY_*>        $stabilityFlags  an array of package name => BasePackage::STABILITY_* value
-     * @param array<string, array<string, PackageInterface>> $alreadyLoaded an array of package name => package version => package
+     * @param array<string, BasePackage::STABILITY_*>        $stabilityFlags        an array of package name => BasePackage::STABILITY_* value
+     * @param array<string, array<string, PackageInterface>> $alreadyLoaded         an array of package name => package version => package
      *
      * @return array{namesFound: string[], packages: PackageInterface[]}
      */

@@ -1161,11 +1161,11 @@ Linked Version => 1.2.11',
         $expectedLibraries = array_merge(array_keys(array_filter($expectations, function ($expectation) {
             return $expectation[0] !== false;
         })));
-        self::assertCount(count(array_filter($expectedLibraries)), $libraries, sprintf('Expected: %s, got %s', var_export($expectedLibraries, true), var_export($libraries, true)));
+        self::assertCount(\count(array_filter($expectedLibraries)), $libraries, sprintf('Expected: %s, got %s', var_export($expectedLibraries, true), var_export($libraries, true)));
 
         $expectations = array_merge($expectations, array_combine(array_map(function ($extension) {
             return 'ext-'.$extension;
-        }, $extensions), array_fill(0, count($extensions), array($extensionVersion, array(), array()))));
+        }, $extensions), array_fill(0, \count($extensions), array($extensionVersion, array(), array()))));
 
         foreach ($expectations as $packageName => $expectation) {
             list($expectedVersion, $expectedReplaces, $expectedProvides) = $expectation;
@@ -1184,7 +1184,7 @@ Linked Version => 1.2.11',
 
     private function assertPackageLinks($context, array $expectedLinks, Package $sourcePackage, array $links)
     {
-        self::assertCount(count($expectedLinks), $links, sprintf('%s: expected package count to match', $context));
+        self::assertCount(\count($expectedLinks), $links, sprintf('%s: expected package count to match', $context));
 
         foreach ($links as $link) {
             self::assertSame($sourcePackage->getName(), $link->getSource());
@@ -1200,7 +1200,7 @@ class ResourceBundleStub
 
     public static function create($locale, $bundleName, $fallback)
     {
-        Assert::assertSame(3, func_num_args());
+        Assert::assertSame(3, \func_num_args());
         Assert::assertSame('root', $locale);
         Assert::assertSame('ICUDATA', $bundleName);
         Assert::assertFalse($fallback);
@@ -1210,7 +1210,7 @@ class ResourceBundleStub
 
     public function get($field)
     {
-        Assert::assertSame(1, func_num_args());
+        Assert::assertSame(1, \func_num_args());
         Assert::assertSame('Version', $field);
 
         return self::STUB_VERSION;
@@ -1228,7 +1228,7 @@ class ImagickStub
 
     public function getVersion()
     {
-        Assert::assertSame(0, func_num_args());
+        Assert::assertSame(0, \func_num_args());
 
         return array('versionString' => $this->versionString);
     }
