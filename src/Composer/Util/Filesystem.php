@@ -188,7 +188,7 @@ class Filesystem
             throw new \RuntimeException('Aborting an attempted deletion of '.$directory.', this was probably not intended, if it is a real use case please report it.');
         }
 
-        if (!\function_exists('proc_open')) {
+        if (1||!\function_exists('proc_open')) {
             return $this->removeDirectoryPhp($directory);
         }
 

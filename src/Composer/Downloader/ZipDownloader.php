@@ -26,7 +26,8 @@ use ZipArchive;
 class ZipDownloader extends ArchiveDownloader
 {
     protected static $hasSystemUnzip;
-    private static $hasZipArchive;
+    private static $unzipCommands;
+    private static $hasZipArchive = false;
     private static $isWindows;
 
     /** @var ZipArchive|null */
@@ -37,16 +38,22 @@ class ZipDownloader extends ArchiveDownloader
      */
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
-        if (null === self::$hasSystemUnzip) {
+        if (null === self::$unzipCommands) {
+            self::$unzipCommands = array();
             $finder = new ExecutableFinder;
-            self::$hasSystemUnzip = (bool) $finder->find('unzip');
+            if (Platform::isWindows() && ($cmd = $finder->find('7z', null, array('C:\Program Files\7-Zip')))) {
+                self::$unzipCommands[] = ProcessExecutor::escape($cmd).' x -y %s -o%s';
+            }
+            if ($cmd = $finder->find('unzip')) {
+                self::$unzipCommands[] = ProcessExecutor::escape($cmd).' %s -d %s';
+            }
         }
 
         if (null === self::$hasZipArchive) {
             self::$hasZipArchive = class_exists('ZipArchive');
         }
 
-        if (!self::$hasZipArchive && !self::$hasSystemUnzip) {
+        if (!self::$hasZipArchive && !self::$unzipCommands) {
             // php.ini path is added to the error message to help users find the correct file
             $iniMessage = IniHelper::getMessage();
             $error = "The zip extension and unzip command are both missing, skipping.\n" . $iniMessage;
@@ -57,7 +64,7 @@ class ZipDownloader extends ArchiveDownloader
         if (null === self::$isWindows) {
             self::$isWindows = Platform::isWindows();
 
-            if (!self::$isWindows && !self::$hasSystemUnzip) {
+            if (!self::$isWindows && !self::$unzipCommands) {
                 $this->io->writeError("<warning>As there is no 'unzip' command installed zip files are being unpacked using the PHP zip extension.</warning>");
                 $this->io->writeError("<warning>This may cause invalid reports of corrupted archives. Besides, any UNIX permissions (e.g. executable) defined in the archives will be lost.</warning>");
                 $this->io->writeError("<warning>Installing 'unzip' may remediate them.</warning>");
@@ -82,7 +89,7 @@ class ZipDownloader extends ArchiveDownloader
             $isLastChance = true;
         }
 
-        if (!self::$hasSystemUnzip && !$isLastChance) {
+        if (!self::$unzipCommands && !$isLastChance) {
             // This was call as the favorite extract way, but is not available
             // We switch to the alternative
             return $this->extractWithZipArchive($package, $file, $path, true);
@@ -90,7 +97,11 @@ class ZipDownloader extends ArchiveDownloader
 
         // When called after a ZipArchive failed, perhaps there is some files to overwrite
         $overwrite = $isLastChance ? '-o' : '';
-        $command = 'unzip -qq '.$overwrite.' '.ProcessExecutor::escape($file).' -d '.ProcessExecutor::escape($path);
+        foreach (self::$unzipCommands as $command) {
+            echo $command, "\n";
+            $command = sprintf($command, ProcessExecutor::escape($file), ProcessExecutor::escape($path));
+            break;
+        }
 
         if ($async) {
             $self = $this;
@@ -166,7 +177,7 @@ class ZipDownloader extends ArchiveDownloader
      */
     public function extractWithZipArchive(PackageInterface $package, $file, $path, $isLastChance)
     {
-        if (!self::$hasSystemUnzip) {
+        if (!self::$unzipCommands) {
             // Force Exception throwing if the Other alternative is not available
             $isLastChance = true;
         }
@@ -226,7 +237,7 @@ class ZipDownloader extends ArchiveDownloader
     {
         // Each extract calls its alternative if not available or fails
         if (self::$isWindows) {
-            return $this->extractWithZipArchive($package, $file, $path, false);
+            //return $this->extractWithZipArchive($package, $file, $path, false);
         }
 
         return $this->extractWithSystemUnzip($package, $file, $path, false, true);
