@@ -54,6 +54,8 @@ return PhpCsFixer\Config::create()
         'ternary_operator_spaces' => true,
         'trailing_comma_in_multiline_array' => true,
         'unary_operator_spaces' => true,
+        'native_constant_invocation' => true,
+        'native_function_invocation' => array('include' => array('@compiler_optimized'), 'scope' => 'namespaced', 'strict' => true),
     ))
     ->setFinder($finder)
 ;
