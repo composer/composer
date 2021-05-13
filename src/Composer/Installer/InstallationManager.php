@@ -451,7 +451,7 @@ class InstallationManager
     private function waitOnPromises(array $promises)
     {
         $progress = null;
-        if ($this->outputProgress && $this->io instanceof ConsoleIO && !$this->io->isDebug() && count($promises) > 1) {
+        if ($this->outputProgress && $this->io instanceof ConsoleIO && $this->io->isDecorated() && !$this->io->isDebug() && count($promises) > 1) {
             $progress = $this->io->getProgressBar();
         }
         $this->loop->wait($promises, $progress);
