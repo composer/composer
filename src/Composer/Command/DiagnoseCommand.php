@@ -534,9 +534,10 @@ EOT
 
         if (filter_var(ini_get('xdebug.profiler_enabled'), FILTER_VALIDATE_BOOLEAN)) {
             $warnings['xdebug_profile'] = true;
-        } elseif (extension_loaded('xdebug')) {
-            $warnings['xdebug_loaded'] = true;
         }
+        // elseif (XdebugHandler::isXdebugActive()) {
+        //     $warnings['xdebug_loaded'] = true;
+        // }
 
         if (defined('PHP_WINDOWS_VERSION_BUILD')
             && (version_compare(PHP_VERSION, '7.2.23', '<')
