@@ -33,11 +33,7 @@ class SvnDownloader extends VcsDownloader
         SvnUtil::cleanEnv();
         $util = new SvnUtil($url, $this->io, $this->config, $this->process);
         if (null === $util->binaryVersion()) {
-            // David fix
-            // Skip when unable to download, instead of throwing error
-            echo "Skipping-SvnDownloader-doDownload\n";
-            
-            // throw new \RuntimeException('svn was not found in your PATH, skipping source download');
+            throw new \RuntimeException('svn was not found in your PATH, skipping source download');
         }
     }
 
@@ -116,13 +112,9 @@ class SvnDownloader extends VcsDownloader
         try {
             return $util->execute($command, $url, $cwd, $path, $this->io->isVerbose());
         } catch (\RuntimeException $e) {
-            // David fix
-            // Skip when unable to download, instead of throwing error
-            echo "Skipping-SvnDownloader-execute\n";
-
-            // throw new \RuntimeException(
-            //     $package->getPrettyName().' could not be downloaded, '.$e->getMessage()
-            // );
+            throw new \RuntimeException(
+                $package->getPrettyName().' could not be downloaded, '.$e->getMessage()
+            );
         }
     }
 
