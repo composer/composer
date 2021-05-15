@@ -26,8 +26,8 @@ In this case the project name is `acme/hello-world`, where `acme` is the vendor
 name. Supplying a vendor name is mandatory.
 
 > **Note:** If you don't know what to use as a vendor name, your GitHub
-> username is usually a good bet. While package names are case-insensitive, the
-> convention is all lowercase and dashes for word separation.
+> username is usually a good bet. Package names must be lowercase, and the
+> convention is to use dashes for word separation.
 
 ## Library Versioning
 
