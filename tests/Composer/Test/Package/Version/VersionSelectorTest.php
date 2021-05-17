@@ -270,7 +270,7 @@ class VersionSelectorTest extends TestCase
     /**
      * @dataProvider getRecommendedRequireVersionPackages
      */
-    public function testFindRecommendedRequireVersion($prettyVersion, $isDev, $stability, $expectedVersion, $branchAlias = null)
+    public function testFindRecommendedRequireVersion($prettyVersion, $isDev, $stability, $expectedVersion, $branchAlias = null, $packageName = null)
     {
         $repositorySet = $this->createMockRepositorySet();
         $versionSelector = new VersionSelector($repositorySet);
@@ -281,6 +281,10 @@ class VersionSelectorTest extends TestCase
             ->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue($prettyVersion));
+        $package
+            ->expects($this->any())
+            ->method('getName')
+            ->will($this->returnValue($packageName));
         $package
             ->expects($this->any())
             ->method('getVersion')
@@ -312,7 +316,7 @@ class VersionSelectorTest extends TestCase
     public function getRecommendedRequireVersionPackages()
     {
         return array(
-            // real version, is dev package, stability, expected recommendation, [branch-alias]
+            // real version, is dev package, stability, expected recommendation, [branch-alias], [pkg name]
             array('1.2.1', false, 'stable', '^1.2'),
             array('1.2', false, 'stable', '^1.2'),
             array('v1.2.1', false, 'stable', '^1.2'),
@@ -342,6 +346,10 @@ class VersionSelectorTest extends TestCase
             // numeric alias
             array('3.x-dev', true, 'dev', '^3.0@dev', '3.0.x-dev'),
             array('3.x-dev', true, 'dev', '^3.0@dev', '3.0-dev'),
+            // ext in sync with php
+            array(PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION, false, 'stable', '*', null, 'ext-filter'),
+            // ext versioned individually
+            array('3.0.5', false, 'stable', '^3.0', null, 'ext-xdebug'),
         );
     }
 
