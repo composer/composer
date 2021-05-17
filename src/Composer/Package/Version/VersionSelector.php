@@ -153,6 +153,16 @@ class VersionSelector
      */
     public function findRecommendedRequireVersion(PackageInterface $package)
     {
+        // Extensions which are versioned in sync with PHP should rather be required as "*" to simplify
+        // the requires and have only one required version to change when bumping the php requirement
+        if (0 === strpos($package->getName(), 'ext-')) {
+            $phpVersion = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
+            $extVersion = implode('.', array_slice(explode('.', $package->getVersion()), 0, 3));
+            if ($phpVersion === $extVersion) {
+                return '*';
+            }
+        }
+
         $version = $package->getVersion();
         if (!$package->isDev()) {
             return $this->transformVersion($version, $package->getPrettyVersion(), $package->getStability());
