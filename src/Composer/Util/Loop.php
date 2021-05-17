@@ -108,7 +108,7 @@ class Loop
 
         // as we skip progress updates if they are too quick, make sure we do one last one here at 100%
         if ($progress) {
-            $progress->setProgress($progress->getMaxSteps());
+            $progress->finish();
         }
 
         unset($this->currentPromises[$waitIndex]);

@@ -451,12 +451,22 @@ class InstallationManager
     private function waitOnPromises(array $promises)
     {
         $progress = null;
-        if ($this->outputProgress && $this->io instanceof ConsoleIO && !$this->io->isDebug() && count($promises) > 1) {
+        if (
+            $this->outputProgress
+            && $this->io instanceof ConsoleIO
+            && !getenv('CI')
+            && !$this->io->isDebug()
+            && count($promises) > 1
+        ) {
             $progress = $this->io->getProgressBar();
         }
         $this->loop->wait($promises, $progress);
         if ($progress) {
             $progress->clear();
+            // ProgressBar in non-decorated output does not output a final line-break and clear() does nothing
+            if ($this->io->isDecorated()) {
+                $this->io->writeError('');
+            }
         }
     }
 
