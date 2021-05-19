@@ -22,11 +22,10 @@ Find packages on [Packagist](https://packagist.org).
 Community
 ---------
 
-IRC channels are on irc.freenode.org: [#composer](irc://irc.freenode.org/composer)
-for users and [#composer-dev](irc://irc.freenode.org/composer-dev) for development.
+Follow [@packagist](https://twitter.com/packagist) or [@seldaek](https://twitter.com/seldaek) on Twitter for announcements, or check the [#composerphp](https://twitter.com/search?q=%23composerphp&src=typed_query&f=live) hashtag.
 
-For support, Stack Overflow also offers a good collection of
-[Composer related questions](https://stackoverflow.com/questions/tagged/composer-php).
+For support, Stack Overflow offers a good collection of
+[Composer related questions](https://stackoverflow.com/questions/tagged/composer-php), or you can use the [GitHub discussions](https://github.com/composer/composer/discussions).
 
 Please note that this project is released with a
 [Contributor Code of Conduct](https://www.contributor-covenant.org/version/1/4/code-of-conduct/).
