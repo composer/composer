@@ -63,6 +63,16 @@ class ConfigValidator
             $json->validateSchema();
         } catch (JsonValidationException $e) {
             foreach ($e->getErrors() as $message) {
+                if ($message === 'type : The property type is required') {
+                    $message .= ' (see https://getcomposer.org/doc/04-schema.md#type)';
+                }
+                if ($message === 'name : The property name is required') {
+                    $message .= ' (or set "type" to "project" to remove this requirement)';
+                }
+                if ($message === 'description : The property description is required') {
+                    $message .= ' (or set "type" to "project" to remove this requirement)';
+                }
+
                 if ($laxValid) {
                     $publishErrors[] = $message;
                 } else {
