@@ -121,6 +121,10 @@ class Factory
         }
 
         $userDir = self::getUserDir();
+        if (PHP_OS === 'Darwin') {
+            return $userDir . '/Library/Caches/composer';
+        }
+
         if ($home === $userDir . '/.composer' && is_dir($home . '/cache')) {
             return $home . '/cache';
         }
