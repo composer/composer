@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Repository\PlatformRepository;
 use Composer\Util\ConfigValidator;
 use Composer\Util\Filesystem;
 use Symfony\Component\Console\Input\InputArgument;
@@ -102,8 +103,10 @@ EOT
         $lockData = $locker->getLockData();
         $lockPackageNames = array_map(function($lockPackage) {return $lockPackage['name'];}, $lockData['packages']);
         $devLockPackageNames = array_map(function($devLockPackage) {return $devLockPackage['name'];}, $lockData['packages-dev']);
-        $missingRequiredPackages = array_diff(array_keys($composer->getPackage()->getRequires()), $lockPackageNames);
-        $missingDevRequiredPackages = array_diff(array_keys($composer->getPackage()->getDevRequires()), $devLockPackageNames);
+        $requiredPackages = array_filter(array_keys($composer->getPackage()->getRequires()), function($requiredPackageName) {return PlatformRepository::isPlatformPackage($requiredPackageName) === false;});
+        $devRequiredPackages = array_filter(array_keys($composer->getPackage()->getDevRequires()), function($devRequiredPackageName) {return PlatformRepository::isPlatformPackage($devRequiredPackageName) === false;});
+        $missingRequiredPackages = array_diff($requiredPackages, $lockPackageNames);
+        $missingDevRequiredPackages = array_diff($devRequiredPackages, $devLockPackageNames);
         if (count(array_merge($missingRequiredPackages, $missingDevRequiredPackages)) > 0) {
             if (count($missingRequiredPackages) > 0) {
                 $lockErrors[] = '- Required package "' . implode('", "', $missingRequiredPackages) . '" is not present in the lock file.';
