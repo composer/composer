@@ -122,6 +122,11 @@ class Factory
 
         $userDir = self::getUserDir();
         if (PHP_OS === 'Darwin') {
+            // Migrate existing cache dir in old location if present
+            if (is_dir($home . '/cache') && !is_dir($userDir . '/Library/Caches/composer')) {
+                Silencer::call('rename', $home . '/cache', $userDir . '/Library/Caches/composer');
+            }
+            
             return $userDir . '/Library/Caches/composer';
         }
 
