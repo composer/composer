@@ -100,8 +100,8 @@ EOT
         }
 
         $lockData = $locker->getLockData();
-        $lockPackageNames = array_map(static function($lockPackage) {return $lockPackage['name'];}, $lockData['packages']);
-        $devLockPackageNames = array_map(static function($devLockPackage) {return $devLockPackage['name'];}, $lockData['packages-dev']);
+        $lockPackageNames = array_map(function($lockPackage) {return $lockPackage['name'];}, $lockData['packages']);
+        $devLockPackageNames = array_map(function($devLockPackage) {return $devLockPackage['name'];}, $lockData['packages-dev']);
         $missingRequiredPackages = array_diff(array_keys($composer->getPackage()->getRequires()), $lockPackageNames);
         $missingDevRequiredPackages = array_diff(array_keys($composer->getPackage()->getDevRequires()), $devLockPackageNames);
         if (count(array_merge($missingRequiredPackages, $missingDevRequiredPackages)) > 0) {
