@@ -42,6 +42,9 @@ class ComposerSchemaTest extends TestCase
         $json = '{ }';
         $result = $this->check($json);
         $this->assertContains(array('property' => 'type', 'message' => 'The property type is required', 'constraint' => 'required'), $result);
+        $this->assertContains(array('property' => 'name', 'message' => 'The property name is required', 'constraint' => 'required'), $result);
+        $this->assertContains(array('property' => 'description', 'message' => 'The property description is required', 'constraint' => 'required'), $result);
+        $this->assertContains(array('property' => '', 'message' => 'Failed to match exactly one schema', 'constraint' => 'oneOf'), $result);
 
         $json = '{ "name": "vendor/package" }';
         $this->assertEquals(array(
