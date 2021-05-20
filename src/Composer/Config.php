@@ -54,6 +54,7 @@ class Config
         'bitbucket-expose-hostname' => true,
         'disable-tls' => false,
         'secure-http' => true,
+        'secure-svn-domains' => array(),
         'cafile' => null,
         'capath' => null,
         'github-expose-hostname' => true,
@@ -474,8 +475,17 @@ class Config
 
         // Extract scheme and throw exception on known insecure protocols
         $scheme = parse_url($url, PHP_URL_SCHEME);
+        $hostname = parse_url($url, PHP_URL_HOST);
         if (in_array($scheme, array('http', 'git', 'ftp', 'svn'))) {
             if ($this->get('secure-http')) {
+                if ($scheme === 'svn') {
+                    if (in_array($hostname, $this->get('secure-svn-domains'), true)) {
+                        return;
+                    }
+
+                    throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-svn-domains for details.");
+                }
+
                 throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             }
             if ($io) {

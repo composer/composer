@@ -345,4 +345,12 @@ Defaults to `php-only` which only checks the PHP version. Set to `true` to also
 check the presence of extension. If set to `false`, Composer will not create and
 require a `platform_check.php` file as part of the autoloader bootstrap.
 
+## secure-svn-domains
+
+Defaults to `[]`. Lists domains which should be trusted/marked as using a secure
+Subversion/SVN transport. By default svn:// protocol is seen as insecure and will
+throw, but you can set this config option to `["example.org"]` to allow using svn
+URLs on that hostname. This is a better/safer alternative to disabling `secure-http`
+altogether.
+
 &larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;

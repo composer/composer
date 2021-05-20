@@ -179,6 +179,13 @@
                     "type": "boolean",
                     "description": "Defaults to `true`. If set to true only HTTPS URLs are allowed to be downloaded via Composer. If you really absolutely need HTTP access to something then you can disable it, but using \"Let's Encrypt\" to get a free SSL certificate is generally a better alternative."
                 },
+                "secure-svn-domains": {
+                    "type": "array",
+                    "description": "A list of domains which should be trusted/marked as using a secure Subversion/SVN transport. By default svn:// protocol is seen as insecure and will throw. This is a better/safer alternative to disabling `secure-http` altogether.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "cafile": {
                     "type": "string",
                     "description": "A way to set the path to the openssl CA file. In PHP 5.6+ you should rather set this via openssl.cafile in php.ini, although PHP 5.6+ should be able to detect your system CA file automatically."
