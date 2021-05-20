@@ -250,16 +250,32 @@ class ProcessExecutor
             throw new \RuntimeException('The given CWD for the process does not exist: '.$cwd);
         }
 
-        // TODO in v3, commands should be passed in as arrays of cmd + args
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
-        } else {
-            $process = new Process($command, $cwd, null, null, static::getTimeout());
+        try {
+            // TODO in v3, commands should be passed in as arrays of cmd + args
+            if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+                $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+            } else {
+                $process = new Process($command, $cwd, null, null, static::getTimeout());
+            }
+        } catch (\Exception $e) {
+            call_user_func($job['reject'], $e);
+            return;
+        } catch (\Throwable $e) {
+            call_user_func($job['reject'], $e);
+            return;
         }
 
         $job['process'] = $process;
 
-        $process->start();
+        try {
+            $process->start();
+        } catch (\Exception $e) {
+            call_user_func($job['reject'], $e);
+            return;
+        } catch (\Throwable $e) {
+            call_user_func($job['reject'], $e);
+            return;
+        }
     }
 
     public function wait($index = null)
