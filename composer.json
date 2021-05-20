@@ -32,14 +32,14 @@
         "psr/log": "^1.0",
         "seld/jsonlint": "^1.4",
         "seld/phar-utils": "^1.0",
-        "symfony/console": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0",
-        "symfony/filesystem": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0",
-        "symfony/finder": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0",
-        "symfony/process": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0",
+        "symfony/console": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
+        "symfony/filesystem": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
+        "symfony/finder": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
+        "symfony/process": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
         "react/promise": "^1.2 || ^2.7"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "^4.2 || ^5.0",
+        "symfony/phpunit-bridge": "^4.2 || ^5.0 || ^6.0",
         "phpspec/prophecy": "^1.10"
     },
     "suggest": {

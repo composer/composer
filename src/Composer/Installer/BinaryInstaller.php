@@ -53,6 +53,9 @@ class BinaryInstaller
         if (!$binaries) {
             return;
         }
+
+        Platform::workaroundFilesystemIssues();
+
         foreach ($binaries as $bin) {
             $binPath = $installPath.'/'.$bin;
             if (!file_exists($binPath)) {
