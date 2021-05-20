@@ -99,6 +99,23 @@ EOT
             $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update` or `composer update <package name>`.';
         }
 
+        $lockData = $locker->getLockData();
+        $lockPackageNames = array_map(static function($lockPackage) {return $lockPackage['name'];}, $lockData['packages']);
+        $devLockPackageNames = array_map(static function($devLockPackage) {return $devLockPackage['name'];}, $lockData['packages-dev']);
+        $missingRequiredPackages = array_diff(array_keys($composer->getPackage()->getRequires()), $lockPackageNames);
+        $missingDevRequiredPackages = array_diff(array_keys($composer->getPackage()->getDevRequires()), $devLockPackageNames);
+        if (count(array_merge($missingRequiredPackages, $missingDevRequiredPackages)) > 0) {
+            if (count($missingRequiredPackages) > 0) {
+                $lockErrors[] = '- Required package "' . implode('", "', $missingRequiredPackages) . '" is not present in the lock file.';
+            }
+            if (count($missingDevRequiredPackages) > 0) {
+                $lockErrors[] = '- Dev-required package "' . implode('", "', $missingDevRequiredPackages) . '" is not present in the lock file.';
+            }
+            $lockErrors[] = 'This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.';
+            $lockErrors[] = 'Read more about correctly resolving merge conflicts -> https://getcomposer.org/doc/articles/resolving-merge-conflicts.md';
+            $lockErrors[] = 'and make sure to not edit the composer.json file directly but to use the "require" command (https://getcomposer.org/doc/03-cli.md#require).';
+        }
+
         $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true);
 
         // $errors include publish and lock errors when exists
