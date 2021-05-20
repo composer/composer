@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft-04/schema#",
-    "name": "Package",
+    "title": "Package",
     "type": "object",
     "additionalProperties": false,
     "required": [ "name", "description" ],
@@ -42,7 +42,7 @@
         "version": {
             "type": "string",
             "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes.",
-            "pattern": "^v?\\d+(((\\.\\d+)?\\.\\d+)?\\.\\d+)?|^dev-"
+            "pattern": "^v?\\d+(\\.\\d+){0,3}|^dev-"
         },
         "time": {
             "type": "string",
@@ -397,7 +397,7 @@
         "minimum-stability": {
             "type": ["string"],
             "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable.",
-            "pattern": "^dev|alpha|beta|rc|RC|stable$"
+            "enum": ["dev", "alpha", "beta", "rc", "RC", "stable"]
         },
         "prefer-stable": {
             "type": ["boolean"],
