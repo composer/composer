@@ -47,32 +47,39 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    In this case add the `--with-dependencies` argument **or** add all dependencies which
    need an update to the command.
 
-## Package not found on travis-ci.org
+## Dependencies on the root package
 
-1. Check the ["Package not found"](#package-not-found) item above.
+When your root package depends on a package which ends up depending (directly or
+indirectly) back on the root package itself, issues can occur in two cases:
 
-2. If the package tested is a dependency of one of its dependencies (cyclic
-   dependency), the problem might be that Composer is not able to detect the version
-   of the package properly. If it is a git clone it is generally alright and Composer
-   will detect the version of the current branch, but travis does shallow clones so
-   that process can fail when testing pull requests and feature branches in general.
+1. During development, if you are on a branch like `dev-main` and the branch has no
+   [branch-alias](aliases.md#branch-alias) defined, and the dependency on the root package
+   requires version `^2.0` for example, the `dev-main` version will not satisfy it.
+   The best solution here is to make sure you first define a branch alias.
+
+2. In CI (Continuous Integration) runs, the problem might be that Composer is not able
+   to detect the version of the root package properly. If it is a git clone it is
+   generally alright and Composer will detect the version of the current branch,
+   but some CIs do shallow clones so that process can fail when testing pull requests
+   and feature branches. In these cases the branch alias may then not be recognized.
    The best solution is to define the version you are on via an environment variable
-   called COMPOSER_ROOT_VERSION. You set it to `dev-master` for example to define
-   the root package's version as `dev-master`.
-   Use: `before_script: COMPOSER_ROOT_VERSION=dev-master composer install` to export
-   the variable for the call to composer.
+   called COMPOSER_ROOT_VERSION. You set it to `dev-main` for example to define
+   the root package's version as `dev-main`.
+   Use for example: `COMPOSER_ROOT_VERSION=dev-main composer install` to export
+   the variable only for the call to composer, or you can define it globally in the
+   CI env vars.
 
 ## Package not found in a Jenkins-build
 
 1. Check the ["Package not found"](#package-not-found) item above.
-2. Reason for failing is similar to the problem which can occur on travis-ci.org: The
-   git-clone / checkout within Jenkins leaves the branch in a "detached HEAD"-state. As
-   a result, Composer is not able to identify the version of the current checked out branch
-   and may not be able to resolve a cyclic dependency. To solve this problem, you can use
-   the "Additional Behaviours" -> "Check out to specific local branch" in your Git-settings
-   for your Jenkins-job, where your "local branch" shall be the same branch as you are
-   checking out. Using this, the checkout will not be in detached state any more and cyclic
-   dependency is recognized correctly.
+
+2. The git-clone / checkout within Jenkins leaves the branch in a "detached HEAD"-state. As
+   a result, Composer may not able to identify the version of the current checked out branch
+   and may not be able to resolve a [dependency on the root package](#dependencies-on-the-root-package).
+   To solve this problem, you can use the "Additional Behaviours" -> "Check out to specific local
+   branch" in your Git-settings for your Jenkins-job, where your "local branch" shall be the same
+   branch as you are checking out. Using this, the checkout will not be in detached state any more
+   and the dependency on the root package should become satisfied.
 
 ## I have a dependency which contains a "repositories" definition in its composer.json, but it seems to be ignored.
 

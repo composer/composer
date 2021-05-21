@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\Constraint;
@@ -417,6 +418,17 @@ class Problem
                 $nextRepo = $package->getRepository();
             } else {
                 break;
+            }
+        }
+
+        if ($higherRepoPackages) {
+            $topPackage = reset($higherRepoPackages);
+            if ($topPackage instanceof RootPackageInterface) {
+                $singular = count($nextRepoPackages) === 1;
+                return array(
+                    "- Root composer.json requires $packageName".self::constraintToText($constraint).', it is ',
+                    'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.$topPackage->getPrettyName().' is the root package and cannot be modified. See https://getcomposer.org/dep-on-root for details and assistance.'
+                );
             }
         }
 
