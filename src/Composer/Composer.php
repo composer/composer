@@ -65,7 +65,7 @@ class Composer
      *
      * @var string
      */
-    const RUNTIME_API_VERSION = '2.0.0';
+    const RUNTIME_API_VERSION = '2.1.0';
 
     public static function getVersion()
     {
