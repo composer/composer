@@ -276,7 +276,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if ($this->validateString('minimum-stability') && !empty($this->config['minimum-stability'])) {
-            if (!isset(BasePackage::$stabilities[$this->config['minimum-stability']])) {
+            if (!isset(BasePackage::$stabilities[strtolower($this->config['minimum-stability'])]) && $this->config['minimum-stability'] !== 'RC') {
                 $this->errors[] = 'minimum-stability : invalid value ('.$this->config['minimum-stability'].'), must be one of '.implode(', ', array_keys(BasePackage::$stabilities));
                 unset($this->config['minimum-stability']);
             }
