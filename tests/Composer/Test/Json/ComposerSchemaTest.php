@@ -94,9 +94,9 @@ class ComposerSchemaTest extends TestCase
         $expectedError = array(
             array(
                 'property' => 'minimum-stability',
-                'message' => 'Does not have a value in the enumeration ["dev","alpha","beta","rc","RC","stable"]',
+                'message' => 'Does not have a value in the enumeration ["dev","alpha","beta","RC","stable"]',
                 'constraint' => 'enum',
-                'enum' => array('dev', 'alpha', 'beta', 'rc', 'RC', 'stable'),
+                'enum' => array('dev', 'alpha', 'beta', 'RC', 'stable'),
             ),
         );
 
@@ -119,7 +119,7 @@ class ComposerSchemaTest extends TestCase
         $this->assertTrue($this->check($json), 'beta');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "rc" }';
-        $this->assertTrue($this->check($json), 'rc lowercase');
+        $this->assertEquals($expectedError, $this->check($json), 'rc lowercase');
 
         $json = '{ "name": "vendor/package", "description": "generic description", "minimum-stability": "RC" }';
         $this->assertTrue($this->check($json), 'rc uppercase');

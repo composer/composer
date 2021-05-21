@@ -423,7 +423,7 @@
         "minimum-stability": {
             "type": ["string"],
             "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable.",
-            "enum": ["dev", "alpha", "beta", "rc", "RC", "stable"]
+            "enum": ["dev", "alpha", "beta", "RC", "stable"]
         },
         "prefer-stable": {
             "type": ["boolean"],
