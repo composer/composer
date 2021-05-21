@@ -130,14 +130,9 @@ class FilesystemRepository extends WritableArrayRepository
 
         if ($this->dumpVersions) {
             $versions = $this->generateInstalledVersions($installationManager, $installPaths, $devMode, $repoDir);
-            $versionsCode = $this->dumpToPhpCode($versions);
 
-            $fs->filePutContentsIfModified($repoDir.'/installed.php', '<?php return ' . $versionsCode . ';'."\n");
+            $fs->filePutContentsIfModified($repoDir.'/installed.php', '<?php return ' . $this->dumpToPhpCode($versions) . ';'."\n");
             $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
-            // while not strictly needed since https://github.com/composer/composer/pull/9635 - we keep this for BC
-            // and overall broader compatibility with people that may not use Composer's ClassLoader. They can
-            // simply include InstalledVersions.php manually and have it working in a basic way.
-            $installedVersionsClass = str_replace('public static function initializeInstalled() {}', 'public static function initializeInstalled() {' . PHP_EOL . 'self::$installed = ' . $versionsCode . ';' . PHP_EOL . '}', $installedVersionsClass);
             $fs->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
 
             \Composer\InstalledVersions::reload($versions);

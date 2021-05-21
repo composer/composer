@@ -24,14 +24,9 @@ use Composer\Semver\VersionParser;
  */
 class InstalledVersions
 {
-    private static $installed = array();
+    private static $installed;
     private static $canGetVendors;
     private static $installedByVendor = array();
-
-    /**
-     * Initialize $installed array
-     */
-    public static function initializeInstalled() {}
 
     /**
      * Returns a list of all package names which are present, either by being installed, replaced or provided
@@ -253,6 +248,10 @@ class InstalledVersions
     {
         @trigger_error('getRawData only returns the first dataset loaded, which may not be what you expect. Use getAllRawData() instead which returns all datasets for all autoloaders present in the process.', E_USER_DEPRECATED);
 
+        if (null === self::$installed) {
+            self::$installed = include __DIR__ . '/installed.php';
+        }
+
         return self::$installed;
     }
 
@@ -260,7 +259,7 @@ class InstalledVersions
      * Returns the raw data of all installed.php which are currently loaded for custom implementations
      *
      * @return array[]
-     * @psalm-return list<array{root: array{name: string, version: string, reference: string, pretty_version: string, aliases: string[]}, versions: array<string, array{pretty_version?: string, version?: string, aliases?: string[], reference?: string, replaced?: string[], provided?: string[]}>}>
+     * @psalm-return list<array{root: array{name: string, version: string, reference: string, pretty_version: string, aliases: string[], install_path: string}, versions: array<string, array{dev_requirement: bool, pretty_version?: string, version?: string, aliases?: string[], reference?: string, replaced?: string[], provided?: string[], install_path?: string}>}>
      */
     public static function getAllRawData()
     {
@@ -309,14 +308,18 @@ class InstalledVersions
                     $installed[] = self::$installedByVendor[$vendorDir];
                 } elseif (is_file($vendorDir.'/composer/installed.php')) {
                     $installed[] = self::$installedByVendor[$vendorDir] = require $vendorDir.'/composer/installed.php';
+                    if (null === self::$installed && strtr($vendorDir.'/composer', '\\', '/') === strtr(__DIR__, '\\', '/')) {
+                        self::$installed = $installed[count($installed) - 1];
+                    }
                 }
             }
         }
 
+        if (null === self::$installed) {
+            self::$installed = require __DIR__ . '/installed.php';
+        }
         $installed[] = self::$installed;
 
         return $installed;
     }
 }
-
-InstalledVersions::initializeInstalled();
