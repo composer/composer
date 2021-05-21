@@ -159,8 +159,13 @@ class FilesystemRepository extends WritableArrayRepository
                 } else {
                     $lines .= "array(),\n";
                 }
-            } elseif ($key === 'install_path') {
-                $lines .= "__DIR__ . " . var_export('/' . $value, true) . ",\n";
+            } elseif ($key === 'install_path' && is_string($value)) {
+                $fs = new Filesystem();
+                if ($fs->isAbsolutePath($value)) {
+                    $lines .= var_export($value, true) . ",\n";
+                } else {
+                    $lines .= "__DIR__ . " . var_export('/' . $value, true) . ",\n";
+                }
             } else {
                 $lines .= var_export($value, true) . ",\n";
             }

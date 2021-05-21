@@ -52,6 +52,7 @@ class InstalledVersionsTest extends TestCase
             'foo/impl',
             'foo/impl2',
             'foo/replaced',
+            'meta/package',
         );
         $this->assertSame($names, InstalledVersions::getInstalledPackages());
     }
@@ -74,6 +75,7 @@ class InstalledVersionsTest extends TestCase
             array(true,  '__root__'),
             array(true,  'b/replacer'),
             array(false, 'not/there'),
+            array(true,  'meta/package'),
         );
     }
 
@@ -246,8 +248,8 @@ class InstalledVersionsTest extends TestCase
 
     public function testGetInstallPath()
     {
-        $this->assertSame($this->root . '/./', \Composer\InstalledVersions::getInstallPath('__root__'));
-        $this->assertSame($this->root . '/foo/bar/vendor/woop/woop', \Composer\InstalledVersions::getInstallPath('c/c'));
+        $this->assertSame(realpath($this->root), realpath(\Composer\InstalledVersions::getInstallPath('__root__')));
+        $this->assertSame('/foo/bar/vendor/c/c', \Composer\InstalledVersions::getInstallPath('c/c'));
         $this->assertNull(\Composer\InstalledVersions::getInstallPath('foo/impl'));
     }
 }

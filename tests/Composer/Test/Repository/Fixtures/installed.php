@@ -42,7 +42,7 @@ return array(
             'version' => '1.1.0.0',
             'type' => 'library',
             // @phpstan-ignore-next-line
-            'install_path' => $dir . '/foo/bar/vendor/woop/woop',
+            'install_path' => $dir . '/vendor/a/provider',
             'aliases' => array(),
             'reference' => 'distref-as-no-source',
             'dev_requirement' => false,
@@ -52,7 +52,7 @@ return array(
             'version' => '1.2.0.0',
             'type' => 'library',
             // @phpstan-ignore-next-line
-            'install_path' => $dir . '/foo/bar/vendor/woop/woop',
+            'install_path' => $dir . '/vendor/a/provider2',
             'aliases' => array(
               '1.4',
             ),
@@ -64,7 +64,7 @@ return array(
             'version' => '2.2.0.0',
             'type' => 'library',
             // @phpstan-ignore-next-line
-            'install_path' => $dir . '/foo/bar/vendor/woop/woop',
+            'install_path' => $dir . '/vendor/b/replacer',
             'aliases' => array(),
             'reference' => null,
             'dev_requirement' => false,
@@ -73,8 +73,7 @@ return array(
             'pretty_version' => '3.0',
             'version' => '3.0.0.0',
             'type' => 'library',
-            // @phpstan-ignore-next-line
-            'install_path' => $dir . '/foo/bar/vendor/woop/woop',
+            'install_path' => '/foo/bar/vendor/c/c',
             'aliases' => array(),
             'reference' => null,
             'dev_requirement' => true,
@@ -103,5 +102,14 @@ return array(
                 '^3.0',
             ),
         ),
+        'meta/package' => array(
+            'pretty_version' => '3.0',
+            'version' => '3.0.0.0',
+            'type' => 'metapackage',
+            'install_path' => null,
+            'aliases' => array(),
+            'reference' => null,
+            'dev_requirement' => false,
+        )
     ),
 );
