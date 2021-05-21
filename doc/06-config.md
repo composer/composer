@@ -171,7 +171,7 @@ Therefore if you use this it is recommended, and safer, to also run the
 deployment strategy.
 
 If a dependency requires some extension that you do not have installed locally
-you may ignore it instead by passing `--ignore-platform-req=ext-foo` to `update`,
+you may ignore it instead by passing `--ignore-platform-reqs=ext-foo` to `update`,
 `install` or `require`. In the long run though you should install required
 extensions as if you ignore one now and a new package you add a month later also
 requires it, you may introduce issues in production unknowingly.
