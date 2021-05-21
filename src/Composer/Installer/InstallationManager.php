@@ -464,7 +464,7 @@ class InstallationManager
         if ($progress) {
             $progress->clear();
             // ProgressBar in non-decorated output does not output a final line-break and clear() does nothing
-            if ($this->io->isDecorated()) {
+            if (!$this->io->isDecorated()) {
                 $this->io->writeError('');
             }
         }

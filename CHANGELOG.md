@@ -1,3 +1,14 @@
+### [2.0.14] 2021-05-21
+
+  * Updated composer/xdebug-handler to 2.0 which adds supports for Xdebug 3
+  * Fixed handling of inline-update-constraints with references or stability flags (#9847)
+  * Fixed async processes erroring in an unclear way when they failed to start (#9808)
+  * Fixed support for the upcoming Symfony 6.0 release when Composer is installed as a library (#9896)
+  * Fixed progress output missing newlines on PowerShell, and disable progress output by default when CI env var is present (#9621)
+  * Fixed support for Vagrant/VirtualBox filesystem slowness when installing binaries from packages (#9627)
+  * Fixed type annotations for the InstalledVersions class
+  * Deprecated InstalledVersions::getRawData in favor of InstalledVersions::getAllRawData (#9816)
+
 ### [2.0.13] 2021-04-27
 
   * Security: Fixed command injection vulnerability in HgDriver/HgDownloader and hardened other VCS drivers and downloaders (GHSA-h5h8-pc6h-jvvx / CVE-2021-29472)
@@ -1143,6 +1154,7 @@
 
   * Initial release
 
+[2.0.14]: https://github.com/composer/composer/compare/2.0.13...2.0.14
 [2.0.13]: https://github.com/composer/composer/compare/2.0.12...2.0.13
 [2.0.12]: https://github.com/composer/composer/compare/2.0.11...2.0.12
 [2.0.11]: https://github.com/composer/composer/compare/2.0.10...2.0.11
