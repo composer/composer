@@ -193,7 +193,7 @@ class InstalledVersionsTest extends TestCase
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
             'type' => 'library',
-            'install_path' => $this->root . DIRECTORY_SEPARATOR . './',
+            'install_path' => $this->root . '/./',
             'aliases' => array(
                 '1.10.x-dev',
             ),
@@ -242,5 +242,12 @@ class InstalledVersionsTest extends TestCase
         );
 
         $this->assertSame($names, \Composer\InstalledVersions::getInstalledPackagesByType('library'));
+    }
+
+    public function testGetInstallPath()
+    {
+        $this->assertSame($this->root . '/./', \Composer\InstalledVersions::getInstallPath('__root__'));
+        $this->assertSame($this->root . '/foo/bar/vendor/woop/woop', \Composer\InstalledVersions::getInstallPath('c/c'));
+        $this->assertNull(\Composer\InstalledVersions::getInstallPath('foo/impl'));
     }
 }
