@@ -222,11 +222,11 @@ class FilesystemRepository extends WritableArrayRepository
                 'install_path' => $installPath,
                 'aliases' => array(),
                 'reference' => $reference,
-                'dev-requirement' => isset($devPackages[$package->getName()]),
+                'dev_requirement' => isset($devPackages[$package->getName()]),
             );
             if ($package instanceof RootPackageInterface) {
                 $versions['root'] = $versions['versions'][$package->getName()];
-                unset($versions['root']['dev-requirement']);
+                unset($versions['root']['dev_requirement']);
                 $versions['root']['name'] = $package->getName();
                 $versions['root']['dev'] = $devMode;
             }
@@ -240,10 +240,10 @@ class FilesystemRepository extends WritableArrayRepository
                 if (PlatformRepository::isPlatformPackage($replace->getTarget())) {
                     continue;
                 }
-                if (!isset($versions['versions'][$replace->getTarget()]['dev-requirement'])) {
-                    $versions['versions'][$replace->getTarget()]['dev-requirement'] = $isDevPackage;
+                if (!isset($versions['versions'][$replace->getTarget()]['dev_requirement'])) {
+                    $versions['versions'][$replace->getTarget()]['dev_requirement'] = $isDevPackage;
                 } elseif (!$isDevPackage) {
-                    $versions['versions'][$replace->getTarget()]['dev-requirement'] = false;
+                    $versions['versions'][$replace->getTarget()]['dev_requirement'] = false;
                 }
                 $replaced = $replace->getPrettyConstraint();
                 if ($replaced === 'self.version') {
@@ -258,10 +258,10 @@ class FilesystemRepository extends WritableArrayRepository
                 if (PlatformRepository::isPlatformPackage($provide->getTarget())) {
                     continue;
                 }
-                if (!isset($versions['versions'][$provide->getTarget()]['dev-requirement'])) {
-                    $versions['versions'][$provide->getTarget()]['dev-requirement'] = $isDevPackage;
+                if (!isset($versions['versions'][$provide->getTarget()]['dev_requirement'])) {
+                    $versions['versions'][$provide->getTarget()]['dev_requirement'] = $isDevPackage;
                 } elseif (!$isDevPackage) {
-                    $versions['versions'][$provide->getTarget()]['dev-requirement'] = false;
+                    $versions['versions'][$provide->getTarget()]['dev_requirement'] = false;
                 }
                 $provided = $provide->getPrettyConstraint();
                 if ($provided === 'self.version') {
