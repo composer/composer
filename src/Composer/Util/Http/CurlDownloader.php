@@ -30,7 +30,7 @@ use React\Promise\Promise;
  */
 class CurlDownloader
 {
-    public $multiHandle;
+    private $multiHandle;
     private $shareHandle;
     private $jobs = array();
     /** @var IOInterface */
