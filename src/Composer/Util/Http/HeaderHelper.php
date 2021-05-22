@@ -22,7 +22,7 @@ class HeaderHelper
         if (!$repos) {
             return $headers;
         }
-        $repoHeaders = $this->getRepoHeaders(, $url);
+        $repoHeaders = $this->getRepoHeaders($repos, $url);
         if (empty($repoHeaders)) {
             return $headers;
         }
