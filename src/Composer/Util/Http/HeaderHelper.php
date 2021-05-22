@@ -18,8 +18,11 @@ class HeaderHelper
 
     public function addHeader(array $headers, $origin, $url)
     {
-//        var_dump('HeaderHelper::addHeader');
-        $repoHeaders = $this->getRepoHeaders($this->config->getRepositories(), $url);
+        $repos = $this->config->getRepositories();
+        if (!$repos) {
+            return $headers;
+        }
+        $repoHeaders = $this->getRepoHeaders(, $url);
         if (empty($repoHeaders)) {
             return $headers;
         }
@@ -28,8 +31,6 @@ class HeaderHelper
             $pieces = explode(':', $repoHeader);
             $repoHeaderNames[$pieces[0]] = $i;
         }
-        // Override existing headers
-//        var_dump('...overriding');
         $repoHeaderOverrides = array();
         foreach ($headers as $i => $header) {
             $pieces = explode(':', $header);
@@ -37,20 +38,9 @@ class HeaderHelper
             if (!array_key_exists($headerName, $repoHeaderNames)) {
                 continue;
             }
-//            var_dump($header);
-//            var_dump($repoHeaders[$repoHeaderNames[$headerName]]);
             $headers[$i] = $repoHeaders[$repoHeaderNames[$headerName]];
             $repoHeaderOverrides[] = $repoHeaderNames[$headerName];
         }
-        // Add new headers
-//        var_dump('...repoHeader');
-//        var_dump($repoHeaders);
-//        var_dump('...override indices');
-//        var_dump(array_values($repoHeaderOverrides));
-//        var_dump('...all repo indices');
-//        var_dump(array_keys($repoHeaders));
-//        var_dump('...diff');
-//        \var_dump(array_diff(array_keys($repoHeaders), array_values($repoHeaderOverrides)));
         foreach(array_diff(array_keys($repoHeaders), array_values($repoHeaderOverrides)) as $i) {
             $headers[] = $repoHeaders[$i];
         }
