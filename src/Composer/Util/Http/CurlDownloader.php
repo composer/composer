@@ -20,6 +20,7 @@ use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
 use Composer\Util\HttpDownloader;
+use Composer\Util\Http\HeaderHelper;
 use React\Promise\Promise;
 
 /**
@@ -29,7 +30,7 @@ use React\Promise\Promise;
  */
 class CurlDownloader
 {
-    private $multiHandle;
+    public $multiHandle;
     private $shareHandle;
     private $jobs = array();
     /** @var IOInterface */
@@ -38,6 +39,8 @@ class CurlDownloader
     private $config;
     /** @var AuthHelper */
     private $authHelper;
+    /** @var HeaderHelper */
+    private $headerHelper;
     private $selectTimeout = 5.0;
     private $maxRedirects = 20;
     /** @var ProxyManager */
@@ -98,6 +101,7 @@ class CurlDownloader
         }
 
         $this->authHelper = new AuthHelper($io, $config);
+        $this->headerHelper = new HeaderHelper($io, $config);
         $this->proxyManager = ProxyManager::getInstance();
 
         $version = curl_version();
@@ -165,6 +169,7 @@ class CurlDownloader
         curl_setopt($curlHandle, CURLOPT_FILE, $bodyHandle);
         curl_setopt($curlHandle, CURLOPT_ENCODING, "gzip");
         curl_setopt($curlHandle, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+
         if (function_exists('curl_share_init')) {
             curl_setopt($curlHandle, CURLOPT_SHARE, $this->shareHandle);
         }
@@ -184,6 +189,7 @@ class CurlDownloader
 
         $options['http']['header'] = $this->authHelper->addAuthenticationHeader($options['http']['header'], $origin, $url);
         $options = StreamContextFactory::initOptions($url, $options, true);
+        $options['http']['header'] = $this->headerHelper->addHeader($options['http']['header'], $origin, $url);
 
         foreach (self::$options as $type => $curlOptions) {
             foreach ($curlOptions as $name => $curlOption) {
