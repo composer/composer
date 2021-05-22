@@ -269,6 +269,16 @@ class AliasPackage extends BasePackage
         $this->aliasOf->setSourceReference($reference);
     }
 
+    public function getSourceOptions()
+    {
+        return $this->aliasOf->getSourceOptions();
+    }
+
+    public function setSourceOptions($options)
+    {
+        $this->aliasOf->setSourceOptions($options);
+    }
+
     public function setSourceMirrors($mirrors)
     {
         $this->aliasOf->setSourceMirrors($mirrors);
@@ -307,6 +317,16 @@ class AliasPackage extends BasePackage
     public function getDistSha1Checksum()
     {
         return $this->aliasOf->getDistSha1Checksum();
+    }
+
+    public function getDistOptions()
+    {
+        return $this->aliasOf->getDistOptions();
+    }
+
+    public function setDistOptions($options)
+    {
+        $this->aliasOf->setDistOptions($options);
     }
 
     public function setTransportOptions(array $options)

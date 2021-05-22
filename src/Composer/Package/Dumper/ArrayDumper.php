@@ -51,6 +51,9 @@ class ArrayDumper
             if (null !== ($value = $package->getSourceReference())) {
                 $data['source']['reference'] = $value;
             }
+            if (null !== ($value = $package->getSourceOptions())) {
+                $data['source']['options'] = $value;
+            }
             if ($mirrors = $package->getSourceMirrors()) {
                 $data['source']['mirrors'] = $mirrors;
             }
@@ -64,6 +67,9 @@ class ArrayDumper
             }
             if (null !== ($value = $package->getDistSha1Checksum())) {
                 $data['dist']['shasum'] = $value;
+            }
+            if (null !== ($value = $package->getDistOptions())) {
+                $data['dist']['options'] = $value;
             }
             if ($mirrors = $package->getDistMirrors()) {
                 $data['dist']['mirrors'] = $mirrors;

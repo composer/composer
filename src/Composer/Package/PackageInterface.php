@@ -136,6 +136,13 @@ interface PackageInterface
     public function getSourceReference();
 
     /**
+     * Returns the options for the source archive of this version
+     *
+     * @return array|null
+     */
+    public function getSourceOptions();
+
+    /**
      * Returns the source mirrors of this package
      *
      * @return array|null
@@ -182,6 +189,13 @@ interface PackageInterface
      * @return string
      */
     public function getDistSha1Checksum();
+
+    /**
+     * Returns the options for the distribution archive of this version
+     *
+     * @return array|null
+     */
+    public function getDistOptions();
 
     /**
      * Returns the dist mirrors of this package
@@ -396,6 +410,13 @@ interface PackageInterface
     public function setSourceReference($reference);
 
     /**
+     * @param array $options
+     *
+     * @return void
+     */
+    public function setSourceOptions($options);
+
+    /**
      * @param string $url
      *
      * @return void
@@ -415,6 +436,13 @@ interface PackageInterface
      * @return void
      */
     public function setDistReference($reference);
+
+    /**
+     * @param array $options
+     *
+     * @return void
+     */
+    public function setDistOptions($options);
 
     /**
      * Set dist and source references and update dist URL for ones that contain a reference

@@ -28,11 +28,13 @@ class Package extends BasePackage
     protected $sourceType;
     protected $sourceUrl;
     protected $sourceReference;
+    protected $sourceOptions;
     protected $sourceMirrors;
     protected $distType;
     protected $distUrl;
     protected $distReference;
     protected $distSha1Checksum;
+    protected $distOptions;
     protected $distMirrors;
     protected $version;
     protected $prettyVersion;
@@ -228,6 +230,22 @@ class Package extends BasePackage
     }
 
     /**
+     * @inerhitDoc
+     */
+    public function getSourceOptions()
+    {
+        return $this->sourceOptions;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setSourceOptions($options)
+    {
+        $this->sourceOptions = $options;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function setSourceMirrors($mirrors)
@@ -313,6 +331,22 @@ class Package extends BasePackage
     public function getDistSha1Checksum()
     {
         return $this->distSha1Checksum;
+    }
+
+    /**
+     * @inerhitDoc
+     */
+    public function getDistOptions()
+    {
+        return $this->distOptions;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setDistOptions($options)
+    {
+        $this->distOptions = $options;
     }
 
     /**
