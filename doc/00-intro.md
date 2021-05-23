@@ -158,6 +158,27 @@ C:\Users\username>composer -V
 Composer version 2.0.12 2021-04-01 10:14:59
 ```
 
+## Docker Image
+
+Composer has a **community supported** image available on [docker hub](https://hub.docker.com/_/composer).
+
+```sh
+docker pull composer
+docker run --rm -it -v "$(pwd):/app" composer -V
+Composer version 2.0.13 2021-04-27 13:11:08
+```
+
+To add Composer to an existing **Dockerfile**:
+
+```Dockerfile
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+```
+
+Read the docker [description](https://hub.docker.com/_/composer?tab=description) for further information.
+
+**Note:** the Docker image isn't officially supported by Composer. Issues should be filed: 
+ [github.com > composer > docker > issues](https://github.com/composer/docker/issues)
+
 ## Using Composer
 
 Now that you've installed Composer, you are ready to use it! Head on over to the
