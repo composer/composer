@@ -39,8 +39,6 @@ Package operations: 6 installs, 0 updates, 0 removals%(\nAs there is no 'unzip' 
   - Installing symfony/filesystem (%v?[2-8]\.\d+\.\d+%): Extracting archive
   - Installing symfony/process (12345.1.2): Symlinking from symfony-process
 Generating autoload files
-2 packages you are using are looking for funding.
-Use the `composer fund` command to find out more!
 > Hooks::postUpdate
 !!PostUpdate:["composer/ca-bundle","composer/composer","composer/metadata-minifier","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/console","symfony/debug","symfony/filesystem","symfony/finder","symfony/polyfill-ctype","symfony/polyfill-mbstring","symfony/process","plugin/a","plugin/b","root/pkg"]
 !!Versions:console:%[2-8]\.\d+\.\d+.0%;process:%[2-8]\.\d+\.\d+.0%;filesystem:%[2-8]\.\d+\.\d+.0%

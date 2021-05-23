@@ -316,24 +316,6 @@ class Installer
             }
         }
 
-        $fundingCount = 0;
-        foreach ($localRepo->getPackages() as $package) {
-            if ($package instanceof CompletePackageInterface && !$package instanceof AliasPackage && $package->getFunding()) {
-                $fundingCount++;
-            }
-        }
-        if ($fundingCount) {
-            $this->io->writeError(array(
-                sprintf(
-                    "<info>%d package%s you are using %s looking for funding.</info>",
-                    $fundingCount,
-                    1 === $fundingCount ? '' : 's',
-                    1 === $fundingCount ? 'is' : 'are'
-                ),
-                '<info>Use the `composer fund` command to find out more!</info>',
-            ));
-        }
-
         if ($this->runScripts) {
             // dispatch post event
             $eventName = $this->update ? ScriptEvents::POST_UPDATE_CMD : ScriptEvents::POST_INSTALL_CMD;
