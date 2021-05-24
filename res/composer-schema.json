@@ -3,26 +3,7 @@
     "title": "Package",
     "type": "object",
     "additionalProperties": false,
-    "oneOf": [
-        {
-            "properties": {
-                "type": {
-                    "not": {
-                        "enum": ["project"]
-                    }
-                }
-            },
-            "required": ["name", "description"]
-        },
-        {
-            "properties": {
-                "type": {
-                    "enum": ["project"]
-                }
-            },
-            "required": ["type"]
-        }
-    ],
+    "required": [ "name", "description" ],
     "properties": {
         "name": {
             "type": "string",
