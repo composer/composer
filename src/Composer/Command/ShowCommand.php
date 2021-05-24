@@ -475,6 +475,24 @@ EOT
         if ('json' === $format) {
             $io->write(JsonFile::encode($viewData));
         } else {
+            if ($input->getOption('latest')) {
+                if (!$io->isDecorated()) {
+                    $io->writeError('Legend:');
+                    $io->writeError('! patch or minor release available - update recommended');
+                    $io->writeError('~ major release available - update possible');
+                    if (!$input->getOption('outdated')) {
+                        $io->writeError('= up to date version');
+                    }
+                } else {
+                    $io->writeError('<info>Color legend:</info>');
+                    $io->writeError('- <comment>patch or minor</comment> release available - update recommended');
+                    $io->writeError('- <highlight>major</highlight> release available - update possible');
+                    if (!$input->getOption('outdated')) {
+                        $io->writeError('- <info>up to date</info> version');
+                    }
+                }
+            }
+
             $width = $this->getTerminalWidth();
 
             foreach ($viewData as $type => $packages) {
