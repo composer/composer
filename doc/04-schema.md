@@ -94,9 +94,7 @@ Out of the box, Composer supports four types:
   CMSs like the [SilverStripe installer](https://github.com/silverstripe/silverstripe-installer)
   or full fledged applications distributed as packages. This can for example
   be used by IDEs to provide listings of projects to initialize when creating
-  a new workspace.  Setting the type to `project` also makes the `name` and
-  `description` fields optional, making it a good choice for closed source
-  projects wishing to use `composer validate`.
+  a new workspace.
 - **metapackage:** An empty package that contains requirements and will trigger
   their installation, but contains no files and will not write anything to the
   filesystem. As such, it does not require a dist or source key to be
