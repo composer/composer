@@ -21,10 +21,12 @@ use Composer\IO\NullIO;
 use Composer\Plugin\PreCommandRunEvent;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Terminal;
 
 /**
  * Base class for Composer commands
@@ -241,5 +243,30 @@ abstract class BaseCommand extends Command
         }
         $rendererStyle->setCellRowContentFormat('%s  ');
         $renderer->setRows($table)->render();
+    }
+
+    protected function getTerminalWidth()
+    {
+        if (class_exists('Symfony\Component\Console\Terminal')) {
+            $terminal = new Terminal();
+            $width = $terminal->getWidth();
+        } else {
+            // For versions of Symfony console before 3.2
+            // TODO remove in composer 2.2
+            // @phpstan-ignore-next-line
+            list($width) = $this->getApplication()->getTerminalDimensions();
+        }
+        if (null === $width) {
+            // In case the width is not detected, we're probably running the command
+            // outside of a real terminal, use space without a limit
+            $width = PHP_INT_MAX;
+        }
+        if (Platform::isWindows()) {
+            $width--;
+        } else {
+            $width = max(80, $width);
+        }
+
+        return $width;
     }
 }

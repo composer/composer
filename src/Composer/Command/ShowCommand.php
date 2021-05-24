@@ -331,26 +331,6 @@ EOT
             $packageListFilter = $this->getRootRequires();
         }
 
-        if (class_exists('Symfony\Component\Console\Terminal')) {
-            $terminal = new Terminal();
-            $width = $terminal->getWidth();
-        } else {
-            // For versions of Symfony console before 3.2
-            // TODO remove in composer 2.2
-            // @phpstan-ignore-next-line
-            list($width) = $this->getApplication()->getTerminalDimensions();
-        }
-        if (null === $width) {
-            // In case the width is not detected, we're probably running the command
-            // outside of a real terminal, use space without a limit
-            $width = PHP_INT_MAX;
-        }
-        if (Platform::isWindows()) {
-            $width--;
-        } else {
-            $width = max(80, $width);
-        }
-
         if ($input->getOption('path') && null === $composer) {
             $io->writeError('No composer.json found in the current directory, disabling "path" option');
             $input->setOption('path', false);
@@ -495,6 +475,8 @@ EOT
         if ('json' === $format) {
             $io->write(JsonFile::encode($viewData));
         } else {
+            $width = $this->getTerminalWidth();
+
             foreach ($viewData as $type => $packages) {
                 $nameLength = $viewMetaData[$type]['nameLength'];
                 $versionLength = $viewMetaData[$type]['versionLength'];

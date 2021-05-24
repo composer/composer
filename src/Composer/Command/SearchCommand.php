@@ -87,8 +87,21 @@ EOT
         $results = $repos->search(implode(' ', $input->getArgument('tokens')), $flags, $type);
 
         if ($results && $format === 'text') {
+            $width = $this->getTerminalWidth();
+
+            $nameLength = 0;
             foreach ($results as $result) {
-                $io->write($result['name'] . (isset($result['description']) ? ' '. $result['description'] : ''));
+                $nameLength = max(strlen($result['name']), $nameLength);
+            }
+            $nameLength += 1;
+            foreach ($results as $result) {
+                $description = isset($result['description']) ? $result['description'] : '';
+                $remaining = $width - $nameLength - 2;
+                if (strlen($description) > $remaining) {
+                    $description = substr($description, 0, $remaining - 3) . '...';
+                }
+
+                $io->write(str_pad($result['name'], $nameLength, ' ') . $description);
             }
         } elseif ($format === 'json') {
             $io->write(JsonFile::encode($results));
