@@ -27,6 +27,14 @@ The main use cases for this class are the following:
 \Composer\InstalledVersions::isInstalled('psr/log-implementation'); // returns bool
 ```
 
+As of Composer 2.1, you may also check if something was installed via require-dev or not by
+passing false as second argument:
+
+```php
+\Composer\InstalledVersions::isInstalled('vendor/package'); // returns true assuming this package is installed
+\Composer\InstalledVersions::isInstalled('vendor/package', false); // returns true if vendor/package is in require, false if in require-dev
+```
+
 Note that this can not be used to check whether platform packages are installed.
 
 ### Knowing whether package X is installed in version Y
@@ -88,6 +96,35 @@ possible for safety.
 
 A few other methods are available for more complex usages, please refer to the
 source/docblocks of [the class itself](https://github.com/composer/composer/blob/master/src/Composer/InstalledVersions.php).
+
+### Knowing the path in which a package is installed
+
+The `getInstallPath` method to retrieve a package's absolute install path.
+
+```php
+// returns an absolute path to the package installation location if vendor/package is installed,
+// or null if it is provided/replaced, or the package is a metapackage
+// or throws OutOfBoundsException if the package is not installed at all
+\Composer\InstalledVersions::getInstallPath('vendor/package');
+```
+
+> Available as of Composer 2.1 (i.e. `composer-runtime-api ^2.1`)
+
+### Knowing which packages of a given type are installed
+
+The `getInstalledPackagesByType` method accepts a package type (e.g. foo-plugin) and lists
+the packages of that type which are installed. You can then use the methods above to retrieve
+more information about each package if needed.
+
+This method should alleviate the need for custom installers placing plugins in a specific path
+instead of leaving them in the vendor dir. You can then find plugins to initialize at runtime
+via InstalledVersions, including their paths via getInstallPath if needed.
+
+```php
+\Composer\InstalledVersions::getInstalledPackagesByType('foo-plugin');
+```
+
+> Available as of Composer 2.1 (i.e. `composer-runtime-api ^2.1`)
 
 ## Platform check
 

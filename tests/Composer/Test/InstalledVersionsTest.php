@@ -17,6 +17,8 @@ use Composer\Semver\VersionParser;
 
 class InstalledVersionsTest extends TestCase
 {
+    private $root;
+
     public static function setUpBeforeClass()
     {
         // disable multiple-ClassLoader-based checks of InstalledVersions by making it seem like no
@@ -33,6 +35,9 @@ class InstalledVersionsTest extends TestCase
 
     public function setUp()
     {
+        $this->root = $this->getUniqueTmpDirectory();
+
+        $dir = $this->root;
         InstalledVersions::reload(require __DIR__.'/Repository/Fixtures/installed.php');
     }
 
@@ -47,6 +52,7 @@ class InstalledVersionsTest extends TestCase
             'foo/impl',
             'foo/impl2',
             'foo/replaced',
+            'meta/package',
         );
         $this->assertSame($names, InstalledVersions::getInstalledPackages());
     }
@@ -69,6 +75,7 @@ class InstalledVersionsTest extends TestCase
             array(true,  '__root__'),
             array(true,  'b/replacer'),
             array(false, 'not/there'),
+            array(true,  'meta/package'),
         );
     }
 
@@ -187,6 +194,8 @@ class InstalledVersionsTest extends TestCase
         $this->assertSame(array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
+            'type' => 'library',
+            'install_path' => $this->root . '/./',
             'aliases' => array(
                 '1.10.x-dev',
             ),
@@ -198,6 +207,7 @@ class InstalledVersionsTest extends TestCase
 
     public function testGetRawData()
     {
+        $dir = $this->root;
         $this->assertSame(require __DIR__.'/Repository/Fixtures/installed.php', InstalledVersions::getRawData());
     }
 
@@ -221,5 +231,25 @@ class InstalledVersionsTest extends TestCase
             array(null, 'b/replacer'),
             array(null, 'c/c'),
         );
+    }
+
+    public function testGetInstalledPackagesByType()
+    {
+        $names = array(
+            '__root__',
+            'a/provider',
+            'a/provider2',
+            'b/replacer',
+            'c/c',
+        );
+
+        $this->assertSame($names, \Composer\InstalledVersions::getInstalledPackagesByType('library'));
+    }
+
+    public function testGetInstallPath()
+    {
+        $this->assertSame(realpath($this->root), realpath(\Composer\InstalledVersions::getInstallPath('__root__')));
+        $this->assertSame('/foo/bar/vendor/c/c', \Composer\InstalledVersions::getInstallPath('c/c'));
+        $this->assertNull(\Composer\InstalledVersions::getInstallPath('foo/impl'));
     }
 }
