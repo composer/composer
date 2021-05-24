@@ -181,26 +181,16 @@ class Problem
     {
         // handle php/hhvm
         if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
-            $version = phpversion();
-            $available = $pool->whatProvides($packageName);
-
-            if (count($available)) {
-                $firstAvailable = reset($available);
-                $version = $firstAvailable->getPrettyVersion();
-                $extra = $firstAvailable->getExtra();
-                if ($firstAvailable instanceof CompletePackageInterface && isset($extra['config.platform']) && $extra['config.platform'] === true) {
-                    $version .= '; ' . str_replace('Package ', '', $firstAvailable->getDescription());
-                }
-            }
+            $version = self::getPlatformPackageVersion($pool, $packageName, phpversion());
 
             $msg = "- Root composer.json requires ".$packageName.self::constraintToText($constraint).' but ';
 
-            if (defined('HHVM_VERSION') || (count($available) && $packageName === 'hhvm')) {
+            if (defined('HHVM_VERSION') || ($packageName === 'hhvm' && count($pool->whatProvides($packageName)) > 0)) {
                 return array($msg, 'your HHVM version does not satisfy that requirement.');
             }
 
             if ($packageName === 'hhvm') {
-                return array($msg, 'you are running this with PHP and not HHVM.');
+                return array($msg, 'HHVM was not detected on this machine, make sure it is in your PATH.');
             }
 
             return array($msg, 'your '.$packageName.' version ('. $version .') does not satisfy that requirement.');
@@ -213,7 +203,9 @@ class Problem
             }
 
             $ext = substr($packageName, 4);
-            $error = extension_loaded($ext) ? 'it has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'it is missing from your system';
+            $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) ?: '0');
+
+            $error = extension_loaded($ext) ? 'it has the wrong version ('.$version.') installed' : 'it is missing from your system';
 
             return array("- Root composer.json requires PHP extension ".$packageName.self::constraintToText($constraint).' but ', $error.'. Install or enable PHP\'s '.$ext.' extension.');
         }
@@ -356,6 +348,22 @@ class Problem
         }
 
         return implode(', ', $prepared);
+    }
+
+    private static function getPlatformPackageVersion(Pool $pool, $packageName, $version)
+    {
+        $available = $pool->whatProvides($packageName);
+
+        if (count($available)) {
+            $firstAvailable = reset($available);
+            $version = $firstAvailable->getPrettyVersion();
+            $extra = $firstAvailable->getExtra();
+            if ($firstAvailable instanceof CompletePackageInterface && isset($extra['config.platform']) && $extra['config.platform'] === true) {
+                $version .= '; ' . str_replace('Package ', '', $firstAvailable->getDescription());
+            }
+        }
+
+        return $version;
     }
 
     /**
