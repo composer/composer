@@ -37,24 +37,6 @@ class ComposerSchemaTest extends TestCase
         $this->assertEquals($expectedError, $this->check($json));
     }
 
-    public function testRequiredProperties()
-    {
-        $json = '{ }';
-        $result = $this->check($json);
-        $this->assertContains(array('property' => 'name', 'message' => 'The property name is required', 'constraint' => 'required'), $result);
-        $this->assertContains(array('property' => 'description', 'message' => 'The property description is required', 'constraint' => 'required'), $result);
-
-        $json = '{ "name": "vendor/package" }';
-        $this->assertEquals(array(
-            array('property' => 'description', 'message' => 'The property description is required', 'constraint' => 'required'),
-        ), $this->check($json));
-
-        $json = '{ "description": "generic description" }';
-        $this->assertEquals(array(
-            array('property' => 'name', 'message' => 'The property name is required', 'constraint' => 'required'),
-        ), $this->check($json));
-    }
-
     public function testOptionalAbandonedProperty()
     {
         $json = '{"name": "vendor/package", "description": "description", "abandoned": true}';

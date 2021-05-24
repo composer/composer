@@ -2,8 +2,6 @@
     "$schema": "https://json-schema.org/draft-04/schema#",
     "title": "Package",
     "type": "object",
-    "additionalProperties": false,
-    "required": [ "name", "description" ],
     "properties": {
         "name": {
             "type": "string",
