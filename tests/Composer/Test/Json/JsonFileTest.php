@@ -176,6 +176,34 @@ class JsonFileTest extends TestCase
         }
         $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
 
+        file_put_contents($file, '{ "type": "library" }');
+        try {
+            $json->validateSchema();
+            $this->fail('Expected exception to be thrown (strict)');
+        } catch (JsonValidationException $e) {
+            $this->assertEquals($expectedMessage, $e->getMessage());
+            $errors = $e->getErrors();
+            $this->assertContains('name : The property name is required', $errors);
+            $this->assertContains('description : The property description is required', $errors);
+        }
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+
+        file_put_contents($file, '{ "type": "project" }');
+        try {
+            $json->validateSchema();
+            $this->fail('Expected exception to be thrown (strict)');
+        } catch (JsonValidationException $e) {
+            $this->assertEquals($expectedMessage, $e->getMessage());
+            $errors = $e->getErrors();
+            $this->assertContains('name : The property name is required', $errors);
+            $this->assertContains('description : The property description is required', $errors);
+        }
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+
+        file_put_contents($file, '{ "name": "vendor/package", "description": "generic description" }');
+        $this->assertTrue($json->validateSchema());
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+
         unlink($file);
     }
 
