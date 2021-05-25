@@ -313,6 +313,53 @@ uninstalled.
 * **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
   Implicitly enables `--apcu-autoloader`.
 
+## reinstall
+
+The `reinstall` command looks up installed packages by name,
+uninstalls them and reinstalls them. This lets you do a clean install
+of a package if you messed with its files, or if you wish to change
+the installation type using --prefer-install.
+
+```sh
+php composer.phar reinstall acme/foo acme/bar
+```
+
+You can specify more than one package name to reinstall, or use a
+wildcard to select several packages at once:
+
+```sh
+php composer.phar reinstall "acme/*"
+```
+
+### Options
+
+* **--prefer-install:** There are two ways of downloading a package: `source`
+  and `dist`. Composer uses `dist` by default. If you pass
+  `--prefer-install=source` (or `--prefer-source`) Composer will install from
+  `source` if there is one. This is useful if you want to make a bugfix to a
+  project and get a local git clone of the dependency directly.
+  To get the legacy behavior where Composer use `source` automatically for dev
+  versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
+  Passing this flag will override the config value.
+* **--no-autoloader:** Skips autoloader generation.
+* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
+* **--no-progress:** Removes the progress display that can mess with some
+  terminals or scripts which don't handle backspace characters.
+* **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
+  autoloader. This is recommended especially for production, but can take
+  a bit of time to run so it is currently not done by default.
+* **--classmap-authoritative (-a):** Autoload classes from the classmap only.
+  Implicitly enables `--optimize-autoloader`.
+* **--apcu-autoloader:** Use APCu to cache found/not-found classes.
+* **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
+  Implicitly enables `--apcu-autoloader`.
+* **--ignore-platform-reqs:** ignore all platform requirements. This only
+  has an effect in the context of the autoloader generation for the
+  reinstall command.
+* **--ignore-platform-req:** ignore a specific platform requirement. This only
+  has an effect in the context of the autoloader generation for the
+  reinstall command.
+
 ## check-platform-reqs
 
 The check-platform-reqs command checks that your PHP and extensions versions

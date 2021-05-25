@@ -487,6 +487,7 @@ class Application extends BaseApplication
             new Command\OutdatedCommand(),
             new Command\CheckPlatformReqsCommand(),
             new Command\FundCommand(),
+            new Command\ReinstallCommand(),
         ));
 
         if (strpos(__FILE__, 'phar:') === 0) {
