@@ -294,6 +294,13 @@ class Problem
                 }
             }
 
+            // check if the root package is a name match and hint the dependencies on root troubleshooting article
+            $allReposPackages = $packages;
+            $topPackage = reset($allReposPackages);
+            if ($topPackage instanceof RootPackageInterface) {
+                $suffix = ' See https://getcomposer.org/dep-on-root for details and assistance.';
+            }
+
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.' . $suffix);
         }
 
@@ -432,7 +439,6 @@ class Problem
         if ($higherRepoPackages) {
             $topPackage = reset($higherRepoPackages);
             if ($topPackage instanceof RootPackageInterface) {
-                $singular = count($nextRepoPackages) === 1;
                 return array(
                     "- Root composer.json requires $packageName".self::constraintToText($constraint).', it is ',
                     'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.$topPackage->getPrettyName().' is the root package and cannot be modified. See https://getcomposer.org/dep-on-root for details and assistance.'

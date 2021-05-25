@@ -60,6 +60,6 @@ Your lock file does not contain a compatible set of packages. Please run compose
 
   Problem 1
     - b/requirer is locked to version 1.0.0 and an update of this package was not requested.
-    - b/requirer 1.0.0 requires root/pkg ^1 -> found root/pkg[2.x-dev] but it does not match the constraint.
+    - b/requirer 1.0.0 requires root/pkg ^1 -> found root/pkg[2.x-dev] but it does not match the constraint. See https://getcomposer.org/dep-on-root for details and assistance.
 
 --EXPECT--
