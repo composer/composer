@@ -35,7 +35,7 @@ class DumpAutoloadCommand extends BaseCommand
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.'),
                 new InputOption('apcu', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
                 new InputOption('apcu-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu'),
-                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'DEPRECATED: Disables autoload-dev rules. Composer now infers this automatically according to the last install or update run.'),
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules. Composer will by default infer this automatically according to the last install or update --no-dev state.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
             ))
@@ -78,7 +78,6 @@ EOT
 
         $generator = $composer->getAutoloadGenerator();
         if ($input->getOption('no-dev')) {
-            $this->getIO()->writeError('<warning>You are using the deprecated option "--no-dev". Composer now infers the value automatically according to the last install or update run.</warning>');
             $generator->setDevMode(false);
         }
         $generator->setClassMapAuthoritative($authoritative);
