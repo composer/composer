@@ -889,6 +889,13 @@ EOT
             // Check for similar names/typos
             $similar = $this->findSimilar($name);
             if ($similar) {
+                if (in_array($name, $similar, true)) {
+                    throw new \InvalidArgumentException(sprintf(
+                        "Could not find package %s. It was however found via repository search, which indicates a consistency issue with the repository.",
+                        $name
+                    ));
+                }
+
                 throw new \InvalidArgumentException(sprintf(
                     "Could not find package %s.\n\nDid you mean " . (count($similar) > 1 ? 'one of these' : 'this') . "?\n    %s",
                     $name,
