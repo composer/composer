@@ -61,6 +61,13 @@ class GitLabDriver extends VcsDriver
     protected $gitDriver = null;
 
     /**
+     * Protocol to force use of for repository URLs.
+     *
+     * @var string One of ssh, http
+     */
+    protected $protocol;
+
+    /**
      * Defaults to true unless we can make sure it is public
      *
      * @var bool defines whether the repo is private or not
@@ -96,6 +103,14 @@ class GitLabDriver extends VcsDriver
             : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https')
         ;
         $this->originUrl = self::determineOrigin($configuredDomains, $guessedDomain, $urlParts, $match['port']);
+
+        if ($protocol = $this->config->get('gitlab-protocol')) {
+            // https treated as a synonym for http.
+            if (!in_array($protocol, array('git', 'http', 'https'))) {
+                throw new \RuntimeException('gitlab-protocol must be one of git, http.');
+            }
+            $this->protocol = $protocol === 'git' ? 'ssh' : 'http';
+        }
 
         if (false !== strpos($this->originUrl, ':') || false !== strpos($this->originUrl, '/')) {
             $this->hasNonstandardOrigin = true;
@@ -210,6 +225,9 @@ class GitLabDriver extends VcsDriver
      */
     public function getRepositoryUrl()
     {
+        if ($this->protocol) {
+            return $this->project["{$this->protocol}_url_to_repo"];
+        }
         return $this->isPrivate ? $this->project['ssh_url_to_repo'] : $this->project['http_url_to_repo'];
     }
 
@@ -360,7 +378,7 @@ class GitLabDriver extends VcsDriver
         if (isset($this->project['visibility'])) {
             $this->isPrivate = $this->project['visibility'] !== 'public';
         } else {
-            // client is not authendicated, therefore repository has to be public
+            // client is not authenticated, therefore repository has to be public
             $this->isPrivate = false;
         }
     }
