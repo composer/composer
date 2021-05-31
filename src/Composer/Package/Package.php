@@ -623,6 +623,11 @@ class Package extends BasePackage
         if (!$url) {
             return array();
         }
+
+        if ($urlType === 'dist' && false !== strpos($url, '%')) {
+            $url = ComposerMirror::processUrl($url, $this->name, $this->version, $ref, $type);
+        }
+
         $urls = array($url);
         if ($mirrors) {
             foreach ($mirrors as $mirror) {
