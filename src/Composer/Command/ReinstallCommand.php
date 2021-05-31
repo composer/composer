@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Transaction;
+use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -98,6 +99,7 @@ EOT
             $uninstallOperations[] = new UninstallOperation($package);
         }
 
+        // make sure we have a list of install operations ordered by dependency/plugins
         $presentPackages = $localRepo->getPackages();
         $resultPackages = $presentPackages;
         foreach ($presentPackages as $index => $package) {
@@ -107,6 +109,17 @@ EOT
         }
         $transaction = new Transaction($presentPackages, $resultPackages);
         $installOperations = $transaction->getOperations();
+
+        // reverse-sort the uninstalls based on the install order
+        $installOrder = array();
+        foreach ($installOperations as $index => $op) {
+            if ($op instanceof InstallOperation && !$op->getPackage() instanceof AliasPackage) {
+                $installOrder[$op->getPackage()->getName()] = $index;
+            }
+        }
+        usort($uninstallOperations, function ($a, $b) use ($installOrder) {
+            return $installOrder[$b->getPackage()->getName()] - $installOrder[$a->getPackage()->getName()];
+        });
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'reinstall', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
