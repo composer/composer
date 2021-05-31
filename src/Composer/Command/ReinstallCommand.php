@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Transaction;
 use Composer\Package\BasePackage;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -69,14 +70,16 @@ EOT
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
 
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-        $packages = array();
+        $packagesToReinstall = array();
+        $packageNamesToReinstall = array();
         foreach ($input->getArgument('packages') as $pattern) {
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
             $matched = false;
             foreach ($localRepo->getCanonicalPackages() as $package) {
                 if (preg_match($patternRegexp, $package->getName())) {
                     $matched = true;
-                    $packages[] = $package;
+                    $packagesToReinstall[] = $package;
+                    $packageNamesToReinstall[] = $package->getName();
                 }
             }
 
@@ -85,17 +88,25 @@ EOT
             }
         }
 
-        if (!$packages) {
+        if (!$packagesToReinstall) {
             $io->writeError('<warning>Found no packages to reinstall, aborting.</warning>');
             return 1;
         }
 
-        $installOperations = array();
         $uninstallOperations = array();
-        foreach ($packages as $package) {
+        foreach ($packagesToReinstall as $package) {
             $uninstallOperations[] = new UninstallOperation($package);
-            $installOperations[] = new InstallOperation($package);
         }
+
+        $presentPackages = $localRepo->getPackages();
+        $resultPackages = $presentPackages;
+        foreach ($presentPackages as $index => $package) {
+            if (in_array($package->getName(), $packageNamesToReinstall, true)) {
+                unset($presentPackages[$index]);
+            }
+        }
+        $transaction = new Transaction($presentPackages, $resultPackages);
+        $installOperations = $transaction->getOperations();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'reinstall', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
