@@ -168,36 +168,62 @@ EOT
         if ($errors) {
             $io->writeError('<error>' . $name . ' is invalid, the following errors/warnings were found:</error>');
         } elseif ($publishErrors) {
-            $io->writeError('<info>' . $name . ' is valid for simple usage with composer but has</info>');
-            $io->writeError('<info>strict errors that make it unable to be published as a package:</info>');
+            $io->writeError('<info>' . $name . ' is valid for simple usage with Composer but has</info>');
+            $io->writeError('<info>strict errors that make it unable to be published as a package</info>');
             $doPrintSchemaUrl = $printSchemaUrl;
         } elseif ($warnings) {
             $io->writeError('<info>' . $name . ' is valid, but with a few warnings</info>');
             $doPrintSchemaUrl = $printSchemaUrl;
+        } elseif ($lockErrors) {
+            $io->write('<info>' . $name . ' is valid but your composer.lock has some '.($checkLock ? 'errors' : 'warnings').'</info>');
         } else {
             $io->write('<info>' . $name . ' is valid</info>');
-            // if ($lockErrors) then they will be displayed below
         }
 
         if ($doPrintSchemaUrl) {
             $io->writeError('<warning>See https://getcomposer.org/doc/04-schema.md for details on the schema</warning>');
         }
 
+        if ($errors) {
+            $errors = array_map(function ($err) {
+                return '- ' . $err;
+            }, $errors);
+            array_unshift($errors, '# General errors');
+        }
+        if ($warnings) {
+            $warnings = array_map(function ($err) {
+                return '- ' . $err;
+            }, $warnings);
+            array_unshift($warnings, '# General warnings');
+        }
+
         // Avoid setting the exit code to 1 in case --strict and --no-check-publish/--no-check-lock are combined
         $extraWarnings = array();
 
         // If checking publish errors, display them as errors, otherwise just show them as warnings
-        if ($checkPublish) {
-            $errors = array_merge($errors, $publishErrors);
-        } else {
-            $extraWarnings = array_merge($extraWarnings, $publishErrors);
+        if ($publishErrors) {
+            $publishErrors = array_map(function ($err) {
+                return '- ' . $err;
+            }, $publishErrors);
+
+            if ($checkPublish) {
+                array_unshift($publishErrors, '# Publish errors');
+                $errors = array_merge($errors, $publishErrors);
+            } else {
+                array_unshift($publishErrors, '# Publish warnings');
+                $extraWarnings = array_merge($extraWarnings, $publishErrors);
+            }
         }
 
         // If checking lock errors, display them as errors, otherwise just show them as warnings
-        if ($checkLock) {
-            $errors = array_merge($errors, $lockErrors);
-        } else {
-            $extraWarnings = array_merge($extraWarnings, $lockErrors);
+        if ($lockErrors) {
+            if ($checkLock) {
+                array_unshift($lockErrors, '# Lock file errors');
+                $errors = array_merge($errors, $lockErrors);
+            } else {
+                array_unshift($lockErrors, '# Lock file warnings');
+                $extraWarnings = array_merge($extraWarnings, $lockErrors);
+            }
         }
 
         $messages = array(
@@ -207,7 +233,11 @@ EOT
 
         foreach ($messages as $style => $msgs) {
             foreach ($msgs as $msg) {
-                $io->writeError('<' . $style . '>' . $msg . '</' . $style . '>');
+                if (strpos($msg, '#') === 0) {
+                    $io->writeError('<' . $style . '>' . $msg . '</' . $style . '>');
+                } else {
+                    $io->writeError($msg);
+                }
             }
         }
     }
