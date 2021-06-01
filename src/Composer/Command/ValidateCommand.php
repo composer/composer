@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Repository\InstalledRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Util\ConfigValidator;
 use Composer\Util\Filesystem;
@@ -97,26 +98,39 @@ EOT
         $composer = Factory::create($io, $file, $input->hasParameterOption('--no-plugins'));
         $locker = $composer->getLocker();
         if ($locker->isLocked() && !$locker->isFresh()) {
-            $lockErrors[] = 'The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update` or `composer update <package name>`.';
+            $lockErrors[] = '- The lock file is not up to date with the latest changes in composer.json, it is recommended that you run `composer update` or `composer update <package name>`.';
         }
 
-        $lockData = $locker->getLockData();
-        $lockPackageNames = array_map(function($lockPackage) {return $lockPackage['name'];}, $lockData['packages']);
-        $devLockPackageNames = array_map(function($devLockPackage) {return $devLockPackage['name'];}, $lockData['packages-dev']);
-        $requiredPackages = array_filter(array_keys($composer->getPackage()->getRequires()), function($requiredPackageName) {return PlatformRepository::isPlatformPackage($requiredPackageName) === false;});
-        $devRequiredPackages = array_filter(array_keys($composer->getPackage()->getDevRequires()), function($devRequiredPackageName) {return PlatformRepository::isPlatformPackage($devRequiredPackageName) === false;});
-        $missingRequiredPackages = array_diff($requiredPackages, $lockPackageNames);
-        $missingDevRequiredPackages = array_diff($devRequiredPackages, $devLockPackageNames);
-        if (count(array_merge($missingRequiredPackages, $missingDevRequiredPackages)) > 0) {
-            if (count($missingRequiredPackages) > 0) {
-                $lockErrors[] = '- Required package "' . implode('", "', $missingRequiredPackages) . '" is not present in the lock file.';
+        if ($locker->isLocked()) {
+            $missingRequirements = false;
+            $sets = array(
+                array('repo' => $locker->getLockedRepository(false), 'method' => 'getRequires', 'description' => 'Required'),
+                array('repo' => $locker->getLockedRepository(true), 'method' => 'getDevRequires', 'description' => 'Required (in require-dev)'),
+            );
+            foreach ($sets as $set) {
+                $installedRepo = new InstalledRepository(array($set['repo']));
+
+                foreach (call_user_func(array($composer->getPackage(), $set['method'])) as $link) {
+                    if (PlatformRepository::isPlatformPackage($link->getTarget())) {
+                        continue;
+                    }
+                    if (!$installedRepo->findPackagesWithReplacersAndProviders($link->getTarget(), $link->getConstraint())) {
+                        if ($results = $installedRepo->findPackagesWithReplacersAndProviders($link->getTarget())) {
+                            $provider = reset($results);
+                            $lockErrors[] = '- ' . $set['description'].' package "' . $link->getTarget() . '" is in the lock file as "'.$provider->getPrettyVersion().'" but that does not satisfy your constraint "'.$link->getPrettyConstraint().'".';
+                        } else {
+                            $lockErrors[] = '- ' . $set['description'].' package "' . $link->getTarget() . '" is not present in the lock file.';
+                        }
+                        $missingRequirements = true;
+                    }
+                }
             }
-            if (count($missingDevRequiredPackages) > 0) {
-                $lockErrors[] = '- Dev-required package "' . implode('", "', $missingDevRequiredPackages) . '" is not present in the lock file.';
+
+            if ($missingRequirements) {
+                $lockErrors[] = 'This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.';
+                $lockErrors[] = 'Read more about correctly resolving merge conflicts https://getcomposer.org/doc/articles/resolving-merge-conflicts.md';
+                $lockErrors[] = 'and prefer using the "require" command over editing the composer.json file directly https://getcomposer.org/doc/03-cli.md#require';
             }
-            $lockErrors[] = 'This usually happens when composer files are incorrectly merged or the composer.json file is manually edited.';
-            $lockErrors[] = 'Read more about correctly resolving merge conflicts -> https://getcomposer.org/doc/articles/resolving-merge-conflicts.md';
-            $lockErrors[] = 'and make sure to not edit the composer.json file directly but to use the "require" command (https://getcomposer.org/doc/03-cli.md#require).';
         }
 
         $this->outputResult($io, $file, $errors, $warnings, $checkPublish, $publishErrors, $checkLock, $lockErrors, true);
