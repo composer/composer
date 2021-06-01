@@ -330,6 +330,14 @@ EOT
                     return $val;
                 },
             ),
+            'gitlab-protocol' => array(
+                function ($val) {
+                    return in_array($val, array('git', 'http', 'https'), true);
+                },
+                function ($val) {
+                    return $val;
+                },
+            ),
             'store-auths' => array(
                 function ($val) {
                     return in_array($val, array('true', 'false', 'prompt'), true);

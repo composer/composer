@@ -143,6 +143,10 @@
                         "type": "string"
                     }
                 },
+                "gitlab-protocol": {
+                    "enum": ["git", "http", "https"],
+                    "description": "A protocol to force use of when creating a repository URL for the `source` value of the package metadata. One of `git` or `http`. By default, Composer will generate a git URL for private repositories and http one for public repos."
+                },
                 "bearer": {
                     "type": "object",
                     "description": "A hash of domain name => bearer authentication token, for example {\"example.com\":\"<token>\"}.",
