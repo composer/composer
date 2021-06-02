@@ -441,6 +441,16 @@ class PoolBuilder
      */
     private function isUpdateAllowed(PackageInterface $package)
     {
+        // Path repo packages are never loaded from lock, to force them to always remain in sync
+        // unless symlinking is disabled in which case we probably should rather treat them like
+        // regular packages
+        if ($package->getDistType() === 'path') {
+            $transportOptions = $package->getTransportOptions();
+            if (!isset($transportOptions['symlink']) || $transportOptions['symlink'] !== false) {
+                return true;
+            }
+        }
+
         foreach ($this->updateAllowList as $pattern => $void) {
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
             if (preg_match($patternRegexp, $package->getName())) {
