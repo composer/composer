@@ -51,10 +51,10 @@ class Composer
      * const RELEASE_DATE = '@release_date@';
      * const SOURCE_VERSION = '1.8-dev+source';
      */
-    const VERSION = '@package_version@';
-    const BRANCH_ALIAS_VERSION = '@package_branch_alias_version@';
-    const RELEASE_DATE = '@release_date@';
-    const SOURCE_VERSION = '2.0.999-dev+source';
+    const VERSION = '2.1.0-RC1';
+    const BRANCH_ALIAS_VERSION = '';
+    const RELEASE_DATE = '2021-06-02 15:30:43';
+    const SOURCE_VERSION = '';
 
     /**
      * Version number of the internal composer-runtime-api package
