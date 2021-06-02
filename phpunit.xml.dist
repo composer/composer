@@ -16,6 +16,7 @@
 >
     <php>
         <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak"/>
+        <env name="COMPOSER_TEST_SUITE" value="1"/>
     </php>
     <testsuites>
         <testsuite name="Composer Test Suite">

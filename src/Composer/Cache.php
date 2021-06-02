@@ -24,7 +24,7 @@ use Symfony\Component\Finder\Finder;
  */
 class Cache
 {
-    private static $cacheCollected = false;
+    private static $cacheCollected = null;
     private $io;
     private $root;
     private $enabled = true;
@@ -191,7 +191,20 @@ class Cache
 
     public function gcIsNecessary()
     {
-        return (!self::$cacheCollected && !mt_rand(0, 50));
+        if (self::$cacheCollected) {
+            return false;
+        }
+
+        self::$cacheCollected = true;
+        if (getenv('COMPOSER_TEST_SUITE')) {
+            return false;
+        }
+
+        if (PHP_VERSION_ID > 70000) {
+            return !random_int(0, 50);
+        }
+
+        return !mt_rand(0, 50);
     }
 
     public function remove($file)
