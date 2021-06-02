@@ -26,7 +26,7 @@ Lock file operations: 0 installs, 5 updates, 0 removals
   - Upgrading symfony/process (12345.1.2 => 12345.1.3)
 Writing lock file
 Installing dependencies from lock file (including require-dev)
-Package operations: 0 installs, 5 updates, 0 removals%(\nAs there is no 'unzip' command installed zip files are being unpacked using the PHP zip extension.\nThis may cause invalid reports of corrupted archives. Besides, any UNIX permissions \(e.g. executable\) defined in the archives will be lost.\nInstalling 'unzip' may remediate them.)?%
+Package operations: 0 installs, 5 updates, 0 removals%(\nAs there is no 'unzip' nor '7z' command installed zip files are being unpacked using the PHP zip extension.\nThis may cause invalid reports of corrupted archives. Besides, any UNIX permissions \(e.g. executable\) defined in the archives will be lost.\nInstalling 'unzip' or '7z' may remediate them.)?%
   - Downloading symfony/filesystem (%v?[2-8]\.\d+\.\d+%)
   - Upgrading symfony/console (99999.1.2 => 99999.1.3): Mirroring from symfony-console
   - Upgrading plugin/a (1.1.1 => 1.1.2): Mirroring from plugin-a

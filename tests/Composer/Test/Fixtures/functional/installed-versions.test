@@ -21,7 +21,7 @@ Lock file operations: 6 installs, 0 updates, 0 removals
   - Locking symfony/process (12345.1.2)
 Writing lock file
 Installing dependencies from lock file (including require-dev)
-Package operations: 6 installs, 0 updates, 0 removals%(\nAs there is no 'unzip' command installed zip files are being unpacked using the PHP zip extension.\nThis may cause invalid reports of corrupted archives. Besides, any UNIX permissions \(e.g. executable\) defined in the archives will be lost.\nInstalling 'unzip' may remediate them.)?%
+Package operations: 6 installs, 0 updates, 0 removals%(\nAs there is no 'unzip' nor '7z' command installed zip files are being unpacked using the PHP zip extension.\nThis may cause invalid reports of corrupted archives. Besides, any UNIX permissions \(e.g. executable\) defined in the archives will be lost.\nInstalling 'unzip' or '7z' may remediate them.)?%
   - Downloading symfony/polyfill-ctype (%v?[1-8]\.\d+\.\d+%)
   - Downloading symfony/filesystem (%v?[2-8]\.\d+\.\d+%)
   - Installing symfony/console (99999.1.2): Symlinking from symfony-console
