@@ -146,6 +146,10 @@ risk runtime errors when your code executes, you can disable this by setting the
 [`platform-check`](06-config.md#platform-check) config option to `false`.
 
 If you want the check to include verifying the presence of PHP extensions,
-set the config option to `true`.
+set the config option to `true`. `ext-*` requirements will then be verified
+but for performance reasons Composer only checks the extension is present,
+not its exact version.
+
+`lib-*` requirements are never supported/checked by the platform check feature.
 
 &larr; [Config](06-config.md)  |  [Community](08-community.md) &rarr;
