@@ -19,18 +19,21 @@ namespace Composer\Util;
  */
 class ComposerMirror
 {
-    public static function processUrl($mirrorUrl, $packageName, $version, $reference, $type)
+    public static function processUrl($mirrorUrl, $packageName, $version, $reference, $type, $prettyVersion = null)
     {
         if ($reference) {
             $reference = preg_match('{^([a-f0-9]*|%reference%)$}', $reference) ? $reference : md5($reference);
         }
         $version = strpos($version, '/') === false ? $version : md5($version);
 
-        return str_replace(
-            array('%package%', '%version%', '%reference%', '%type%'),
-            array($packageName, $version, $reference, $type),
-            $mirrorUrl
-        );
+        $from = array('%package%', '%version%', '%reference%', '%type%');
+        $to = array($packageName, $version, $reference, $type);
+        if (null !== $prettyVersion) {
+            $from[] = '%prettyVersion%';
+            $to[] = $prettyVersion;
+        }
+
+        return str_replace($from, $to, $mirrorUrl);
     }
 
     public static function processGitUrl($mirrorUrl, $packageName, $url, $type)
