@@ -1,0 +1,39 @@
+--TEST--
+Test that a conflict against a name that is provided by a dependency does not error
+--COMPOSER--
+{
+    "version": "1.2.3",
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "conflicting/pkg",
+                    "version": "1.0.0",
+                    "conflict": {
+                        "provided/pkg2": "2.*"
+                    }
+                },
+                {
+                    "name": "provider/pkg",
+                    "version": "1.0.0",
+                    "provide": { "provided/pkg2": "2.*" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "conflicting/pkg": "*",
+        "provider/pkg": "*"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+0
+
+--EXPECT--
+Installing conflicting/pkg (1.0.0)
+Installing provider/pkg (1.0.0)

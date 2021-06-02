@@ -1,0 +1,48 @@
+--TEST--
+Test that a conflict against a name that is only replaced by a dependency correctly highlights the issue
+--COMPOSER--
+{
+    "version": "1.2.3",
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "conflicting/pkg",
+                    "version": "1.0.0",
+                    "conflict": {
+                        "replaced/pkg2": ">=2.1"
+                    }
+                },
+                {
+                    "name": "provider/pkg",
+                    "version": "1.0.0",
+                    "replace": { "replaced/pkg2": "2.5" }
+                }
+            ]
+        }
+    ],
+    "require": {
+        "conflicting/pkg": "*",
+        "provider/pkg": "*"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires conflicting/pkg * -> satisfiable by conflicting/pkg[1.0.0].
+    - conflicting/pkg 1.0.0 conflicts with replaced/pkg2 >=2.1 (provider/pkg 1.0.0 replaces replaced/pkg2 2.5).
+    - Root composer.json requires provider/pkg * -> satisfiable by provider/pkg[1.0.0].
+
+--EXPECT--
+
