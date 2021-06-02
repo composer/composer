@@ -86,14 +86,16 @@ class Compiler
             ->name('*.php')
             ->notName('Compiler.php')
             ->notName('ClassLoader.php')
+            ->notName('InstalledVersions.php')
             ->in(__DIR__.'/..')
             ->sort($finderSort)
         ;
         foreach ($finder as $file) {
             $this->addFile($phar, $file);
         }
-        // Add ClassLoader separately to make sure it retains the docblocks as it will get copied into projects
+        // Add runtime utilities separately to make sure they retains the docblocks as these will get copied into projects
         $this->addFile($phar, new \SplFileInfo(__DIR__ . '/Autoload/ClassLoader.php'), false);
+        $this->addFile($phar, new \SplFileInfo(__DIR__ . '/InstalledVersions.php'), false);
 
         // Add Composer resources
         $finder = new Finder();
