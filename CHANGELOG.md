@@ -1,3 +1,39 @@
+### [2.1.0-RC1] 2021-06-02
+
+  * Bumped `composer-runtime-api` and `composer-plugin-api` to `2.1.0`
+  * UX Change: The default install method for packages is now always dist/zip, even for dev packages, added `--prefer-install=auto` if you want the old behavior (#9603)
+  * UX Change: Packages from `path` repositories which are symlinked in the vendor dir will always be allowed to update in partial update to avoid mistakes when the original composer.json changes but the package is not explicitly updated (#9765)
+  * Added `reinstall` command that takes one or more package names, including wildcard (`*`) support, and removes then reinstalls them in the exact same version they had (#9915)
+  * Added support for parallel package installs on Windows via [7-Zip](https://www.7-zip.org/) if it is installed (#9875)
+  * Added detection of invalid composer.lock files that do not fullfil the composer.json requirements to `validate` command (#9899)
+  * Added `InstalledVersions::getInstalledPackagesByType(string $type)` to retrieve installed plugins for example, [read more](https://getcomposer.org/doc/07-runtime.md#knowing-which-packages-of-a-given-type-are-installed) (#9699)
+  * Added `InstalledVersions::getInstalledPath(string $packageName)` to retrieve the install path of a given package, [read more](https://getcomposer.org/doc/07-runtime.md#knowing-the-path-in-which-a-package-is-installed) (#9699)
+  * Added flag to `InstalledVersions::isInstalled()` to allow excluding dev requirements from that check (#9682)
+  * Added support for PHP 8.1 enums in autoloader / classmap generation (#9670)
+  * Added support for using `@php binary-name foo` in scripts to refer to a binary without using its full path, but forcing to use the same PHP version as Composer used (#9726)
+  * Added `--format=json` support to the `fund` command (#9678)
+  * Added `--format=json` support to the `search` command (#9747)
+  * Added `COMPOSER_DEV_MODE` env var definition within the run-script command for compatibility (#9793)
+  * Added async uninstall of packages (#9618)
+  * Added color legend to `outdated` and `show --latest` commands (#9716)
+  * Added `secure-svn-domains` config option to mark secure svn:// hostnames and suppress warnings without disabling secure-http (#9872)
+  * Added `gitlab-protocol` config option to allow forcing `git` or `http` URLs for all gitlab repos loaded inline, instead of the default of git for private and http for public (#9401)
+  * Added generation of autoload rules in `init` command (#9829)
+  * Added source/dist validation in `validate` command
+  * Added automatic detection of WSL when generating binaries and use `bin-compat:full` implicitly (#9855)
+  * Added automatic detection of the --no-dev state for `dump-autoload` based on the last install run (#9714)
+  * Added warning/prompt to `require` command if requiring a package that already exists in require-dev or vice versa (#9542)
+  * Added information about package conflicts in the `why`/`why-not` commands (#9693)
+  * Removed version argument from `why` command as it was not needed (#9729)
+  * Fixed `why-not` command to always require a specific version as it is useless without (#9729)
+  * Fixed cache dir on macOS to follow OS guidelines, it is now in ~/Library/Caches/composer (#9898)
+  * Fixed composer.json JSON schema to avoid having name/description required by default (#9912)
+  * Fixed support for running inside WSL paths from a Windows PHP/Composer (#9861)
+  * Fixed InstalledVersions to include the original doc blocks when installed from a Composer phar file
+  * Fixed `require` command to use `*` as constraint for extensions bundled with PHP instead of duplicating the PHP constraint (#9483)
+  * Fixed `search` output to be aligned and avoid wrapped long lines to be more readable (#9455)
+  * Error output improvements for many cases (#9876, #9837, #9928, and some smaller improvements)
+
 ### [2.0.14] 2021-05-21
 
   * Updated composer/xdebug-handler to 2.0 which adds supports for Xdebug 3
@@ -1154,6 +1190,7 @@
 
   * Initial release
 
+[2.1.0-RC1]: https://github.com/composer/composer/compare/2.0.14...2.1.0-RC1
 [2.0.14]: https://github.com/composer/composer/compare/2.0.13...2.0.14
 [2.0.13]: https://github.com/composer/composer/compare/2.0.12...2.0.13
 [2.0.12]: https://github.com/composer/composer/compare/2.0.11...2.0.12
