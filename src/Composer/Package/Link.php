@@ -77,9 +77,9 @@ class Link
      *
      * @param string              $source
      * @param string              $target
-     * @param ConstraintInterface $constraint  Constraint applying to the target of this link
-     * @param self::TYPE_*        $description Used to create a descriptive string representation
-     * @param string|null $prettyConstraint
+     * @param ConstraintInterface $constraint       Constraint applying to the target of this link
+     * @param self::TYPE_*        $description      Used to create a descriptive string representation
+     * @param string|null         $prettyConstraint
      */
     public function __construct(
         $source,

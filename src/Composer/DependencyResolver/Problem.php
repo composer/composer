@@ -441,7 +441,7 @@ class Problem
             if ($topPackage instanceof RootPackageInterface) {
                 return array(
                     "- Root composer.json requires $packageName".self::constraintToText($constraint).', it is ',
-                    'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.$topPackage->getPrettyName().' is the root package and cannot be modified. See https://getcomposer.org/dep-on-root for details and assistance.'
+                    'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.$topPackage->getPrettyName().' is the root package and cannot be modified. See https://getcomposer.org/dep-on-root for details and assistance.',
                 );
             }
         }
@@ -450,7 +450,7 @@ class Problem
             $singular = count($higherRepoPackages) === 1;
 
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ',
-                'found '.self::getPackageList($nextRepoPackages, $isVerbose).' in the lock file and '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' but ' . ($singular ? 'it does' : 'these do') . ' not match your '.$reason.' and ' . ($singular ? 'is' : 'are') . ' therefore not installable. Make sure you either fix the '.$reason.' or avoid updating this package to keep the one from the lock file.');
+                'found '.self::getPackageList($nextRepoPackages, $isVerbose).' in the lock file and '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' but ' . ($singular ? 'it does' : 'these do') . ' not match your '.$reason.' and ' . ($singular ? 'is' : 'are') . ' therefore not installable. Make sure you either fix the '.$reason.' or avoid updating this package to keep the one from the lock file.', );
         }
 
         return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your '.$reason.' and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');

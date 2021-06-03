@@ -126,7 +126,7 @@ class Factory
             if (is_dir($home . '/cache') && !is_dir($userDir . '/Library/Caches/composer')) {
                 Silencer::call('rename', $home . '/cache', $userDir . '/Library/Caches/composer');
             }
-            
+
             return $userDir . '/Library/Caches/composer';
         }
 

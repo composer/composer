@@ -243,7 +243,6 @@ abstract class Rule
                     }
                 }
 
-
                 return $package2->getPrettyString().' conflicts with '.$conflictTarget.'.';
 
             case self::RULE_PACKAGE_REQUIRES:

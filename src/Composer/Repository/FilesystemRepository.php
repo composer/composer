@@ -14,7 +14,6 @@ namespace Composer\Repository;
 
 use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\Dumper\ArrayDumper;

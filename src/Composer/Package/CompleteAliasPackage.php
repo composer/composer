@@ -24,8 +24,8 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
      * All descendants' constructors should call this parent constructor
      *
      * @param CompletePackage $aliasOf       The package this package is an alias of
-     * @param string                   $version       The version the alias must report
-     * @param string                   $prettyVersion The alias's non-normalized version
+     * @param string          $version       The version the alias must report
+     * @param string          $prettyVersion The alias's non-normalized version
      */
     public function __construct(CompletePackage $aliasOf, $version, $prettyVersion)
     {

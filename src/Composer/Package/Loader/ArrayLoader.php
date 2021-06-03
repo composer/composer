@@ -80,7 +80,7 @@ class ArrayLoader implements LoaderInterface
     /**
      * @template PackageClass of CompletePackageInterface
      * @param  array                                      $versions
-     * @param  string                                      $class    FQCN to be instantiated
+     * @param  string                                     $class    FQCN to be instantiated
      * @return list<CompletePackage|CompleteAliasPackage>
      * @phpstan-param class-string<PackageClass> $class
      */

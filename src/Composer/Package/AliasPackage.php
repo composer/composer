@@ -43,9 +43,9 @@ class AliasPackage extends BasePackage
     /**
      * All descendants' constructors should call this parent constructor
      *
-     * @param BasePackage      $aliasOf       The package this package is an alias of
-     * @param string           $version       The version the alias must report
-     * @param string           $prettyVersion The alias's non-normalized version
+     * @param BasePackage $aliasOf       The package this package is an alias of
+     * @param string      $version       The version the alias must report
+     * @param string      $prettyVersion The alias's non-normalized version
      */
     public function __construct(BasePackage $aliasOf, $version, $prettyVersion)
     {

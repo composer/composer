@@ -115,8 +115,8 @@ abstract class ArchiveDownloader extends FileDownloader
              * that the source directory gets merged into the target one if the target exists. Otherwise rename() by default would
              * put the source into the target e.g. src/ => target/src/ (assuming target exists) instead of src/ => target/
              *
-             * @param string $from Directory
-             * @param string $to Directory
+             * @param  string $from Directory
+             * @param  string $to   Directory
              * @return void
              */
             $renameRecursively = function ($from, $to) use ($filesystem, $getFolderContent, $package, &$renameRecursively) {

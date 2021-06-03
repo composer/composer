@@ -85,7 +85,6 @@ class ZipDownloaderTest extends TestCase
 
         $downloader = new ZipDownloader($this->io, $this->config, $this->httpDownloader);
 
-
         try {
             $loop = new Loop($this->httpDownloader);
             $promise = $downloader->download($this->package, $path = sys_get_temp_dir().'/composer-zip-test');

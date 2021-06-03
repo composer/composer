@@ -477,7 +477,7 @@ class PluginManager
 
     /**
      * @template CapabilityClass of Capability
-     * @param  PluginInterface $plugin
+     * @param  PluginInterface               $plugin
      * @param  class-string<CapabilityClass> $capabilityClassName The fully qualified name of the API interface which the plugin may provide
      *                                                            an implementation of.
      * @param  array                         $ctorArgs            Arguments passed to Capability's constructor.
@@ -509,12 +509,12 @@ class PluginManager
         return null;
     }
 
-     /**
+    /**
      * @template CapabilityClass of Capability
      * @param  class-string<CapabilityClass> $capabilityClassName The fully qualified name of the API interface which the plugin may provide
-     *                                                         an implementation of.
-     * @param  array                      $ctorArgs            Arguments passed to Capability's constructor.
-     *                                                         Keeping it an array will allow future values to be passed w\o changing the signature.
+     *                                                            an implementation of.
+     * @param  array                         $ctorArgs            Arguments passed to Capability's constructor.
+     *                                                            Keeping it an array will allow future values to be passed w\o changing the signature.
      * @return CapabilityClass[]
      */
     public function getPluginCapabilities($capabilityClassName, array $ctorArgs = array())

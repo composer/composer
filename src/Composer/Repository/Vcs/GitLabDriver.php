@@ -228,6 +228,7 @@ class GitLabDriver extends VcsDriver
         if ($this->protocol) {
             return $this->project["{$this->protocol}_url_to_repo"];
         }
+
         return $this->isPrivate ? $this->project['ssh_url_to_repo'] : $this->project['http_url_to_repo'];
     }
 

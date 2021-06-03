@@ -77,5 +77,5 @@ class RarDownloader extends ArchiveDownloader
         $rarArchive->close();
 
         return \React\Promise\resolve();
-   }
+    }
 }

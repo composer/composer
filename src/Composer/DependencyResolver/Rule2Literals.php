@@ -24,9 +24,9 @@ class Rule2Literals extends Rule
     protected $literal2;
 
     /**
-     * @param int                   $literal1
-     * @param int                   $literal2
-     * @param int                   $reason     A RULE_* constant describing the reason for generating this rule
+     * @param int              $literal1
+     * @param int              $literal2
+     * @param int              $reason     A RULE_* constant describing the reason for generating this rule
      * @param Link|BasePackage $reasonData
      */
     public function __construct($literal1, $literal2, $reason, $reasonData)

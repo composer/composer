@@ -113,5 +113,4 @@ class InitCommandTest extends TestCase
         $namespace = $command->namespaceFromPackageName(null);
         $this->assertNull($namespace);
     }
-
 }

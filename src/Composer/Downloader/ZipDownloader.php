@@ -76,8 +76,8 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * extract $file to $path with "unzip" command
      *
-     * @param  string           $file         File to extract
-     * @param  string           $path         Path where to extract file
+     * @param  string           $file File to extract
+     * @param  string           $path Path where to extract file
      * @return PromiseInterface
      */
     private function extractWithSystemUnzip(PackageInterface $package, $file, $path)
@@ -136,8 +136,8 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * extract $file to $path with ZipArchive
      *
-     * @param  string           $file         File to extract
-     * @param  string           $path         Path where to extract file
+     * @param  string           $file File to extract
+     * @param  string           $path Path where to extract file
      * @return PromiseInterface
      *
      * TODO v3 should make this private once we can drop PHP 5.3 support

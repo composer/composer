@@ -27,7 +27,7 @@ interface CompletePackageInterface extends PackageInterface
     public function getScripts();
 
     /**
-     * @param array<string, string[]> $scripts
+     * @param  array<string, string[]> $scripts
      * @return void
      */
     public function setScripts(array $scripts);
@@ -205,6 +205,4 @@ interface CompletePackageInterface extends PackageInterface
      * @return void
      */
     public function setArchiveExcludes(array $excludes);
-
-
 }

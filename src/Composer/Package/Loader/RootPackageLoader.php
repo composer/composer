@@ -13,11 +13,9 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package\BasePackage;
-use Composer\Package\AliasPackage;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Package\Package;
-use Composer\Package\RootPackageInterface;
 use Composer\Package\RootAliasPackage;
 use Composer\Repository\RepositoryFactory;
 use Composer\Package\Version\VersionGuesser;

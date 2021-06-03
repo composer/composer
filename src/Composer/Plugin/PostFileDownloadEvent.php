@@ -50,12 +50,12 @@ class PostFileDownloadEvent extends Event
     /**
      * Constructor.
      *
-     * @param string           $name     The event name
-     * @param string|null      $fileName The file name
-     * @param string|null      $checksum The checksum
-     * @param string           $url      The processed url
-     * @param string           $type     The type (package or metadata).
-     * @param mixed            $context  Additional context for the download.
+     * @param string      $name     The event name
+     * @param string|null $fileName The file name
+     * @param string|null $checksum The checksum
+     * @param string      $url      The processed url
+     * @param string      $type     The type (package or metadata).
+     * @param mixed       $context  Additional context for the download.
      */
     public function __construct($name, $fileName, $checksum, $url, $type, $context = null)
     {

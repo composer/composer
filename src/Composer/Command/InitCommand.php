@@ -133,7 +133,7 @@ EOT
             $options['autoload'] = (object) array(
                 'psr-4' => array(
                     $namespace . '\\' => $autoloadPath,
-                )
+                ),
             );
         }
 
@@ -444,7 +444,6 @@ EOT
             $autoload
         );
         $input->setOption('autoload', $autoload);
-
     }
 
     /**
@@ -673,9 +672,10 @@ EOT
         }
 
         $namespace = array_map(
-            function($part) {
+            function ($part) {
                 $part = preg_replace('/[^a-z0-9]/i', ' ', $part);
                 $part = ucwords($part);
+
                 return str_replace(' ', '', $part);
             },
             explode('/', $packageName)

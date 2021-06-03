@@ -91,6 +91,7 @@ EOT
 
         if (!$packagesToReinstall) {
             $io->writeError('<warning>Found no packages to reinstall, aborting.</warning>');
+
             return 1;
         }
 

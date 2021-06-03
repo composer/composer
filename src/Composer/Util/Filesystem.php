@@ -606,7 +606,7 @@ class Filesystem
      * This will also check for readability by reading the file as is_readable can not be trusted on network-mounts
      * and \\wsl$ paths. See https://github.com/composer/composer/issues/8231 and https://bugs.php.net/bug.php?id=68926
      *
-     * @param string $path
+     * @param  string $path
      * @return bool
      */
     public static function isReadable($path)

@@ -260,9 +260,11 @@ class ProcessExecutor
             }
         } catch (\Exception $e) {
             call_user_func($job['reject'], $e);
+
             return;
         } catch (\Throwable $e) {
             call_user_func($job['reject'], $e);
+
             return;
         }
 
@@ -272,9 +274,11 @@ class ProcessExecutor
             $process->start();
         } catch (\Exception $e) {
             call_user_func($job['reject'], $e);
+
             return;
         } catch (\Throwable $e) {
             call_user_func($job['reject'], $e);
+
             return;
         }
     }

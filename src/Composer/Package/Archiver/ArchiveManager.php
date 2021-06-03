@@ -13,7 +13,6 @@
 namespace Composer\Package\Archiver;
 
 use Composer\Downloader\DownloadManager;
-use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Loop;

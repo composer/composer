@@ -42,7 +42,6 @@ class Platform
      * putenv('X') equivalent but updates the runtime global variables too
      *
      * @param  string $name
-     * @param  string $value
      * @return void
      */
     public static function clearEnv($name)
@@ -103,7 +102,7 @@ class Platform
     {
         if (null === self::$isWindowsSubsystemForLinux) {
             self::$isWindowsSubsystemForLinux = false;
-            
+
             // while WSL will be hosted within windows, WSL itself cannot be windows based itself.
             if (self::isWindows()) {
                 return self::$isWindowsSubsystemForLinux = false;

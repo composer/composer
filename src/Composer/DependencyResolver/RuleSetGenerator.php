@@ -44,9 +44,9 @@ class RuleSetGenerator
      * @param  BasePackage $package    The package with a requirement
      * @param  array       $providers  The providers of the requirement
      * @param  int         $reason     A RULE_* constant describing the
-     *                                      reason for generating this rule
+     *                                 reason for generating this rule
      * @param  mixed       $reasonData Any data, e.g. the requirement name,
-     *                                      that goes with the reason
+     *                                 that goes with the reason
      * @return Rule|null   The generated rule or null if tautological
      */
     protected function createRequireRule(BasePackage $package, array $providers, $reason, $reasonData = null)
@@ -95,9 +95,9 @@ class RuleSetGenerator
      * @param  BasePackage $issuer     The package declaring the conflict
      * @param  BasePackage $provider   The package causing the conflict
      * @param  int         $reason     A RULE_* constant describing the
-     *                                      reason for generating this rule
+     *                                 reason for generating this rule
      * @param  mixed       $reasonData Any data, e.g. the package name, that
-     *                                      goes with the reason
+     *                                 goes with the reason
      * @return Rule|null   The generated rule
      */
     protected function createRule2Literals(BasePackage $issuer, BasePackage $provider, $reason, $reasonData = null)
