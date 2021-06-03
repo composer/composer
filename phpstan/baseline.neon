@@ -46,21 +46,6 @@ parameters:
 			path: ../src/Composer/Command/DiagnoseCommand.php
 
 		-
-			message: "#^PHPDoc tag @param references unknown parameter\\: \\$links$#"
-			count: 1
-			path: ../src/Composer/Command/GenerateTestCommand.php
-
-		-
-			message: "#^Undefined variable\\: \\$io$#"
-			count: 2
-			path: ../src/Composer/Command/GenerateTestCommand.php
-
-		-
-			message: "#^Unreachable statement \\- code above always terminates\\.$#"
-			count: 1
-			path: ../src/Composer/Command/GenerateTestCommand.php
-
-		-
 			message: "#^Negated boolean expression is always false\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
