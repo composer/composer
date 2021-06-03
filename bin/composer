@@ -58,7 +58,7 @@ if (function_exists('ini_set')) {
     unset($memoryLimit);
 }
 
-Platform::setEnv('COMPOSER_BINARY', realpath($_SERVER['argv'][0]));
+Platform::putEnv('COMPOSER_BINARY', realpath($_SERVER['argv'][0]));
 
 // run the command application
 $application = new Application();
