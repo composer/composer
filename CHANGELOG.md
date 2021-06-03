@@ -1195,7 +1195,7 @@
 
   * Initial release
 
-[2.1.0]: https://github.com/composer/composer/compare/2.1.0...2.1.0
+[2.1.0]: https://github.com/composer/composer/compare/2.1.0-RC1...2.1.0
 [2.1.0-RC1]: https://github.com/composer/composer/compare/2.0.14...2.1.0-RC1
 [2.0.14]: https://github.com/composer/composer/compare/2.0.13...2.0.14
 [2.0.13]: https://github.com/composer/composer/compare/2.0.12...2.0.13
