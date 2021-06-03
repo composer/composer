@@ -31,7 +31,7 @@ class Platform
      * @param  string $value
      * @return void
      */
-    public function putEnv($name, $value)
+    public static function putEnv($name, $value)
     {
         $value = (string) $value;
         putenv($name . '=' . $value);
@@ -45,7 +45,7 @@ class Platform
      * @param  string $value
      * @return void
      */
-    public function clearEnv($name)
+    public static function clearEnv($name)
     {
         putenv($name);
         unset($_SERVER[$name], $_ENV[$name]);
