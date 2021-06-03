@@ -120,7 +120,7 @@ A protocol to force use of when creating a repository URL for the `source`
 value of the package metadata. One of `git` or `http`. (`https` is treated
 as a synonym for `http`.) Helpful when working with projects referencing
 private repositories which will later be cloned in GitLab CI jobs with a
-[GitLab CI job token](https://docs.gitlab.com/ee/user/project/new_ci_build_permissions_model.html#dependent-repositories)
+[GitLab CI_JOB_TOKEN](https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference)
 using HTTP basic auth. By default, Composer will generate a git-over-SSH
 URL for private repositories and HTTP(S) only for public.
 
