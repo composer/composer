@@ -1,8 +1,13 @@
+### [2.1.0] 2021-06-03
+
+  * Fixed PHP 8.1 deprecation warning (#9932)
+  * Fixed env var handling when variables_order includes E and symfony/console 3.3.15+ is in use (#9930)
+
 ### [2.1.0-RC1] 2021-06-02
 
   * Bumped `composer-runtime-api` and `composer-plugin-api` to `2.1.0`
   * UX Change: The default install method for packages is now always dist/zip, even for dev packages, added `--prefer-install=auto` if you want the old behavior (#9603)
-  * UX Change: Packages from `path` repositories which are symlinked in the vendor dir will always be allowed to update in partial update to avoid mistakes when the original composer.json changes but the package is not explicitly updated (#9765)
+  * UX Change: Packages from `path` repositories which are symlinked in the vendor dir will always be updated in partial updates to avoid mistakes when the original composer.json changes but the symlinked package is not explicitly updated (#9765)
   * Added `reinstall` command that takes one or more package names, including wildcard (`*`) support, and removes then reinstalls them in the exact same version they had (#9915)
   * Added support for parallel package installs on Windows via [7-Zip](https://www.7-zip.org/) if it is installed (#9875)
   * Added detection of invalid composer.lock files that do not fullfil the composer.json requirements to `validate` command (#9899)
@@ -1190,6 +1195,7 @@
 
   * Initial release
 
+[2.1.0]: https://github.com/composer/composer/compare/2.1.0...2.1.0
 [2.1.0-RC1]: https://github.com/composer/composer/compare/2.0.14...2.1.0-RC1
 [2.0.14]: https://github.com/composer/composer/compare/2.0.13...2.0.14
 [2.0.13]: https://github.com/composer/composer/compare/2.0.12...2.0.13
