@@ -207,6 +207,38 @@ class JsonFileTest extends TestCase
         unlink($file);
     }
 
+    public function testCustomSchemaValidationLax()
+    {
+        $file = tempnam(sys_get_temp_dir(), 'c');
+        file_put_contents($file, '{ "custom": "property", "another custom": "property" }');
+
+        $schema = tempnam(sys_get_temp_dir(), 'c');
+        file_put_contents($schema, '{ "properties": { "custom": { "type": "string" }}}');
+
+        $json = new JsonFile($file);
+
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA, $schema));
+
+        unlink($file);
+        unlink($schema);
+    }
+
+    public function testCustomSchemaValidationStrict()
+    {
+        $file = tempnam(sys_get_temp_dir(), 'c');
+        file_put_contents($file, '{ "custom": "property" }');
+
+        $schema = tempnam(sys_get_temp_dir(), 'c');
+        file_put_contents($schema, '{ "properties": { "custom": { "type": "string" }}}');
+
+        $json = new JsonFile($file);
+
+        $this->assertTrue($json->validateSchema(JsonFile::STRICT_SCHEMA, $schema));
+
+        unlink($file);
+        unlink($schema);
+    }
+
     public function testParseErrorDetectMissingCommaMultiline()
     {
         $json = '{

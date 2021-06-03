@@ -180,6 +180,7 @@ class JsonFile
     {
         $content = file_get_contents($this->path);
         $data = json_decode($content);
+        $requiredSchemaData = array();
 
         if (null === $data && 'null' !== $content) {
             self::validateSyntax($content, $this->path);
@@ -187,6 +188,7 @@ class JsonFile
 
         if (null === $schemaFile) {
             $schemaFile = __DIR__ . self::COMPOSER_SCHEMA_PATH;
+            $requiredSchemaData = array('name', 'description');
         }
 
         // Prepend with file:// only when not using a special schema already (e.g. in the phar)
@@ -198,7 +200,7 @@ class JsonFile
 
         if ($schema !== self::LAX_SCHEMA) {
             $schemaData->additionalProperties = false;
-            $schemaData->required = array('name', 'description');
+            $schemaData->required = $requiredSchemaData;
         }
 
         $validator = new Validator();
