@@ -97,7 +97,7 @@ class Version
         return sprintf(
             '%d.%d.%d',
             $versionId / ($base * $base),
-            ($versionId / $base) % $base,
+            (int) ($versionId / $base) % $base,
             $versionId % $base
         );
     }
