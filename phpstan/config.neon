@@ -1,8 +1,9 @@
 includes:
     - ../vendor/phpstan/phpstan-phpunit/extension.neon
+    - ./baseline.neon
 
 parameters:
-    level: 3
+    level: 4
     excludes_analyse:
        - '../tests/Composer/Test/Fixtures/*'
        - '../tests/Composer/Test/Autoload/Fixtures/*'

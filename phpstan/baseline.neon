@@ -1,0 +1,297 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Else branch is unreachable because ternary operator condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Autoload/AutoloadGenerator.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Autoload/AutoloadGenerator.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Autoload/ClassMapGenerator.php
+
+		-
+			message: "#^Else branch is unreachable because previous condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Command/BaseCommand.php
+
+		-
+			message: "#^Elseif branch is unreachable because previous condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Command/BaseCommand.php
+
+		-
+			message: "#^Call to function is_array\\(\\) with string will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/Command/DiagnoseCommand.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Command/DiagnoseCommand.php
+
+		-
+			message: "#^Strict comparison using \\!\\=\\= between '@package_version@' and '@package_version@' will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/Command/DiagnoseCommand.php
+
+		-
+			message: "#^Ternary operator condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Command/DiagnoseCommand.php
+
+		-
+			message: "#^PHPDoc tag @param references unknown parameter\\: \\$links$#"
+			count: 1
+			path: ../src/Composer/Command/GenerateTestCommand.php
+
+		-
+			message: "#^Undefined variable\\: \\$io$#"
+			count: 2
+			path: ../src/Composer/Command/GenerateTestCommand.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: ../src/Composer/Command/GenerateTestCommand.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Command/InitCommand.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Command/InstallCommand.php
+
+		-
+			message: "#^Call to function is_array\\(\\) with string will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ShowCommand.php
+
+		-
+			message: "#^Elseif branch is unreachable because previous condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ShowCommand.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ShowCommand.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: ../src/Composer/Composer.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Console/Application.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 2
+			path: ../src/Composer/Console/Application.php
+
+		-
+			message: "#^Strict comparison using \\!\\=\\= between '@package_branch…' and '@package_branch…' will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/Console/Application.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between null and Composer\\\\Composer will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/Console/Application.php
+
+		-
+			message: "#^Instanceof between mixed and Composer\\\\Package\\\\RootAliasPackage will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/LockTransaction.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/PoolBuilder.php
+
+		-
+			message: "#^Ternary operator condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/DependencyResolver/Problem.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 2
+			path: ../src/Composer/Downloader/FileDownloader.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 3
+			path: ../src/Composer/Downloader/FileDownloader.php
+
+		-
+			message: "#^Comparison operation \"\\>\" between 0 and 6 is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/PathDownloader.php
+
+		-
+			message: "#^Comparison operation \"\\>\\=\" between 0 and 1 is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/PathDownloader.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 2
+			path: ../src/Composer/Downloader/PathDownloader.php
+
+		-
+			message: "#^Result of \\|\\| is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/PathDownloader.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between 0 and 6 will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/PathDownloader.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Factory.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 3
+			path: ../src/Composer/Factory.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between 16 and 0 will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/IO/ConsoleIO.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: ../src/Composer/InstalledVersions.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 2
+			path: ../src/Composer/Installer.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Installer.php
+
+		-
+			message: "#^Empty array passed to foreach\\.$#"
+			count: 1
+			path: ../src/Composer/Installer/InstallationManager.php
+
+		-
+			message: "#^Right side of && is always true\\.$#"
+			count: 2
+			path: ../src/Composer/Installer/InstallationManager.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between null and string will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/Json/JsonFile.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Dumper/ArrayDumper.php
+
+		-
+			message: "#^Ternary operator condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Link.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Loader/ArrayLoader.php
+
+		-
+			message: "#^Else branch is unreachable because previous condition is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Package/Locker.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 3
+			path: ../src/Composer/Plugin/PluginManager.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Plugin/PluginManager.php
+
+		-
+			message: "#^Ternary operator condition is always true\\.$#"
+			count: 2
+			path: ../src/Composer/Plugin/PluginManager.php
+
+		-
+			message: "#^Instanceof between string and Composer\\\\Package\\\\PackageInterface will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/Plugin/PostFileDownloadEvent.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Plugin/PostFileDownloadEvent.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/ArrayRepository.php
+
+		-
+			message: "#^Strict comparison using \\=\\=\\= between null and Composer\\\\Repository\\\\RepositoryInterface will always evaluate to false\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/ArrayRepository.php
+
+		-
+			message: "#^If condition is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/ComposerRepository.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/ComposerRepository.php
+
+		-
+			message: "#^Negated boolean expression is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/InstalledRepository.php
+
+		-
+			message: "#^Negated boolean expression is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
+
+		-
+			message: "#^Negated boolean expression is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
+
+		-
+			message: "#^Right side of && is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
+
