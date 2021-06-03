@@ -57,7 +57,8 @@ if (function_exists('ini_set')) {
     unset($memoryLimit);
 }
 
-putenv('COMPOSER_BINARY='.realpath($_SERVER['argv'][0]));
+$_SERVER['COMPOSER_BINARY'] = realpath($_SERVER['argv'][0]);
+putenv('COMPOSER_BINARY='.$_SERVER['COMPOSER_BINARY']);
 
 // run the command application
 $application = new Application();
