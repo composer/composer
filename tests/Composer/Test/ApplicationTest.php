@@ -18,6 +18,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ApplicationTest extends TestCase
 {
+    public function tearDown()
+    {
+        parent::tearDown();
+
+        putenv('COMPOSER_NO_INTERACTION');
+    }
+
     public function testDevWarning()
     {
         $application = new Application;

@@ -143,8 +143,7 @@ class Application extends BaseApplication
 
         if ($input->hasParameterOption('--no-cache')) {
             $io->writeError('Disabling cache usage', true, IOInterface::DEBUG);
-            $_SERVER['COMPOSER_CACHE_DIR'] = Platform::isWindows() ? 'nul' : '/dev/null';
-            putenv('COMPOSER_CACHE_DIR='.$_SERVER['COMPOSER_CACHE_DIR']);
+            Platform::putEnv('COMPOSER_CACHE_DIR', Platform::isWindows() ? 'nul' : '/dev/null');
         }
 
         // switch working dir

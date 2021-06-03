@@ -37,6 +37,7 @@ use Symfony\Component\Finder\Finder;
 use Composer\Json\JsonFile;
 use Composer\Config\JsonConfigSource;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Version\VersionParser;
 
@@ -453,8 +454,7 @@ EOT
         $io->writeError('<info>Created project in ' . $directory . '</info>');
         chdir($directory);
 
-        $_SERVER['COMPOSER_ROOT_VERSION'] = $package->getPrettyVersion();
-        putenv('COMPOSER_ROOT_VERSION='.$_SERVER['COMPOSER_ROOT_VERSION']);
+        Platform::putEnv('COMPOSER_ROOT_VERSION', $package->getPrettyVersion());
 
         return $installedFromVcs;
     }

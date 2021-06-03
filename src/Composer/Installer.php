@@ -56,6 +56,7 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\LockArrayRepository;
 use Composer\Script\ScriptEvents;
+use Composer\Util\Platform;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -224,8 +225,7 @@ class Installer
         }
 
         if ($this->runScripts) {
-            $_SERVER['COMPOSER_DEV_MODE'] = $this->devMode ? '1' : '0';
-            putenv('COMPOSER_DEV_MODE='.$_SERVER['COMPOSER_DEV_MODE']);
+            Platform::putEnv('COMPOSER_DEV_MODE', $this->devMode ? '1' : '0');
 
             // dispatch pre event
             // should we treat this more strictly as running an update and then running an install, triggering events multiple times?

@@ -247,9 +247,12 @@ class EventDispatcher
                     }
 
                     if (strpos($exec, '@putenv ') === 0) {
-                        putenv(substr($exec, 8));
-                        list($var, $value) = explode('=', substr($exec, 8), 2);
-                        $_SERVER[$var] = $value;
+                        if (false === strpos($exec, '=')) {
+                            Platform::clearEnv(substr($exec, 8));
+                        } else {
+                            list($var, $value) = explode('=', substr($exec, 8), 2);
+                            Platform::putEnv($var, $value);
+                        }
 
                         continue;
                     }
@@ -274,8 +277,7 @@ class EventDispatcher
                         $finder = new PhpExecutableFinder();
                         $phpPath = $finder->find(false);
                         if ($phpPath) {
-                            $_SERVER['PHP_BINARY'] = $phpPath;
-                            putenv('PHP_BINARY=' . $_SERVER['PHP_BINARY']);
+                            Platform::putEnv('PHP_BINARY', $phpPath);
                         }
 
                         if (Platform::isWindows()) {
@@ -539,8 +541,7 @@ class EventDispatcher
         if (is_dir($binDir)) {
             $binDir = realpath($binDir);
             if (isset($_SERVER[$pathStr]) && !preg_match('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $_SERVER[$pathStr])) {
-                $_SERVER[$pathStr] = $binDir.PATH_SEPARATOR.getenv($pathStr);
-                putenv($pathStr.'='.$_SERVER[$pathStr]);
+                Platform::putEnv($pathStr, $binDir.PATH_SEPARATOR.getenv($pathStr));
             }
         }
     }

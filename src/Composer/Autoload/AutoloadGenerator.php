@@ -24,6 +24,7 @@ use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Bound;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Composer\Script\ScriptEvents;
 use Composer\Util\PackageSorter;
 use Composer\Json\JsonFile;
@@ -158,8 +159,7 @@ class AutoloadGenerator
 
             // set COMPOSER_DEV_MODE in case not set yet so it is available in the dump-autoload autoload
             if (!isset($_SERVER['COMPOSER_DEV_MODE'])) {
-                $_SERVER['COMPOSER_DEV_MODE'] = $this->devMode ? '1' : '0';
-                putenv('COMPOSER_DEV_MODE='.$_SERVER['COMPOSER_DEV_MODE']);
+                Platform::putEnv('COMPOSER_DEV_MODE', $this->devMode ? '1' : '0');
             }
 
             $this->eventDispatcher->dispatchScript(ScriptEvents::PRE_AUTOLOAD_DUMP, $this->devMode, array(), array(

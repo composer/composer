@@ -25,6 +25,33 @@ class Platform
     private static $isWindowsSubsystemForLinux = null;
 
     /**
+     * putenv() equivalent but updates the runtime global variables too
+     *
+     * @param  string $name
+     * @param  string $value
+     * @return void
+     */
+    public function putEnv($name, $value)
+    {
+        $value = (string) $value;
+        putenv($name . '=' . $value);
+        $_SERVER[$name] = $_ENV[$name] = $value;
+    }
+
+    /**
+     * putenv('X') equivalent but updates the runtime global variables too
+     *
+     * @param  string $name
+     * @param  string $value
+     * @return void
+     */
+    public function clearEnv($name)
+    {
+        putenv($name);
+        unset($_SERVER[$name], $_ENV[$name]);
+    }
+
+    /**
      * Parses tildes and environment variables in paths.
      *
      * @param  string $path
