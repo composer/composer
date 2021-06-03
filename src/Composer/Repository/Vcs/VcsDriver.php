@@ -45,7 +45,7 @@ abstract class VcsDriver implements VcsDriverInterface
     protected $httpDownloader;
     /** @var array */
     protected $infoCache = array();
-    /** @var Cache */
+    /** @var ?Cache */
     protected $cache;
 
     /**

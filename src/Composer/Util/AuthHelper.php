@@ -210,7 +210,7 @@ class AuthHelper
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
                     $authenticationDisplayMessage = 'Using GitLab OAuth token authentication';
-                } elseif ($auth['password'] === 'private-token' || $auth['password'] === 'gitlab-ci-token') {
+                } else {
                     $headers[] = 'PRIVATE-TOKEN: '.$auth['username'];
                     $authenticationDisplayMessage = 'Using GitLab private token authentication';
                 }

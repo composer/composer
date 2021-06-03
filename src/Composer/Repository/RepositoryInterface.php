@@ -86,8 +86,8 @@ interface RepositoryInterface extends \Countable
      * @param int    $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only
      * @param string $type  The type of package to search for. Defaults to all types of packages
      *
-     * @return array[] an array of array('name' => '...', 'description' => '...')
-     * @phpstan-return list<array{name: string, description: string}>
+     * @return array[] an array of array('name' => '...', 'description' => '...'|null)
+     * @phpstan-return list<array{name: string, description: ?string}>
      */
     public function search($query, $mode = 0, $type = null);
 

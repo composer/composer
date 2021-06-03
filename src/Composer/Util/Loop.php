@@ -76,9 +76,7 @@ class Loop
 
         if ($progress) {
             $totalJobs = 0;
-            if ($this->httpDownloader) {
-                $totalJobs += $this->httpDownloader->countActiveJobs();
-            }
+            $totalJobs += $this->httpDownloader->countActiveJobs();
             if ($this->processExecutor) {
                 $totalJobs += $this->processExecutor->countActiveJobs();
             }
@@ -89,9 +87,7 @@ class Loop
         while (true) {
             $activeJobs = 0;
 
-            if ($this->httpDownloader) {
-                $activeJobs += $this->httpDownloader->countActiveJobs();
-            }
+            $activeJobs += $this->httpDownloader->countActiveJobs();
             if ($this->processExecutor) {
                 $activeJobs += $this->processExecutor->countActiveJobs();
             }

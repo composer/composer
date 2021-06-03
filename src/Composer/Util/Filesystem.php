@@ -24,7 +24,7 @@ use Symfony\Component\Finder\Finder;
  */
 class Filesystem
 {
-    /** @var ProcessExecutor */
+    /** @var ?ProcessExecutor */
     private $processExecutor;
 
     public function __construct(ProcessExecutor $executor = null)

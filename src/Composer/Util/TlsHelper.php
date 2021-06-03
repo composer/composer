@@ -162,7 +162,7 @@ final class TlsHelper
      *
      * @param string $certName CN/SAN
      *
-     * @return callable|void
+     * @return callable|null
      */
     private static function certNameMatcher($certName)
     {
@@ -180,14 +180,14 @@ final class TlsHelper
 
             if (3 > count($components)) {
                 // Must have 3+ components
-                return;
+                return null;
             }
 
             $firstComponent = $components[0];
 
             // Wildcard must be the last character.
             if ('*' !== $firstComponent[strlen($firstComponent) - 1]) {
-                return;
+                return null;
             }
 
             $wildcardRegex = preg_quote($certName);
@@ -198,5 +198,7 @@ final class TlsHelper
                 return 1 === preg_match($wildcardRegex, $hostname);
             };
         }
+
+        return null;
     }
 }

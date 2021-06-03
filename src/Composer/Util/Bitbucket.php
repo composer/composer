@@ -103,7 +103,12 @@ class Bitbucket
                 ),
             ));
 
-            $this->token = $response->decodeJson();
+            $token = $response->decodeJson();
+            if (!isset($token['expires_in']) || !isset($token['access_token'])) {
+                throw new \LogicException('Expected a token configured with expires_in and access_token present, got '.json_encode($token));
+            }
+
+            $this->token = $token;
         } catch (TransportException $e) {
             if ($e->getCode() === 400) {
                 $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
@@ -202,10 +207,12 @@ class Bitbucket
 
         $this->storeInAuthConfig($originUrl, $consumerKey, $consumerSecret);
 
-        if (!isset($this->token['expires_in']) || !isset($this->token['access_token'])) {
-            throw new \LogicException('Expected a token configured with expires_in and access_token present, got '.json_encode($this->token));
+        if (!isset($this->token['access_token'])) {
+            throw new \LogicException('Failed to initialize token above');
         }
 
+        // side effect above caused this, https://github.com/phpstan/phpstan/issues/5129
+        // @phpstan-ignore-next-line
         return $this->token['access_token'];
     }
 
@@ -219,8 +226,8 @@ class Bitbucket
     {
         $this->config->getConfigSource()->removeConfigSetting('bitbucket-oauth.'.$originUrl);
 
-        if (!isset($this->token['expires_in']) || !isset($this->token['access_token'])) {
-            throw new \LogicException('Expected a token configured with expires_in and access_token present, got '.json_encode($this->token));
+        if (null === $this->token || !isset($this->token['expires_in'])) {
+            throw new \LogicException('Expected a token configured with expires_in present, got '.json_encode($this->token));
         }
 
         $time = null === $this->time ? time() : $this->time;

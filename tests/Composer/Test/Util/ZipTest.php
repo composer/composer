@@ -35,8 +35,6 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
-
-            return;
         }
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/invalid.zip');
@@ -48,8 +46,6 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
-
-            return;
         }
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/empty.zip');
@@ -61,8 +57,6 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
-
-            return;
         }
 
         $this->setExpectedException('\RuntimeException', 'No composer.json found either at the top level or within the topmost directory');
@@ -74,8 +68,6 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
-
-            return;
         }
 
         $this->setExpectedException('\RuntimeException', 'No composer.json found either at the top level or within the topmost directory');
@@ -87,8 +79,6 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
-
-            return;
         }
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/root.zip');
@@ -100,8 +90,6 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
-
-            return;
         }
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/folder.zip');
@@ -112,8 +100,6 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
-
-            return;
         }
 
         $this->setExpectedException('\RuntimeException', 'Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: folder1/,folder2/');
@@ -125,8 +111,6 @@ class ZipTest extends TestCase
     {
         if (!extension_loaded('zip')) {
             $this->markTestSkipped('The PHP zip extension is not loaded.');
-
-            return;
         }
 
         $result = Zip::getComposerJson(__DIR__.'/Fixtures/Zip/single-sub.zip');

@@ -466,7 +466,7 @@ class CurlDownloader
         // check for gitlab 404 when downloading archives
         if (
             $response->getStatusCode() === 404
-            && $this->config && in_array($job['origin'], $this->config->get('gitlab-domains'), true)
+            && in_array($job['origin'], $this->config->get('gitlab-domains'), true)
             && false !== strpos($job['url'], 'archive.zip')
         ) {
             $needsAuthRetry = 'GitLab requires authentication and it was not provided';

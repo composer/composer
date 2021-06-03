@@ -82,6 +82,7 @@ class InstallerTest extends TestCase
         $installationManager = new InstallationManagerMock();
 
         // emulate a writable lock file
+        /** @var ?string $lockData */
         $lockData = null;
         $lockJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
         $lockJsonMock->expects($this->any())

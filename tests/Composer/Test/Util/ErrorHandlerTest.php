@@ -57,6 +57,7 @@ class ErrorHandlerTest extends TestCase
             $this->setExpectedException('ErrorException', 'array_merge');
         }
 
+        // @phpstan-ignore-next-line
         array_merge(array(), 'string');
     }
 

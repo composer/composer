@@ -46,9 +46,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     protected $processExecutor;
     protected $branchErrorOccurred = false;
     private $drivers;
-    /** @var VcsDriverInterface */
+    /** @var ?VcsDriverInterface */
     private $driver;
-    /** @var VersionCacheInterface */
+    /** @var ?VersionCacheInterface */
     private $versionCache;
     private $emptyReferences = array();
     private $versionTransportExceptions = array();

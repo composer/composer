@@ -550,8 +550,8 @@ class RemoteFilesystem
                 // passing `null` to file_get_contents will convert `null` to `0` and return 0 bytes
                 $result = file_get_contents($fileUrl, false, $context);
             }
-        } catch (\Throwable $e) {
         } catch (\Exception $e) {
+        } catch (\Throwable $e) {
         }
 
         if ($maxFileSize !== null && Platform::strlen($result) >= $maxFileSize) {
