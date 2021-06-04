@@ -1,3 +1,10 @@
+### [2.1.1] 2021-06-04
+
+  * Fixed regression in autoload generation when --no-scripts is used (#9935)
+  * Fixed `outdated` color legend to have the right color in the right place (#9939)
+  * Fixed PCRE bug causing a previously valid pattern to fail to match (#9941)
+  * Fixed JsonFile::validateSchema regression when used as a library to validate custom schema files (#9938)
+
 ### [2.1.0] 2021-06-03
 
   * Fixed PHP 8.1 deprecation warning (#9932)
@@ -1195,6 +1202,7 @@
 
   * Initial release
 
+[2.1.1]: https://github.com/composer/composer/compare/2.1.0...2.1.1
 [2.1.0]: https://github.com/composer/composer/compare/2.1.0-RC1...2.1.0
 [2.1.0-RC1]: https://github.com/composer/composer/compare/2.0.14...2.1.0-RC1
 [2.0.14]: https://github.com/composer/composer/compare/2.0.13...2.0.14
