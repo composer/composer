@@ -473,7 +473,7 @@ EOT
         if ('json' === $format) {
             $io->write(JsonFile::encode($viewData));
         } else {
-            if ($input->getOption('latest')) {
+            if ($input->getOption('latest') && array_filter($viewData)) {
                 if (!$io->isDecorated()) {
                     $io->writeError('Legend:');
                     $io->writeError('! patch or minor release available - update recommended');
@@ -483,8 +483,8 @@ EOT
                     }
                 } else {
                     $io->writeError('<info>Color legend:</info>');
-                    $io->writeError('- <comment>patch or minor</comment> release available - update recommended');
-                    $io->writeError('- <highlight>major</highlight> release available - update possible');
+                    $io->writeError('- <highlight>patch or minor</highlight> release available - update recommended');
+                    $io->writeError('- <comment>major</comment> release available - update possible');
                     if (!$input->getOption('outdated')) {
                         $io->writeError('- <info>up to date</info> version');
                     }
