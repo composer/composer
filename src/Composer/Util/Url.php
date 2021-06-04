@@ -109,13 +109,25 @@ class Url
         // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
         $url = preg_replace('{([&?]access_token=)[^&]+}', '$1***', $url);
 
-        $url = preg_replace_callback('{(?P<prefix>://|^)(?P<user>[^:/\s@]+):(?P<password>[^@\s/]+)@}i', function ($m) {
+        // duplication here to apparent PCRE regression in v10.37 26-May-2021 which
+        // makes (?P<prefix>://|^) not match anymore
+        // should be reverted ideally when fixed in upstream
+        $url = preg_replace_callback('{^(?P<user>[^:/\s@]+):(?P<password>[^@\s/]+)@}i', function ($m) {
             // if the username looks like a long (12char+) hex string, or a modern github token (e.g. gp1_xxx) we obfuscate that
             if (preg_match('{^([a-f0-9]{12,}|g[a-z]\d_[a-zA-Z0-9_]+)$}', $m['user'])) {
-                return $m['prefix'].'***:***@';
+                return '***:***@';
             }
 
-            return $m['prefix'].$m['user'].':***@';
+            return $m['user'].':***@';
+        }, $url);
+
+        $url = preg_replace_callback('{://(?P<user>[^:/\s@]+):(?P<password>[^@\s/]+)@}i', function ($m) {
+            // if the username looks like a long (12char+) hex string, or a modern github token (e.g. gp1_xxx) we obfuscate that
+            if (preg_match('{^([a-f0-9]{12,}|g[a-z]\d_[a-zA-Z0-9_]+)$}', $m['user'])) {
+                return '://***:***@';
+            }
+
+            return '://'.$m['user'].':***@';
         }, $url);
 
         return $url;
