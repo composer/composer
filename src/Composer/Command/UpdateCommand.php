@@ -116,6 +116,7 @@ EOT
         }
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+        $composer->getEventDispatcher()->setRunScripts(!$input->getOption('no-scripts'));
 
         if (!HttpDownloader::isCurlEnabled()) {
             $io->writeError('<warning>Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled.</warning>');
@@ -220,7 +221,6 @@ EOT
             ->setPreferDist($preferDist)
             ->setDevMode(!$input->getOption('no-dev'))
             ->setDumpAutoloader(!$input->getOption('no-autoloader'))
-            ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu, $apcuPrefix)

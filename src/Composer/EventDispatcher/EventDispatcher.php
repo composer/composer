@@ -53,6 +53,8 @@ class EventDispatcher
     protected $process;
     /** @var array<string, array<int, array<callable|string>>> */
     protected $listeners = array();
+    /** @var bool */
+    protected $runScripts = true;
     /** @var list<string> */
     private $eventStack;
 
@@ -69,6 +71,18 @@ class EventDispatcher
         $this->io = $io;
         $this->process = $process ?: new ProcessExecutor($io);
         $this->eventStack = array();
+    }
+
+    /**
+     * Set whether to run scripts or not
+     *
+     * @param bool $runScripts
+     */
+    public function setRunScripts($runScripts = true)
+    {
+        $this->runScripts = (bool) $runScripts;
+
+        return $this;
     }
 
     /**
@@ -421,7 +435,7 @@ class EventDispatcher
      */
     protected function getListeners(Event $event)
     {
-        $scriptListeners = $this->getScriptListeners($event);
+        $scriptListeners = $this->runScripts ? $this->getScriptListeners($event) : array();
 
         if (!isset($this->listeners[$event->getName()][0])) {
             $this->listeners[$event->getName()][0] = array();

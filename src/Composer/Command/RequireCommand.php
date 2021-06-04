@@ -311,6 +311,7 @@ EOT
         // Update packages
         $this->resetComposer();
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+        $composer->getEventDispatcher()->setRunScripts(!$input->getOption('no-scripts'));
 
         if ($input->getOption('dry-run')) {
             $rootPackage = $composer->getPackage();
@@ -362,7 +363,6 @@ EOT
             ->setPreferSource($preferSource)
             ->setPreferDist($preferDist)
             ->setDevMode($updateDevMode)
-            ->setRunScripts(!$input->getOption('no-scripts'))
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu, $apcuPrefix)
