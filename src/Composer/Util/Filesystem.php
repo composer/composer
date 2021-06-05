@@ -294,6 +294,8 @@ class Filesystem
             if (Platform::isWindows()) {
                 usleep(350000);
                 $deleted = @rmdir($path);
+            } elseif (Platform::workaroundFilesystemIssues()) {
+                $deleted = @rmdir($path);
             }
 
             if (!$deleted) {
