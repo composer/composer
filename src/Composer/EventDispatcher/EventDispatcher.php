@@ -265,8 +265,8 @@ class EventDispatcher
                         }
                         // match somename (not in quote, and not a qualified path) and if it is not a valid path from CWD then try to find it
                         // in $PATH. This allows support for `@php foo` where foo is a binary name found in PATH but not an actual relative path
-                        preg_match('{^[^\'"\s/\\\\]+}', $pathAndArgs, $match);
-                        if (!file_exists($match[0])) {
+                        $matched = preg_match('{^[^\'"\s/\\\\]+}', $pathAndArgs, $match);
+                        if ($matched && !file_exists($match[0])) {
                             $finder = new ExecutableFinder;
                             if ($pathToExec = $finder->find($match[0])) {
                                 $pathAndArgs = $pathToExec . substr($pathAndArgs, strlen($match[0]));
