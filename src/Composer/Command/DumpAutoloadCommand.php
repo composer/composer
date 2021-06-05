@@ -52,6 +52,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer();
+        $composer->getEventDispatcher()->setRunScripts(!$input->getOption('no-scripts'));
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'dump-autoload', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -82,7 +83,6 @@ EOT
         }
         $generator->setClassMapAuthoritative($authoritative);
         $generator->setApcu($apcu, $apcuPrefix);
-        $generator->setRunScripts(!$input->getOption('no-scripts'));
         $generator->setIgnorePlatformRequirements($ignorePlatformReqs);
         $numberOfClasses = $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
 

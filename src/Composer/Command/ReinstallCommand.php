@@ -69,6 +69,7 @@ EOT
         $io = $this->getIO();
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+        $composer->getEventDispatcher()->setRunScripts(!$input->getOption('no-scripts'));
 
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         $packagesToReinstall = array();
@@ -142,8 +143,8 @@ EOT
         $downloadManager->setPreferSource($preferSource);
         $downloadManager->setPreferDist($preferDist);
 
-        $installationManager->execute($localRepo, $uninstallOperations, true, !$input->getOption('no-scripts'));
-        $installationManager->execute($localRepo, $installOperations, true, !$input->getOption('no-scripts'));
+        $installationManager->execute($localRepo, $uninstallOperations, true);
+        $installationManager->execute($localRepo, $installOperations, true);
 
         if (!$input->getOption('no-autoloader')) {
             $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
@@ -154,7 +155,6 @@ EOT
             $generator = $composer->getAutoloadGenerator();
             $generator->setClassMapAuthoritative($authoritative);
             $generator->setApcu($apcu, $apcuPrefix);
-            $generator->setRunScripts(!$input->getOption('no-scripts'));
             $generator->setIgnorePlatformRequirements($ignorePlatformReqs);
             $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
         }
