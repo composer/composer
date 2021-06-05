@@ -174,11 +174,7 @@ class Platform
     {
         if (self::isVirtualBoxGuest()) {
             usleep(200000);
-
-            return true;
         }
-
-        return false;
     }
 
     /**
