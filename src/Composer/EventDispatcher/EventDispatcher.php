@@ -74,7 +74,7 @@ class EventDispatcher
     }
 
     /**
-     * Set whether to run scripts or not
+     * Set whether script handlers are active or not
      *
      * @param bool $runScripts
      */
