@@ -13,7 +13,6 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
-use Composer\Util\Platform;
 use Symfony\Component\Finder\Finder;
 use React\Promise\PromiseInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -136,8 +135,6 @@ abstract class ArchiveDownloader extends FileDownloader
                     }
                 }
             };
-
-            Platform::workaroundFilesystemIssues();
 
             $renameAsOne = false;
             if (!file_exists($path) || ($filesystem->isDirEmpty($path) && $filesystem->removeDirectoryPhp($path))) {
