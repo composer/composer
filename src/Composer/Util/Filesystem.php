@@ -229,6 +229,9 @@ class Filesystem
             }
         }
 
+        // release locks on the directory, see https://github.com/composer/composer/issues/9945
+        unset($ri, $it);
+
         return $this->rmdir($directory);
     }
 
