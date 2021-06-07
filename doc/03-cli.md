@@ -865,6 +865,8 @@ performance.
   Implicitly enables `--apcu`.
 * **--no-dev:** Disables autoload-dev rules. Composer will by default infer this
   automatically according to the last `install` or `update` `--no-dev` state.
+* **--dev:** Enables autoload-dev rules. Composer will by default infer this
+  automatically according to the last `install` or `update` `--no-dev` state.
 * **--ignore-platform-reqs:** ignore all `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and skip the [platform check](07-runtime.md#platform-check) for these.
   See also the [`platform`](06-config.md#platform) config option.
