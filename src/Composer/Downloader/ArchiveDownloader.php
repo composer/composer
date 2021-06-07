@@ -139,8 +139,7 @@ abstract class ArchiveDownloader extends FileDownloader
             $renameAsOne = false;
             if (!file_exists($path)) {
                 $renameAsOne = true;
-            }
-            if ($filesystem->isDirEmpty($path)) {
+            } elseif ($filesystem->isDirEmpty($path)) {
                 try {
                     if ($filesystem->removeDirectoryPhp($path)) {
                         $renameAsOne = true;
