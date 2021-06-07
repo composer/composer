@@ -1,3 +1,11 @@
+### [2.1.2] 2021-06-07
+
+  * Added `--dev` to `dump-autoload` command to allow force-dumping dev autoload rules even if dev requirements are not present (#9946)
+  * Fixed `--no-scripts` disabling events for plugins too instead of only disabling script handlers, using `--no-plugins` is the way to disable plugins (#9942)
+  * Fixed handling of deletions during package installs on some filesystems (#9945, #9947)
+  * Fixed undefined array access when using "@php <absolute path>" in a script handler (#9943)
+  * Fixed usage of InstalledVersions when loaded from composer/composer installed as a dependency and runtime Composer is v1 (#9937)
+
 ### [2.1.1] 2021-06-04
 
   * Fixed regression in autoload generation when --no-scripts is used (#9935)
@@ -1202,6 +1210,7 @@
 
   * Initial release
 
+[2.1.2]: https://github.com/composer/composer/compare/2.1.1...2.1.2
 [2.1.1]: https://github.com/composer/composer/compare/2.1.0...2.1.1
 [2.1.0]: https://github.com/composer/composer/compare/2.1.0-RC1...2.1.0
 [2.1.0-RC1]: https://github.com/composer/composer/compare/2.0.14...2.1.0-RC1
