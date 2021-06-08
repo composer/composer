@@ -43,7 +43,7 @@ class SolverProblemsException extends \RuntimeException
         }
 
         if (strpos($text, 'could not be found') || strpos($text, 'no matching package found')) {
-            $text .= "\nPotential causes:\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n - It's a private package and you forgot to add a custom repository to find it\n\nRead <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
+            $text .= "\nPotential causes:\n - This package is not installable via Composer 1.x, see <https://blog.packagist.com/deprecating-composer-1-support/>\n - A typo in the package name\n - The package is not available in a stable-enough version according to your minimum-stability setting\n   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n - It's a private package and you forgot to add a custom repository to find it\n\nRead <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.";
         }
 
         if ($hasExtensionProblems) {

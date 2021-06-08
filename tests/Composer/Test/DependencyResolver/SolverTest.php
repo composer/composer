@@ -709,6 +709,7 @@ class SolverTest extends TestCase
             $msg .= "    - Installation request for a -> satisfiable by A[1.0].\n";
             $msg .= "    - A 1.0 requires b >= 2.0 -> no matching package found.\n\n";
             $msg .= "Potential causes:\n";
+            $msg .= " - This package is not installable via Composer 1.x, see <https://blog.packagist.com/deprecating-composer-1-support/>\n";
             $msg .= " - A typo in the package name\n";
             $msg .= " - The package is not available in a stable-enough version according to your minimum-stability setting\n";
             $msg .= "   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.\n";

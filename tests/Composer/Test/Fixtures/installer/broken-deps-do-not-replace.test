@@ -31,6 +31,7 @@ Your requirements could not be resolved to an installable set of packages.
     - Installation request for b/b 1.* -> satisfiable by b/b[1.0.0].
 
 Potential causes:
+ - This package is not installable via Composer 1.x, see <https://blog.packagist.com/deprecating-composer-1-support/>
  - A typo in the package name
  - The package is not available in a stable-enough version according to your minimum-stability setting
    see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.
