@@ -89,6 +89,7 @@ EOT
             $generator->setDevMode(true);
         }
         $generator->setClassMapAuthoritative($authoritative);
+        $generator->setRunScripts(true);
         $generator->setApcu($apcu, $apcuPrefix);
         $generator->setIgnorePlatformRequirements($ignorePlatformReqs);
         $numberOfClasses = $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
