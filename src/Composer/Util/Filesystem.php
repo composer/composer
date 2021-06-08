@@ -166,7 +166,7 @@ class Filesystem
      *
      * @return bool|null Returns null, when no edge case was hit. Otherwise a bool whether removal was successfull
      */
-    private function removeEdgeCases($directory)
+    private function removeEdgeCases($directory, $fallbackToPhp = true)
     {
         if ($this->isSymlinkedDirectory($directory)) {
             return $this->unlinkSymlinkedDirectory($directory);
@@ -188,7 +188,7 @@ class Filesystem
             throw new \RuntimeException('Aborting an attempted deletion of '.$directory.', this was probably not intended, if it is a real use case please report it.');
         }
 
-        if (!\function_exists('proc_open')) {
+        if (!\function_exists('proc_open') && $fallbackToPhp) {
             return $this->removeDirectoryPhp($directory);
         }
 
@@ -207,6 +207,11 @@ class Filesystem
      */
     public function removeDirectoryPhp($directory)
     {
+        $edgeCaseResult = $this->removeEdgeCases($directory, false);
+        if ($edgeCaseResult !== null) {
+            return $edgeCaseResult;
+        }
+
         try {
             $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);
         } catch (\UnexpectedValueException $e) {
