@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Repository;
 
+use Composer\Composer;
 use Composer\Package\Package;
 use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
@@ -1210,7 +1211,7 @@ Linked Version => 1.2.11',
 
         $platformRepository = new PlatformRepository(array(), array(), $runtime);
 
-        $package = $platformRepository->findPackage('composer', '*');
+        $package = $platformRepository->findPackage('composer', '='.Composer::getVersion());
         self::assertNotNull($package, 'Composer package exists');
     }
 }
