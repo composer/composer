@@ -251,8 +251,8 @@
                     "description": "Whether to use the Composer cache in read-only mode."
                 },
                 "bin-compat": {
-                    "enum": ["auto", "full"],
-                    "description": "The compatibility of the binaries, defaults to \"auto\" (automatically guessed) and can be \"full\" (compatible with both Windows and Unix-based systems)."
+                    "enum": ["auto", "full", "symlink"],
+                    "description": "The compatibility of the binaries, defaults to \"auto\" (automatically guessed), can be \"full\" (compatible with both Windows and Unix-based systems) and \"symlink\" (symlink also for WSL)."
                 },
                 "discard-changes": {
                     "type": ["string", "boolean"],
