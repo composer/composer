@@ -1,3 +1,10 @@
+### [2.1.3] 2021-06-09
+
+  * Add "symlink" option for "bin-compat" config to force symlinking even on WSL/Windows (#9959)
+  * Fixed source binaries not being made executable when symlinks cannot be used (#9961)
+  * Fixed more deletion edge cases (#9955, #9956)
+  * Fixed `dump-autoload` command not dispatching scripts anymore, regressed in 2.1.2 (#9954)
+
 ### [2.1.2] 2021-06-07
 
   * Added `--dev` to `dump-autoload` command to allow force-dumping dev autoload rules even if dev requirements are not present (#9946)
@@ -1210,6 +1217,7 @@
 
   * Initial release
 
+[2.1.3]: https://github.com/composer/composer/compare/2.1.2...2.1.3
 [2.1.2]: https://github.com/composer/composer/compare/2.1.1...2.1.2
 [2.1.1]: https://github.com/composer/composer/compare/2.1.0...2.1.1
 [2.1.0]: https://github.com/composer/composer/compare/2.1.0-RC1...2.1.0
