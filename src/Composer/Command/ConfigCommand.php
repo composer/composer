@@ -390,7 +390,7 @@ EOT
             ),
             'bin-compat' => array(
                 function ($val) {
-                    return in_array($val, array('auto', 'full'));
+                    return in_array($val, array('auto', 'full', 'symlink'));
                 },
                 function ($val) {
                     return $val;

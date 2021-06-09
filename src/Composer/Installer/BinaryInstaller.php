@@ -92,6 +92,8 @@ class BinaryInstaller
                 }
             } elseif ($this->binCompat === "full") {
                 $this->installFullBinaries($binPath, $link, $bin, $package);
+            } elseif ($this->binCompat === "symlink") {
+                $this->installSymlinkBinaries($binPath, $link);
             }
             Silencer::call('chmod', $link, 0777 & ~umask());
         }
