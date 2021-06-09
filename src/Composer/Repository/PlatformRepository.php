@@ -87,6 +87,12 @@ class PlatformRepository extends ArrayRepository
             $this->addOverriddenPackage($override);
         }
 
+        $prettyVersion = Composer::getVersion();
+        $version = $this->versionParser->normalize($prettyVersion);
+        $composer = new CompletePackage('composer', $version, $prettyVersion);
+        $composer->setDescription('Composer package');
+        $this->addPackage($composer);
+
         $prettyVersion = PluginInterface::PLUGIN_API_VERSION;
         $version = $this->versionParser->normalize($prettyVersion);
         $composerPluginApi = new CompletePackage('composer-plugin-api', $version, $prettyVersion);
