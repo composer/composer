@@ -256,8 +256,9 @@ Defaults to `auto`. Determines the compatibility of the binaries to be installed
 If it is `auto` then Composer only installs .bat proxy files when on Windows or WSL. If
 set to `full` then both .bat files for Windows and scripts for Unix-based
 operating systems will be installed for each binary. This is mainly useful if you
-run Composer inside a linux VM but still want the .bat proxies available for use
-in the Windows host OS. If set to `symlink` composer try to symlink the binary also on WSL.
+run Composer inside a linux VM but still want the `.bat` proxies available for use
+in the Windows host OS. If set to `symlink` Composer will always symlink even on 
+Windows/WSL.
 
 ## prepend-autoloader
 
