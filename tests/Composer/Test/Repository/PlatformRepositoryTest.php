@@ -1213,6 +1213,27 @@ Linked Version => 1.2.11',
             self::assertTrue($link->getConstraint()->matches($this->getVersionConstraint('=', $sourcePackage->getVersion())));
         }
     }
+
+    public function testComposerPlatformVersion()
+    {
+        $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
+        $runtime
+            ->method('getExtensions')
+            ->willReturn(array());
+        $runtime
+            ->method('getConstant')
+            ->willReturnMap(
+                array(
+                    array('PHP_VERSION', null, '7.0.0'),
+                    array('PHP_DEBUG', null, false),
+                )
+            );
+
+        $platformRepository = new PlatformRepository(array(), array(), $runtime);
+
+        $package = $platformRepository->findPackage('composer', '*');
+        self::assertNotNull($package, 'Composer package exists');
+    }
 }
 
 class ResourceBundleStub
