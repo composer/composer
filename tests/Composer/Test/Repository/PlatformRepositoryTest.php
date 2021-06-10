@@ -1235,6 +1235,39 @@ Linked Version => 1.2.11',
         $package = $platformRepository->findPackage('composer', '='.Composer::getVersion());
         self::assertNotNull($package, 'Composer package exists');
     }
+
+    public static function getPlatformPackages()
+    {
+        return array(
+            array('php', true),
+            array('php-debug', true),
+            array('php-ipv6', true),
+            array('php-64bit', true),
+            array('php-zts', true),
+            array('hhvm', true),
+            array('hhvm-foo', false),
+            array('ext-foo', true),
+            array('ext-123', true),
+            array('extfoo', false),
+            array('ext', false),
+            array('lib-foo', true),
+            array('lib-123', true),
+            array('libfoo', false),
+            array('lib', false),
+            array('composer', true),
+            array('composer-foo', false),
+            array('composer-plugin-api', true),
+            array('composer-plugin', false),
+            array('composer-runtime-api', true),
+            array('composer-runtime', false),
+        );
+    }
+
+    /** @dataProvider getPlatformPackages */
+    public function testValidPlatformPackages($packageName, $expectation)
+    {
+        self::assertSame($expectation, PlatformRepository::isPlatformPackage($packageName));
+    }
 }
 
 class ResourceBundleStub
