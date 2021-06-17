@@ -19,10 +19,10 @@ namespace Composer\Package;
  */
 class CompletePackage extends Package implements CompletePackageInterface
 {
-    protected $repositories;
+    protected $repositories = array();
     protected $license = array();
-    protected $keywords;
-    protected $authors;
+    protected $keywords = array();
+    protected $authors = array();
     protected $description;
     protected $homepage;
     protected $scripts = array();
