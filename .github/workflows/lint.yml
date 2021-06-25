@@ -18,7 +18,7 @@ jobs:
       matrix:
         php-version:
           - "5.3"
-          - "7.4"
+          - "latest"
 
     steps:
       - name: "Checkout"
@@ -29,7 +29,7 @@ jobs:
         with:
           coverage: "none"
           extensions: "intl"
-          ini-values: "memory_limit=-1"
+          ini-values: "memory_limit=-1, error_reporting=E_ALL, display_errors=On"
           php-version: "${{ matrix.php-version }}"
 
       - name: "Lint PHP files"
