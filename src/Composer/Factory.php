@@ -37,6 +37,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Version\VersionParser;
 use Composer\Downloader\TransportException;
+use Composer\Json\JsonValidationException;
 use Seld\JsonLint\JsonParser;
 
 /**
@@ -308,7 +309,13 @@ class Factory
                 throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
             }
 
-            $file->validateSchema(JsonFile::LAX_SCHEMA);
+            try {
+                $file->validateSchema(JsonFile::LAX_SCHEMA);
+            } catch (JsonValidationException $e) {
+                $errors = ' - ' . implode(PHP_EOL . ' - ', $e->getErrors());
+                $message = $e->getMessage() . ':' . PHP_EOL . $errors;
+                throw new JsonValidationException($message);
+            }
             $jsonParser = new JsonParser;
             try {
                 $jsonParser->parse(file_get_contents($localConfig), JsonParser::DETECT_KEY_CONFLICTS);

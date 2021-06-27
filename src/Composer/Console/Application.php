@@ -420,9 +420,9 @@ class Application extends BaseApplication
                     exit(1);
                 }
             } catch (JsonValidationException $e) {
-                $errors = ' - ' . implode(PHP_EOL . ' - ', $e->getErrors());
-                $message = $e->getMessage() . ':' . PHP_EOL . $errors;
-                throw new JsonValidationException($message);
+                if ($required) {
+                    throw $e;
+                }
             }
         }
 
