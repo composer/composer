@@ -160,7 +160,7 @@ EOT
                 throw new \RuntimeException('You have to run this command in interactive mode, or specify at least some data using --name, --require, etc.');
             }
 
-            $io->writeError('Writing composer.json');
+            $io->writeError('Writing '.$file->getPath());
         }
 
         $file->write($options);
