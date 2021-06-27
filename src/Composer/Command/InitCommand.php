@@ -95,6 +95,12 @@ EOT
         $allowlist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license', 'autoload');
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)));
 
+        if (isset($options['name']) && !preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $options['name'])) {
+            throw new \InvalidArgumentException(
+                'The package name '.$options['name'].' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
+            );
+        }
+
         if (isset($options['author'])) {
             $options['authors'] = $this->formatAuthors($options['author']);
             unset($options['author']);
@@ -273,12 +279,6 @@ EOT
                 $name .= '/' . $name;
             }
             $name = strtolower($name);
-        } else {
-            if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $name)) {
-                throw new \InvalidArgumentException(
-                    'The package name '.$name.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
-                );
-            }
         }
 
         $name = $io->askAndValidate(
