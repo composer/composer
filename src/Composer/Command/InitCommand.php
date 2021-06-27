@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Factory;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonValidationException;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Package;
@@ -27,6 +28,7 @@ use Composer\Repository\RepositorySet;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -162,6 +164,16 @@ EOT
         }
 
         $file->write($options);
+        try {
+            $file->validateSchema(JsonFile::LAX_SCHEMA);
+        } catch (JsonValidationException $e) {
+            $io->writeError('<error>Schema validation error, aborting</error>');
+            $errors = ' - ' . implode(PHP_EOL . ' - ', $e->getErrors());
+            $io->writeError($e->getMessage() . ':' . PHP_EOL . $errors);
+            Silencer::call('unlink', $file->getPath());
+
+            return 1;
+        }
 
         // --autoload - Create src folder
         if ($autoloadPath) {
