@@ -701,7 +701,7 @@
             "type": "object",
             "required": ["type", "url"],
             "properties": {
-                "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "git-bitbucket", "hg", "hg-bitbucket", "fossil", "perforce", "svn"] },
+                "type": { "type": "string", "enum": ["vcs", "github", "git", "gitlab", "git-bitbucket", "hg", "hg-bitbucket", "fossil", "perforce", "svn", "bitbucket-server"] },
                 "url": { "type": "string" },
                 "canonical": { "type": "boolean" },
                 "only": {

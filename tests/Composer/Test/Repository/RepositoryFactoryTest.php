@@ -46,6 +46,7 @@ class RepositoryFactoryTest extends TestCase
             'hg-bitbucket',
             'artifact',
             'path',
+            'bitbucket-server',
         ), array_keys($repositoryClasses));
     }
 
