@@ -413,7 +413,7 @@ EOT
     }
 
     /**
-     * @param bool|string|\Exception $result
+     * @param bool|string|string[]|\Exception $result
      */
     private function outputResult($result)
     {

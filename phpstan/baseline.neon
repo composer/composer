@@ -26,11 +26,6 @@ parameters:
 			path: ../src/Composer/Command/BaseCommand.php
 
 		-
-			message: "#^Call to function is_array\\(\\) with string will always evaluate to false\\.$#"
-			count: 1
-			path: ../src/Composer/Command/DiagnoseCommand.php
-
-		-
 			message: "#^Result of && is always false\\.$#"
 			count: 1
 			path: ../src/Composer/Command/DiagnoseCommand.php
