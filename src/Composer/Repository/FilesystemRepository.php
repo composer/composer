@@ -31,6 +31,7 @@ class FilesystemRepository extends WritableArrayRepository
     protected $file;
     private $dumpVersions;
     private $rootPackage;
+    private $filesystem;
 
     /**
      * Initializes filesystem repository.
@@ -39,12 +40,13 @@ class FilesystemRepository extends WritableArrayRepository
      * @param bool                  $dumpVersions
      * @param ?RootPackageInterface $rootPackage    Must be provided if $dumpVersions is true
      */
-    public function __construct(JsonFile $repositoryFile, $dumpVersions = false, RootPackageInterface $rootPackage = null)
+    public function __construct(JsonFile $repositoryFile, $dumpVersions = false, RootPackageInterface $rootPackage = null, Filesystem $filesystem = null)
     {
         parent::__construct();
         $this->file = $repositoryFile;
         $this->dumpVersions = $dumpVersions;
         $this->rootPackage = $rootPackage;
+        $this->filesystem = $filesystem ?: new Filesystem;
         if ($dumpVersions && !$rootPackage) {
             throw new \InvalidArgumentException('Expected a root package instance if $dumpVersions is true');
         }
@@ -100,14 +102,24 @@ class FilesystemRepository extends WritableArrayRepository
     {
         $data = array('packages' => array(), 'dev' => $devMode, 'dev-package-names' => array());
         $dumper = new ArrayDumper();
-        $fs = new Filesystem();
-        $repoDir = dirname($fs->normalizePath($this->file->getPath()));
+
+        // make sure the directory is created so we can realpath it
+        // as realpath() does some additional normalizations with network paths that normalizePath does not
+        // and we need to find shortest path correctly
+        $repoDir = dirname($this->file->getPath());
+        $this->filesystem->ensureDirectoryExists($repoDir);
+
+        $repoDir = $this->filesystem->normalizePath(realpath($repoDir));
         $installPaths = array();
 
         foreach ($this->getCanonicalPackages() as $package) {
             $pkgArray = $dumper->dump($package);
             $path = $installationManager->getInstallPath($package);
-            $installPath = ('' !== $path && null !== $path) ? $fs->findShortestPath($repoDir, $fs->isAbsolutePath($path) ? $path : getcwd() . '/' . $path, true) : null;
+            $installPath = null;
+            if ('' !== $path && null !== $path) {
+                $normalizedPath = $this->filesystem->normalizePath($this->filesystem->isAbsolutePath($path) ? $path : getcwd() . '/' . $path);
+                $installPath = $this->filesystem->findShortestPath($repoDir, $normalizedPath, true);
+            }
             $installPaths[$package->getName()] = $installPath;
 
             $pkgArray['install-path'] = $installPath;
@@ -130,9 +142,9 @@ class FilesystemRepository extends WritableArrayRepository
         if ($this->dumpVersions) {
             $versions = $this->generateInstalledVersions($installationManager, $installPaths, $devMode, $repoDir);
 
-            $fs->filePutContentsIfModified($repoDir.'/installed.php', '<?php return ' . $this->dumpToPhpCode($versions) . ';'."\n");
+            $this->filesystem->filePutContentsIfModified($repoDir.'/installed.php', '<?php return ' . $this->dumpToPhpCode($versions) . ';'."\n");
             $installedVersionsClass = file_get_contents(__DIR__.'/../InstalledVersions.php');
-            $fs->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
+            $this->filesystem->filePutContentsIfModified($repoDir.'/InstalledVersions.php', $installedVersionsClass);
 
             \Composer\InstalledVersions::reload($versions);
         }
@@ -154,8 +166,7 @@ class FilesystemRepository extends WritableArrayRepository
                     $lines .= "array(),\n";
                 }
             } elseif ($key === 'install_path' && is_string($value)) {
-                $fs = new Filesystem();
-                if ($fs->isAbsolutePath($value)) {
+                if ($this->filesystem->isAbsolutePath($value)) {
                     $lines .= var_export($value, true) . ",\n";
                 } else {
                     $lines .= "__DIR__ . " . var_export('/' . $value, true) . ",\n";
@@ -203,9 +214,8 @@ class FilesystemRepository extends WritableArrayRepository
             }
 
             if ($package instanceof RootPackageInterface) {
-                $fs = new Filesystem();
-                $to = getcwd();
-                $installPath = $fs->findShortestPath($repoDir, $to, true);
+                $to = $this->filesystem->normalizePath(realpath(getcwd()));
+                $installPath = $this->filesystem->findShortestPath($repoDir, $to, true);
             } else {
                 $installPath = $installPaths[$package->getName()];
             }

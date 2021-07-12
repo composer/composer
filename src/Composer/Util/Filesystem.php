@@ -544,7 +544,13 @@ class Filesystem
         $parts = array();
         $path = strtr($path, '\\', '/');
         $prefix = '';
-        $absolute = false;
+        $absolute = '';
+
+        // extract windows UNC paths e.g. \\foo\bar
+        if (strpos($path, '//') === 0 && \strlen($path) > 2) {
+            $absolute = '//';
+            $path = substr($path, 2);
+        }
 
         // extract a prefix being a protocol://, protocol:, protocol://drive: or simply drive:
         if (preg_match('{^( [0-9a-z]{2,}+: (?: // (?: [a-z]: )? )? | [a-z]: )}ix', $path, $match)) {
@@ -553,13 +559,13 @@ class Filesystem
         }
 
         if (strpos($path, '/') === 0) {
-            $absolute = true;
+            $absolute = '/';
             $path = substr($path, 1);
         }
 
         $up = false;
         foreach (explode('/', $path) as $chunk) {
-            if ('..' === $chunk && ($absolute || $up)) {
+            if ('..' === $chunk && ($absolute !== '' || $up)) {
                 array_pop($parts);
                 $up = !(empty($parts) || '..' === end($parts));
             } elseif ('.' !== $chunk && '' !== $chunk) {
@@ -568,7 +574,7 @@ class Filesystem
             }
         }
 
-        return $prefix.($absolute ? '/' : '').implode('/', $parts);
+        return $prefix.((string) $absolute).implode('/', $parts);
     }
 
     /**
