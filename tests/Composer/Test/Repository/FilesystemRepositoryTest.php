@@ -16,6 +16,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Repository\FilesystemRepository;
 use Composer\Test\TestCase;
 use Composer\Json\JsonFile;
+use Composer\Util\Filesystem;
 
 class FilesystemRepositoryTest extends TestCase
 {
@@ -83,13 +84,17 @@ class FilesystemRepositoryTest extends TestCase
     {
         $json = $this->createJsonFileMock();
 
+        $repoDir = realpath(sys_get_temp_dir()).'/repo_write_test/';
+        $fs = new Filesystem();
+        $fs->removeDirectory($repoDir);
+
         $repository = new FilesystemRepository($json);
         $im = $this->getMockBuilder('Composer\Installer\InstallationManager')
             ->disableOriginalConstructor()
             ->getMock();
         $im->expects($this->exactly(2))
             ->method('getInstallPath')
-            ->will($this->returnValue('/foo/bar/vendor/woop/woop'));
+            ->will($this->returnValue($repoDir.'/vendor/woop/woop'));
 
         $json
             ->expects($this->once())
@@ -98,7 +103,7 @@ class FilesystemRepositoryTest extends TestCase
         $json
             ->expects($this->once())
             ->method('getPath')
-            ->will($this->returnValue('/foo/bar/vendor/composer/installed.json'));
+            ->will($this->returnValue($repoDir.'/vendor/composer/installed.json'));
         $json
             ->expects($this->once())
             ->method('exists')

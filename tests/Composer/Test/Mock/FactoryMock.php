@@ -46,7 +46,7 @@ class FactoryMock extends Factory
         return new \Composer\Package\Loader\RootPackageLoader($rm, $config, $parser, new VersionGuesserMock(), $io);
     }
 
-    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage)
+    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage, ProcessExecutor $process = null)
     {
     }
 

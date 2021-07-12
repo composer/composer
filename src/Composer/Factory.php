@@ -385,7 +385,7 @@ class Factory
         $composer->setPackage($package);
 
         // load local repository
-        $this->addLocalRepository($io, $rm, $vendorDir, $package);
+        $this->addLocalRepository($io, $rm, $vendorDir, $package, $process);
 
         // initialize installation manager
         $im = $this->createInstallationManager($loop, $io, $dispatcher);
@@ -458,9 +458,14 @@ class Factory
      * @param Repository\RepositoryManager $rm
      * @param string                       $vendorDir
      */
-    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage)
+    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage, ProcessExecutor $process = null)
     {
-        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io), true, $rootPackage));
+        $fs = null;
+        if ($process) {
+            $fs = new Filesystem($process);
+        }
+
+        $rm->setLocalRepository(new Repository\InstalledFilesystemRepository(new JsonFile($vendorDir.'/composer/installed.json', null, $io), true, $rootPackage, $fs));
     }
 
     /**
