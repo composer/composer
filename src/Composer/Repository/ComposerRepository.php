@@ -566,22 +566,20 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $packages = null;
-            if ($cacheKey) {
-                if (!$useLastModifiedCheck && $hash && $this->cache->sha256($cacheKey) === $hash) {
-                    $packages = json_decode($this->cache->read($cacheKey), true);
-                    $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
-                } elseif ($useLastModifiedCheck) {
-                    if ($contents = $this->cache->read($cacheKey)) {
-                        $contents = json_decode($contents, true);
-                        // we already loaded some packages from this file, so assume it is fresh and avoid fetching it again
-                        if (isset($alreadyLoaded[$name])) {
-                            $packages = $contents;
-                            $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
-                        } elseif (isset($contents['last-modified'])) {
-                            $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
-                            $packages = true === $response ? $contents : $response;
-                            $packagesSource = true === $response ? 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')' : 'downloaded file ('.Url::sanitize($url).')';
-                        }
+            if (!$useLastModifiedCheck && $hash && $this->cache->sha256($cacheKey) === $hash) {
+                $packages = json_decode($this->cache->read($cacheKey), true);
+                $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
+            } elseif ($useLastModifiedCheck) {
+                if ($contents = $this->cache->read($cacheKey)) {
+                    $contents = json_decode($contents, true);
+                    // we already loaded some packages from this file, so assume it is fresh and avoid fetching it again
+                    if (isset($alreadyLoaded[$name])) {
+                        $packages = $contents;
+                        $packagesSource = 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')';
+                    } elseif (isset($contents['last-modified'])) {
+                        $response = $this->fetchFileIfLastModified($url, $cacheKey, $contents['last-modified']);
+                        $packages = true === $response ? $contents : $response;
+                        $packagesSource = true === $response ? 'cached file ('.$cacheKey.' originating from '.Url::sanitize($url).')' : 'downloaded file ('.Url::sanitize($url).')';
                     }
                 }
             }
