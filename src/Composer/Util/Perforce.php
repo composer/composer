@@ -208,8 +208,6 @@ class Perforce
             return;
         }
         $this->p4User = $this->getP4variable('P4USER');
-        // https://github.com/phpstan/phpstan/issues/5129
-        // @phpstan-ignore-next-line
         if (strlen($this->p4User) > 0) {
             return;
         }
