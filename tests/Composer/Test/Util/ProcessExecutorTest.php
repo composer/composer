@@ -111,7 +111,7 @@ class ProcessExecutorTest extends TestCase
         $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
         $process = new ProcessExecutor(new ConsoleIO(new ArrayInput(array()), $output, new HelperSet(array())));
 
-        $process->execute('php -r "echo \'<error>foo</error>\'.PHP_EOL;"');
+        $process->execute('php -ddisplay_errors=0 -derror_reporting=0 -r "echo \'<error>foo</error>\'.PHP_EOL;"');
         $this->assertSame('<error>foo</error>'.PHP_EOL, $output->fetch());
     }
 

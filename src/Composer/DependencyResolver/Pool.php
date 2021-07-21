@@ -79,6 +79,7 @@ class Pool implements \Countable
     /**
      * Returns how many packages have been loaded into the pool
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return \count($this->packages);
