@@ -842,6 +842,7 @@ EOT
 
         // find the latest version allowed in this repo set
         $versionSelector = new VersionSelector($this->getRepositorySet($input, $minimumStability), $platformRepo);
+        $effectiveMinimumStability = $minimumStability ?: $this->getMinimumStability($input);
 
         $package = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $ignorePlatformReqs);
 
@@ -872,7 +873,7 @@ EOT
                 throw new \InvalidArgumentException(sprintf(
                     'Could not find a version of package %s matching your minimum-stability (%s). Require it with an explicit version constraint allowing its desired stability.',
                     $name,
-                    $this->getMinimumStability($input)
+                    $effectiveMinimumStability
                 ));
             }
             // Check whether the required version was the problem
@@ -885,16 +886,22 @@ EOT
                 }
 
                 throw new \InvalidArgumentException(sprintf(
-                    'Could not find package %s in a version matching %s',
+                    'Could not find package %s in a version matching "%s" and a stability matching "'.$effectiveMinimumStability.'".',
                     $name,
                     $requiredVersion
                 ));
             }
             // Check whether the PHP version was the problem for all versions
-            if (true !== $ignorePlatformReqs && ($candidate = $versionSelector->findBestCandidate($name, null, $preferredStability, true))) {
+            if (true !== $ignorePlatformReqs && ($candidate = $versionSelector->findBestCandidate($name, null, $preferredStability, true, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
+                $additional = '';
+                if (false === $versionSelector->findBestCandidate($name, null, $preferredStability, true)) {
+                    $additional = PHP_EOL.PHP_EOL.'Additionally, the package was only found with a stability of "'.$candidate->getStability().'" while your minimum stability is "'.$effectiveMinimumStability.'".';
+                }
+
                 throw new \InvalidArgumentException(sprintf(
-                    'Could not find package %s in any version matching your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
-                    $name
+                    'Could not find package %s in any version matching your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo) . '%s',
+                    $name,
+                    $additional
                 ));
             }
 
@@ -918,7 +925,7 @@ EOT
             throw new \InvalidArgumentException(sprintf(
                 'Could not find a matching version of package %s. Check the package spelling, your version constraint and that the package is available in a stability which matches your minimum-stability (%s).',
                 $name,
-                $this->getMinimumStability($input)
+                $effectiveMinimumStability
             ));
         }
 
@@ -936,9 +943,12 @@ EOT
         }
 
         foreach ($candidate->getRequires() as $link) {
+            if (!PlatformRepository::isPlatformPackage($link->getTarget())) {
+                continue;
+            }
             $platformPkg = $platformRepo->findPackage($link->getTarget(), '*');
             if (!$platformPkg) {
-                $details[] = $candidate->getName().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' but it is not present.';
+                $details[] = $candidate->getPrettyName().' '.$candidate->getPrettyVersion().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' but it is not present.';
                 continue;
             }
             if (!$link->getConstraint()->matches(new Constraint('==', $platformPkg->getVersion()))) {
@@ -947,7 +957,7 @@ EOT
                 if (isset($platformExtra['config.platform']) && $platformPkg instanceof CompletePackageInterface) {
                     $platformPkgVersion .= ' ('.$platformPkg->getDescription().')';
                 }
-                $details[] = $candidate->getName().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' which does not match your installed version '.$platformPkgVersion.'.';
+                $details[] = $candidate->getPrettyName().' '.$candidate->getPrettyVersion().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' which does not match your installed version '.$platformPkgVersion.'.';
             }
         }
 
