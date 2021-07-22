@@ -52,6 +52,11 @@ class ErrorHandler
         }
 
         if (self::$io) {
+            // ignore symfony/console deprecation warning
+            if (0 === strpos($message, 'Return type of Symfony\\Component\\Console\\Helper\\HelperSet::getIterator() should either be compatible with IteratorAggregate::getIterator')) {
+                return true;
+            }
+
             self::$io->writeError('<warning>Deprecation Notice: '.$message.' in '.$file.':'.$line.'</warning>');
             if (self::$io->isVerbose()) {
                 self::$io->writeError('<warning>Stack trace:</warning>');
