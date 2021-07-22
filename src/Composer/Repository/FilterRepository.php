@@ -185,6 +185,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * {@inheritdoc}
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         if ($this->repo->count() > 0) {
