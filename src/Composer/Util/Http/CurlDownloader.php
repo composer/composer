@@ -20,6 +20,7 @@ use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
 use Composer\Util\HttpDownloader;
+use Composer\Util\ProcessExecutor;
 use React\Promise\Promise;
 
 /**
@@ -160,7 +161,7 @@ class CurlDownloader
         curl_setopt($curlHandle, CURLOPT_URL, $url);
         curl_setopt($curlHandle, CURLOPT_FOLLOWLOCATION, false);
         curl_setopt($curlHandle, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($curlHandle, CURLOPT_TIMEOUT, 300);
+        curl_setopt($curlHandle, CURLOPT_TIMEOUT, ProcessExecutor::getTimeout());
         curl_setopt($curlHandle, CURLOPT_WRITEHEADER, $headerHandle);
         curl_setopt($curlHandle, CURLOPT_FILE, $bodyHandle);
         curl_setopt($curlHandle, CURLOPT_ENCODING, "gzip");
