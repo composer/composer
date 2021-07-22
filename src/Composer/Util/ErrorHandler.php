@@ -53,7 +53,7 @@ class ErrorHandler
 
         if (self::$io) {
             // ignore symfony/* deprecation warnings about return types
-            if (preg_match('{^Return type of Symfony\\Component\\.*ReturnTypeWillChange}', $message)) {
+            if (preg_match('{^Return type of Symfony\\\\.*ReturnTypeWillChange}is', $message)) {
                 return true;
             }
 
