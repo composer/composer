@@ -419,7 +419,10 @@ class Application extends BaseApplication
             } catch (\InvalidArgumentException $e) {
                 if ($required) {
                     $this->io->writeError($e->getMessage());
-                    exit(1);
+                    if ($this->areExceptionsCaught()){
+                        exit(1);
+                    }
+                    throw $e;
                 }
             } catch (JsonValidationException $e) {
                 if ($required) {
