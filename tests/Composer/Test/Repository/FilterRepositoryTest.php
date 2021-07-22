@@ -50,6 +50,9 @@ class FilterRepositoryTest extends TestCase
             array(array('foo/aaa', 'foo/bbb'), array('only' => array('foo/*'))),
             array(array('foo/aaa', 'baz/yyy'), array('only' => array('foo/aaa', 'baz/yyy'))),
             array(array('bar/xxx'), array('exclude' => array('foo/*', 'baz/yyy'))),
+            // make sure sub-patterns are not matched without wildcard
+            array(array('foo/aaa', 'foo/bbb', 'bar/xxx', 'baz/yyy'), array('exclude' => array('foo/aa', 'az/yyy'))),
+            array(array(), array('only' => array('foo/aa', 'az/yyy'))),
         );
     }
 
