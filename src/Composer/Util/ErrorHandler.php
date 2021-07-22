@@ -52,8 +52,8 @@ class ErrorHandler
         }
 
         if (self::$io) {
-            // ignore symfony/console deprecation warning
-            if (0 === strpos($message, 'Return type of Symfony\\Component\\Console\\Helper\\HelperSet::getIterator() should either be compatible with IteratorAggregate::getIterator')) {
+            // ignore symfony/* deprecation warnings about return types
+            if (preg_match('{^Return type of Symfony\\Component\\.*ReturnTypeWillChange}', $message)) {
                 return true;
             }
 
