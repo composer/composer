@@ -1,3 +1,8 @@
+### [2.1.5] 2021-07-23
+
+  * Fixed `create-project` creating a `php:` directory in the directory it was executed in (#10020, #10021)
+  * Fixed curl downloader to respect default_socket_timeout if it is bigger than our default 300s (#10018)
+
 ### [2.1.4] 2021-07-22
 
   * Fixed PHP 8.1 deprecation warnings (#10008)
@@ -1228,6 +1233,7 @@
 
   * Initial release
 
+[2.1.5]: https://github.com/composer/composer/compare/2.1.4...2.1.5
 [2.1.4]: https://github.com/composer/composer/compare/2.1.3...2.1.4
 [2.1.3]: https://github.com/composer/composer/compare/2.1.2...2.1.3
 [2.1.2]: https://github.com/composer/composer/compare/2.1.1...2.1.2
