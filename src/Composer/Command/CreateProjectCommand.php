@@ -25,7 +25,7 @@ use Composer\Package\AliasPackage;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
-use Composer\Repository\InstalledFilesystemRepository;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Silencer;
@@ -439,7 +439,7 @@ EOT
         $im = $composer->getInstallationManager();
         $im->setOutputProgress(!$noProgress);
         $im->addInstaller($projectInstaller);
-        $im->execute(new InstalledFilesystemRepository(new JsonFile('php://memory')), array(new InstallOperation($package)));
+        $im->execute(new InstalledArrayRepository(), array(new InstallOperation($package)));
         $im->notifyInstalls($io);
 
         // collect suggestions
