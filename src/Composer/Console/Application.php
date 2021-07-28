@@ -419,7 +419,8 @@ class Application extends BaseApplication
             } catch (\InvalidArgumentException $e) {
                 if ($required) {
                     $this->io->writeError($e->getMessage());
-                    if ($this->catchExceptions) {
+                    // TODO composer 2.3 simplify to $this->areExceptionsCaught()
+                    if (!method_exists($this, 'areExceptionsCaught') || $this->areExceptionsCaught()) {
                         exit(1);
                     }
                     throw $e;
