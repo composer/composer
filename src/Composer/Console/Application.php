@@ -419,7 +419,7 @@ class Application extends BaseApplication
             } catch (\InvalidArgumentException $e) {
                 if ($required) {
                     $this->io->writeError($e->getMessage());
-                    if ($this->areExceptionsCaught()){
+                    if ($this->catchExceptions) {
                         exit(1);
                     }
                     throw $e;
