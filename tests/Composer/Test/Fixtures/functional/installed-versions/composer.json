@@ -5,7 +5,7 @@
         "plugin/a": "*",
         "plugin/b": "*",
         "symfony/process": "*",
-        "symfony/filesystem": "*"
+        "symfony/filesystem": "5.2.4"
     },
     "repositories": [
         {"type": "path", "url": "plugin-*"},
