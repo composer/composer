@@ -39,7 +39,7 @@ class NoProxyPattern
      */
     public function __construct($pattern)
     {
-        $this->hostNames = preg_split('{[\s,]+}', $pattern, null, PREG_SPLIT_NO_EMPTY);
+        $this->hostNames = preg_split('{[\s,]+}', $pattern, -1, PREG_SPLIT_NO_EMPTY);
         $this->noproxy = empty($this->hostNames) || '*' === $this->hostNames[0];
     }
 
