@@ -336,6 +336,10 @@ class Git
         );
 
         $errorOutput = $this->process->getErrorOutput();
+        if (null === $errorOutput) {
+            return false;
+        }
+
         foreach ($authFailures as $authFailure) {
             if (strpos($errorOutput, $authFailure) !== false) {
                 return true;

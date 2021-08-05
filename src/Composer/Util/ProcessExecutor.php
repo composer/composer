@@ -361,7 +361,7 @@ class ProcessExecutor
     /**
      * Get any error output from the last command
      *
-     * @return string
+     * @return ?string
      */
     public function getErrorOutput()
     {
