@@ -201,6 +201,10 @@ class LibraryInstallerTest extends TestCase
             ->expects($this->any())
             ->method('getPrettyName')
             ->will($this->returnValue('pkg'));
+        $package
+            ->expects($this->any())
+            ->method('getName')
+            ->will($this->returnValue('pkg'));
 
         $this->repository
             ->expects($this->exactly(2))
