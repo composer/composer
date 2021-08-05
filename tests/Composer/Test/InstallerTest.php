@@ -50,7 +50,7 @@ class InstallerTest extends TestCase
     public function tearDown()
     {
         chdir($this->prevCwd);
-        if (is_dir($this->tempComposerHome)) {
+        if (isset($this->tempComposerHome) && is_dir($this->tempComposerHome)) {
             $fs = new Filesystem;
             $fs->removeDirectory($this->tempComposerHome);
         }
