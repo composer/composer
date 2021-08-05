@@ -52,7 +52,12 @@ class PharArchiver implements ArchiverInterface
                 $target = $filename . '.tar';
             }
 
-            $phar = new \PharData($target, null, null, static::$formats[$format]);
+            $phar = new \PharData(
+                $target,
+                \FilesystemIterator::KEY_AS_PATHNAME | \FilesystemIterator::CURRENT_AS_FILEINFO,
+                '',
+                static::$formats[$format]
+            );
             $files = new ArchivableFilesFinder($sources, $excludes, $ignoreFilters);
             $filesOnly = new ArchivableFilesFilter($files);
             $phar->buildFromIterator($filesOnly, $sources);
