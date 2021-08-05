@@ -175,7 +175,7 @@ class PoolBuilderTest extends TestCase
 
     protected function readTestFile(\SplFileInfo $file, $fixturesDir)
     {
-        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), null, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
 
         $sectionInfo = array(
             'TEST' => true,
