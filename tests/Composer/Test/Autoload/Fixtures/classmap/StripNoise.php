@@ -17,7 +17,12 @@ HEREDOC . <<<  WHITESPACE
 class FailHeredocWhitespace
 {
 }
-WHITESPACE . <<<"DOUBLEQUOTES"
+WHITESPACE . <<<  MARKERINTEXT
+    In PHP < 7.3, the docblock marker could occur in the text as long as it did not occur at the very start of the line.
+But, what are you blind McFly, it's there. How else do you explain that wreck out there? Doc, Doc. Oh, no. You're alive. Bullet proof vest, how did you know, I never got a chance to tell you. About all that talk about screwing up future events, the space time continuum. Okay, alright, I'll prove it to you.
+    MARKERINTEXT
+ Look at my driver's license, expires 1987. Look at my birthday, for crying out load I haven't even been born yet. And, look at this picture, my brother, my sister, and me. Look at the sweatshirt, Doc, class of 1984. Why do you keep following me around? Hey beat it, spook, this don't concern you.
+MARKERINTEXT . <<<"DOUBLEQUOTES"
 class FailHeredocDoubleQuotes
 {
 }
