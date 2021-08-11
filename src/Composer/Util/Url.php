@@ -110,8 +110,8 @@ class Url
         $url = preg_replace('{([&?]access_token=)[^&]+}', '$1***', $url);
 
         $url = preg_replace_callback('{^(?P<prefix>[a-z0-9]+://)?(?P<user>[^:/\s@]+):(?P<password>[^@\s/]+)@}i', function ($m) {
-            // if the username looks like a long (12char+) hex string, or a modern github token (e.g. gp1_xxx) we obfuscate that
-            if (preg_match('{^([a-f0-9]{12,}|g[a-z]\d_[a-zA-Z0-9_]+)$}', $m['user'])) {
+            // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx) we obfuscate that
+            if (preg_match('{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+)$}', $m['user'])) {
                 return $m['prefix'].'***:***@';
             }
 
