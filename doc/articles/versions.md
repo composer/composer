@@ -124,6 +124,11 @@ will be treated as a **logical OR**. AND has higher precedence than OR.
 > unexpectedly installing versions that break backwards compatibility.
 > Consider using the [caret](#caret-version-range-) operator instead for safety.
 
+<!--blank line followed by comment markup to separate the block quotes-->
+> **Note:** In older versions of Composer the single pipe (`|`) was the
+> recommended alternative to the **logical OR**. Thus for backwards compatibility
+> the single pipe (`|`) will still be treated as a **logical OR**.
+
 Examples:
 
 * `>=1.0`
