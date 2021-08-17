@@ -168,6 +168,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 if ($output) {
                     $io->writeError("  - Loading <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>) from cache", true, IOInterface::VERY_VERBOSE);
                 }
+                // mark the file as having been written in cache even though it is only read from cache, so that if
+                // the cache is corrupt the archive will be deleted and the next attempt will re-download it
+                // see https://github.com/composer/composer/issues/10028
+                if (!$cache->isReadOnly()) {
+                    $this->lastCacheWrites[$package->getName()] = $cacheKey;
+                }
                 $result = \React\Promise\resolve($fileName);
             } else {
                 if ($output) {
