@@ -172,7 +172,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 // the cache is corrupt the archive will be deleted and the next attempt will re-download it
                 // see https://github.com/composer/composer/issues/10028
                 if (!$cache->isReadOnly()) {
-                    $this->lastCacheWrites[$package->getName()] = $cacheKey;
+                    $self->lastCacheWrites[$package->getName()] = $cacheKey;
                 }
                 $result = \React\Promise\resolve($fileName);
             } else {
