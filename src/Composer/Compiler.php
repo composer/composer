@@ -71,7 +71,7 @@ class Compiler
         }
 
         $phar = new \Phar($pharFile, 0, 'composer.phar');
-        $phar->setSignatureAlgorithm(\Phar::SHA1);
+        $phar->setSignatureAlgorithm(\Phar::SHA512);
 
         $phar->startBuffering();
 
@@ -173,7 +173,7 @@ class Compiler
         // re-sign the phar with reproducible timestamp / signature
         $util = new Timestamps($pharFile);
         $util->updateTimestamps($this->versionDate);
-        $util->save($pharFile, \Phar::SHA1);
+        $util->save($pharFile, \Phar::SHA512);
 
         Linter::lint($pharFile);
     }
