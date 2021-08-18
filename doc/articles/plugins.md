@@ -39,7 +39,7 @@ requirements:
 The required version of the `composer-plugin-api` follows the same [rules][7]
 as a normal package's.
 
-The current Composer plugin API version is `2.0.0`.
+The current Composer plugin API version is `2.1.0`.
 
 An example of a valid plugin `composer.json` file (with the autoloading
 part omitted and an optional require-dev dependency on `composer/composer` for IDE auto completion):
