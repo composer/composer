@@ -42,9 +42,17 @@ To achieve this, you need to acquire the Composer source code:
 3. Run Composer to get the dependencies: `cd composer && php ../composer.phar install`
 
 You can run the test suite by executing `vendor/bin/simple-phpunit` when inside the
-composer directory, and run Composer by executing the `bin/composer`. To test
-your modified Composer code against another project, run `php
-/path/to/composer/bin/composer` inside that project's directory.
+composer directory, and run Composer by executing the `bin/composer`.
+
+For running the tests against the most recent PHP versions (PHP 8.0/8.1), you will
+need to run `composer config platform.php --unset && composer update --ignore-platform-reqs`
+before running the `vendor/bin/simple-phpunit` command.
+If that still doesn't work, try running
+`composer require --dev "symfony/phpunit-bridge:~5.2" --update-with-dependencies` and
+then running the `vendor/bin/simple-phpunit` command again.
+
+To test your modified Composer code against another project, run
+`php /path/to/composer/bin/composer` inside that project's directory.
 
 Contributing policy
 -------------------

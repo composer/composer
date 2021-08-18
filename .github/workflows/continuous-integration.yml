@@ -12,7 +12,6 @@ env:
   COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
   COMPOSER_UPDATE_FLAGS: ""
   COMPOSER_TESTS_ARE_RUNNING: "1"
-  SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT: "1"
 
 jobs:
   tests:

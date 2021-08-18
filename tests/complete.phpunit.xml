@@ -16,6 +16,7 @@
 >
     <php>
         <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak"/>
+        <env name="SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT" value="1"/>
     </php>
     <testsuites>
         <testsuite name="Full Composer Test Suite">
