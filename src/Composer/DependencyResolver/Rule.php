@@ -94,6 +94,8 @@ abstract class Rule
         if ($reason === self::RULE_PACKAGE_REQUIRES) {
             return $this->reasonData->getTarget();
         }
+
+        return null;
     }
 
     public function setType($type)
