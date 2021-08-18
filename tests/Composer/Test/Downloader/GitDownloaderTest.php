@@ -69,7 +69,7 @@ class GitDownloaderTest extends TestCase
     protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $executor = $executor ?: $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $executor = $executor ?: $this->getMockBuilder('Composer\Util\ProcessExecutor')->setMethods(array('execute'))->getMock();
         $filesystem = $filesystem ?: $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $config = $this->setupConfig($config);
 
@@ -107,7 +107,7 @@ class GitDownloaderTest extends TestCase
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('dev-master'));
-        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->setMethods(array('execute'))->getMock();
 
         $expectedGitCommand = $this->winCompat("git clone --no-checkout -- 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer -- 'https://example.com/composer/composer' && git fetch composer && git remote set-url origin -- 'https://example.com/composer/composer' && git remote set-url composer -- 'https://example.com/composer/composer'");
         $processExecutor->expects($this->at(0))
@@ -147,7 +147,7 @@ class GitDownloaderTest extends TestCase
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('dev-master'));
-        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->setMethods(array('execute'))->getMock();
 
         $this->initGitVersion('2.17.0');
 
@@ -219,7 +219,7 @@ class GitDownloaderTest extends TestCase
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
-        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->setMethods(array('execute', 'getErrorOutput'))->getMock();
 
         $expectedGitCommand = $this->winCompat("git clone --no-checkout -- 'https://github.com/mirrors/composer' 'composerPath' && cd 'composerPath' && git remote add composer -- 'https://github.com/mirrors/composer' && git fetch composer && git remote set-url origin -- 'https://github.com/mirrors/composer' && git remote set-url composer -- 'https://github.com/mirrors/composer'");
         $processExecutor->expects($this->at(0))
@@ -297,7 +297,7 @@ class GitDownloaderTest extends TestCase
         $packageMock->expects($this->any())
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
-        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->setMethods(array('execute'))->getMock();
 
         $expectedGitCommand = $this->winCompat("git clone --no-checkout -- '{$url}' 'composerPath' && cd 'composerPath' && git remote add composer -- '{$url}' && git fetch composer && git remote set-url origin -- '{$url}' && git remote set-url composer -- '{$url}'");
         $processExecutor->expects($this->at(0))
@@ -335,7 +335,7 @@ class GitDownloaderTest extends TestCase
         $packageMock->expects($this->any())
             ->method('getSourceUrls')
             ->will($this->returnValue(array('https://example.com/composer/composer')));
-        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->setMethods(array('execute'))->getMock();
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedGitCommand))
@@ -423,7 +423,7 @@ class GitDownloaderTest extends TestCase
             ->method('getVersion')
             ->will($this->returnValue('1.0.0.0'));
 
-        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->setMethods(array('execute'))->getMock();
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($this->winCompat("git show-ref --head -d")))
@@ -589,7 +589,7 @@ composer https://github.com/old/url (push)
             ->method('getFullPrettyVersion')
             ->will($this->returnValue('1.0.0'));
 
-        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->setMethods(array('execute'))->getMock();
         $processExecutor->expects($this->any())
             ->method('execute')
             ->will($this->returnValue(0));
@@ -631,7 +631,7 @@ composer https://github.com/old/url (push)
             ->method('getVersion')
             ->will($this->returnValue('dev-ref2'));
 
-        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->setMethods(array('execute'))->getMock();
         $processExecutor->expects($this->any())
             ->method('execute')
             ->will($this->returnValue(0));
@@ -654,7 +654,7 @@ composer https://github.com/old/url (push)
         $expectedGitResetCommand = $this->winCompat("cd 'composerPath' && git status --porcelain --untracked-files=no");
 
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
-        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
+        $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->setMethods(array('execute'))->getMock();
         $processExecutor->expects($this->any())
             ->method('execute')
             ->with($this->equalTo($expectedGitResetCommand))
