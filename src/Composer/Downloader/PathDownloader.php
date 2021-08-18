@@ -184,7 +184,14 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             return \React\Promise\resolve();
         }
 
-        if (realpath($path) === realpath($package->getDistUrl())) {
+        // ensure that the source path (dist url) is not the same as the install path, which
+        // can happen when using custom installers, see https://github.com/composer/composer/pull/9116
+        // not using realpath here as we do not want to resolve the symlink to the original dist url
+        // it points to
+        $fs = new Filesystem;
+        $absPath = $fs->isAbsolutePath($path) ? $path : getcwd() . '/' . $path;
+        $absDistUrl = $fs->isAbsolutePath($package->getDistUrl()) ? $package->getDistUrl() : getcwd() . '/' . $package->getDistUrl();
+        if ($fs->normalizePath($absPath) === $fs->normalizePath($absDistUrl)) {
             if ($output) {
                 $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
             }
