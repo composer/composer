@@ -189,6 +189,7 @@ EOT
             'zip: ' . (extension_loaded('zip') ? '<comment>extension present</comment>' : '<comment>extension not loaded</comment>')
             . ', ' . ($hasSystemUnzip ? '<comment>unzip present</comment>' : '<comment>unzip not available</comment>')
             . ', ' . ($hasSystem7zip ? '<comment>7-Zip present ('.$bin7zip.')</comment>' : '<comment>7-Zip not available</comment>')
+            . (($hasSystem7zip || $hasSystemUnzip) && !function_exists('proc_open') ? ', <warning>proc_open is disabled or not present, unzip/7-z will not be usable</warning>' : '')
         );
 
         return $this->exitCode;
@@ -220,6 +221,10 @@ EOT
 
     private function checkGit()
     {
+        if (!function_exists('proc_open')) {
+            return '<comment>proc_open is not available, git cannot be used</comment>';
+        }
+
         $this->process->execute('git config color.ui', $output);
         if (strtolower(trim($output)) === 'always') {
             return '<comment>Your git color.ui setting is set to always, this is known to create issues. Use "git config --global color.ui true" to set it correctly.</comment>';
