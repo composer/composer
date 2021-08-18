@@ -371,6 +371,9 @@ class ProcessExecutor
         return $this->errorOutput;
     }
 
+    /**
+     * @private
+     */
     public function outputHandler($type, $buffer)
     {
         if ($this->captureOutput) {
