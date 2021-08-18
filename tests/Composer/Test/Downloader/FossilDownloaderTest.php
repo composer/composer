@@ -132,7 +132,11 @@ class FossilDownloaderTest extends TestCase
         $processExecutor->expects($this->at(0))
             ->method('execute')
             ->with($this->equalTo($expectedFossilCommand))
-            ->will($this->returnValue(0));
+            ->will($this->returnCallback(function ($cmd, &$output, $path) {
+                $output = '';
+
+                return 0;
+            }));
         $expectedFossilCommand = $this->getCmd("fossil pull && fossil up 'trunk'");
         $processExecutor->expects($this->at(1))
             ->method('execute')

@@ -15,6 +15,7 @@ namespace Composer\Test\Mock;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Platform;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\AssertionFailedError;
 use Symfony\Component\Process\Process;
 use React\Promise\Promise;
 
@@ -29,16 +30,18 @@ class ProcessExecutorMock extends ProcessExecutor
     private $log = array();
 
     /**
-     * @param array<string|array{cmd: string, return: int, stdout?: string, stderr?: string}> $expectations
-     * @param bool                                                                            $strict         set to true if you want to provide *all* expected commands, and not just a subset you are interested in testing
-     * @param array{return: int, stdout?: string, stderr?: string}                            $defaultHandler default command handler for undefined commands if not in strict mode
+     * @param array<string|array{cmd: string, return: int, stdout?: string, stderr?: string, callback?: callable}> $expectations
+     * @param bool                                                                                                 $strict         set to true if you want to provide *all* expected commands, and not just a subset you are interested in testing
+     * @param array{return: int, stdout?: string, stderr?: string}                                                 $defaultHandler default command handler for undefined commands if not in strict mode
      */
     public function expects(array $expectations, $strict = false, array $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => ''))
     {
-        $default = array('return' => 0, 'stdout' => '', 'stderr' => '');
+        $default = array('cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null);
         $this->expectations = array_map(function ($expect) use ($default) {
             if (is_string($expect)) {
                 $expect = array('cmd' => $expect);
+            } elseif ($diff = array_diff_key(array_merge($default, $expect), $default)) {
+                throw new \UnexpectedValueException('Unexpected keys in process execution step: '.implode(', ', array_keys($diff)));
             }
 
             return array_merge($default, $expect);
@@ -53,7 +56,7 @@ class ProcessExecutorMock extends ProcessExecutor
             $expectations = array_map(function ($expect) {
                 return $expect['cmd'];
             }, $this->expectations);
-            throw new \LogicException(
+            throw new AssertionFailedError(
                 'There are still '.count($this->expectations).' expected process calls which have not been consumed:'.PHP_EOL.
                 implode(PHP_EOL, $expectations).PHP_EOL.PHP_EOL.
                 'Received calls:'.PHP_EOL.implode(PHP_EOL, $this->log)
@@ -88,19 +91,25 @@ class ProcessExecutorMock extends ProcessExecutor
 
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
 
+        $this->log[] = $command;
+
         if ($this->expectations && $command === $this->expectations[0]['cmd']) {
             $expect = array_shift($this->expectations);
             $stdout = $expect['stdout'];
             $stderr = $expect['stderr'];
             $return = $expect['return'];
+            if (isset($expect['callback'])) {
+                call_user_func($expect['callback']);
+            }
         } elseif (!$this->strict) {
             $stdout = $this->defaultHandler['stdout'];
             $stderr = $this->defaultHandler['stderr'];
             $return = $this->defaultHandler['return'];
         } else {
-            throw new \LogicException(
+            throw new AssertionFailedError(
                 'Received unexpected command "'.$command.'" in "'.$cwd.'"'.PHP_EOL.
-                ($this->expectations ? 'Expected "'.$this->expectations[0]['cmd'].'" at this point.' : 'Expected no more calls at this point.')
+                ($this->expectations ? 'Expected "'.$this->expectations[0]['cmd'].'" at this point.' : 'Expected no more calls at this point.').PHP_EOL.
+                'Received calls:'.PHP_EOL.implode(PHP_EOL, array_slice($this->log, 0, -1))
             );
         }
 
@@ -114,8 +123,6 @@ class ProcessExecutorMock extends ProcessExecutor
         if ($this->captureOutput && !is_callable($output)) {
             $output = $stdout;
         }
-
-        $this->log[] = $command;
 
         $this->errorOutput = $stderr;
 
