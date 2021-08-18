@@ -205,6 +205,9 @@ class InstalledVersionsTest extends TestCase
         ), InstalledVersions::getRootPackage());
     }
 
+    /**
+     * @group legacy
+     */
     public function testGetRawData()
     {
         $dir = $this->root;
