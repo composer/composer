@@ -115,6 +115,12 @@ class ZipDownloader extends ArchiveDownloader
 
         $commandSpec = reset(self::$unzipCommands);
         $command = sprintf($commandSpec[1], ProcessExecutor::escape($file), ProcessExecutor::escape($path));
+        // normalize separators to backslashes to avoid problems with 7-zip on windows
+        // see https://github.com/composer/composer/issues/10058
+        if (Platform::isWindows()) {
+            $command = sprintf($commandSpec[1], ProcessExecutor::escape(strtr($file, '/', '\\')), ProcessExecutor::escape(strtr($path, '/', '\\')));
+        }
+
         $executable = $commandSpec[0];
 
         $self = $this;
