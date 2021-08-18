@@ -97,7 +97,7 @@ class RepositoryManagerTest extends TestCase
             array('git', array('url' => 'http://github.com/foo/bar')),
             array('git', array('url' => 'git@example.org:foo/bar.git')),
             array('svn', array('url' => 'svn://example.org/foo/bar')),
-            array('pear', array('url' => 'http://pear.example.org/foo'), 'RuntimeException'),
+            array('pear', array('url' => 'http://pear.example.org/foo'), 'InvalidArgumentException'),
             array('package', array('package' => array())),
             array('invalid', array(), 'InvalidArgumentException'),
         );
