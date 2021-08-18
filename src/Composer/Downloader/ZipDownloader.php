@@ -54,6 +54,12 @@ class ZipDownloader extends ArchiveDownloader
             }
         }
 
+        $procOpenMissing = false;
+        if (!function_exists('proc_open')) {
+            self::$unzipCommands = array();
+            $procOpenMissing = true;
+        }
+
         if (null === self::$hasZipArchive) {
             self::$hasZipArchive = class_exists('ZipArchive');
         }
@@ -61,7 +67,11 @@ class ZipDownloader extends ArchiveDownloader
         if (!self::$hasZipArchive && !self::$unzipCommands) {
             // php.ini path is added to the error message to help users find the correct file
             $iniMessage = IniHelper::getMessage();
-            $error = "The zip extension and unzip/7z commands are both missing, skipping.\n" . $iniMessage;
+            if ($procOpenMissing) {
+                $error = "The zip extension is missing and unzip/7z commands cannot be called as proc_open is disabled, skipping.\n" . $iniMessage;
+            } else {
+                $error = "The zip extension and unzip/7z commands are both missing, skipping.\n" . $iniMessage;
+            }
 
             throw new \RuntimeException($error);
         }
@@ -70,9 +80,15 @@ class ZipDownloader extends ArchiveDownloader
             self::$isWindows = Platform::isWindows();
 
             if (!self::$isWindows && !self::$unzipCommands) {
-                $this->io->writeError("<warning>As there is no 'unzip' nor '7z' command installed zip files are being unpacked using the PHP zip extension.</warning>");
-                $this->io->writeError("<warning>This may cause invalid reports of corrupted archives. Besides, any UNIX permissions (e.g. executable) defined in the archives will be lost.</warning>");
-                $this->io->writeError("<warning>Installing 'unzip' or '7z' may remediate them.</warning>");
+                if ($procOpenMissing) {
+                    $this->io->writeError("<warning>proc_open is disabled so 'unzip' and '7z' commands cannot be used, zip files are being unpacked using the PHP zip extension.</warning>");
+                    $this->io->writeError("<warning>This may cause invalid reports of corrupted archives. Besides, any UNIX permissions (e.g. executable) defined in the archives will be lost.</warning>");
+                    $this->io->writeError("<warning>Enabling proc_open and installing 'unzip' or '7z' may remediate them.</warning>");
+                } else {
+                    $this->io->writeError("<warning>As there is no 'unzip' nor '7z' command installed zip files are being unpacked using the PHP zip extension.</warning>");
+                    $this->io->writeError("<warning>This may cause invalid reports of corrupted archives. Besides, any UNIX permissions (e.g. executable) defined in the archives will be lost.</warning>");
+                    $this->io->writeError("<warning>Installing 'unzip' or '7z' may remediate them.</warning>");
+                }
             }
         }
 
