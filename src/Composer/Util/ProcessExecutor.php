@@ -33,8 +33,11 @@ class ProcessExecutor
 
     protected static $timeout = 300;
 
-    protected $captureOutput;
-    protected $errorOutput;
+    /** @var bool */
+    protected $captureOutput = false;
+    /** @var string */
+    protected $errorOutput = '';
+    /** @var ?IOInterface */
     protected $io;
 
     /**
@@ -111,7 +114,7 @@ class ProcessExecutor
         }
 
         $this->captureOutput = func_num_args() > 3;
-        $this->errorOutput = null;
+        $this->errorOutput = '';
 
         // TODO in v3, commands should be passed in as arrays of cmd + args
         if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
