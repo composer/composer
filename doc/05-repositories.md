@@ -149,6 +149,102 @@ number.
 
 This field is optional.
 
+### metadata-url, available-packages and available-package-patterns
+
+The `metadata-url` field allows you to provide a URL template to serve all
+packages which are in the repository. It must contain the placeholder
+`%package%`.
+
+This field is new in Composer v2, and is prioritised over the
+`provider-includes` and `providers-url` fields if both are present.
+For compatibility with both Composer v1 and v2 you ideally want
+to provide both. New repository implementations may only need to
+support v2 however.
+
+An example:
+
+```json
+{
+    "metadata-url": "/p2/%package%.json"
+}
+```
+
+Whenever Composer looks for a package, it will replace `%package%` by the
+package name, and fetch that URL. If dev stability is allowed for the package,
+it will also load the URL again with `$packageName~dev` (e.g.
+`/p2/foo/bar~dev.json` to look for `foo/bar`'s dev versions).
+
+The `foo/bar.json` and `foo/bar~dev.json` files containing package versions
+MUST contain only versions for the foo/bar package, as
+`{"packages":{"foo/bar":[ ... versions here ... ]}}`.
+
+Caching is done via the use of If-Modified-Since header, so make sure you
+return Last-Modified headers and that they are accurate.
+
+The array of versions can also optionally be minified using
+`Composer\MetadataMinifier\MetadataMinifier::minify()` from
+[composer/metadata-minifier](https://packagist.org/packages/composer/metadata-minifier).
+If you do that, you should add a `"minified": "composer/2.0"` key
+at the top level to indicate to Composer it must expand the version
+list back into the original data. See 
+https://repo.packagist.org/p2/monolog/monolog.json for an example.
+
+Any requested package which does not exist MUST return a 404 status code,
+which will indicate to Composer that this package does not exist in your
+repository. Make sure the 404 response is fast to avoid blocking Composer.
+Avoid redirects to alternative 404 pages.
+
+If your repository only has a small number of packages, and you want to avoid
+the 404-requests, you can also specify an `"available-packages"` key in
+`packages.json` which should be an array with all the package names that your
+repository contain. Alternatively you can specify an
+`"available-package-patterns"` key which is an array of package name patterns
+(with `*` matching any string, e.g. `vendor/*` would make composer look up
+every matching package name in this repository).
+
+This field is optional.
+
+### providers-api
+
+The `providers-api` field allows you to provide a URL template to serve all
+packages which provide a given package name, but not the package which has
+that name. It must contain the placeholder `%package%`.
+
+For example https://packagist.org/providers/monolog/monolog.json lists some
+package which have a "provide" rule for monolog/monolog, but it does not list
+monolog/monolog itself.
+
+```json
+{
+    "providers-api": "https://packagist.org/providers/%package%.json",
+}
+```
+
+This field is optional.
+
+### list
+
+The `list` field allows you to return the names of packages which match a
+given field (or all names if no filter is present). It should accept an
+optional `?filter=xx` query param, which can contain `*` as wildcards matching
+any substring.
+
+Replace/provide rules should not be considered here.
+
+It must return an array of package names:
+```json
+{
+    "packageNames": [
+        "a/b",
+        "c/d"
+    ]
+}
+```
+
+See <https://packagist.org/packages/list.json?filter=composer/*> for example.
+
+This field is optional.
+
 #### provider-includes and providers-url
 
 The `provider-includes` field allows you to list a set of files that list
@@ -158,6 +254,9 @@ the files in this case.
 The `providers-url` describes how provider files are found on the server. It
 is an absolute path from the repository root. It must contain the placeholders
 `%package%` and `%hash%`.
+
+These fields are used by Composer v1, or if your repository does not have the
+`metadata-url` field set.
 
 An example:
 
