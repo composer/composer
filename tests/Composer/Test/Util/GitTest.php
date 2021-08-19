@@ -16,7 +16,7 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Git;
-use Composer\Util\ProcessExecutor;
+use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Test\TestCase;
 
 class GitTest extends TestCase
@@ -27,7 +27,7 @@ class GitTest extends TestCase
     private $io;
     /** @var Config&\PHPUnit\Framework\MockObject\MockObject */
     private $config;
-    /** @var ProcessExecutor&\PHPUnit\Framework\MockObject\MockObject */
+    /** @var ProcessExecutorMock */
     private $process;
     /** @var Filesystem&\PHPUnit\Framework\MockObject\MockObject */
     private $fs;
@@ -36,7 +36,7 @@ class GitTest extends TestCase
     {
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->config = $this->getMockBuilder('Composer\Config')->disableOriginalConstructor()->getMock();
-        $this->process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->disableOriginalConstructor()->getMock();
+        $this->process = new ProcessExecutorMock;
         $this->fs = $this->getMockBuilder('Composer\Util\Filesystem')->disableOriginalConstructor()->getMock();
         $this->git = new Git($this->io, $this->config, $this->process, $this->fs);
     }
@@ -55,13 +55,11 @@ class GitTest extends TestCase
 
         $this->mockConfig($protocol);
 
-        $this->process
-            ->expects($this->once())
-            ->method('execute')
-            ->with($this->equalTo('git command'))
-            ->willReturn(0);
+        $this->process->expects(array('git command'), true);
 
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
+
+        $this->process->assertComplete($this);
     }
 
     public function publicGithubNoCredentialsProvider()
@@ -85,20 +83,21 @@ class GitTest extends TestCase
 
         $this->mockConfig('https');
 
-        $this->process
-            ->method('execute')
-            ->willReturnMap(array(
-                array('git command', null, null, 1),
-                array('git --version', null, null, 0),
-            ));
+
+        $this->process->expects(array(
+            array('cmd' => 'git command', 'return' => 1),
+            array('cmd' => 'git --version', 'return' => 0),
+        ), true);
 
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
+
+        $this->process->assertComplete($this);
     }
 
     /**
      * @dataProvider privateGithubWithCredentialsProvider
      */
-    public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithAuthentication($gitUrl, $protocol, $gitHubToken, $expectedUrl)
+    public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithAuthentication($gitUrl, $protocol, $gitHubToken, $expectedUrl, $expectedFailuresBeforeSuccess)
     {
         $commandCallable = function ($url) use ($expectedUrl) {
             if ($url !== $expectedUrl) {
@@ -110,13 +109,10 @@ class GitTest extends TestCase
 
         $this->mockConfig($protocol);
 
-        $this->process
-            ->expects($this->atLeast(2))
-            ->method('execute')
-            ->willReturnMap(array(
-                array('git command failing', null, null, 1),
-                array('git command ok', null, null, 0),
-            ));
+        $expectedCalls = array_fill(0, $expectedFailuresBeforeSuccess, array('cmd' => 'git command failing', 'return' => 1));
+        $expectedCalls[] = array('cmd' => 'git command ok', 'return' => 0);
+
+        $this->process->expects($expectedCalls, true);
 
         $this->io
             ->method('isInteractive')
@@ -135,13 +131,15 @@ class GitTest extends TestCase
             ->willReturn(array('username' => 'token', 'password' => $gitHubToken));
 
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
+
+        $this->process->assertComplete($this);
     }
 
     public function privateGithubWithCredentialsProvider()
     {
         return array(
-            array('git@github.com:acme/repo.git', 'ssh', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git'),
-            array('https://github.com/acme/repo', 'https', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git'),
+            array('git@github.com:acme/repo.git', 'ssh', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git', 1),
+            array('https://github.com/acme/repo', 'https', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git', 2),
         );
     }
 

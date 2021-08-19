@@ -18,6 +18,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Test\TestCase;
+use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Util\Filesystem;
 use Composer\Util\Http\Response;
 use Composer\Util\Loop;
@@ -194,7 +195,7 @@ class FileDownloaderTest extends TestCase
         $dispatcher = new EventDispatcher(
             $composerMock,
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock()
+            new ProcessExecutorMock
         );
         $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function (PreFileDownloadEvent $event) use ($expectedUrl) {
             $event->setProcessedUrl($expectedUrl);
@@ -288,7 +289,7 @@ class FileDownloaderTest extends TestCase
         $dispatcher = new EventDispatcher(
             $composerMock,
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock()
+            new ProcessExecutorMock
         );
         $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function (PreFileDownloadEvent $event) use ($customCacheKey) {
             $event->setCustomCacheKey($customCacheKey);

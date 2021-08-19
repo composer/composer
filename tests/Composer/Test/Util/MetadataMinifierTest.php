@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Util;
 
-use Composer\Util\MetadataMinifier;
+use Composer\MetadataMinifier\MetadataMinifier;
 use Composer\Package\CompletePackage;
 use Composer\Package\Dumper\ArrayDumper;
 use PHPUnit\Framework\TestCase;
