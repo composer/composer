@@ -571,6 +571,12 @@ EOF;
             }
         }
 
+        if (isset($autoloads['files'])) {
+            foreach ($autoloads['files'] as $fileIdentifier => $file) {
+                composerRequire($fileIdentifier, $file);
+            }
+        }
+
         return $loader;
     }
 
@@ -1283,5 +1289,14 @@ INITIALIZER;
         }
 
         return $sortedPackageMap;
+    }
+}
+
+function composerRequire($fileIdentifier, $file)
+{
+    if (empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
+        require $file;
+
+        $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;
     }
 }
