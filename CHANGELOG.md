@@ -1,3 +1,18 @@
+### [2.1.6] 2021-08-19
+
+  * Updated internal PHAR signatures to be SHA512 instead of SHA1
+  * Fixed uncaught exception handler regression (#10022)
+  * Fixed more PHP 8.1 deprecation warnings (#10036, #10038, #10061)
+  * Fixed corrupted zips in the cache from blocking installs until a cache clear, the bad archives are now deleted automatically on first failure (#10028)
+  * Fixed URL sanitizer handling of new github tokens (#10048)
+  * Fixed issue finding classes with very long heredocs in classmap autoload (#10050)
+  * Fixed proc_open being required for simple installs from zip, as well as diagnose (#9253)
+  * Fixed path repository bug causing symlinks to be left behind after a package is uninstalled (#10023)
+  * Fixed issue in 7-zip support on windows with certain archives (#10058)
+  * Fixed bootstrapping process to avoid loading the composer.json and plugins until necessary, speeding things up slightly (#10064)
+  * Fixed lib-openssl detection on FreeBSD (#10046)
+  * Fixed support for `ircs://` protocol for support.irc composer.json entries
+
 ### [2.1.5] 2021-07-23
 
   * Fixed `create-project` creating a `php:` directory in the directory it was executed in (#10020, #10021)
@@ -1233,6 +1248,7 @@
 
   * Initial release
 
+[2.1.6]: https://github.com/composer/composer/compare/2.1.5...2.1.6
 [2.1.5]: https://github.com/composer/composer/compare/2.1.4...2.1.5
 [2.1.4]: https://github.com/composer/composer/compare/2.1.3...2.1.4
 [2.1.3]: https://github.com/composer/composer/compare/2.1.2...2.1.3
