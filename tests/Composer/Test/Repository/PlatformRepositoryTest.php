@@ -775,6 +775,13 @@ msgpack support => yes',
                 array(),
                 array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g  21 Apr 2020')),
             ),
+            'openssl: distro peculiarities' => array(
+                'openssl',
+                null,
+                array('lib-openssl' => '1.1.1.7'),
+                array(),
+                array(array('OPENSSL_VERSION_TEXT', null, 'OpenSSL 1.1.1g-freebsd  21 Apr 2020')),
+            ),
             'openssl: two letters suffix' => array(
                 'openssl',
                 null,
