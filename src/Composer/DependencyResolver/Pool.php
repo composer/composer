@@ -202,7 +202,7 @@ class Pool implements \Countable
         $str = "Pool:\n";
 
         foreach ($this->packages as $package) {
-            $str .= '- '.str_pad($package->id, 6, ' ', STR_PAD_LEFT).': '.$package->getName()."\n";
+            $str .= '- '.str_pad((string) $package->id, 6, ' ', STR_PAD_LEFT).': '.$package->getName()."\n";
         }
 
         return $str;

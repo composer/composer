@@ -49,7 +49,7 @@ class ArchiveCommand extends BaseCommand
                 new InputOption('dir', null, InputOption::VALUE_REQUIRED, 'Write the archive to this directory'),
                 new InputOption('file', null, InputOption::VALUE_REQUIRED, 'Write the archive with the given file name.'
                     .' Note that the format will be appended.'),
-                new InputOption('ignore-filters', false, InputOption::VALUE_NONE, 'Ignore filters when saving package'),
+                new InputOption('ignore-filters', null, InputOption::VALUE_NONE, 'Ignore filters when saving package'),
             ))
             ->setHelp(
                 <<<EOT

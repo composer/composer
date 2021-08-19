@@ -13,7 +13,9 @@
 namespace Composer\Repository;
 
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
+use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -28,11 +30,11 @@ use Composer\Semver\Constraint\Constraint;
  */
 class ArrayRepository implements RepositoryInterface
 {
-    /** @var ?PackageInterface[] */
+    /** @var ?array<PackageInterface&BasePackage> */
     protected $packages = null;
 
     /**
-     * @var ?PackageInterface[] indexed by package unique name and used to cache hasPackage calls
+     * @var ?array<PackageInterface&BasePackage> indexed by package unique name and used to cache hasPackage calls
      */
     protected $packageMap = null;
 
@@ -232,13 +234,17 @@ class ArrayRepository implements RepositoryInterface
         return $result;
     }
 
+    /**
+     * @phpstan-param PackageInterface&BasePackage $package
+     * @return AliasPackage|CompleteAliasPackage
+     */
     protected function createAliasPackage(PackageInterface $package, $alias, $prettyAlias)
     {
         while ($package instanceof AliasPackage) {
             $package = $package->getAliasOf();
         }
 
-        if ($package instanceof CompletePackageInterface) {
+        if ($package instanceof CompletePackage) {
             return new CompleteAliasPackage($package, $alias, $prettyAlias);
         }
 
@@ -273,6 +279,10 @@ class ArrayRepository implements RepositoryInterface
     {
         if (null === $this->packages) {
             $this->initialize();
+        }
+
+        if (null === $this->packages) {
+            throw new \LogicException('initialize failed to initialize the packages array');
         }
 
         return $this->packages;

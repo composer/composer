@@ -27,7 +27,7 @@ class RootAliasPackageTest extends TestCase
 
         $alias = new RootAliasPackage($root->reveal(), '1.0', '1.0.0.0');
         $this->assertEmpty($alias->getRequires());
-        $links = array(new Link('a', 'b', new MatchAllConstraint(), 'foo', 'self.version'));
+        $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_REQUIRE, 'self.version'));
         $alias->setRequires($links);
         $this->assertNotEmpty($alias->getRequires());
     }
@@ -39,7 +39,7 @@ class RootAliasPackageTest extends TestCase
 
         $alias = new RootAliasPackage($root->reveal(), '1.0', '1.0.0.0');
         $this->assertEmpty($alias->getDevRequires());
-        $links = array(new Link('a', 'b', new MatchAllConstraint(), 'foo', 'self.version'));
+        $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_DEV_REQUIRE, 'self.version'));
         $alias->setDevRequires($links);
         $this->assertNotEmpty($alias->getDevRequires());
     }
@@ -51,7 +51,7 @@ class RootAliasPackageTest extends TestCase
 
         $alias = new RootAliasPackage($root->reveal(), '1.0', '1.0.0.0');
         $this->assertEmpty($alias->getConflicts());
-        $links = array(new Link('a', 'b', new MatchAllConstraint(), 'foo', 'self.version'));
+        $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_CONFLICT, 'self.version'));
         $alias->setConflicts($links);
         $this->assertNotEmpty($alias->getConflicts());
     }
@@ -63,7 +63,7 @@ class RootAliasPackageTest extends TestCase
 
         $alias = new RootAliasPackage($root->reveal(), '1.0', '1.0.0.0');
         $this->assertEmpty($alias->getProvides());
-        $links = array(new Link('a', 'b', new MatchAllConstraint(), 'foo', 'self.version'));
+        $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_PROVIDE, 'self.version'));
         $alias->setProvides($links);
         $this->assertNotEmpty($alias->getProvides());
     }
@@ -75,7 +75,7 @@ class RootAliasPackageTest extends TestCase
 
         $alias = new RootAliasPackage($root->reveal(), '1.0', '1.0.0.0');
         $this->assertEmpty($alias->getReplaces());
-        $links = array(new Link('a', 'b', new MatchAllConstraint(), 'foo', 'self.version'));
+        $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_REPLACE, 'self.version'));
         $alias->setReplaces($links);
         $this->assertNotEmpty($alias->getReplaces());
     }

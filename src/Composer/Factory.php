@@ -38,6 +38,7 @@ use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Version\VersionParser;
 use Composer\Downloader\TransportException;
 use Composer\Json\JsonValidationException;
+use Composer\Repository\InstalledRepositoryInterface;
 use Seld\JsonLint\JsonParser;
 
 /**
@@ -585,10 +586,10 @@ class Factory
     }
 
     /**
-     * @param WritableRepositoryInterface   $repo repository to purge packages from
+     * @param InstalledRepositoryInterface   $repo repository to purge packages from
      * @param Installer\InstallationManager $im   manager to check whether packages are still installed
      */
-    protected function purgePackages(WritableRepositoryInterface $repo, Installer\InstallationManager $im)
+    protected function purgePackages(InstalledRepositoryInterface $repo, Installer\InstallationManager $im)
     {
         foreach ($repo->getPackages() as $package) {
             if (!$im->isPackageInstalled($repo, $package)) {

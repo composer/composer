@@ -54,12 +54,12 @@ class PluginInstallerTest extends TestCase
     protected $directory;
 
     /**
-     * @var \PHPUnit\Framework\MockObject\MockObject
+     * @var \PHPUnit\Framework\MockObject\MockObject&\Composer\Installer\InstallationManager
      */
     protected $im;
 
     /**
-     * @var \PHPUnit\Framework\MockObject\MockObject
+     * @var \PHPUnit\Framework\MockObject\MockObject&\Composer\Repository\InstalledRepositoryInterface
      */
     protected $repository;
 

@@ -167,8 +167,8 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * @param Link[] $links
-     * @param string $linkType
+     * @param Link[]       $links
+     * @param Link::TYPE_* $linkType
      *
      * @return Link[]
      */

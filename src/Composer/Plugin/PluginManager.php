@@ -259,6 +259,7 @@ class PluginManager
         }
 
         if ($oldInstallerPlugin) {
+            /** @var \Composer\Installer\InstallerInterface $installer */
             $installer = $this->registeredPlugins[$package->getName()];
             unset($this->registeredPlugins[$package->getName()]);
             $this->composer->getInstallationManager()->removeInstaller($installer);
@@ -469,7 +470,7 @@ class PluginManager
             array_key_exists($capability, $capabilities)
             && (empty($capabilities[$capability]) || !is_string($capabilities[$capability]) || !trim($capabilities[$capability]))
         ) {
-            throw new \UnexpectedValueException('Plugin '.get_class($plugin).' provided invalid capability class name(s), got '.var_export($capabilities[$capability], 1));
+            throw new \UnexpectedValueException('Plugin '.get_class($plugin).' provided invalid capability class name(s), got '.var_export($capabilities[$capability], true));
         }
 
         return null;

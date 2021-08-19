@@ -94,7 +94,7 @@ abstract class TestCase extends PolyfillTestCase
                     $arrayLoader->parseLinks(
                         $package->getName(),
                         $package->getPrettyVersion(),
-                        $opts['description'],
+                        $opts['method'],
                         $config[$type]
                     )
                 );

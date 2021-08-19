@@ -17,23 +17,23 @@ namespace Composer\Package;
  */
 class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterface
 {
-    /** @var RootPackageInterface */
+    /** @var RootPackage */
     protected $aliasOf;
 
     /**
      * All descendants' constructors should call this parent constructor
      *
-     * @param RootPackageInterface $aliasOf       The package this package is an alias of
-     * @param string               $version       The version the alias must report
-     * @param string               $prettyVersion The alias's non-normalized version
+     * @param RootPackage $aliasOf       The package this package is an alias of
+     * @param string      $version       The version the alias must report
+     * @param string      $prettyVersion The alias's non-normalized version
      */
-    public function __construct(RootPackageInterface $aliasOf, $version, $prettyVersion)
+    public function __construct(RootPackage $aliasOf, $version, $prettyVersion)
     {
         parent::__construct($aliasOf, $version, $prettyVersion);
     }
 
     /**
-     * @return RootPackageInterface
+     * @return RootPackage
      */
     public function getAliasOf()
     {

@@ -65,7 +65,7 @@ class ArrayLoader implements LoaderInterface
                     $this->parseLinks(
                         $package->getName(),
                         $package->getPrettyVersion(),
-                        $opts['description'],
+                        $opts['method'],
                         $config[$type]
                     )
                 );
@@ -137,14 +137,14 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param  CompletePackageInterface                                          $package
+     * @param  CompletePackage                                                   $package
      * @param  array                                                             $config  package data
      * @return RootPackage|RootAliasPackage|CompletePackage|CompleteAliasPackage
      */
     private function configureObject(PackageInterface $package, array $config)
     {
-        if (!$package instanceof Package) {
-            throw new \LogicException('ArrayLoader expects instances of the Composer\Package\Package class to function correctly');
+        if (!$package instanceof CompletePackage) {
+            throw new \LogicException('ArrayLoader expects instances of the Composer\Package\CompletePackage class to function correctly');
         }
 
         $package->setType(isset($config['type']) ? strtolower($config['type']) : 'library');
@@ -302,11 +302,11 @@ class ArrayLoader implements LoaderInterface
         if ($aliasNormalized = $this->getBranchAlias($config)) {
             $prettyAlias = preg_replace('{(\.9{7})+}', '.x', $aliasNormalized);
 
-            if ($package instanceof RootPackageInterface) {
+            if ($package instanceof RootPackage) {
                 return new RootAliasPackage($package, $aliasNormalized, $prettyAlias);
             }
 
-            if ($package instanceof CompletePackageInterface) {
+            if ($package instanceof CompletePackage) {
                 return new CompleteAliasPackage($package, $aliasNormalized, $prettyAlias);
             }
 
@@ -335,10 +335,10 @@ class ArrayLoader implements LoaderInterface
                 foreach ($config[$type] as $prettyTarget => $constraint) {
                     $target = strtolower($prettyTarget);
                     if ($constraint === 'self.version') {
-                        $links[$target] = $this->createLink($name, $prettyVersion, $opts['description'], $target, $constraint);
+                        $links[$target] = $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint);
                     } else {
                         if (!isset($linkCache[$name][$type][$target][$constraint])) {
-                            $linkCache[$name][$type][$target][$constraint] = array($target, $this->createLink($name, $prettyVersion, $opts['description'], $target, $constraint));
+                            $linkCache[$name][$type][$target][$constraint] = array($target, $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint));
                         }
 
                         list($target, $link) = $linkCache[$name][$type][$target][$constraint];

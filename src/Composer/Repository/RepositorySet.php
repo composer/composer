@@ -21,6 +21,7 @@ use Composer\IO\NullIO;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompleteAliasPackage;
+use Composer\Package\CompletePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\StabilityFilter;
@@ -56,13 +57,13 @@ class RepositorySet
 
     /**
      * @var int[] array of stability => BasePackage::STABILITY_* value
-     * @phpstan-var array<string, int>
+     * @phpstan-var array<string, BasePackage::STABILITY_*>
      */
     private $acceptableStabilities;
 
     /**
      * @var int[] array of package name => BasePackage::STABILITY_* value
-     * @phpstan-var array<string, int>
+     * @phpstan-var array<string, BasePackage::STABILITY_*>
      */
     private $stabilityFlags;
 
@@ -80,7 +81,7 @@ class RepositorySet
      *
      * @param string $minimumStability
      * @param int[]  $stabilityFlags   an array of package name => BasePackage::STABILITY_* value
-     * @phpstan-param array<string, int> $stabilityFlags
+     * @phpstan-param array<string, BasePackage::STABILITY_*> $stabilityFlags
      * @param array[] $rootAliases
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $rootAliases
      * @param string[] $rootReferences an array of package name => source reference
@@ -254,7 +255,7 @@ class RepositorySet
                     while ($package instanceof AliasPackage) {
                         $package = $package->getAliasOf();
                     }
-                    if ($package instanceof CompletePackageInterface) {
+                    if ($package instanceof CompletePackage) {
                         $aliasPackage = new CompleteAliasPackage($package, $alias['alias_normalized'], $alias['alias']);
                     } else {
                         $aliasPackage = new AliasPackage($package, $alias['alias_normalized'], $alias['alias']);

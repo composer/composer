@@ -221,7 +221,7 @@ class InstalledRepository extends CompositeRepository
                                 }
 
                                 $results[] = array($package, $link, false);
-                                $results[] = array($rootPackage, new Link($rootPackage->getName(), $link->getTarget(), new MatchAllConstraint, 'does not require', 'but ' . $pkg->getPrettyVersion() . ' is installed'), false);
+                                $results[] = array($rootPackage, new Link($rootPackage->getName(), $link->getTarget(), new MatchAllConstraint, Link::TYPE_DOES_NOT_REQUIRE, 'but ' . $pkg->getPrettyVersion() . ' is installed'), false);
                             } else {
                                 // no root so let's just print whatever we found
                                 $results[] = array($package, $link, false);

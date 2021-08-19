@@ -14,6 +14,7 @@ namespace Composer\Test\Package\Loader;
 
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Package\Link;
 use Composer\Test\TestCase;
 
 class ArrayLoaderTest extends TestCase
@@ -287,7 +288,7 @@ class ArrayLoaderTest extends TestCase
      */
     public function testPluginApiVersionAreKeptAsDeclared($apiVersion)
     {
-        $links = $this->loader->parseLinks('Plugin', '9.9.9', '', array('composer-plugin-api' => $apiVersion));
+        $links = $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, array('composer-plugin-api' => $apiVersion));
 
         $this->assertArrayHasKey('composer-plugin-api', $links);
         $this->assertSame($apiVersion, $links['composer-plugin-api']->getConstraint()->getPrettyString());
@@ -295,7 +296,7 @@ class ArrayLoaderTest extends TestCase
 
     public function testPluginApiVersionDoesSupportSelfVersion()
     {
-        $links = $this->loader->parseLinks('Plugin', '6.6.6', '', array('composer-plugin-api' => 'self.version'));
+        $links = $this->loader->parseLinks('Plugin', '6.6.6', Link::TYPE_REQUIRE, array('composer-plugin-api' => 'self.version'));
 
         $this->assertArrayHasKey('composer-plugin-api', $links);
         $this->assertSame('6.6.6', $links['composer-plugin-api']->getConstraint()->getPrettyString());

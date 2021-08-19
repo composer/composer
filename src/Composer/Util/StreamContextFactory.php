@@ -31,7 +31,7 @@ final class StreamContextFactory
      * Creates a context supporting HTTP proxies
      *
      * @param string $url URL the context is to be used for
-     * @phpstan-param array{http?: array{follow_location?: int, max_redirects?: int, header?: string|array<string, string|int>}} $defaultOptions
+     * @phpstan-param array{http?: array{follow_location?: int, max_redirects?: int, header?: string|array<string>}} $defaultOptions
      * @param  array             $defaultOptions Options to merge with the default
      * @param  array             $defaultParams  Parameters to specify on the context
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled

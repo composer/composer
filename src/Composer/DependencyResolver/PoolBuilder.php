@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
+use Composer\Package\CompletePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\StabilityFilter;
@@ -38,10 +39,12 @@ class PoolBuilder
 {
     /**
      * @var int[]
+     * @phpstan-var array<string, BasePackage::STABILITY_*>
      */
     private $acceptableStabilities;
     /**
      * @var int[]
+     * @phpstan-var array<string, BasePackage::STABILITY_*>
      */
     private $stabilityFlags;
     /**
@@ -340,7 +343,7 @@ class PoolBuilder
         }
     }
 
-    private function loadPackage(Request $request, PackageInterface $package, $propagateUpdate = true)
+    private function loadPackage(Request $request, BasePackage $package, $propagateUpdate = true)
     {
         $index = $this->indexCounter++;
         $this->packages[$index] = $package;
@@ -370,7 +373,7 @@ class PoolBuilder
             } else {
                 $basePackage = $package;
             }
-            if ($basePackage instanceof CompletePackageInterface) {
+            if ($basePackage instanceof CompletePackage) {
                 $aliasPackage = new CompleteAliasPackage($basePackage, $alias['alias_normalized'], $alias['alias']);
             } else {
                 $aliasPackage = new AliasPackage($basePackage, $alias['alias_normalized'], $alias['alias']);

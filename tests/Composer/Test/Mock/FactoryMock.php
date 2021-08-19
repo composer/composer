@@ -16,13 +16,13 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\Factory;
 use Composer\Repository\RepositoryManager;
-use Composer\Repository\WritableRepositoryInterface;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\RootPackageInterface;
 use Composer\Installer;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
+use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Test\TestCase;
 use Composer\Util\Loop;
 use Composer\Util\ProcessExecutor;
@@ -59,7 +59,7 @@ class FactoryMock extends Factory
     {
     }
 
-    protected function purgePackages(WritableRepositoryInterface $repo, Installer\InstallationManager $im)
+    protected function purgePackages(InstalledRepositoryInterface $repo, Installer\InstallationManager $im)
     {
     }
 }
