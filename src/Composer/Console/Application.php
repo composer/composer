@@ -186,7 +186,10 @@ class Application extends BaseApplication
             }
         }
 
-        if (!$this->disablePluginsByDefault && !$this->hasPluginCommands && 'global' !== $commandName) {
+        // avoid loading plugins/initializing the Composer instance earlier than necessary if no plugin command is needed
+        $isComposerCommand = false !== $commandName;
+
+        if (!$isComposerCommand && !$this->disablePluginsByDefault && !$this->hasPluginCommands && 'global' !== $commandName) {
             try {
                 foreach ($this->getPluginCommands() as $command) {
                     if ($this->has($command->getName())) {
