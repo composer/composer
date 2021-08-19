@@ -36,9 +36,9 @@ class ConsoleIO extends BaseIO
     /** @var HelperSet */
     protected $helperSet;
     /** @var string */
-    protected $lastMessage;
+    protected $lastMessage = '';
     /** @var string */
-    protected $lastMessageErr;
+    protected $lastMessageErr = '';
 
     /** @var float */
     private $startTime;

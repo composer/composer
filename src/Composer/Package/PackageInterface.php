@@ -131,7 +131,7 @@ interface PackageInterface
     /**
      * Returns the repository reference of this package, e.g. master, 1.0.0 or a commit hash for git
      *
-     * @return string The repository reference
+     * @return ?string The repository reference
      */
     public function getSourceReference();
 
@@ -172,14 +172,14 @@ interface PackageInterface
     /**
      * Returns the reference of the distribution archive of this version, e.g. master, 1.0.0 or a commit hash for git
      *
-     * @return string
+     * @return ?string
      */
     public function getDistReference();
 
     /**
      * Returns the sha1 checksum for the distribution archive of this version
      *
-     * @return string
+     * @return ?string
      */
     public function getDistSha1Checksum();
 

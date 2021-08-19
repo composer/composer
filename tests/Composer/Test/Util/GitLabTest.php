@@ -93,8 +93,9 @@ class GitLabTest extends TestCase
         $httpDownloader
             ->expects($this->exactly(5))
             ->method('get')
-            ->will($this->throwException(new TransportException('', 401)))
+            ->will($this->throwException($e = new TransportException('', 401)))
         ;
+        $e->setResponse('{}');
 
         $config = $this->getConfigMock();
         $config

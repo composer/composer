@@ -217,6 +217,10 @@ abstract class BasePackage implements PackageInterface
                 throw new \UnexpectedValueException('Display mode '.$displayMode.' is not supported');
         }
 
+        if (null === $reference) {
+            return $this->getPrettyVersion();
+        }
+
         // if source reference is a sha1 hash -- truncate
         if ($truncate && \strlen($reference) === 40 && $this->getSourceType() !== 'svn') {
             return $this->getPrettyVersion() . ' ' . substr($reference, 0, 7);

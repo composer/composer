@@ -19,6 +19,7 @@ use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Factory;
 use Composer\Util\Filesystem;
+use Composer\Test\Mock\ProcessExecutorMock;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
@@ -41,7 +42,7 @@ class PerforceDownloaderTest extends TestCase
         $this->repoConfig = $this->getRepoConfig();
         $this->config = $this->getConfig();
         $this->io = $this->getMockIoInterface();
-        $this->processExecutor = $this->getMockProcessExecutor();
+        $this->processExecutor = new ProcessExecutorMock;
         $this->repository = $this->getMockRepository($this->repoConfig, $this->io, $this->config);
         $this->package = $this->getMockPackageInterface($this->repository);
         $this->downloader = new PerforceDownloader($this->io, $this->config, $this->processExecutor);
@@ -59,11 +60,6 @@ class PerforceDownloaderTest extends TestCase
             $fs = new Filesystem;
             $fs->removeDirectory($this->testPath);
         }
-    }
-
-    protected function getMockProcessExecutor()
-    {
-        return $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
     }
 
     protected function getConfig()

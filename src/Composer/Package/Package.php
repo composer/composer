@@ -27,11 +27,14 @@ class Package extends BasePackage
     protected $installationSource;
     protected $sourceType;
     protected $sourceUrl;
+    /** @var ?string */
     protected $sourceReference;
     protected $sourceMirrors;
     protected $distType;
     protected $distUrl;
+    /** @var ?string */
     protected $distReference;
+    /** @var ?string */
     protected $distSha1Checksum;
     protected $distMirrors;
     protected $version;

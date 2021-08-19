@@ -67,6 +67,21 @@ class InstallerTest extends TestCase
             ->setConstructorArgs(array($io))
             ->getMock();
         $config = $this->getMockBuilder('Composer\Config')->getMock();
+        $config->expects($this->any())
+            ->method('get')
+            ->will($this->returnCallback(function ($key) {
+                switch ($key) {
+                    case 'vendor-dir':
+                        return 'foo';
+                    case 'lock';
+                    case 'notify-on-install';
+                        return true;
+                    case 'platform';
+                        return array();
+                }
+
+                throw new \UnexpectedValueException('Unknown key '.$key);
+            }));
 
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock();
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();

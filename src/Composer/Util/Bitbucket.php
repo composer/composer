@@ -151,7 +151,7 @@ class Bitbucket
         $this->io->writeError(sprintf('to create a consumer. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
         $this->io->writeError('Ensure you enter a "Callback URL" (http://example.com is fine) or it will not be possible to create an Access Token (this callback url will not be used by composer)');
 
-        $consumerKey = trim($this->io->askAndHideAnswer('Consumer Key (hidden): '));
+        $consumerKey = trim((string) $this->io->askAndHideAnswer('Consumer Key (hidden): '));
 
         if (!$consumerKey) {
             $this->io->writeError('<warning>No consumer key given, aborting.</warning>');
@@ -160,7 +160,7 @@ class Bitbucket
             return false;
         }
 
-        $consumerSecret = trim($this->io->askAndHideAnswer('Consumer Secret (hidden): '));
+        $consumerSecret = trim((string) $this->io->askAndHideAnswer('Consumer Secret (hidden): '));
 
         if (!$consumerSecret) {
             $this->io->writeError('<warning>No consumer secret given, aborting.</warning>');
