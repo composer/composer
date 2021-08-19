@@ -356,9 +356,9 @@ class ProcessExecutor
      */
     public function splitLines($output)
     {
-        $output = trim($output);
+        $output = trim((string) $output);
 
-        return ((string) $output === '') ? array() : preg_split('{\r?\n}', $output);
+        return $output === '' ? array() : preg_split('{\r?\n}', $output);
     }
 
     /**

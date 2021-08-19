@@ -17,7 +17,10 @@ use Composer\Repository\Vcs\GitHubDriver;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Http\Response;
+use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Config;
+use Composer\Util\ProcessExecutor;
+use Symfony\Component\Process\Process;
 
 class GitHubDriverTest extends TestCase
 {
@@ -58,10 +61,8 @@ class GitHubDriverTest extends TestCase
             ->setConstructorArgs(array($io, $this->config))
             ->getMock();
 
-        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
-        $process->expects($this->any())
-            ->method('execute')
-            ->will($this->returnValue(1));
+        $process = new ProcessExecutorMock;
+        $process->expects(array(), false, array('return' => 1));
 
         $httpDownloader->expects($this->at(0))
             ->method('get')
@@ -139,11 +140,7 @@ class GitHubDriverTest extends TestCase
         );
         $repoUrl = 'https://github.com/composer/packagist.git';
 
-        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $process);
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, new ProcessExecutorMock);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -201,11 +198,7 @@ class GitHubDriverTest extends TestCase
         );
         $repoUrl = 'https://github.com/composer/packagist.git';
 
-        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $process);
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, new ProcessExecutorMock);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -239,10 +232,6 @@ class GitHubDriverTest extends TestCase
             ->method('isInteractive')
             ->will($this->returnValue(true));
 
-        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
             ->setConstructorArgs(array($io, $this->config))
             ->getMock();
@@ -271,7 +260,7 @@ class GitHubDriverTest extends TestCase
             'url' => $repoUrl,
         );
 
-        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, $process);
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, new ProcessExecutorMock);
         $gitHubDriver->initialize();
         $this->setAttribute($gitHubDriver, 'tags', array($identifier => $sha));
 
@@ -287,10 +276,6 @@ class GitHubDriverTest extends TestCase
         $repoSshUrl = 'git@github.com:composer/packagist.git';
         $identifier = 'v0.0.0';
         $sha = 'SOMESHA';
-
-        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')
-            ->disableOriginalConstructor()
-            ->getMock();
 
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io->expects($this->any())
@@ -310,39 +295,23 @@ class GitHubDriverTest extends TestCase
         $fs = new Filesystem();
         $fs->removeDirectory(sys_get_temp_dir() . '/composer-test');
 
-        $process->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo('git config github.accesstoken'))
-            ->will($this->returnValue(1));
-
-        $process->expects($this->at(1))
-            ->method('execute')
-            ->with($this->stringContains($repoSshUrl))
-            ->will($this->returnValue(0));
-
-        $process->expects($this->at(2))
-            ->method('execute')
-            ->with($this->stringContains('git show-ref --tags'));
-
-        $process->expects($this->at(3))
-            ->method('splitLines')
-            ->will($this->returnValue(array($sha.' refs/tags/'.$identifier)));
-
-        $process->expects($this->at(4))
-            ->method('execute')
-            ->with($this->stringContains('git branch --no-color --no-abbrev -v'));
-
-        $process->expects($this->at(5))
-            ->method('splitLines')
-            ->will($this->returnValue(array('  test_master     edf93f1fccaebd8764383dc12016d0a1a9672d89 Fix test & behavior')));
-
-        $process->expects($this->at(6))
-            ->method('execute')
-            ->with($this->stringContains('git branch --no-color'));
-
-        $process->expects($this->at(7))
-            ->method('splitLines')
-            ->will($this->returnValue(array('* test_master')));
+        $process = new ProcessExecutorMock;
+        $process->expects(array(
+            array('cmd' => 'git config github.accesstoken', 'return' => 1),
+            'git clone --mirror -- '.ProcessExecutor::escape($repoSshUrl).' '.ProcessExecutor::escape($this->config->get('cache-vcs-dir').'/git-github.com-composer-packagist.git/'),
+            array(
+                'cmd' => 'git show-ref --tags --dereference',
+                'stdout' => $sha.' refs/tags/'.$identifier,
+            ),
+            array(
+                'cmd' => 'git branch --no-color --no-abbrev -v',
+                'stdout' => '  test_master     edf93f1fccaebd8764383dc12016d0a1a9672d89 Fix test & behavior',
+            ),
+            array(
+                'cmd' => 'git branch --no-color',
+                'stdout' => '* test_master',
+            ),
+        ), true);
 
         $repoConfig = array(
             'url' => $repoUrl,
@@ -367,6 +336,8 @@ class GitHubDriverTest extends TestCase
         $this->assertEquals('git', $source['type']);
         $this->assertEquals($repoSshUrl, $source['url']);
         $this->assertEquals($sha, $source['reference']);
+
+        $process->assertComplete($this);
     }
 
     protected function setAttribute($object, $attribute, $value)

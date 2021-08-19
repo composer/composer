@@ -19,13 +19,14 @@ use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
+use Composer\Test\Mock\ProcessExecutorMock;
 use Prophecy\Argument;
 
 class RootPackageLoaderTest extends TestCase
 {
     protected function loadPackage($data)
     {
-        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
+        $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -67,38 +68,28 @@ class RootPackageLoaderTest extends TestCase
 
     public function testNoVersionIsVisibleInPrettyVersion()
     {
-        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
+        $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')
             ->disableOriginalConstructor()
             ->getMock()
-        ;
-
-        $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
-            ->setMethods(array('execute'))
-            ->disableArgumentCloning()
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-
-        $executor
-            ->expects($this->any())
-            ->method('execute')
-            ->willReturn(null)
         ;
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
-        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $executor, new VersionParser()));
+        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $process = new ProcessExecutorMock, new VersionParser()));
+        $process->expects(array(), false, array('return' => 1));
+
         $package = $loader->load(array());
 
         $this->assertEquals("1.0.0.0", $package->getVersion());
         $this->assertEquals(RootPackage::DEFAULT_PRETTY_VERSION, $package->getPrettyVersion());
+
     }
 
     public function testPrettyVersionForRootPackageInVersionBranch()
     {
         // see #6845
-        $manager = $this->prophesize('\\Composer\\Repository\\RepositoryManager');
-        $versionGuesser = $this->prophesize('\\Composer\\Package\\Version\\VersionGuesser');
+        $manager = $this->prophesize('Composer\\Repository\\RepositoryManager');
+        $versionGuesser = $this->prophesize('Composer\\Package\\Version\\VersionGuesser');
         $versionGuesser->guessVersion(Argument::cetera())
             ->willReturn(array(
                 'name' => 'A',
@@ -120,48 +111,28 @@ class RootPackageLoaderTest extends TestCase
             $this->markTestSkipped('proc_open() is not available');
         }
 
-        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
+        $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')
             ->disableOriginalConstructor()
             ->getMock()
         ;
 
-        $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
-            ->setMethods(array('execute'))
-            ->disableArgumentCloning()
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-
-        $self = $this;
-
-        $executor
-            ->expects($this->at(0))
-            ->method('execute')
-            ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
-                $output = "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n";
-
-                return 0;
-            })
-        ;
-
-        $executor
-            ->expects($this->at(1))
-            ->method('execute')
-            ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git rev-list master..latest-production', $command);
-                $output = "";
-
-                return 0;
-            })
-        ;
+        $process = new ProcessExecutorMock;
+        $process->expects(array(
+            array(
+                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'stdout' => "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n",
+            ),
+            'git rev-list master..latest-production',
+        ), true);
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
-        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $executor, new VersionParser()));
+        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $process, new VersionParser()));
         $package = $loader->load(array('require' => array('foo/bar' => 'self.version')));
 
         $this->assertEquals("dev-master", $package->getPrettyVersion());
+
+        $process->assertComplete($this);
     }
 
     public function testNonFeatureBranchPrettyVersion()
@@ -170,36 +141,26 @@ class RootPackageLoaderTest extends TestCase
             $this->markTestSkipped('proc_open() is not available');
         }
 
-        $manager = $this->getMockBuilder('\\Composer\\Repository\\RepositoryManager')
+        $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')
             ->disableOriginalConstructor()
             ->getMock()
         ;
 
-        $executor = $this->getMockBuilder('\\Composer\\Util\\ProcessExecutor')
-            ->setMethods(array('execute'))
-            ->disableArgumentCloning()
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-
-        $self = $this;
-
-        $executor
-            ->expects($this->at(0))
-            ->method('execute')
-            ->willReturnCallback(function ($command, &$output) use ($self) {
-                $self->assertEquals('git branch -a --no-color --no-abbrev -v', $command);
-                $output = "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n";
-
-                return 0;
-            })
-        ;
+        $process = new ProcessExecutorMock;
+        $process->expects(array(
+            array(
+                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'stdout' => "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n"
+            ),
+        ), true);
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
-        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $executor, new VersionParser()));
+        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $process, new VersionParser()));
         $package = $loader->load(array('require' => array('foo/bar' => 'self.version'), "non-feature-branches" => array("latest-.*")));
 
         $this->assertEquals("dev-latest-production", $package->getPrettyVersion());
+
+        $process->assertComplete($this);
     }
 }

@@ -15,6 +15,7 @@ namespace Composer\Test\Util;
 use Composer\Util\Bitbucket;
 use Composer\Util\Http\Response;
 use Composer\Test\TestCase;
+use Composer\Test\Mock\ProcessExecutorMock;
 
 /**
  * @author Paul Wenke <wenke.paul@gmail.com>
@@ -456,10 +457,8 @@ class BitbucketTest extends TestCase
 
     public function testAuthorizeOAuthWithoutAvailableGitConfigToken()
     {
-        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
-        $process->expects($this->once())
-            ->method('execute')
-            ->willReturn(-1);
+        $process = new ProcessExecutorMock;
+        $process->expects(array(), false, array('return' => -1));
 
         $bitbucket = new Bitbucket($this->io, $this->config, $process, $this->httpDownloader, $this->time);
 
@@ -468,10 +467,7 @@ class BitbucketTest extends TestCase
 
     public function testAuthorizeOAuthWithAvailableGitConfigToken()
     {
-        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
-        $process->expects($this->once())
-            ->method('execute')
-            ->willReturn(0);
+        $process = new ProcessExecutorMock;
 
         $bitbucket = new Bitbucket($this->io, $this->config, $process, $this->httpDownloader, $this->time);
 

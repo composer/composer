@@ -160,7 +160,7 @@ class Perforce
 
     public function isStream()
     {
-        return (strcmp($this->p4DepotType, 'stream') === 0);
+        return is_string($this->p4DepotType) && (strcmp($this->p4DepotType, 'stream') === 0);
     }
 
     public function getStream()
@@ -204,11 +204,11 @@ class Perforce
     public function queryP4User()
     {
         $this->getUser();
-        if (strlen($this->p4User) > 0) {
+        if (strlen((string) $this->p4User) > 0) {
             return;
         }
         $this->p4User = $this->getP4variable('P4USER');
-        if (strlen($this->p4User) > 0) {
+        if (strlen((string) $this->p4User) > 0) {
             return;
         }
         $this->p4User = $this->io->ask('Enter P4 User:');
@@ -262,7 +262,7 @@ class Perforce
             return $this->p4Password;
         }
         $password = $this->getP4variable('P4PASSWD');
-        if (strlen($password) <= 0) {
+        if (strlen((string) $password) <= 0) {
             $password = $this->io->askAndHideAnswer('Enter password for Perforce user ' . $this->getUser() . ': ');
         }
         $this->p4Password = $password;

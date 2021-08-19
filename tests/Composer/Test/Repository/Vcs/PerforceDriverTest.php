@@ -17,6 +17,7 @@ use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
 use Composer\Util\Perforce;
+use Composer\Test\Mock\ProcessExecutorMock;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>
@@ -42,7 +43,7 @@ class PerforceDriverTest extends TestCase
         $this->config = $this->getTestConfig($this->testPath);
         $this->repoConfig = $this->getTestRepoConfig();
         $this->io = $this->getMockIOInterface();
-        $this->process = $this->getMockProcessExecutor();
+        $this->process = new ProcessExecutorMock;
         $this->httpDownloader = $this->getMockHttpDownloader();
         $this->perforce = $this->getMockPerforce();
         $this->driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->process);
@@ -92,11 +93,6 @@ class PerforceDriverTest extends TestCase
     protected function getMockIOInterface()
     {
         return $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-    }
-
-    protected function getMockProcessExecutor()
-    {
-        return $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
     }
 
     protected function getMockHttpDownloader()

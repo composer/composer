@@ -16,6 +16,7 @@ use Composer\Repository\Vcs\SvnDriver;
 use Composer\Config;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Test\Mock\ProcessExecutorMock;
 
 class SvnDriverTest extends TestCase
 {
@@ -50,16 +51,11 @@ class SvnDriverTest extends TestCase
         $output .= " authorization failed: Could not authenticate to server:";
         $output .= " rejected Basic challenge (https://corp.svn.local/)";
 
-        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
-        $process->expects($this->at(1))
-            ->method('execute')
-            ->will($this->returnValue(1));
-        $process->expects($this->exactly(7))
-            ->method('getErrorOutput')
-            ->will($this->returnValue($output));
-        $process->expects($this->at(2))
-            ->method('execute')
-            ->will($this->returnValue(0));
+        $process = new ProcessExecutorMock;
+        $process->expects(array(
+            'svn --version',
+            array('cmd' => '', 'return' => 1, 'stderr' => $output),
+        ), true);
 
         $repoConfig = array(
             'url' => 'https://till:secret@corp.svn.local/repo',
@@ -67,6 +63,8 @@ class SvnDriverTest extends TestCase
 
         $svn = new SvnDriver($repoConfig, $console, $this->config, $httpDownloader, $process);
         $svn->initialize();
+
+        $process->assertComplete($this);
     }
 
     public static function supportProvider()
