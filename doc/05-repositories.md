@@ -156,8 +156,10 @@ packages which are in the repository. It must contain the placeholder
 `%package%`.
 
 This field is new in Composer v2, and is prioritised over the
-`provider-includes` and `providers-url` fields. For compatibility with both
-Composer v1 and v2, and we recommend providing both.
+`provider-includes` and `providers-url` fields if both are present.
+For compatibility with both Composer v1 and v2 you ideally want
+to provide both. New repository implementations may only need to
+support v2 however.
 
 An example:
 
@@ -180,9 +182,11 @@ Caching is done via the use of If-Modified-Since header, so make sure you
 return Last-Modified headers and that they are accurate.
 
 The array of versions can also optionally be minified using
-`Composer\Util\MetadataMinifier::minify()`. If you do that, you should add a
-`"minified": "composer/2.0"` key at the top level to indicate to Composer it
-must expand the version list back into the original data. See
+`Composer\MetadataMinifier\MetadataMinifier::minify()` from
+[composer/metadata-minifier](https://packagist.org/packages/composer/metadata-minifier).
+If you do that, you should add a `"minified": "composer/2.0"` key
+at the top level to indicate to Composer it must expand the version
+list back into the original data. See 
 https://repo.packagist.org/p2/monolog/monolog.json for an example.
 
 Any requested package which does not exist MUST return a 404 status code,
