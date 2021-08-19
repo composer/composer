@@ -4,6 +4,7 @@
 /composer.phar
 /vendor
 /nbproject
+.phpunit.result.cache
 phpunit.xml
 .vagrant
 Vagrantfile
