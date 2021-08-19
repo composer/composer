@@ -86,6 +86,6 @@
     },
     "support": {
         "issues": "https://github.com/composer/composer/issues",
-        "irc": "irc://irc.freenode.org/composer"
+        "irc": "ircs://irc.libera.chat:6697/composer"
     }
 }
