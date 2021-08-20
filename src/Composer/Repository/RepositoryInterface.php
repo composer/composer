@@ -79,6 +79,8 @@ interface RepositoryInterface extends \Countable
      * @param array<string, array<string, PackageInterface>> $alreadyLoaded         an array of package name => package version => package
      *
      * @return array
+     *
+     * @phpstan-param  array<string, ConstraintInterface|null> $packageNameMap
      * @phpstan-return array{namesFound: string[], packages: array<BasePackage&PackageInterface>}
      */
     public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array());

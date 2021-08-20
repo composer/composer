@@ -22,6 +22,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Installer;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
+use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Test\TestCase;
 use Composer\Util\Loop;
@@ -48,6 +49,7 @@ class FactoryMock extends Factory
 
     protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage, ProcessExecutor $process = null)
     {
+        $rm->setLocalRepository(new InstalledArrayRepository);
     }
 
     public function createInstallationManager(Loop $loop, IOInterface $io, EventDispatcher $dispatcher = null)

@@ -157,6 +157,7 @@ abstract class VcsDriver implements VcsDriverInterface
      * @param string $url The URL of content
      *
      * @return Response
+     * @throws TransportException
      */
     protected function getContents($url)
     {

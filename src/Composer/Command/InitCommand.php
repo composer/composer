@@ -43,7 +43,7 @@ use Symfony\Component\Console\Helper\FormatterHelper;
  */
 class InitCommand extends BaseCommand
 {
-    /** @var CompositeRepository */
+    /** @var ?CompositeRepository */
     protected $repos;
 
     /** @var array */

@@ -58,7 +58,7 @@ class PoolBuilder
      */
     private $rootReferences;
     /**
-     * @var EventDispatcher
+     * @var ?EventDispatcher
      */
     private $eventDispatcher;
     /**

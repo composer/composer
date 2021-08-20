@@ -481,6 +481,7 @@ class HttpDownloader
 
     /**
      * @internal
+     * @return bool
      */
     public static function isCurlEnabled()
     {

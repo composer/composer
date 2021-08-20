@@ -54,7 +54,7 @@ class ShowCommand extends BaseCommand
     protected $versionParser;
     protected $colors;
 
-    /** @var RepositorySet */
+    /** @var ?RepositorySet */
     private $repositorySet;
 
     protected function configure()
@@ -311,12 +311,6 @@ EOT
             return 0;
         }
 
-        if ($repos instanceof CompositeRepository) {
-            $repos = $repos->getRepositories();
-        } elseif (!is_array($repos)) {
-            $repos = array($repos);
-        }
-
         // list packages
         $packages = array();
         $packageFilterRegex = null;
@@ -334,7 +328,7 @@ EOT
             $input->setOption('path', false);
         }
 
-        foreach ($repos as $repo) {
+        foreach ($repos->getRepositories() as $repo) {
             if ($repo === $platformRepo) {
                 $type = 'platform';
             } elseif ($lockedRepo !== null && $repo === $lockedRepo) {
@@ -1245,6 +1239,9 @@ EOT
         return $candidate;
     }
 
+    /**
+     * @return RepositorySet
+     */
     private function getRepositorySet(Composer $composer)
     {
         if (!$this->repositorySet) {

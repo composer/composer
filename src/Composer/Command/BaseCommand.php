@@ -61,6 +61,7 @@ abstract class BaseCommand extends Command
             if ($application instanceof Application) {
                 /* @var $application    Application */
                 $this->composer = $application->getComposer($required, $disablePlugins);
+            /** @phpstan-ignore-next-line */
             } elseif ($required) {
                 throw new \RuntimeException(
                     'Could not create a Composer\Composer instance, you must inject '.
@@ -109,8 +110,8 @@ abstract class BaseCommand extends Command
         if (null === $this->io) {
             $application = $this->getApplication();
             if ($application instanceof Application) {
-                /* @var $application    Application */
                 $this->io = $application->getIO();
+            /** @phpstan-ignore-next-line */
             } else {
                 $this->io = new NullIO();
             }

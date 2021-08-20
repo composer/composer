@@ -42,5 +42,11 @@ parameters:
         - ../src
         - ../tests
 
+    dynamicConstantNames:
+        - Composer\Composer::BRANCH_ALIAS_VERSION
+        - Composer\Composer::VERSION
+        - Composer\Composer::RELEASE_DATE
+        - Composer\Composer::SOURCE_VERSION
+
 rules:
     - Composer\PHPStanRules\AnonymousFunctionWithThisRule

@@ -45,9 +45,12 @@ class ArrayLoader implements LoaderInterface
 
     /**
      * @template PackageClass of CompletePackageInterface
-     * @param  array                                $config package data
-     * @param  string                               $class  FQCN to be instantiated
-     * @return CompletePackage|CompleteAliasPackage
+     *
+     * @param  array  $config package data
+     * @param  string $class  FQCN to be instantiated
+     *
+     * @return CompletePackage|CompleteAliasPackage|RootPackage|RootAliasPackage
+     *
      * @phpstan-param class-string<PackageClass> $class
      */
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
@@ -78,23 +81,16 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @template PackageClass of CompletePackageInterface
      * @param  array                                      $versions
-     * @param  string                                     $class    FQCN to be instantiated
      * @return list<CompletePackage|CompleteAliasPackage>
-     * @phpstan-param class-string<PackageClass> $class
      */
-    public function loadPackages(array $versions, $class = 'Composer\Package\CompletePackage')
+    public function loadPackages(array $versions)
     {
-        if ($class !== 'Composer\Package\CompletePackage') {
-            trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
-        }
-
         $packages = array();
         $linkCache = array();
 
         foreach ($versions as $version) {
-            $package = $this->createObject($version, $class);
+            $package = $this->createObject($version, 'Composer\Package\CompletePackage');
 
             $this->configureCachedLinks($linkCache, $package, $version);
             $package = $this->configureObject($package, $version);
@@ -306,11 +302,7 @@ class ArrayLoader implements LoaderInterface
                 return new RootAliasPackage($package, $aliasNormalized, $prettyAlias);
             }
 
-            if ($package instanceof CompletePackage) {
-                return new CompleteAliasPackage($package, $aliasNormalized, $prettyAlias);
-            }
-
-            return new AliasPackage($package, $aliasNormalized, $prettyAlias);
+            return new CompleteAliasPackage($package, $aliasNormalized, $prettyAlias);
         }
 
         return $package;

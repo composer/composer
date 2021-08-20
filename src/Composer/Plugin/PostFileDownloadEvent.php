@@ -59,6 +59,7 @@ class PostFileDownloadEvent extends Event
      */
     public function __construct($name, $fileName, $checksum, $url, $type, $context = null)
     {
+        /** @phpstan-ignore-next-line */
         if ($context === null && $type instanceof PackageInterface) {
             $context = $type;
             $type = 'package';

@@ -113,6 +113,7 @@ class AliasPackage extends BasePackage
 
     /**
      * {@inheritDoc}
+     * @return array<string|int, Link>
      */
     public function getConflicts()
     {
@@ -121,6 +122,7 @@ class AliasPackage extends BasePackage
 
     /**
      * {@inheritDoc}
+     * @return array<string|int, Link>
      */
     public function getProvides()
     {
@@ -129,6 +131,7 @@ class AliasPackage extends BasePackage
 
     /**
      * {@inheritDoc}
+     * @return array<string|int, Link>
      */
     public function getReplaces()
     {

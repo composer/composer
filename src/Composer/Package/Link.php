@@ -75,7 +75,7 @@ class Link
     protected $description;
 
     /**
-     * @var string|null
+     * @var ?string
      */
     protected $prettyConstraint;
 
@@ -161,6 +161,6 @@ class Link
      */
     public function getPrettyString(PackageInterface $sourcePackage)
     {
-        return $sourcePackage->getPrettyString().' '.$this->description.' '.$this->target.($this->constraint ? ' '.$this->constraint->getPrettyString() : '');
+        return $sourcePackage->getPrettyString().' '.$this->description.' '.$this->target.' '.$this->constraint->getPrettyString();
     }
 }

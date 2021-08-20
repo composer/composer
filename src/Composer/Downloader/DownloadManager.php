@@ -401,7 +401,7 @@ class DownloadManager
     }
 
     /**
-     * @return string[]
+     * @return array<'dist'|'source'>&non-empty-array
      */
     private function getAvailableSources(PackageInterface $package, PackageInterface $prevPackage = null)
     {

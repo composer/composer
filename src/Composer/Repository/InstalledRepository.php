@@ -114,7 +114,7 @@ class InstalledRepository extends CompositeRepository
                 foreach ($package->getReplaces() as $link) {
                     foreach ($needles as $needle) {
                         if ($link->getSource() === $needle) {
-                            if ($constraint === null || ($link->getConstraint()->matches($constraint) === !$invert)) {
+                            if ($constraint === null || ($link->getConstraint()->matches($constraint) === true)) {
                                 // already displayed this node's dependencies, cutting short
                                 if (in_array($link->getTarget(), $packagesInTree)) {
                                     $results[] = array($package, $link, false);

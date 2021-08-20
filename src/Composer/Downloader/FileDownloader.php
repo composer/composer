@@ -51,9 +51,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     protected $httpDownloader;
     /** @var Filesystem */
     protected $filesystem;
-    /** @var Cache */
+    /** @var ?Cache */
     protected $cache;
-    /** @var EventDispatcher */
+    /** @var ?EventDispatcher */
     protected $eventDispatcher;
     /** @var ProcessExecutor */
     protected $process;

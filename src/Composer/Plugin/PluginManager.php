@@ -39,7 +39,7 @@ class PluginManager
     protected $composer;
     /** @var IOInterface */
     protected $io;
-    /** @var Composer */
+    /** @var ?Composer */
     protected $globalComposer;
     /** @var VersionParser */
     protected $versionParser;
@@ -82,9 +82,7 @@ class PluginManager
 
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
-        if ($repo) {
-            $this->loadRepository($repo, false);
-        }
+        $this->loadRepository($repo, false);
         if ($globalRepo) {
             $this->loadRepository($globalRepo, true);
         }
