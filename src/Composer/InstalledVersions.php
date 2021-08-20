@@ -20,7 +20,7 @@ use Composer\Semver\VersionParser;
  *
  * See also https://getcomposer.org/doc/07-runtime.md#installed-versions
  *
- * To require it's presence, you can require `composer-runtime-api ^2.0`
+ * To require its presence, you can require `composer-runtime-api ^2.0`
  */
 class InstalledVersions
 {

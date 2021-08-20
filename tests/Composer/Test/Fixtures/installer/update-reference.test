@@ -1,5 +1,5 @@
 --TEST--
-Updates a dev package forcing it's reference
+Updates a dev package forcing its reference
 --COMPOSER--
 {
     "repositories": [
