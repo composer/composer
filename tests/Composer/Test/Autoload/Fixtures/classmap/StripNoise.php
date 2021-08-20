@@ -90,3 +90,27 @@ NOWDOCTABBED . <<<'NOWDOCPHP73'
         return 'class FailSimpleString {}';
     }
 }
+
+// Issue #10067.
+abstract class First {
+    public function heredocDuplicateMarker(): void {
+        echo <<<DUPLICATE_MARKER
+
+        DUPLICATE_MARKER;
+    }
+}
+
+abstract class Second extends First {
+    public function heredocDuplicateMarker(): void {
+        echo <<<DUPLICATE_MARKER
+
+        DUPLICATE_MARKER;
+    }
+}
+
+abstract class Third extends First {
+    public function heredocMarkersOnlyWhitespaceBetween(): void {
+        echo <<<DUPLICATE_MARKER
+DUPLICATE_MARKER;
+    }
+}
