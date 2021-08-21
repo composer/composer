@@ -39,7 +39,7 @@ class SyncHelper
             self::await($loop, $downloader->prepare($type, $package, $path, $prevPackage));
 
             if ($type === 'update') {
-                self::await($loop, $downloader->update($package, $path, $prevPackage));
+                self::await($loop, $downloader->update($package, $prevPackage, $path));
             } else {
                 self::await($loop, $downloader->install($package, $path));
             }

@@ -82,14 +82,14 @@ interface PackageInterface
     /**
      * Returns the package targetDir property
      *
-     * @return string|null The package targetDir
+     * @return ?string The package targetDir
      */
     public function getTargetDir();
 
     /**
      * Returns the package extra data
      *
-     * @return array The package extra data
+     * @return mixed[] The package extra data
      */
     public function getExtra();
 
@@ -97,27 +97,29 @@ interface PackageInterface
      * Sets source from which this package was installed (source/dist).
      *
      * @param string $type source/dist
+     * @phpstan-param 'source'|'dist'|null $type
      */
     public function setInstallationSource($type);
 
     /**
      * Returns source from which this package was installed (source/dist).
      *
-     * @return string source/dist
+     * @return ?string source/dist
+     * @phpstan-return 'source'|'dist'|null
      */
     public function getInstallationSource();
 
     /**
      * Returns the repository type of this package, e.g. git, svn
      *
-     * @return string The repository type
+     * @return ?string The repository type
      */
     public function getSourceType();
 
     /**
      * Returns the repository url of this package, e.g. git://github.com/naderman/composer.git
      *
-     * @return string The repository url
+     * @return ?string The repository url
      */
     public function getSourceUrl();
 
@@ -138,12 +140,12 @@ interface PackageInterface
     /**
      * Returns the source mirrors of this package
      *
-     * @return array|null
+     * @return ?array
      */
     public function getSourceMirrors();
 
     /**
-     * @param  array|null $mirrors
+     * @param  ?array $mirrors
      * @return void
      */
     public function setSourceMirrors($mirrors);
@@ -151,14 +153,14 @@ interface PackageInterface
     /**
      * Returns the type of the distribution archive of this version, e.g. zip, tarball
      *
-     * @return string The repository type
+     * @return ?string The repository type
      */
     public function getDistType();
 
     /**
      * Returns the url of the distribution archive of this version
      *
-     * @return string
+     * @return ?string
      */
     public function getDistUrl();
 
@@ -186,12 +188,12 @@ interface PackageInterface
     /**
      * Returns the dist mirrors of this package
      *
-     * @return array|null
+     * @return ?array
      */
     public function getDistMirrors();
 
     /**
-     * @param  array|null $mirrors
+     * @param  ?array $mirrors
      * @return void
      */
     public function setDistMirrors($mirrors);
@@ -226,7 +228,7 @@ interface PackageInterface
     /**
      * Returns the release date of the package
      *
-     * @return \DateTime
+     * @return ?\DateTime
      */
     public function getReleaseDate();
 
@@ -241,7 +243,7 @@ interface PackageInterface
      * Returns a set of links to packages which need to be installed before
      * this package can be installed
      *
-     * @return Link[] An array of package links defining required packages
+     * @return array<string, Link> An array of package links defining required packages
      */
     public function getRequires();
 
@@ -273,7 +275,7 @@ interface PackageInterface
      * Returns a set of links to packages which are required to develop
      * this package. These are installed if in dev mode.
      *
-     * @return Link[] An array of package links defining packages required for development
+     * @return array<string, Link> An array of package links defining packages required for development
      */
     public function getDevRequires();
 
@@ -295,7 +297,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
-     * @phpstan-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, files?: list<string>}
+     * @phpstan-return array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>}
      */
     public function getAutoload();
 
@@ -308,7 +310,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of dev autoloading rules
-     * @phpstan-return array{psr-0?: array<string, string>, psr-4?: array<string, string>, classmap?: list<string>, files?: list<string>}
+     * @phpstan-return array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>}
      */
     public function getDevAutoload();
 
@@ -330,7 +332,7 @@ interface PackageInterface
     /**
      * Returns a reference to the repository that owns the package
      *
-     * @return RepositoryInterface
+     * @return ?RepositoryInterface
      */
     public function getRepository();
 
@@ -351,7 +353,7 @@ interface PackageInterface
     /**
      * Returns the package notification url
      *
-     * @return string
+     * @return ?string
      */
     public function getNotificationUrl();
 
@@ -377,7 +379,7 @@ interface PackageInterface
     /**
      * Returns a list of options to download package dist files
      *
-     * @return array
+     * @return mixed[]
      */
     public function getTransportOptions();
 

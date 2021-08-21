@@ -49,6 +49,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $url;
     private $baseUrl;
     private $io;
+    /** @var HttpDownloader */
     private $httpDownloader;
     private $loop;
     protected $cache;

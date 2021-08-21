@@ -191,7 +191,7 @@ class ConsoleIOTest extends TestCase
         ;
 
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);
-        $consoleIO->askConfirmation('Why?', 'default');
+        $consoleIO->askConfirmation('Why?', false);
     }
 
     public function testAskAndValidate()
@@ -250,7 +250,7 @@ class ConsoleIOTest extends TestCase
         ;
 
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);
-        $result = $consoleIO->select('Select item', array("item1", "item2"), null, false, "Error message", true);
+        $result = $consoleIO->select('Select item', array("item1", "item2"), 'item1', false, "Error message", true);
         $this->assertEquals(array('1'), $result);
     }
 

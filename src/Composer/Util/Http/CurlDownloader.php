@@ -142,6 +142,7 @@ class CurlDownloader
 
         if ($copyTo) {
             $errorMessage = '';
+            // @phpstan-ignore-next-line
             set_error_handler(function ($code, $msg) use (&$errorMessage) {
                 if ($errorMessage) {
                     $errorMessage .= "\n";

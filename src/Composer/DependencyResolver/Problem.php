@@ -18,6 +18,7 @@ use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -459,7 +460,7 @@ class Problem
     /**
      * Turns a constraint into text usable in a sentence describing a request
      *
-     * @param  \Composer\Semver\Constraint\ConstraintInterface $constraint
+     * @param  ?ConstraintInterface $constraint
      * @return string
      */
     protected static function constraintToText($constraint)

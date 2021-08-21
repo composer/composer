@@ -77,8 +77,8 @@ class Application extends BaseApplication
         static $shutdownRegistered = false;
 
         if (function_exists('ini_set') && extension_loaded('xdebug')) {
-            ini_set('xdebug.show_exception_trace', false);
-            ini_set('xdebug.scream', false);
+            ini_set('xdebug.show_exception_trace', '0');
+            ini_set('xdebug.scream', '0');
         }
 
         if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
@@ -408,7 +408,8 @@ class Application extends BaseApplication
      * @param  bool                    $required
      * @param  bool|null               $disablePlugins
      * @throws JsonValidationException
-     * @return \Composer\Composer
+     * @throws \InvalidArgumentException
+     * @return ?\Composer\Composer If $required is true then the return value is guaranteed
      */
     public function getComposer($required = true, $disablePlugins = null)
     {
@@ -444,7 +445,7 @@ class Application extends BaseApplication
     public function resetComposer()
     {
         $this->composer = null;
-        if ($this->getIO() && method_exists($this->getIO(), 'resetAuthentications')) {
+        if (method_exists($this->getIO(), 'resetAuthentications')) {
             $this->getIO()->resetAuthentications();
         }
     }

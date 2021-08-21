@@ -13,7 +13,8 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\AliasPackage;
-use Composer\Package\RootAliasPackage;
+use Composer\Package\BasePackage;
+use Composer\Package\Package;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -23,22 +24,32 @@ class LockTransaction extends Transaction
 {
     /**
      * packages in current lock file, platform repo or otherwise present
-     * @var array
+     *
+     * Indexed by spl_object_hash
+     *
+     * @var array<string, BasePackage>
      */
     protected $presentMap;
 
     /**
      * Packages which cannot be mapped, platform repo, root package, other fixed repos
-     * @var array
+     *
+     * Indexed by package id
+     *
+     * @var array<int, BasePackage>
      */
     protected $unlockableMap;
 
     /**
-     * @var array
+     * @var array{dev: BasePackage[], non-dev: BasePackage[], all: BasePackage[]}
      */
     protected $resultPackages;
 
-    public function __construct(Pool $pool, $presentMap, $unlockableMap, $decisions)
+    /**
+     * @param array<string, BasePackage> $presentMap
+     * @param array<int, BasePackage> $unlockableMap
+     */
+    public function __construct(Pool $pool, array $presentMap, array $unlockableMap, Decisions $decisions)
     {
         $this->presentMap = $presentMap;
         $this->unlockableMap = $unlockableMap;
@@ -88,7 +99,7 @@ class LockTransaction extends Transaction
     {
         $packages = array();
         foreach ($this->resultPackages[$devMode ? 'dev' : 'non-dev'] as $package) {
-            if (!($package instanceof AliasPackage) && !($package instanceof RootAliasPackage)) {
+            if (!$package instanceof AliasPackage) {
                 // if we're just updating mirrors we need to reset references to the same as currently "present" packages' references to keep the lock file as-is
                 // we do not reset references if the currently present package didn't have any, or if the type of VCS has changed
                 if ($updateMirrors && !isset($this->presentMap[spl_object_hash($package)])) {
@@ -97,7 +108,7 @@ class LockTransaction extends Transaction
                             if ($presentPackage->getSourceReference() && $presentPackage->getSourceType() === $package->getSourceType()) {
                                 $package->setSourceDistReferences($presentPackage->getSourceReference());
                             }
-                            if ($presentPackage->getReleaseDate()) {
+                            if ($presentPackage->getReleaseDate() && $package instanceof Package) {
                                 $package->setReleaseDate($presentPackage->getReleaseDate());
                             }
                         }

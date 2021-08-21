@@ -78,11 +78,20 @@
     ],
     "scripts": {
         "compile": "@php -dphar.readonly=0 bin/compile",
-        "test": "simple-phpunit"
+        "test": "simple-phpunit",
+        "phpstan-setup": [
+            "@composer config platform --unset",
+            "@php composer.phar update",
+            "@composer require --dev phpstan/phpstan:^0.12.93 phpstan/phpstan-phpunit:^0.12.17 phpunit/phpunit:^7.5.20 --with-all-dependencies",
+            "git checkout composer.json composer.lock"
+        ],
+        "phpstan": "@php vendor/bin/phpstan analyse --configuration=phpstan/config.neon"
     },
     "scripts-descriptions": {
         "compile": "Compile composer.phar",
-        "test": "Run all tests"
+        "test": "Run all tests",
+        "phpstan-setup": "Prepare environment to run PHPStan locally (must be run with PHP7.4)",
+        "phpstan": "Runs PHPStan (after phpstan-setup was executed, must be run with PHP7.4)"
     },
     "support": {
         "issues": "https://github.com/composer/composer/issues",

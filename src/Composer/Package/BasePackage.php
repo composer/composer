@@ -24,6 +24,7 @@ abstract class BasePackage implements PackageInterface
 {
     /**
      * @phpstan-var array<string, array{description: string, method: Link::TYPE_*}>
+     * @internal
      */
     public static $supportedLinkTypes = array(
         'require' => array('description' => 'requires', 'method' => Link::TYPE_REQUIRE),

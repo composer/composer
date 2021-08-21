@@ -88,9 +88,9 @@ class Composer
     private $package;
 
     /**
-     * @var Locker
+     * @var ?Locker
      */
-    private $locker;
+    private $locker = null;
 
     /**
      * @var Loop
@@ -179,7 +179,7 @@ class Composer
     }
 
     /**
-     * @return Locker
+     * @return ?Locker
      */
     public function getLocker()
     {

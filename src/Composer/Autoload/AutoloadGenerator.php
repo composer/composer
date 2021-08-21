@@ -41,7 +41,7 @@ class AutoloadGenerator
     private $eventDispatcher;
 
     /**
-     * @var IOInterface
+     * @var ?IOInterface
      */
     private $io;
 
@@ -667,7 +667,7 @@ EOF;
             $baseDir = "'phar://' . " . $baseDir;
         }
 
-        return $baseDir . (($path !== false) ? var_export($path, true) : "");
+        return $baseDir . var_export($path, true);
     }
 
     protected function getPlatformCheck(array $packageMap, array $ignorePlatformReqs, $checkPlatform, array $devPackageNames)

@@ -566,7 +566,7 @@ class PlatformRepository extends ArrayRepository
 
         if ($name === 'uuid') {
             $ext->setReplaces(array(
-                new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version), Link::TYPE_REPLACE, $ext->getPrettyVersion()),
+                'lib-uuid' => new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version), Link::TYPE_REPLACE, $ext->getPrettyVersion()),
             ));
         }
 

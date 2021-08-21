@@ -315,6 +315,7 @@ EOT
             $link->getSource(),
             $link->getTarget(),
             $newConstraint,
+            /** @phpstan-ignore-next-line */
             $link->getDescription(),
             $link->getPrettyConstraint() . ', ' . $constraint
         );

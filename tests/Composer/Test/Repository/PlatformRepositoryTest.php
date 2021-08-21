@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Package\Package;
+use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
 use PHPUnit\Framework\Assert;
@@ -1189,7 +1190,7 @@ Linked Version => 1.2.11',
         }
     }
 
-    private function assertPackageLinks($context, array $expectedLinks, Package $sourcePackage, array $links)
+    private function assertPackageLinks($context, array $expectedLinks, PackageInterface $sourcePackage, array $links)
     {
         self::assertCount(count($expectedLinks), $links, sprintf('%s: expected package count to match', $context));
 

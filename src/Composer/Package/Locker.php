@@ -186,11 +186,7 @@ class Locker
             if (isset($lockData['aliases'])) {
                 foreach ($lockData['aliases'] as $alias) {
                     if (isset($packageByName[$alias['package']])) {
-                        if ($packageByName[$alias['package']] instanceof CompletePackageInterface) {
-                            $aliasPkg = new CompleteAliasPackage($packageByName[$alias['package']], $alias['alias_normalized'], $alias['alias']);
-                        } else {
-                            $aliasPkg = new AliasPackage($packageByName[$alias['package']], $alias['alias_normalized'], $alias['alias']);
-                        }
+                        $aliasPkg = new CompleteAliasPackage($packageByName[$alias['package']], $alias['alias_normalized'], $alias['alias']);
                         $aliasPkg->setRootPackageAlias(true);
                         $packages->addPackage($aliasPkg);
                     }

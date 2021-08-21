@@ -304,9 +304,11 @@ EOT
         try {
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/' : 'https://'.$domain.'/api/v3/';
 
-            return $this->httpDownloader->get($url, array(
+            $this->httpDownloader->get($url, array(
                 'retry-auth-failure' => false,
-            )) ? true : 'Unexpected error';
+            ));
+
+            return true;
         } catch (\Exception $e) {
             if ($e instanceof TransportException && $e->getCode() === 401) {
                 return '<comment>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</comment>';

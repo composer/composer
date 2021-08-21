@@ -15,6 +15,7 @@ namespace Composer\Test\Package\Archiver;
 use Composer\IO\NullIO;
 use Composer\Factory;
 use Composer\Package\Archiver\ArchiveManager;
+use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Util\Loop;
 use Composer\Test\Mock\FactoryMock;
@@ -95,7 +96,7 @@ class ArchiveManagerTest extends ArchiverTest
         unlink($target);
     }
 
-    protected function getTargetName(PackageInterface $package, $format, $fileName = null)
+    protected function getTargetName(CompletePackage $package, $format, $fileName = null)
     {
         if (null === $fileName) {
             $packageName = $this->manager->getPackageFilename($package);

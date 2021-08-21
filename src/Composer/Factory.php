@@ -38,6 +38,7 @@ use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Version\VersionParser;
 use Composer\Downloader\TransportException;
 use Composer\Json\JsonValidationException;
+use Composer\Repository\InstalledRepositoryInterface;
 use Seld\JsonLint\JsonParser;
 
 /**
@@ -434,9 +435,7 @@ class Factory
 
             // once everything is initialized we can
             // purge packages from local repos if they have been deleted on the filesystem
-            if ($rm->getLocalRepository()) {
-                $this->purgePackages($rm->getLocalRepository(), $im);
-            }
+            $this->purgePackages($rm->getLocalRepository(), $im);
         }
 
         return $composer;
@@ -585,10 +584,10 @@ class Factory
     }
 
     /**
-     * @param WritableRepositoryInterface   $repo repository to purge packages from
+     * @param InstalledRepositoryInterface   $repo repository to purge packages from
      * @param Installer\InstallationManager $im   manager to check whether packages are still installed
      */
-    protected function purgePackages(WritableRepositoryInterface $repo, Installer\InstallationManager $im)
+    protected function purgePackages(InstalledRepositoryInterface $repo, Installer\InstallationManager $im)
     {
         foreach ($repo->getPackages() as $package) {
             if (!$im->isPackageInstalled($repo, $package)) {
@@ -632,7 +631,7 @@ class Factory
         if (isset($_SERVER['argv']) && in_array('disable-tls', $_SERVER['argv']) && (in_array('conf', $_SERVER['argv']) || in_array('config', $_SERVER['argv']))) {
             $warned = true;
             $disableTls = !extension_loaded('openssl');
-        } elseif ($config && $config->get('disable-tls') === true) {
+        } elseif ($config->get('disable-tls') === true) {
             if (!$warned) {
                 $io->writeError('<warning>You are running Composer with SSL/TLS protection disabled.</warning>');
             }
@@ -644,10 +643,10 @@ class Factory
         }
         $httpDownloaderOptions = array();
         if ($disableTls === false) {
-            if ($config && $config->get('cafile')) {
+            if ($config->get('cafile')) {
                 $httpDownloaderOptions['ssl']['cafile'] = $config->get('cafile');
             }
-            if ($config && $config->get('capath')) {
+            if ($config->get('capath')) {
                 $httpDownloaderOptions['ssl']['capath'] = $config->get('capath');
             }
             $httpDownloaderOptions = array_replace_recursive($httpDownloaderOptions, $options);

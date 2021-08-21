@@ -44,6 +44,7 @@ interface RepositoryInterface extends \Countable
      * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface|null
+     * @phpstan-return (BasePackage&PackageInterface)|null
      */
     public function findPackage($name, $constraint);
 
@@ -54,6 +55,7 @@ interface RepositoryInterface extends \Countable
      * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface[]
+     * @phpstan-return array<BasePackage&PackageInterface>
      */
     public function findPackages($name, $constraint = null);
 
@@ -61,6 +63,7 @@ interface RepositoryInterface extends \Countable
      * Returns list of registered packages.
      *
      * @return PackageInterface[]
+     * @phpstan-return array<BasePackage&PackageInterface>
      */
     public function getPackages();
 
@@ -75,7 +78,10 @@ interface RepositoryInterface extends \Countable
      * @param array<string, BasePackage::STABILITY_*>        $stabilityFlags        an array of package name => BasePackage::STABILITY_* value
      * @param array<string, array<string, PackageInterface>> $alreadyLoaded         an array of package name => package version => package
      *
-     * @return array{namesFound: string[], packages: PackageInterface[]}
+     * @return array
+     *
+     * @phpstan-param  array<string, ConstraintInterface|null> $packageNameMap
+     * @phpstan-return array{namesFound: string[], packages: array<BasePackage&PackageInterface>}
      */
     public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array());
 

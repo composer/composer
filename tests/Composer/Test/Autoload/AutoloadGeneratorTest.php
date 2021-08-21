@@ -371,8 +371,8 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
-            new Link('a', 'b/b', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
+            'b/b' => new Link('a', 'b/b', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -400,7 +400,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -408,11 +408,11 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $b = new Package('b/b', '1.0', '1.0');
         $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
         $a->setRequires(array(
-            new Link('a/a', 'b/b', new MatchAllConstraint()),
+            'b/b' => new Link('a/a', 'b/b', new MatchAllConstraint()),
         ));
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
         $b->setRequires(array(
-            new Link('b/b', 'a/a', new MatchAllConstraint()),
+            'a/a' => new Link('b/b', 'a/a', new MatchAllConstraint()),
         ));
 
         $this->repository->expects($this->once())
@@ -432,17 +432,17 @@ class AutoloadGeneratorTest extends TestCase
     public function testNonDevAutoloadShouldIncludeReplacedPackages()
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
-        $package->setRequires(array(new Link('a', 'a/a', new MatchAllConstraint())));
+        $package->setRequires(array('a/a' => new Link('a', 'a/a', new MatchAllConstraint())));
 
         $packages = array();
         $packages[] = $a = new Package('a/a', '1.0', '1.0');
         $packages[] = $b = new Package('b/b', '1.0', '1.0');
 
-        $a->setRequires(array(new Link('a/a', 'b/c', new MatchAllConstraint())));
+        $a->setRequires(array('b/c' => new Link('a/a', 'b/c', new MatchAllConstraint())));
 
         $b->setAutoload(array('psr-4' => array('B\\' => 'src/')));
         $b->setReplaces(
-            array(new Link('b/b', 'b/c', new Constraint('==', '1.0'), Link::TYPE_REPLACE))
+            array('b/c' => new Link('b/b', 'b/c', new Constraint('==', '1.0'), Link::TYPE_REPLACE))
         );
 
         $this->repository->expects($this->once())
@@ -467,7 +467,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -475,11 +475,11 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $b = new Package('b/b', '1.0', '1.0');
         $a->setAutoload(array('psr-0' => array('A' => 'src/', 'A\\B' => 'lib/')));
         $a->setRequires(array(
-            new Link('a/a', 'c/c', new MatchAllConstraint()),
+            'c/c' => new Link('a/a', 'c/c', new MatchAllConstraint()),
         ));
         $b->setAutoload(array('psr-0' => array('B\\Sub\\Name' => 'src/')));
         $b->setReplaces(array(
-            new Link('b/b', 'c/c', new MatchAllConstraint()),
+            'c/c' => new Link('b/b', 'c/c', new MatchAllConstraint()),
         ));
 
         $this->repository->expects($this->once())
@@ -500,7 +500,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -511,18 +511,18 @@ class AutoloadGeneratorTest extends TestCase
         $packages[] = $e = new Package('e/e', '1.0', '1.0');
         $a->setAutoload(array('classmap' => array('src/A.php')));
         $a->setRequires(array(
-            new Link('a/a', 'b/b', new MatchAllConstraint()),
+            'b/b' => new Link('a/a', 'b/b', new MatchAllConstraint()),
         ));
         $b->setAutoload(array('classmap' => array('src/B.php')));
         $b->setRequires(array(
-            new Link('b/b', 'e/e', new MatchAllConstraint()),
+            'e/e' => new Link('b/b', 'e/e', new MatchAllConstraint()),
         ));
         $c->setAutoload(array('classmap' => array('src/C.php')));
         $c->setReplaces(array(
-            new Link('c/c', 'b/b', new MatchAllConstraint()),
+            'b/b' => new Link('c/c', 'b/b', new MatchAllConstraint()),
         ));
         $c->setRequires(array(
-            new Link('c/c', 'd/d', new MatchAllConstraint()),
+            'd/d' => new Link('c/c', 'd/d', new MatchAllConstraint()),
         ));
         $d->setAutoload(array('classmap' => array('src/D.php')));
         $e->setAutoload(array('classmap' => array('src/E.php')));
@@ -552,7 +552,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
         ));
 
         $package->setAutoload(array(
@@ -657,8 +657,8 @@ EOF;
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
-            new Link('a', 'b/b', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
+            'b/b' => new Link('a', 'b/b', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -697,8 +697,8 @@ EOF;
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
-            new Link('a', 'b/b', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
+            'b/b' => new Link('a', 'b/b', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -737,9 +737,9 @@ EOF;
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
-            new Link('a', 'b/b', new MatchAllConstraint()),
-            new Link('a', 'c/c', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
+            'b/b' => new Link('a', 'b/b', new MatchAllConstraint()),
+            'c/c' => new Link('a', 'c/c', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -782,9 +782,9 @@ EOF;
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
-            new Link('a', 'b/b', new MatchAllConstraint()),
-            new Link('a', 'c/c', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
+            'b/b' => new Link('a', 'b/b', new MatchAllConstraint()),
+            'c/c' => new Link('a', 'c/c', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -831,9 +831,9 @@ EOF;
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
-            new Link('a', 'b/b', new MatchAllConstraint()),
-            new Link('a', 'c/c', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
+            'b/b' => new Link('a', 'b/b', new MatchAllConstraint()),
+            'c/c' => new Link('a', 'c/c', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -881,9 +881,9 @@ EOF;
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setAutoload(array('files' => array('root.php')));
         $package->setRequires(array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
-            new Link('a', 'b/b', new MatchAllConstraint()),
-            new Link('a', 'c/c', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
+            'b/b' => new Link('a', 'b/b', new MatchAllConstraint()),
+            'c/c' => new Link('a', 'c/c', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -932,9 +932,9 @@ EOF;
         $notAutoloadPackage = new RootPackage('root/a', '1.0', '1.0');
 
         $requires = array(
-            new Link('a', 'a/a', new MatchAllConstraint()),
-            new Link('a', 'b/b', new MatchAllConstraint()),
-            new Link('a', 'c/c', new MatchAllConstraint()),
+            'a/a' => new Link('a', 'a/a', new MatchAllConstraint()),
+            'b/b' => new Link('a', 'b/b', new MatchAllConstraint()),
+            'c/c' => new Link('a', 'c/c', new MatchAllConstraint()),
         );
         $autoloadPackage->setRequires($requires);
         $notAutoloadPackage->setRequires($requires);
@@ -1003,10 +1003,10 @@ EOF;
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setAutoload(array('files' => array('root2.php')));
         $package->setRequires(array(
-            new Link('a', 'z/foo', new MatchAllConstraint()),
-            new Link('a', 'b/bar', new MatchAllConstraint()),
-            new Link('a', 'd/d', new MatchAllConstraint()),
-            new Link('a', 'e/e', new MatchAllConstraint()),
+            'z/foo' => new Link('a', 'z/foo', new MatchAllConstraint()),
+            'b/bar' => new Link('a', 'b/bar', new MatchAllConstraint()),
+            'd/d' => new Link('a', 'd/d', new MatchAllConstraint()),
+            'e/e' => new Link('a', 'e/e', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -1017,18 +1017,18 @@ EOF;
         $packages[] = $e = new Package('e/e', '1.0', '1.0');
 
         $z->setAutoload(array('files' => array('testA.php')));
-        $z->setRequires(array(new Link('z/foo', 'c/lorem', new MatchAllConstraint())));
+        $z->setRequires(array('c/lorem' => new Link('z/foo', 'c/lorem', new MatchAllConstraint())));
 
         $b->setAutoload(array('files' => array('testB.php')));
-        $b->setRequires(array(new Link('b/bar', 'c/lorem', new MatchAllConstraint()), new Link('b/bar', 'd/d', new MatchAllConstraint())));
+        $b->setRequires(array('c/lorem' => new Link('b/bar', 'c/lorem', new MatchAllConstraint()), 'd/d' => new Link('b/bar', 'd/d', new MatchAllConstraint())));
 
         $c->setAutoload(array('files' => array('testC.php')));
 
         $d->setAutoload(array('files' => array('testD.php')));
-        $d->setRequires(array(new Link('d/d', 'c/lorem', new MatchAllConstraint())));
+        $d->setRequires(array('c/lorem' => new Link('d/d', 'c/lorem', new MatchAllConstraint())));
 
         $e->setAutoload(array('files' => array('testE.php')));
-        $e->setRequires(array(new Link('e/e', 'c/lorem', new MatchAllConstraint())));
+        $e->setRequires(array('c/lorem' => new Link('e/e', 'c/lorem', new MatchAllConstraint())));
 
         $this->repository->expects($this->once())
             ->method('getCanonicalPackages')
@@ -1076,8 +1076,8 @@ EOF;
             'classmap' => array($this->workingDir.'/src'),
         ));
         $rootPackage->setRequires(array(
-            new Link('z', 'a/a', new MatchAllConstraint()),
-            new Link('z', 'b/b', new MatchAllConstraint()),
+            'a/a' => new Link('z', 'a/a', new MatchAllConstraint()),
+            'b/b' => new Link('z', 'b/b', new MatchAllConstraint()),
         ));
 
         $packages = array();
@@ -1339,7 +1339,7 @@ EOF;
             'files' => array('test.php'),
         ));
         $package->setRequires(array(
-            new Link('a', 'b/b', new MatchAllConstraint()),
+            'b/b' => new Link('a', 'b/b', new MatchAllConstraint()),
         ));
 
         $vendorPackage = new Package('b/b', '1.0', '1.0');

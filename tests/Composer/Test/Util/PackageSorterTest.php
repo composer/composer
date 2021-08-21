@@ -123,7 +123,7 @@ class PackageSorterTest extends TestCase
 
         $links = array();
         foreach ($requires as $requireName) {
-            $links[] = new Link($package->getName(), $requireName, new MatchAllConstraint);
+            $links[$requireName] = new Link($package->getName(), $requireName, new MatchAllConstraint);
         }
         $package->setRequires($links);
 

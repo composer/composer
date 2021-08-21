@@ -16,6 +16,7 @@ use Composer\DependencyResolver\GenericRule;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\Pool;
+use Composer\Semver\Constraint\MatchNoneConstraint;
 use Composer\Test\TestCase;
 
 class RuleSetTest extends TestCase
@@ -144,7 +145,7 @@ class RuleSetTest extends TestCase
 
         $ruleSet = new RuleSet;
         $literal = $p->getId();
-        $rule = new GenericRule(array($literal), Rule::RULE_ROOT_REQUIRE, array('packageName' => 'foo/bar', 'constraint' => null));
+        $rule = new GenericRule(array($literal), Rule::RULE_ROOT_REQUIRE, array('packageName' => 'foo/bar', 'constraint' => new MatchNoneConstraint));
 
         $ruleSet->add($rule, RuleSet::TYPE_REQUEST);
 

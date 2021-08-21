@@ -36,8 +36,8 @@ class BufferIOTest extends TestCase
             '',
         ));
 
-        $this->assertTrue($bufferIO->askConfirmation('Please say yes!', 'no'));
-        $this->assertFalse($bufferIO->askConfirmation('Now please say no!', 'yes'));
+        $this->assertTrue($bufferIO->askConfirmation('Please say yes!', false));
+        $this->assertFalse($bufferIO->askConfirmation('Now please say no!', true));
         $this->assertSame('default', $bufferIO->ask('Empty string last', 'default'));
     }
 }

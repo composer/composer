@@ -110,7 +110,7 @@ class InitCommandTest extends TestCase
     public function testNamespaceFromMissingPackageName()
     {
         $command = new InitCommand;
-        $namespace = $command->namespaceFromPackageName(null);
+        $namespace = $command->namespaceFromPackageName('');
         $this->assertNull($namespace);
     }
 }
