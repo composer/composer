@@ -246,7 +246,29 @@ class ClassMapGenerator
         }
 
         // strip heredocs/nowdocs
-        $contents = self::stripHereNowDocs($contents);
+        $contents = preg_replace('{
+            # opening heredoc/nowdoc delimiter (word-chars)
+            <<<[ \t]*([\'"]?)(\w+)\\1
+            # needs to be followed by a newline
+            (?:\r\n|\n|\r)
+            # the meat of it, matching line by line until end delimiter
+            (?:
+                # a valid line is either..
+                (?:
+                    # non-word or non-space char, then anything goes for the rest of the line
+                    [^\s\w][^\r\n]+
+                    # white-space (possessive match) not followed by the delimiter, then anything goes for the rest of the line
+                    | \s*+(?!\\2)[^\r\n]+
+                    # white-space but no new lines
+                    | [\t\f\v ]+
+                )
+                # end of line(s)
+                [\r\n]+
+            )*
+            # end delimiter
+            \s* \\2 (?=\s*[;,.)])
+        }x', 'null', $contents);
+
         // strip strings
         $contents = preg_replace('{"[^"\\\\]*+(\\\\.[^"\\\\]*+)*+"|\'[^\'\\\\]*+(\\\\.[^\'\\\\]*+)*+\'}s', 'null', $contents);
         // strip leading non-php code if needed
@@ -302,36 +324,5 @@ class ClassMapGenerator
         }
 
         return $classes;
-    }
-
-    /**
-     * Strip heredoc and nowdoc blocks from the contents of a file.
-     *
-     * @param string $contents File contents.
-     *
-     * @return string The cleaned up file contents.
-     */
-    private static function stripHereNowDocs($contents)
-    {
-        // Find a heredoc/nowdoc start marker an its offset in the file.
-        $result = preg_match('{<<<[ \t]*([\'"]?)(?P<marker>\w+)\\1[\r\n]}', $contents, $startMatches, PREG_OFFSET_CAPTURE);
-        if ($result < 1) {
-            return $contents;
-        }
-
-        $offset  = ($startMatches['marker'][1] + strlen($startMatches['marker'][0]));
-        $pattern = '`[\r\n]+[ \t]*' . preg_quote($startMatches['marker'][0], '`') . '(?=\s*[;,.)])`';
-
-        // Find the corresponding heredoc/nowdoc end marker an its offset in the file.
-        $result = preg_match($pattern, $contents, $endMatches, PREG_OFFSET_CAPTURE, $offset);
-        if ($result < 1) {
-            return $contents;
-        }
-
-        // Strip the complete heredoc/nowdoc and replace it with "null".
-        $contents = substr_replace($contents, 'null', $startMatches[0][1], (($endMatches[0][1] + strlen($endMatches[0][0])) - $startMatches[0][1]));
-
-        // Recurse to strip the next heredoc/nowdoc until there are none left.
-        return self::stripHereNowDocs($contents);
     }
 }
