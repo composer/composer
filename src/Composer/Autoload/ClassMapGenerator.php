@@ -257,8 +257,8 @@ class ClassMapGenerator
                 (?:
                     # non-word or non-space char, then anything goes for the rest of the line
                     [^\s\w][^\r\n]+
-                    # white-space (possessive match) not followed by the delimiter, then anything goes for the rest of the line
-                    | \s*+(?!\\2)[^\r\n]+
+                    # white-space (possessive match) not followed by the end delimiter, then anything goes for the rest of the line
+                    | \s*+(?!\\2 \s*[;,.)])[^\r\n]+
                     # white-space but no new lines
                     | [\t\f\v ]+
                 )
