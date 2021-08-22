@@ -514,7 +514,7 @@ class Filesystem
 
     /**
      * Returns size of a file or directory specified by path. If a directory is
-     * given, it's size will be computed recursively.
+     * given, its size will be computed recursively.
      *
      * @param  string            $path Path to the file or directory
      * @throws \RuntimeException
