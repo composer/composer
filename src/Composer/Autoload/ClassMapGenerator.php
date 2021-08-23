@@ -253,20 +253,13 @@ class ClassMapGenerator
             (?:\r\n|\n|\r)
             # the meat of it, matching line by line until end delimiter
             (?:
-                # a valid line is either..
-                (?:
-                    # non-word or non-space char, then anything goes for the rest of the line
-                    [^\s\w][^\r\n]+
-                    # white-space (possessive match) not followed by the end delimiter, then anything goes for the rest of the line
-                    | \s*+(?!\\2 \s*[;,.)])[^\r\n]+
-                    # white-space but no new lines
-                    | [\t\f\v ]+
-                )
+                # a valid line is optional white-space (possessive match) not followed by the end delimiter, then anything goes for the rest of the line
+                [\t ]*+(?!\\2 [\t \r\n]*[;,.)])[^\r\n]*
                 # end of line(s)
                 [\r\n]+
             )*
             # end delimiter
-            \s* \\2 (?=\s*[;,.)])
+            [\t ]* \\2 (?=[\t \r\n]*[;,.)])
         }x', 'null', $contents);
 
         // strip strings
