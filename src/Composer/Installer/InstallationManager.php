@@ -511,7 +511,7 @@ class InstallationManager
             }
 
             $installer = $this->getInstaller($targetType);
-            $promise->then(function () use ($installer, $repo, $target) {
+            $promise = $promise->then(function () use ($installer, $repo, $target) {
                 return $installer->install($repo, $target);
             });
         }
