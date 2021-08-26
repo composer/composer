@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Factory;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilter;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
 use Composer\Package\BasePackage;
@@ -890,22 +891,23 @@ EOT
         if ($input->hasOption('ignore-platform-reqs') && $input->hasOption('ignore-platform-req')) {
             $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
         }
+        $platformRequirementFilter = PlatformRequirementFilter::fromBoolOrList($ignorePlatformReqs);
 
         // find the latest version allowed in this repo set
         $versionSelector = new VersionSelector($this->getRepositorySet($input, $minimumStability), $platformRepo);
         $effectiveMinimumStability = $minimumStability ?: $this->getMinimumStability($input);
 
-        $package = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $ignorePlatformReqs);
+        $package = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $platformRequirementFilter);
 
         if (!$package) {
             // platform packages can not be found in the pool in versions other than the local platform's has
             // so if platform reqs are ignored we just take the user's word for it
-            if ((true === $ignorePlatformReqs || (is_array($ignorePlatformReqs) && in_array($name, $ignorePlatformReqs))) && PlatformRepository::isPlatformPackage($name)) {
+            if ($platformRequirementFilter->isReqIgnored($name)) {
                 return array($name, $requiredVersion ?: '*');
             }
 
             // Check whether the package requirements were the problem
-            if (true !== $ignorePlatformReqs && ($candidate = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, true))) {
+            if (!$platformRequirementFilter->isAllIgnored() && ($candidate = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, PlatformRequirementFilter::ignoreAll()))) {
                 throw new \InvalidArgumentException(sprintf(
                     'Package %s%s has requirements incompatible with your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
                     $name,
@@ -913,9 +915,9 @@ EOT
                 ));
             }
             // Check whether the minimum stability was the problem but the package exists
-            if ($package = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $ignorePlatformReqs, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
+            if ($package = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
                 // we must first verify if a valid package would be found in a lower priority repository
-                if ($allReposPackage = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $ignorePlatformReqs, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
+                if ($allReposPackage = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $platformRequirementFilter, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
                     throw new \InvalidArgumentException(
                         'Package '.$name.' exists in '.$allReposPackage->getRepository()->getRepoName().' and '.$package->getRepository()->getRepoName().' which has a higher repository priority. The packages with higher priority do not match your minimum-stability and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.'
                     );
@@ -928,9 +930,9 @@ EOT
                 ));
             }
             // Check whether the required version was the problem
-            if ($requiredVersion && $package = $versionSelector->findBestCandidate($name, null, $preferredStability, $ignorePlatformReqs)) {
+            if ($requiredVersion && $package = $versionSelector->findBestCandidate($name, null, $preferredStability, $platformRequirementFilter)) {
                 // we must first verify if a valid package would be found in a lower priority repository
-                if ($allReposPackage = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, false, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
+                if ($allReposPackage = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, PlatformRequirementFilter::ignoreNothing(), RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
                     throw new \InvalidArgumentException(
                         'Package '.$name.' exists in '.$allReposPackage->getRepository()->getRepoName().' and '.$package->getRepository()->getRepoName().' which has a higher repository priority. The packages with higher priority do not match your constraint and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.'
                     );
@@ -943,9 +945,9 @@ EOT
                 ));
             }
             // Check whether the PHP version was the problem for all versions
-            if (true !== $ignorePlatformReqs && ($candidate = $versionSelector->findBestCandidate($name, null, $preferredStability, true, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
+            if (!$platformRequirementFilter->isAllIgnored() && ($candidate = $versionSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilter::ignoreAll(), RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES))) {
                 $additional = '';
-                if (false === $versionSelector->findBestCandidate($name, null, $preferredStability, true)) {
+                if (false === $versionSelector->findBestCandidate($name, null, $preferredStability, PlatformRequirementFilter::ignoreAll())) {
                     $additional = PHP_EOL.PHP_EOL.'Additionally, the package was only found with a stability of "'.$candidate->getStability().'" while your minimum stability is "'.$effectiveMinimumStability.'".';
                 }
 

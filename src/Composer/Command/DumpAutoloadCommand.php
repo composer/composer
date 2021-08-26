@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilter;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
@@ -97,7 +98,7 @@ EOT
         $generator->setClassMapAuthoritative($authoritative);
         $generator->setRunScripts(true);
         $generator->setApcu($apcu, $apcuPrefix);
-        $generator->setIgnorePlatformRequirements($ignorePlatformReqs);
+        $generator->setPlatformRequirementFilter(PlatformRequirementFilter::fromBoolOrList($ignorePlatformReqs));
         $numberOfClasses = $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
 
         if ($authoritative) {
