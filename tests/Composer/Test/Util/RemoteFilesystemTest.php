@@ -141,7 +141,7 @@ class RemoteFilesystemTest extends TestCase
         $this->setAttribute($fs, 'progress', true);
 
         $this->callCallbackGet($fs, STREAM_NOTIFY_PROGRESS, 0, '', 0, 10, 20);
-        $this->assertAttributeEqualsCustom(50.0, 'lastProgress', $fs);
+        $this->assertAttributeEqualsCustom(50, 'lastProgress', $fs);
     }
 
     public function testCallbackGetPassesThrough404()
