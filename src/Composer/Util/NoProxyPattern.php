@@ -420,6 +420,8 @@ class NoProxyPattern
      * @param string $int
      * @param int    $min
      * @param int    $max
+     *
+     * @return bool
      */
     private function validateInt($int, $min, $max)
     {

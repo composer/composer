@@ -31,6 +31,7 @@ class ProcessExecutor
     const STATUS_FAILED = 4;
     const STATUS_ABORTED = 5;
 
+    /** @var int */
     protected static $timeout = 300;
 
     /** @var bool */
@@ -44,9 +45,13 @@ class ProcessExecutor
      * @phpstan-var array<int, array<string, mixed>>
      */
     private $jobs = array();
+    /** @var int */
     private $runningJobs = 0;
+    /** @var int */
     private $maxJobs = 10;
+    /** @var int */
     private $idGen = 0;
+    /** @var bool */
     private $allowAsync = false;
 
     public function __construct(IOInterface $io = null)
@@ -57,11 +62,11 @@ class ProcessExecutor
     /**
      * runs a process on the commandline
      *
-     * @param  string $command the command to execute
-     * @param  mixed  $output  the output will be written into this var if passed by ref
-     *                         if a callable is passed it will be used as output handler
-     * @param  string $cwd     the working directory
-     * @return int    statuscode
+     * @param  string  $command the command to execute
+     * @param  mixed   $output  the output will be written into this var if passed by ref
+     *                          if a callable is passed it will be used as output handler
+     * @param  ?string $cwd     the working directory
+     * @return int     statuscode
      */
     public function execute($command, &$output = null, $cwd = null)
     {
@@ -75,9 +80,9 @@ class ProcessExecutor
     /**
      * runs a process on the commandline in TTY mode
      *
-     * @param  string $command the command to execute
-     * @param  string $cwd     the working directory
-     * @return int    statuscode
+     * @param  string  $command the command to execute
+     * @param  ?string $cwd     the working directory
+     * @return int     statuscode
      */
     public function executeTty($command, $cwd = null)
     {
@@ -88,6 +93,13 @@ class ProcessExecutor
         return $this->doExecute($command, $cwd, false);
     }
 
+    /**
+     * @param  string  $command
+     * @param  ?string $cwd
+     * @param  bool    $tty
+     * @param  mixed   $output
+     * @return int
+     */
     private function doExecute($command, $cwd, $tty, &$output = null)
     {
         if ($this->io && $this->io->isDebug()) {
@@ -120,6 +132,7 @@ class ProcessExecutor
         if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
             $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
         } else {
+            /** @phpstan-ignore-next-line */
             $process = new Process($command, $cwd, null, null, static::getTimeout());
         }
         if (!Platform::isWindows() && $tty) {
@@ -218,6 +231,10 @@ class ProcessExecutor
         return $promise;
     }
 
+    /**
+     * @param  int  $id
+     * @return void
+     */
     private function startJob($id)
     {
         $job = &$this->jobs[$id];
@@ -286,6 +303,10 @@ class ProcessExecutor
         }
     }
 
+    /**
+     * @param  ?int $index job id
+     * @return void
+     */
     public function wait($index = null)
     {
         while (true) {
@@ -299,6 +320,8 @@ class ProcessExecutor
 
     /**
      * @internal
+     *
+     * @return void
      */
     public function enableAsync()
     {
@@ -308,7 +331,8 @@ class ProcessExecutor
     /**
      * @internal
      *
-     * @return int number of active (queued or started) jobs
+     * @param  ?int $index job id
+     * @return int         number of active (queued or started) jobs
      */
     public function countActiveJobs($index = null)
     {
@@ -345,6 +369,8 @@ class ProcessExecutor
 
     /**
      * @private
+     *
+     * @return void
      */
     public function markJobDone()
     {
@@ -352,6 +378,7 @@ class ProcessExecutor
     }
 
     /**
+     * @param  ?string  $output
      * @return string[]
      */
     public function splitLines($output)
@@ -373,6 +400,11 @@ class ProcessExecutor
 
     /**
      * @private
+     *
+     * @param Process::ERR|Process::OUT $type
+     * @param string                    $buffer
+     *
+     * @return void
      */
     public function outputHandler($type, $buffer)
     {
@@ -402,7 +434,8 @@ class ProcessExecutor
     }
 
     /**
-     * @param int $timeout the timeout in seconds
+     * @param  int  $timeout the timeout in seconds
+     * @return void
      */
     public static function setTimeout($timeout)
     {
@@ -466,6 +499,11 @@ class ProcessExecutor
         return "'".str_replace("'", "'\\''", $argument)."'";
     }
 
+    /**
+     * @param  string $arg
+     * @param  string $char
+     * @return bool
+     */
     private static function isSurroundedBy($arg, $char)
     {
         return 2 < strlen($arg) && $char === $arg[0] && $char === $arg[strlen($arg) - 1];

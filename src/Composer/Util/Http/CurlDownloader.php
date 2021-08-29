@@ -26,11 +26,16 @@ use React\Promise\Promise;
  * @internal
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
+ * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int, storeAuth: bool}
+ * @phpstan-type Job array{url: string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: resource, filename: string|false, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable}
  */
 class CurlDownloader
 {
+    /** @var ?resource */
     private $multiHandle;
+    /** @var ?resource */
     private $shareHandle;
+    /** @var Job[] */
     private $jobs = array();
     /** @var IOInterface */
     private $io;
@@ -38,11 +43,15 @@ class CurlDownloader
     private $config;
     /** @var AuthHelper */
     private $authHelper;
+    /** @var float */
     private $selectTimeout = 5.0;
+    /** @var int */
     private $maxRedirects = 20;
     /** @var ProxyManager */
     private $proxyManager;
+    /** @var bool */
     private $supportsSecureProxy;
+    /** @var array<int, string[]> */
     protected $multiErrors = array(
         CURLM_BAD_HANDLE => array('CURLM_BAD_HANDLE', 'The passed-in handle is not a valid CURLM handle.'),
         CURLM_BAD_EASY_HANDLE => array('CURLM_BAD_EASY_HANDLE', "An easy handle was not good/valid. It could mean that it isn't an easy handle at all, or possibly that the handle already is in used by this or another multi handle."),
@@ -50,6 +59,7 @@ class CurlDownloader
         CURLM_INTERNAL_ERROR => array('CURLM_INTERNAL_ERROR', 'This can only be returned if libcurl bugs. Please report it to us!'),
     );
 
+    /** @var mixed[] */
     private static $options = array(
         'http' => array(
             'method' => CURLOPT_CUSTOMREQUEST,
@@ -68,6 +78,7 @@ class CurlDownloader
         ),
     );
 
+    /** @var array<string, true> */
     private static $timeInfo = array(
         'total_time' => true,
         'namelookup_time' => true,
@@ -77,6 +88,10 @@ class CurlDownloader
         'redirect_time' => true,
     );
 
+    /**
+     * @param mixed[] $options
+     * @param bool    $disableTls
+     */
     public function __construct(IOInterface $io, Config $config, array $options = array(), $disableTls = false)
     {
         $this->io = $io;
@@ -106,6 +121,13 @@ class CurlDownloader
     }
 
     /**
+     * @param callable $resolve
+     * @param callable $reject
+     * @param string   $origin
+     * @param string   $url
+     * @param mixed[]  $options
+     * @param ?string  $copyTo
+     *
      * @return int internal job id
      */
     public function download($resolve, $reject, $origin, $url, $options, $copyTo = null)
@@ -120,6 +142,15 @@ class CurlDownloader
     }
 
     /**
+     * @param callable $resolve
+     * @param callable $reject
+     * @param string   $origin
+     * @param string   $url
+     * @param mixed[]  $options
+     * @param ?string  $copyTo
+     *
+     * @param array{retryAuthFailure?: bool, redirects?: int, storeAuth?: bool} $attributes
+     *
      * @return int internal job id
      */
     private function initDownload($resolve, $reject, $origin, $url, $options, $copyTo = null, array $attributes = array())
@@ -245,6 +276,10 @@ class CurlDownloader
         return (int) $curlHandle;
     }
 
+    /**
+     * @param  int  $id
+     * @return void
+     */
     public function abortRequest($id)
     {
         if (isset($this->jobs[$id], $this->jobs[$id]['handle'])) {
@@ -264,6 +299,9 @@ class CurlDownloader
         }
     }
 
+    /**
+     * @return void
+     */
     public function tick()
     {
         if (!$this->jobs) {
@@ -409,6 +447,10 @@ class CurlDownloader
         }
     }
 
+    /**
+     * @param  Job    $job
+     * @return string
+     */
     private function handleRedirect(array $job, Response $response)
     {
         if ($locationHeader = $response->getHeader('location')) {
@@ -440,6 +482,10 @@ class CurlDownloader
         throw new TransportException('The "'.$job['url'].'" file could not be downloaded, got redirect without Location ('.$response->getStatusMessage().')');
     }
 
+    /**
+     * @param  Job                                        $job
+     * @return array{retry: bool, storeAuth: string|bool}
+     */
     private function isAuthenticatedRetryNeeded(array $job, Response $response)
     {
         if (in_array($response->getStatusCode(), array(401, 403)) && $job['attributes']['retryAuthFailure']) {
@@ -487,6 +533,14 @@ class CurlDownloader
         return array('retry' => false, 'storeAuth' => false);
     }
 
+    /**
+     * @param  Job    $job
+     * @param  string $url
+     *
+     * @param  array{retryAuthFailure?: bool, redirects?: int, storeAuth?: bool} $attributes
+     *
+     * @return void
+     */
     private function restartJob(array $job, $url, array $attributes = array())
     {
         if ($job['filename']) {
@@ -499,6 +553,11 @@ class CurlDownloader
         $this->initDownload($job['resolve'], $job['reject'], $origin, $url, $job['options'], $job['filename'], $attributes);
     }
 
+    /**
+     * @param  Job                $job
+     * @param  string             $errorMessage
+     * @return TransportException
+     */
     private function failResponse(array $job, Response $response, $errorMessage)
     {
         if ($job['filename']) {
@@ -513,6 +572,10 @@ class CurlDownloader
         return new TransportException('The "'.$job['url'].'" file could not be downloaded ('.$errorMessage.')' . $details, $response->getStatusCode());
     }
 
+    /**
+     * @param  Job                $job
+     * @return void
+     */
     private function rejectJob(array $job, \Exception $e)
     {
         if (is_resource($job['headerHandle'])) {
@@ -527,6 +590,10 @@ class CurlDownloader
         call_user_func($job['reject'], $e);
     }
 
+    /**
+     * @param  int  $code
+     * @return void
+     */
     private function checkCurlResult($code)
     {
         if ($code != CURLM_OK && $code != CURLM_CALL_MULTI_PERFORM) {

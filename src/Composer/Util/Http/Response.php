@@ -13,14 +13,28 @@
 namespace Composer\Util\Http;
 
 use Composer\Json\JsonFile;
+use Composer\Util\HttpDownloader;
 
+/**
+ * @phpstan-import-type Request from HttpDownloader
+ */
 class Response
 {
+    /** @var Request */
     private $request;
+    /** @var int */
     private $code;
+    /** @var string[] */
     private $headers;
+    /** @var ?string */
     private $body;
 
+    /**
+     * @param Request  $request
+     * @param int      $code
+     * @param string[] $headers
+     * @param ?string  $body
+     */
     public function __construct(array $request, $code, array $headers, $body)
     {
         if (!isset($request['url'])) {
@@ -32,6 +46,9 @@ class Response
         $this->body = $body;
     }
 
+    /**
+     * @return int
+     */
     public function getStatusCode()
     {
         return $this->code;
@@ -54,33 +71,51 @@ class Response
         return $value;
     }
 
+    /**
+     * @return string[]
+     */
     public function getHeaders()
     {
         return $this->headers;
     }
 
+    /**
+     * @param  string  $name
+     * @return ?string
+     */
     public function getHeader($name)
     {
         return self::findHeaderValue($this->headers, $name);
     }
 
+    /**
+     * @return ?string
+     */
     public function getBody()
     {
         return $this->body;
     }
 
+    /**
+     * @return mixed
+     */
     public function decodeJson()
     {
         return JsonFile::parseJson($this->body, $this->request['url']);
     }
 
+    /**
+     * @return void
+     * @phpstan-impure
+     */
     public function collect()
     {
+        /** @phpstan-ignore-next-line */
         $this->request = $this->code = $this->headers = $this->body = null;
     }
 
     /**
-     * @param  array       $headers array of returned headers like from getLastHeaders()
+     * @param  string[]    $headers array of returned headers like from getLastHeaders()
      * @param  string      $name    header name (case insensitive)
      * @return string|null
      */

@@ -142,6 +142,10 @@ class Platform
         return \strlen($str);
     }
 
+    /**
+     * @param  ?resource $fd Open file descriptor or null to default to STDOUT
+     * @return bool
+     */
     public static function isTty($fd = null)
     {
         if ($fd === null) {
@@ -170,6 +174,9 @@ class Platform
         return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
 
+    /**
+     * @return void
+     */
     public static function workaroundFilesystemIssues()
     {
         if (self::isVirtualBoxGuest()) {

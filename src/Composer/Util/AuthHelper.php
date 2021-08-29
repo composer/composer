@@ -75,6 +75,7 @@ class AuthHelper
      * @param  string[]    $headers
      * @return array|null  containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
      *                                retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
+     * @phpstan-return ?array{retry: bool, storeAuth: string|bool}
      */
     public function promptAuthIfNeeded($url, $origin, $statusCode, $reason = null, $headers = array())
     {

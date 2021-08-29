@@ -32,8 +32,8 @@ final class StreamContextFactory
      *
      * @param string $url URL the context is to be used for
      * @phpstan-param array{http?: array{follow_location?: int, max_redirects?: int, header?: string|array<string>}} $defaultOptions
-     * @param  array             $defaultOptions Options to merge with the default
-     * @param  array             $defaultParams  Parameters to specify on the context
+     * @param  mixed[]           $defaultOptions Options to merge with the default
+     * @param  mixed[]           $defaultParams  Parameters to specify on the context
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
      * @return resource          Default context
      */
@@ -57,9 +57,9 @@ final class StreamContextFactory
     }
 
     /**
-     * @param string $url
-     * @param array  $options
-     * @param bool   $forCurl When true, will not add proxy values as these are handled separately
+     * @param string  $url
+     * @param mixed[] $options
+     * @param bool    $forCurl When true, will not add proxy values as these are handled separately
      * @phpstan-return array{http: array{header: string[], proxy?: string, request_fulluri: bool}, ssl: array}
      * @return array formatted as a stream context array
      */
@@ -130,9 +130,9 @@ final class StreamContextFactory
     }
 
     /**
-     * @param array $options
+     * @param mixed[] $options
      *
-     * @return array
+     * @return mixed[]
      */
     public static function getTlsDefaults(array $options, LoggerInterface $logger = null)
     {
@@ -239,8 +239,8 @@ final class StreamContextFactory
      * This method fixes the array by moving the content-type header to the end
      *
      * @link https://bugs.php.net/bug.php?id=61548
-     * @param  string|array $header
-     * @return array
+     * @param  string|string[] $header
+     * @return string[]
      */
     private static function fixHttpHeaderField($header)
     {

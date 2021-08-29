@@ -35,6 +35,10 @@ parameters:
         # Mock errors
         - '~^Call to an undefined method (PHPUnit\\Framework\\MockObject\\MockObject|Prophecy\\Prophecy\\ObjectProphecy)::.*$~'
 
+        # Level 6 TODO
+        #- '~parameter .*? with no return typehint specified.$~'
+        #- '~has no return typehint specified.$~'
+
     bootstrapFiles:
         - ../tests/bootstrap.php
 

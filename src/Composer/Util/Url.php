@@ -103,6 +103,10 @@ class Url
         return $origin;
     }
 
+    /**
+     * @param  string $url
+     * @return string
+     */
     public static function sanitize($url)
     {
         // GitHub repository rename result in redirect locations containing the access_token as GET parameter

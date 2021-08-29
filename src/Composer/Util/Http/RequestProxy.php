@@ -20,15 +20,19 @@ use Composer\Util\Url;
  */
 class RequestProxy
 {
+    /** @var mixed[] */
     private $contextOptions;
+    /** @var bool */
     private $isSecure;
+    /** @var string */
     private $formattedUrl;
+    /** @var string */
     private $url;
 
     /**
-     * @param string $url
-     * @param array  $contextOptions
-     * @param string $formattedUrl
+     * @param string  $url
+     * @param mixed[] $contextOptions
+     * @param string  $formattedUrl
      */
     public function __construct($url, array $contextOptions, $formattedUrl)
     {
@@ -41,7 +45,7 @@ class RequestProxy
     /**
      * Returns an array of context options
      *
-     * @return array
+     * @return mixed[]
      */
     public function getContextOptions()
     {
