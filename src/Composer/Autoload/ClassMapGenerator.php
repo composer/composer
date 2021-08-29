@@ -246,7 +246,22 @@ class ClassMapGenerator
         }
 
         // strip heredocs/nowdocs
-        $contents = preg_replace('{<<<[ \t]*([\'"]?)(\w+)\\1(?:\r\n|\n|\r)(?:.*(?=[\r\n]+[ \t]*\\2))[\r\n]+[ \t]*\\2(?=\s*[;,.)])}s', 'null', $contents);
+        $contents = preg_replace('{
+            # opening heredoc/nowdoc delimiter (word-chars)
+            <<<[ \t]*+([\'"]?)(\w++)\\1
+            # needs to be followed by a newline
+            (?:\r\n|\n|\r)
+            # the meat of it, matching line by line until end delimiter
+            (?:
+                # a valid line is optional white-space (possessive match) not followed by the end delimiter, then anything goes for the rest of the line
+                [\t ]*+(?!\\2 \b)[^\r\n]*+
+                # end of line(s)
+                [\r\n]++
+            )*
+            # end delimiter
+            [\t ]*+ \\2 (?=\b)
+        }xu', 'null', $contents);
+
         // strip strings
         $contents = preg_replace('{"[^"\\\\]*+(\\\\.[^"\\\\]*+)*+"|\'[^\'\\\\]*+(\\\\.[^\'\\\\]*+)*+\'}s', 'null', $contents);
         // strip leading non-php code if needed
