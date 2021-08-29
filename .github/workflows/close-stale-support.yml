@@ -1,0 +1,25 @@
+name: Mark and close stale support issues
+
+on:
+  schedule:
+  - cron: '32 1 * * *'
+
+jobs:
+  stale:
+
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+    - uses: actions/stale@v3
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        days-before-stale: 180
+        days-before-close: 15
+        stale-issue-message: 'This issue has been automatically marked Stale and will be closed in 15 days if no further activity happens.'
+        stale-issue-label: 'Stale'
+        only-labels: 'Support'
+        exempt-all-milestones: true
+        ascending: true
