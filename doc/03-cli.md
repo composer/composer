@@ -117,7 +117,7 @@ resolution.
   See also the [`platform`](06-config.md#platform) config option.
 * **--ignore-platform-req:** ignore a specific platform requirement(`php`,
   `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
-  does not fulfill it.
+  does not fulfill it. Multiple requirements can be ignored via wildcard.
 
 ## update / u
 
@@ -202,7 +202,7 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
   See also the [`platform`](06-config.md#platform) config option.
 * **--ignore-platform-req:** ignore a specific platform requirement(`php`,
   `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
-  does not fulfill it.
+  does not fulfill it. Multiple requirements can be ignored via wildcard.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
@@ -258,7 +258,7 @@ If you do not specify a package, Composer will prompt you to search for a packag
   See also the [`platform`](06-config.md#platform) config option.
 * **--ignore-platform-req:** ignore a specific platform requirement(`php`,
   `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
-  does not fulfill it.
+  does not fulfill it. Multiple requirements can be ignored via wildcard.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal
   versions of requirements, generally used with `--prefer-stable`.
@@ -303,7 +303,7 @@ uninstalled.
   See also the [`platform`](06-config.md#platform) config option.
 * **--ignore-platform-req:** ignore a specific platform requirement(`php`,
   `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
-  does not fulfill it.
+  does not fulfill it. Multiple requirements can be ignored via wildcard.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to
   get a faster autoloader. This is recommended especially for production, but
   can take a bit of time to run so it is currently not done by default.
@@ -358,7 +358,7 @@ php composer.phar reinstall "acme/*"
   reinstall command.
 * **--ignore-platform-req:** ignore a specific platform requirement. This only
   has an effect in the context of the autoloader generation for the
-  reinstall command.
+  reinstall command.  Multiple requirements can be ignored via wildcard.
 
 ## check-platform-reqs
 
@@ -837,7 +837,7 @@ By default the command checks for the packages on packagist.org.
   See also the [`platform`](06-config.md#platform) config option.
 * **--ignore-platform-req:** ignore a specific platform requirement(`php`,
   `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
-  does not fulfill it.
+  does not fulfill it. Multiple requirements can be ignored via wildcard.
 * **--ask:** Ask user to provide target directory for new project.
 
 ## dump-autoload (dumpautoload)
@@ -872,6 +872,7 @@ performance.
   See also the [`platform`](06-config.md#platform) config option.
 * **--ignore-platform-req:** ignore a specific platform requirement (`php`, `hhvm`,
   `lib-*` and `ext-*`) and skip the [platform check](07-runtime.md#platform-check) for it.
+  Multiple requirements can be ignored via wildcard.
 
 ## clear-cache / clearcache / cc
 

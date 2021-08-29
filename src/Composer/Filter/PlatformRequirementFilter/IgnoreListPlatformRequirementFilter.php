@@ -2,21 +2,22 @@
 
 namespace Composer\Filter\PlatformRequirementFilter;
 
+use Composer\Package\BasePackage;
 use Composer\Repository\PlatformRepository;
 
 final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFilterInterface
 {
     /**
-     * @var string[]
+     * @var string
      */
-    private $reqList;
+    private $regexp;
 
     /**
      * @param string[] $reqList
      */
     public function __construct(array $reqList)
     {
-        $this->reqList = $reqList;
+        $this->regexp = BasePackage::packageNamesToRegexp($reqList);
     }
 
     /**
@@ -29,6 +30,6 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
             return false;
         }
 
-        return in_array($req, $this->reqList, true);
+        return 1 === preg_match($this->regexp, $req);
     }
 }
