@@ -108,7 +108,7 @@ class Platform
                 return self::$isWindowsSubsystemForLinux = false;
             }
 
-            if (!ini_get('open_basedir') && is_readable('/proc/version') && false !== stripos(file_get_contents('/proc/version'), 'microsoft')) {
+            if (!ini_get('open_basedir') && is_readable('/proc/version') && false !== stripos(Silencer::call('file_get_contents', '/proc/version'), 'microsoft')) {
                 return self::$isWindowsSubsystemForLinux = true;
             }
         }
