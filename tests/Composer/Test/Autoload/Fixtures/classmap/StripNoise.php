@@ -23,7 +23,7 @@ class FailHeredocMarkerInText
 {
 }
 But, what are you blind McFly, it's there. How else do you explain that wreck out there? Doc, Doc. Oh, no. You're alive. Bullet proof vest, how did you know, I never got a chance to tell you. About all that talk about screwing up future events, the space time continuum. Okay, alright, I'll prove it to you.
-    MARKERINTEXT
+  .    MARKERINTEXT
 class FailHeredocMarkerInText2
 {
 }
@@ -94,6 +94,33 @@ NOWDOCTABBED . <<<'NOWDOCPHP73'
     public function test_simple_string()
     {
         return 'class FailSimpleString {}';
+    }
+
+    public function test_unicode_heredoc()
+    {
+        return array(1, 2, <<<öéçив必
+            class FailUnicode
+            {
+            }
+            öéçив必, 3, 4);
+    }
+
+    public function test_wrapped_in_curly_brackets()
+    {
+        return ${<<<FOO
+            class FailCurlyBrackets
+            {
+            }
+            FOO};
+    }
+
+    public function test_wrapped_in_angle_brackets()
+    {
+        return [<<<FOO
+            class FailAngleBrackets
+            {
+            }
+            FOO];
     }
 }
 
