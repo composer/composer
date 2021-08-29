@@ -187,9 +187,16 @@ class Application extends BaseApplication
         }
 
         // avoid loading plugins/initializing the Composer instance earlier than necessary if no plugin command is needed
-        $isComposerCommand = false !== $commandName;
+        // if showing the version, we never need plugin commands
+        $mayNeedPluginCommand = false === $input->hasParameterOption(array('--version', '-V'))
+            && (
+                // not a composer command, so try loading plugin ones
+                false === $commandName
+                // list command requires plugin commands to show them
+                || in_array($commandName, array('', 'list'), true)
+            );
 
-        if (!$isComposerCommand && !$this->disablePluginsByDefault && !$this->hasPluginCommands && 'global' !== $commandName) {
+        if ($mayNeedPluginCommand && !$this->disablePluginsByDefault && !$this->hasPluginCommands && 'global' !== $commandName) {
             try {
                 foreach ($this->getPluginCommands() as $command) {
                     if ($this->has($command->getName())) {
