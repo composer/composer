@@ -23,7 +23,9 @@ use Composer\Util\Perforce;
  */
 class PerforceDriver extends VcsDriver
 {
+    /** @var string */
     protected $depot;
+    /** @var string */
     protected $branch;
     /** @var ?Perforce */
     protected $perforce = null;

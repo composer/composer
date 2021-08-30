@@ -20,16 +20,27 @@ use Composer\Util\Http\Response;
 
 abstract class BitbucketDriver extends VcsDriver
 {
+    /** @var string */
     protected $owner;
+    /** @var string */
     protected $repository;
-    protected $hasIssues;
+    /** @var bool */
+    protected $hasIssues = false;
+    /** @var ?string */
     protected $rootIdentifier;
+    /** @var array<string, string> Map of tag name to identifier */
     protected $tags;
+    /** @var array<string, string> Map of branch name to identifier */
     protected $branches;
+    /** @var string */
     protected $branchesUrl = '';
+    /** @var string */
     protected $tagsUrl = '';
+    /** @var string */
     protected $homeUrl = '';
+    /** @var string */
     protected $website = '';
+    /** @var string */
     protected $cloneHttpsUrl = '';
 
     /**

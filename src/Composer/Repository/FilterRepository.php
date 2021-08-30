@@ -22,9 +22,13 @@ use Composer\Package\BasePackage;
  */
 class FilterRepository implements RepositoryInterface
 {
-    private $only = array();
-    private $exclude = array();
+    /** @var ?string */
+    private $only = null;
+    /** @var ?string */
+    private $exclude = null;
+    /** @var bool */
     private $canonical = true;
+    /** @var RepositoryInterface */
     private $repo;
 
     public function __construct(RepositoryInterface $repo, array $options)
@@ -172,14 +176,6 @@ class FilterRepository implements RepositoryInterface
         }
 
         return $result;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function removePackage(PackageInterface $package)
-    {
-        return $this->repo->removePackage($package);
     }
 
     /**

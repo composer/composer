@@ -29,28 +29,30 @@ use Composer\Util\Http\Response;
  */
 class GitLabDriver extends VcsDriver
 {
+    /**
+     * @var string
+     * @phpstan-var 'https'|'http'
+     */
     private $scheme;
+    /** @var string */
     private $namespace;
+    /** @var string */
     private $repository;
 
     /**
-     * @var array Project data returned by GitLab API
+     * @var mixed[] Project data returned by GitLab API
      */
     private $project;
 
     /**
-     * @var array Keeps commits returned by GitLab API
+     * @var array<string, mixed[]> Keeps commits returned by GitLab API
      */
     private $commits = array();
 
-    /**
-     * @var array List of tag => reference
-     */
+    /** @var array<string, string> Map of tag name to identifier */
     private $tags;
 
-    /**
-     * @var array List of branch => reference
-     */
+    /** @var array<string, string> Map of branch name to identifier */
     private $branches;
 
     /**

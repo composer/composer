@@ -26,6 +26,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
  */
 class MetapackageInstaller implements InstallerInterface
 {
+    /** @var IOInterface */
     private $io;
 
     public function __construct(IOInterface $io)

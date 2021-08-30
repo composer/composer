@@ -25,9 +25,13 @@ use Composer\Config;
  */
 class GitDriver extends VcsDriver
 {
+    /** @var array<string, string> Map of tag name to identifier */
     protected $tags;
+    /** @var array<string, string> Map of branch name to identifier */
     protected $branches;
+    /** @var string */
     protected $rootIdentifier;
+    /** @var string */
     protected $repoDir;
 
     /**

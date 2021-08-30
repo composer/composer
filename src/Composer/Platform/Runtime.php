@@ -25,7 +25,7 @@ class Runtime
     }
 
     /**
-     * @param  bool         $constant
+     * @param  string       $constant
      * @param  class-string $class
      * @return mixed
      */

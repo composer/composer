@@ -32,25 +32,41 @@ use Composer\Config;
  */
 class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInterface
 {
+    /** @var string */
     protected $url;
+    /** @var ?string */
     protected $packageName;
+    /** @var bool */
     protected $isVerbose;
+    /** @var bool */
     protected $isVeryVerbose;
+    /** @var IOInterface */
     protected $io;
+    /** @var Config */
     protected $config;
+    /** @var VersionParser */
     protected $versionParser;
+    /** @var string */
     protected $type;
+    /** @var ?LoaderInterface */
     protected $loader;
+    /** @var array<string, mixed> */
     protected $repoConfig;
+    /** @var HttpDownloader */
     protected $httpDownloader;
+    /** @var ProcessExecutor */
     protected $processExecutor;
+    /** @var bool */
     protected $branchErrorOccurred = false;
+    /** @var array<string, class-string> */
     private $drivers;
     /** @var ?VcsDriverInterface */
     private $driver;
     /** @var ?VersionCacheInterface */
     private $versionCache;
+    /** @var string[] */
     private $emptyReferences = array();
+    /** @var array<'tags'|'branches', array<string, \Throwable>> */
     private $versionTransportExceptions = array();
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null, ProcessExecutor $process = null, array $drivers = null, VersionCacheInterface $versionCache = null)

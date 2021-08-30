@@ -28,15 +28,24 @@ use Composer\Downloader\TransportException;
  */
 class SvnDriver extends VcsDriver
 {
+    /** @var string */
     protected $baseUrl;
+    /** @var array<string, string> Map of tag name to identifier */
     protected $tags;
+    /** @var array<string, string> Map of branch name to identifier */
     protected $branches;
+    /** @var ?string */
     protected $rootIdentifier;
 
+    /** @var string|false */
     protected $trunkPath = 'trunk';
+    /** @var string */
     protected $branchesPath = 'branches';
+    /** @var string */
     protected $tagsPath = 'tags';
+    /** @var string */
     protected $packagePath = '';
+    /** @var bool */
     protected $cacheCredentials = true;
 
     /**

@@ -28,9 +28,13 @@ use Composer\Util\Filesystem;
  */
 class FilesystemRepository extends WritableArrayRepository
 {
+    /** @var JsonFile */
     protected $file;
+    /** @var bool */
     private $dumpVersions;
+    /** @var ?RootPackageInterface */
     private $rootPackage;
+    /** @var Filesystem */
     private $filesystem;
 
     /**

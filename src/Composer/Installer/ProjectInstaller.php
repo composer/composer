@@ -25,8 +25,11 @@ use Composer\Util\Filesystem;
  */
 class ProjectInstaller implements InstallerInterface
 {
+    /** @var string */
     private $installPath;
+    /** @var DownloadManager */
     private $downloadManager;
+    /** @var Filesystem */
     private $filesystem;
 
     public function __construct($installPath, DownloadManager $dm, Filesystem $fs)

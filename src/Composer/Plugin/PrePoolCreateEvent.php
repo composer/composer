@@ -16,6 +16,7 @@ use Composer\EventDispatcher\Event;
 use Composer\Repository\RepositoryInterface;
 use Composer\DependencyResolver\Request;
 use Composer\Package\PackageInterface;
+use Composer\Package\BasePackage;
 
 /**
  * The pre command run event.
@@ -33,19 +34,23 @@ class PrePoolCreateEvent extends Event
      */
     private $request;
     /**
-     * @var array
+     * @var int[] array of stability => BasePackage::STABILITY_* value
+     * @phpstan-var array<string, BasePackage::STABILITY_*>
      */
     private $acceptableStabilities;
     /**
-     * @var array
+     * @var int[] array of package name => BasePackage::STABILITY_* value
+     * @phpstan-var array<string, BasePackage::STABILITY_*>
      */
     private $stabilityFlags;
     /**
-     * @var array
+     * @var array[] of package => version => [alias, alias_normalized]
+     * @phpstan-var array<string, array<string, array{alias: string, alias_normalized: string}>>
      */
     private $rootAliases;
     /**
-     * @var array
+     * @var string[]
+     * @phpstan-var array<string, string>
      */
     private $rootReferences;
     /**
@@ -58,8 +63,17 @@ class PrePoolCreateEvent extends Event
     private $unacceptableFixedPackages;
 
     /**
-     * @param string                $name         The event name
+     * @param string                $name                   The event name
      * @param RepositoryInterface[] $repositories
+     * @param int[]                 $acceptableStabilities  array of stability => BasePackage::STABILITY_* value
+     * @param int[]                 $stabilityFlags         array of package name => BasePackage::STABILITY_* value
+     * @param array[]               $rootAliases            array of package => version => [alias, alias_normalized]
+     * @param string[]              $rootReferences
+     *
+     * @phpstan-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
+     * @phpstan-param array<string, BasePackage::STABILITY_*> $stabilityFlags
+     * @phpstan-param array<string, array<string, array{alias: string, alias_normalized: string}>> $rootAliases
+     * @phpstan-param array<string, string> $rootReferences
      */
     public function __construct($name, array $repositories, Request $request, array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, array $packages, array $unacceptableFixedPackages)
     {
@@ -92,7 +106,8 @@ class PrePoolCreateEvent extends Event
     }
 
     /**
-     * @return array
+     * @return int[] array of stability => BasePackage::STABILITY_* value
+     * @phpstan-return array<string, BasePackage::STABILITY_*>
      */
     public function getAcceptableStabilities()
     {
@@ -100,7 +115,8 @@ class PrePoolCreateEvent extends Event
     }
 
     /**
-     * @return array
+     * @return int[] array of package name => BasePackage::STABILITY_* value
+     * @phpstan-return array<string, BasePackage::STABILITY_*>
      */
     public function getStabilityFlags()
     {
@@ -117,7 +133,8 @@ class PrePoolCreateEvent extends Event
     }
 
     /**
-     * @return array
+     * @return string[]
+     * @phpstan-return array<string, string>
      */
     public function getRootReferences()
     {

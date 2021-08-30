@@ -23,10 +23,15 @@ use Composer\IO\IOInterface;
  */
 class FossilDriver extends VcsDriver
 {
+    /** @var array<string, string> Map of tag name to identifier */
     protected $tags;
+    /** @var array<string, string> Map of branch name to identifier */
     protected $branches;
-    protected $rootIdentifier;
-    protected $repoFile;
+    /** @var ?string */
+    protected $rootIdentifier = null;
+    /** @var ?string */
+    protected $repoFile = null;
+    /** @var string */
     protected $checkoutDir;
 
     /**

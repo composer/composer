@@ -46,13 +46,15 @@ class PlatformRepository extends ArrayRepository
     /**
      * Defines overrides so that the platform can be mocked
      *
-     * Should be an array of package name => version number mappings
+     * Keyed by package name (lowercased)
      *
-     * @var array
+     * @var array<string, array{name: string, version: string}>
      */
     private $overrides = array();
 
+    /** @var Runtime */
     private $runtime;
+    /** @var HhvmDetector */
     private $hhvmDetector;
 
     public function __construct(array $packages = array(), array $overrides = array(), Runtime $runtime = null, HhvmDetector $hhvmDetector = null)

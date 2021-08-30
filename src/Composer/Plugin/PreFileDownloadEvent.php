@@ -48,7 +48,7 @@ class PreFileDownloadEvent extends Event
     private $context;
 
     /**
-     * @var array
+     * @var mixed[]
      */
     private $transportOptions = array();
 

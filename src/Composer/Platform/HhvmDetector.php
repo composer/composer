@@ -18,11 +18,14 @@ use Symfony\Component\Process\ExecutableFinder;
 
 class HhvmDetector
 {
-    private static $hhvmVersion;
+    /** @var string|false|null */
+    private static $hhvmVersion = null;
+    /** @var ?ExecutableFinder */
     private $executableFinder;
+    /** @var ?ProcessExecutor */
     private $processExecutor;
 
-    public function __construct(ExecutableFinder  $executableFinder = null, ProcessExecutor $processExecutor = null)
+    public function __construct(ExecutableFinder $executableFinder = null, ProcessExecutor $processExecutor = null)
     {
         $this->executableFinder = $executableFinder;
         $this->processExecutor = $processExecutor;

@@ -22,6 +22,7 @@ use Composer\Package\Loader\ValidatingArrayLoader;
  */
 class PackageRepository extends ArrayRepository
 {
+    /** @var mixed[] */
     private $config;
 
     /**

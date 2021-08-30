@@ -29,7 +29,7 @@ class SuggestedPackagesReporter
     const MODE_BY_SUGGESTION = 4;
 
     /**
-     * @var array
+     * @var array<array{source: string, target: string, reason: string}>
      */
     protected $suggestedPackages = array();
 

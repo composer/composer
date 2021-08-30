@@ -67,6 +67,10 @@ class RepositorySet
      */
     private $stabilityFlags;
 
+    /**
+     * @var ConstraintInterface[]
+     * @phpstan-var array<string, ConstraintInterface>
+     */
     private $rootRequires;
 
     /** @var bool */
@@ -86,6 +90,8 @@ class RepositorySet
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $rootAliases
      * @param string[] $rootReferences an array of package name => source reference
      * @phpstan-param array<string, string> $rootReferences
+     * @param ConstraintInterface[] $rootRequires an array of package name => constraint from the root package
+     * @phpstan-param array<string, ConstraintInterface> $rootRequires
      */
     public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
     {
@@ -112,6 +118,10 @@ class RepositorySet
         $this->allowInstalledRepositories = $allow;
     }
 
+    /**
+     * @return ConstraintInterface[] an array of package name => constraint from the root package, platform requirements excluded
+     * @phpstan-return array<string, ConstraintInterface>
+     */
     public function getRootRequires()
     {
         return $this->rootRequires;
@@ -193,6 +203,12 @@ class RepositorySet
         return $result;
     }
 
+    /**
+     * @param  string   $packageName
+     *
+     * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...')
+     * @phpstan-return array<string, array{name: string, description: string, type: string}>
+     */
     public function getProviders($packageName)
     {
         $providers = array();
@@ -205,6 +221,13 @@ class RepositorySet
         return $providers;
     }
 
+    /**
+     * Check for each given package name whether it would be accepted by this RepositorySet in the given $stability
+     *
+     * @param  string[] $names
+     * @param  string   $stability one of 'stable', 'RC', 'beta', 'alpha' or 'dev'
+     * @return bool
+     */
     public function isPackageAcceptable($names, $stability)
     {
         return StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $names, $stability);

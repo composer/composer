@@ -33,7 +33,7 @@ abstract class VcsDriver implements VcsDriverInterface
     protected $url;
     /** @var string */
     protected $originUrl;
-    /** @var array */
+    /** @var array<string, mixed> */
     protected $repoConfig;
     /** @var IOInterface */
     protected $io;
@@ -43,7 +43,7 @@ abstract class VcsDriver implements VcsDriverInterface
     protected $process;
     /** @var HttpDownloader */
     protected $httpDownloader;
-    /** @var array */
+    /** @var array<string, mixed> */
     protected $infoCache = array();
     /** @var ?Cache */
     protected $cache;

@@ -44,43 +44,72 @@ use Composer\Util\Url;
  */
 class ComposerRepository extends ArrayRepository implements ConfigurableRepositoryInterface
 {
+    /**
+     * @var mixed[]
+     * @phpstan-var array{url: string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool}
+     */
     private $repoConfig;
+    /** @var mixed[] */
     private $options;
+    /** @var string */
     private $url;
+    /** @var string */
     private $baseUrl;
+    /** @var IOInterface */
     private $io;
     /** @var HttpDownloader */
     private $httpDownloader;
+    /** @var Loop */
     private $loop;
+    /** @var Cache */
     protected $cache;
-    protected $notifyUrl;
-    protected $searchUrl;
-    /** @var string|null a URL containing %package% which can be queried to get providers of a given name */
-    protected $providersApiUrl;
+    /** @var ?string */
+    protected $notifyUrl = null;
+    /** @var ?string */
+    protected $searchUrl = null;
+    /** @var ?string a URL containing %package% which can be queried to get providers of a given name */
+    protected $providersApiUrl = null;
+    /** @var bool */
     protected $hasProviders = false;
-    protected $providersUrl;
-    protected $listUrl;
+    /** @var ?string */
+    protected $providersUrl = null;
+    /** @var ?string */
+    protected $listUrl = null;
     /** @var bool Indicates whether a comprehensive list of packages this repository might provide is expressed in the repository root. **/
     protected $hasAvailablePackageList = false;
-    protected $availablePackages;
-    protected $availablePackagePatterns;
-    protected $lazyProvidersUrl;
+    /** @var ?array<string> */
+    protected $availablePackages = null;
+    /** @var ?array<string> */
+    protected $availablePackagePatterns = null;
+    /** @var ?string */
+    protected $lazyProvidersUrl = null;
+    /** @var ?array<string, array{sha256: string}> */
     protected $providerListing;
+    /** @var ArrayLoader */
     protected $loader;
+    /** @var bool */
     private $allowSslDowngrade = false;
+    /** @var ?EventDispatcher */
     private $eventDispatcher;
+    /** @var ?array<string, array{url: string, preferred: bool}> */
     private $sourceMirrors;
+    /** @var ?array<string, array{url: string, preferred: bool}> */
     private $distMirrors;
+    /** @var bool */
     private $degradedMode = false;
+    /** @var mixed[]|true */
     private $rootData;
-    private $hasPartialPackages;
-    private $partialPackagesByName;
+    /** @var bool */
+    private $hasPartialPackages = false;
+    /** @var ?array<string, PackageInterface> */
+    private $partialPackagesByName = null;
 
     /**
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @private
      * @var array list of package names which are fresh and can be loaded from the cache directly in case loadPackage is called several times
      *            useful for v2 metadata repositories with lazy providers
+     * @phpstan-var array<string, true>
      */
     public $freshMetadataUrls = array();
 
@@ -89,11 +118,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @private
      * @var array list of package names which returned a 404 and should not be re-fetched in case loadPackage is called several times
      *            useful for v2 metadata repositories with lazy providers
+     * @phpstan-var array<string, true>
      */
     public $packagesNotFoundCache = array();
     /**
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @private
+     * @var VersionParser
      */
     public $versionParser;
 

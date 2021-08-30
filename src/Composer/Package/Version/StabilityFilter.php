@@ -30,7 +30,7 @@ class StabilityFilter
      * @param  string   $stability one of 'stable', 'RC', 'beta', 'alpha' or 'dev'
      * @return bool     true if any package name is acceptable
      */
-    public static function isPackageAcceptable(array $acceptableStabilities, array $stabilityFlags, $names, $stability)
+    public static function isPackageAcceptable(array $acceptableStabilities, array $stabilityFlags, array $names, $stability)
     {
         foreach ($names as $name) {
             // allow if package matches the package-specific stability flag
