@@ -23,6 +23,7 @@ use Composer\Util\ProcessExecutor;
  */
 class SvnDownloader extends VcsDownloader
 {
+    /** @var bool */
     protected $cacheCredentials = true;
 
     /**

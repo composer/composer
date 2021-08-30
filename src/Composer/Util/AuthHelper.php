@@ -21,8 +21,11 @@ use Composer\Downloader\TransportException;
  */
 class AuthHelper
 {
+    /** @var IOInterface */
     protected $io;
+    /** @var Config */
     protected $config;
+    /** @var array<string, string> Map of origins to message displayed */
     private $displayedOriginAuthentications = array();
 
     public function __construct(IOInterface $io, Config $config)

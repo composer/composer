@@ -56,6 +56,7 @@ class Application extends BaseApplication
      */
     protected $io;
 
+    /** @var string */
     private static $logo = '   ______
   / ____/___  ____ ___  ____  ____  ________  _____
  / /   / __ \/ __ `__ \/ __ \/ __ \/ ___/ _ \/ ___/
@@ -64,7 +65,9 @@ class Application extends BaseApplication
                     /_/
 ';
 
+    /** @var bool */
     private $hasPluginCommands = false;
+    /** @var bool */
     private $disablePluginsByDefault = false;
 
     /**

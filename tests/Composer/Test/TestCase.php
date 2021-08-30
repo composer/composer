@@ -27,6 +27,9 @@ abstract class TestCase extends PolyfillTestCase
     private static $parser;
     private static $executableCache = array();
 
+    /**
+     * @return string
+     */
     public static function getUniqueTmpDirectory()
     {
         $attempts = 5;

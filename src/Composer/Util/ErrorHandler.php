@@ -21,6 +21,7 @@ use Composer\IO\IOInterface;
  */
 class ErrorHandler
 {
+    /** @var ?IOInterface */
     private static $io;
 
     /**

@@ -20,6 +20,7 @@ use Composer\IO\IOInterface;
  */
 class Git
 {
+    /** @var string|false|null */
     private static $version = false;
 
     /** @var IOInterface */

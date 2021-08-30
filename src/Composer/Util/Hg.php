@@ -20,6 +20,7 @@ use Composer\IO\IOInterface;
  */
 class Hg
 {
+    /** @var string|false|null */
     private static $version = false;
 
     /**

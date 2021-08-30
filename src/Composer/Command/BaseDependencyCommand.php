@@ -40,6 +40,7 @@ class BaseDependencyCommand extends BaseCommand
     const OPTION_RECURSIVE = 'recursive';
     const OPTION_TREE = 'tree';
 
+    /** @var ?string[] */
     protected $colors;
 
     /**
@@ -202,7 +203,7 @@ class BaseDependencyCommand extends BaseCommand
             /**
              * @var PackageInterface $package
              * @var Link             $link
-             * @var array|bool       $children
+             * @var array|bool     $children
              */
             list($package, $link, $children) = $result;
 

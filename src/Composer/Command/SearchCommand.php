@@ -29,12 +29,6 @@ use Composer\Plugin\PluginEvents;
  */
 class SearchCommand extends BaseCommand
 {
-    protected $matches;
-    protected $lowMatches = array();
-    protected $tokens;
-    protected $output;
-    protected $onlyName;
-
     protected function configure()
     {
         $this

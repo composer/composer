@@ -20,11 +20,16 @@ use Composer\Config;
  */
 class Versions
 {
+    /** @var string[] */
     public static $channels = array('stable', 'preview', 'snapshot', '1', '2');
 
+    /** @var HttpDownloader */
     private $httpDownloader;
+    /** @var Config */
     private $config;
+    /** @var string */
     private $channel;
+    /** @var array<string, array<int, array{path: string, version: string, min-php: int}>> */
     private $versionsData;
 
     public function __construct(Config $config, HttpDownloader $httpDownloader)

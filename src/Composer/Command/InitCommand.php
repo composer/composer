@@ -46,7 +46,7 @@ class InitCommand extends BaseCommand
     /** @var ?CompositeRepository */
     protected $repos;
 
-    /** @var array */
+    /** @var array<string, string> */
     private $gitConfig;
 
     /** @var RepositorySet[] */

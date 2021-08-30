@@ -19,6 +19,7 @@ use Composer\Repository\PlatformRepository;
  */
 class JsonManipulator
 {
+    /** @var string */
     private static $DEFINES = '(?(DEFINE)
        (?<number>    -? (?= [1-9]|0(?!\d) ) \d++ (\.\d++)? ([eE] [+-]?+ \d++)? )
        (?<boolean>   true | false | null )
@@ -29,8 +30,11 @@ class JsonManipulator
        (?<json>      \s*+ (?: (?&number) | (?&boolean) | (?&string) | (?&array) | (?&object) ) )
     )';
 
+    /** @var string */
     private $contents;
+    /** @var string */
     private $newline;
+    /** @var string */
     private $indent;
 
     public function __construct($contents)

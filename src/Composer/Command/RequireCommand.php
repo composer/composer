@@ -38,10 +38,15 @@ use Composer\Util\Silencer;
  */
 class RequireCommand extends InitCommand
 {
+    /** @var bool */
     private $newlyCreated;
+    /** @var bool */
     private $firstRequire;
+    /** @var JsonFile */
     private $json;
+    /** @var string */
     private $file;
+    /** @var string */
     private $composerBackup;
     /** @var string file name */
     private $lock;

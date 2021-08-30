@@ -30,6 +30,7 @@ class ConfigValidator
 {
     const CHECK_VERSION = 1;
 
+    /** @var IOInterface */
     private $io;
 
     public function __construct(IOInterface $io)

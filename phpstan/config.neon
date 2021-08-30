@@ -36,8 +36,11 @@ parameters:
         - '~^Call to an undefined method (PHPUnit\\Framework\\MockObject\\MockObject|Prophecy\\Prophecy\\ObjectProphecy)::.*$~'
 
         # Level 6 TODO
-        #- '~parameter .*? with no return typehint specified.$~'
+        #- '~parameter .*? with no typehint specified.$~'
+        #- '~parameter .*? with no value type specified in iterable type array.$~'
         #- '~has no return typehint specified.$~'
+        #- '~return type has no value type specified in iterable type array.$~'
+        #- '~ignorePlatformReqs~'
 
     bootstrapFiles:
         - ../tests/bootstrap.php

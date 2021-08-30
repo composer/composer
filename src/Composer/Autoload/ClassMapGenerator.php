@@ -33,8 +33,8 @@ class ClassMapGenerator
     /**
      * Generate a class map file
      *
-     * @param \Traversable|string[] $dirs Directories or a single path to search in
-     * @param string                $file The name of the class map file
+     * @param \Traversable|array<string> $dirs Directories or a single path to search in
+     * @param string                     $file The name of the class map file
      */
     public static function dump($dirs, $file)
     {
@@ -50,11 +50,11 @@ class ClassMapGenerator
     /**
      * Iterate over all files in the given directory searching for classes
      *
-     * @param \Traversable|string|string[] $path         The path to search in or an iterator
-     * @param string                       $excluded     Regex that matches file paths to be excluded from the classmap
-     * @param ?IOInterface                 $io           IO object
-     * @param ?string                      $namespace    Optional namespace prefix to filter by
-     * @param ?string                      $autoloadType psr-0|psr-4 Optional autoload standard to use mapping rules
+     * @param \Traversable|string|array<string> $path         The path to search in or an iterator
+     * @param string                            $excluded     Regex that matches file paths to be excluded from the classmap
+     * @param ?IOInterface                      $io           IO object
+     * @param ?string                           $namespace    Optional namespace prefix to filter by
+     * @param ?string                           $autoloadType psr-0|psr-4 Optional autoload standard to use mapping rules
      *
      * @throws \RuntimeException When the path is neither an existing file nor directory
      * @return array             A class map array

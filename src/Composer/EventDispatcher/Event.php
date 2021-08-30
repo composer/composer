@@ -25,12 +25,12 @@ class Event
     protected $name;
 
     /**
-     * @var array Arguments passed by the user, these will be forwarded to CLI script handlers
+     * @var string[] Arguments passed by the user, these will be forwarded to CLI script handlers
      */
     protected $args;
 
     /**
-     * @var array Flags usable in PHP script handlers
+     * @var mixed[] Flags usable in PHP script handlers
      */
     protected $flags;
 
@@ -42,9 +42,9 @@ class Event
     /**
      * Constructor.
      *
-     * @param string $name  The event name
-     * @param array  $args  Arguments passed by the user
-     * @param array  $flags Optional flags to pass data not as argument
+     * @param string   $name  The event name
+     * @param string[] $args  Arguments passed by the user
+     * @param mixed[]  $flags Optional flags to pass data not as argument
      */
     public function __construct($name, array $args = array(), array $flags = array())
     {
@@ -66,7 +66,7 @@ class Event
     /**
      * Returns the event's arguments.
      *
-     * @return array The event arguments
+     * @return string[] The event arguments
      */
     public function getArguments()
     {
@@ -76,7 +76,7 @@ class Event
     /**
      * Returns the event's flags.
      *
-     * @return array The event flags
+     * @return mixed[] The event flags
      */
     public function getFlags()
     {

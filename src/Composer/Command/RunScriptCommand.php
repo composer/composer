@@ -27,7 +27,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class RunScriptCommand extends BaseCommand
 {
     /**
-     * @var array Array with command events
+     * @var string[] Array with command events
      */
     protected $scriptEvents = array(
         ScriptEvents::PRE_INSTALL_CMD,

@@ -52,6 +52,7 @@ class ShowCommand extends BaseCommand
 {
     /** @var VersionParser */
     protected $versionParser;
+    /** @var string[] */
     protected $colors;
 
     /** @var ?RepositorySet */
