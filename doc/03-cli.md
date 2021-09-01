@@ -931,8 +931,8 @@ php composer.phar archive vendor/package 2.0.21 --format=zip
 
 ### Options
 
-* **--format (-f):** Format of the resulting archive: tar or zip (default:
-  "tar")
+* **--format (-f):** Format of the resulting archive: tar, tar.gz or zip
+  (default: "tar")
 * **--dir:** Write the archive to this directory (default: ".")
 * **--file:** Write the archive with the given file name.
 
