@@ -57,6 +57,9 @@ class ErrorHandler
             if (preg_match('{^Return type of (Symfony|Composer)\\\\.*ReturnTypeWillChange}is', $message)) {
                 return true;
             }
+            if (strpos(strtr($file, '\\', '/'), 'vendor/symfony/') !== false) {
+                return true;
+            }
 
             self::$io->writeError('<warning>Deprecation Notice: '.$message.' in '.$file.':'.$line.'</warning>');
             if (self::$io->isVerbose()) {
