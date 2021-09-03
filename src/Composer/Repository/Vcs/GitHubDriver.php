@@ -575,6 +575,10 @@ class GitHubDriver extends VcsDriver
     protected function getNextPage(Response $response)
     {
         $header = $response->getHeader('link');
+        
+        if (!$header) {
+            return;
+        }
 
         $links = explode(',', $header);
         foreach ($links as $link) {
