@@ -16,6 +16,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\DependencyResolver\Operation\OperationInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -24,24 +25,24 @@ use Composer\Repository\PlatformRepository;
 class Transaction
 {
     /**
-     * @var array
+     * @var OperationInterface[]
      */
     protected $operations;
 
     /**
      * Packages present at the beginning of the transaction
-     * @var array
+     * @var PackageInterface[]
      */
     protected $presentPackages;
 
     /**
      * Package set resulting from this transaction
-     * @var array
+     * @var array<string, PackageInterface>
      */
     protected $resultPackageMap;
 
     /**
-     * @var array
+     * @var array<string, PackageInterface[]>
      */
     protected $resultPackagesByName = array();
 
@@ -52,6 +53,7 @@ class Transaction
         $this->operations = $this->calculateOperations();
     }
 
+    /** @return OperationInterface[] */
     public function getOperations()
     {
         return $this->operations;
@@ -201,7 +203,7 @@ class Transaction
      * These serve as a starting point to enumerate packages in a topological order despite potential cycles.
      * If there are packages with a cycle on the top level the package with the lowest name gets picked
      *
-     * @return array
+     * @return array<string, PackageInterface>
      */
     protected function getRootPackages()
     {
@@ -245,8 +247,8 @@ class Transaction
      * it at least fixes the symptoms and makes usage of composer possible (again)
      * in such scenarios.
      *
-     * @param  Operation\OperationInterface[] $operations
-     * @return Operation\OperationInterface[] reordered operation list
+     * @param  OperationInterface[] $operations
+     * @return OperationInterface[] reordered operation list
      */
     private function movePluginsToFront(array $operations)
     {
@@ -322,8 +324,8 @@ class Transaction
      * Removals of packages should be executed before installations in
      * case two packages resolve to the same path (due to custom installers)
      *
-     * @param  Operation\OperationInterface[] $operations
-     * @return Operation\OperationInterface[] reordered operation list
+     * @param  OperationInterface[] $operations
+     * @return OperationInterface[] reordered operation list
      */
     private function moveUninstallsToFront(array $operations)
     {

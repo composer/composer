@@ -40,12 +40,19 @@ class Request
      */
     const UPDATE_LISTED_WITH_TRANSITIVE_DEPS = 2;
 
+    /** @var ?LockArrayRepository */
     protected $lockedRepository;
+    /** @var array<string, ConstraintInterface> */
     protected $requires = array();
+    /** @var array<string, PackageInterface> */
     protected $fixedPackages = array();
+    /** @var array<string, PackageInterface> */
     protected $lockedPackages = array();
+    /** @var array<string, PackageInterface> */
     protected $fixedLockedPackages = array();
+    /** @var string[] */
     protected $updateAllowList = array();
+    /** @var false|self::UPDATE_* */
     protected $updateAllowTransitiveDependencies = false;
 
     public function __construct(LockArrayRepository $lockedRepository = null)
@@ -169,12 +176,12 @@ class Request
 
         if ($this->lockedRepository) {
             foreach ($this->lockedRepository->getPackages() as $package) {
-                $presentMap[$packageIds ? $package->id : spl_object_hash($package)] = $package;
+                $presentMap[$packageIds ? $package->getId() : spl_object_hash($package)] = $package;
             }
         }
 
         foreach ($this->fixedPackages as $package) {
-            $presentMap[$packageIds ? $package->id : spl_object_hash($package)] = $package;
+            $presentMap[$packageIds ? $package->getId() : spl_object_hash($package)] = $package;
         }
 
         return $presentMap;
@@ -185,7 +192,7 @@ class Request
         $fixedPackagesMap = array();
 
         foreach ($this->fixedPackages as $package) {
-            $fixedPackagesMap[$package->id] = $package;
+            $fixedPackagesMap[$package->getId()] = $package;
         }
 
         return $fixedPackagesMap;

@@ -21,14 +21,11 @@ use Composer\Semver\Constraint\ConstraintInterface;
  */
 class GenericRule extends Rule
 {
+    /** @var int[] */
     protected $literals;
 
     /**
-     * @param array                           $literals
-     * @param int|null                        $reason     A RULE_* constant describing the reason for generating this rule
-     * @param Link|BasePackage|int|null|array $reasonData
-     *
-     * @phpstan-param Link|BasePackage|int|null|array{packageName: string, constraint: ConstraintInterface} $reasonData
+     * @param int[]                           $literals
      */
     public function __construct(array $literals, $reason, $reasonData)
     {

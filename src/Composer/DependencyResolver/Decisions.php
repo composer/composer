@@ -16,17 +16,21 @@ namespace Composer\DependencyResolver;
  * Stores decisions on installing, removing or keeping packages
  *
  * @author Nils Adermann <naderman@naderman.de>
+ * @implements \Iterator<array{0: int, 1: mixed}>
  */
 class Decisions implements \Iterator, \Countable
 {
     const DECISION_LITERAL = 0;
     const DECISION_REASON = 1;
 
+    /** @var Pool */
     protected $pool;
+    /** @var array<int, int> */
     protected $decisionMap;
+    /** @var array<array{0: int, 1: mixed}> */
     protected $decisionQueue = array();
 
-    public function __construct($pool)
+    public function __construct(Pool $pool)
     {
         $this->pool = $pool;
         $this->decisionMap = array();

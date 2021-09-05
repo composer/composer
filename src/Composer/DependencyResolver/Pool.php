@@ -30,7 +30,9 @@ class Pool implements \Countable
     protected $packages = array();
     /** @var array<string, BasePackage[]> */
     protected $packageByName = array();
+    /** @var VersionParser */
     protected $versionParser;
+    /** @var array<string, array<string, BasePackage[]>> */
     protected $providerCache = array();
     /** @var BasePackage[] */
     protected $unacceptableFixedOrLockedPackages;

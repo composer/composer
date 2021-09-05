@@ -17,6 +17,7 @@ use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\RuleSetIterator;
 use Composer\DependencyResolver\Pool;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Test\TestCase;
 
 class RuleSetIteratorTest extends TestCase
@@ -30,11 +31,11 @@ class RuleSetIteratorTest extends TestCase
 
         $this->rules = array(
             RuleSet::TYPE_REQUEST => array(
-                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null),
-                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null),
+                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint)),
+                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint)),
             ),
             RuleSet::TYPE_LEARNED => array(
-                new GenericRule(array(), Rule::RULE_LEARNED, null),
+                new GenericRule(array(), Rule::RULE_LEARNED, 1),
             ),
             RuleSet::TYPE_PACKAGE => array(),
         );

@@ -22,12 +22,11 @@ use Composer\Package\Link;
  */
 class MultiConflictRule extends Rule
 {
+    /** @var int[] */
     protected $literals;
 
     /**
-     * @param array            $literals
-     * @param int              $reason     A RULE_* constant describing the reason for generating this rule
-     * @param Link|BasePackage $reasonData
+     * @param int[]            $literals
      */
     public function __construct(array $literals, $reason, $reasonData)
     {

@@ -45,9 +45,9 @@ class Solver
     protected $branches = array();
     /** @var Problem[] */
     protected $problems = array();
-    /** @var array */
+    /** @var array<Rule[]> */
     protected $learnedPool = array();
-    /** @var array */
+    /** @var array<string, int> */
     protected $learnedWhy = array();
 
     /** @var bool */

@@ -94,7 +94,9 @@ class PoolBuilder
      * @phpstan-var list<PackageInterface>
      */
     private $unacceptableFixedOrLockedPackages = array();
+    /** @var string[] */
     private $updateAllowList = array();
+    /** @var array<string, string> */
     private $skippedLoad = array();
 
     /**
@@ -104,6 +106,8 @@ class PoolBuilder
      *
      * Packages get cleared from this list if they get unlocked as in that case
      * we need to actually load them
+     *
+     * @var array<string, true>
      */
     private $maxExtendedReqs = array();
     /**
@@ -112,6 +116,7 @@ class PoolBuilder
      */
     private $updateAllowWarned = array();
 
+    /** @var int */
     private $indexCounter = 0;
 
     /**

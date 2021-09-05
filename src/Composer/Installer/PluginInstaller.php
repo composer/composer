@@ -99,7 +99,7 @@ class PluginInstaller extends LibraryInstaller
         return $promise->then(function () use ($self, $pluginManager, $initial, $target, $repo) {
             try {
                 Platform::workaroundFilesystemIssues();
-                $pluginManager->deactivatePackage($initial, true);
+                $pluginManager->deactivatePackage($initial);
                 $pluginManager->registerPackage($target, true);
             } catch (\Exception $e) {
                 $self->rollbackInstall($e, $repo, $target);
@@ -109,7 +109,7 @@ class PluginInstaller extends LibraryInstaller
 
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $this->composer->getPluginManager()->uninstallPackage($package, true);
+        $this->composer->getPluginManager()->uninstallPackage($package);
 
         return parent::uninstall($repo, $package);
     }

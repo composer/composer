@@ -16,6 +16,7 @@ use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ * @implements \IteratorAggregate<Rule>
  */
 class RuleSet implements \IteratorAggregate, \Countable
 {
@@ -27,10 +28,11 @@ class RuleSet implements \IteratorAggregate, \Countable
     /**
      * READ-ONLY: Lookup table for rule id to rule object
      *
-     * @var Rule[]
+     * @var array<int, Rule>
      */
-    public $ruleById;
+    public $ruleById = array();
 
+    /** @var array<255|0|1|4, string> */
     protected static $types = array(
         255 => 'UNKNOWN',
         self::TYPE_PACKAGE => 'PACKAGE',
@@ -38,20 +40,20 @@ class RuleSet implements \IteratorAggregate, \Countable
         self::TYPE_LEARNED => 'LEARNED',
     );
 
+    /** @var array<self::TYPE_*, Rule[]> */
     protected $rules;
-    protected $nextRuleId;
 
-    protected $rulesByHash;
+    /** @var int */
+    protected $nextRuleId = 0;
+
+    /** @var array<string, Rule|Rule[]> */
+    protected $rulesByHash = array();
 
     public function __construct()
     {
-        $this->nextRuleId = 0;
-
         foreach ($this->getTypes() as $type) {
             $this->rules[$type] = array();
         }
-
-        $this->rulesByHash = array();
     }
 
     public function add(Rule $rule, $type)
@@ -109,6 +111,7 @@ class RuleSet implements \IteratorAggregate, \Countable
         return $this->ruleById[$id];
     }
 
+    /** @return array<self::TYPE_*, Rule[]> */
     public function getRules()
     {
         return $this->rules;
@@ -123,6 +126,10 @@ class RuleSet implements \IteratorAggregate, \Countable
         return new RuleSetIterator($this->getRules());
     }
 
+    /**
+     * @param  self::TYPE_*|array<self::TYPE_*> $types
+     * @return RuleSetIterator
+     */
     public function getIteratorFor($types)
     {
         if (!\is_array($types)) {
@@ -130,6 +137,8 @@ class RuleSet implements \IteratorAggregate, \Countable
         }
 
         $allRules = $this->getRules();
+
+        /** @var array<self::TYPE_*, Rule[]> $rules */
         $rules = array();
 
         foreach ($types as $type) {
@@ -154,6 +163,7 @@ class RuleSet implements \IteratorAggregate, \Countable
         return new RuleSetIterator($rules);
     }
 
+    /** @return array{0: 0, 1: 1, 2: 4} */
     public function getTypes()
     {
         $types = self::$types;

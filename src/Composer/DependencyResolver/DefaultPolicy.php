@@ -23,7 +23,9 @@ use Composer\Semver\Constraint\Constraint;
  */
 class DefaultPolicy implements PolicyInterface
 {
+    /** @var bool */
     private $preferStable;
+    /** @var bool */
     private $preferLowest;
 
     public function __construct($preferStable = false, $preferLowest = false)

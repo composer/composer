@@ -25,8 +25,11 @@ use ZipArchive;
  */
 class ZipDownloader extends ArchiveDownloader
 {
+    /** @var array<int, array{0: string, 1: string}> */
     private static $unzipCommands;
+    /** @var bool */
     private static $hasZipArchive;
+    /** @var bool */
     private static $isWindows;
 
     /** @var ZipArchive|null */

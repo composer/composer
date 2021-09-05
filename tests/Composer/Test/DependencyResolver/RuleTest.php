@@ -24,7 +24,7 @@ class RuleTest extends TestCase
 {
     public function testGetHash()
     {
-        $rule = new GenericRule(array(123), Rule::RULE_ROOT_REQUIRE, null);
+        $rule = new GenericRule(array(123), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
 
         $hash = unpack('ihash', md5('123', true));
         $this->assertEquals($hash['hash'], $rule->getHash());
@@ -32,31 +32,31 @@ class RuleTest extends TestCase
 
     public function testEqualsForRulesWithDifferentHashes()
     {
-        $rule = new GenericRule(array(1, 2), Rule::RULE_ROOT_REQUIRE, null);
-        $rule2 = new GenericRule(array(1, 3), Rule::RULE_ROOT_REQUIRE, null);
+        $rule = new GenericRule(array(1, 2), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
+        $rule2 = new GenericRule(array(1, 3), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
 
         $this->assertFalse($rule->equals($rule2));
     }
 
     public function testEqualsForRulesWithDifferLiteralsQuantity()
     {
-        $rule = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, null);
-        $rule2 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, null);
+        $rule = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
+        $rule2 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
 
         $this->assertFalse($rule->equals($rule2));
     }
 
     public function testEqualsForRulesWithSameLiterals()
     {
-        $rule = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, null);
-        $rule2 = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, null);
+        $rule = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
+        $rule2 = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
 
         $this->assertTrue($rule->equals($rule2));
     }
 
     public function testSetAndGetType()
     {
-        $rule = new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null);
+        $rule = new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
         $rule->setType(RuleSet::TYPE_REQUEST);
 
         $this->assertEquals(RuleSet::TYPE_REQUEST, $rule->getType());
@@ -64,7 +64,7 @@ class RuleTest extends TestCase
 
     public function testEnable()
     {
-        $rule = new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null);
+        $rule = new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
         $rule->disable();
         $rule->enable();
 
@@ -74,7 +74,7 @@ class RuleTest extends TestCase
 
     public function testDisable()
     {
-        $rule = new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null);
+        $rule = new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
         $rule->enable();
         $rule->disable();
 
@@ -84,8 +84,8 @@ class RuleTest extends TestCase
 
     public function testIsAssertions()
     {
-        $rule = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, null);
-        $rule2 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, null);
+        $rule = new GenericRule(array(1, 12), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
+        $rule2 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
 
         $this->assertFalse($rule->isAssertion());
         $this->assertTrue($rule2->isAssertion());

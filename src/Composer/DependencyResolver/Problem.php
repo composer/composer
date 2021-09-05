@@ -30,16 +30,17 @@ class Problem
 {
     /**
      * A map containing the id of each rule part of this problem as a key
-     * @var array
+     * @var array<string, true>
      */
     protected $reasonSeen;
 
     /**
      * A set of reasons for the problem, each is a rule or a root require and a rule
-     * @var array
+     * @var array<int, array<int, Rule>>
      */
     protected $reasons = array();
 
+    /** @var int */
     protected $section = 0;
 
     /**

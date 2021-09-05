@@ -38,7 +38,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     protected $process;
     /** @var Filesystem */
     protected $filesystem;
-    /** @var array */
+    /** @var array<string, true> */
     protected $hasCleanedChanges = array();
 
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)

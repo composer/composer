@@ -14,15 +14,22 @@ namespace Composer\DependencyResolver;
 
 use Composer\Util\IniHelper;
 use Composer\Repository\RepositorySet;
+use Composer\Package\PackageInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
 class SolverProblemsException extends \RuntimeException
 {
+    /** @var Problem[] */
     protected $problems;
+    /** @var array<Rule[]> */
     protected $learnedPool;
 
+    /**
+     * @param Problem[]          $problems
+     * @param array<Rule[]> $learnedPool
+     */
     public function __construct(array $problems, array $learnedPool)
     {
         $this->problems = $problems;

@@ -20,6 +20,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
 use Composer\Util\Platform;
 use React\Promise\PromiseInterface;
+use Composer\Downloader\DownloadManager;
 
 /**
  * Package installation manager.
@@ -29,14 +30,19 @@ use React\Promise\PromiseInterface;
  */
 class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
 {
+    /** @var Composer */
     protected $composer;
+    /** @var string */
     protected $vendorDir;
-    protected $binDir;
+    /** @var DownloadManager */
     protected $downloadManager;
+    /** @var IOInterface */
     protected $io;
+    /** @var string */
     protected $type;
+    /** @var Filesystem */
     protected $filesystem;
-    protected $binCompat;
+    /** @var BinaryInstaller */
     protected $binaryInstaller;
 
     /**

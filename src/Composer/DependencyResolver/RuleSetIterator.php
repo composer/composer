@@ -14,16 +14,25 @@ namespace Composer\DependencyResolver;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ * @implements \Iterator<RuleSet::TYPE_*, Rule>
  */
 class RuleSetIterator implements \Iterator
 {
+    /** @var array<RuleSet::TYPE_*, Rule[]> */
     protected $rules;
+    /** @var array<RuleSet::TYPE_*> */
     protected $types;
 
+    /** @var int */
     protected $currentOffset;
+    /** @var RuleSet::TYPE_*|-1 */
     protected $currentType;
+    /** @var int */
     protected $currentTypeOffset;
 
+    /**
+     * @param array<RuleSet::TYPE_*, Rule[]> $rules
+     */
     public function __construct(array $rules)
     {
         $this->rules = $rules;

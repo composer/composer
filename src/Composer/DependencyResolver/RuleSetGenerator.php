@@ -14,25 +14,31 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
+use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ * @phpstan-import-type ReasonData from Rule
  */
 class RuleSetGenerator
 {
+    /** @var PolicyInterface */
     protected $policy;
+    /** @var Pool */
     protected $pool;
+    /** @var RuleSet */
     protected $rules;
-    protected $addedMap;
-    protected $conflictAddedMap;
-    protected $addedPackagesByNames;
-    protected $conflictsForName;
+    /** @var array<int, PackageInterface> */
+    protected $addedMap = array();
+    /** @var array<string, PackageInterface[]> */
+    protected $addedPackagesByNames = array();
 
     public function __construct(PolicyInterface $policy, Pool $pool)
     {
         $this->policy = $policy;
         $this->pool = $pool;
+        $this->rules = new RuleSet;
     }
 
     /**
@@ -41,13 +47,15 @@ class RuleSetGenerator
      * This rule is of the form (-A|B|C), where B and C are the providers of
      * one requirement of the package A.
      *
-     * @param  BasePackage $package    The package with a requirement
-     * @param  array       $providers  The providers of the requirement
-     * @param  int         $reason     A RULE_* constant describing the
-     *                                 reason for generating this rule
-     * @param  mixed       $reasonData Any data, e.g. the requirement name,
-     *                                 that goes with the reason
-     * @return Rule|null   The generated rule or null if tautological
+     * @param  BasePackage  $package    The package with a requirement
+     * @param  array        $providers  The providers of the requirement
+     * @param  Rule::RULE_* $reason     A RULE_* constant describing the
+     *                                  reason for generating this rule
+     * @param  mixed        $reasonData Any data, e.g. the requirement name,
+     *                                  that goes with the reason
+     * @return Rule|null    The generated rule or null if tautological
+     *
+     * @phpstan-param ReasonData $reasonData
      */
     protected function createRequireRule(BasePackage $package, array $providers, $reason, $reasonData = null)
     {
@@ -71,10 +79,12 @@ class RuleSetGenerator
      * set of packages is empty an impossible rule is generated.
      *
      * @param  BasePackage[] $packages   The set of packages to choose from
-     * @param  int           $reason     A RULE_* constant describing the reason for
+     * @param  Rule::RULE_*  $reason     A RULE_* constant describing the reason for
      *                                   generating this rule
      * @param  array         $reasonData Additional data like the root require or fix request info
      * @return Rule          The generated rule
+     *
+     * @phpstan-param ReasonData $reasonData
      */
     protected function createInstallOneOfRule(array $packages, $reason, $reasonData)
     {
@@ -92,13 +102,15 @@ class RuleSetGenerator
      * The rule for conflicting packages A and B is (-A|-B). A is called the issuer
      * and B the provider.
      *
-     * @param  BasePackage $issuer     The package declaring the conflict
-     * @param  BasePackage $provider   The package causing the conflict
-     * @param  int         $reason     A RULE_* constant describing the
-     *                                 reason for generating this rule
-     * @param  mixed       $reasonData Any data, e.g. the package name, that
-     *                                 goes with the reason
-     * @return Rule|null   The generated rule
+     * @param  BasePackage  $issuer     The package declaring the conflict
+     * @param  BasePackage  $provider   The package causing the conflict
+     * @param  Rule::RULE_* $reason     A RULE_* constant describing the
+     *                                  reason for generating this rule
+     * @param  mixed        $reasonData Any data, e.g. the package name, that
+     *                                  goes with the reason
+     * @return Rule|null    The generated rule
+     *
+     * @phpstan-param ReasonData $reasonData
      */
     protected function createRule2Literals(BasePackage $issuer, BasePackage $provider, $reason, $reasonData = null)
     {
@@ -144,11 +156,11 @@ class RuleSetGenerator
 
     protected function addRulesForPackage(BasePackage $package, $ignorePlatformReqs)
     {
+        /** @var \SplQueue<BasePackage> */
         $workQueue = new \SplQueue;
         $workQueue->enqueue($package);
 
         while (!$workQueue->isEmpty()) {
-            /** @var BasePackage $package */
             $package = $workQueue->dequeue();
             if (isset($this->addedMap[$package->id])) {
                 continue;
@@ -286,13 +298,6 @@ class RuleSetGenerator
      */
     public function getRulesFor(Request $request, $ignorePlatformReqs = false)
     {
-        $this->rules = new RuleSet;
-
-        $this->addedMap = array();
-        $this->conflictAddedMap = array();
-        $this->addedPackagesByNames = array();
-        $this->conflictsForName = array();
-
         $this->addRulesForRequest($request, $ignorePlatformReqs);
 
         $this->addRulesForRootAliases($ignorePlatformReqs);
@@ -300,8 +305,12 @@ class RuleSetGenerator
         $this->addConflictRules($ignorePlatformReqs);
 
         // Remove references to packages
-        $this->addedMap = $this->addedPackagesByNames = null;
+        $this->addedMap = $this->addedPackagesByNames = array();
 
-        return $this->rules;
+        $rules = $this->rules;
+
+        $this->rules = new RuleSet;
+
+        return $rules;
     }
 }

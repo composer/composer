@@ -17,9 +17,13 @@ namespace Composer\Downloader;
  */
 class TransportException extends \RuntimeException
 {
+    /** @var ?array<string, string> */
     protected $headers;
+    /** @var ?string */
     protected $response;
+    /** @var ?int */
     protected $statusCode;
+    /** @var ?array<mixed> */
     protected $responseInfo = array();
 
     public function setHeaders($headers)

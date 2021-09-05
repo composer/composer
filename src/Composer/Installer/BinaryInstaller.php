@@ -28,9 +28,13 @@ use Composer\Util\Silencer;
  */
 class BinaryInstaller
 {
+    /** @var string */
     protected $binDir;
+    /** @var string */
     protected $binCompat;
+    /** @var IOInterface */
     protected $io;
+    /** @var Filesystem */
     protected $filesystem;
 
     /**

@@ -19,35 +19,45 @@ use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
  * @author Ruben Gonzalez <rubenrua@gmail.com>
+ * @phpstan-type ReasonData Link|BasePackage|string|int|array{packageName: string, constraint: ConstraintInterface}|array{package: BasePackage}
  */
 abstract class Rule
 {
-    // reason constants
-    const RULE_ROOT_REQUIRE = 2;
-    const RULE_FIXED = 3;
-    const RULE_PACKAGE_CONFLICT = 6;
-    const RULE_PACKAGE_REQUIRES = 7;
-    const RULE_PACKAGE_SAME_NAME = 10;
-    const RULE_LEARNED = 12;
-    const RULE_PACKAGE_ALIAS = 13;
-    const RULE_PACKAGE_INVERSE_ALIAS = 14;
+    // reason constants and // their reason data contents
+    const RULE_ROOT_REQUIRE = 2; // array{packageName: string, constraint: ConstraintInterface}
+    const RULE_FIXED = 3; // array{package: BasePackage}
+    const RULE_PACKAGE_CONFLICT = 6; // Link
+    const RULE_PACKAGE_REQUIRES = 7; // Link
+    const RULE_PACKAGE_SAME_NAME = 10; // string (package name)
+    const RULE_LEARNED = 12; // int (rule id)
+    const RULE_PACKAGE_ALIAS = 13; // BasePackage
+    const RULE_PACKAGE_INVERSE_ALIAS = 14; // BasePackage
 
     // bitfield defs
     const BITFIELD_TYPE = 0;
     const BITFIELD_REASON = 8;
     const BITFIELD_DISABLED = 16;
 
+    /** @var int */
     protected $bitfield;
+    /** @var Request */
     protected $request;
+    /**
+     * @var Link|BasePackage|ConstraintInterface|string
+     * @phpstan-var ReasonData
+     */
     protected $reasonData;
 
     /**
-     * @param int              $reason     A RULE_* constant describing the reason for generating this rule
-     * @param Link|BasePackage $reasonData
+     * @param self::RULE_*                                $reason     A RULE_* constant describing the reason for generating this rule
+     * @param Link|BasePackage|ConstraintInterface|string $reasonData
+     *
+     * @phpstan-param ReasonData $reasonData
      */
     public function __construct($reason, $reasonData)
     {
@@ -253,17 +263,19 @@ abstract class Rule
             case self::RULE_PACKAGE_REQUIRES:
                 $sourceLiteral = array_shift($literals);
                 $sourcePackage = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($sourceLiteral));
+                /** @var Link */
+                $reasonData = $this->reasonData;
 
                 $requires = array();
                 foreach ($literals as $literal) {
                     $requires[] = $pool->literalToPackage($literal);
                 }
 
-                $text = $this->reasonData->getPrettyString($sourcePackage);
+                $text = $reasonData->getPrettyString($sourcePackage);
                 if ($requires) {
                     $text .= ' -> satisfiable by ' . $this->formatPackagesUnique($pool, $requires, $isVerbose) . '.';
                 } else {
-                    $targetName = $this->reasonData->getTarget();
+                    $targetName = $reasonData->getTarget();
 
                     $reason = Problem::getMissingPackageReason($repositorySet, $request, $pool, $isVerbose, $targetName, $this->reasonData->getConstraint());
 
