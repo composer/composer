@@ -52,7 +52,7 @@ class ZipArchiver implements ArchiverInterface
                 /**
                  * ZipArchive::setExternalAttributesName is available from >= PHP 5.6
                  */
-                if (PHP_VERSION_ID >= 50600) {
+                if (PHP_VERSION_ID >= 50600 && method_exists($zip, 'setExternalAttributesName')) {
                     $perms = fileperms($filepath);
 
                     /**
