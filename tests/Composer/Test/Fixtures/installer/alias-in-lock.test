@@ -1,5 +1,5 @@
 --TEST--
-Root-defined aliases end up in lock file only if required to solve deps
+Root-defined aliases end up in lock file always on full update
 --COMPOSER--
 {
     "repositories": [
@@ -50,6 +50,11 @@ update
         "version": "3.0.2.0",
         "alias": "3.0.3",
         "alias_normalized": "3.0.3.0"
+    },{
+        "package": "a/aliased2",
+        "version": "3.0.2.0",
+        "alias": "3.0.3",
+        "alias_normalized": "3.0.3.0"
     }],
     "minimum-stability": "stable",
     "stability-flags": [],
@@ -60,6 +65,7 @@ update
 }
 --EXPECT--
 Installing a/aliased2 (3.0.2)
+Marking a/aliased2 (3.0.3) as installed, alias of a/aliased2 (3.0.2)
 Installing a/aliased (3.0.2)
 Marking a/aliased (3.0.3) as installed, alias of a/aliased (3.0.2)
 Installing b/requirer (1.0.0)

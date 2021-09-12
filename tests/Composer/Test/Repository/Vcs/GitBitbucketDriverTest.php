@@ -116,22 +116,22 @@ class GitBitbucketDriverTest extends TestCase
             ->method('get')
             ->withConsecutive(
                 array(
-                    $urls[0], array()
+                    $urls[0], array(),
                 ),
                 array(
-                    $urls[1], array()
+                    $urls[1], array(),
                 ),
                 array(
-                    $urls[2], array()
+                    $urls[2], array(),
                 ),
                 array(
-                    $urls[3], array()
+                    $urls[3], array(),
                 ),
                 array(
-                    $urls[4], array()
+                    $urls[4], array(),
                 ),
                 array(
-                    $urls[5], array()
+                    $urls[5], array(),
                 )
             )
             ->willReturnOnConsecutiveCalls(
@@ -224,6 +224,7 @@ class GitBitbucketDriverTest extends TestCase
             GitBitbucketDriver::supports($this->io, $this->config, 'https://bitbucket.org/user/repo.git')
         );
 
+        // should not be changed, see https://github.com/composer/composer/issues/9400
         $this->assertFalse(
             GitBitbucketDriver::supports($this->io, $this->config, 'git@bitbucket.org:user/repo.git')
         );

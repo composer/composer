@@ -55,7 +55,7 @@ class RepositoryManager
     }
 
     /**
-     * Searches for a package by it's name and version in managed repositories.
+     * Searches for a package by its name and version in managed repositories.
      *
      * @param string                                                 $name       package name
      * @param string|\Composer\Semver\Constraint\ConstraintInterface $constraint package version or version constraint to match against

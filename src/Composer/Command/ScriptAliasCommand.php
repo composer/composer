@@ -22,7 +22,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ScriptAliasCommand extends BaseCommand
 {
+    /** @var string */
     private $script;
+    /** @var string */
     private $description;
 
     public function __construct($script, $description)

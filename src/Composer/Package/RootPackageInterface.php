@@ -105,7 +105,7 @@ interface RootPackageInterface extends CompletePackageInterface
      *
      * @param array $repositories
      */
-    public function setRepositories($repositories);
+    public function setRepositories(array $repositories);
 
     /**
      * Set the autoload mapping
@@ -127,6 +127,41 @@ interface RootPackageInterface extends CompletePackageInterface
      * @param array $stabilityFlags
      */
     public function setStabilityFlags(array $stabilityFlags);
+
+    /**
+     * Set the minimumStability
+     *
+     * @param string $minimumStability
+     */
+    public function setMinimumStability($minimumStability);
+
+    /**
+     * Set the preferStable
+     *
+     * @param bool $preferStable
+     */
+    public function setPreferStable($preferStable);
+
+    /**
+     * Set the config
+     *
+     * @param array $config
+     */
+    public function setConfig(array $config);
+
+    /**
+     * Set the references
+     *
+     * @param array $references
+     */
+    public function setReferences(array $references);
+
+    /**
+     * Set the aliases
+     *
+     * @param array $aliases
+     */
+    public function setAliases(array $aliases);
 
     /**
      * Set the suggested packages

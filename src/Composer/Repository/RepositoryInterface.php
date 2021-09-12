@@ -44,6 +44,7 @@ interface RepositoryInterface extends \Countable
      * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface|null
+     * @phpstan-return (BasePackage&PackageInterface)|null
      */
     public function findPackage($name, $constraint);
 
@@ -54,6 +55,7 @@ interface RepositoryInterface extends \Countable
      * @param string|ConstraintInterface $constraint package version or version constraint to match against
      *
      * @return PackageInterface[]
+     * @phpstan-return array<BasePackage&PackageInterface>
      */
     public function findPackages($name, $constraint = null);
 
@@ -61,6 +63,7 @@ interface RepositoryInterface extends \Countable
      * Returns list of registered packages.
      *
      * @return PackageInterface[]
+     * @phpstan-return array<BasePackage&PackageInterface>
      */
     public function getPackages();
 
@@ -70,16 +73,15 @@ interface RepositoryInterface extends \Countable
      * - The packages returned are the packages found which match the constraints, acceptable stability and stability flags provided
      * - The namesFound returned are names which should be considered as canonically found in this repository, that should not be looked up in any further lower priority repositories
      *
-     * @param ConstraintInterface[] $packageNameMap package names pointing to constraints
-     * @param int[] $acceptableStabilities array of stability => BasePackage::STABILITY_* value
-     * @psalm-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
-     * @param int[] $stabilityFlags an array of package name => BasePackage::STABILITY_* value
-     * @psalm-param array<string, BasePackage::STABILITY_*> $stabilityFlags
-     * @param array[] $alreadyLoaded an array of package name => package version => package
-     * @psalm-param array<string, array<string, PackageInterface>> $alreadyLoaded
+     * @param ConstraintInterface[]                          $packageNameMap        package names pointing to constraints
+     * @param array<string, BasePackage::STABILITY_*>        $acceptableStabilities array of stability => BasePackage::STABILITY_* value
+     * @param array<string, BasePackage::STABILITY_*>        $stabilityFlags        an array of package name => BasePackage::STABILITY_* value
+     * @param array<string, array<string, PackageInterface>> $alreadyLoaded         an array of package name => package version => package
      *
-     * @return array [namesFound => string[], packages => PackageInterface[]]
-     * @psalm-return array{namesFound: string[], packages: PackageInterface[]}
+     * @return array
+     *
+     * @phpstan-param  array<string, ConstraintInterface|null> $packageNameMap
+     * @phpstan-return array{namesFound: string[], packages: array<BasePackage&PackageInterface>}
      */
     public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array());
 
@@ -90,8 +92,8 @@ interface RepositoryInterface extends \Countable
      * @param int    $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only
      * @param string $type  The type of package to search for. Defaults to all types of packages
      *
-     * @return array[] an array of array('name' => '...', 'description' => '...')
-     * @psalm-return list<array{name: string, description: string}>
+     * @return array[] an array of array('name' => '...', 'description' => '...'|null)
+     * @phpstan-return list<array{name: string, description: ?string}>
      */
     public function search($query, $mode = 0, $type = null);
 
@@ -103,7 +105,7 @@ interface RepositoryInterface extends \Countable
      * @param string $packageName package name which must be provided
      *
      * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...')
-     * @psalm-return array<string, array{name: string, description: string, type: string}>
+     * @phpstan-return array<string, array{name: string, description: string, type: string}>
      */
     public function getProviders($packageName);
 

@@ -45,7 +45,7 @@ update
     "packages-dev": [],
     "aliases": [{
         "package": "a/aliased",
-        "version": "dev-master",
+        "version": "9999999-dev",
         "alias": "1.0.0",
         "alias_normalized": "1.0.0.0"
     }],

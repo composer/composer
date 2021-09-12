@@ -88,7 +88,7 @@ installer capable of installing packages of that type.
 
 Out of the box, Composer supports four types:
 
-- **library:** This is the default. It will simply copy the files to `vendor`.
+- **library:** This is the default. It will copy the files to `vendor`.
 - **project:** This denotes a project rather than a library. For example
   application shells like the [Symfony standard edition](https://github.com/symfony/symfony-standard),
   CMSs like the [SilverStripe installer](https://github.com/silverstripe/silverstripe-installer)
@@ -160,7 +160,7 @@ The recommended notation for the most common licenses is (alphabetical):
 Optional, but it is highly recommended to supply this. More identifiers are
 listed at the [SPDX Open Source License Registry](https://spdx.org/licenses/).
 
-For closed-source software, you may use `"proprietary"` as the license identifier.
+> **Note:** For closed-source software, you may use `"proprietary"` as the license identifier.
 
 An Example:
 
@@ -382,7 +382,7 @@ Example:
 ```json
 {
     "require" : {
-        "php" : "^5.5 || ^7.0",
+        "php" : ">=7.4",
         "ext-mbstring": "*"
     }
 }
@@ -401,19 +401,19 @@ Example:
 
 #### require
 
-Lists packages required by this package. The package will not be installed
+Map of packages required by this package. The package will not be installed
 unless those requirements can be met.
 
 #### require-dev <span>([root-only](04-schema.md#root-package))</span>
 
-Lists packages required for developing this package, or running
+Map of packages required for developing this package, or running
 tests, etc. The dev requirements of the root package are installed by default.
 Both `install` or `update` support the `--no-dev` option that prevents dev
 dependencies from being installed.
 
 #### conflict
 
-Lists packages that conflict with this version of this package. They
+Map of packages that conflict with this version of this package. They
 will not be allowed to be installed together with your package.
 
 Note that when specifying ranges like `<1.0 >=1.1` in a `conflict` link,
@@ -423,7 +423,7 @@ probably want to go for `<1.0 || >=1.1` in this case.
 
 #### replace
 
-Lists packages that are replaced by this package. This allows you to fork a
+Map of packages that are replaced by this package. This allows you to fork a
 package, publish it under a different name with its own version numbers, while
 packages requiring the original package continue to work with your fork because
 it replaces the original package.
@@ -441,10 +441,18 @@ that exact version, and not any other version, which would be incorrect.
 
 #### provide
 
-List of other packages that are provided by this package. This is mostly
-useful for common interfaces. A package could depend on some virtual
-`logger` package, any library that implements this logger interface would
-simply list it in `provide`.
+Map of packages that are provided by this package. This is mostly
+useful for implementations of common interfaces. A package could depend on
+some virtual package e.g. `psr/logger-implementation`, any library that implements
+this logger interface would list it in `provide`. Implementors can then
+be [found on Packagist.org](https://packagist.org/providers/psr/log-implementation).
+
+Using `provide` with the name of an actual package rather than a virtual one
+implies that the code of that package is also shipped, in which case `replace`
+is generally a better choice. A common convention for packages providing an
+interface and relying on other packages to provide an implementation (for
+instance the PSR interfaces) is to use a `-implementation` suffix for the
+name of the virtual package corresponding to the interface package.
 
 #### suggest
 
@@ -775,7 +783,7 @@ ignored.
 
 The following repository types are supported:
 
-* **composer:** A Composer repository is simply a `packages.json` file served
+* **composer:** A Composer repository is a `packages.json` file served
   via the network (HTTP, FTP, SSH), that contains a list of `composer.json`
   objects with additional `dist` and/or `source` information. The `packages.json`
   file is loaded using a PHP stream. You can set extra options on that stream

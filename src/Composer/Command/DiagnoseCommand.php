@@ -24,11 +24,15 @@ use Composer\Util\IniHelper;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\HttpDownloader;
 use Composer\Util\StreamContextFactory;
+use Composer\Util\Platform;
 use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
 use Composer\IO\NullIO;
+use Composer\Package\CompletePackageInterface;
+use Composer\XdebugHandler\XdebugHandler;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -105,10 +109,6 @@ EOT
         if (!empty($opts['http']['proxy'])) {
             $io->write('Checking HTTP proxy: ', false);
             $this->outputResult($this->checkHttpProxy());
-            $io->write('Checking HTTP proxy support for request_fulluri: ', false);
-            $this->outputResult($this->checkHttpProxyFullUriRequestParam());
-            $io->write('Checking HTTPS proxy support for request_fulluri: ', false);
-            $this->outputResult($this->checkHttpsProxyFullUriRequestParam());
         }
 
         if ($oauth = $config->get('github-oauth')) {
@@ -162,7 +162,7 @@ EOT
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
         $phpPkg = $platformRepo->findPackage('php', '*');
         $phpVersion = $phpPkg->getPrettyVersion();
-        if (false !== strpos($phpPkg->getDescription(), 'overridden')) {
+        if ($phpPkg instanceof CompletePackageInterface && false !== strpos($phpPkg->getDescription(), 'overridden')) {
             $phpVersion .= ' - ' . $phpPkg->getDescription();
         }
 
@@ -172,7 +172,25 @@ EOT
             $io->write(sprintf('PHP binary path: <comment>%s</comment>', PHP_BINARY));
         }
 
-        $io->write(sprintf('OpenSSL version: <comment>%s</comment>', OPENSSL_VERSION_TEXT));
+        $io->write('OpenSSL version: ' . (defined('OPENSSL_VERSION_TEXT') ? '<comment>'.OPENSSL_VERSION_TEXT.'</comment>' : '<error>missing</error>'));
+        $io->write('cURL version: ' . $this->getCurlVersion());
+
+        $finder = new ExecutableFinder;
+        $hasSystemUnzip = (bool) $finder->find('unzip');
+        $bin7zip = '';
+        if ($hasSystem7zip = (bool) $finder->find('7z', null, array('C:\Program Files\7-Zip'))) {
+            $bin7zip = '7z';
+        }
+        if (!Platform::isWindows() && !$hasSystem7zip && $hasSystem7zip = (bool) $finder->find('7zz')) {
+            $bin7zip = '7zz';
+        }
+
+        $io->write(
+            'zip: ' . (extension_loaded('zip') ? '<comment>extension present</comment>' : '<comment>extension not loaded</comment>')
+            . ', ' . ($hasSystemUnzip ? '<comment>unzip present</comment>' : '<comment>unzip not available</comment>')
+            . ', ' . ($hasSystem7zip ? '<comment>7-Zip present ('.$bin7zip.')</comment>' : '<comment>7-Zip not available</comment>')
+            . (($hasSystem7zip || $hasSystemUnzip) && !function_exists('proc_open') ? ', <warning>proc_open is disabled or not present, unzip/7-z will not be usable</warning>' : '')
+        );
 
         return $this->exitCode;
     }
@@ -203,6 +221,10 @@ EOT
 
     private function checkGit()
     {
+        if (!function_exists('proc_open')) {
+            return '<comment>proc_open is not available, git cannot be used</comment>';
+        }
+
         $this->process->execute('git config color.ui', $output);
         if (strtolower(trim($output)) === 'always') {
             return '<comment>Your git color.ui setting is set to always, this is known to create issues. Use "git config --global color.ui true" to set it correctly.</comment>';
@@ -218,26 +240,25 @@ EOT
             return $result;
         }
 
-        $disableTls = false;
         $result = array();
         if ($proto === 'https' && $config->get('disable-tls') === true) {
-            $disableTls = true;
-            $result[] = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
-        }
-        if ($proto === 'https' && !extension_loaded('openssl') && !$disableTls) {
-            $result[] = '<error>Composer is configured to use SSL/TLS protection but the openssl extension is not available.</error>';
+            $tlsWarning = '<warning>Composer is configured to disable SSL/TLS protection. This will leave remote HTTPS requests vulnerable to Man-In-The-Middle attacks.</warning>';
         }
 
         try {
             $this->httpDownloader->get($proto . '://repo.packagist.org/packages.json');
         } catch (TransportException $e) {
-            if (false !== strpos($e->getMessage(), 'cafile')) {
-                $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
-                $result[] = '<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>';
-                $result[] = '<error>You can alternatively disable this error, at your own risk, by enabling the \'disable-tls\' option.</error>';
-            } else {
-                array_unshift($result, '[' . get_class($e) . '] ' . $e->getMessage());
+            if ($hints = HttpDownloader::getExceptionHints($e)) {
+                foreach ($hints as $hint) {
+                    $result[] = $hint;
+                }
             }
+
+            $result[] = '<error>[' . get_class($e) . '] ' . $e->getMessage() . '</error>';
+        }
+
+        if (isset($tlsWarning)) {
+            $result[] = $tlsWarning;
         }
 
         if (count($result) > 0) {
@@ -272,70 +293,6 @@ EOT
         return true;
     }
 
-    /**
-     * Due to various proxy servers configurations, some servers can't handle non-standard HTTP "http_proxy_request_fulluri" parameter,
-     * and will return error 500/501 (as not implemented), see discussion @ https://github.com/composer/composer/pull/1825.
-     * This method will test, if you need to disable this parameter via setting extra environment variable in your system.
-     *
-     * @return bool|string
-     */
-    private function checkHttpProxyFullUriRequestParam()
-    {
-        $result = $this->checkConnectivity();
-        if ($result !== true) {
-            return $result;
-        }
-
-        $url = 'http://repo.packagist.org/packages.json';
-        try {
-            $this->httpDownloader->get($url);
-        } catch (TransportException $e) {
-            try {
-                $this->httpDownloader->get($url, array('http' => array('request_fulluri' => false)));
-            } catch (TransportException $e) {
-                return 'Unable to assess the situation, maybe packagist.org is down ('.$e->getMessage().')';
-            }
-
-            return 'It seems there is a problem with your proxy server, try setting the "HTTP_PROXY_REQUEST_FULLURI" and "HTTPS_PROXY_REQUEST_FULLURI" environment variables to "false"';
-        }
-
-        return true;
-    }
-
-    /**
-     * Due to various proxy servers configurations, some servers can't handle non-standard HTTP "http_proxy_request_fulluri" parameter,
-     * and will return error 500/501 (as not implemented), see discussion @ https://github.com/composer/composer/pull/1825.
-     * This method will test, if you need to disable this parameter via setting extra environment variable in your system.
-     *
-     * @return bool|string
-     */
-    private function checkHttpsProxyFullUriRequestParam()
-    {
-        $result = $this->checkConnectivity();
-        if ($result !== true) {
-            return $result;
-        }
-
-        if (!extension_loaded('openssl')) {
-            return 'You need the openssl extension installed for this check';
-        }
-
-        $url = 'https://api.github.com/repos/Seldaek/jsonlint/zipball/1.0.0';
-        try {
-            $this->httpDownloader->get($url);
-        } catch (TransportException $e) {
-            try {
-                $this->httpDownloader->get($url, array('http' => array('request_fulluri' => false)));
-            } catch (TransportException $e) {
-                return 'Unable to assess the situation, maybe github is down ('.$e->getMessage().')';
-            }
-
-            return 'It seems there is a problem with your proxy server, try setting the "HTTPS_PROXY_REQUEST_FULLURI" environment variable to "false"';
-        }
-
-        return true;
-    }
-
     private function checkGithubOauth($domain, $token)
     {
         $result = $this->checkConnectivity();
@@ -347,9 +304,11 @@ EOT
         try {
             $url = $domain === 'github.com' ? 'https://api.'.$domain.'/' : 'https://'.$domain.'/api/v3/';
 
-            return $this->httpDownloader->get($url, array(
+            $this->httpDownloader->get($url, array(
                 'retry-auth-failure' => false,
-            )) ? true : 'Unexpected error';
+            ));
+
+            return true;
         } catch (\Exception $e) {
             if ($e instanceof TransportException && $e->getCode() === 401) {
                 return '<comment>The oauth token for '.$domain.' seems invalid, run "composer config --global --unset github-oauth.'.$domain.'" to remove it</comment>';
@@ -444,8 +403,25 @@ EOT
         return true;
     }
 
+    private function getCurlVersion()
+    {
+        if (extension_loaded('curl')) {
+            if (!HttpDownloader::isCurlEnabled()) {
+                return '<error>disabled via disable_functions, using php streams fallback, which reduces performance</error>';
+            }
+
+            $version = curl_version();
+
+            return '<comment>'.$version['version'].'</comment> '.
+                'libz <comment>'.(isset($version['libz_version']) ? $version['libz_version'] : 'missing').'</comment> '.
+                'ssl <comment>'.(isset($version['ssl_version']) ? $version['ssl_version'] : 'missing').'</comment>';
+        }
+
+        return '<error>missing, using php streams fallback, which reduces performance</error>';
+    }
+
     /**
-     * @param bool|string|\Exception $result
+     * @param bool|string|string[]|\Exception $result
      */
     private function outputResult($result)
     {
@@ -577,7 +553,7 @@ EOT
 
         if (filter_var(ini_get('xdebug.profiler_enabled'), FILTER_VALIDATE_BOOLEAN)) {
             $warnings['xdebug_profile'] = true;
-        } elseif (extension_loaded('xdebug')) {
+        } elseif (XdebugHandler::isXdebugActive()) {
             $warnings['xdebug_loaded'] = true;
         }
 
@@ -720,7 +696,6 @@ EOT
         return !$warnings && !$errors ? true : $output;
     }
 
-
     /**
      * Check if allow_url_fopen is ON
      *
@@ -729,8 +704,7 @@ EOT
     private function checkConnectivity()
     {
         if (!ini_get('allow_url_fopen')) {
-            $result = '<info>Skipped because allow_url_fopen is missing.</info>';
-            return $result;
+            return '<info>Skipped because allow_url_fopen is missing.</info>';
         }
 
         return true;

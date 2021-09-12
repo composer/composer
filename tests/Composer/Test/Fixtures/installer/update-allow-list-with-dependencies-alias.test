@@ -44,7 +44,7 @@ Verify that a partial update with deps correctly keeps track of all aliases.
         {
             "alias": "1.1.0",
             "alias_normalized": "1.1.0.0",
-            "version": "dev-master",
+            "version": "9999999-dev",
             "package": "current/dep"
         }
     ],
@@ -70,13 +70,13 @@ update new/pkg --with-all-dependencies
         {
             "alias": "1.1.0",
             "alias_normalized": "1.1.0.0",
-            "version": "dev-master",
+            "version": "9999999-dev",
             "package": "current/dep"
         },
         {
             "alias": "1.1.2",
             "alias_normalized": "1.1.2.0",
-            "version": "dev-master",
+            "version": "9999999-dev",
             "package": "current/dep2"
         }
     ],

@@ -15,7 +15,6 @@ namespace Composer\Repository\Vcs;
 use Composer\Cache;
 use Composer\Downloader\TransportException;
 use Composer\Config;
-use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Util\ProcessExecutor;
@@ -34,7 +33,7 @@ abstract class VcsDriver implements VcsDriverInterface
     protected $url;
     /** @var string */
     protected $originUrl;
-    /** @var array */
+    /** @var array<string, mixed> */
     protected $repoConfig;
     /** @var IOInterface */
     protected $io;
@@ -44,19 +43,19 @@ abstract class VcsDriver implements VcsDriverInterface
     protected $process;
     /** @var HttpDownloader */
     protected $httpDownloader;
-    /** @var array */
+    /** @var array<string, mixed> */
     protected $infoCache = array();
-    /** @var Cache */
+    /** @var ?Cache */
     protected $cache;
 
     /**
      * Constructor.
      *
-     * @param array            $repoConfig       The repository configuration
-     * @param IOInterface      $io               The IO instance
-     * @param Config           $config           The composer configuration
-     * @param HttpDownloader   $httpDownloader   Remote Filesystem, injectable for mocking
-     * @param ProcessExecutor  $process          Process instance, injectable for mocking
+     * @param array           $repoConfig     The repository configuration
+     * @param IOInterface     $io             The IO instance
+     * @param Config          $config         The composer configuration
+     * @param HttpDownloader  $httpDownloader Remote Filesystem, injectable for mocking
+     * @param ProcessExecutor $process        Process instance, injectable for mocking
      */
     final public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, ProcessExecutor $process)
     {
@@ -158,6 +157,7 @@ abstract class VcsDriver implements VcsDriverInterface
      * @param string $url The URL of content
      *
      * @return Response
+     * @throws TransportException
      */
     protected function getContents($url)
     {

@@ -15,7 +15,6 @@ namespace Composer\DependencyResolver;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
-use Composer\Semver\Constraint\MultiConstraint;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -46,9 +45,9 @@ class Solver
     protected $branches = array();
     /** @var Problem[] */
     protected $problems = array();
-    /** @var array */
+    /** @var array<Rule[]> */
     protected $learnedPool = array();
-    /** @var array */
+    /** @var array<string, int> */
     protected $learnedWhy = array();
 
     /** @var bool */
@@ -58,9 +57,9 @@ class Solver
     protected $io;
 
     /**
-     * @param PolicyInterface     $policy
-     * @param Pool                $pool
-     * @param IOInterface         $io
+     * @param PolicyInterface $policy
+     * @param Pool            $pool
+     * @param IOInterface     $io
      */
     public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io)
     {
@@ -182,8 +181,8 @@ class Solver
     }
 
     /**
-     * @param  Request    $request
-     * @param  bool|array $ignorePlatformReqs
+     * @param  Request         $request
+     * @param  bool|array      $ignorePlatformReqs
      * @return LockTransaction
      */
     public function solve(Request $request, $ignorePlatformReqs = false)
@@ -215,7 +214,7 @@ class Solver
             throw new SolverProblemsException($this->problems, $this->learnedPool);
         }
 
-        return new LockTransaction($this->pool, $request->getPresentMap(), $request->getUnlockableMap(), $this->decisions);
+        return new LockTransaction($this->pool, $request->getPresentMap(), $request->getFixedPackagesMap(), $this->decisions);
     }
 
     /**
@@ -319,7 +318,8 @@ class Solver
                 throw new SolverBugException(
                     "Trying to revert to invalid level ".(int) $newLevel." from level ".(int) $level."."
                 );
-            } elseif (!$newRule) {
+            }
+            if (!$newRule) {
                 throw new SolverBugException(
                     "No rule was learned from analyzing $rule at level $level."
                 );
@@ -464,35 +464,35 @@ class Solver
                     // only level 1 marks left
                     $l1num++;
                     $l1retry = true;
-                }
+                } else {
+                    $decision = $this->decisions->atOffset($decisionId);
+                    $rule = $decision[Decisions::DECISION_REASON];
 
-                $decision = $this->decisions->atOffset($decisionId);
-                $rule = $decision[Decisions::DECISION_REASON];
+                    if ($rule instanceof MultiConflictRule) {
+                        // there is only ever exactly one positive decision in a multiconflict rule
+                        foreach ($rule->getLiterals() as $literal) {
+                            if (!isset($seen[abs($literal)]) && $this->decisions->satisfy(-$literal)) {
+                                $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
+                                $l = $this->decisions->decisionLevel($literal);
+                                if (1 === $l) {
+                                    $l1num++;
+                                } elseif ($level === $l) {
+                                    $num++;
+                                } else {
+                                    // not level1 or conflict level, add to new rule
+                                    $learnedLiterals[] = $literal;
 
-                if ($rule instanceof MultiConflictRule) {
-                    // there is only ever exactly one positive decision in a multiconflict rule
-                    foreach ($rule->getLiterals() as $literal) {
-                        if (!isset($seen[abs($literal)]) && $this->decisions->satisfy(-$literal)) {
-                            $this->learnedPool[\count($this->learnedPool) - 1][] = $rule;
-                            $l = $this->decisions->decisionLevel($literal);
-                            if (1 === $l) {
-                                $l1num++;
-                            } elseif ($level === $l) {
-                                $num++;
-                            } else {
-                                // not level1 or conflict level, add to new rule
-                                $learnedLiterals[] = $literal;
-
-                                if ($l > $ruleLevel) {
-                                    $ruleLevel = $l;
+                                    if ($l > $ruleLevel) {
+                                        $ruleLevel = $l;
+                                    }
                                 }
+                                $seen[abs($literal)] = true;
+                                break;
                             }
-                            $seen[abs($literal)] = true;
-                            break;
                         }
-                    }
 
-                    $l1retry = true;
+                        $l1retry = true;
+                    }
                 }
             }
 
@@ -513,19 +513,19 @@ class Solver
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
 
-    /**
-     * @param Problem $problem
-     * @param Rule    $conflictRule
-     */
-    private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule)
+    private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen)
     {
+        $why = spl_object_hash($conflictRule);
+        $ruleSeen[$why] = true;
+
         if ($conflictRule->getType() == RuleSet::TYPE_LEARNED) {
-            $why = spl_object_hash($conflictRule);
             $learnedWhy = $this->learnedWhy[$why];
             $problemRules = $this->learnedPool[$learnedWhy];
 
             foreach ($problemRules as $problemRule) {
-                $this->analyzeUnsolvableRule($problem, $problemRule);
+                if (!isset($ruleSeen[spl_object_hash($problemRule)])) {
+                    $this->analyzeUnsolvableRule($problem, $problemRule, $ruleSeen);
+                }
             }
 
             return;
@@ -549,7 +549,9 @@ class Solver
         $problem = new Problem();
         $problem->addRule($conflictRule);
 
-        $this->analyzeUnsolvableRule($problem, $conflictRule);
+        $ruleSeen = array();
+
+        $this->analyzeUnsolvableRule($problem, $conflictRule, $ruleSeen);
 
         $this->problems[] = $problem;
 
@@ -575,7 +577,7 @@ class Solver
             $why = $decision[Decisions::DECISION_REASON];
 
             $problem->addRule($why);
-            $this->analyzeUnsolvableRule($problem, $why);
+            $this->analyzeUnsolvableRule($problem, $why, $ruleSeen);
 
             $literals = $why->getLiterals();
 
@@ -589,17 +591,6 @@ class Solver
         }
 
         return 0;
-    }
-
-    private function resetSolver()
-    {
-        $this->decisions->reset();
-
-        $this->propagateIndex = 0;
-        $this->branches = array();
-
-        $this->enableDisableLearnedRules();
-        $this->makeAssertionRuleDecisions();
     }
 
     /**
@@ -644,9 +635,6 @@ class Solver
          * if we encounter a problem, we rewind to a safe level and restart
          * with step 1
          */
-
-        $decisionQueue = array();
-        $decisionSupplementQueue = array();
 
         $level = 1;
         $systemLevel = $level + 1;

@@ -26,8 +26,8 @@ In this case the project name is `acme/hello-world`, where `acme` is the vendor
 name. Supplying a vendor name is mandatory.
 
 > **Note:** If you don't know what to use as a vendor name, your GitHub
-> username is usually a good bet. While package names are case-insensitive, the
-> convention is all lowercase and dashes for word separation.
+> username is usually a good bet. Package names must be lowercase, and the
+> convention is to use dashes for word separation.
 
 ## Library Versioning
 
@@ -142,9 +142,9 @@ Packagist is available automatically through Composer. Since
 can depend on it without having to specify any additional repositories.
 
 If we wanted to share `hello-world` with the world, we would publish it on
-Packagist as well. Doing so is really easy.
+Packagist as well.
 
-You simply visit [Packagist](https://packagist.org) and hit the "Submit"
+You visit [Packagist](https://packagist.org) and hit the "Submit"
 button. This will prompt you to sign up if you haven't already, and then
 allows you to submit the URL to your VCS repository, at which point Packagist
 will start crawling it. Once it is done, your package will be available to

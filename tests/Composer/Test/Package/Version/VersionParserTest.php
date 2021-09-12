@@ -33,6 +33,8 @@ class VersionParserTest extends TestCase
             array(array('php:^7.0'), array(array('name' => 'php', 'version' => '^7.0'))),
             array(array('php', '^7.0'), array(array('name' => 'php', 'version' => '^7.0'))),
             array(array('php', 'ext-apcu'), array(array('name' => 'php'), array('name' => 'ext-apcu'))),
+            array(array('foo/*', 'bar*', 'acme/baz', '*@dev'), array(array('name' => 'foo/*'), array('name' => 'bar*'), array('name' => 'acme/baz', 'version' => '*@dev'))),
+            array(array('php', '*'), array(array('name' => 'php', 'version' => '*'))),
         );
     }
 

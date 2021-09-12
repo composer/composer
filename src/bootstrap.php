@@ -10,9 +10,13 @@
  * file that was distributed with this source code.
  */
 
+/**
+ * @param string $file
+ * @return ?\Composer\Autoload\ClassLoader
+ */
 function includeIfExists($file)
 {
-    return file_exists($file) ? include $file : false;
+    return file_exists($file) ? include $file : null;
 }
 
 if ((!$loader = includeIfExists(__DIR__.'/../vendor/autoload.php')) && (!$loader = includeIfExists(__DIR__.'/../../../autoload.php'))) {

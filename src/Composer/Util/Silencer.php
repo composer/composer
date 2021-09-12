@@ -44,6 +44,8 @@ class Silencer
 
     /**
      * Restores a single state.
+     *
+     * @return void
      */
     public static function restore()
     {

@@ -15,11 +15,29 @@ namespace Composer\Package;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class RootAliasPackage extends AliasPackage implements RootPackageInterface
+class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterface
 {
-    public function __construct(RootPackageInterface $aliasOf, $version, $prettyVersion)
+    /** @var RootPackage */
+    protected $aliasOf;
+
+    /**
+     * All descendants' constructors should call this parent constructor
+     *
+     * @param RootPackage $aliasOf       The package this package is an alias of
+     * @param string      $version       The version the alias must report
+     * @param string      $prettyVersion The alias's non-normalized version
+     */
+    public function __construct(RootPackage $aliasOf, $version, $prettyVersion)
     {
         parent::__construct($aliasOf, $version, $prettyVersion);
+    }
+
+    /**
+     * @return RootPackage
+     */
+    public function getAliasOf()
+    {
+        return $this->aliasOf;
     }
 
     /**
@@ -120,14 +138,6 @@ class RootAliasPackage extends AliasPackage implements RootPackageInterface
     /**
      * {@inheritDoc}
      */
-    public function setRepositories($repositories)
-    {
-        $this->aliasOf->setRepositories($repositories);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function setAutoload(array $autoload)
     {
         $this->aliasOf->setAutoload($autoload);
@@ -147,6 +157,46 @@ class RootAliasPackage extends AliasPackage implements RootPackageInterface
     public function setStabilityFlags(array $stabilityFlags)
     {
         $this->aliasOf->setStabilityFlags($stabilityFlags);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setMinimumStability($minimumStability)
+    {
+        $this->aliasOf->setMinimumStability($minimumStability);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setPreferStable($preferStable)
+    {
+        $this->aliasOf->setPreferStable($preferStable);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setConfig(array $config)
+    {
+        $this->aliasOf->setConfig($config);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setReferences(array $references)
+    {
+        $this->aliasOf->setReferences($references);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setAliases(array $aliases)
+    {
+        $this->aliasOf->setAliases($aliases);
     }
 
     /**

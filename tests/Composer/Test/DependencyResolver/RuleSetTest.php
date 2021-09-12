@@ -16,8 +16,8 @@ use Composer\DependencyResolver\GenericRule;
 use Composer\DependencyResolver\Rule;
 use Composer\DependencyResolver\RuleSet;
 use Composer\DependencyResolver\Pool;
-use Composer\Package\BasePackage;
-use Composer\Repository\ArrayRepository;
+use Composer\Semver\Constraint\MatchAllConstraint;
+use Composer\Semver\Constraint\MatchNoneConstraint;
 use Composer\Test\TestCase;
 
 class RuleSetTest extends TestCase
@@ -27,11 +27,11 @@ class RuleSetTest extends TestCase
         $rules = array(
             RuleSet::TYPE_PACKAGE => array(),
             RuleSet::TYPE_REQUEST => array(
-                new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, null),
-                new GenericRule(array(2), Rule::RULE_ROOT_REQUIRE, null),
+                new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint)),
+                new GenericRule(array(2), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint)),
             ),
             RuleSet::TYPE_LEARNED => array(
-                new GenericRule(array(), Rule::RULE_LEARNED, null),
+                new GenericRule(array(), Rule::RULE_LEARNED, 1),
             ),
         );
 
@@ -48,9 +48,9 @@ class RuleSetTest extends TestCase
     {
         $rules = array(
             RuleSet::TYPE_REQUEST => array(
-                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null),
-                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null),
-                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null),
+                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint)),
+                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint)),
+                new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint)),
             ),
         );
 
@@ -68,15 +68,15 @@ class RuleSetTest extends TestCase
         $ruleSet = new RuleSet;
 
         $this->setExpectedException('OutOfBoundsException');
-        $ruleSet->add(new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null), 7);
+        $ruleSet->add(new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint)), 7);
     }
 
     public function testCount()
     {
         $ruleSet = new RuleSet;
 
-        $ruleSet->add(new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, null), RuleSet::TYPE_REQUEST);
-        $ruleSet->add(new GenericRule(array(2), Rule::RULE_ROOT_REQUIRE, null), RuleSet::TYPE_REQUEST);
+        $ruleSet->add(new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint)), RuleSet::TYPE_REQUEST);
+        $ruleSet->add(new GenericRule(array(2), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint)), RuleSet::TYPE_REQUEST);
 
         $this->assertEquals(2, $ruleSet->count());
     }
@@ -85,7 +85,7 @@ class RuleSetTest extends TestCase
     {
         $ruleSet = new RuleSet;
 
-        $rule = new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, null);
+        $rule = new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
         $ruleSet->add($rule, RuleSet::TYPE_REQUEST);
 
         $this->assertSame($rule, $ruleSet->ruleById[0]);
@@ -95,8 +95,8 @@ class RuleSetTest extends TestCase
     {
         $ruleSet = new RuleSet;
 
-        $rule1 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, null);
-        $rule2 = new GenericRule(array(2), Rule::RULE_ROOT_REQUIRE, null);
+        $rule1 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
+        $rule2 = new GenericRule(array(2), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
         $ruleSet->add($rule1, RuleSet::TYPE_REQUEST);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
 
@@ -110,8 +110,8 @@ class RuleSetTest extends TestCase
     public function testGetIteratorFor()
     {
         $ruleSet = new RuleSet;
-        $rule1 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, null);
-        $rule2 = new GenericRule(array(2), Rule::RULE_ROOT_REQUIRE, null);
+        $rule1 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
+        $rule2 = new GenericRule(array(2), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
 
         $ruleSet->add($rule1, RuleSet::TYPE_REQUEST);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
@@ -124,8 +124,8 @@ class RuleSetTest extends TestCase
     public function testGetIteratorWithout()
     {
         $ruleSet = new RuleSet;
-        $rule1 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, null);
-        $rule2 = new GenericRule(array(2), Rule::RULE_ROOT_REQUIRE, null);
+        $rule1 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
+        $rule2 = new GenericRule(array(2), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
 
         $ruleSet->add($rule1, RuleSet::TYPE_REQUEST);
         $ruleSet->add($rule2, RuleSet::TYPE_LEARNED);
@@ -146,7 +146,7 @@ class RuleSetTest extends TestCase
 
         $ruleSet = new RuleSet;
         $literal = $p->getId();
-        $rule = new GenericRule(array($literal), Rule::RULE_ROOT_REQUIRE, array('packageName' => 'foo/bar', 'constraint' => null));
+        $rule = new GenericRule(array($literal), Rule::RULE_ROOT_REQUIRE, array('packageName' => 'foo/bar', 'constraint' => new MatchNoneConstraint));
 
         $ruleSet->add($rule, RuleSet::TYPE_REQUEST);
 

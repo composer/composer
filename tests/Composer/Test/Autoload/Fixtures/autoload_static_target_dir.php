@@ -7,8 +7,8 @@ namespace Composer\Autoload;
 class ComposerStaticInitTargetDir
 {
     public static $files = array (
-        'b419c11b924de79ffa740afc29a3dc16' => __DIR__ . '/../..' . '/foo.php',
-        'f558c96fbd0535aaa98981fa59ff7594' => __DIR__ . '/../..' . '/bar.php',
+        'b4b4f2eb2151c57cadbd5714a7aba8b7' => __DIR__ . '/../..' . '/foo.php',
+        '99b24fc198db06c1d2d8118a8a5475eb' => __DIR__ . '/../..' . '/bar.php',
     );
 
     public static $prefixesPsr0 = array (

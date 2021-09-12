@@ -1,0 +1,25 @@
+--TEST--
+Test that a package requiring something it replaces itself, satisfies itself even though a package exists.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "replaced/pkg",
+                "version": "1.0.0"
+            }
+        }
+    ],
+    "require": {
+        "replaced/pkg": "1.0.0"
+    },
+    "replace": {
+        "replaced/pkg": "1.0.0"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT--

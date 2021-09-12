@@ -34,7 +34,9 @@ class DumpAutoloadCommand extends BaseCommand
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.'),
                 new InputOption('apcu', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
-                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules.'),
+                new InputOption('apcu-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu'),
+                new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables autoload-dev rules. Composer will by default infer this automatically according to the last install or update --no-dev state.'),
+                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules. Composer will by default infer this automatically according to the last install or update --no-dev state.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
             ))
@@ -51,6 +53,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer();
+        $composer->getEventDispatcher()->setRunScripts(!$input->getOption('no-scripts'));
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'dump-autoload', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -62,7 +65,8 @@ EOT
 
         $optimize = $input->getOption('optimize') || $config->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');
-        $apcu = $input->getOption('apcu') || $config->get('apcu-autoloader');
+        $apcuPrefix = $input->getOption('apcu-prefix');
+        $apcu = $apcuPrefix !== null || $input->getOption('apcu') || $config->get('apcu-autoloader');
 
         if ($authoritative) {
             $this->getIO()->write('<info>Generating optimized autoload files (authoritative)</info>');
@@ -75,10 +79,18 @@ EOT
         $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
         $generator = $composer->getAutoloadGenerator();
-        $generator->setDevMode(!$input->getOption('no-dev'));
+        if ($input->getOption('no-dev')) {
+            $generator->setDevMode(false);
+        }
+        if ($input->getOption('dev')) {
+            if ($input->getOption('no-dev')) {
+                throw new \InvalidArgumentException('You can not use both --no-dev and --dev as they conflict with each other.');
+            }
+            $generator->setDevMode(true);
+        }
         $generator->setClassMapAuthoritative($authoritative);
-        $generator->setApcu($apcu);
-        $generator->setRunScripts(!$input->getOption('no-scripts'));
+        $generator->setRunScripts(true);
+        $generator->setApcu($apcu, $apcuPrefix);
         $generator->setIgnorePlatformRequirements($ignorePlatformReqs);
         $numberOfClasses = $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
 

@@ -1,0 +1,50 @@
+--TEST--
+Verify that a conflict with all dependencies option enabled don't recommend to use the option
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "locked/pkg", "version": "dev-master", "require": {"locked/dependency": "1.0.0"}, "default-branch": true }
+            ]
+        }
+    ],
+    "require": {
+        "locked/pkg": "*@dev"
+    }
+}
+
+--LOCK--
+{
+    "packages": [
+        { "name": "locked/pkg", "version": "dev-master", "require": {"locked/dependency": "1.0.0"}, "default-branch": true },
+        { "name": "locked/dependency", "version": "1.0.0" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+
+--RUN--
+update locked/dependency --with-all-dependencies
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - locked/pkg dev-master requires locked/dependency 1.0.0 -> found locked/dependency[1.0.0] in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.
+    - locked/pkg is locked to version dev-master and an update of this package was not requested.
+
+--EXPECT--
+

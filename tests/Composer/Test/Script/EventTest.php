@@ -35,6 +35,7 @@ class EventTest extends TestCase
 
         $scriptEvent->setOriginatingEvent($originatingEvent);
 
+        // @phpstan-ignore-next-line
         $this->assertSame(
             $originatingEvent,
             $scriptEvent->getOriginatingEvent(),

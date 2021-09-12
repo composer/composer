@@ -13,7 +13,7 @@ files which makes installs faster and independent from third party systems - e.g
 you can deploy even if GitHub is down because your zip files are mirrored.
 
 Private Packagist is available as a hosted SaaS solution or as an on-premise self-hosted
-package, providing an easy interactive set up experience.
+package, providing an interactive set up experience.
 
 Some of Private Packagist's revenue is used to pay for Composer and Packagist.org
 development and hosting so using it is a good way to support the maintenance of
@@ -213,23 +213,7 @@ Example using a custom HTTP Header field for token authentication:
 
 ### Authentication
 
-When your private repositories are password protected, you can store the
-authentication details permanently.  The first time Composer needs to
-authenticate against some domain it will prompt you for a username/password and
-then you will be asked whether you want to store it.
-
-The storage can be done either globally in the `COMPOSER_HOME/auth.json` file
-(`COMPOSER_HOME` defaults to `~/.composer` or `%APPDATA%/Composer` on Windows)
-or also in the project directory directly sitting besides your composer.json.
-
-You can also configure these by hand using the config command if you need to
-configure a production machine to be able to run non-interactive installs. For
-example to enter credentials for example.org one could type:
-
-    composer config http-basic.example.org username password
-
-That will store it in the current directory's auth.json, but if you want it
-available globally you can use the `--global` (`-g`) flag.
+Authentication can be handled in [several different ways](authentication-for-private-packages.md).
 
 ### Downloads
 

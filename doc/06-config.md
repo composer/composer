@@ -5,7 +5,8 @@ This chapter will describe the `config` section of the `composer.json`
 
 ## process-timeout
 
-Defaults to `300`. The duration processes like git clones can run before
+The timeout in seconds for process executions, defaults to 300 (5mins).
+The duration processes like git clones can run before
 Composer assumes they died out. You may need to make this higher if you have a
 slow connection or huge vendors.
 
@@ -30,7 +31,7 @@ in the PHP include path.
 
 ## preferred-install
 
-Defaults to `auto` and can be any of `source`, `dist` or `auto`. This option
+Defaults to `dist` and can be any of `source`, `dist` or `auto`. This option
 allows you to set the install method Composer will prefer to use. Can
 optionally be a hash of patterns for more granular install preferences.
 
@@ -46,6 +47,16 @@ optionally be a hash of patterns for more granular install preferences.
     }
 }
 ```
+
+- `source` means Composer will install packages from their `source` if there
+  is one. This is typically a git clone or equivalent checkout of the version
+  control system the package uses. This is useful if you want to make a bugfix
+  to a project and get a local git clone of the dependency directly.
+- `auto` is the legacy behavior where Composer uses `source` automatically
+  for dev versions, and `dist` otherwise.
+- `dist` (the default as of Composer 2.1) means Composer installs from `dist`,
+  where possible. This is typically a zip file download, which is faster than
+  cloning the entire repository.
 
 > **Note:** Order matters. More specific patterns should be earlier than
 > more relaxed patterns. When mixing the string notation with the hash
@@ -71,9 +82,14 @@ URL.
 A list of domain names and oauth keys. For example using `{"github.com":
 "oauthtoken"}` as the value of this option will use `oauthtoken` to access
 private repositories on github and to circumvent the low IP-based rate limiting
-of their API. [Read
-more](articles/troubleshooting.md#api-rate-limit-and-oauth-tokens) on how to get
-an OAuth token for GitHub.
+of their API. Composer may prompt for credentials when needed, but these can also be
+manually set. Read more on how to get an OAuth token for GitHub and cli syntax
+[here](articles/authentication-for-private-packages.md#github-oauth).
+
+## gitlab-domains
+
+Defaults to `["gitlab.com"]`. A list of domains of GitLab servers.
+This is used if you use the `gitlab` repository type.
 
 ## gitlab-oauth
 
@@ -82,6 +98,7 @@ A list of domain names and oauth keys. For example using `{"gitlab.com":
 private repositories on gitlab. Please note: If the package is not hosted at
 gitlab.com the domain names must be also specified with the
 [`gitlab-domains`](06-config.md#gitlab-domains) option.
+Further info can also be found [here](articles/authentication-for-private-packages.md#gitlab-oauth)
 
 ## gitlab-token
 
@@ -95,13 +112,25 @@ Please note: If the package is not hosted at
 gitlab.com the domain names must be also specified with the
 [`gitlab-domains`](06-config.md#gitlab-domains) option. The token must have
 `api` or `read_api` scope.
+Further info can also be found [here](articles/authentication-for-private-packages.md#gitlab-token)
+
+## gitlab-protocol
+
+A protocol to force use of when creating a repository URL for the `source`
+value of the package metadata. One of `git` or `http`. (`https` is treated
+as a synonym for `http`.) Helpful when working with projects referencing
+private repositories which will later be cloned in GitLab CI jobs with a
+[GitLab CI_JOB_TOKEN](https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference)
+using HTTP basic auth. By default, Composer will generate a git-over-SSH
+URL for private repositories and HTTP(S) only for public.
 
 ## disable-tls
 
 Defaults to `false`. If set to true all HTTPS URLs will be tried with HTTP
 instead and no network level encryption is performed. Enabling this is a
 security risk and is NOT recommended. The better way is to enable the
-php_openssl extension in php.ini.
+php_openssl extension in php.ini. Enabling this will implicitly disable the
+`secure-http` option.
 
 ## secure-http
 
@@ -113,8 +142,8 @@ get a free SSL certificate is generally a better alternative.
 ## bitbucket-oauth
 
 A list of domain names and consumers. For example using `{"bitbucket.org":
-{"consumer-key": "myKey", "consumer-secret": "mySecret"}}`. [Read](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html)
-how to set up a consumer on Bitbucket.
+{"consumer-key": "myKey", "consumer-secret": "mySecret"}}`.
+Read more [here](articles/authentication-for-private-packages.md#bitbucket-oauth).
 
 ## cafile
 
@@ -133,11 +162,7 @@ capath must be a correctly hashed certificate directory.
 A list of domain names and username/passwords to authenticate against them. For
 example using `{"example.org": {"username": "alice", "password": "foo"}}` as the
 value of this option will let Composer authenticate against example.org.
-
-> **Note:** Authentication-related config options like `http-basic`, `bearer` and
-> `github-oauth` can also be specified inside a `auth.json` file that goes
-> besides your `composer.json`. That way you can gitignore it and every
-> developer can place their own credentials in there.
+More info can be found [here](articles/authentication-for-private-packages.md#http-basic).
 
 ## bearer
 
@@ -150,6 +175,21 @@ against example.org using an `Authorization: Bearer foo` header.
 Lets you fake platform packages (PHP and extensions) so that you can emulate a
 production env or define your target platform in the config. Example: `{"php":
 "7.0.3", "ext-something": "4.0.3"}`.
+
+This will make sure that no package requiring more than PHP 7.0.3 can be installed
+regardless of the actual PHP version you run locally. However it also means
+the dependencies are not checked correctly anymore, if you run PHP 5.6 it will
+install fine as it assumes 7.0.3, but then it will fail at runtime.
+
+Therefore if you use this it is recommended, and safer, to also run the
+[`check-platform-reqs`](03-cli.md#check-platform-reqs) command as part of your
+deployment strategy.
+
+If a dependency requires some extension that you do not have installed locally
+you may ignore it instead by passing `--ignore-platform-req=ext-foo` to `update`,
+`install` or `require`. In the long run though you should install required
+extensions as if you ignore one now and a new package you add a month later also
+requires it, you may introduce issues in production unknowingly.
 
 ## vendor-dir
 
@@ -173,9 +213,10 @@ versions. See also [COMPOSER_HOME](03-cli.md#composer-home).
 ## cache-dir
 
 Defaults to `C:\Users\<user>\AppData\Local\Composer` on Windows,
-`$XDG_CACHE_HOME/composer` on unix systems that follow the XDG Base Directory
-Specifications, and `$home/cache` on other unix systems. Stores all the caches
-used by Composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
+`/Users/<user>/Library/Caches/composer` on macOS, `$XDG_CACHE_HOME/composer`
+on unix systems that follow the XDG Base Directory Specifications, and
+`$home/cache` on other unix systems. Stores all the caches used by Composer.
+See also [COMPOSER_HOME](03-cli.md#composer-home).
 
 ## cache-files-dir
 
@@ -212,11 +253,12 @@ Defaults to `false`. Whether to use the Composer cache in read-only mode.
 ## bin-compat
 
 Defaults to `auto`. Determines the compatibility of the binaries to be installed.
-If it is `auto` then Composer only installs .bat proxy files when on Windows. If
+If it is `auto` then Composer only installs .bat proxy files when on Windows or WSL. If
 set to `full` then both .bat files for Windows and scripts for Unix-based
 operating systems will be installed for each binary. This is mainly useful if you
-run Composer inside a linux VM but still want the .bat proxies available for use
-in the Windows host OS.
+run Composer inside a linux VM but still want the `.bat` proxies available for use
+in the Windows host OS. If set to `symlink` Composer will always symlink even on 
+Windows/WSL.
 
 ## prepend-autoloader
 
@@ -258,11 +300,6 @@ used for GitHub Enterprise setups.
 Defaults to `true`. If `false`, the OAuth tokens created to access the
 github API will have a date instead of the machine hostname.
 
-## gitlab-domains
-
-Defaults to `["gitlab.com"]`. A list of domains of GitLab servers.
-This is used if you use the `gitlab` repository type.
-
 ## use-github-api
 
 Defaults to `true`.  Similar to the `no-api` key on a specific repository,
@@ -287,14 +324,12 @@ scripts if you tend to have modified vendors.
 
 ## archive-format
 
-Defaults to `tar`. Composer allows you to add a default archive format when the
-workflow needs to create a dedicated archiving format.
+Defaults to `tar`. Overrides the default format used by the archive command.
 
 ## archive-dir
 
-Defaults to `.`. Composer allows you to add a default archive directory when the
-workflow needs to create a dedicated archiving format. Or for easier development
-between modules.
+Defaults to `.`. Default destination for archives created by the archive
+command.
 
 Example:
 
@@ -318,7 +353,16 @@ file.
 
 ## platform-check
 
-Defaults to `true`. If set to `false`, Composer will not create and require a
-`platform_check.php` file as part of the autoloader bootstrap.
+Defaults to `php-only` which only checks the PHP version. Set to `true` to also
+check the presence of extension. If set to `false`, Composer will not create and
+require a `platform_check.php` file as part of the autoloader bootstrap.
+
+## secure-svn-domains
+
+Defaults to `[]`. Lists domains which should be trusted/marked as using a secure
+Subversion/SVN transport. By default svn:// protocol is seen as insecure and will
+throw, but you can set this config option to `["example.org"]` to allow using svn
+URLs on that hostname. This is a better/safer alternative to disabling `secure-http`
+altogether.
 
 &larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;

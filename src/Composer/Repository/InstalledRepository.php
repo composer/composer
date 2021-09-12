@@ -15,10 +15,9 @@ namespace Composer\Repository;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Package\AliasPackage;
+use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\Link;
-
 
 /**
  * Installed repository is a composite of all installed repo types.
@@ -115,7 +114,7 @@ class InstalledRepository extends CompositeRepository
                 foreach ($package->getReplaces() as $link) {
                     foreach ($needles as $needle) {
                         if ($link->getSource() === $needle) {
-                            if ($constraint === null || ($link->getConstraint()->matches($constraint) === !$invert)) {
+                            if ($constraint === null || ($link->getConstraint()->matches($constraint) === true)) {
                                 // already displayed this node's dependencies, cutting short
                                 if (in_array($link->getTarget(), $packagesInTree)) {
                                     $results[] = array($package, $link, false);
@@ -166,6 +165,18 @@ class InstalledRepository extends CompositeRepository
                 }
             }
 
+            // List conflicts against X as they may explain why the current version was selected, or explain why it is rejected if the conflict matched when inverting
+            foreach ($package->getConflicts() as $link) {
+                if (in_array($link->getTarget(), $needles)) {
+                    foreach ($this->findPackages($link->getTarget()) as $pkg) {
+                        $version = new Constraint('=', $pkg->getVersion());
+                        if ($link->getConstraint()->matches($version) === $invert) {
+                            $results[] = array($package, $link, false);
+                        }
+                    }
+                }
+            }
+
             // When inverting, we need to check for conflicts of the needles' requirements against installed packages
             if ($invert && $constraint && in_array($package->getName(), $needles) && $constraint->matches(new Constraint('=', $package->getVersion()))) {
                 foreach ($package->getRequires() as $link) {
@@ -176,7 +187,7 @@ class InstalledRepository extends CompositeRepository
 
                         $platformPkg = $this->findPackage($link->getTarget(), '*');
                         $description = $platformPkg ? 'but '.$platformPkg->getPrettyVersion().' is installed' : 'but it is missing';
-                        $results[] = array($package, new Link($package->getName(), $link->getTarget(), null, Link::TYPE_REQUIRE, $link->getPrettyConstraint().' '.$description), false);
+                        $results[] = array($package, new Link($package->getName(), $link->getTarget(), new MatchAllConstraint, Link::TYPE_REQUIRE, $link->getPrettyConstraint().' '.$description), false);
 
                         continue;
                     }
@@ -187,6 +198,16 @@ class InstalledRepository extends CompositeRepository
                         }
 
                         $version = new Constraint('=', $pkg->getVersion());
+
+                        if ($link->getTarget() !== $pkg->getName()) {
+                            foreach (array_merge($pkg->getReplaces(), $pkg->getProvides()) as $prov) {
+                                if ($link->getTarget() === $prov->getTarget()) {
+                                    $version = $prov->getConstraint();
+                                    break;
+                                }
+                            }
+                        }
+
                         if (!$link->getConstraint()->matches($version)) {
                             // if we have a root package (we should but can not guarantee..) we show
                             // the root requires as well to perhaps allow to find an issue there
@@ -198,8 +219,9 @@ class InstalledRepository extends CompositeRepository
                                         continue 3;
                                     }
                                 }
+
                                 $results[] = array($package, $link, false);
-                                $results[] = array($rootPackage, new Link($rootPackage->getName(), $link->getTarget(), null, 'does not require', 'but ' . $pkg->getPrettyVersion() . ' is installed'), false);
+                                $results[] = array($rootPackage, new Link($rootPackage->getName(), $link->getTarget(), new MatchAllConstraint, Link::TYPE_DOES_NOT_REQUIRE, 'but ' . $pkg->getPrettyVersion() . ' is installed'), false);
                             } else {
                                 // no root so let's just print whatever we found
                                 $results[] = array($package, $link, false);
@@ -219,7 +241,9 @@ class InstalledRepository extends CompositeRepository
 
     public function getRepoName()
     {
-        return 'installed repo ('.implode(', ', array_map(function ($repo) { return $repo->getRepoName(); }, $this->getRepositories())).')';
+        return 'installed repo ('.implode(', ', array_map(function ($repo) {
+            return $repo->getRepoName();
+        }, $this->getRepositories())).')';
     }
 
     /**

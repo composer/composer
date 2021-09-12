@@ -19,11 +19,10 @@ namespace Composer\DependencyResolver;
  * method to set the internal iterator to a particular offset.
  *
  * @author Nils Adermann <naderman@naderman.de>
+ * @extends \SplDoublyLinkedList<RuleWatchNode>
  */
 class RuleWatchChain extends \SplDoublyLinkedList
 {
-    protected $offset = 0;
-
     /**
      * Moves the internal iterator to the specified offset
      *

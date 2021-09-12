@@ -1,0 +1,49 @@
+--TEST--
+Checks that package versions in InstalledVersions are correct on initial install. Noteworthy things:
+
+  - PluginA is not yet found at the moment where it is first initialized. This is a quirk which we are unlikely to fix
+  - PluginB is not yet found at the moment where it is first initialized, but it finds PluginA which was installed before
+  - Local dependencies (symfony/*) always show the Composer-bundled version
+--RUN--
+update
+--EXPECT--
+> Hooks::preUpdate
+!!PreUpdate:["composer/ca-bundle","composer/composer","composer/metadata-minifier","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/console","symfony/debug","symfony/filesystem","symfony/finder","symfony/polyfill-ctype","symfony/polyfill-mbstring","symfony/process"]
+!!Versions:console:%[2-8]\.\d+\.\d+.0%;process:%[2-8]\.\d+\.\d+.0%;filesystem:%[2-8]\.\d+\.\d+.0%
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 6 installs, 0 updates, 0 removals
+  - Locking plugin/a (1.1.1)
+  - Locking plugin/b (2.2.2)
+  - Locking symfony/console (99999.1.2)
+  - Locking symfony/filesystem (%v?[2-8]\.\d+\.\d+%)
+  - Locking symfony/polyfill-ctype (%v?[1-8]\.\d+\.\d+%)
+  - Locking symfony/process (12345.1.2)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 6 installs, 0 updates, 0 removals%(\nAs there is no 'unzip' nor '7z' command installed zip files are being unpacked using the PHP zip extension.\nThis may cause invalid reports of corrupted archives. Besides, any UNIX permissions \(e.g. executable\) defined in the archives will be lost.\nInstalling 'unzip' or '7z' may remediate them.)?%
+  - Downloading symfony/polyfill-ctype (%v?[1-8]\.\d+\.\d+%)
+  - Downloading symfony/filesystem (%v?[2-8]\.\d+\.\d+%)
+  - Installing symfony/console (99999.1.2): Symlinking from symfony-console
+  - Installing plugin/a (1.1.1): Symlinking from plugin-a
+!!PluginAInit["composer/ca-bundle","composer/composer","composer/metadata-minifier","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/console","symfony/debug","symfony/filesystem","symfony/finder","symfony/polyfill-ctype","symfony/polyfill-mbstring","symfony/process","root/pkg"]
+!!PluginA:null
+!!PluginB:null
+!!Versions:console:%[2-8]\.\d+\.\d+.0%;process:%[2-8]\.\d+\.\d+.0%;filesystem:%[2-8]\.\d+\.\d+.0%
+  - Installing plugin/b (2.2.2): Symlinking from plugin-b
+!!PluginBInit["composer/ca-bundle","composer/composer","composer/metadata-minifier","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/console","symfony/debug","symfony/filesystem","symfony/finder","symfony/polyfill-ctype","symfony/polyfill-mbstring","symfony/process","plugin/a","root/pkg"]
+!!PluginA:1.1.1.0
+!!PluginB:null
+!!Versions:console:%[2-8]\.\d+\.\d+.0%;process:%[2-8]\.\d+\.\d+.0%;filesystem:%[2-8]\.\d+\.\d+.0%
+  - Installing symfony/polyfill-ctype (%v?[1-8]\.\d+\.\d+%): Extracting archive
+  - Installing symfony/filesystem (%v?[2-8]\.\d+\.\d+%): Extracting archive
+  - Installing symfony/process (12345.1.2): Symlinking from symfony-process
+Generating autoload files
+2 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
+> Hooks::postUpdate
+!!PostUpdate:["composer/ca-bundle","composer/composer","composer/metadata-minifier","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/log","react/promise","seld/jsonlint","seld/phar-utils","symfony/console","symfony/debug","symfony/filesystem","symfony/finder","symfony/polyfill-ctype","symfony/polyfill-mbstring","symfony/process","plugin/a","plugin/b","root/pkg"]
+!!Versions:console:%[2-8]\.\d+\.\d+.0%;process:%[2-8]\.\d+\.\d+.0%;filesystem:%[2-8]\.\d+\.\d+.0%
+
+--EXPECT-EXIT-CODE--
+0

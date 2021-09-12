@@ -16,7 +16,6 @@ use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Util\AuthHelper;
 use Composer\Util\Bitbucket;
-use RuntimeException;
 
 /**
  * @author Michael Chekin <mchekin@gmail.com>
@@ -48,7 +47,7 @@ class AuthHelperTest extends TestCase
     {
         $headers = array(
             'Accept-Encoding: gzip',
-            'Connection: close'
+            'Connection: close',
         );
         $origin = 'http://example.org';
         $url = 'file://' . __FILE__;
@@ -68,13 +67,13 @@ class AuthHelperTest extends TestCase
     {
         $headers = array(
             'Accept-Encoding: gzip',
-            'Connection: close'
+            'Connection: close',
         );
         $origin = 'http://example.org';
         $url = 'file://' . __FILE__;
         $auth = array(
             'username' => 'my_username',
-            'password' => 'bearer'
+            'password' => 'bearer',
         );
 
         $this->expectsAuthentication($origin, $auth);
@@ -91,13 +90,13 @@ class AuthHelperTest extends TestCase
     {
         $headers = array(
             'Accept-Encoding: gzip',
-            'Connection: close'
+            'Connection: close',
         );
         $origin = 'github.com';
         $url = 'https://api.github.com/';
         $auth = array(
             'username' => 'my_username',
-            'password' => 'x-oauth-basic'
+            'password' => 'x-oauth-basic',
         );
 
         $this->expectsAuthentication($origin, $auth);
@@ -118,13 +117,13 @@ class AuthHelperTest extends TestCase
     {
         $headers = array(
             'Accept-Encoding: gzip',
-            'Connection: close'
+            'Connection: close',
         );
         $origin = 'gitlab.com';
         $url = 'https://api.gitlab.com/';
         $auth = array(
             'username' => 'my_username',
-            'password' => 'oauth2'
+            'password' => 'oauth2',
         );
 
         $this->expectsAuthentication($origin, $auth);
@@ -163,13 +162,13 @@ class AuthHelperTest extends TestCase
     {
         $headers = array(
             'Accept-Encoding: gzip',
-            'Connection: close'
+            'Connection: close',
         );
         $origin = 'gitlab.com';
         $url = 'https://api.gitlab.com/';
         $auth = array(
             'username' => 'my_username',
-            'password' => $password
+            'password' => $password,
         );
 
         $this->expectsAuthentication($origin, $auth);
@@ -195,13 +194,13 @@ class AuthHelperTest extends TestCase
     {
         $headers = array(
             'Accept-Encoding: gzip',
-            'Connection: close'
+            'Connection: close',
         );
         $origin = 'bitbucket.org';
         $url = 'https://bitbucket.org/site/oauth2/authorize';
         $auth = array(
             'username' => 'x-token-auth',
-            'password' => 'my_password'
+            'password' => 'my_password',
         );
 
         $this->expectsAuthentication($origin, $auth);
@@ -240,12 +239,12 @@ class AuthHelperTest extends TestCase
     {
         $headers = array(
             'Accept-Encoding: gzip',
-            'Connection: close'
+            'Connection: close',
         );
         $origin = 'bitbucket.org';
         $auth = array(
             'username' => 'x-token-auth',
-            'password' => 'my_password'
+            'password' => 'my_password',
         );
 
         $this->expectsAuthentication($origin, $auth);
@@ -269,24 +268,24 @@ class AuthHelperTest extends TestCase
                 'bitbucket.org',
                 array(
                     'username' => 'x-token-auth',
-                    'password' => 'my_password'
-                )
+                    'password' => 'my_password',
+                ),
             ),
             array(
                 'https://some-api.url.com',
                 'some-api.url.com',
                 array(
                     'username' => 'my_username',
-                    'password' => 'my_password'
-                )
+                    'password' => 'my_password',
+                ),
             ),
             array(
                 'https://gitlab.com',
                 'gitlab.com',
                 array(
                     'username' => 'my_username',
-                    'password' => 'my_password'
-                )
+                    'password' => 'my_password',
+                ),
             ),
         );
     }
@@ -296,13 +295,13 @@ class AuthHelperTest extends TestCase
      *
      * @param string $url
      * @param string $origin
-     * @param array $auth
+     * @param array  $auth
      */
     public function testAddAuthenticationHeaderWithBasicHttpAuthentication($url, $origin, $auth)
     {
         $headers = array(
             'Accept-Encoding: gzip',
-            'Connection: close'
+            'Connection: close',
         );
 
         $this->expectsAuthentication($origin, $auth);
@@ -343,8 +342,10 @@ class AuthHelperTest extends TestCase
 
     public function testIsPublicBitBucketDownloadWithNonBitbucketPublicUrl()
     {
-        $this->assertFalse($this->authHelper->isPublicBitBucketDownload(
-            'https://bitbucket.org/site/oauth2/authorize')
+        $this->assertFalse(
+            $this->authHelper->isPublicBitBucketDownload(
+                'https://bitbucket.org/site/oauth2/authorize'
+            )
         );
     }
 
@@ -354,7 +355,7 @@ class AuthHelperTest extends TestCase
         $storeAuth = true;
         $auth = array(
             'username' => 'my_username',
-            'password' => 'my_password'
+            'password' => 'my_password',
         );
 
         /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $configSource */
@@ -386,7 +387,7 @@ class AuthHelperTest extends TestCase
         $storeAuth = 'prompt';
         $auth = array(
             'username' => 'my_username',
-            'password' => 'my_password'
+            'password' => 'my_password',
         );
         $answer = 'y';
         $configSourceName = 'https://api.gitlab.com/source';
@@ -414,7 +415,6 @@ class AuthHelperTest extends TestCase
                 'y'
             )
             ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
-
                 $validator($answer);
 
                 return $answer;
@@ -463,7 +463,6 @@ class AuthHelperTest extends TestCase
                 'y'
             )
             ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
-
                 $validator($answer);
 
                 return $answer;
@@ -504,7 +503,6 @@ class AuthHelperTest extends TestCase
                 'y'
             )
             ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
-
                 $validator($answer);
 
                 return $answer;
@@ -514,8 +512,8 @@ class AuthHelperTest extends TestCase
     }
 
     /**
-     * @param $origin
-     * @param $auth
+     * @param string $origin
+     * @param array  $auth
      */
     private function expectsAuthentication($origin, $auth)
     {

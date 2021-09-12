@@ -1,0 +1,38 @@
+--TEST--
+Test that a root package conflict with a branch alias leads to an error, even if the branch alias isn't required.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "some/dep", "version": "1.0.0" },
+                { "name": "some/dep", "version": "1.1.0" },
+                { "name": "some/dep", "version": "1.2.0" },
+                { "name": "some/dep", "version": "dev-main", "extra": {"branch-alias": {"dev-main": "1.3.x-dev"} } },
+                { "name": "some/dep", "version": "1.2.x-dev" }
+            ]
+        }
+    ],
+    "require": {
+        "some/dep": "dev-main"
+    },
+    "conflict": {
+        "some/dep": ">=1.3"
+    }
+}
+--RUN--
+update
+--EXPECT-EXIT-CODE--
+2
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - __root__ is present at version 1.0.0+no-version-set and cannot be modified by Composer
+    - some/dep 1.3.x-dev is an alias of some/dep dev-main and must be installed with it.
+    - __root__ 1.0.0+no-version-set conflicts with some/dep 1.3.x-dev.
+    - Root composer.json requires some/dep dev-main -> satisfiable by some/dep[dev-main].
+--EXPECT--

@@ -21,15 +21,16 @@ The most important guidelines are described as follows:
 > To ensure a consistent code base, you should make sure the code follows
 > the [PSR-2 Coding Standards](https://www.php-fig.org/psr/psr-2/).
 
-## IRC / mailing list
+## Support
 
-Mailing lists for [user support](https://groups.google.com/group/composer-users) and
-[development](https://groups.google.com/group/composer-dev).
+The IRC channel is on irc.libera.chat: [#composer](ircs://irc.libera.chat:6697/composer).
 
-IRC channels are on irc.freenode.org: [#composer](irc://irc.freenode.org/composer)
-for users and [#composer-dev](irc://irc.freenode.org/composer-dev) for development.
+[Stack Overflow](https://stackoverflow.com/questions/tagged/composer-php) and
+[GitHub Discussions](https://github.com/composer/composer/discussions) both have a
+collection of Composer related questions.
 
-Stack Overflow has a growing collection of
-[Composer related questions](https://stackoverflow.com/questions/tagged/composer-php).
+For paid support, we do provide Composer-related support via chat and email to
+[Private Packagist](https://packagist.com) customers.
+
 
 &larr; [Config](07-runtime.md)

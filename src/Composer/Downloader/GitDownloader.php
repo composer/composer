@@ -29,12 +29,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 {
     /**
      * @var bool[]
-     * @psalm-var array<string, bool>
+     * @phpstan-var array<string, bool>
      */
     private $hasStashedChanges = array();
     /**
      * @var bool[]
-     * @psalm-var array<string, bool>
+     * @phpstan-var array<string, bool>
      */
     private $hasDiscardedChanges = array();
     /**
@@ -43,7 +43,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     private $gitUtil;
     /**
      * @var array
-     * @psalm-var array<int, array<string, bool>>
+     * @phpstan-var array<int, array<string, bool>>
      */
     private $cachedPackages = array();
 
@@ -71,7 +71,11 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             if ($this->gitUtil->fetchRefOrSyncMirror($url, $cachePath, $ref) && is_dir($cachePath)) {
                 $this->cachedPackages[$package->getId()][$ref] = true;
             }
+        } elseif (null === $gitVersion) {
+            throw new \RuntimeException('git was not found in your PATH, skipping source download');
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -90,10 +94,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $command =
                 'git clone --no-checkout %cachePath% %path% --dissociate --reference %cachePath% '
                 . '&& cd '.$flag.'%path% '
-                . '&& git remote set-url origin %sanitizedUrl% && git remote add composer %sanitizedUrl%';
+                . '&& git remote set-url origin -- %sanitizedUrl% && git remote add composer -- %sanitizedUrl%';
         } else {
             $msg = "Cloning ".$this->getShortHash($ref);
-            $command = 'git clone --no-checkout %url% %path% && cd '.$flag.'%path% && git remote add composer %url% && git fetch composer && git remote set-url origin %sanitizedUrl% && git remote set-url composer %sanitizedUrl%';
+            $command = 'git clone --no-checkout -- %url% %path% && cd '.$flag.'%path% && git remote add composer -- %url% && git fetch composer && git remote set-url origin -- %sanitizedUrl% && git remote set-url composer -- %sanitizedUrl%';
             if (getenv('COMPOSER_DISABLE_NETWORK')) {
                 throw new \RuntimeException('The required git reference for '.$package->getName().' is not in cache and network is disabled, aborting');
             }
@@ -127,6 +131,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             }
             $package->setSourceReference($newRef);
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -142,14 +148,13 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $cachePath = $this->config->get('cache-vcs-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', $url).'/';
         $ref = $target->getSourceReference();
-        $flag = Platform::isWindows() ? '/D ' : '';
 
         if (!empty($this->cachedPackages[$target->getId()][$ref])) {
             $msg = "Checking out ".$this->getShortHash($ref).' from cache';
-            $command = '(git rev-parse --quiet --verify %ref% || (git remote set-url composer %cachePath% && git fetch composer && git fetch --tags composer)) && git remote set-url composer %sanitizedUrl%';
+            $command = '(git rev-parse --quiet --verify %ref% || (git remote set-url composer -- %cachePath% && git fetch composer && git fetch --tags composer)) && git remote set-url composer -- %sanitizedUrl%';
         } else {
             $msg = "Checking out ".$this->getShortHash($ref);
-            $command = '(git remote set-url composer %url% && git rev-parse --quiet --verify %ref% || (git fetch composer && git fetch --tags composer)) && git remote set-url composer %sanitizedUrl%';
+            $command = '(git remote set-url composer -- %url% && git rev-parse --quiet --verify %ref% || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- %sanitizedUrl%';
             if (getenv('COMPOSER_DISABLE_NETWORK')) {
                 throw new \RuntimeException('The required git reference for '.$target->getName().' is not in cache and network is disabled, aborting');
             }
@@ -191,6 +196,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         if ($updateOriginUrl) {
             $this->updateOriginUrl($path, $target->getSourceUrl());
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -200,7 +207,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     {
         GitUtil::cleanEnv();
         if (!$this->hasMetadataRepository($path)) {
-            return;
+            return null;
         }
 
         $command = 'git status --porcelain --untracked-files=no';
@@ -216,7 +223,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         GitUtil::cleanEnv();
         $path = $this->normalizePath($path);
         if (!$this->hasMetadataRepository($path)) {
-            return;
+            return null;
         }
 
         $command = 'git show-ref --head -d';
@@ -227,26 +234,32 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $refs = trim($output);
         if (!preg_match('{^([a-f0-9]+) HEAD$}mi', $refs, $match)) {
             // could not match the HEAD for some reason
-            return;
+            return null;
         }
 
         $headRef = $match[1];
         if (!preg_match_all('{^'.$headRef.' refs/heads/(.+)$}mi', $refs, $matches)) {
             // not on a branch, we are either on a not-modified tag or some sort of detached head, so skip this
-            return;
+            return null;
         }
 
+        $candidateBranches = $matches[1];
         // use the first match as branch name for now
-        $branch = $matches[1][0];
+        $branch = $candidateBranches[0];
         $unpushedChanges = null;
+        $branchNotFoundError = false;
 
         // do two passes, as if we find anything we want to fetch and then re-try
         for ($i = 0; $i <= 1; $i++) {
-            // try to find the a matching branch name in the composer remote
-            foreach ($matches[1] as $candidate) {
-                if (preg_match('{^[a-f0-9]+ refs/remotes/((?:composer|origin)/'.preg_quote($candidate).')$}mi', $refs, $match)) {
-                    $branch = $candidate;
-                    $remoteBranch = $match[1];
+            $remoteBranches = array();
+
+            // try to find matching branch names in remote repos
+            foreach ($candidateBranches as $candidate) {
+                if (preg_match_all('{^[a-f0-9]+ refs/remotes/((?:[^/]+)/'.preg_quote($candidate).')$}mi', $refs, $matches)) {
+                    foreach ($matches[1] as $match) {
+                        $branch = $candidate;
+                        $remoteBranches[] = $match;
+                    }
                     break;
                 }
             }
@@ -254,21 +267,40 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             // if it doesn't exist, then we assume it is an unpushed branch
             // this is bad as we have no reference point to do a diff so we just bail listing
             // the branch as being unpushed
-            if (!isset($remoteBranch)) {
-                $unpushedChanges = 'Branch ' . $branch . ' could not be found on the origin remote and appears to be unpushed';
+            if (!$remoteBranches) {
+                $unpushedChanges = 'Branch ' . $branch . ' could not be found on any remote and appears to be unpushed';
+                $branchNotFoundError = true;
             } else {
-                $command = sprintf('git diff --name-status %s...%s --', $remoteBranch, $branch);
+                // if first iteration found no remote branch but it has now found some, reset $unpushedChanges
+                // so we get the real diff output no matter its length
+                if ($branchNotFoundError) {
+                    $unpushedChanges = null;
+                }
+                foreach ($remoteBranches as $remoteBranch) {
+                    $command = sprintf('git diff --name-status %s...%s --', $remoteBranch, $branch);
+                    if (0 !== $this->process->execute($command, $output, $path)) {
+                        throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
+                    }
+
+                    $output = trim($output);
+                    // keep the shortest diff from all remote branches we compare against
+                    if ($unpushedChanges === null || strlen($output) < strlen($unpushedChanges)) {
+                        $unpushedChanges = $output;
+                    }
+                }
+            }
+
+            // first pass and we found unpushed changes, fetch from all remotes to make sure we have up to date
+            // remotes and then try again as outdated remotes can sometimes cause false-positives
+            if ($unpushedChanges && $i === 0) {
+                $this->process->execute('git fetch --all', $output, $path);
+
+                // update list of refs after fetching
+                $command = 'git show-ref --head -d';
                 if (0 !== $this->process->execute($command, $output, $path)) {
                     throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
                 }
-
-                $unpushedChanges = trim($output) ?: null;
-            }
-
-            // first pass and we found unpushed changes, fetch from both remotes to make sure we have up to date
-            // remotes and then try again as outdated remotes can sometimes cause false-positives
-            if ($unpushedChanges && $i === 0) {
-                $this->process->execute('git fetch composer && git fetch origin', $output, $path);
+                $refs = trim($output);
             }
 
             // abort after first pass if we didn't find anything
@@ -349,7 +381,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
                 case '?':
                 default:
-                    help:
+                    help :
                     $this->io->writeError(array(
                         '    y - discard changes and apply the '.($update ? 'update' : 'uninstall'),
                         '    n - abort the '.($update ? 'update' : 'uninstall').' and let you manually clean things up',
@@ -430,13 +462,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
             $command = sprintf('git checkout %s --', ProcessExecutor::escape($branch));
             $fallbackCommand = sprintf('git checkout '.$force.'-B %s %s --', ProcessExecutor::escape($branch), ProcessExecutor::escape('composer/'.$branch));
-            if (0 === $this->process->execute($command, $output, $path)
-                || 0 === $this->process->execute($fallbackCommand, $output, $path)
-            ) {
-                $command = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
-                if (0 === $this->process->execute($command, $output, $path)) {
-                    return null;
-                }
+            $resetCommand = sprintf('git reset --hard %s --', ProcessExecutor::escape($reference));
+
+            if (0 === $this->process->execute("($command || $fallbackCommand) && $resetCommand", $output, $path)) {
+                return null;
             }
         }
 
@@ -455,7 +484,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
     protected function updateOriginUrl($path, $url)
     {
-        $this->process->execute(sprintf('git remote set-url origin %s', ProcessExecutor::escape($url)), $output, $path);
+        $this->process->execute(sprintf('git remote set-url origin -- %s', ProcessExecutor::escape($url)), $output, $path);
         $this->setPushUrl($path, $url);
     }
 
@@ -468,7 +497,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             if (!in_array('ssh', $protocols, true)) {
                 $pushUrl = 'https://' . $match[1] . '/'.$match[2].'/'.$match[3].'.git';
             }
-            $cmd = sprintf('git remote set-url --push origin %s', ProcessExecutor::escape($pushUrl));
+            $cmd = sprintf('git remote set-url --push origin -- %s', ProcessExecutor::escape($pushUrl));
             $this->process->execute($cmd, $ignoredOutput, $path);
         }
     }
@@ -489,42 +518,42 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * @param string $path
+     * @param  string            $path
      * @throws \RuntimeException
      */
     protected function discardChanges($path)
     {
         $path = $this->normalizePath($path);
         if (0 !== $this->process->execute('git clean -df && git reset --hard', $output, $path)) {
-            throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
+            throw new \RuntimeException("Could not reset changes\n\n:".$output);
         }
 
         $this->hasDiscardedChanges[$path] = true;
     }
 
     /**
-     * @param string $path
+     * @param  string            $path
      * @throws \RuntimeException
      */
     protected function stashChanges($path)
     {
         $path = $this->normalizePath($path);
         if (0 !== $this->process->execute('git stash --include-untracked', $output, $path)) {
-            throw new \RuntimeException("Could not stash changes\n\n:".$this->process->getErrorOutput());
+            throw new \RuntimeException("Could not stash changes\n\n:".$output);
         }
 
         $this->hasStashedChanges[$path] = true;
     }
 
     /**
-     * @param string $path
+     * @param  string            $path
      * @throws \RuntimeException
      */
     protected function viewDiff($path)
     {
         $path = $this->normalizePath($path);
         if (0 !== $this->process->execute('git diff HEAD', $output, $path)) {
-            throw new \RuntimeException("Could not view diff\n\n:".$this->process->getErrorOutput());
+            throw new \RuntimeException("Could not view diff\n\n:".$output);
         }
 
         $this->io->writeError($output);

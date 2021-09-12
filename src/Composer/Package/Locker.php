@@ -15,10 +15,10 @@ namespace Composer\Package;
 use Composer\Json\JsonFile;
 use Composer\Installer\InstallationManager;
 use Composer\Repository\LockArrayRepository;
-use Composer\Repository\RepositoryManager;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginInterface;
 use Composer\Util\Git as GitUtil;
 use Composer\IO\IOInterface;
@@ -179,7 +179,6 @@ class Locker
                 $packageByName[$package->getName()] = $package;
 
                 if ($package instanceof AliasPackage) {
-                    $packages->addPackage($package->getAliasOf());
                     $packageByName[$package->getAliasOf()->getName()] = $package->getAliasOf();
                 }
             }
@@ -187,7 +186,9 @@ class Locker
             if (isset($lockData['aliases'])) {
                 foreach ($lockData['aliases'] as $alias) {
                     if (isset($packageByName[$alias['package']])) {
-                        $packages->addPackage(new AliasPackage($packageByName[$alias['package']], $alias['alias_normalized'], $alias['alias']));
+                        $aliasPkg = new CompleteAliasPackage($packageByName[$alias['package']], $alias['alias_normalized'], $alias['alias']);
+                        $aliasPkg->setRootPackageAlias(true);
+                        $packages->addPackage($aliasPkg);
                     }
                 }
             }
@@ -196,6 +197,22 @@ class Locker
         }
 
         throw new \RuntimeException('Your composer.lock is invalid. Run "composer update" to generate a new one.');
+    }
+
+    /**
+     * @return string[] Names of dependencies installed through require-dev
+     */
+    public function getDevPackageNames()
+    {
+        $names = array();
+        $lockData = $this->getLockData();
+        if (isset($lockData['packages-dev'])) {
+            foreach ($lockData['packages-dev'] as $package) {
+                $names[] = strtolower($package['name']);
+            }
+        }
+
+        return $names;
     }
 
     /**
@@ -310,6 +327,16 @@ class Locker
      */
     public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides, $write = true)
     {
+        // keep old default branch names normalized to DEFAULT_BRANCH_ALIAS for BC as that is how Composer 1 outputs the lock file
+        // when loading the lock file the version is anyway ignored in Composer 2, so it has no adverse effect
+        $aliases = array_map(function ($alias) {
+            if (in_array($alias['version'], array('dev-master', 'dev-trunk', 'dev-default'), true)) {
+                $alias['version'] = VersionParser::DEFAULT_BRANCH_ALIAS;
+            }
+
+            return $alias;
+        }, $aliases);
+
         $lock = array(
             '_readme' => array('This file locks the dependencies of your project to a known state',
                                'Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies',
@@ -344,7 +371,6 @@ class Locker
         if (!$isLocked || $lock !== $this->getLockData()) {
             if ($write) {
                 $this->lockFile->write($lock);
-//                $this->lockDataCache = JsonFile::parseJson(JsonFile::encode($lock, 448 & JsonFile::JSON_PRETTY_PRINT));
                 $this->lockDataCache = null;
                 $this->virtualFileWritten = false;
             } else {

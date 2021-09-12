@@ -1,0 +1,15 @@
+{
+    "name": "plugin/b",
+    "version": "2.2.3",
+    "require": {
+        "plugin/a": "*",
+        "composer-plugin-api": "^2"
+    },
+    "autoload": {
+        "classmap": ["PluginB.php"]
+    },
+    "type": "composer-plugin",
+    "extra": {
+        "class": "PluginB"
+    }
+}

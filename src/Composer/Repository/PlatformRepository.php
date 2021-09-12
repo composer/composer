@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Composer;
 use Composer\Package\CompletePackage;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -33,6 +34,11 @@ class PlatformRepository extends ArrayRepository
     const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-(?:plugin|runtime)-api)$}iD';
 
     /**
+     * @var ?string
+     */
+    private static $lastSeenPlatformPhp = null;
+
+    /**
      * @var VersionParser
      */
     private $versionParser;
@@ -40,13 +46,15 @@ class PlatformRepository extends ArrayRepository
     /**
      * Defines overrides so that the platform can be mocked
      *
-     * Should be an array of package name => version number mappings
+     * Keyed by package name (lowercased)
      *
-     * @var array
+     * @var array<string, array{name: string, version: string}>
      */
     private $overrides = array();
 
+    /** @var Runtime */
     private $runtime;
+    /** @var HhvmDetector */
     private $hhvmDetector;
 
     public function __construct(array $packages = array(), array $overrides = array(), Runtime $runtime = null, HhvmDetector $hhvmDetector = null)
@@ -186,7 +194,7 @@ class PlatformRepository extends ArrayRepository
                         $library = strtolower($sslMatches['library']);
                         if ($library === 'openssl') {
                             $parsedVersion = Version::parseOpenssl($sslMatches['version'], $isFips);
-                            $this->addLibrary($name.'-openssl'.($isFips ? '-fips': ''), $parsedVersion, 'curl OpenSSL version ('.$parsedVersion.')', array(), $isFips ? array('curl-openssl'): array());
+                            $this->addLibrary($name.'-openssl'.($isFips ? '-fips' : ''), $parsedVersion, 'curl OpenSSL version ('.$parsedVersion.')', array(), $isFips ? array('curl-openssl') : array());
                         } else {
                             $this->addLibrary($name.'-'.$library, $sslMatches['version'], 'curl '.$library.' version ('.$sslMatches['version'].')', array('curl-openssl'));
                         }
@@ -315,7 +323,7 @@ class PlatformRepository extends ArrayRepository
 
                 case 'libxml':
                     // ext/dom, ext/simplexml, ext/xmlreader and ext/xmlwriter use the same libxml as the ext/libxml
-                    $libxmlProvides = array_map(function($extension) {
+                    $libxmlProvides = array_map(function ($extension) {
                         return $extension . '-libxml';
                     }, array_intersect($loadedExtensions, array('dom', 'simplexml', 'xml', 'xmlreader', 'xmlwriter')));
                     $this->addLibrary($name, $this->runtime->getConstant('LIBXML_DOTTED_VERSION'), 'libxml library version', array(), $libxmlProvides);
@@ -402,7 +410,9 @@ class PlatformRepository extends ArrayRepository
 
                 case 'libsodium':
                 case 'sodium':
-                    $this->addLibrary('libsodium', $this->runtime->getConstant('SODIUM_LIBRARY_VERSION'));
+                    if ($this->runtime->hasConstant('SODIUM_LIBRARY_VERSION')) {
+                        $this->addLibrary('libsodium', $this->runtime->getConstant('SODIUM_LIBRARY_VERSION'));
+                    }
                     break;
 
                 case 'sqlite3':
@@ -441,7 +451,7 @@ class PlatformRepository extends ArrayRepository
 
                 case 'zip':
                     if ($this->runtime->hasConstant('LIBZIP_VERSION', 'ZipArchive')) {
-                        $this->addLibrary($name.'-libzip', $this->runtime->getConstant('LIBZIP_VERSION','ZipArchive'), null, array('zip'));
+                        $this->addLibrary($name.'-libzip', $this->runtime->getConstant('LIBZIP_VERSION', 'ZipArchive'), null, array('zip'));
                     }
                     break;
 
@@ -489,7 +499,9 @@ class PlatformRepository extends ArrayRepository
             } else {
                 $actualText = 'actual: '.$package->getPrettyVersion();
             }
-            $overrider->setDescription($overrider->getDescription().', '.$actualText);
+            if ($overrider instanceof CompletePackageInterface) {
+                $overrider->setDescription($overrider->getDescription().', '.$actualText);
+            }
 
             return;
         }
@@ -510,6 +522,9 @@ class PlatformRepository extends ArrayRepository
         parent::addPackage($package);
     }
 
+    /**
+     * @return CompletePackage
+     */
     private function addOverriddenPackage(array $override, $name = null)
     {
         $version = $this->versionParser->normalize($override['version']);
@@ -517,6 +532,10 @@ class PlatformRepository extends ArrayRepository
         $package->setDescription('Package overridden via config.platform');
         $package->setExtra(array('config.platform' => true));
         parent::addPackage($package);
+
+        if ($package->getName() === 'php') {
+            self::$lastSeenPlatformPhp = implode('.', array_slice(explode('.', $package->getVersion()), 0, 3));
+        }
 
         return $package;
     }
@@ -549,7 +568,7 @@ class PlatformRepository extends ArrayRepository
 
         if ($name === 'uuid') {
             $ext->setReplaces(array(
-                new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version), Link::TYPE_REPLACE, $ext->getPrettyVersion())
+                'lib-uuid' => new Link('ext-uuid', 'lib-uuid', new Constraint('=', $version), Link::TYPE_REPLACE, $ext->getPrettyVersion()),
             ));
         }
 
@@ -557,7 +576,7 @@ class PlatformRepository extends ArrayRepository
     }
 
     /**
-     * @param string $name
+     * @param  string $name
      * @return string
      */
     private function buildPackageName($name)
@@ -599,7 +618,7 @@ class PlatformRepository extends ArrayRepository
     /**
      * Check if a package name is a platform package.
      *
-     * @param $name
+     * @param  string $name
      * @return bool
      */
     public static function isPlatformPackage($name)
@@ -611,5 +630,19 @@ class PlatformRepository extends ArrayRepository
         }
 
         return $cache[$name] = (bool) preg_match(PlatformRepository::PLATFORM_PACKAGE_REGEX, $name);
+    }
+
+    /**
+     * Returns the last seen config.platform.php version if defined
+     *
+     * This is a best effort attempt for internal purposes, retrieve the real
+     * packages from a PlatformRepository instance if you need a version guaranteed to
+     * be correct.
+     *
+     * @internal
+     */
+    public static function getPlatformPhpVersion()
+    {
+        return self::$lastSeenPlatformPhp;
     }
 }

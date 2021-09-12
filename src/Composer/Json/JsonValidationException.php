@@ -19,14 +19,24 @@ use Exception;
  */
 class JsonValidationException extends Exception
 {
+    /**
+     * @var string[]
+     */
     protected $errors;
 
+    /**
+     * @param string   $message
+     * @param string[] $errors
+     */
     public function __construct($message, $errors = array(), Exception $previous = null)
     {
         $this->errors = $errors;
-        parent::__construct($message, 0, $previous);
+        parent::__construct((string) $message, 0, $previous);
     }
 
+    /**
+     * @return string[]
+     */
     public function getErrors()
     {
         return $this->errors;

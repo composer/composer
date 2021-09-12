@@ -12,12 +12,11 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\AliasPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Package\PackageInterface;
+use Composer\Package\BasePackage;
 
 /**
  * A package pool contains all packages for dependency resolution
@@ -27,17 +26,22 @@ use Composer\Package\PackageInterface;
  */
 class Pool implements \Countable
 {
+    /** @var BasePackage[] */
     protected $packages = array();
+    /** @var array<string, BasePackage[]> */
     protected $packageByName = array();
+    /** @var VersionParser */
     protected $versionParser;
+    /** @var array<string, array<string, BasePackage[]>> */
     protected $providerCache = array();
-    protected $unacceptableFixedPackages;
+    /** @var BasePackage[] */
+    protected $unacceptableFixedOrLockedPackages;
 
-    public function __construct(array $packages = array(), array $unacceptableFixedPackages = array())
+    public function __construct(array $packages = array(), array $unacceptableFixedOrLockedPackages = array())
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
-        $this->unacceptableFixedPackages = $unacceptableFixedPackages;
+        $this->unacceptableFixedOrLockedPackages = $unacceptableFixedOrLockedPackages;
     }
 
     private function setPackages(array $packages)
@@ -56,10 +60,18 @@ class Pool implements \Countable
     }
 
     /**
+     * @return BasePackage[]
+     */
+    public function getPackages()
+    {
+        return $this->packages;
+    }
+
+    /**
      * Retrieves the package object for a given package id.
      *
-     * @param  int              $id
-     * @return PackageInterface
+     * @param  int         $id
+     * @return BasePackage
      */
     public function packageById($id)
     {
@@ -69,6 +81,7 @@ class Pool implements \Countable
     /**
      * Returns how many packages have been loaded into the pool
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return \count($this->packages);
@@ -77,10 +90,10 @@ class Pool implements \Countable
     /**
      * Searches all packages providing the given package name and match the constraint
      *
-     * @param  string              $name          The package name to be searched for
-     * @param  ConstraintInterface $constraint    A constraint that all returned
-     *                                            packages must match or null to return all
-     * @return PackageInterface[]  A set of packages
+     * @param  string              $name       The package name to be searched for
+     * @param  ConstraintInterface $constraint A constraint that all returned
+     *                                         packages must match or null to return all
+     * @return BasePackage[]       A set of packages
      */
     public function whatProvides($name, ConstraintInterface $constraint = null)
     {
@@ -136,22 +149,18 @@ class Pool implements \Countable
      * Checks if the package matches the given constraint directly or through
      * provided or replaced packages
      *
-     * @param  PackageInterface       $candidate
-     * @param  string                 $name       Name of the package to be matched
-     * @param  ConstraintInterface    $constraint The constraint to verify
+     * @param  BasePackage         $candidate
+     * @param  string              $name       Name of the package to be matched
+     * @param  ConstraintInterface $constraint The constraint to verify
      * @return bool
      */
-    public function match($candidate, $name, ConstraintInterface $constraint = null)
+    public function match(BasePackage $candidate, $name, ConstraintInterface $constraint = null)
     {
         $candidateName = $candidate->getName();
         $candidateVersion = $candidate->getVersion();
 
         if ($candidateName === $name) {
-            if ($constraint === null || CompilingMatcher::match($constraint, Constraint::OP_EQ, $candidateVersion)) {
-                return true;
-            }
-
-            return false;
+            return $constraint === null || CompilingMatcher::match($constraint, Constraint::OP_EQ, $candidateVersion);
         }
 
         $provides = $candidate->getProvides();
@@ -185,9 +194,9 @@ class Pool implements \Countable
         return false;
     }
 
-    public function isUnacceptableFixedPackage(PackageInterface $package)
+    public function isUnacceptableFixedOrLockedPackage(BasePackage $package)
     {
-        return \in_array($package, $this->unacceptableFixedPackages, true);
+        return \in_array($package, $this->unacceptableFixedOrLockedPackages, true);
     }
 
     public function __toString()
@@ -195,7 +204,7 @@ class Pool implements \Countable
         $str = "Pool:\n";
 
         foreach ($this->packages as $package) {
-            $str .= '- '.str_pad($package->id, 6, ' ', STR_PAD_LEFT).': '.$package->getName()."\n";
+            $str .= '- '.str_pad((string) $package->id, 6, ' ', STR_PAD_LEFT).': '.$package->getName()."\n";
         }
 
         return $str;

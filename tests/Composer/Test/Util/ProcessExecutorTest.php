@@ -111,7 +111,7 @@ class ProcessExecutorTest extends TestCase
         $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
         $process = new ProcessExecutor(new ConsoleIO(new ArrayInput(array()), $output, new HelperSet(array())));
 
-        $process->execute('php -r "echo \'<error>foo</error>\'.PHP_EOL;"');
+        $process->execute('php -ddisplay_errors=0 -derror_reporting=0 -r "echo \'<error>foo</error>\'.PHP_EOL;"');
         $this->assertSame('<error>foo</error>'.PHP_EOL, $output->fetch());
     }
 
@@ -119,10 +119,13 @@ class ProcessExecutorTest extends TestCase
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
         $process->enableAsync();
+        $start = microtime(true);
         /** @var Promise $promise */
-        $promise = $process->executeAsync('echo foo');
-        $this->assertEquals(1,  $process->countActiveJobs());
+        $promise = $process->executeAsync('sleep 2');
+        $this->assertEquals(1, $process->countActiveJobs());
         $promise->cancel();
-        $this->assertEquals(0,  $process->countActiveJobs());
+        $this->assertEquals(0, $process->countActiveJobs());
+        $end = microtime(true);
+        $this->assertTrue($end - $start < 0.5, 'Canceling took longer than it should, lasted '.($end - $start));
     }
 }

@@ -20,25 +20,33 @@ use Composer\Util\Http\Response;
 
 abstract class BitbucketDriver extends VcsDriver
 {
-    /** @var Cache */
-    protected $cache;
+    /** @var string */
     protected $owner;
+    /** @var string */
     protected $repository;
-    protected $hasIssues;
+    /** @var bool */
+    protected $hasIssues = false;
+    /** @var ?string */
     protected $rootIdentifier;
+    /** @var array<string, string> Map of tag name to identifier */
     protected $tags;
+    /** @var array<string, string> Map of branch name to identifier */
     protected $branches;
-    protected $infoCache = array();
+    /** @var string */
     protected $branchesUrl = '';
+    /** @var string */
     protected $tagsUrl = '';
+    /** @var string */
     protected $homeUrl = '';
+    /** @var string */
     protected $website = '';
+    /** @var string */
     protected $cloneHttpsUrl = '';
 
     /**
-     * @var VcsDriver
+     * @var ?VcsDriver
      */
-    protected $fallbackDriver;
+    protected $fallbackDriver = null;
     /** @var string|null if set either git or hg */
     protected $vcsType;
 
@@ -80,6 +88,7 @@ abstract class BitbucketDriver extends VcsDriver
      * sets some parameters which are used in other methods
      *
      * @return bool
+     * @phpstan-impure
      */
     protected function getRepoData()
     {
@@ -89,7 +98,7 @@ abstract class BitbucketDriver extends VcsDriver
             $this->repository,
             http_build_query(
                 array('fields' => '-project,-owner'),
-                null,
+                '',
                 '&'
             )
         );
@@ -147,7 +156,7 @@ abstract class BitbucketDriver extends VcsDriver
                         $hash = $branches[$label];
                     }
 
-                    if (! isset($hash)) {
+                    if (!isset($hash)) {
                         $composer['support']['source'] = sprintf(
                             'https://%s/%s/%s/src',
                             $this->originUrl,
@@ -289,7 +298,7 @@ abstract class BitbucketDriver extends VcsDriver
                         'fields' => 'values.name,values.target.hash,next',
                         'sort' => '-target.date',
                     ),
-                    null,
+                    '',
                     '&'
                 )
             );
@@ -333,7 +342,7 @@ abstract class BitbucketDriver extends VcsDriver
                         'fields' => 'values.name,values.target.hash,values.heads,next',
                         'sort' => '-target.date',
                     ),
-                    null,
+                    '',
                     '&'
                 )
             );
@@ -366,6 +375,8 @@ abstract class BitbucketDriver extends VcsDriver
      * @param bool   $fetchingRepoData
      *
      * @return Response The result
+     *
+     * @phpstan-impure
      */
     protected function fetchWithOAuthCredentials($url, $fetchingRepoData = false)
     {
@@ -399,6 +410,9 @@ abstract class BitbucketDriver extends VcsDriver
      */
     abstract protected function generateSshUrl();
 
+    /**
+     * @phpstan-impure
+     */
     protected function attemptCloneFallback()
     {
         try {

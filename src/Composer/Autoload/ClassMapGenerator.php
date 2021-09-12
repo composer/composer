@@ -33,8 +33,8 @@ class ClassMapGenerator
     /**
      * Generate a class map file
      *
-     * @param \Traversable $dirs Directories or a single path to search in
-     * @param string       $file The name of the class map file
+     * @param \Traversable|array<string> $dirs Directories or a single path to search in
+     * @param string                     $file The name of the class map file
      */
     public static function dump($dirs, $file)
     {
@@ -50,11 +50,11 @@ class ClassMapGenerator
     /**
      * Iterate over all files in the given directory searching for classes
      *
-     * @param \Iterator|string $path         The path to search in or an iterator
-     * @param string           $excluded    Regex that matches against the file path that exclude from the classmap.
-     * @param IOInterface      $io           IO object
-     * @param string           $namespace    Optional namespace prefix to filter by
-     * @param string           $autoloadType psr-0|psr-4 Optional autoload standard to use mapping rules
+     * @param \Traversable|string|array<string> $path         The path to search in or an iterator
+     * @param string                            $excluded     Regex that matches file paths to be excluded from the classmap
+     * @param ?IOInterface                      $io           IO object
+     * @param ?string                           $namespace    Optional namespace prefix to filter by
+     * @param ?string                           $autoloadType psr-0|psr-4 Optional autoload standard to use mapping rules
      *
      * @throws \RuntimeException When the path is neither an existing file nor directory
      * @return array             A class map array
@@ -147,13 +147,13 @@ class ClassMapGenerator
     /**
      * Remove classes which could not have been loaded by namespace autoloaders
      *
-     * @param array       $classes       found classes in given file
-     * @param string      $filePath      current file
-     * @param string      $baseNamespace prefix of given autoload mapping
-     * @param string      $namespaceType psr-0|psr-4
-     * @param string      $basePath      root directory of given autoload mapping
-     * @param IOInterface $io            IO object
-     * @return array      valid classes
+     * @param  array        $classes       found classes in given file
+     * @param  string       $filePath      current file
+     * @param  string       $baseNamespace prefix of given autoload mapping
+     * @param  string       $namespaceType psr-0|psr-4
+     * @param  string       $basePath      root directory of given autoload mapping
+     * @param  ?IOInterface $io            IO object
+     * @return array        valid classes
      */
     private static function filterByNamespace($classes, $filePath, $baseNamespace, $namespaceType, $basePath, $io)
     {
@@ -176,8 +176,7 @@ class ClassMapGenerator
                     $className = substr($class, $namespaceLength + 1);
                     $subPath = str_replace('\\', DIRECTORY_SEPARATOR, $namespace)
                         . str_replace('_', DIRECTORY_SEPARATOR, $className);
-                }
-                else {
+                } else {
                     $subPath = str_replace('_', DIRECTORY_SEPARATOR, $class);
                 }
             } elseif ('psr-4' === $namespaceType) {
@@ -216,7 +215,7 @@ class ClassMapGenerator
     private static function findClasses($path)
     {
         $extraTypes = PHP_VERSION_ID < 50400 ? '' : '|trait';
-        if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>=')) {
+        if (PHP_VERSION_ID >= 80100 || (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>='))) {
             $extraTypes .= '|enum';
         }
 
@@ -226,7 +225,7 @@ class ClassMapGenerator
         if (!$contents) {
             if (!file_exists($path)) {
                 $message = 'File at "%s" does not exist, check your classmap definitions';
-            } elseif (!is_readable($path)) {
+            } elseif (!Filesystem::isReadable($path)) {
                 $message = 'File at "%s" is not readable, check its permissions';
             } elseif ('' === trim(file_get_contents($path))) {
                 // The input file was really empty and thus contains no classes
@@ -247,7 +246,22 @@ class ClassMapGenerator
         }
 
         // strip heredocs/nowdocs
-        $contents = preg_replace('{<<<[ \t]*([\'"]?)(\w+)\\1(?:\r\n|\n|\r)(?:.*?)(?:\r\n|\n|\r)(?:\s*)\\2(?=\s+|[;,.)])}s', 'null', $contents);
+        $contents = preg_replace('{
+            # opening heredoc/nowdoc delimiter (word-chars)
+            <<<[ \t]*+([\'"]?)(\w++)\\1
+            # needs to be followed by a newline
+            (?:\r\n|\n|\r)
+            # the meat of it, matching line by line until end delimiter
+            (?:
+                # a valid line is optional white-space (possessive match) not followed by the end delimiter, then anything goes for the rest of the line
+                [\t ]*+(?!\\2 \b)[^\r\n]*+
+                # end of line(s)
+                [\r\n]++
+            )*
+            # end delimiter
+            [\t ]*+ \\2 (?=\b)
+        }xu', 'null', $contents);
+
         // strip strings
         $contents = preg_replace('{"[^"\\\\]*+(\\\\.[^"\\\\]*+)*+"|\'[^\'\\\\]*+(\\\\.[^\'\\\\]*+)*+\'}s', 'null', $contents);
         // strip leading non-php code if needed

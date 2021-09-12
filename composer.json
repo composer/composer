@@ -24,21 +24,22 @@
     "require": {
         "php": "^5.3.2 || ^7.0 || ^8.0",
         "composer/ca-bundle": "^1.0",
+        "composer/metadata-minifier": "^1.0",
         "composer/semver": "^3.0",
         "composer/spdx-licenses": "^1.2",
-        "composer/xdebug-handler": "^1.1",
-        "justinrainbow/json-schema": "^5.2.10",
+        "composer/xdebug-handler": "^2.0",
+        "justinrainbow/json-schema": "^5.2.11",
         "psr/log": "^1.0",
         "seld/jsonlint": "^1.4",
         "seld/phar-utils": "^1.0",
-        "symfony/console": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0",
-        "symfony/filesystem": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0",
-        "symfony/finder": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0",
-        "symfony/process": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0",
+        "symfony/console": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
+        "symfony/filesystem": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
+        "symfony/finder": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
+        "symfony/process": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
         "react/promise": "^1.2 || ^2.7"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "^4.2 || ^5.0",
+        "symfony/phpunit-bridge": "^4.2 || ^5.0 || ^6.0",
         "phpspec/prophecy": "^1.10"
     },
     "suggest": {
@@ -54,7 +55,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.0-dev"
+            "dev-master": "2.1-dev"
         }
     },
     "autoload": {
@@ -77,14 +78,23 @@
     ],
     "scripts": {
         "compile": "@php -dphar.readonly=0 bin/compile",
-        "test": "simple-phpunit"
+        "test": "simple-phpunit",
+        "phpstan-setup": [
+            "@composer config platform --unset",
+            "@php composer.phar update",
+            "@composer require --dev phpstan/phpstan:^0.12.93 phpstan/phpstan-phpunit:^0.12.17 phpunit/phpunit:^7.5.20 --with-all-dependencies",
+            "git checkout composer.json composer.lock"
+        ],
+        "phpstan": "@php vendor/bin/phpstan analyse --configuration=phpstan/config.neon"
     },
     "scripts-descriptions": {
         "compile": "Compile composer.phar",
-        "test": "Run all tests"
+        "test": "Run all tests",
+        "phpstan-setup": "Prepare environment to run PHPStan locally (must be run with PHP7.4)",
+        "phpstan": "Runs PHPStan (after phpstan-setup was executed, must be run with PHP7.4)"
     },
     "support": {
         "issues": "https://github.com/composer/composer/issues",
-        "irc": "irc://irc.freenode.org/composer"
+        "irc": "ircs://irc.libera.chat:6697/composer"
     }
 }

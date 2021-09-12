@@ -42,11 +42,6 @@ class Zip
         }
 
         $foundFileIndex = self::locateFile($zip, 'composer.json');
-        if (false === $foundFileIndex) {
-            $zip->close();
-
-            return null;
-        }
 
         $content = null;
         $configurationFileName = $zip->getNameIndex($foundFileIndex);
@@ -64,8 +59,8 @@ class Zip
     /**
      * Find a file by name, returning the one that has the shortest path.
      *
-     * @param \ZipArchive $zip
-     * @param string      $filename
+     * @param  \ZipArchive       $zip
+     * @param  string            $filename
      * @throws \RuntimeException
      *
      * @return int
@@ -81,6 +76,11 @@ class Zip
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = $zip->getNameIndex($i);
             $dirname = dirname($name);
+
+            // ignore OSX specific resource fork folder
+            if (strpos($name, '__MACOSX') !== false) {
+                continue;
+            }
 
             // handle archives with proper TOC
             if ($dirname === '.') {

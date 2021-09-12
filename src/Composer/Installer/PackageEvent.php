@@ -15,10 +15,7 @@ namespace Composer\Installer;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\DependencyResolver\Operation\OperationInterface;
-use Composer\DependencyResolver\PolicyInterface;
-use Composer\DependencyResolver\Request;
 use Composer\Repository\RepositoryInterface;
-use Composer\Repository\RepositorySet;
 use Composer\EventDispatcher\Event;
 
 /**
@@ -66,7 +63,6 @@ class PackageEvent extends Event
      * @param IOInterface          $io
      * @param bool                 $devMode
      * @param RepositoryInterface  $localRepo
-     * @param Request              $request
      * @param OperationInterface[] $operations
      * @param OperationInterface   $operation
      */

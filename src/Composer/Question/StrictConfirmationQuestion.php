@@ -24,7 +24,9 @@ use Symfony\Component\Console\Question\Question;
  */
 class StrictConfirmationQuestion extends Question
 {
+    /** @var string */
     private $trueAnswerRegex;
+    /** @var string */
     private $falseAnswerRegex;
 
     /**

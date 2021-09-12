@@ -28,20 +28,24 @@ use Composer\Downloader\TransportException;
  */
 class SvnDriver extends VcsDriver
 {
-    /**
-     * @var Cache
-     */
-    protected $cache;
+    /** @var string */
     protected $baseUrl;
+    /** @var array<string, string> Map of tag name to identifier */
     protected $tags;
+    /** @var array<string, string> Map of branch name to identifier */
     protected $branches;
+    /** @var ?string */
     protected $rootIdentifier;
-    protected $infoCache = array();
 
+    /** @var string|false */
     protected $trunkPath = 'trunk';
+    /** @var string */
     protected $branchesPath = 'branches';
+    /** @var string */
     protected $tagsPath = 'tags';
+    /** @var string */
     protected $packagePath = '';
+    /** @var bool */
     protected $cacheCredentials = true;
 
     /**
@@ -226,7 +230,7 @@ class SvnDriver extends VcsDriver
                     foreach ($this->process->splitLines($output) as $line) {
                         $line = trim($line);
                         if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                            if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
+                            if (isset($match[1], $match[2]) && $match[2] !== './') {
                                 $this->tags[rtrim($match[2], '/')] = $this->buildIdentifier(
                                     '/' . $this->tagsPath . '/' . $match[2],
                                     $match[1]
@@ -260,7 +264,7 @@ class SvnDriver extends VcsDriver
                 foreach ($this->process->splitLines($output) as $line) {
                     $line = trim($line);
                     if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                        if (isset($match[1]) && isset($match[2]) && $match[2] === './') {
+                        if (isset($match[1], $match[2]) && $match[2] === './') {
                             $this->branches['trunk'] = $this->buildIdentifier(
                                 '/' . $this->trunkPath,
                                 $match[1]
@@ -279,7 +283,7 @@ class SvnDriver extends VcsDriver
                     foreach ($this->process->splitLines(trim($output)) as $line) {
                         $line = trim($line);
                         if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
-                            if (isset($match[1]) && isset($match[2]) && $match[2] !== './') {
+                            if (isset($match[1], $match[2]) && $match[2] !== './') {
                                 $this->branches[rtrim($match[2], '/')] = $this->buildIdentifier(
                                     '/' . $this->branchesPath . '/' . $match[2],
                                     $match[1]
@@ -311,7 +315,7 @@ class SvnDriver extends VcsDriver
 
         $process = new ProcessExecutor($io);
         $exit = $process->execute(
-            "svn info --non-interactive ".ProcessExecutor::escape($url),
+            "svn info --non-interactive -- ".ProcessExecutor::escape($url),
             $ignoredOutput
         );
 

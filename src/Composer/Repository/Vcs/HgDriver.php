@@ -24,11 +24,14 @@ use Composer\IO\IOInterface;
  */
 class HgDriver extends VcsDriver
 {
+    /** @var array<string, string> Map of tag name to identifier */
     protected $tags;
+    /** @var array<string, string> Map of branch name to identifier */
     protected $branches;
+    /** @var string */
     protected $rootIdentifier;
+    /** @var string */
     protected $repoDir;
-    protected $infoCache = array();
 
     /**
      * {@inheritDoc}
@@ -68,7 +71,7 @@ class HgDriver extends VcsDriver
 
                 $repoDir = $this->repoDir;
                 $command = function ($url) use ($repoDir) {
-                    return sprintf('hg clone --noupdate %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($repoDir));
+                    return sprintf('hg clone --noupdate -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($repoDir));
                 };
 
                 $hgUtils->runCommand($command, $this->url, null);
@@ -126,7 +129,7 @@ class HgDriver extends VcsDriver
         $this->process->execute($resource, $content, $this->repoDir);
 
         if (!trim($content)) {
-            return;
+            return null;
         }
 
         return $content;
@@ -229,7 +232,7 @@ class HgDriver extends VcsDriver
         }
 
         $process = new ProcessExecutor($io);
-        $exit = $process->execute(sprintf('hg identify %s', ProcessExecutor::escape($url)), $ignored);
+        $exit = $process->execute(sprintf('hg identify -- %s', ProcessExecutor::escape($url)), $ignored);
 
         return $exit === 0;
     }

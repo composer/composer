@@ -112,7 +112,7 @@ Your requirements could not be resolved to an installable set of packages.
   Problem 1
     - Root composer.json requires b/b ^1.1 || ^2.0 || ^3.0, found b/b[1.1.0, ..., 1.2.9, 2.0.0, ..., 2.3.0-RC, 3.0.0, 3.0.1, 3.0.2, 3.0.3] but the package is fixed to 1.0.0 (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.
 
-Use the option --with-all-dependencies to allow upgrades, downgrades and removals for packages currently locked to specific versions.
+Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
 
 --EXPECT--
 

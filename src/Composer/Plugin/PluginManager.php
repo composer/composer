@@ -20,6 +20,7 @@ use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledRepository;
+use Composer\Repository\RootPackageRepository;
 use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Semver\Constraint\Constraint;
@@ -38,7 +39,7 @@ class PluginManager
     protected $composer;
     /** @var IOInterface */
     protected $io;
-    /** @var Composer */
+    /** @var ?Composer */
     protected $globalComposer;
     /** @var VersionParser */
     protected $versionParser;
@@ -81,11 +82,9 @@ class PluginManager
 
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
-        if ($repo) {
-            $this->loadRepository($repo);
-        }
+        $this->loadRepository($repo, false);
         if ($globalRepo) {
-            $this->loadRepository($globalRepo);
+            $this->loadRepository($globalRepo, true);
         }
     }
 
@@ -117,10 +116,11 @@ class PluginManager
      *
      * @param PackageInterface $package
      * @param bool             $failOnMissingClasses By default this silently skips plugins that can not be found, but if set to true it fails with an exception
+     * @param bool             $isGlobalPlugin       Set to true to denote plugins which are installed in the global Composer directory
      *
      * @throws \UnexpectedValueException
      */
-    public function registerPackage(PackageInterface $package, $failOnMissingClasses = false)
+    public function registerPackage(PackageInterface $package, $failOnMissingClasses = false, $isGlobalPlugin = false)
     {
         if ($this->disablePlugins) {
             return;
@@ -145,7 +145,13 @@ class PluginManager
             if ($requiresComposer->getPrettyString() === $this->getPluginApiVersion()) {
                 $this->io->writeError('<warning>The "' . $package->getName() . '" plugin requires composer-plugin-api '.$this->getPluginApiVersion().', this *WILL* break in the future and it should be fixed ASAP (require ^'.$this->getPluginApiVersion().' instead for example).</warning>');
             } elseif (!$requiresComposer->matches($currentPluginApiConstraint)) {
-                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
+                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin '.($isGlobalPlugin ? '(installed globally) ' : '').'was skipped because it requires a Plugin API version ("' . $requiresComposer->getPrettyString() . '") that does not match your Composer installation ("' . $currentPluginApiVersion . '"). You may need to run composer update with the "--no-plugins" option.</warning>');
+
+                return;
+            }
+
+            if ($package->getName() === 'symfony/flex' && preg_match('{^[0-9.]+$}', $package->getVersion()) && version_compare($package->getVersion(), '1.9.8', '<')) {
+                $this->io->writeError('<warning>The "' . $package->getName() . '" plugin '.($isGlobalPlugin ? '(installed globally) ' : '').'was skipped because it is not compatible with Composer 2+. Make sure to update it to version 1.9.8 or greater.</warning>');
 
                 return;
             }
@@ -166,7 +172,9 @@ class PluginManager
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
         $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
 
-        $installedRepo = new InstalledRepository(array($localRepo));
+        $rootPackage = clone $this->composer->getPackage();
+        $rootPackageRepo = new RootPackageRepository($rootPackage);
+        $installedRepo = new InstalledRepository(array($localRepo, $rootPackageRepo));
         if ($globalRepo) {
             $installedRepo->addRepository($globalRepo);
         }
@@ -175,15 +183,19 @@ class PluginManager
         $autoloadPackages = $this->collectDependencies($installedRepo, $autoloadPackages, $package);
 
         $generator = $this->composer->getAutoloadGenerator();
-        $autoloads = array();
+        $autoloads = array(array($rootPackage, ''));
         foreach ($autoloadPackages as $autoloadPackage) {
+            if ($autoloadPackage === $rootPackage) {
+                continue;
+            }
+
             $downloadPath = $this->getInstallPath($autoloadPackage, $globalRepo && $globalRepo->hasPackage($autoloadPackage));
             $autoloads[] = array($autoloadPackage, $downloadPath);
         }
 
-        $map = $generator->parseAutoloads($autoloads, new Package('dummy', '1.0.0.0', '1.0.0'));
-        $classLoader = $generator->createLoader($map);
-        $classLoader->register();
+        $map = $generator->parseAutoloads($autoloads, $rootPackage);
+        $classLoader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
+        $classLoader->register(false);
 
         foreach ($classes as $class) {
             if (class_exists($class, false)) {
@@ -208,12 +220,13 @@ class PluginManager
             }
 
             if ($oldInstallerPlugin) {
+                $this->io->writeError('<warning>Loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').'which is a legacy composer-installer built for Composer 1.x, it is likely to cause issues as you are running Composer 2.x.</warning>');
                 $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
                 $this->registeredPlugins[$package->getName()] = $installer;
             } elseif (class_exists($class)) {
                 $plugin = new $class();
-                $this->addPlugin($plugin);
+                $this->addPlugin($plugin, $isGlobalPlugin, $package);
                 $this->registeredPlugins[$package->getName()] = $plugin;
             } elseif ($failOnMissingClasses) {
                 throw new \UnexpectedValueException('Plugin '.$package->getName().' could not be initialized, class not found: '.$class);
@@ -244,6 +257,7 @@ class PluginManager
         }
 
         if ($oldInstallerPlugin) {
+            /** @var \Composer\Installer\InstallerInterface $installer */
             $installer = $this->registeredPlugins[$package->getName()];
             unset($this->registeredPlugins[$package->getName()]);
             $this->composer->getInstallationManager()->removeInstaller($installer);
@@ -303,11 +317,19 @@ class PluginManager
      * programmatically and want to register a plugin class directly this is a valid way
      * to do it.
      *
-     * @param PluginInterface $plugin plugin instance
+     * @param PluginInterface   $plugin        plugin instance
+     * @param ?PackageInterface $sourcePackage Package from which the plugin comes from
      */
-    public function addPlugin(PluginInterface $plugin)
+    public function addPlugin(PluginInterface $plugin, $isGlobalPlugin = false, PackageInterface $sourcePackage = null)
     {
-        $this->io->writeError('Loading plugin '.get_class($plugin), true, IOInterface::DEBUG);
+        $details = array();
+        if ($sourcePackage) {
+            $details[] = 'from '.$sourcePackage->getName();
+        }
+        if ($isGlobalPlugin) {
+            $details[] = 'installed globally';
+        }
+        $this->io->writeError('Loading plugin '.get_class($plugin).($details ? ' ('.implode(', ', $details).')' : ''), true, IOInterface::DEBUG);
         $this->plugins[] = $plugin;
         $plugin->activate($this->composer, $this->io);
 
@@ -367,7 +389,7 @@ class PluginManager
      *
      * @throws \RuntimeException
      */
-    private function loadRepository(RepositoryInterface $repo)
+    private function loadRepository(RepositoryInterface $repo, $isGlobalRepo)
     {
         $packages = $repo->getPackages();
         $sortedPackages = PackageSorter::sortPackages($packages);
@@ -376,10 +398,10 @@ class PluginManager
                 continue;
             }
             if ('composer-plugin' === $package->getType()) {
-                $this->registerPackage($package);
+                $this->registerPackage($package, false, $isGlobalRepo);
             // Backward compatibility
             } elseif ('composer-installer' === $package->getType()) {
-                $this->registerPackage($package);
+                $this->registerPackage($package, false, $isGlobalRepo);
             }
         }
     }
@@ -395,13 +417,8 @@ class PluginManager
      */
     private function collectDependencies(InstalledRepository $installedRepo, array $collected, PackageInterface $package)
     {
-        $requires = array_merge(
-            $package->getRequires(),
-            $package->getDevRequires()
-        );
-
-        foreach ($requires as $requireLink) {
-            foreach ($installedRepo->findPackagesWithReplacersAndProviders($requireLink->getTarget(), $requireLink->getConstraint()) as $requiredPackage) {
+        foreach ($package->getRequires() as $requireLink) {
+            foreach ($installedRepo->findPackagesWithReplacersAndProviders($requireLink->getTarget()) as $requiredPackage) {
                 if (!isset($collected[$requiredPackage->getName()])) {
                     $collected[$requiredPackage->getName()] = $requiredPackage;
                     $collected = $this->collectDependencies($installedRepo, $collected, $requiredPackage);
@@ -451,17 +468,22 @@ class PluginManager
             array_key_exists($capability, $capabilities)
             && (empty($capabilities[$capability]) || !is_string($capabilities[$capability]) || !trim($capabilities[$capability]))
         ) {
-            throw new \UnexpectedValueException('Plugin '.get_class($plugin).' provided invalid capability class name(s), got '.var_export($capabilities[$capability], 1));
+            throw new \UnexpectedValueException('Plugin '.get_class($plugin).' provided invalid capability class name(s), got '.var_export($capabilities[$capability], true));
         }
+
+        return null;
     }
 
     /**
-     * @param  PluginInterface $plugin
-     * @param  string          $capabilityClassName The fully qualified name of the API interface which the plugin may provide
-     *                                              an implementation of.
-     * @param  array           $ctorArgs            Arguments passed to Capability's constructor.
-     *                                              Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @template CapabilityClass of Capability
+     * @param  PluginInterface               $plugin
+     * @param  class-string<CapabilityClass> $capabilityClassName The fully qualified name of the API interface which the plugin may provide
+     *                                                            an implementation of.
+     * @param  array                         $ctorArgs            Arguments passed to Capability's constructor.
+     *                                                            Keeping it an array will allow future values to be passed w\o changing the signature.
      * @return null|Capability
+     * @phpstan-param class-string<CapabilityClass> $capabilityClassName
+     * @phpstan-return null|CapabilityClass
      */
     public function getPluginCapability(PluginInterface $plugin, $capabilityClassName, array $ctorArgs = array())
     {
@@ -482,14 +504,17 @@ class PluginManager
 
             return $capabilityObj;
         }
+
+        return null;
     }
 
     /**
-     * @param  string       $capabilityClassName The fully qualified name of the API interface which the plugin may provide
-     *                                           an implementation of.
-     * @param  array        $ctorArgs            Arguments passed to Capability's constructor.
-     *                                           Keeping it an array will allow future values to be passed w\o changing the signature.
-     * @return Capability[]
+     * @template CapabilityClass of Capability
+     * @param  class-string<CapabilityClass> $capabilityClassName The fully qualified name of the API interface which the plugin may provide
+     *                                                            an implementation of.
+     * @param  array                         $ctorArgs            Arguments passed to Capability's constructor.
+     *                                                            Keeping it an array will allow future values to be passed w\o changing the signature.
+     * @return CapabilityClass[]
      */
     public function getPluginCapabilities($capabilityClassName, array $ctorArgs = array())
     {

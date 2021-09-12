@@ -179,8 +179,8 @@ class ValidatingArrayLoader implements LoaderInterface
                 unset($this->config['support']['email']);
             }
 
-            if (isset($this->config['support']['irc']) && !$this->filterUrl($this->config['support']['irc'], array('irc'))) {
-                $this->warnings[] = 'support.irc : invalid value ('.$this->config['support']['irc'].'), must be a irc://<server>/<channel> URL';
+            if (isset($this->config['support']['irc']) && !$this->filterUrl($this->config['support']['irc'], array('irc', 'ircs'))) {
+                $this->warnings[] = 'support.irc : invalid value ('.$this->config['support']['irc'].'), must be a irc://<server>/<channel> or ircs:// URL';
                 unset($this->config['support']['irc']);
             }
 
@@ -276,7 +276,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         if ($this->validateString('minimum-stability') && !empty($this->config['minimum-stability'])) {
-            if (!isset(BasePackage::$stabilities[$this->config['minimum-stability']])) {
+            if (!isset(BasePackage::$stabilities[strtolower($this->config['minimum-stability'])]) && $this->config['minimum-stability'] !== 'RC') {
                 $this->errors[] = 'minimum-stability : invalid value ('.$this->config['minimum-stability'].'), must be one of '.implode(', ', array_keys(BasePackage::$stabilities));
                 unset($this->config['minimum-stability']);
             }
@@ -306,8 +306,34 @@ class ValidatingArrayLoader implements LoaderInterface
             unset($this->config['autoload']['psr-4']);
         }
 
-        // TODO validate dist
-        // TODO validate source
+        foreach (array('source', 'dist') as $srcType) {
+            if ($this->validateArray($srcType) && !empty($this->config[$srcType])) {
+                if (!isset($this->config[$srcType]['type'])) {
+                    $this->errors[] = $srcType . '.type : must be present';
+                }
+                if (!isset($this->config[$srcType]['url'])) {
+                    $this->errors[] = $srcType . '.url : must be present';
+                }
+                if ($srcType === 'source' && !isset($this->config[$srcType]['reference'])) {
+                    $this->errors[] = $srcType . '.reference : must be present';
+                }
+                if (!is_string($this->config[$srcType]['type'])) {
+                    $this->errors[] = $srcType . '.type : should be a string, '.gettype($this->config[$srcType]['type']).' given';
+                }
+                if (!is_string($this->config[$srcType]['url'])) {
+                    $this->errors[] = $srcType . '.url : should be a string, '.gettype($this->config[$srcType]['url']).' given';
+                }
+                if (isset($this->config[$srcType]['reference']) && !is_string($this->config[$srcType]['reference']) && !is_int($this->config[$srcType]['reference'])) {
+                    $this->errors[] = $srcType . '.reference : should be a string or int, '.gettype($this->config[$srcType]['reference']).' given';
+                }
+                if (isset($this->config[$srcType]['reference']) && preg_match('{^\s*-}', (string) $this->config[$srcType]['reference'])) {
+                    $this->errors[] = $srcType . '.reference : must not start with a "-", "'.$this->config[$srcType]['reference'].'" given';
+                }
+                if (preg_match('{^\s*-}', $this->config[$srcType]['url'])) {
+                    $this->errors[] = $srcType . '.url : must not start with a "-", "'.$this->config[$srcType]['url'].'" given';
+                }
+            }
+        }
 
         // TODO validate repositories
         // TODO validate package repositories' packages using this recursively
@@ -321,6 +347,13 @@ class ValidatingArrayLoader implements LoaderInterface
                 $this->errors[] = 'extra.branch-alias : must be an array of versions => aliases';
             } else {
                 foreach ($this->config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
+                    if (!is_string($targetBranch)) {
+                        $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.json_encode($targetBranch).') must be a string, "'.gettype($targetBranch).'" received.';
+                        unset($this->config['extra']['branch-alias'][$sourceBranch]);
+
+                        continue;
+                    }
+
                     // ensure it is an alias to a -dev package
                     if ('-dev' !== substr($targetBranch, -4)) {
                         $this->warnings[] = 'extra.branch-alias.'.$sourceBranch.' : the target branch ('.$targetBranch.') must end in -dev';

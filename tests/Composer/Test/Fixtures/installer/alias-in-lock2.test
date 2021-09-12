@@ -1,0 +1,75 @@
+--TEST--
+Newly defined root aliases end up in lock file only if the package is updated
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "a/aliased", "version": "3.0.2"
+                },
+                {
+                    "name": "a/aliased2", "version": "3.0.2"
+                }
+            ]
+        }
+    ],
+    "require": {
+        "a/aliased": "3.0.2 as 3.0.3",
+        "a/aliased2": "3.0.2 as 3.0.3"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "a/aliased", "version": "3.0.2",
+            "type": "library"
+        },
+        {
+            "name": "a/aliased2", "version": "3.0.2",
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update a/aliased
+--EXPECT-LOCK--
+{
+    "packages": [
+        {
+            "name": "a/aliased", "version": "3.0.2",
+            "type": "library"
+        },
+        {
+            "name": "a/aliased2", "version": "3.0.2",
+            "type": "library"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [{
+        "package": "a/aliased",
+        "version": "3.0.2.0",
+        "alias": "3.0.3",
+        "alias_normalized": "3.0.3.0"
+    }],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT--
+Installing a/aliased (3.0.2)
+Marking a/aliased (3.0.3) as installed, alias of a/aliased (3.0.2)
+Installing a/aliased2 (3.0.2)

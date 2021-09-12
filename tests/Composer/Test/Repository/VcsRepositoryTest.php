@@ -44,7 +44,7 @@ class VcsRepositoryTest extends TestCase
         self::$gitRepo = $this->getUniqueTmpDirectory();
 
         if (!@chdir(self::$gitRepo)) {
-            $this->skipped = 'Could not create and move into the temp git repo '.self::$gitRepo;
+            $this->skipped = 'Could not move into the temp git repo '.self::$gitRepo;
 
             return;
         }
@@ -58,7 +58,8 @@ class VcsRepositoryTest extends TestCase
             }
         };
 
-        $exec('git init');
+        $exec('git init -q');
+        $exec('git checkout -b master');
         $exec('git config user.email composertest@example.org');
         $exec('git config user.name ComposerTest');
         $exec('git config commit.gpgsign false');

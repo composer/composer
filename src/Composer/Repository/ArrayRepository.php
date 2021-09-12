@@ -13,6 +13,9 @@
 namespace Composer\Repository;
 
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
+use Composer\Package\CompleteAliasPackage;
+use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
@@ -27,13 +30,13 @@ use Composer\Semver\Constraint\Constraint;
  */
 class ArrayRepository implements RepositoryInterface
 {
-    /** @var PackageInterface[] */
-    protected $packages;
+    /** @var ?array<PackageInterface&BasePackage> */
+    protected $packages = null;
 
     /**
-      * @var PackageInterface[] indexed by package unique name and used to cache hasPackage calls
-      */
-    protected $packageMap;
+     * @var ?array<PackageInterface&BasePackage> indexed by package unique name and used to cache hasPackage calls
+     */
+    protected $packageMap = null;
 
     public function __construct(array $packages = array())
     {
@@ -220,7 +223,7 @@ class ArrayRepository implements RepositoryInterface
                 if ($packageName === $link->getTarget()) {
                     $result[$candidate->getName()] = array(
                         'name' => $candidate->getName(),
-                        'description' => $candidate->getDescription(),
+                        'description' => $candidate instanceof CompletePackageInterface ? $candidate->getDescription() : null,
                         'type' => $candidate->getType(),
                     );
                     continue 2;
@@ -231,9 +234,21 @@ class ArrayRepository implements RepositoryInterface
         return $result;
     }
 
+    /**
+     * @phpstan-param PackageInterface&BasePackage $package
+     * @return AliasPackage|CompleteAliasPackage
+     */
     protected function createAliasPackage(PackageInterface $package, $alias, $prettyAlias)
     {
-        return new AliasPackage($package instanceof AliasPackage ? $package->getAliasOf() : $package, $alias, $prettyAlias);
+        while ($package instanceof AliasPackage) {
+            $package = $package->getAliasOf();
+        }
+
+        if ($package instanceof CompletePackage) {
+            return new CompleteAliasPackage($package, $alias, $prettyAlias);
+        }
+
+        return new AliasPackage($package, $alias, $prettyAlias);
     }
 
     /**
@@ -266,6 +281,10 @@ class ArrayRepository implements RepositoryInterface
             $this->initialize();
         }
 
+        if (null === $this->packages) {
+            throw new \LogicException('initialize failed to initialize the packages array');
+        }
+
         return $this->packages;
     }
 
@@ -274,6 +293,7 @@ class ArrayRepository implements RepositoryInterface
      *
      * @return int Number of packages
      */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         if (null === $this->packages) {

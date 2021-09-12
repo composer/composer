@@ -1,0 +1,39 @@
+--TEST--
+Test that a conflict against >=5 includes the default branch if it has no branch alias defined (and then uses the default 9999999-dev alias).
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "conflicter/pkg", "version": "1.0.0", "conflict": { "victim/pkg": ">=5", "victim/pkg2": ">=5" } },
+                { "name": "victim/pkg", "version": "dev-master", "default-branch": true },
+                { "name": "victim/pkg2", "version": "dev-foo" }
+            ]
+        }
+    ],
+    "require": {
+        "conflicter/pkg": "1.0.0",
+        "victim/pkg": "*",
+        "victim/pkg2": "*"
+    },
+    "minimum-stability": "dev"
+}
+
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - conflicter/pkg 1.0.0 conflicts with victim/pkg dev-master.
+    - Root composer.json requires conflicter/pkg 1.0.0 -> satisfiable by conflicter/pkg[1.0.0].
+    - Root composer.json requires victim/pkg * -> satisfiable by victim/pkg[dev-master].
+
+--EXPECT--

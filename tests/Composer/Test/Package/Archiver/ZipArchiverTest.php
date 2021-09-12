@@ -12,42 +12,85 @@
 
 namespace Composer\Test\Package\Archiver;
 
+use Composer\Util\Platform;
+use ZipArchive;
 use Composer\Package\Archiver\ZipArchiver;
 
 class ZipArchiverTest extends ArchiverTest
 {
-    public function testZipArchive()
+    /**
+     * @param string $include
+     *
+     * @dataProvider provideGitignoreExcludeNegationTestCases
+     */
+    public function testGitignoreExcludeNegation($include)
+    {
+        $this->testZipArchive(array(
+            'docs/README.md' => '# The doc',
+            '.gitignore' => "/*\n.*\n!.git*\n$include",
+        ));
+    }
+
+    public function provideGitignoreExcludeNegationTestCases()
+    {
+        return array(
+            array('!/docs'),
+            array('!/docs/'),
+        );
+    }
+
+    public function testZipArchive(array $files = array())
     {
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('Cannot run ZipArchiverTest, missing class "ZipArchive".');
         }
 
+        if (empty($files)) {
+            $files = array(
+                'file.txt' => null,
+                'foo/bar/baz' => null,
+                'x/baz' => null,
+                'x/includeme' => null,
+            );
+
+            if (!Platform::isWindows()) {
+                $files['foo' . getcwd() . '/file.txt'] = null;
+            }
+        }
         // Set up repository
-        $this->setupDummyRepo();
+        $this->setupDummyRepo($files);
         $package = $this->setupPackage();
         $target = sys_get_temp_dir().'/composer_archiver_test.zip';
 
         // Test archive
         $archiver = new ZipArchiver();
         $archiver->archive($package->getSourceUrl(), $target, 'zip');
-        $this->assertFileExists($target);
+        static::assertFileExists($target);
+        $zip = new ZipArchive();
+        $res = $zip->open($target);
+        static::assertTrue($res, 'Failed asserting that Zip file can be opened');
+        foreach ($files as $path => $content) {
+            static::assertSame($content, $zip->getFromName($path), 'Failed asserting that Zip contains ' . $path);
+        }
+        $zip->close();
 
         unlink($target);
     }
 
     /**
      * Create a local dummy repository to run tests against!
+     * @param array $files
      */
-    protected function setupDummyRepo()
+    protected function setupDummyRepo(array &$files)
     {
         $currentWorkDir = getcwd();
         chdir($this->testDir);
-
-        $this->writeFile('file.txt', 'content', $currentWorkDir);
-        $this->writeFile('foo/bar/baz', 'content', $currentWorkDir);
-        $this->writeFile('foo/bar/ignoreme', 'content', $currentWorkDir);
-        $this->writeFile('x/baz', 'content', $currentWorkDir);
-        $this->writeFile('x/includeme', 'content', $currentWorkDir);
+        foreach ($files as $path => $content) {
+            if ($files[$path] === null) {
+                $files[$path] = 'content';
+            }
+            $this->writeFile($path, $files[$path], $currentWorkDir);
+        }
 
         chdir($currentWorkDir);
     }
@@ -58,7 +101,7 @@ class ZipArchiverTest extends ArchiverTest
             mkdir(dirname($path), 0777, true);
         }
 
-        $result = file_put_contents($path, 'a');
+        $result = file_put_contents($path, $content);
         if (false === $result) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not save file.');

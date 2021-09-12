@@ -14,15 +14,22 @@ namespace Composer\DependencyResolver;
 
 use Composer\Util\IniHelper;
 use Composer\Repository\RepositorySet;
+use Composer\Package\PackageInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
 class SolverProblemsException extends \RuntimeException
 {
+    /** @var Problem[] */
     protected $problems;
+    /** @var array<Rule[]> */
     protected $learnedPool;
 
+    /**
+     * @param Problem[]          $problems
+     * @param array<Rule[]> $learnedPool
+     */
     public function __construct(array $problems, array $learnedPool)
     {
         $this->problems = $problems;
@@ -63,20 +70,17 @@ class SolverProblemsException extends \RuntimeException
             $hints[] = $this->createExtensionHint();
         }
 
-        if ($isCausedByLock && !$isDevExtraction) {
-            $hints[] = "Use the option --with-all-dependencies to allow upgrades, downgrades and removals for packages currently locked to specific versions.";
+        if ($isCausedByLock && !$isDevExtraction && !$request->getUpdateAllowTransitiveRootDependencies()) {
+            $hints[] = "Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.";
         }
 
         if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match') && strpos($text, '- ocramius/package-versions')) {
             $hints[] = "<warning>ocramius/package-versions only provides support for Composer 2 in 1.8+, which requires PHP 7.4.</warning>\nIf you can not upgrade PHP you can require <info>composer/package-versions-deprecated</info> to resolve this with PHP 7.0+.";
         }
 
-        // TODO remove before 2.0 final
         if (!class_exists('PHPUnit\Framework\TestCase', false)) {
             if (strpos($text, 'found composer-plugin-api[2.0.0] but it does not match')) {
                 $hints[] = "You are using Composer 2, which some of your plugins seem to be incompatible with. Make sure you update your plugins or report a plugin-issue to ask them to support Composer 2.";
-            } else {
-                $hints[] = "You are using a snapshot build of Composer 2, which may be the cause of the problem. Run `composer self-update --stable` and then try again. In case it solves the problem, please report an issue mentioning Composer 2.";
             }
         }
 
@@ -111,7 +115,8 @@ class SolverProblemsException extends \RuntimeException
     {
         foreach ($reasonSets as $reasonSet) {
             foreach ($reasonSet as $rule) {
-                if (0 === strpos($rule->getRequiredPackage(), 'ext-')) {
+                $required = $rule->getRequiredPackage();
+                if (null !== $required && 0 === strpos($required, 'ext-')) {
                     return true;
                 }
             }

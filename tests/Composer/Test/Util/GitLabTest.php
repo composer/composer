@@ -57,7 +57,7 @@ class GitLabTest extends TestCase
                 $this->equalTo($url = sprintf('http://%s/oauth/token', $this->origin)),
                 $this->anything()
             )
-            ->willReturn(new Response(array('url' => $url), 200, array(), sprintf('{"access_token": "%s", "token_type": "bearer", "expires_in": 7200}', $this->token)));
+            ->willReturn(new Response(array('url' => $url), 200, array(), sprintf('{"access_token": "%s", "token_type": "bearer", "expires_in": 7200}', $this->token)))
         ;
 
         $config = $this->getConfigMock();
@@ -93,8 +93,9 @@ class GitLabTest extends TestCase
         $httpDownloader
             ->expects($this->exactly(5))
             ->method('get')
-            ->will($this->throwException(new TransportException('', 401)))
+            ->will($this->throwException($e = new TransportException('', 401)))
         ;
+        $e->setResponse('{}');
 
         $config = $this->getConfigMock();
         $config

@@ -61,4 +61,4 @@ Your requirements could not be resolved to an installable set of packages.
   Problem 1
     - b/unstable is fixed to 1.1.0-alpha (lock file version) by a partial update but that version is rejected by your minimum-stability. Make sure you list it as an argument for the update command.
 
-Use the option --with-all-dependencies to allow upgrades, downgrades and removals for packages currently locked to specific versions.
+Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.

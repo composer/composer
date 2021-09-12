@@ -21,7 +21,6 @@ use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
 
-
 /**
  * Try to guess the current version number based on different VCS configuration.
  *
@@ -79,7 +78,7 @@ class VersionGuesser
             return $this->postprocess($versionData);
         }
 
-        $versionData = $this->guessFossilVersion($packageConfig, $path);
+        $versionData = $this->guessFossilVersion($path);
         if (null !== $versionData && null !== $versionData['version']) {
             return $this->postprocess($versionData);
         }
@@ -120,7 +119,7 @@ class VersionGuesser
         $isDetached = false;
 
         // try to fetch current version from git branch
-        if (0 === $this->process->execute('git branch --no-color --no-abbrev -v', $output, $path)) {
+        if (0 === $this->process->execute('git branch -a --no-color --no-abbrev -v', $output, $path)) {
             $branches = array();
             $isFeatureBranch = false;
 
@@ -147,8 +146,8 @@ class VersionGuesser
                     }
                 }
 
-                if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
-                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                if ($branch && !preg_match('{^ *.+/HEAD }', $branch)) {
+                    if (preg_match('{^(?:\* )? *((?:remotes/(?:origin|upstream)/)?[^\s/]+) *([a-f0-9]+) .*$}', $branch, $match)) {
                         $branches[] = $match[1];
                     }
                 }
@@ -252,13 +251,25 @@ class VersionGuesser
                 return array('version' => $version, 'pretty_version' => $prettyVersion);
             }
 
-            // sort numeric branches below named ones, to make sure if the branch has the same distance from main and 1.10 and 1.9 for example, main is picked
+            // sort local branches first then remote ones
+            // and sort numeric branches below named ones, to make sure if the branch has the same distance from main and 1.10 and 1.9 for example, main is picked
             // and sort using natural sort so that 1.10 will appear before 1.9
-            rsort($branches, defined('SORT_NATURAL') ? SORT_NATURAL : SORT_REGULAR);
+            usort($branches, function ($a, $b) {
+                $aRemote = 0 === strpos($a, 'remotes/');
+                $bRemote = 0 === strpos($b, 'remotes/');
+
+                if ($aRemote !== $bRemote) {
+                    return $aRemote ? 1 : -1;
+                }
+
+                return strnatcasecmp($b, $a);
+            });
 
             foreach ($branches as $candidate) {
+                $candidateVersion = preg_replace('{^remotes/\S+/}', '', $candidate);
+
                 // do not compare against itself or other feature branches
-                if ($candidate === $branch || $this->isFeatureBranch($packageConfig, $candidate)) {
+                if ($candidate === $branch || $this->isFeatureBranch($packageConfig, $candidateVersion)) {
                     continue;
                 }
 
@@ -269,8 +280,11 @@ class VersionGuesser
 
                 if (strlen($output) < $length) {
                     $length = strlen($output);
-                    $version = $this->versionParser->normalizeBranch($candidate);
-                    $prettyVersion = 'dev-' . $candidate;
+                    $version = $this->versionParser->normalizeBranch($candidateVersion);
+                    $prettyVersion = 'dev-' . $candidateVersion;
+                    if ($length === 0) {
+                        break;
+                    }
                 }
             }
         }
@@ -288,7 +302,7 @@ class VersionGuesser
         return !preg_match('{^(' . $nonFeatureBranches . '|master|main|latest|next|current|support|tip|trunk|default|develop|\d+\..+)$}', $branchName, $match);
     }
 
-    private function guessFossilVersion(array $packageConfig, $path)
+    private function guessFossilVersion($path)
     {
         $version = null;
         $prettyVersion = null;

@@ -15,6 +15,7 @@ namespace Composer\Test\Util;
 use Composer\Util\Bitbucket;
 use Composer\Util\Http\Response;
 use Composer\Test\TestCase;
+use Composer\Test\Mock\ProcessExecutorMock;
 
 /**
  * @author Paul Wenke <wenke.paul@gmail.com>
@@ -240,8 +241,7 @@ class BitbucketTest extends TestCase
             ->method('writeError')
             ->withConsecutive(
                 array('<error>Invalid OAuth consumer provided.</error>'),
-                array(
-                    'You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"')
+                array('You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"')
             );
 
         $this->httpDownloader->expects($this->once())
@@ -256,7 +256,7 @@ class BitbucketTest extends TestCase
                     ),
                 )
             )
-            ->willThrowException(new \Composer\Downloader\TransportException('HTTP/1.1 401 UNAUTHORIZED',401));
+            ->willThrowException(new \Composer\Downloader\TransportException('HTTP/1.1 401 UNAUTHORIZED', 401));
 
         $this->assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
     }
@@ -273,7 +273,7 @@ class BitbucketTest extends TestCase
             ->method('setAuthentication')
             ->with($this->origin, $this->username, $this->password);
 
-        $exception = new \Composer\Downloader\TransportException('HTTP/1.1 404 NOT FOUND',404);
+        $exception = new \Composer\Downloader\TransportException('HTTP/1.1 404 NOT FOUND', 404);
         $this->httpDownloader->expects($this->once())
             ->method('get')
             ->with(
@@ -324,7 +324,7 @@ class BitbucketTest extends TestCase
                         $this->token
                     )
                 )
-            );
+            )
         ;
 
         $this->setExpectationsForStoringAccessToken(true);
@@ -452,15 +452,13 @@ class BitbucketTest extends TestCase
 
     public function testAuthorizeOAuthWithWrongOriginUrl()
     {
-       $this->assertFalse($this->bitbucket->authorizeOAuth('non-' . $this->origin));
+        $this->assertFalse($this->bitbucket->authorizeOAuth('non-' . $this->origin));
     }
 
     public function testAuthorizeOAuthWithoutAvailableGitConfigToken()
     {
-        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
-        $process->expects($this->once())
-            ->method('execute')
-            ->willReturn(-1);
+        $process = new ProcessExecutorMock;
+        $process->expects(array(), false, array('return' => -1));
 
         $bitbucket = new Bitbucket($this->io, $this->config, $process, $this->httpDownloader, $this->time);
 
@@ -469,10 +467,7 @@ class BitbucketTest extends TestCase
 
     public function testAuthorizeOAuthWithAvailableGitConfigToken()
     {
-        $process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
-        $process->expects($this->once())
-            ->method('execute')
-            ->willReturn(0);
+        $process = new ProcessExecutorMock;
 
         $bitbucket = new Bitbucket($this->io, $this->config, $process, $this->httpDownloader, $this->time);
 

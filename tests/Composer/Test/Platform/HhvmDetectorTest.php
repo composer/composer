@@ -32,7 +32,6 @@ class HhvmDetectorTest extends TestCase
     {
         if (!defined('HHVM_VERSION_ID')) {
             self::markTestSkipped('Not running with HHVM');
-            return;
         }
         $version = $this->hhvmDetector->getVersion();
         self::assertSame(self::versionIdToVersion(), $version);
@@ -42,15 +41,12 @@ class HhvmDetectorTest extends TestCase
     {
         if (defined('HHVM_VERSION_ID')) {
             self::markTestSkipped('Running with HHVM');
-            return;
         }
         if (PHP_VERSION_ID < 50400) {
             self::markTestSkipped('Test only works on PHP 5.4+');
-            return;
         }
         if (Platform::isWindows()) {
             self::markTestSkipped('Test does not run on Windows');
-            return;
         }
         $finder = new ExecutableFinder();
         $hhvm = $finder->find('hhvm');
@@ -70,17 +66,6 @@ class HhvmDetectorTest extends TestCase
         self::assertSame(0, $exitCode);
 
         self::assertSame(self::getVersionParser()->normalize($version), self::getVersionParser()->normalize($detectedVersion));
-    }
-
-    /** @runInSeparateProcess */
-    public function testHHVMVersionWhenRunningInHHVMWithMockedConstant()
-    {
-        if (!defined('HHVM_VERSION_ID')) {
-            define('HHVM_VERSION', '2.2.1');
-            define('HHVM_VERSION_ID', 20201);
-        }
-        $version = $this->hhvmDetector->getVersion();
-        self::assertSame(self::getVersionParser()->normalize(self::versionIdToVersion()), self::getVersionParser()->normalize($version));
     }
 
     private static function versionIdToVersion()

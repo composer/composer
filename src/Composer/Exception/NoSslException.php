@@ -13,6 +13,8 @@
 namespace Composer\Exception;
 
 /**
+ * Specific exception for Composer\Util\HttpDownloader creation.
+ *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class NoSslException extends \RuntimeException

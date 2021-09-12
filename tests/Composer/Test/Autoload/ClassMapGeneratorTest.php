@@ -55,6 +55,9 @@ class ClassMapGeneratorTest extends TestCase
             'Foo\\LargeGap' => realpath(__DIR__) . '/Fixtures/classmap/LargeGap.php',
             'Foo\\MissingSpace' => realpath(__DIR__) . '/Fixtures/classmap/MissingSpace.php',
             'Foo\\StripNoise' => realpath(__DIR__) . '/Fixtures/classmap/StripNoise.php',
+            'Foo\\First' => realpath(__DIR__) . '/Fixtures/classmap/StripNoise.php',
+            'Foo\\Second' => realpath(__DIR__) . '/Fixtures/classmap/StripNoise.php',
+            'Foo\\Third' => realpath(__DIR__) . '/Fixtures/classmap/StripNoise.php',
             'Foo\\SlashedA' => realpath(__DIR__) . '/Fixtures/classmap/BackslashLineEndingString.php',
             'Foo\\SlashedB' => realpath(__DIR__) . '/Fixtures/classmap/BackslashLineEndingString.php',
             'Unicode\\↑\\↑' => realpath(__DIR__) . '/Fixtures/classmap/Unicode.php',
@@ -96,6 +99,16 @@ class ClassMapGeneratorTest extends TestCase
                 'Dummy\Test\AnonClassHolder' => __DIR__ . '/Fixtures/php7.0/anonclass.php',
             ));
         }
+
+        if (PHP_VERSION_ID >= 80100) {
+            $data[] = array(__DIR__ . '/Fixtures/php8.1', array(
+                'RolesBasicEnum' => __DIR__ . '/Fixtures/php8.1/enum_basic.php',
+                'RolesBackedEnum' => __DIR__ . '/Fixtures/php8.1/enum_backed.php',
+                'RolesClassLikeEnum' => __DIR__ . '/Fixtures/php8.1/enum_class_semantics.php',
+                'Foo\Bar\RolesClassLikeNamespacedEnum' => __DIR__ . '/Fixtures/php8.1/enum_namespaced.php',
+            ));
+        }
+
         if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>=')) {
             $data[] = array(__DIR__ . '/Fixtures/hhvm3.3', array(
                 'FooEnum' => __DIR__ . '/Fixtures/hhvm3.3/HackEnum.php',
@@ -232,6 +245,25 @@ class ClassMapGeneratorTest extends TestCase
 
         $fs = new Filesystem();
         $fs->removeDirectory($tempDir);
+    }
+
+    public function testCreateMapDoesNotHitRegexBacktraceLimit()
+    {
+        $expected = array(
+            'Foo\\StripNoise'            => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/StripNoise.php',
+            'Foo\\VeryLongHeredoc'       => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongHeredoc.php',
+            'Foo\\ClassAfterLongHereDoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongHeredoc.php',
+            'Foo\\VeryLongPHP73Heredoc'  => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Heredoc.php',
+            'Foo\\VeryLongPHP73Nowdoc'   => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Nowdoc.php',
+            'Foo\\ClassAfterLongNowDoc'  => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Nowdoc.php',
+            'Foo\\VeryLongNowdoc'        => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongNowdoc.php',
+        );
+
+        ini_set('pcre.backtrack_limit', '30000');
+        $result = ClassMapGenerator::createMap(__DIR__ . '/Fixtures/pcrebacktracelimit');
+        ini_restore('pcre.backtrack_limit');
+
+        $this->assertEqualsNormalized($expected, $result);
     }
 
     protected function assertEqualsNormalized($expected, $actual, $message = '')

@@ -3,7 +3,7 @@
 You've already learned how to use the command-line interface to do some
 things. This chapter documents all the available commands.
 
-To get help from the command-line, simply call `composer` or `composer list`
+To get help from the command-line, call `composer` or `composer list`
 to see the complete list of commands, then `--help` combined with any of those
 can give you more information.
 
@@ -39,8 +39,7 @@ The following options are available with every command:
 ## init
 
 In the [Libraries](02-libraries.md) chapter we looked at how to create a
-`composer.json` by hand. There is also an `init` command available that makes
-it a bit easier to do this.
+`composer.json` by hand. There is also an `init` command available to do this.
 
 When you run the command it will interactively ask you to fill in the fields,
 while using some smart defaults.
@@ -66,6 +65,7 @@ php composer.phar init
   the list of requires. Every repository can be either an HTTP URL pointing
   to a `composer` repository or a JSON string which similar to what the
   [repositories](04-schema.md#repositories) key accepts.
+* **--autoload (-a):** Add a PSR-4 autoload mapping to the composer.json. Automatically maps your package's namespace to the provided directory. (Expects a relative path, e.g. src/) See also [PSR-4 autoload](04-schema.md#psr-4).
 
 ## install / i
 
@@ -85,17 +85,14 @@ resolution.
 
 ### Options
 
-* **--prefer-source:** There are two ways of downloading a package: `source`
-  and `dist`. For stable versions Composer will use the `dist` by default.
-  The `source` is a version control repository. If `--prefer-source` is
-  enabled, Composer will install from `source` if there is one. This is
-  useful if you want to make a bugfix to a project and get a local git
-  clone of the dependency directly.
-* **--prefer-dist:** Reverse of `--prefer-source`, Composer will install
-  from `dist` if possible. This can speed up installs substantially on build
-  servers and other use cases where you typically do not run updates of the
-  vendors. It is also a way to circumvent problems with git if you do not
-  have a proper setup.
+* **--prefer-install:** There are two ways of downloading a package: `source`
+  and `dist`. Composer uses `dist` by default. If you pass
+  `--prefer-install=source` (or `--prefer-source`) Composer will install from
+  `source` if there is one. This is useful if you want to make a bugfix to a
+  project and get a local git clone of the dependency directly.
+  To get the legacy behavior where Composer use `source` automatically for dev
+  versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
+  Passing this flag will override the config value.
 * **--dry-run:** If you want to run through an installation without actually
   installing a package, you can use `--dry-run`. This will simulate the
   installation and show you what would happen.
@@ -112,6 +109,8 @@ resolution.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
+* **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
+  Implicitly enables `--apcu-autoloader`.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
@@ -168,8 +167,14 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 
 ### Options
 
-* **--prefer-source:** Install packages from `source` when available.
-* **--prefer-dist:** Install packages from `dist` when available.
+* **--prefer-install:** There are two ways of downloading a package: `source`
+  and `dist`. Composer uses `dist` by default. If you pass
+  `--prefer-install=source` (or `--prefer-source`) Composer will install from
+  `source` if there is one. This is useful if you want to make a bugfix to a
+  project and get a local git clone of the dependency directly.
+  To get the legacy behavior where Composer use `source` automatically for dev
+  versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
+  Passing this flag will override the config value.
 * **--dry-run:** Simulate the command without actually doing anything.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
@@ -181,14 +186,16 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
-* **--with-dependencies:** Update also dependencies of packages in the argument list, except those which are root requirements.
-* **--with-all-dependencies:** Update also dependencies of packages in the argument list, including those which are root requirements.
+* **--with-dependencies (-w):** Update also dependencies of packages in the argument list, except those which are root requirements.
+* **--with-all-dependencies (-W):** Update also dependencies of packages in the argument list, including those which are root requirements.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run, so it is currently not done by default.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
+* **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
+  Implicitly enables `--apcu-autoloader`.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
@@ -229,16 +236,22 @@ If you do not specify a package, composer will prompt you to search for a packag
 
 * **--dev:** Add packages to `require-dev`.
 * **--dry-run:** Simulate the command without actually doing anything.
-* **--prefer-source:** Install packages from `source` when available.
-* **--prefer-dist:** Install packages from `dist` when available.
+* **--prefer-install:** There are two ways of downloading a package: `source`
+  and `dist`. Composer uses `dist` by default. If you pass
+  `--prefer-install=source` (or `--prefer-source`) Composer will install from
+  `source` if there is one. This is useful if you want to make a bugfix to a
+  project and get a local git clone of the dependency directly.
+  To get the legacy behavior where Composer use `source` automatically for dev
+  versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
+  Passing this flag will override the config value.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
-* **--update-with-dependencies:** Also update dependencies of the newly required packages, except those that are root requirements.
-* **--update-with-all-dependencies:** Also update dependencies of the newly required packages, including those that are root requirements.
+* **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements.
+* **--update-with-all-dependencies (-W):** Also update dependencies of the newly required packages, including those that are root requirements.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
@@ -256,6 +269,8 @@ If you do not specify a package, composer will prompt you to search for a packag
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
+* **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
+  Implicitly enables `--apcu-autoloader`.
 
 ## remove
 
@@ -278,7 +293,10 @@ uninstalled.
 * **--no-install:** Does not run the install step after updating the composer.lock file.
 * **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
-* **--update-with-dependencies:** Also update dependencies of the removed packages.
+* **--update-with-dependencies (-w):** Also update dependencies of the removed packages.
+  (Deprecated, is now default behavior)
+* **--update-with-all-dependencies (-W):** Allows all inherited dependencies to be updated,
+  including those that are root requirements.
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
@@ -292,6 +310,55 @@ uninstalled.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize-autoloader`.
 * **--apcu-autoloader:** Use APCu to cache found/not-found classes.
+* **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
+  Implicitly enables `--apcu-autoloader`.
+
+## reinstall
+
+The `reinstall` command looks up installed packages by name,
+uninstalls them and reinstalls them. This lets you do a clean install
+of a package if you messed with its files, or if you wish to change
+the installation type using --prefer-install.
+
+```sh
+php composer.phar reinstall acme/foo acme/bar
+```
+
+You can specify more than one package name to reinstall, or use a
+wildcard to select several packages at once:
+
+```sh
+php composer.phar reinstall "acme/*"
+```
+
+### Options
+
+* **--prefer-install:** There are two ways of downloading a package: `source`
+  and `dist`. Composer uses `dist` by default. If you pass
+  `--prefer-install=source` (or `--prefer-source`) Composer will install from
+  `source` if there is one. This is useful if you want to make a bugfix to a
+  project and get a local git clone of the dependency directly.
+  To get the legacy behavior where Composer use `source` automatically for dev
+  versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
+  Passing this flag will override the config value.
+* **--no-autoloader:** Skips autoloader generation.
+* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
+* **--no-progress:** Removes the progress display that can mess with some
+  terminals or scripts which don't handle backspace characters.
+* **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
+  autoloader. This is recommended especially for production, but can take
+  a bit of time to run so it is currently not done by default.
+* **--classmap-authoritative (-a):** Autoload classes from the classmap only.
+  Implicitly enables `--optimize-autoloader`.
+* **--apcu-autoloader:** Use APCu to cache found/not-found classes.
+* **--apcu-autoloader-prefix:** Use a custom prefix for the APCu autoloader cache.
+  Implicitly enables `--apcu-autoloader`.
+* **--ignore-platform-reqs:** ignore all platform requirements. This only
+  has an effect in the context of the autoloader generation for the
+  reinstall command.
+* **--ignore-platform-req:** ignore a specific platform requirement. This only
+  has an effect in the context of the autoloader generation for the
+  reinstall command.
 
 ## check-platform-reqs
 
@@ -336,8 +403,8 @@ php composer.phar global update
 ## search
 
 The search command allows you to search through the current project's package
-repositories. Usually this will be packagist. You simply pass it the
-terms you want to search for.
+repositories. Usually this will be packagist. You pass it the terms you want
+to search for.
 
 ```sh
 php composer.phar search monolog
@@ -349,6 +416,11 @@ You can also search for more than one term by passing multiple arguments.
 
 * **--only-name (-N):** Search only in name.
 * **--type (-t):** Search for a specific package type.
+* **--format (-f):** Lets you pick between text (default) or json output format.
+  Note that in the json, only the name and description keys are guaranteed to be
+  present. The rest (`url`, `repository`, `downloads` and `favers`) are available
+  for Packagist.org search results and other repositories may return more or less
+  data.
 
 ## show
 
@@ -423,7 +495,7 @@ including their current and latest versions. This is basically an alias for
 The color coding is as such:
 
 - **green (=)**: Dependency is in the latest version and is up to date.
-- **yellow (~)**: Dependency has a new version available that includes backwards compatibility breaks according to semver, so upgrade when
+- **yellow (`~`)**: Dependency has a new version available that includes backwards compatibility breaks according to semver, so upgrade when
   you can but it may involve work.
 - **red (!)**: Dependency has a new version that is semver-compatible and you should upgrade it.
 
@@ -435,6 +507,7 @@ The color coding is as such:
 * **--minor-only (-m):** Only shows packages that have minor SemVer-compatible updates.
 * **--format (-f):** Lets you pick between text (default) or json output format.
 * **--no-dev:** Do not show outdated dev dependencies.
+* **--locked:** Shows updates for packages from the lock file, regardless of what is currently in vendor dir.
 
 ## browse / home
 
@@ -469,7 +542,12 @@ If you only want a list of suggested package names, use `--list`.
 ## fund
 
 Discover how to help fund the maintenance of your dependencies. This lists
-all funding links from the installed dependencies.
+all funding links from the installed dependencies. Use `--format=json` to
+get machine-readable output.
+
+### Options
+
+* **--format (-f):** Lets you pick between text (default) or json output format.
 
 ## depends (why)
 
@@ -584,7 +662,7 @@ command. It will replace your `composer.phar` with the latest version.
 php composer.phar self-update
 ```
 
-If you would like to instead update to a specific release simply specify it:
+If you would like to instead update to a specific release specify it:
 
 ```sh
 php composer.phar self-update 1.0.0-alpha7
@@ -597,6 +675,9 @@ you may have to run the command with `root` privileges
 sudo -H composer self-update
 ```
 
+If Composer was not installed as a PHAR, this command is not available.
+(This is sometimes the case when Composer was installed by an operating system package manager.)
+
 ### Options
 
 * **--rollback (-r):** Rollback to the last version you had installed.
@@ -607,6 +688,9 @@ sudo -H composer self-update
 * **--stable:** Force an update to the stable channel.
 * **--preview:** Force an update to the preview channel.
 * **--snapshot:** Force an update to the snapshot channel.
+* **--1:** Force an update to the stable channel, but only use 1.x versions
+* **--2:** Force an update to the stable channel, but only use 2.x versions
+* **--set-channel-only:** Only store the channel as the default one and then exit
 
 ## config
 
@@ -648,7 +732,7 @@ See the [Config](06-config.md) chapter for valid configuration options.
   option this lists the global configuration only.
 * **--file="..." (-f):** Operate on a specific file instead of composer.json. Note
   that this cannot be used in conjunction with the `--global` option.
-* **--absolute:** Returns absolute paths when fetching *-dir config values
+* **--absolute:** Returns absolute paths when fetching `*-dir` config values
   instead of relative.
 * **--json:** JSON decode the setting value, to be used with `extra.*` keys.
 * **--merge:** Merge the setting value with the current value, to be used with `extra.*` keys in combination with `--json`.
@@ -718,8 +802,14 @@ By default the command checks for the packages on packagist.org.
 ### Options
 
 * **--stability (-s):** Minimum stability of package. Defaults to `stable`.
-* **--prefer-source:** Install packages from `source` when available.
-* **--prefer-dist:** Install packages from `dist` when available.
+* **--prefer-install:** There are two ways of downloading a package: `source`
+  and `dist`. Composer uses `dist` by default. If you pass
+  `--prefer-install=source` (or `--prefer-source`) Composer will install from
+  `source` if there is one. This is useful if you want to make a bugfix to a
+  project and get a local git clone of the dependency directly.
+  To get the legacy behavior where Composer use `source` automatically for dev
+  versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
+  Passing this flag will override the config value.
 * **--repository:** Provide a custom repository to search for the package,
   which will be used instead of packagist. Can be either an HTTP URL pointing
   to a `composer` repository, a path to a local `packages.json` file, or a
@@ -771,7 +861,12 @@ performance.
 * **--classmap-authoritative (-a):** Autoload classes from the classmap only.
   Implicitly enables `--optimize`.
 * **--apcu:** Use APCu to cache found/not-found classes.
-* **--no-dev:** Disables autoload-dev rules.
+* **--apcu-prefix:** Use a custom prefix for the APCu autoloader cache.
+  Implicitly enables `--apcu`.
+* **--no-dev:** Disables autoload-dev rules. Composer will by default infer this
+  automatically according to the last `install` or `update` `--no-dev` state.
+* **--dev:** Enables autoload-dev rules. Composer will by default infer this
+  automatically according to the last `install` or `update` `--no-dev` state.
 * **--ignore-platform-reqs:** ignore all `php`, `hhvm`, `lib-*` and `ext-*`
   requirements and skip the [platform check](07-runtime.md#platform-check) for these.
   See also the [`platform`](06-config.md#platform) config option.
@@ -887,9 +982,10 @@ If set to 1, this env allows running Composer when the Xdebug extension is enabl
 ### COMPOSER_AUTH
 
 The `COMPOSER_AUTH` var allows you to set up authentication as an environment variable.
-The contents of the variable should be a JSON formatted object containing http-basic,
-github-oauth, bitbucket-oauth, ... objects as needed, and following the
-[spec from the config](06-config.md#gitlab-oauth).
+The contents of the variable should be a JSON formatted object containing [http-basic,
+github-oauth, bitbucket-oauth, ... objects as needed](articles/authentication-for-private-packages.md),
+and following the
+[spec from the config](06-config.md).
 
 ### COMPOSER_BIN_DIR
 
@@ -922,6 +1018,8 @@ This env var controls the [`discard-changes`](06-config.md#discard-changes) conf
 The `COMPOSER_HOME` var allows you to change the Composer home directory. This
 is a hidden, global (per-user on the machine) directory that is shared between
 all projects.
+
+Use `composer config --global home` to see the location of the home directory.
 
 By default, it points to `C:\Users\<user>\AppData\Roaming\Composer` on Windows
 and `/Users/<user>/.composer` on macOS. On \*nix systems that follow the [XDG Base
@@ -976,10 +1074,19 @@ cannot be guessed from VCS info and is not present in `composer.json`.
 By setting this var you can make Composer install the dependencies into a
 directory other than `vendor`.
 
+### COMPOSER_RUNTIME_ENV
+
+This lets you hint under which environment Composer is running, which can help Composer
+work around some environment specific issues. The only value currently supported is
+`virtualbox`, which then enables some short `sleep()` calls to wait for the filesystem
+to have written files properly before we attempt reading them. You can set the
+environment variable if you use Vagrant or VirtualBox and experience issues with files not
+being found during installation even though they should be present.
+
 ### http_proxy or HTTP_PROXY
 
 If you are using Composer from behind an HTTP proxy, you can use the standard
-`http_proxy` or `HTTP_PROXY` env vars. Simply set it to the URL of your proxy.
+`http_proxy` or `HTTP_PROXY` env vars. Set it to the URL of your proxy.
 Many operating systems already set this variable for you.
 
 Using `http_proxy` (lowercased) or even defining both might be preferable since
@@ -991,6 +1098,13 @@ If you are using Composer in a non-CLI context (i.e. integration into a CMS or
 similar use case), and need to support proxies, please provide the `CGI_HTTP_PROXY`
 environment variable instead. See [httpoxy.org](https://httpoxy.org/) for further
 details.
+
+### COMPOSER_MAX_PARALLEL_HTTP
+
+Set to an integer to configure how many files can be downloaded in parallel. This
+defaults to 12 and must be between 1 and 50. If your proxy has issues with
+concurrency maybe you want to lower this. Increasing it should generally not result
+in performance gains.
 
 ### HTTP_PROXY_REQUEST_FULLURI
 
@@ -1011,7 +1125,7 @@ If set, makes the self-update command write the new Composer phar file into that
 ### no_proxy or NO_PROXY
 
 If you are behind a proxy and would like to disable it for certain domains, you
-can use the `no_proxy` or `NO_PROXY` env var. Simply set it to a comma separated list of
+can use the `no_proxy` or `NO_PROXY` env var. Set it to a comma separated list of
 domains the proxy should *not* be used for.
 
 The env var accepts domains, IP addresses, and IP address blocks in CIDR
@@ -1025,5 +1139,10 @@ to run Composer on a plane or a starship with poor connectivity.
 
 If set to `prime`, GitHub VCS repositories will prime the cache, so it can then be used
 fully offline with `1`.
+
+### COMPOSER_DEBUG_EVENTS
+
+If set to `1`, outputs information about events being dispatched, which can be
+useful for plugin authors to identify what is firing when exactly.
 
 &larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;

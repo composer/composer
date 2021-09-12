@@ -13,11 +13,12 @@
 namespace Composer\Package\Archiver;
 
 use Composer\Downloader\DownloadManager;
-use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Loop;
+use Composer\Util\SyncHelper;
 use Composer\Json\JsonFile;
+use Composer\Package\CompletePackageInterface;
 
 /**
  * @author Matthieu Moquet <matthieu@moquet.net>
@@ -74,11 +75,11 @@ class ArchiveManager
     /**
      * Generate a distinct filename for a particular version of a package.
      *
-     * @param PackageInterface $package The package to get a name for
+     * @param CompletePackageInterface $package The package to get a name for
      *
      * @return string A filename without an extension
      */
-    public function getPackageFilename(PackageInterface $package)
+    public function getPackageFilename(CompletePackageInterface $package)
     {
         if ($package->getArchiveName()) {
             $baseName = $package->getArchiveName();
@@ -87,7 +88,7 @@ class ArchiveManager
         }
         $nameParts = array($baseName);
 
-        if (preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
+        if (null !== $package->getDistReference() && preg_match('{^[a-f0-9]{40}$}', $package->getDistReference())) {
             array_push($nameParts, $package->getDistReference(), $package->getDistType());
         } else {
             array_push($nameParts, $package->getPrettyVersion(), $package->getDistReference());
@@ -107,7 +108,7 @@ class ArchiveManager
     /**
      * Create an archive of the specified package.
      *
-     * @param  PackageInterface          $package       The package to archive
+     * @param  CompletePackageInterface  $package       The package to archive
      * @param  string                    $format        The format of the archive (zip, tar, ...)
      * @param  string                    $targetDir     The directory where to build the archive
      * @param  string|null               $fileName      The relative file name to use for the archive, or null to generate
@@ -117,7 +118,7 @@ class ArchiveManager
      * @throws \RuntimeException
      * @return string                    The path of the created archive
      */
-    public function archive(PackageInterface $package, $format, $targetDir, $fileName = null, $ignoreFilters = false)
+    public function archive(CompletePackageInterface $package, $format, $targetDir, $fileName = null, $ignoreFilters = false)
     {
         if (empty($format)) {
             throw new \InvalidArgumentException('Format must be specified');
@@ -149,8 +150,9 @@ class ArchiveManager
             try {
                 // Download sources
                 $promise = $this->downloadManager->download($package, $sourcePath);
-                $this->loop->wait(array($promise));
-                $this->downloadManager->install($package, $sourcePath);
+                SyncHelper::await($this->loop, $promise);
+                $promise = $this->downloadManager->install($package, $sourcePath);
+                SyncHelper::await($this->loop, $promise);
             } catch (\Exception $e) {
                 $filesystem->removeDirectory($sourcePath);
                 throw  $e;

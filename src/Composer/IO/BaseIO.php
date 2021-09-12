@@ -18,6 +18,7 @@ use Psr\Log\LogLevel;
 
 abstract class BaseIO implements IOInterface
 {
+    /** @var array<string, array{username: string, password: string}> */
     protected $authentications = array();
 
     /**
@@ -124,7 +125,9 @@ abstract class BaseIO implements IOInterface
         }
 
         foreach ($githubOauth as $domain => $token) {
-            if (!preg_match('{^[.a-z0-9]+$}', $token)) {
+            // allowed chars for GH tokens are from https://github.blog/changelog/2021-03-04-authentication-token-format-updates/
+            // plus dots which were at some point used for GH app integration tokens
+            if (!preg_match('{^[.A-Za-z0-9_]+$}', $token)) {
                 throw new \UnexpectedValueException('Your github oauth token for '.$domain.' contains invalid characters: "'.$token.'"');
             }
             $this->checkAndSetAuthentication($domain, $token, 'x-oauth-basic');
@@ -154,126 +157,78 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * System is unusable.
-     *
-     * @param  string $message
-     * @param  array  $context
-     * @return null
+     * {@inheritDoc}
      */
     public function emergency($message, array $context = array())
     {
-        return $this->log(LogLevel::EMERGENCY, $message, $context);
+        $this->log(LogLevel::EMERGENCY, $message, $context);
     }
 
     /**
-     * Action must be taken immediately.
-     *
-     * Example: Entire website down, database unavailable, etc. This should
-     * trigger the SMS alerts and wake you up.
-     *
-     * @param  string $message
-     * @param  array  $context
-     * @return null
+     * {@inheritDoc}
      */
     public function alert($message, array $context = array())
     {
-        return $this->log(LogLevel::ALERT, $message, $context);
+        $this->log(LogLevel::ALERT, $message, $context);
     }
 
     /**
-     * Critical conditions.
-     *
-     * Example: Application component unavailable, unexpected exception.
-     *
-     * @param  string $message
-     * @param  array  $context
-     * @return null
+     * {@inheritDoc}
      */
     public function critical($message, array $context = array())
     {
-        return $this->log(LogLevel::CRITICAL, $message, $context);
+        $this->log(LogLevel::CRITICAL, $message, $context);
     }
 
     /**
-     * Runtime errors that do not require immediate action but should typically
-     * be logged and monitored.
-     *
-     * @param  string $message
-     * @param  array  $context
-     * @return null
+     * {@inheritDoc}
      */
     public function error($message, array $context = array())
     {
-        return $this->log(LogLevel::ERROR, $message, $context);
+        $this->log(LogLevel::ERROR, $message, $context);
     }
 
     /**
-     * Exceptional occurrences that are not errors.
-     *
-     * Example: Use of deprecated APIs, poor use of an API, undesirable things
-     * that are not necessarily wrong.
-     *
-     * @param  string $message
-     * @param  array  $context
-     * @return null
+     * {@inheritDoc}
      */
     public function warning($message, array $context = array())
     {
-        return $this->log(LogLevel::WARNING, $message, $context);
+        $this->log(LogLevel::WARNING, $message, $context);
     }
 
     /**
-     * Normal but significant events.
-     *
-     * @param  string $message
-     * @param  array  $context
-     * @return null
+     * {@inheritDoc}
      */
     public function notice($message, array $context = array())
     {
-        return $this->log(LogLevel::NOTICE, $message, $context);
+        $this->log(LogLevel::NOTICE, $message, $context);
     }
 
     /**
-     * Interesting events.
-     *
-     * Example: User logs in, SQL logs.
-     *
-     * @param  string $message
-     * @param  array  $context
-     * @return null
+     * {@inheritDoc}
      */
     public function info($message, array $context = array())
     {
-        return $this->log(LogLevel::INFO, $message, $context);
+        $this->log(LogLevel::INFO, $message, $context);
     }
 
     /**
-     * Detailed debug information.
-     *
-     * @param  string $message
-     * @param  array  $context
-     * @return null
+     * {@inheritDoc}
      */
     public function debug($message, array $context = array())
     {
-        return $this->log(LogLevel::DEBUG, $message, $context);
+        $this->log(LogLevel::DEBUG, $message, $context);
     }
 
     /**
-     * Logs with an arbitrary level.
-     *
-     * @param  mixed  $level
-     * @param  string $message
-     * @param  array  $context
-     * @return null
+     * {@inheritDoc}
      */
     public function log($level, $message, array $context = array())
     {
         if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
-            $this->writeError('<error>'.$message.'</error>', true, self::NORMAL);
+            $this->writeError('<error>'.$message.'</error>');
         } elseif ($level === LogLevel::WARNING) {
-            $this->writeError('<warning>'.$message.'</warning>', true, self::NORMAL);
+            $this->writeError('<warning>'.$message.'</warning>');
         } elseif ($level === LogLevel::NOTICE) {
             $this->writeError('<info>'.$message.'</info>', true, self::VERBOSE);
         } elseif ($level === LogLevel::INFO) {

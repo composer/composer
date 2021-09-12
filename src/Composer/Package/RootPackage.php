@@ -19,6 +19,8 @@ namespace Composer\Package;
  */
 class RootPackage extends CompletePackage implements RootPackageInterface
 {
+    const DEFAULT_PRETTY_VERSION = '1.0.0+no-version-set';
+
     protected $minimumStability = 'stable';
     protected $preferStable = false;
     protected $stabilityFlags = array();
@@ -27,9 +29,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     protected $aliases = array();
 
     /**
-     * Set the minimumStability
-     *
-     * @param string $minimumStability
+     * {@inerhitDoc}
      */
     public function setMinimumStability($minimumStability)
     {
@@ -45,9 +45,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the stabilityFlags
-     *
-     * @param array $stabilityFlags
+     * {@inheritDoc}
      */
     public function setStabilityFlags(array $stabilityFlags)
     {
@@ -63,9 +61,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the preferStable
-     *
-     * @param bool $preferStable
+     * {@inerhitDoc}
      */
     public function setPreferStable($preferStable)
     {
@@ -81,9 +77,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the config
-     *
-     * @param array $config
+     * {@inerhitDoc}
      */
     public function setConfig(array $config)
     {
@@ -99,9 +93,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the references
-     *
-     * @param array $references
+     * {@inerhitDoc}
      */
     public function setReferences(array $references)
     {
@@ -117,9 +109,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * Set the aliases
-     *
-     * @param array $aliases
+     * {@inerhitDoc}
      */
     public function setAliases(array $aliases)
     {

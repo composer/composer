@@ -41,7 +41,7 @@ Installs a simple package with exact match requirement
 --RUN--
 install
 --EXPECT-OUTPUT--
-<warning>No lock file found. Updating dependencies instead of installing from lock file. Use composer update over composer install if you do not have a lock file.</warning>
+<warning>No composer.lock file present. Updating dependencies to latest instead of installing from lock file. See https://getcomposer.org/install for more information.</warning>
 Loading composer repositories with package information
 Updating dependencies
 Lock file operations: 3 installs, 0 updates, 0 removals

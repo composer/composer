@@ -38,7 +38,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     protected $process;
     /** @var Filesystem */
     protected $filesystem;
-    /** @var array */
+    /** @var array<string, true> */
     protected $hasCleanedChanges = array();
 
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
@@ -86,6 +86,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 }
             }
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -101,6 +103,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         } elseif ($type === 'uninstall') {
             $this->cleanChanges($package, $path, false);
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -112,6 +116,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             $this->reapplyChanges($path);
             unset($this->hasCleanedChanges[$prevPackage->getUniqueName()]);
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -145,6 +151,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
                 }
             }
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -207,6 +215,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         if (!$urls && $exception) {
             throw $exception;
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -215,9 +225,14 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     public function remove(PackageInterface $package, $path)
     {
         $this->io->writeError("  - " . UninstallOperation::format($package));
-        if (!$this->filesystem->removeDirectory($path)) {
-            throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
-        }
+
+        $promise = $this->filesystem->removeDirectoryAsync($path);
+
+        return $promise->then(function ($result) use ($path) {
+            if (!$result) {
+                throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
+            }
+        });
     }
 
     /**
@@ -233,6 +248,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         if ($packageVersion = $guesser->guessVersion($packageConfig, $path)) {
             return $packageVersion['commit'];
         }
+
+        return null;
     }
 
     /**
@@ -250,6 +267,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
         if (null !== $this->getLocalChanges($package, $path)) {
             throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes.');
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -316,6 +335,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      */
     abstract protected function hasMetadataRepository($path);
 
+    /**
+     * @return string[]
+     */
     private function prepareUrls(array $urls)
     {
         foreach ($urls as $index => $url) {

@@ -16,6 +16,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
+use Composer\DependencyResolver\Operation\OperationInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -24,24 +25,24 @@ use Composer\Repository\PlatformRepository;
 class Transaction
 {
     /**
-     * @var array
+     * @var OperationInterface[]
      */
     protected $operations;
 
     /**
      * Packages present at the beginning of the transaction
-     * @var array
+     * @var PackageInterface[]
      */
     protected $presentPackages;
 
     /**
      * Package set resulting from this transaction
-     * @var array
+     * @var array<string, PackageInterface>
      */
     protected $resultPackageMap;
 
     /**
-     * @var array
+     * @var array<string, PackageInterface[]>
      */
     protected $resultPackagesByName = array();
 
@@ -52,6 +53,7 @@ class Transaction
         $this->operations = $this->calculateOperations();
     }
 
+    /** @return OperationInterface[] */
     public function getOperations()
     {
         return $this->operations;
@@ -61,9 +63,14 @@ class Transaction
     {
         $packageSort = function (PackageInterface $a, PackageInterface $b) {
             // sort alias packages by the same name behind their non alias version
-            if ($a->getName() == $b->getName() && $a instanceof AliasPackage != $b instanceof AliasPackage) {
-                return $a instanceof AliasPackage ? -1 : 1;
+            if ($a->getName() == $b->getName()) {
+                if ($a instanceof AliasPackage != $b instanceof AliasPackage) {
+                    return $a instanceof AliasPackage ? -1 : 1;
+                }
+                // if names are the same, compare version, e.g. to sort aliases reliably, actual order does not matter
+                return strcmp($b->getVersion(), $a->getVersion());
             }
+
             return strcmp($b->getName(), $a->getName());
         };
 
@@ -158,10 +165,10 @@ class Transaction
         }
 
         foreach ($removeMap as $name => $package) {
-            array_unshift($operations, new Operation\UninstallOperation($package, null));
+            array_unshift($operations, new Operation\UninstallOperation($package));
         }
         foreach ($removeAliasMap as $nameVersion => $package) {
-            $operations[] = new Operation\MarkAliasUninstalledOperation($package, null);
+            $operations[] = new Operation\MarkAliasUninstalledOperation($package);
         }
 
         $operations = $this->movePluginsToFront($operations);
@@ -196,7 +203,7 @@ class Transaction
      * These serve as a starting point to enumerate packages in a topological order despite potential cycles.
      * If there are packages with a cycle on the top level the package with the lowest name gets picked
      *
-     * @return array
+     * @return array<string, PackageInterface>
      */
     protected function getRootPackages()
     {
@@ -226,6 +233,7 @@ class Transaction
         if (!isset($this->resultPackagesByName[$link->getTarget()])) {
             return array();
         }
+
         return $this->resultPackagesByName[$link->getTarget()];
     }
 
@@ -239,11 +247,14 @@ class Transaction
      * it at least fixes the symptoms and makes usage of composer possible (again)
      * in such scenarios.
      *
-     * @param  Operation\OperationInterface[] $operations
-     * @return Operation\OperationInterface[] reordered operation list
+     * @param  OperationInterface[] $operations
+     * @return OperationInterface[] reordered operation list
      */
     private function movePluginsToFront(array $operations)
     {
+        $dlModifyingPluginsNoDeps = array();
+        $dlModifyingPluginsWithDeps = array();
+        $dlModifyingPluginRequires = array();
         $pluginsNoDeps = array();
         $pluginsWithDeps = array();
         $pluginRequires = array();
@@ -254,6 +265,30 @@ class Transaction
             } elseif ($op instanceof Operation\UpdateOperation) {
                 $package = $op->getTargetPackage();
             } else {
+                continue;
+            }
+
+            $isDownloadsModifyingPlugin = $package->getType() === 'composer-plugin' && ($extra = $package->getExtra()) && isset($extra['plugin-modifies-downloads']) && $extra['plugin-modifies-downloads'] === true;
+
+            // is this a downloads modifying plugin or a dependency of one?
+            if ($isDownloadsModifyingPlugin || count(array_intersect($package->getNames(), $dlModifyingPluginRequires))) {
+                // get the package's requires, but filter out any platform requirements
+                $requires = array_filter(array_keys($package->getRequires()), function ($req) {
+                    return !PlatformRepository::isPlatformPackage($req);
+                });
+
+                // is this a plugin with no meaningful dependencies?
+                if ($isDownloadsModifyingPlugin && !count($requires)) {
+                    // plugins with no dependencies go to the very front
+                    array_unshift($dlModifyingPluginsNoDeps, $op);
+                } else {
+                    // capture the requirements for this package so those packages will be moved up as well
+                    $dlModifyingPluginRequires = array_merge($dlModifyingPluginRequires, $requires);
+                    // move the operation to the front
+                    array_unshift($dlModifyingPluginsWithDeps, $op);
+                }
+
+                unset($operations[$idx]);
                 continue;
             }
 
@@ -282,15 +317,15 @@ class Transaction
             }
         }
 
-        return array_merge($pluginsNoDeps, $pluginsWithDeps, $operations);
+        return array_merge($dlModifyingPluginsNoDeps, $dlModifyingPluginsWithDeps, $pluginsNoDeps, $pluginsWithDeps, $operations);
     }
 
     /**
      * Removals of packages should be executed before installations in
      * case two packages resolve to the same path (due to custom installers)
      *
-     * @param  Operation\OperationInterface[] $operations
-     * @return Operation\OperationInterface[] reordered operation list
+     * @param  OperationInterface[] $operations
+     * @return OperationInterface[] reordered operation list
      */
     private function moveUninstallsToFront(array $operations)
     {

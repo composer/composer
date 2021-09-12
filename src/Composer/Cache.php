@@ -24,7 +24,7 @@ use Symfony\Component\Finder\Finder;
  */
 class Cache
 {
-    private static $cacheCollected = false;
+    private static $cacheCollected = null;
     private $io;
     private $root;
     private $enabled = true;
@@ -114,20 +114,21 @@ class Cache
 
             $this->io->writeError('Writing '.$this->root . $file.' into cache', true, IOInterface::DEBUG);
 
+            $tempFileName = $this->root . $file . uniqid('.', true) . '.tmp';
             try {
-                return file_put_contents($this->root . $file, $contents);
+                return file_put_contents($tempFileName, $contents) !== false && rename($tempFileName, $this->root . $file);
             } catch (\ErrorException $e) {
                 $this->io->writeError('<warning>Failed to write into cache: '.$e->getMessage().'</warning>', true, IOInterface::DEBUG);
                 if (preg_match('{^file_put_contents\(\): Only ([0-9]+) of ([0-9]+) bytes written}', $e->getMessage(), $m)) {
                     // Remove partial file.
-                    unlink($this->root . $file);
+                    unlink($tempFileName);
 
                     $message = sprintf(
                         '<warning>Writing %1$s into cache failed after %2$u of %3$u bytes written, only %4$u bytes of free space available</warning>',
-                        $this->root . $file,
+                        $tempFileName,
                         $m[1],
                         $m[2],
-                        @disk_free_space($this->root . dirname($file))
+                        @disk_free_space(dirname($tempFileName))
                     );
 
                     $this->io->writeError($message);
@@ -190,7 +191,20 @@ class Cache
 
     public function gcIsNecessary()
     {
-        return (!self::$cacheCollected && !mt_rand(0, 50));
+        if (self::$cacheCollected) {
+            return false;
+        }
+
+        self::$cacheCollected = true;
+        if (getenv('COMPOSER_TEST_SUITE')) {
+            return false;
+        }
+
+        if (PHP_VERSION_ID > 70000) {
+            return !random_int(0, 50);
+        }
+
+        return !mt_rand(0, 50);
     }
 
     public function remove($file)
@@ -209,6 +223,7 @@ class Cache
     {
         if ($this->enabled) {
             $this->filesystem->emptyDirectory($this->root);
+
             return true;
         }
 

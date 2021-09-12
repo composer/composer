@@ -30,6 +30,7 @@ class ConfigValidator
 {
     const CHECK_VERSION = 1;
 
+    /** @var IOInterface */
     private $io;
 
     public function __construct(IOInterface $io)
@@ -132,12 +133,27 @@ class ConfigValidator
         }
 
         // check for require-dev overrides
-        if (isset($manifest['require']) && isset($manifest['require-dev'])) {
+        if (isset($manifest['require'], $manifest['require-dev'])) {
             $requireOverrides = array_intersect_key($manifest['require'], $manifest['require-dev']);
 
             if (!empty($requireOverrides)) {
                 $plural = (count($requireOverrides) > 1) ? 'are' : 'is';
                 $warnings[] = implode(', ', array_keys($requireOverrides)). " {$plural} required both in require and require-dev, this can lead to unexpected behavior";
+            }
+        }
+
+        // check for meaningless provide/replace satisfying requirements
+        foreach (array('provide', 'replace') as $linkType) {
+            if (isset($manifest[$linkType])) {
+                foreach (array('require', 'require-dev') as $requireType) {
+                    if (isset($manifest[$requireType])) {
+                        foreach ($manifest[$linkType] as $provide => $constraint) {
+                            if (isset($manifest[$requireType][$provide])) {
+                                $warnings[] = 'The package ' . $provide . ' in '.$requireType.' is also listed in '.$linkType.' which satisfies the requirement. Remove it from '.$linkType.' if you wish to install it.';
+                            }
+                        }
+                    }
+                }
             }
         }
 

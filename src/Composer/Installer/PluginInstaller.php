@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use React\Promise\PromiseInterface;
 
 /**
@@ -27,8 +28,6 @@ use React\Promise\PromiseInterface;
  */
 class PluginInstaller extends LibraryInstaller
 {
-    private $installationManager;
-
     /**
      * Initializes Plugin installer.
      *
@@ -38,7 +37,6 @@ class PluginInstaller extends LibraryInstaller
     public function __construct(IOInterface $io, Composer $composer, Filesystem $fs = null, BinaryInstaller $binaryInstaller = null)
     {
         parent::__construct($io, $composer, 'composer-plugin', $fs, $binaryInstaller);
-        $this->installationManager = $composer->getInstallationManager();
     }
 
     /**
@@ -74,8 +72,10 @@ class PluginInstaller extends LibraryInstaller
 
         $pluginManager = $this->composer->getPluginManager();
         $self = $this;
+
         return $promise->then(function () use ($self, $pluginManager, $package, $repo) {
             try {
+                Platform::workaroundFilesystemIssues();
                 $pluginManager->registerPackage($package, true);
             } catch (\Exception $e) {
                 $self->rollbackInstall($e, $repo, $package);
@@ -95,9 +95,11 @@ class PluginInstaller extends LibraryInstaller
 
         $pluginManager = $this->composer->getPluginManager();
         $self = $this;
+
         return $promise->then(function () use ($self, $pluginManager, $initial, $target, $repo) {
             try {
-                $pluginManager->deactivatePackage($initial, true);
+                Platform::workaroundFilesystemIssues();
+                $pluginManager->deactivatePackage($initial);
                 $pluginManager->registerPackage($target, true);
             } catch (\Exception $e) {
                 $self->rollbackInstall($e, $repo, $target);
@@ -107,7 +109,7 @@ class PluginInstaller extends LibraryInstaller
 
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $this->composer->getPluginManager()->uninstallPackage($package, true);
+        $this->composer->getPluginManager()->uninstallPackage($package);
 
         return parent::uninstall($repo, $package);
     }

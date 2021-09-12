@@ -13,7 +13,6 @@
 namespace Composer\Test;
 
 use Composer\Semver\VersionParser;
-use Composer\Package\AliasPackage;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
@@ -28,6 +27,9 @@ abstract class TestCase extends PolyfillTestCase
     private static $parser;
     private static $executableCache = array();
 
+    /**
+     * @return string
+     */
     public static function getUniqueTmpDirectory()
     {
         $attempts = 5;
@@ -95,7 +97,7 @@ abstract class TestCase extends PolyfillTestCase
                     $arrayLoader->parseLinks(
                         $package->getName(),
                         $package->getPrettyVersion(),
-                        $opts['description'],
+                        $opts['method'],
                         $config[$type]
                     )
                 );
@@ -119,7 +121,7 @@ abstract class TestCase extends PolyfillTestCase
      *
      * @param string $executableName The name of the binary to test.
      *
-     * @throws \PHPUnit_Framework_SkippedTestError
+     * @throws \PHPUnit\Framework\SkippedTestError
      */
     protected function skipIfNotExecutable($executableName)
     {

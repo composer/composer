@@ -22,6 +22,7 @@ class ArchivableFilesFilter extends FilterIterator
     /**
      * @return bool true if the current element is acceptable, otherwise false.
      */
+    #[\ReturnTypeWillChange]
     public function accept()
     {
         $file = $this->getInnerIterator()->current();

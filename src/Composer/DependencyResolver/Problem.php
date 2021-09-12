@@ -14,9 +14,11 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -28,16 +30,17 @@ class Problem
 {
     /**
      * A map containing the id of each rule part of this problem as a key
-     * @var array
+     * @var array<string, true>
      */
     protected $reasonSeen;
 
     /**
      * A set of reasons for the problem, each is a rule or a root require and a rule
-     * @var array
+     * @var array<int, array<int, Rule>>
      */
     protected $reasons = array();
 
+    /** @var int */
     protected $section = 0;
 
     /**
@@ -156,7 +159,7 @@ class Problem
      * Store a reason descriptor but ignore duplicates
      *
      * @param string $id     A canonical identifier for the reason
-     * @param Rule $reason The reason descriptor
+     * @param Rule   $reason The reason descriptor
      */
     protected function addReason($id, Rule $reason)
     {
@@ -181,26 +184,16 @@ class Problem
     {
         // handle php/hhvm
         if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
-            $version = phpversion();
-            $available = $pool->whatProvides($packageName);
-
-            if (count($available)) {
-                $firstAvailable = reset($available);
-                $version = $firstAvailable->getPrettyVersion();
-                $extra = $firstAvailable->getExtra();
-                if ($firstAvailable instanceof CompletePackageInterface && isset($extra['config.platform']) && $extra['config.platform'] === true) {
-                    $version .= '; ' . str_replace('Package ', '', $firstAvailable->getDescription());
-                }
-            }
+            $version = self::getPlatformPackageVersion($pool, $packageName, phpversion());
 
             $msg = "- Root composer.json requires ".$packageName.self::constraintToText($constraint).' but ';
 
-            if (defined('HHVM_VERSION') || (count($available) && $packageName === 'hhvm')) {
+            if (defined('HHVM_VERSION') || ($packageName === 'hhvm' && count($pool->whatProvides($packageName)) > 0)) {
                 return array($msg, 'your HHVM version does not satisfy that requirement.');
             }
 
             if ($packageName === 'hhvm') {
-                return array($msg, 'you are running this with PHP and not HHVM.');
+                return array($msg, 'HHVM was not detected on this machine, make sure it is in your PATH.');
             }
 
             return array($msg, 'your '.$packageName.' version ('. $version .') does not satisfy that requirement.');
@@ -213,7 +206,9 @@ class Problem
             }
 
             $ext = substr($packageName, 4);
-            $error = extension_loaded($ext) ? 'it has the wrong version ('.(phpversion($ext) ?: '0').') installed' : 'it is missing from your system';
+            $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) ?: '0');
+
+            $error = extension_loaded($ext) ? 'it has the wrong version ('.$version.') installed' : 'it is missing from your system';
 
             return array("- Root composer.json requires PHP extension ".$packageName.self::constraintToText($constraint).' but ', $error.'. Install or enable PHP\'s '.$ext.' extension.');
         }
@@ -229,11 +224,11 @@ class Problem
             return array("- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', 'it has the wrong version installed or is missing from your system, make sure to load the extension providing it.');
         }
 
-        $fixedPackage = null;
-        foreach ($request->getFixedPackages() as $package) {
+        $lockedPackage = null;
+        foreach ($request->getLockedPackages() as $package) {
             if ($package->getName() === $packageName) {
-                $fixedPackage = $package;
-                if ($pool->isUnacceptableFixedPackage($package)) {
+                $lockedPackage = $package;
+                if ($pool->isUnacceptableFixedOrLockedPackage($package)) {
                     return array("- ", $package->getPrettyName().' is fixed to '.$package->getPrettyVersion().' (lock file version) by a partial update but that version is rejected by your minimum-stability. Make sure you list it as an argument for the update command.');
                 }
                 break;
@@ -253,13 +248,13 @@ class Problem
                 }
             }
 
-            if ($fixedPackage) {
-                $fixedConstraint = new Constraint('==', $fixedPackage->getVersion());
+            if ($lockedPackage) {
+                $fixedConstraint = new Constraint('==', $lockedPackage->getVersion());
                 $filtered = array_filter($packages, function ($p) use ($fixedConstraint) {
                     return $fixedConstraint->matches(new Constraint('==', $p->getVersion()));
                 });
                 if (0 === count($filtered)) {
-                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but the package is fixed to '.$fixedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.');
+                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but the package is fixed to '.$lockedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.');
                 }
             }
 
@@ -268,10 +263,10 @@ class Problem
             });
 
             if (!$nonLockedPackages) {
-                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' in lock file but not in remote repositories, make sure you avoid updating this package to keep the one from lock file.');
+                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.');
             }
 
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with another require.');
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.');
         }
 
         // check if the package is found when bypassing stability checks
@@ -291,7 +286,24 @@ class Problem
                 return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, $packages, $allReposPackages, 'constraint');
             }
 
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.');
+            $suffix = '';
+            if ($constraint instanceof Constraint && $constraint->getVersion() === 'dev-master') {
+                foreach ($packages as $candidate) {
+                    if (in_array($candidate->getVersion(), array('dev-default', 'dev-main'), true)) {
+                        $suffix = ' Perhaps dev-master was renamed to '.$candidate->getPrettyVersion().'?';
+                        break;
+                    }
+                }
+            }
+
+            // check if the root package is a name match and hint the dependencies on root troubleshooting article
+            $allReposPackages = $packages;
+            $topPackage = reset($allReposPackages);
+            if ($topPackage instanceof RootPackageInterface) {
+                $suffix = ' See https://getcomposer.org/dep-on-root for details and assistance.';
+            }
+
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.' . $suffix);
         }
 
         if (!preg_match('{^[A-Za-z0-9_./-]+$}', $packageName)) {
@@ -304,11 +316,13 @@ class Problem
             $maxProviders = 20;
             $providersStr = implode(array_map(function ($p) {
                 $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
+
                 return "      - ${p['name']}".$description."\n";
-            }, count($providers) > $maxProviders+1 ? array_slice($providers, 0, $maxProviders) : $providers));
-            if (count($providers) > $maxProviders+1) {
-                $providersStr .= '      ... and '.(count($providers)-$maxProviders).' more.'."\n";
+            }, count($providers) > $maxProviders + 1 ? array_slice($providers, 0, $maxProviders) : $providers));
+            if (count($providers) > $maxProviders + 1) {
+                $providersStr .= '      ... and '.(count($providers) - $maxProviders).' more.'."\n";
             }
+
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint).", it ", "could not be found in any version, but the following packages provide it:\n".$providersStr."      Consider requiring one of these to satisfy the $packageName requirement.");
         }
 
@@ -331,7 +345,7 @@ class Problem
         }
         foreach ($prepared as $name => $package) {
             // remove the implicit default branch alias to avoid cruft in the display
-            if (isset($package['versions'][VersionParser::DEFAULT_BRANCH_ALIAS]) && isset($hasDefaultBranch[$name])) {
+            if (isset($package['versions'][VersionParser::DEFAULT_BRANCH_ALIAS], $hasDefaultBranch[$name])) {
                 unset($package['versions'][VersionParser::DEFAULT_BRANCH_ALIAS]);
             }
 
@@ -346,11 +360,27 @@ class Problem
         return implode(', ', $prepared);
     }
 
+    private static function getPlatformPackageVersion(Pool $pool, $packageName, $version)
+    {
+        $available = $pool->whatProvides($packageName);
+
+        if (count($available)) {
+            $firstAvailable = reset($available);
+            $version = $firstAvailable->getPrettyVersion();
+            $extra = $firstAvailable->getExtra();
+            if ($firstAvailable instanceof CompletePackageInterface && isset($extra['config.platform']) && $extra['config.platform'] === true) {
+                $version .= '; ' . str_replace('Package ', '', $firstAvailable->getDescription());
+            }
+        }
+
+        return $version;
+    }
+
     /**
-     * @param string[] $versions an array of pretty versions, with normalized versions as keys
+     * @param  string[]     $versions an array of pretty versions, with normalized versions as keys
      * @return list<string> a list of pretty versions and '...' where versions were removed
      */
-    private static function condenseVersionList(array $versions, $max)
+    private static function condenseVersionList(array $versions, $max, $maxDev = 16)
     {
         if (count($versions) <= $max) {
             return $versions;
@@ -359,10 +389,16 @@ class Problem
         $filtered = array();
         $byMajor = array();
         foreach ($versions as $version => $pretty) {
-            $byMajor[preg_replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
+            if (0 === stripos($version, 'dev-')) {
+                $byMajor['dev'][] = $pretty;
+            } else {
+                $byMajor[preg_replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
+            }
         }
-        foreach ($byMajor as $versionsForMajor) {
-            if (count($versionsForMajor) > $max) {
+        foreach ($byMajor as $majorVersion => $versionsForMajor) {
+            $maxVersions = $majorVersion === 'dev' ? $maxDev : $max;
+            if (count($versionsForMajor) > $maxVersions) {
+                // output only 1st and last versions
                 $filtered[] = $versionsForMajor[0];
                 $filtered[] = '...';
                 $filtered[] = $versionsForMajor[count($versionsForMajor) - 1];
@@ -402,14 +438,30 @@ class Problem
             }
         }
 
-        return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your '.$reason.' and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');
+        if ($higherRepoPackages) {
+            $topPackage = reset($higherRepoPackages);
+            if ($topPackage instanceof RootPackageInterface) {
+                return array(
+                    "- Root composer.json requires $packageName".self::constraintToText($constraint).', it is ',
+                    'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.$topPackage->getPrettyName().' is the root package and cannot be modified. See https://getcomposer.org/dep-on-root for details and assistance.',
+                );
+            }
+        }
 
+        if ($nextRepo instanceof LockArrayRepository) {
+            $singular = count($higherRepoPackages) === 1;
+
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ',
+                'found '.self::getPackageList($nextRepoPackages, $isVerbose).' in the lock file and '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' but ' . ($singular ? 'it does' : 'these do') . ' not match your '.$reason.' and ' . ($singular ? 'is' : 'are') . ' therefore not installable. Make sure you either fix the '.$reason.' or avoid updating this package to keep the one from the lock file.', );
+        }
+
+        return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your '.$reason.' and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');
     }
 
     /**
      * Turns a constraint into text usable in a sentence describing a request
      *
-     * @param  \Composer\Semver\Constraint\ConstraintInterface $constraint
+     * @param  ?ConstraintInterface $constraint
      * @return string
      */
     protected static function constraintToText($constraint)

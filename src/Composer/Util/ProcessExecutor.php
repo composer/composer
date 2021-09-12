@@ -17,6 +17,7 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessUtils;
 use Symfony\Component\Process\Exception\RuntimeException;
 use React\Promise\Promise;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Robert Schönthal <seroscho@googlemail.com>
@@ -30,16 +31,27 @@ class ProcessExecutor
     const STATUS_FAILED = 4;
     const STATUS_ABORTED = 5;
 
+    /** @var int */
     protected static $timeout = 300;
 
-    protected $captureOutput;
-    protected $errorOutput;
+    /** @var bool */
+    protected $captureOutput = false;
+    /** @var string */
+    protected $errorOutput = '';
+    /** @var ?IOInterface */
     protected $io;
 
+    /**
+     * @phpstan-var array<int, array<string, mixed>>
+     */
     private $jobs = array();
+    /** @var int */
     private $runningJobs = 0;
+    /** @var int */
     private $maxJobs = 10;
+    /** @var int */
     private $idGen = 0;
+    /** @var bool */
     private $allowAsync = false;
 
     public function __construct(IOInterface $io = null)
@@ -50,11 +62,11 @@ class ProcessExecutor
     /**
      * runs a process on the commandline
      *
-     * @param  string $command the command to execute
-     * @param  mixed  $output  the output will be written into this var if passed by ref
-     *                         if a callable is passed it will be used as output handler
-     * @param  string $cwd     the working directory
-     * @return int    statuscode
+     * @param  string  $command the command to execute
+     * @param  mixed   $output  the output will be written into this var if passed by ref
+     *                          if a callable is passed it will be used as output handler
+     * @param  ?string $cwd     the working directory
+     * @return int     statuscode
      */
     public function execute($command, &$output = null, $cwd = null)
     {
@@ -68,20 +80,32 @@ class ProcessExecutor
     /**
      * runs a process on the commandline in TTY mode
      *
-     * @param  string $command the command to execute
-     * @param  string $cwd     the working directory
-     * @return int    statuscode
+     * @param  string  $command the command to execute
+     * @param  ?string $cwd     the working directory
+     * @return int     statuscode
      */
     public function executeTty($command, $cwd = null)
     {
-        return $this->doExecute($command, $cwd, true);
+        if (Platform::isTty()) {
+            return $this->doExecute($command, $cwd, true);
+        }
+
+        return $this->doExecute($command, $cwd, false);
     }
 
+    /**
+     * @param  string  $command
+     * @param  ?string $cwd
+     * @param  bool    $tty
+     * @param  mixed   $output
+     * @return int
+     */
     private function doExecute($command, $cwd, $tty, &$output = null)
     {
         if ($this->io && $this->io->isDebug()) {
             $safeCommand = preg_replace_callback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
-                if (preg_match('{^[a-f0-9]{12,}$}', $m['user'])) {
+                // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx) we obfuscate that
+                if (preg_match('{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+)$}', $m['user'])) {
                     return '://***:***@';
                 }
 
@@ -91,19 +115,24 @@ class ProcessExecutor
             $this->io->writeError('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
         }
 
+        // TODO in 2.2, these two checks can be dropped as Symfony 4+ supports them out of the box
         // make sure that null translate to the proper directory in case the dir is a symlink
         // and we call a git command, because msysgit does not handle symlinks properly
         if (null === $cwd && Platform::isWindows() && false !== strpos($command, 'git') && getcwd()) {
             $cwd = realpath(getcwd());
         }
+        if (null !== $cwd && !is_dir($cwd)) {
+            throw new \RuntimeException('The given CWD for the process does not exist: '.$cwd);
+        }
 
         $this->captureOutput = func_num_args() > 3;
-        $this->errorOutput = null;
+        $this->errorOutput = '';
 
         // TODO in v3, commands should be passed in as arrays of cmd + args
         if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
             $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
         } else {
+            /** @phpstan-ignore-next-line */
             $process = new Process($command, $cwd, null, null, static::getTimeout());
         }
         if (!Platform::isWindows() && $tty) {
@@ -129,11 +158,9 @@ class ProcessExecutor
     /**
      * starts a process on the commandline in async mode
      *
-     * @param  string $command the command to execute
-     * @param  mixed  $output  the output will be written into this var if passed by ref
-     *                         if a callable is passed it will be used as output handler
-     * @param  string $cwd     the working directory
-     * @return int    statuscode
+     * @param  string           $command the command to execute
+     * @param  string           $cwd     the working directory
+     * @return PromiseInterface
      */
     public function executeAsync($command, $cwd = null)
     {
@@ -155,7 +182,6 @@ class ProcessExecutor
         };
 
         $self = $this;
-        $io = $this->io;
 
         $canceler = function () use (&$job) {
             if ($job['status'] === ProcessExecutor::STATUS_QUEUED) {
@@ -173,6 +199,8 @@ class ProcessExecutor
                 // signal can throw in various conditions, but we don't care if it fails
             }
             $job['process']->stop(1);
+
+            throw new \RuntimeException('Aborted process');
         };
 
         $promise = new Promise($resolver, $canceler);
@@ -194,7 +222,7 @@ class ProcessExecutor
 
             throw $e;
         });
-        $this->jobs[$job['id']] =& $job;
+        $this->jobs[$job['id']] = &$job;
 
         if ($this->runningJobs < $this->maxJobs) {
             $this->startJob($job['id']);
@@ -203,9 +231,13 @@ class ProcessExecutor
         return $promise;
     }
 
+    /**
+     * @param  int  $id
+     * @return void
+     */
     private function startJob($id)
     {
-        $job =& $this->jobs[$id];
+        $job = &$this->jobs[$id];
         if ($job['status'] !== self::STATUS_QUEUED) {
             return;
         }
@@ -229,24 +261,52 @@ class ProcessExecutor
             $this->io->writeError('Executing async command ('.($cwd ?: 'CWD').'): '.$safeCommand);
         }
 
+        // TODO in 2.2, these two checks can be dropped as Symfony 4+ supports them out of the box
         // make sure that null translate to the proper directory in case the dir is a symlink
         // and we call a git command, because msysgit does not handle symlinks properly
         if (null === $cwd && Platform::isWindows() && false !== strpos($command, 'git') && getcwd()) {
             $cwd = realpath(getcwd());
         }
+        if (null !== $cwd && !is_dir($cwd)) {
+            throw new \RuntimeException('The given CWD for the process does not exist: '.$cwd);
+        }
 
-        // TODO in v3, commands should be passed in as arrays of cmd + args
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
-        } else {
-            $process = new Process($command, $cwd, null, null, static::getTimeout());
+        try {
+            // TODO in v3, commands should be passed in as arrays of cmd + args
+            if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+                $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+            } else {
+                $process = new Process($command, $cwd, null, null, static::getTimeout());
+            }
+        } catch (\Exception $e) {
+            call_user_func($job['reject'], $e);
+
+            return;
+        } catch (\Throwable $e) {
+            call_user_func($job['reject'], $e);
+
+            return;
         }
 
         $job['process'] = $process;
 
-        $process->start();
+        try {
+            $process->start();
+        } catch (\Exception $e) {
+            call_user_func($job['reject'], $e);
+
+            return;
+        } catch (\Throwable $e) {
+            call_user_func($job['reject'], $e);
+
+            return;
+        }
     }
 
+    /**
+     * @param  ?int $index job id
+     * @return void
+     */
     public function wait($index = null)
     {
         while (true) {
@@ -260,6 +320,8 @@ class ProcessExecutor
 
     /**
      * @internal
+     *
+     * @return void
      */
     public function enableAsync()
     {
@@ -269,7 +331,8 @@ class ProcessExecutor
     /**
      * @internal
      *
-     * @return int number of active (queued or started) jobs
+     * @param  ?int $index job id
+     * @return int         number of active (queued or started) jobs
      */
     public function countActiveJobs($index = null)
     {
@@ -306,17 +369,23 @@ class ProcessExecutor
 
     /**
      * @private
+     *
+     * @return void
      */
     public function markJobDone()
     {
         $this->runningJobs--;
     }
 
+    /**
+     * @param  ?string  $output
+     * @return string[]
+     */
     public function splitLines($output)
     {
-        $output = trim($output);
+        $output = trim((string) $output);
 
-        return ((string) $output === '') ? array() : preg_split('{\r?\n}', $output);
+        return $output === '' ? array() : preg_split('{\r?\n}', $output);
     }
 
     /**
@@ -329,6 +398,14 @@ class ProcessExecutor
         return $this->errorOutput;
     }
 
+    /**
+     * @private
+     *
+     * @param Process::ERR|Process::OUT $type
+     * @param string                    $buffer
+     *
+     * @return void
+     */
     public function outputHandler($type, $buffer)
     {
         if ($this->captureOutput) {
@@ -348,11 +425,18 @@ class ProcessExecutor
         }
     }
 
+    /**
+     * @return int the timeout in seconds
+     */
     public static function getTimeout()
     {
         return static::$timeout;
     }
 
+    /**
+     * @param  int  $timeout the timeout in seconds
+     * @return void
+     */
     public static function setTimeout($timeout)
     {
         static::$timeout = $timeout;
@@ -415,6 +499,11 @@ class ProcessExecutor
         return "'".str_replace("'", "'\\''", $argument)."'";
     }
 
+    /**
+     * @param  string $arg
+     * @param  string $char
+     * @return bool
+     */
     private static function isSurroundedBy($arg, $char)
     {
         return 2 < strlen($arg) && $char === $arg[0] && $char === $arg[strlen($arg) - 1];

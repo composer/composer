@@ -57,7 +57,7 @@ final class TlsHelper
      *
      * @param mixed $certificate X.509 certificate
      *
-     * @return array|null
+     * @return array{cn: string, san: string[]}|null
      */
     public static function getCertificateNames($certificate)
     {
@@ -130,6 +130,9 @@ final class TlsHelper
      * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
      * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
      * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     *
+     * @param string $certificate
+     * @return string
      */
     public static function getCertificateFingerprint($certificate)
     {
@@ -162,7 +165,7 @@ final class TlsHelper
      *
      * @param string $certName CN/SAN
      *
-     * @return callable|void
+     * @return callable|null
      */
     private static function certNameMatcher($certName)
     {
@@ -180,14 +183,14 @@ final class TlsHelper
 
             if (3 > count($components)) {
                 // Must have 3+ components
-                return;
+                return null;
             }
 
             $firstComponent = $components[0];
 
             // Wildcard must be the last character.
             if ('*' !== $firstComponent[strlen($firstComponent) - 1]) {
-                return;
+                return null;
             }
 
             $wildcardRegex = preg_quote($certName);
@@ -198,5 +201,7 @@ final class TlsHelper
                 return 1 === preg_match($wildcardRegex, $hostname);
             };
         }
+
+        return null;
     }
 }

@@ -51,7 +51,7 @@ class VersionParser extends SemverVersionParser
 
         for ($i = 0, $count = count($pairs); $i < $count; $i++) {
             $pair = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
-            if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/') && !PlatformRepository::isPlatformPackage($pairs[$i + 1])) {
+            if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/') && !preg_match('{(?<=[a-z0-9_/-])\*|\*(?=[a-z0-9_/-])}i', $pairs[$i + 1]) && !PlatformRepository::isPlatformPackage($pairs[$i + 1])) {
                 $pair .= ' '.$pairs[$i + 1];
                 $i++;
             }
@@ -76,8 +76,12 @@ class VersionParser extends SemverVersionParser
             return true;
         }
 
-        $normalizedFrom = str_replace(array('dev-master', 'dev-trunk', 'dev-default'), VersionParser::DEFAULT_BRANCH_ALIAS, $normalizedFrom);
-        $normalizedTo = str_replace(array('dev-master', 'dev-trunk', 'dev-default'), VersionParser::DEFAULT_BRANCH_ALIAS, $normalizedTo);
+        if (in_array($normalizedFrom, array('dev-master', 'dev-trunk', 'dev-default'), true)) {
+            $normalizedFrom = VersionParser::DEFAULT_BRANCH_ALIAS;
+        }
+        if (in_array($normalizedTo, array('dev-master', 'dev-trunk', 'dev-default'), true)) {
+            $normalizedTo = VersionParser::DEFAULT_BRANCH_ALIAS;
+        }
 
         if (strpos($normalizedFrom, 'dev-') === 0 || strpos($normalizedTo, 'dev-') === 0) {
             return true;

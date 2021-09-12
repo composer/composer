@@ -178,7 +178,7 @@ class ArrayDumperTest extends TestCase
             ),
             array(
                 'require-dev',
-                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), 'requires (for development)', '1.0.0')),
+                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_DEV_REQUIRE, '1.0.0')),
                 'devRequires',
                 array('foo/bar' => '1.0.0'),
             ),

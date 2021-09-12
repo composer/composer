@@ -1,0 +1,31 @@
+--TEST--
+Test that a conflict against >=5 does not include the default branch if it has a branch alias defined.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "conflicter/pkg", "version": "1.0.0", "conflict": { "victim/pkg": ">=5", "victim/pkg2": ">=5" } },
+                { "name": "victim/pkg", "version": "dev-master", "default-branch": true, "extra": { "branch-alias": { "dev-master": "2.x-dev" } } },
+                { "name": "victim/pkg2", "version": "dev-foo" }
+            ]
+        }
+    ],
+    "require": {
+        "conflicter/pkg": "1.0.0",
+        "victim/pkg": "*",
+        "victim/pkg2": "*"
+    },
+    "minimum-stability": "dev"
+}
+
+
+--RUN--
+update
+
+--EXPECT--
+Installing conflicter/pkg (1.0.0)
+Installing victim/pkg (dev-master)
+Marking victim/pkg (2.x-dev) as installed, alias of victim/pkg (dev-master)
+Installing victim/pkg2 (dev-foo)

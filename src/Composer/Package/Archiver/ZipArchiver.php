@@ -39,7 +39,10 @@ class ZipArchiver implements ArchiverInterface
             foreach ($files as $file) {
                 /** @var \SplFileInfo $file */
                 $filepath = strtr($file->getPath()."/".$file->getFilename(), '\\', '/');
-                $localname = str_replace($sources.'/', '', $filepath);
+                $localname = $filepath;
+                if (strpos($localname, $sources . '/') === 0) {
+                    $localname = substr($localname, strlen($sources . '/'));
+                }
                 if ($file->isDir()) {
                     $zip->addEmptyDir($localname);
                 } else {

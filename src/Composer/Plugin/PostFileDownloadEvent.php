@@ -22,7 +22,6 @@ use Composer\Package\PackageInterface;
  */
 class PostFileDownloadEvent extends Event
 {
-
     /**
      * @var string
      */
@@ -39,32 +38,48 @@ class PostFileDownloadEvent extends Event
     private $url;
 
     /**
-     * @var \Composer\Package\PackageInterface
+     * @var mixed
      */
-    private $package;
+    private $context;
+
+    /**
+     * @var string
+     */
+    private $type;
 
     /**
      * Constructor.
      *
-     * @param string           $name         The event name
-     * @param string           $fileName     The file name
-     * @param string|null      $checksum     The checksum
-     * @param string           $url          The processed url
-     * @param PackageInterface $package      The package.
+     * @param string      $name     The event name
+     * @param string|null $fileName The file name
+     * @param string|null $checksum The checksum
+     * @param string      $url      The processed url
+     * @param string      $type     The type (package or metadata).
+     * @param mixed       $context  Additional context for the download.
      */
-    public function __construct($name, $fileName, $checksum, $url, PackageInterface $package)
+    public function __construct($name, $fileName, $checksum, $url, $type, $context = null)
     {
+        /** @phpstan-ignore-next-line */
+        if ($context === null && $type instanceof PackageInterface) {
+            $context = $type;
+            $type = 'package';
+            trigger_error('PostFileDownloadEvent::__construct should receive a $type=package and the package object in $context since Composer 2.1.', E_USER_DEPRECATED);
+        }
+
         parent::__construct($name);
         $this->fileName = $fileName;
         $this->checksum = $checksum;
         $this->url = $url;
-        $this->package = $package;
+        $this->context = $context;
+        $this->type = $type;
     }
 
     /**
      * Retrieves the target file name location.
      *
-     * @return string
+     * If this download is of type metadata, null is returned.
+     *
+     * @return string|null
      */
     public function getFileName()
     {
@@ -76,7 +91,8 @@ class PostFileDownloadEvent extends Event
      *
      * @return string|null
      */
-    public function getChecksum() {
+    public function getChecksum()
+    {
         return $this->checksum;
     }
 
@@ -85,18 +101,47 @@ class PostFileDownloadEvent extends Event
      *
      * @return string
      */
-    public function getUrl() {
+    public function getUrl()
+    {
         return $this->url;
+    }
+
+    /**
+     * Returns the context of this download, if any.
+     *
+     * If this download is of type package, the package object is returned. If
+     * this download is of type metadata, an array{response: Response, repository: RepositoryInterface} is returned.
+     *
+     * @return mixed
+     */
+    public function getContext()
+    {
+        return $this->context;
     }
 
     /**
      * Get the package.
      *
-     * @return \Composer\Package\PackageInterface
-     *   The package.
+     * If this download is of type metadata, null is returned.
+     *
+     * @return \Composer\Package\PackageInterface|null The package.
+     * @deprecated Use getContext instead
      */
-    public function getPackage() {
-        return $this->package;
+    public function getPackage()
+    {
+        trigger_error('PostFileDownloadEvent::getPackage is deprecated since Composer 2.1, use getContext instead.', E_USER_DEPRECATED);
+        $context = $this->getContext();
+
+        return $context instanceof PackageInterface ? $context : null;
     }
 
+    /**
+     * Returns the type of this download (package, metadata).
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
 }

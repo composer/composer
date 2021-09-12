@@ -3,14 +3,14 @@
 namespace Foo;
 
 class SlashedA {
-    function foo() {
+    public function foo() {
         return sprintf("foo\
                         bar");
     }
 }
 
 class SlashedB {
-    function bar() {
+    public function bar() {
         print "baz";
     }
 }

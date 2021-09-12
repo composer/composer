@@ -201,6 +201,10 @@ class LibraryInstallerTest extends TestCase
             ->expects($this->any())
             ->method('getPrettyName')
             ->will($this->returnValue('pkg'));
+        $package
+            ->expects($this->any())
+            ->method('getName')
+            ->will($this->returnValue('pkg'));
 
         $this->repository
             ->expects($this->exactly(2))
@@ -284,7 +288,7 @@ class LibraryInstallerTest extends TestCase
     protected function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')
-            ->setConstructorArgs(array(md5(mt_rand()), '1.0.0.0', '1.0.0'))
+            ->setConstructorArgs(array(md5((string) mt_rand()), '1.0.0.0', '1.0.0'))
             ->getMock();
     }
 }

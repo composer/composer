@@ -44,9 +44,9 @@ update b/b foo/bar baz/* --with-dependencies
 
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
-Updating dependencies
 <warning>Package "foo/bar" listed for update is not locked.</warning>
 <warning>Pattern "baz/*" listed for update does not match any locked packages.</warning>
+Updating dependencies
 Lock file operations: 0 installs, 1 update, 0 removals
   - Upgrading b/b (1.0.0 => 1.1.0)
 Writing lock file

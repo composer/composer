@@ -24,6 +24,11 @@ use Symfony\Component\Console\Helper\HelperSet;
  */
 class BufferIO extends ConsoleIO
 {
+    /** @var StringInput */
+    protected $input;
+    /** @var StreamOutput */
+    protected $output;
+
     /**
      * @param string                        $input
      * @param int                           $verbosity
@@ -73,7 +78,7 @@ class BufferIO extends ConsoleIO
 
     private function createStream(array $inputs)
     {
-        $stream = fopen('php://memory', 'r+', false);
+        $stream = fopen('php://memory', 'r+');
 
         foreach ($inputs as $input) {
             fwrite($stream, $input.PHP_EOL);

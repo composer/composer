@@ -164,7 +164,7 @@ To enable extensions, verify that they are enabled in your .ini files:
 __inilist__
 You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.
 
-Use the option --with-all-dependencies to allow upgrades, downgrades and removals for packages currently locked to specific versions.
+Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
 
 --EXPECT--
 

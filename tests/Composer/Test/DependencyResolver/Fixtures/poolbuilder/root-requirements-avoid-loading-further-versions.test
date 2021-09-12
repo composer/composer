@@ -1,0 +1,30 @@
+--TEST--
+Root requirements avoid loading of further versions
+
+--REQUEST--
+{
+    "require": {
+        "foo/bar": "1.0.0",
+        "foo/requirer": "*"
+    }
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        { "name": "foo/bar", "version": "1.0.0" },
+        { "name": "foo/bar", "version": "2.0.0" },
+        { "name": "foo/bar", "version": "3.0.0" },
+        { "name": "foo/requirer", "version": "1.0.0", "require": { "foo/bar": "*" } }
+    ]
+]
+
+--EXPECT--
+[
+    "foo/bar-1.0.0.0",
+    "foo/requirer-1.0.0.0"
+]

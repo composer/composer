@@ -16,17 +16,21 @@ namespace Composer\DependencyResolver;
  * Stores decisions on installing, removing or keeping packages
  *
  * @author Nils Adermann <naderman@naderman.de>
+ * @implements \Iterator<array{0: int, 1: mixed}>
  */
 class Decisions implements \Iterator, \Countable
 {
     const DECISION_LITERAL = 0;
     const DECISION_REASON = 1;
 
+    /** @var Pool */
     protected $pool;
+    /** @var array<int, int> */
     protected $decisionMap;
+    /** @var array<array{0: int, 1: mixed}> */
     protected $decisionQueue = array();
 
-    public function __construct($pool)
+    public function __construct(Pool $pool)
     {
         $this->pool = $pool;
         $this->decisionMap = array();
@@ -142,31 +146,37 @@ class Decisions implements \Iterator, \Countable
         array_pop($this->decisionQueue);
     }
 
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return \count($this->decisionQueue);
     }
 
+    #[\ReturnTypeWillChange]
     public function rewind()
     {
         end($this->decisionQueue);
     }
 
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return current($this->decisionQueue);
     }
 
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return key($this->decisionQueue);
     }
 
+    #[\ReturnTypeWillChange]
     public function next()
     {
-        return prev($this->decisionQueue);
+        prev($this->decisionQueue);
     }
 
+    #[\ReturnTypeWillChange]
     public function valid()
     {
         return false !== current($this->decisionQueue);
@@ -197,15 +207,21 @@ class Decisions implements \Iterator, \Countable
         }
     }
 
-    public function __toString()
+    public function toString(Pool $pool = null)
     {
         $decisionMap = $this->decisionMap;
         ksort($decisionMap);
         $str = '[';
         foreach ($decisionMap as $packageId => $level) {
-            $str .= $packageId.':'.$level.',';
+            $str .= (($pool) ? $pool->literalToPackage($packageId) : $packageId).':'.$level.',';
         }
         $str .= ']';
+
         return $str;
+    }
+
+    public function __toString()
+    {
+        return $this->toString();
     }
 }

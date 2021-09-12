@@ -1,0 +1,30 @@
+--TEST--
+A root alias for a package which cannot be found in an acceptable version does not lead to different error.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/aliased", "version": "1.2.3" }
+            ]
+        }
+    ],
+    "require": {
+        "a/aliased": "3.0.2 as 3.0.3"
+    }
+}
+--RUN--
+update
+--EXPECT-EXIT-CODE--
+2
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires a/aliased 3.0.2 as 3.0.3, found a/aliased[1.2.3] but it does not match the constraint.
+
+--EXPECT--
+

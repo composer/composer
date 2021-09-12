@@ -24,7 +24,7 @@ class Svn
     const MAX_QTY_AUTH_TRIES = 5;
 
     /**
-     * @var array
+     * @var ?array{username: string, password: string}
      */
     protected $credentials;
 
@@ -82,11 +82,13 @@ class Svn
         $this->process = $process ?: new ProcessExecutor($io);
     }
 
+    /**
+     * @return void
+     */
     public static function cleanEnv()
     {
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
-        putenv("DYLD_LIBRARY_PATH");
-        unset($_SERVER['DYLD_LIBRARY_PATH']);
+        Platform::clearEnv('DYLD_LIBRARY_PATH');
     }
 
     /**
@@ -128,6 +130,15 @@ class Svn
         return $this->executeWithAuthRetry($command, $cwd, '', $path, $verbose);
     }
 
+    /**
+     * @param  string $svnCommand
+     * @param  string $cwd
+     * @param  string $url
+     * @param  string $path
+     * @param  bool   $verbose
+     *
+     * @return ?string
+     */
     private function executeWithAuthRetry($svnCommand, $cwd, $url, $path, $verbose)
     {
         // Regenerate the command at each try, to use the newly user-provided credentials
@@ -137,10 +148,10 @@ class Svn
         $io = $this->io;
         $handler = function ($type, $buffer) use (&$output, $io, $verbose) {
             if ($type !== 'out') {
-                return;
+                return null;
             }
             if (strpos($buffer, 'Redirecting to URL ') === 0) {
-                return;
+                return null;
             }
             $output .= $buffer;
             if ($verbose) {
@@ -179,7 +190,8 @@ class Svn
     }
 
     /**
-     * @param bool $cacheCredentials
+     * @param  bool $cacheCredentials
+     * @return void
      */
     public function setCacheCredentials($cacheCredentials)
     {
@@ -207,7 +219,7 @@ class Svn
         $this->credentials['username'] = $this->io->ask("Username: ");
         $this->credentials['password'] = $this->io->askAndHideAnswer("Password: ");
 
-        $this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ", true);
+        $this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ");
 
         return $this;
     }
@@ -224,7 +236,7 @@ class Svn
     protected function getCommand($cmd, $url, $path = null)
     {
         $cmd = sprintf(
-            '%s %s%s %s',
+            '%s %s%s -- %s',
             $cmd,
             '--non-interactive ',
             $this->getCredentialString(),

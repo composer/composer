@@ -1,4 +1,4 @@
 --RUN--
-create-project seld/jsonlint %testDir% 1.0.0 --prefer-source -n
---EXPECT-ERROR-REGEX--
-{Installing seld/jsonlint \(1.0.0\): Cloning [a-f0-9]{10}( from cache)?}
+create-project seld/jsonlint foo 1.0.0 --prefer-source -n
+--EXPECT-REGEX--
+{- Installing seld/jsonlint \(1.0.0\): Cloning [a-f0-9]{10}( from cache)?}

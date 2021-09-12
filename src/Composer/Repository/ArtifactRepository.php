@@ -27,8 +27,11 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     /** @var LoaderInterface */
     protected $loader;
 
+    /** @var string */
     protected $lookup;
+    /** @var mixed[] */
     protected $repoConfig;
+    /** @var IOInterface */
     private $io;
 
     public function __construct(array $repoConfig, IOInterface $io)
@@ -94,7 +97,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         $fileExtension = pathinfo($file->getPathname(), PATHINFO_EXTENSION);
         if (in_array($fileExtension, array('gz', 'tar', 'tgz'), true)) {
             $fileType = 'tar';
-        } else if ($fileExtension === 'zip') {
+        } elseif ($fileExtension === 'zip') {
             $fileType = 'zip';
         } else {
             throw new \RuntimeException('Files with "'.$fileExtension.'" extensions aren\'t supported. Only ZIP and TAR/TAR.GZ/TGZ archives are supported.');

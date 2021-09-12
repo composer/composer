@@ -149,6 +149,102 @@ number.
 
 This field is optional.
 
+### metadata-url, available-packages and available-package-patterns
+
+The `metadata-url` field allows you to provide a URL template to serve all
+packages which are in the repository. It must contain the placeholder
+`%package%`.
+
+This field is new in Composer v2, and is prioritised over the
+`provider-includes` and `providers-url` fields if both are present.
+For compatibility with both Composer v1 and v2 you ideally want
+to provide both. New repository implementations may only need to
+support v2 however.
+
+An example:
+
+```json
+{
+    "metadata-url": "/p2/%package%.json"
+}
+```
+
+Whenever Composer looks for a package, it will replace `%package%` by the
+package name, and fetch that URL. If dev stability is allowed for the package,
+it will also load the URL again with `$packageName~dev` (e.g.
+`/p2/foo/bar~dev.json` to look for `foo/bar`'s dev versions).
+
+The `foo/bar.json` and `foo/bar~dev.json` files containing package versions
+MUST contain only versions for the foo/bar package, as
+`{"packages":{"foo/bar":[ ... versions here ... ]}}`.
+
+Caching is done via the use of If-Modified-Since header, so make sure you
+return Last-Modified headers and that they are accurate.
+
+The array of versions can also optionally be minified using
+`Composer\MetadataMinifier\MetadataMinifier::minify()` from
+[composer/metadata-minifier](https://packagist.org/packages/composer/metadata-minifier).
+If you do that, you should add a `"minified": "composer/2.0"` key
+at the top level to indicate to Composer it must expand the version
+list back into the original data. See 
+https://repo.packagist.org/p2/monolog/monolog.json for an example.
+
+Any requested package which does not exist MUST return a 404 status code,
+which will indicate to Composer that this package does not exist in your
+repository. Make sure the 404 response is fast to avoid blocking Composer.
+Avoid redirects to alternative 404 pages.
+
+If your repository only has a small number of packages, and you want to avoid
+the 404-requests, you can also specify an `"available-packages"` key in
+`packages.json` which should be an array with all the package names that your
+repository contain. Alternatively you can specify an
+`"available-package-patterns"` key which is an array of package name patterns
+(with `*` matching any string, e.g. `vendor/*` would make composer look up
+every matching package name in this repository).
+
+This field is optional.
+
+### providers-api
+
+The `providers-api` field allows you to provide a URL template to serve all
+packages which provide a given package name, but not the package which has
+that name. It must contain the placeholder `%package%`.
+
+For example https://packagist.org/providers/monolog/monolog.json lists some
+package which have a "provide" rule for monolog/monolog, but it does not list
+monolog/monolog itself.
+
+```json
+{
+    "providers-api": "https://packagist.org/providers/%package%.json",
+}
+```
+
+This field is optional.
+
+### list
+
+The `list` field allows you to return the names of packages which match a
+given field (or all names if no filter is present). It should accept an
+optional `?filter=xx` query param, which can contain `*` as wildcards matching
+any substring.
+
+Replace/provide rules should not be considered here.
+
+It must return an array of package names:
+```json
+{
+    "packageNames": [
+        "a/b",
+        "c/d"
+    ]
+}
+```
+
+See <https://packagist.org/packages/list.json?filter=composer/*> for example.
+
+This field is optional.
+
 #### provider-includes and providers-url
 
 The `provider-includes` field allows you to list a set of files that list
@@ -158,6 +254,9 @@ the files in this case.
 The `providers-url` describes how provider files are found on the server. It
 is an absolute path from the repository root. It must contain the placeholders
 `%package%` and `%hash%`.
+
+These fields are used by Composer v1, or if your repository does not have the
+`metadata-url` field set.
 
 An example:
 
@@ -219,7 +318,7 @@ There are a few use cases for this. The most common one is maintaining your
 own fork of a third party library. If you are using a certain library for your
 project, and you decide to change something in the library, you will want your
 project to use the patched version. If the library is on GitHub (this is the
-case most of the time), you can simply fork it there and push your changes to
+case most of the time), you can fork it there and push your changes to
 your fork. After that you update the project's `composer.json`. All you have
 to do is add your fork as a repository and update the version constraint to
 point to your custom branch. In `composer.json`, you should prefix your custom
@@ -316,23 +415,10 @@ Please note:
 
 #### BitBucket Driver Configuration
 
-The BitBucket driver uses OAuth to access your private repositories via the BitBucket REST APIs, and you will need to create an OAuth consumer to use the driver, please refer to [Atlassian's Documentation](https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html). You will need to fill the callback url with something to satisfy BitBucket, but the address does not need to go anywhere and is not used by Composer.
+> **Note that the repository endpoint for BitBucket needs to be https rather than git.**
 
-After creating an OAuth consumer in the BitBucket control panel, you need to setup your auth.json file with
-the credentials like this (more info [here](https://getcomposer.org/doc/06-config.md#bitbucket-oauth)):
-```json
-{
-    "bitbucket-oauth": {
-        "bitbucket.org": {
-            "consumer-key": "myKey",
-            "consumer-secret": "mySecret"
-        }
-    }
-}
-```
-**Note that the repository endpoint needs to be https rather than git.**
-
-Alternatively if you prefer not to have your OAuth credentials on your filesystem you may export the ```bitbucket-oauth``` block above to the [COMPOSER_AUTH](https://getcomposer.org/doc/03-cli.md#composer-auth) environment variable instead.
+After setting up your bitbucket repository, you will also need to
+[set up authentication](articles/authentication-for-private-packages.md#bitbucket-oauth).
 
 #### Subversion Options
 
@@ -507,17 +593,17 @@ package repository definitions. It will fetch all the packages that are
 `require`d and dump a `packages.json` that is your `composer` repository.
 
 Check [the satis GitHub repository](https://github.com/composer/satis) and
-the [Satis article](articles/handling-private-packages-with-satis.md) for more
+the [handling private packages article](articles/handling-private-packages.md) for more
 information.
 
 ### Artifact
 
 There are some cases, when there is no ability to have one of the previously
-mentioned repository types online, even the VCS one. Typical example could be
-cross-organisation library exchange through built artifacts. Of course, most
-of the times they are private. To simplify maintenance, one can simply use a
-repository of type `artifact` with a folder containing ZIP or TAR archives of those
-private packages:
+mentioned repository types online, even the VCS one. A typical example could be
+cross-organisation library exchange through build artifacts. Of course, most
+of the time these are private. To use these archives as-is, one can use a
+repository of type `artifact` with a folder containing ZIP or TAR archives of
+those private packages:
 
 ```json
 {
@@ -589,6 +675,26 @@ the branch or tag that is currently checked out. Otherwise, the version should
 be explicitly defined in the package's `composer.json` file. If the version
 cannot be resolved by these means, it is assumed to be `dev-master`.
 
+When the version cannot be inferred from the local VCS repository, or when you
+want to override the version, you can use the `versions` option when declaring
+the repository:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/my-package",
+            "options": {
+                "versions": {
+                    "my/package": "4.2-dev"
+                }
+            }
+        }
+    ]
+}
+```
+
 The local package will be symlinked if possible, in which case the output in
 the console will read `Symlinking from ../../packages/my-package`. If symlinking
 is _not_ possible the package will be copied. In that case, the console will
@@ -623,7 +729,7 @@ variables are parsed in both Windows and Linux/Mac notations. For example
 `/home/<username>/git/mypackage`, equivalent to `$HOME/git/mypackage` or
 `%USERPROFILE%/git/mypackage`.
 
-> **Note:** Repository paths can also contain wildcards like ``*`` and ``?``.
+> **Note:** Repository paths can also contain wildcards like `*` and `?`.
 > For details, see the [PHP glob function](https://php.net/glob).
 
 ## Disabling Packagist.org

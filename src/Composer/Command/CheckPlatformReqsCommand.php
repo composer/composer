@@ -13,7 +13,6 @@
 namespace Composer\Command;
 
 use Composer\Package\Link;
-use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -30,6 +29,7 @@ class CheckPlatformReqsCommand extends BaseCommand
             ->setDescription('Check that platform requirements are satisfied.')
             ->setDefinition(array(
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables checking of require-dev packages requirements.'),
+                new InputOption('lock', null, InputOption::VALUE_NONE, 'Checks requirements only from the lock file, not from installed packages.'),
             ))
             ->setHelp(
                 <<<EOT
@@ -48,22 +48,37 @@ EOT
         $composer = $this->getComposer();
 
         $requires = array();
-        if ($input->getOption('no-dev')) {
+        $removePackages = array();
+        if ($input->getOption('lock')) {
+            $this->getIO()->writeError('<info>Checking '.($input->getOption('no-dev') ? 'non-dev ' : '').'platform requirements using the lock file</info>');
             $installedRepo = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'));
         } else {
             $installedRepo = $composer->getRepositoryManager()->getLocalRepository();
             // fallback to lockfile if installed repo is empty
             if (!$installedRepo->getPackages()) {
-                $installedRepo = $composer->getLocker()->getLockedRepository(true);
+                $this->getIO()->writeError('<warning>No vendor dir present, checking '.($input->getOption('no-dev') ? 'non-dev ' : '').'platform requirements from the lock file</warning>');
+                $installedRepo = $composer->getLocker()->getLockedRepository(!$input->getOption('no-dev'));
+            } else {
+                if ($input->getOption('no-dev')) {
+                    $removePackages = $installedRepo->getDevPackageNames();
+                }
+
+                $this->getIO()->writeError('<info>Checking '.($input->getOption('no-dev') ? 'non-dev ' : '').'platform requirements for packages in the vendor dir</info>');
             }
+        }
+        if (!$input->getOption('no-dev')) {
             $requires += $composer->getPackage()->getDevRequires();
         }
+
         foreach ($requires as $require => $link) {
             $requires[$require] = array($link);
         }
 
         $installedRepo = new InstalledRepository(array($installedRepo, new RootPackageRepository($composer->getPackage())));
         foreach ($installedRepo->getPackages() as $package) {
+            if (in_array($package->getName(), $removePackages, true)) {
+                continue;
+            }
             foreach ($package->getRequires() as $require => $link) {
                 $requires[$require][] = $link;
             }
@@ -153,7 +168,6 @@ EOT
 
     protected function printTable(OutputInterface $output, $results)
     {
-        $table = array();
         $rows = array();
         foreach ($results as $result) {
             /**

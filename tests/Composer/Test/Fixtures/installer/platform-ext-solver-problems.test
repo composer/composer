@@ -1,0 +1,56 @@
+--TEST--
+Test the error output of solver problems with ext/platform packages which have platform config
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {"name": "a/a", "version": "1.0.0", "require": {"ext-filter": "2.0.0"}}
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "*"
+    },
+    "config": {
+        "platform": {
+            "ext-filter": "7.4.0"
+        }
+    }
+}
+
+--LOCK--
+{
+    "packages": [
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires a/a * -> satisfiable by a/a[1.0.0].
+    - a/a 1.0.0 requires ext-filter 2.0.0 -> it has the wrong version (7.4.0; overridden via config.platform, actual: %s) installed. Install or enable PHP's filter extension.
+
+To enable extensions, verify that they are enabled in your .ini files:
+__inilist__
+You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.
+
+--EXPECT--

@@ -30,8 +30,8 @@ class Bitbucket
     private $process;
     /** @var HttpDownloader */
     private $httpDownloader;
-    /** @var array */
-    private $token = array();
+    /** @var array{access_token: string, expires_in?: int}|null */
+    private $token = null;
     /** @var int|null */
     private $time;
 
@@ -40,11 +40,11 @@ class Bitbucket
     /**
      * Constructor.
      *
-     * @param IOInterface      $io               The IO instance
-     * @param Config           $config           The composer configuration
-     * @param ProcessExecutor  $process          Process instance, injectable for mocking
-     * @param HttpDownloader $httpDownloader Remote Filesystem, injectable for mocking
-     * @param int              $time             Timestamp, injectable for mocking
+     * @param IOInterface     $io             The IO instance
+     * @param Config          $config         The composer configuration
+     * @param ProcessExecutor $process        Process instance, injectable for mocking
+     * @param HttpDownloader  $httpDownloader Remote Filesystem, injectable for mocking
+     * @param int             $time           Timestamp, injectable for mocking
      */
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, HttpDownloader $httpDownloader = null, $time = null)
     {
@@ -90,10 +90,9 @@ class Bitbucket
     }
 
     /**
-     * @param  string $originUrl
      * @return bool
      */
-    private function requestAccessToken($originUrl)
+    private function requestAccessToken()
     {
         try {
             $response = $this->httpDownloader->get(self::OAUTH2_ACCESS_TOKEN_URL, array(
@@ -104,7 +103,12 @@ class Bitbucket
                 ),
             ));
 
-            $this->token = $response->decodeJson();
+            $token = $response->decodeJson();
+            if (!isset($token['expires_in']) || !isset($token['access_token'])) {
+                throw new \LogicException('Expected a token configured with expires_in and access_token present, got '.json_encode($token));
+            }
+
+            $this->token = $token;
         } catch (TransportException $e) {
             if ($e->getCode() === 400) {
                 $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
@@ -113,7 +117,8 @@ class Bitbucket
                 $this->io->writeError('2. You are using an OAuth consumer, but didn\'t configure a (dummy) callback url');
 
                 return false;
-            } elseif (in_array($e->getCode(), array(403, 401))) {
+            }
+            if (in_array($e->getCode(), array(403, 401))) {
                 $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
                 $this->io->writeError('You can also add it manually later by using "composer config --global --auth bitbucket-oauth.bitbucket.org <consumer-key> <consumer-secret>"');
 
@@ -141,12 +146,12 @@ class Bitbucket
             $this->io->writeError($message);
         }
 
-        $url = 'https://confluence.atlassian.com/bitbucket/oauth-on-bitbucket-cloud-238027431.html';
+        $url = 'https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/';
         $this->io->writeError(sprintf('Follow the instructions on %s', $url));
         $this->io->writeError(sprintf('to create a consumer. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
         $this->io->writeError('Ensure you enter a "Callback URL" (http://example.com is fine) or it will not be possible to create an Access Token (this callback url will not be used by composer)');
 
-        $consumerKey = trim($this->io->askAndHideAnswer('Consumer Key (hidden): '));
+        $consumerKey = trim((string) $this->io->askAndHideAnswer('Consumer Key (hidden): '));
 
         if (!$consumerKey) {
             $this->io->writeError('<warning>No consumer key given, aborting.</warning>');
@@ -155,7 +160,7 @@ class Bitbucket
             return false;
         }
 
-        $consumerSecret = trim($this->io->askAndHideAnswer('Consumer Secret (hidden): '));
+        $consumerSecret = trim((string) $this->io->askAndHideAnswer('Consumer Secret (hidden): '));
 
         if (!$consumerSecret) {
             $this->io->writeError('<warning>No consumer secret given, aborting.</warning>');
@@ -166,7 +171,7 @@ class Bitbucket
 
         $this->io->setAuthentication($originUrl, $consumerKey, $consumerSecret);
 
-        if (!$this->requestAccessToken($originUrl)) {
+        if (!$this->requestAccessToken()) {
             return false;
         }
 
@@ -191,17 +196,23 @@ class Bitbucket
      */
     public function requestToken($originUrl, $consumerKey, $consumerSecret)
     {
-        if (!empty($this->token) || $this->getTokenFromConfig($originUrl)) {
+        if ($this->token !== null || $this->getTokenFromConfig($originUrl)) {
             return $this->token['access_token'];
         }
 
         $this->io->setAuthentication($originUrl, $consumerKey, $consumerSecret);
-        if (!$this->requestAccessToken($originUrl)) {
+        if (!$this->requestAccessToken()) {
             return '';
         }
 
         $this->storeInAuthConfig($originUrl, $consumerKey, $consumerSecret);
 
+        if (!isset($this->token['access_token'])) {
+            throw new \LogicException('Failed to initialize token above');
+        }
+
+        // side effect above caused this, https://github.com/phpstan/phpstan/issues/5129
+        // @phpstan-ignore-next-line
         return $this->token['access_token'];
     }
 
@@ -214,6 +225,10 @@ class Bitbucket
     private function storeInAuthConfig($originUrl, $consumerKey, $consumerSecret)
     {
         $this->config->getConfigSource()->removeConfigSetting('bitbucket-oauth.'.$originUrl);
+
+        if (null === $this->token || !isset($this->token['expires_in'])) {
+            throw new \LogicException('Expected a token configured with expires_in present, got '.json_encode($this->token));
+        }
 
         $time = null === $this->time ? time() : $this->time;
         $consumer = array(
@@ -235,8 +250,7 @@ class Bitbucket
         $authConfig = $this->config->get('bitbucket-oauth');
 
         if (
-            !isset($authConfig[$originUrl]['access-token'])
-            || !isset($authConfig[$originUrl]['access-token-expiration'])
+            !isset($authConfig[$originUrl]['access-token'], $authConfig[$originUrl]['access-token-expiration'])
             || time() > $authConfig[$originUrl]['access-token-expiration']
         ) {
             return false;

@@ -1,7 +1,246 @@
+### [2.1.6] 2021-08-19
+
+  * Updated internal PHAR signatures to be SHA512 instead of SHA1
+  * Fixed uncaught exception handler regression (#10022)
+  * Fixed more PHP 8.1 deprecation warnings (#10036, #10038, #10061)
+  * Fixed corrupted zips in the cache from blocking installs until a cache clear, the bad archives are now deleted automatically on first failure (#10028)
+  * Fixed URL sanitizer handling of new github tokens (#10048)
+  * Fixed issue finding classes with very long heredocs in classmap autoload (#10050)
+  * Fixed proc_open being required for simple installs from zip, as well as diagnose (#9253)
+  * Fixed path repository bug causing symlinks to be left behind after a package is uninstalled (#10023)
+  * Fixed issue in 7-zip support on windows with certain archives (#10058)
+  * Fixed bootstrapping process to avoid loading the composer.json and plugins until necessary, speeding things up slightly (#10064)
+  * Fixed lib-openssl detection on FreeBSD (#10046)
+  * Fixed support for `ircs://` protocol for support.irc composer.json entries
+
+### [2.1.5] 2021-07-23
+
+  * Fixed `create-project` creating a `php:` directory in the directory it was executed in (#10020, #10021)
+  * Fixed curl downloader to respect default_socket_timeout if it is bigger than our default 300s (#10018)
+
+### [2.1.4] 2021-07-22
+
+  * Fixed PHP 8.1 deprecation warnings (#10008)
+  * Fixed support for working within UNC/WSL paths on Windows (#9993)
+  * Fixed 7-zip support to also be looked up on Linux/macOS as 7z or 7zz (#9951)
+  * Fixed repositories' `only`/`exclude` properties to avoid matching names as sub-strings of full package names (#10001)
+  * Fixed open_basedir regression from #9855
+  * Fixed schema errors being reported incorrectly in some conditions (#9986)
+  * Fixed `archive` command not working with async archive extraction
+  * Fixed `init` command being able to generate an invalid composer.json (#9986)
+
+### [2.1.3] 2021-06-09
+
+  * Add "symlink" option for "bin-compat" config to force symlinking even on WSL/Windows (#9959)
+  * Fixed source binaries not being made executable when symlinks cannot be used (#9961)
+  * Fixed more deletion edge cases (#9955, #9956)
+  * Fixed `dump-autoload` command not dispatching scripts anymore, regressed in 2.1.2 (#9954)
+
+### [2.1.2] 2021-06-07
+
+  * Added `--dev` to `dump-autoload` command to allow force-dumping dev autoload rules even if dev requirements are not present (#9946)
+  * Fixed `--no-scripts` disabling events for plugins too instead of only disabling script handlers, using `--no-plugins` is the way to disable plugins (#9942)
+  * Fixed handling of deletions during package installs on some filesystems (#9945, #9947)
+  * Fixed undefined array access when using "@php <absolute path>" in a script handler (#9943)
+  * Fixed usage of InstalledVersions when loaded from composer/composer installed as a dependency and runtime Composer is v1 (#9937)
+
+### [2.1.1] 2021-06-04
+
+  * Fixed regression in autoload generation when --no-scripts is used (#9935)
+  * Fixed `outdated` color legend to have the right color in the right place (#9939)
+  * Fixed PCRE bug causing a previously valid pattern to fail to match (#9941)
+  * Fixed JsonFile::validateSchema regression when used as a library to validate custom schema files (#9938)
+
+### [2.1.0] 2021-06-03
+
+  * Fixed PHP 8.1 deprecation warning (#9932)
+  * Fixed env var handling when variables_order includes E and symfony/console 3.3.15+ is in use (#9930)
+
+### [2.1.0-RC1] 2021-06-02
+
+  * Bumped `composer-runtime-api` and `composer-plugin-api` to `2.1.0`
+  * UX Change: The default install method for packages is now always dist/zip, even for dev packages, added `--prefer-install=auto` if you want the old behavior (#9603)
+  * UX Change: Packages from `path` repositories which are symlinked in the vendor dir will always be updated in partial updates to avoid mistakes when the original composer.json changes but the symlinked package is not explicitly updated (#9765)
+  * Added `reinstall` command that takes one or more package names, including wildcard (`*`) support, and removes then reinstalls them in the exact same version they had (#9915)
+  * Added support for parallel package installs on Windows via [7-Zip](https://www.7-zip.org/) if it is installed (#9875)
+  * Added detection of invalid composer.lock files that do not fullfil the composer.json requirements to `validate` command (#9899)
+  * Added `InstalledVersions::getInstalledPackagesByType(string $type)` to retrieve installed plugins for example, [read more](https://getcomposer.org/doc/07-runtime.md#knowing-which-packages-of-a-given-type-are-installed) (#9699)
+  * Added `InstalledVersions::getInstalledPath(string $packageName)` to retrieve the install path of a given package, [read more](https://getcomposer.org/doc/07-runtime.md#knowing-the-path-in-which-a-package-is-installed) (#9699)
+  * Added flag to `InstalledVersions::isInstalled()` to allow excluding dev requirements from that check (#9682)
+  * Added support for PHP 8.1 enums in autoloader / classmap generation (#9670)
+  * Added support for using `@php binary-name foo` in scripts to refer to a binary without using its full path, but forcing to use the same PHP version as Composer used (#9726)
+  * Added `--format=json` support to the `fund` command (#9678)
+  * Added `--format=json` support to the `search` command (#9747)
+  * Added `COMPOSER_DEV_MODE` env var definition within the run-script command for compatibility (#9793)
+  * Added async uninstall of packages (#9618)
+  * Added color legend to `outdated` and `show --latest` commands (#9716)
+  * Added `secure-svn-domains` config option to mark secure svn:// hostnames and suppress warnings without disabling secure-http (#9872)
+  * Added `gitlab-protocol` config option to allow forcing `git` or `http` URLs for all gitlab repos loaded inline, instead of the default of git for private and http for public (#9401)
+  * Added generation of autoload rules in `init` command (#9829)
+  * Added source/dist validation in `validate` command
+  * Added automatic detection of WSL when generating binaries and use `bin-compat:full` implicitly (#9855)
+  * Added automatic detection of the --no-dev state for `dump-autoload` based on the last install run (#9714)
+  * Added warning/prompt to `require` command if requiring a package that already exists in require-dev or vice versa (#9542)
+  * Added information about package conflicts in the `why`/`why-not` commands (#9693)
+  * Removed version argument from `why` command as it was not needed (#9729)
+  * Fixed `why-not` command to always require a specific version as it is useless without (#9729)
+  * Fixed cache dir on macOS to follow OS guidelines, it is now in ~/Library/Caches/composer (#9898)
+  * Fixed composer.json JSON schema to avoid having name/description required by default (#9912)
+  * Fixed support for running inside WSL paths from a Windows PHP/Composer (#9861)
+  * Fixed InstalledVersions to include the original doc blocks when installed from a Composer phar file
+  * Fixed `require` command to use `*` as constraint for extensions bundled with PHP instead of duplicating the PHP constraint (#9483)
+  * Fixed `search` output to be aligned and avoid wrapped long lines to be more readable (#9455)
+  * Error output improvements for many cases (#9876, #9837, #9928, and some smaller improvements)
+
+### [2.0.14] 2021-05-21
+
+  * Updated composer/xdebug-handler to 2.0 which adds supports for Xdebug 3
+  * Fixed handling of inline-update-constraints with references or stability flags (#9847)
+  * Fixed async processes erroring in an unclear way when they failed to start (#9808)
+  * Fixed support for the upcoming Symfony 6.0 release when Composer is installed as a library (#9896)
+  * Fixed progress output missing newlines on PowerShell, and disable progress output by default when CI env var is present (#9621)
+  * Fixed support for Vagrant/VirtualBox filesystem slowness when installing binaries from packages (#9627)
+  * Fixed type annotations for the InstalledVersions class
+  * Deprecated InstalledVersions::getRawData in favor of InstalledVersions::getAllRawData (#9816)
+
+### [2.0.13] 2021-04-27
+
+  * Security: Fixed command injection vulnerability in HgDriver/HgDownloader and hardened other VCS drivers and downloaders (GHSA-h5h8-pc6h-jvvx / CVE-2021-29472)
+  * Fixed install step at the end of the init command to take new dependencies into account correctly
+  * Fixed `update --lock` listing updates which were not really happening (#9812)
+  * Fixed support for --no-dev combined with --locked in outdated and show commands (#9788)
+
+### [2.0.12] 2021-04-01
+
+  * Fixed support for new GitHub OAuth token format (#9757)
+  * Fixed support for Vagrant/VirtualBox filesystem slowness by adding short sleeps in some places (#9627)
+  * Fixed unclear error reporting when a package is in the lock file but not in the remote repositories (#9750)
+  * Fixed processes silently ignoring the CWD when it does not exist
+  * Fixed new Windows bin handling to avoid proxying phar files (#9742)
+  * Fixed issue extracting archives into paths that already exist, fixing problems with some custom installers (composer/installers#479)
+  * Fixed support for branch names starting with master/trunk/default (#9739)
+  * Fixed self-update to preserve phar file permissions on Windows (#9733)
+  * Fixed detection of hg version when localized (#9753)
+  * Fixed git execution failures to also include the stdout output (#9720)
+
+### [2.0.11] 2021-02-24
+
+  * Reverted "Fixed runtime autoloader registration (for plugins and script handlers) to prefer the project dependencies over the bundled Composer ones" as it caused more problems than expected
+
+### [2.0.10] 2021-02-23
+
+  * Added COMPOSER_MAX_PARALLEL_HTTP to let people set a lower amount of parallel requests if needed
+  * Fixed autoloader registration when plugins are loaded, which may impact plugins relying on this bug (if you use `symfony/flex` make sure you upgrade it to 1.12.2+ to fix `dump-env` issues)
+  * Fixed `exec` command suppressing output in some circumstances
+  * Fixed Windows/cmd.exe support for script handlers defined as `path/to/foo`, which are now rewritten internally to `path\to\foo` when needed
+  * Fixed bin handling on Windows for PHP scripts, to more closely match symlinks and allow `@php vendor/bin/foo` to work cross-platform
+  * Fixed Git for Windows/Git Bash not being detected correctly as an interactive shell (regression since 2.0.7)
+  * Fixed regression handling some private Bitbucket repository clones
+  * Fixed Ctrl-C/SIGINT handling during downloads to correctly abort as soon as possible
+  * Fixed runtime autoloader registration (for plugins and script handlers) to prefer the project dependencies over the bundled Composer ones
+  * Fixed numeric default branches being aliased as 9999999-dev internally. This alias now only applies to default branches being non-numeric (e.g. `dev-main`)
+  * Fixed support for older lib-sodium versions
+  * Fixed various minor issues
+
+### [2.0.9] 2021-01-27
+
+  * Added warning if the curl extension is not enabled as it significantly degrades performance
+  * Fixed InstalledVersions to report all packages when several vendor dirs are present in the same runtime
+  * Fixed download speed when downloading large files
+  * Fixed `archive` and path repo copies mishandling some .gitignore paths
+  * Fixed root package classes not being available to the plugins/scripts during the initial install
+  * Fixed cache writes to be atomic and better support multiple Composer processes running in parallel
+  * Fixed preg jit issues when `config` or `require` modifies large composer.json files
+  * Fixed compatibility with envs having open_basedir restrictions
+  * Fixed exclude-from-classmap causing regex issues when having too many paths
+  * Fixed compatibility issue with Symfony 4/5
+  * Several small performance and debug output improvements
+
+### [2.0.8] 2020-12-03
+
+  * Fixed packages with aliases not matching conflicts which match the alias
+  * Fixed invalid reports of uncommitted changes when using non-default remotes in vendor dir
+  * Fixed curl error handling edge cases
+  * Fixed cached git repositories becoming stale by having a `git gc` applied to them periodically
+  * Fixed issue initializing plugins when using dev packages
+  * Fixed update --lock / mirrors failing to update in some edge cases
+  * Fixed partial update with --with-dependencies failing in some edge cases with some nonsensical error
+
+### [2.0.7] 2020-11-13
+
+  * Fixed detection of TTY mode, made input non-interactive automatically if STDIN is not a TTY
+  * Fixed root aliases not being present in lock file if not required by anything else
+  * Fixed `remove` command requiring a lock file to be present
+  * Fixed `Composer\InstalledVersions` to always contain up to date data during installation
+  * Fixed `status` command breaking on slow networks
+  * Fixed order of POST_PACKAGE_* events to occur together once all installations of a package batch are done
+
+### [2.0.6] 2020-11-07
+
+  * Fixed regression in 2.0.5 dealing with custom installers which do not pass absolute paths
+
+### [2.0.5] 2020-11-06
+
+  * Disabled platform-check verification of extensions by default (now defaulting `php-only`), set platform-check to `true` if you want a complete check
+  * Improved platform-check handling of issue reporting
+  * Fixed platform-check to only check non-dev requires even if require-dev dependencies are installed
+  * Fixed issues dealing with custom installers which return trailing slashes in getInstallPath (ideally avoid doing this as there might be other issues left)
+  * Fixed issues when curl functions are disabled
+  * Fixed gitlab-domains/github-domains to make sure if they are overridden the default value remains present
+  * Fixed issues removing/upgrading packages from path repositories on Windows
+  * Fixed regression in 2.0.4 when handling of git@bitbucket.org URLs in vcs repositories
+  * Fixed issue running create-project in current directory on Windows
+
+### [2.0.4] 2020-10-30
+
+  * Fixed `check-platform-req` command not being clear on what packages are checked, and added a --lock flag to explicitly check the locked packages
+  * Fixed `config` & `create-project` adding of repositories to make sure they are prepended as order is much more important in Composer 2, also added a --append flag to `config` to restore the old behavior in the unlikely case this is needed
+  * Fixed curl downloader failing on old PHP releases or when using self-signed SSL certificates
+  * Fixed Bitbucket API authentication issue
+
+### [2.0.3] 2020-10-28
+
+  * Fixed bug in `outdated` command where dev packages with branch-aliases where always shown as being outdated
+  * Fixed issue in lock file interoperability with composer 1.x when using `dev-master as xxx` aliases
+  * Fixed new `--locked` option being missing from `outdated` command, for checking outdated packages directly from the lock file
+  * Fixed a few debug/error reporting strings
+
+### [2.0.2] 2020-10-25
+
+  * Fixed regression handling `composer show -s` in projects where no version can be guessed from VCS
+  * Fixed regression handling partial updates/`require` when a lock file was missing
+  * Fixed interop issue with plugins that need to update dist URLs of packages, [see docs](https://getcomposer.org/doc/articles/plugins.md#plugin-modifies-downloads) if you need this
+
+### [2.0.1] 2020-10-24
+
+  * Fixed crash on PHP8
+
+### [2.0.0] 2020-10-24
+
+  * Fixed proxy handling issues when combined with our new curl-based downloader
+  * Fixed solver bug resulting in endless loops in some cases
+  * Fixed solver output being extremely long due to learnt rules
+  * Fixed solver bug with multi literals
+  * Fixed a couple minor regressions
+
+### [2.0.0-RC2] 2020-10-14
+
+  * Breaking: Removed `OperationInterface::getReason` as the data was not accurate
+  * Added automatic removal of packages which are not required anymore whenever an update is done, this will purge packages previously left over by partial updates and `require`/`remove`
+  * Added shorthand aliases `-w` for `--with-dependencies` and `-W` for `--with-all-dependencies` on `update`/`require`/`remove` commands
+  * Added `COMPOSER_DEBUG_EVENTS=1` env var support for plugin authors to figure out which events are triggered when
+  * Added `setCustomCacheKey` to `PreFileDownloadEvent` and fixed a cache bug for integrations changing the processed url of package archives
+  * Added `Composer\Util\SyncHelper` for plugin authors to deal with async Promises more easily
+  * Added `$composer->getLoop()->getHttpDownloader()` to get access to the main HttpDownloader instance in plugins
+  * Added a non-zero exit code (2) and warning to `remove` command when a package to be removed could not be removed
+  * Added `--apcu-autoloader-prefix` (or `--apcu-prefix` for `dump-autoload` command) flag to let people use apcu autoloading in a deterministic output way if that is needed
+  * Fixed version guesser to look at remote branches as well as local ones
+  * Lots of minor bug fixes and improvements
+
 ### [2.0.0-RC1] 2020-09-10
 
   * Added more advanced filtering to avoid loading all versions of all referenced packages when resolving dependencies, which should reduce memory usage further in some cases
-  * Added support for many new lib-* packages in the platform repository and improved version detection for some ext-* and lib-* packages
+  * Added support for many new `lib-*` packages in the platform repository and improved version detection for some `ext-*` and `lib-*` packages
   * Added an `--ask` flag to `create-project` command to make Composer prompt for the install dir name, [useful for project install instructions](https://github.com/composer/composer/pull/9181)
   * Added support for tar in artifact repositories
   * Added a `cache-read-only` config option to make the cache usable in read only mode for containers and such
@@ -68,6 +307,50 @@
   * Fixed package ordering when autoloading and especially when loading plugins, to make sure dependencies are loaded before their dependents
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
+
+### [1.10.22] 2021-04-27
+
+  * Security: Fixed command injection vulnerability in HgDriver/HgDownloader and hardened other VCS drivers and downloaders (GHSA-h5h8-pc6h-jvvx / CVE-2021-29472)
+
+### [1.10.21] 2021-04-01
+
+  * Fixed support for new GitHub OAuth token format
+  * Fixed processes silently ignoring the CWD when it does not exist
+
+### [1.10.20] 2021-01-27
+
+  * Fixed exclude-from-classmap causing regex issues when having too many paths
+  * Fixed compatibility issue with Symfony 4/5
+
+### [1.10.19] 2020-12-04
+
+  * Fixed regression on PHP 8.0
+
+### [1.10.18] 2020-12-03
+
+  * Allow installation on PHP 8.0
+
+### [1.10.17] 2020-10-30
+
+  * Fixed Bitbucket API authentication issue
+  * Fixed parsing of Composer 2 lock files breaking in some rare conditions
+
+### [1.10.16] 2020-10-24
+
+  * Added warning to `validate` command for cases where packages provide/replace a package that they also require
+  * Fixed JSON schema validation issue with PHPStorm
+  * Fixed symlink handling in `archive` command
+
+### [1.10.15] 2020-10-13
+
+  * Fixed path repo version guessing issue
+
+### [1.10.14] 2020-10-13
+
+  * Fixed version guesser to look at remote branches as well as local ones
+  * Fixed path repositories version guessing to handle edge cases where version is different from the VCS-guessed version
+  * Fixed COMPOSER env var causing issues when combined with the `global ` command
+  * Fixed a few issues dealing with PHP without openssl extension (not recommended at all but sometimes needed for testing)
 
 ### [1.10.13] 2020-09-09
 
@@ -173,7 +456,7 @@
   * Fixed archive command to persist file permissions inside the zip files
   * Fixed init/require command to avoid suggesting packages which are already selected in the search results
   * Fixed create-project UX issues
-  * Fixed filemtime for vendor/composer/* files is now only changing when the files actually change
+  * Fixed filemtime for `vendor/composer/*` files is now only changing when the files actually change
   * Fixed issues detecting docker environment with an active open_basedir
 
 ### [1.9.3] 2020-02-04
@@ -183,7 +466,7 @@
 ### [1.9.2] 2020-01-14
 
   * Fixed minor git driver bugs
-  * Fixed schema validation for version field to allow dev-* versions too
+  * Fixed schema validation for version field to allow `dev-*` versions too
   * Fixed external processes' output being formatted even though it should not
   * Fixed issue with path repositories when trying to install feature branches
 
@@ -484,7 +767,7 @@
   * Fixed dist downloads from Bitbucket
   * Fixed some regressions related to xdebug disabling
   * Fixed `--minor-only` flag in `outdated` command
-  * Fixed handling of config.platform.php which did not replace other php-* package's versions
+  * Fixed handling of config.platform.php which did not replace other `php-*` package's versions
 
 ### [1.3.0] - 2016-12-24
 
@@ -906,7 +1189,7 @@
   * Added a recommendation for package names to be `lower-cased/with-dashes`, it will be enforced for new packages on Pacakgist
   * Added `require` command to add a package to your requirements and install it
   * Added a whitelist to `update`. Calling `composer update foo/bar foo/baz` allows you to update only those packages
-  * Added support for overriding repositories in the system config (define repositories in ~/.composer/config.json)
+  * Added support for overriding repositories in the system config (define repositories in `~/.composer/config.json`)
   * Added `lib-*` packages to the platform repository, e.g. `lib-pcre` contains the pcre version
   * Added caching of GitHub metadata (faster startup time with custom GitHub VCS repos)
   * Added caching of SVN metadata (faster startup time with custom SVN VCS repos)
@@ -965,10 +1248,43 @@
 
   * Initial release
 
+[2.1.6]: https://github.com/composer/composer/compare/2.1.5...2.1.6
+[2.1.5]: https://github.com/composer/composer/compare/2.1.4...2.1.5
+[2.1.4]: https://github.com/composer/composer/compare/2.1.3...2.1.4
+[2.1.3]: https://github.com/composer/composer/compare/2.1.2...2.1.3
+[2.1.2]: https://github.com/composer/composer/compare/2.1.1...2.1.2
+[2.1.1]: https://github.com/composer/composer/compare/2.1.0...2.1.1
+[2.1.0]: https://github.com/composer/composer/compare/2.1.0-RC1...2.1.0
+[2.1.0-RC1]: https://github.com/composer/composer/compare/2.0.14...2.1.0-RC1
+[2.0.14]: https://github.com/composer/composer/compare/2.0.13...2.0.14
+[2.0.13]: https://github.com/composer/composer/compare/2.0.12...2.0.13
+[2.0.12]: https://github.com/composer/composer/compare/2.0.11...2.0.12
+[2.0.11]: https://github.com/composer/composer/compare/2.0.10...2.0.11
+[2.0.10]: https://github.com/composer/composer/compare/2.0.9...2.0.10
+[2.0.9]: https://github.com/composer/composer/compare/2.0.8...2.0.9
+[2.0.8]: https://github.com/composer/composer/compare/2.0.7...2.0.8
+[2.0.7]: https://github.com/composer/composer/compare/2.0.6...2.0.7
+[2.0.6]: https://github.com/composer/composer/compare/2.0.5...2.0.6
+[2.0.5]: https://github.com/composer/composer/compare/2.0.4...2.0.5
+[2.0.4]: https://github.com/composer/composer/compare/2.0.3...2.0.4
+[2.0.3]: https://github.com/composer/composer/compare/2.0.2...2.0.3
+[2.0.2]: https://github.com/composer/composer/compare/2.0.1...2.0.2
+[2.0.1]: https://github.com/composer/composer/compare/2.0.0...2.0.1
+[2.0.0]: https://github.com/composer/composer/compare/2.0.0-RC2...2.0.0
+[2.0.0-RC2]: https://github.com/composer/composer/compare/2.0.0-RC1...2.0.0-RC2
 [2.0.0-RC1]: https://github.com/composer/composer/compare/2.0.0-alpha3...2.0.0-RC1
 [2.0.0-alpha3]: https://github.com/composer/composer/compare/2.0.0-alpha2...2.0.0-alpha3
 [2.0.0-alpha2]: https://github.com/composer/composer/compare/2.0.0-alpha1...2.0.0-alpha2
 [2.0.0-alpha1]: https://github.com/composer/composer/compare/1.10.7...2.0.0-alpha1
+[1.10.22]: https://github.com/composer/composer/compare/1.10.21...1.10.22
+[1.10.21]: https://github.com/composer/composer/compare/1.10.20...1.10.21
+[1.10.20]: https://github.com/composer/composer/compare/1.10.19...1.10.20
+[1.10.19]: https://github.com/composer/composer/compare/1.10.18...1.10.19
+[1.10.18]: https://github.com/composer/composer/compare/1.10.17...1.10.18
+[1.10.17]: https://github.com/composer/composer/compare/1.10.16...1.10.17
+[1.10.16]: https://github.com/composer/composer/compare/1.10.15...1.10.16
+[1.10.15]: https://github.com/composer/composer/compare/1.10.14...1.10.15
+[1.10.14]: https://github.com/composer/composer/compare/1.10.13...1.10.14
 [1.10.13]: https://github.com/composer/composer/compare/1.10.12...1.10.13
 [1.10.12]: https://github.com/composer/composer/compare/1.10.11...1.10.12
 [1.10.11]: https://github.com/composer/composer/compare/1.10.10...1.10.11

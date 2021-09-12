@@ -1,5 +1,9 @@
+includes:
+    - ../vendor/phpstan/phpstan-phpunit/extension.neon
+    - ./baseline.neon
+
 parameters:
-    level: 1
+    level: 5
     excludes_analyse:
        - '../tests/Composer/Test/Fixtures/*'
        - '../tests/Composer/Test/Autoload/Fixtures/*'
@@ -28,9 +32,28 @@ parameters:
         - '~^Call to an undefined static method Composer\\Test\\PolyfillTestCase::setExpectedException\(\)\.$~'
         - '~^Call to an undefined method Composer\\Test\\[a-zA-Z0-9\\]+::(assertFileDoesNotExist|assertMatchesRegularExpression)\(\)\.$~'
 
+        # Mock errors
+        - '~^Call to an undefined method (PHPUnit\\Framework\\MockObject\\MockObject|Prophecy\\Prophecy\\ObjectProphecy)::.*$~'
+
+        # Level 6 TODO
+        #- '~parameter .*? with no typehint specified.$~'
+        #- '~parameter .*? with no value type specified in iterable type array.$~'
+        #- '~has no return typehint specified.$~'
+        #- '~return type has no value type specified in iterable type array.$~'
+        #- '~ignorePlatformReqs~'
+
+    bootstrapFiles:
+        - ../tests/bootstrap.php
+
     paths:
         - ../src
         - ../tests
+
+    dynamicConstantNames:
+        - Composer\Composer::BRANCH_ALIAS_VERSION
+        - Composer\Composer::VERSION
+        - Composer\Composer::RELEASE_DATE
+        - Composer\Composer::SOURCE_VERSION
 
 rules:
     - Composer\PHPStanRules\AnonymousFunctionWithThisRule

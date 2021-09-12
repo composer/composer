@@ -32,25 +32,41 @@ use Composer\Config;
  */
 class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInterface
 {
+    /** @var string */
     protected $url;
+    /** @var ?string */
     protected $packageName;
+    /** @var bool */
     protected $isVerbose;
+    /** @var bool */
     protected $isVeryVerbose;
+    /** @var IOInterface */
     protected $io;
+    /** @var Config */
     protected $config;
+    /** @var VersionParser */
     protected $versionParser;
+    /** @var string */
     protected $type;
+    /** @var ?LoaderInterface */
     protected $loader;
+    /** @var array<string, mixed> */
     protected $repoConfig;
+    /** @var HttpDownloader */
     protected $httpDownloader;
+    /** @var ProcessExecutor */
     protected $processExecutor;
+    /** @var bool */
     protected $branchErrorOccurred = false;
+    /** @var array<string, class-string> */
     private $drivers;
-    /** @var VcsDriverInterface */
+    /** @var ?VcsDriverInterface */
     private $driver;
-    /** @var VersionCacheInterface */
+    /** @var ?VersionCacheInterface */
     private $versionCache;
+    /** @var string[] */
     private $emptyReferences = array();
+    /** @var array<'tags'|'branches', array<string, \Throwable>> */
     private $versionTransportExceptions = array();
 
     public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null, ProcessExecutor $process = null, array $drivers = null, VersionCacheInterface $versionCache = null)
@@ -196,7 +212,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $this->addPackage($cachedPackage);
 
                 continue;
-            } elseif ($cachedPackage === false) {
+            }
+            if ($cachedPackage === false) {
                 $this->emptyReferences[] = $identifier;
 
                 continue;
@@ -246,7 +263,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                     continue;
                 }
 
-                $tagPackageName = isset($data['name']) ? $data['name'] : $this->packageName;
+                $tagPackageName = $this->packageName ?: (isset($data['name']) ? $data['name'] : '');
                 if ($existingPackage = $this->findPackage($tagPackageName, $data['version_normalized'])) {
                     if ($isVeryVerbose) {
                         $this->io->writeError('<warning>Skipped tag '.$tag.', it conflicts with an another tag ('.$existingPackage->getPrettyVersion().') as both resolve to '.$data['version_normalized'].' internally</warning>');
@@ -385,6 +402,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     protected function preProcess(VcsDriverInterface $driver, array $data, $identifier)
     {
         // keep the name of the main identifier for all packages
+        // this ensures that a package can be renamed in one place and that all old tags
+        // will still be installable using that new name without requiring re-tagging
         $dataPackageName = isset($data['name']) ? $data['name'] : null;
         $data['name'] = $this->packageName ?: $dataPackageName;
 

@@ -112,7 +112,6 @@ class Comparer
                             return false;
                         }
                     } elseif (is_file($dir.'/'.$file) && filesize($dir.'/'.$file)) {
-                        set_time_limit(30);
                         $array[$dir][$file] = md5_file($dir.'/'.$file);
                     }
                 }

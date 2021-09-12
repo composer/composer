@@ -1,0 +1,96 @@
+--TEST--
+
+See Github issue #9290 ( https://github.com/composer/composer/issues/9290 ).
+MultiConflictRule with a level 1 decision needs to exit correctly.
+
+--COMPOSER--
+{
+    "require": {
+        "mailgun/mailgun-php": "^2.8"
+    },
+    "minimum-stability": "dev",
+    "repositories": {
+        "mailgun/mailgun-php": {
+            "type": "package",
+            "package": [
+                {
+                    "name": "mailgun/mailgun-php",
+                    "version": "2.x-dev",
+                    "type": "library",
+                    "require": {
+                        "php-http/httplug": "^1.0 || ^2.0",
+                        "php-http/client-common": "^1.1"
+                    }
+                }
+            ]
+        },
+        "php-http/client-common": {
+            "type": "package",
+            "package": [
+                {
+                    "name": "php-http/client-common",
+                    "version": "1.10.0",
+                    "type": "library",
+                    "require": {
+                        "php-http/httplug": "^1.1",
+                        "symfony/options-resolver": "^5.0"
+                    }
+                },
+                {
+                    "name": "php-http/client-common",
+                    "version": "1.x-dev",
+                    "type": "library",
+                    "require": {
+                        "php-http/httplug": "^1.1",
+                        "symfony/options-resolver": "^5.0"
+                    }
+                }
+            ]
+        },
+        "php-http/httplug": {
+            "type": "package",
+            "package": [
+                {
+                    "name": "php-http/httplug",
+                    "version": "v2.0.0",
+                    "type": "library"
+                },
+                {
+                    "name": "php-http/httplug",
+                    "version": "v1.1.0",
+                    "type": "library"
+                },
+                {
+                    "name": "php-http/httplug",
+                    "version": "dev-master",
+                    "type": "library",
+                    "extra": {
+                        "branch-alias": {
+                            "dev-master": "2.x-dev"
+                        }
+                    },
+                    "default-branch": true
+                }
+            ]
+        },
+        "symfony/options-resolver": {
+            "type": "package",
+            "package": [
+                {
+                    "name": "symfony/options-resolver",
+                    "version": "v5.2.0-BETA1",
+                    "type": "library"
+                }
+            ]
+        }
+    }
+}
+
+--RUN--
+update
+
+--EXPECT--
+Installing php-http/httplug (v1.1.0)
+Installing symfony/options-resolver (v5.2.0-BETA1)
+Installing php-http/client-common (1.x-dev)
+Installing mailgun/mailgun-php (2.x-dev)

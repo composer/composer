@@ -82,7 +82,10 @@ class RemoteFilesystemTest extends TestCase
         ));
 
         $res = $this->callGetOptionsForUrl($io, array('https://example.org', array()), $streamOptions);
-        $this->assertTrue(isset($res['ssl']) && isset($res['ssl']['allow_self_signed']) && true === $res['ssl']['allow_self_signed'], 'getOptions must return an array with a allow_self_signed set to true');
+        $this->assertTrue(
+            isset($res['ssl'], $res['ssl']['allow_self_signed']) && true === $res['ssl']['allow_self_signed'],
+            'getOptions must return an array with a allow_self_signed set to true'
+        );
     }
 
     public function testGetOptionsForUrlWithCallOptionsKeepsHeader()
@@ -138,7 +141,7 @@ class RemoteFilesystemTest extends TestCase
         $this->setAttribute($fs, 'progress', true);
 
         $this->callCallbackGet($fs, STREAM_NOTIFY_PROGRESS, 0, '', 0, 10, 20);
-        $this->assertAttributeEqualsCustom(50.0, 'lastProgress', $fs);
+        $this->assertAttributeEqualsCustom(50, 'lastProgress', $fs);
     }
 
     public function testCallbackGetPassesThrough404()
@@ -173,13 +176,10 @@ class RemoteFilesystemTest extends TestCase
 
         $fs->expects($this->once())->method('getRemoteContents')
             ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
-
                 $http_response_header = array('http/1.1 401 unauthorized');
 
                 return '';
-
             });
-
 
         $file = tempnam(sys_get_temp_dir(), 'z');
         unlink($file);
@@ -202,29 +202,24 @@ class RemoteFilesystemTest extends TestCase
             ->method('promptAuthIfNeeded')
             ->willReturn(array(
                 'storeAuth' => true,
-                'retry' => true
+                'retry' => true,
             ));
 
         $fs->expects($this->at(0))
             ->method('getRemoteContents')
             ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
-
                 $http_response_header = array('http/1.1 401 unauthorized');
 
                 return '';
-
             });
 
         $fs->expects($this->at(1))
             ->method('getRemoteContents')
             ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
-
                 $http_response_header = array('http/1.1 200 OK');
 
                 return '<?php $copied = "Copied"; ';
-
             });
-
 
         $file = tempnam(sys_get_temp_dir(), 'z');
 
@@ -408,7 +403,7 @@ class RemoteFilesystemTest extends TestCase
     }
 
     /**
-     * @param array $mockedMethods
+     * @param array      $mockedMethods
      * @param AuthHelper $authHelper
      *
      * @return RemoteFilesystem|MockObject
@@ -421,7 +416,7 @@ class RemoteFilesystemTest extends TestCase
                 $this->getConfigMock(),
                 array(),
                 false,
-                $authHelper
+                $authHelper,
             ))
             ->setMethods($mockedMethods)
             ->getMock();
@@ -437,7 +432,7 @@ class RemoteFilesystemTest extends TestCase
         return $this->getMockBuilder('Composer\Util\AuthHelper')
             ->setConstructorArgs(array(
                 $this->getIOInterfaceMock(),
-                $this->getConfigMock()
+                $this->getConfigMock(),
             ))
             ->setMethods($mockedMethods)
             ->getMock();

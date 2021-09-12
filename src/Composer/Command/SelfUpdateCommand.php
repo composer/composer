@@ -21,6 +21,7 @@ use Composer\SelfUpdate\Keys;
 use Composer\SelfUpdate\Versions;
 use Composer\IO\IOInterface;
 use Composer\Downloader\FilesystemException;
+use Composer\Downloader\TransportException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -124,8 +125,8 @@ EOT
         if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
             $composeUser = posix_getpwuid(posix_geteuid());
             $homeOwner = posix_getpwuid(fileowner($home));
-            if (isset($composeUser['name']) && isset($homeOwner['name']) && $composeUser['name'] !== $homeOwner['name']) {
-                $io->writeError('<warning>You are running composer as "'.$composeUser['name'].'", while "'.$home.'" is owned by "'.$homeOwner['name'].'"</warning>');
+            if (isset($composeUser['name'], $homeOwner['name']) && $composeUser['name'] !== $homeOwner['name']) {
+                $io->writeError('<warning>You are running Composer as "'.$composeUser['name'].'", while "'.$home.'" is owned by "'.$homeOwner['name'].'"</warning>');
             }
         }
 
@@ -159,7 +160,7 @@ EOT
                 $latestVersion = $latest['version'];
                 $updateVersion = $latestVersion;
 
-                $io->writeError('<warning>A new stable major version of Composer is available ('.$skippedVersion.'), run "composer self-update --'.$updateMajorVersion.'" to update to it. See also https://github.com/composer/composer/releases for changelogs.</warning>');
+                $io->writeError('<warning>A new stable major version of Composer is available ('.$skippedVersion.'), run "composer self-update --'.$updateMajorVersion.'" to update to it. See also https://getcomposer.org/'.$updateMajorVersion.'</warning>');
             } elseif ($currentMajorVersion < $previewMajorVersion) {
                 // promote next major version if available in preview
                 $io->writeError('<warning>A preview release of the next major version of Composer is available ('.$latestPreview['version'].'), run "composer self-update --preview" to give it a try. See also https://github.com/composer/composer/releases for changelogs.</warning>');
@@ -176,8 +177,19 @@ EOT
             return 1;
         }
 
+        $channelString = $versionsUtil->getChannel();
+        if (is_numeric($channelString)) {
+            $channelString .= '.x';
+        }
+
         if (Composer::VERSION === $updateVersion) {
-            $io->writeError(sprintf('<info>You are already using composer version %s (%s channel).</info>', $updateVersion, $versionsUtil->getChannel()));
+            $io->writeError(
+                sprintf(
+                    '<info>You are already using the latest available Composer version %s (%s channel).</info>',
+                    $updateVersion,
+                    $channelString
+                )
+            );
 
             // remove all backups except for the most recent, if any
             if ($input->getOption('clean-backups')) {
@@ -198,9 +210,16 @@ EOT
 
         $updatingToTag = !preg_match('{^[0-9a-f]{40}$}', $updateVersion);
 
-        $io->write(sprintf("Upgrading to version <info>%s</info> (%s channel).", $updateVersion, $versionsUtil->getChannel()));
+        $io->write(sprintf("Upgrading to version <info>%s</info> (%s channel).", $updateVersion, $channelString));
         $remoteFilename = $baseUrl . ($updatingToTag ? "/download/{$updateVersion}/composer.phar" : '/composer.phar');
-        $signature = $httpDownloader->get($remoteFilename.'.sig')->getBody();
+        try {
+            $signature = $httpDownloader->get($remoteFilename.'.sig')->getBody();
+        } catch (TransportException $e) {
+            if ($e->getStatusCode() === 404) {
+                throw new \InvalidArgumentException('Version "'.$updateVersion.'" could not be found.', 0, $e);
+            }
+            throw $e;
+        }
         $io->writeError('   ', false);
         $httpDownloader->copy($remoteFilename, $tempFilename);
         $io->writeError('');
@@ -362,7 +381,7 @@ TAGSPUBKEY
         if (!is_file($oldFile)) {
             throw new FilesystemException('Composer rollback failed: "'.$oldFile.'" could not be found');
         }
-        if (!is_readable($oldFile)) {
+        if (!Filesystem::isReadable($oldFile)) {
             throw new FilesystemException('Composer rollback failed: "'.$oldFile.'" could not be read');
         }
 
@@ -378,11 +397,11 @@ TAGSPUBKEY
     /**
      * Checks if the downloaded/rollback phar is valid then moves it
      *
-     * @param  string $localFilename The composer.phar location
-     * @param  string $newFilename The downloaded or backup phar
-     * @param  string $backupTarget The filename to use for the backup
-     * @throws \FilesystemException If the file cannot be moved
-     * @return bool Whether the phar is valid and has been moved
+     * @param  string              $localFilename The composer.phar location
+     * @param  string              $newFilename   The downloaded or backup phar
+     * @param  string              $backupTarget  The filename to use for the backup
+     * @throws FilesystemException If the file cannot be moved
+     * @return bool                Whether the phar is valid and has been moved
      */
     protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
     {
@@ -406,7 +425,14 @@ TAGSPUBKEY
         }
 
         try {
-            rename($newFilename, $localFilename);
+            if (Platform::isWindows()) {
+                // use copy to apply permissions from the destination directory
+                // as rename uses source permissions and may block other users
+                copy($newFilename, $localFilename);
+                @unlink($newFilename);
+            } else {
+                rename($newFilename, $localFilename);
+            }
 
             return true;
         } catch (\Exception $e) {
@@ -453,26 +479,24 @@ TAGSPUBKEY
 
     protected function getOldInstallationFinder($rollbackDir)
     {
-        $finder = Finder::create()
+        return Finder::create()
             ->depth(0)
             ->files()
             ->name('*' . self::OLD_INSTALL_EXT)
             ->in($rollbackDir);
-
-        return $finder;
     }
 
     /**
      * Validates the downloaded/backup phar file
      *
-     * @param string $pharFile The downloaded or backup phar
-     * @param null|string $error Set by method on failure
+     * @param string      $pharFile The downloaded or backup phar
+     * @param null|string $error    Set by method on failure
      *
      * Code taken from getcomposer.org/installer. Any changes should be made
      * there and replicated here
      *
-     * @return bool If the operation succeeded
      * @throws \Exception
+     * @return bool       If the operation succeeded
      */
     protected function validatePhar($pharFile, &$error)
     {
@@ -517,11 +541,11 @@ TAGSPUBKEY
     /**
      * Invokes a UAC prompt to update composer.phar as an admin
      *
-     * Uses a .vbs script to elevate and run the cmd.exe move command.
+     * Uses a .vbs script to elevate and run the cmd.exe copy command.
      *
-     * @param string $localFilename The composer.phar location
-     * @param string $newFilename The downloaded or backup phar
-     * @return bool Whether composer.phar has been updated
+     * @param  string $localFilename The composer.phar location
+     * @param  string $newFilename   The downloaded or backup phar
+     * @return bool   Whether composer.phar has been updated
      */
     protected function tryAsWindowsAdmin($localFilename, $newFilename)
     {
@@ -543,13 +567,13 @@ TAGSPUBKEY
 
         $checksum = hash_file('sha256', $newFilename);
 
-        // cmd's internal move is fussy about backslashes
+        // cmd's internal copy is fussy about backslashes
         $source = str_replace('/', '\\', $newFilename);
         $destination = str_replace('/', '\\', $localFilename);
 
         $vbs = <<<EOT
 Set UAC = CreateObject("Shell.Application")
-UAC.ShellExecute "cmd.exe", "/c move /y ""$source"" ""$destination""", "", "runas", 0
+UAC.ShellExecute "cmd.exe", "/c copy /b /y ""$source"" ""$destination""", "", "runas", 0
 Wscript.Sleep(300)
 EOT;
 
@@ -557,12 +581,13 @@ EOT;
         exec('"'.$script.'"');
         @unlink($script);
 
-        // see if the file was moved
-        if ($result = (hash_file('sha256', $localFilename) === $checksum)) {
+        // see if the file was moved and is still accessible
+        if ($result = Filesystem::isReadable($localFilename) && (hash_file('sha256', $localFilename) === $checksum)) {
             $io->writeError('<info>Operation succeeded.</info>');
+            @unlink($newFilename);
         } else {
-            $io->writeError('<error>Operation failed (file not written). '.$helpMessage.'</error>');
-        };
+            $io->writeError('<error>Operation failed.'.$helpMessage.'</error>');
+        }
 
         return $result;
     }

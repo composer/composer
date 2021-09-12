@@ -12,15 +12,9 @@
 
 namespace Composer\Downloader;
 
-use Composer\Config;
-use Composer\Cache;
-use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Composer\Util\HttpDownloader;
-use Composer\Util\Filesystem;
-use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use RarArchive;
 
@@ -39,10 +33,10 @@ class RarDownloader extends ArchiveDownloader
 
         // Try to use unrar on *nix
         if (!Platform::isWindows()) {
-            $command = 'unrar x ' . ProcessExecutor::escape($file) . ' ' . ProcessExecutor::escape($path) . ' >/dev/null && chmod -R u+w ' . ProcessExecutor::escape($path);
+            $command = 'unrar x -- ' . ProcessExecutor::escape($file) . ' ' . ProcessExecutor::escape($path) . ' >/dev/null && chmod -R u+w ' . ProcessExecutor::escape($path);
 
             if (0 === $this->process->execute($command, $ignoredOutput)) {
-                return;
+                return \React\Promise\resolve();
             }
 
             $processError = 'Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput();
@@ -81,5 +75,7 @@ class RarDownloader extends ArchiveDownloader
         }
 
         $rarArchive->close();
+
+        return \React\Promise\resolve();
     }
 }

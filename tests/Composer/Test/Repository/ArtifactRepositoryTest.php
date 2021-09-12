@@ -15,7 +15,6 @@ namespace Composer\Test\Repository;
 use Composer\Repository\ArtifactRepository;
 use Composer\Test\TestCase;
 use Composer\IO\NullIO;
-use Composer\Config;
 use Composer\Package\BasePackage;
 
 class ArtifactRepositoryTest extends TestCase

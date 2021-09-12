@@ -1,0 +1,25 @@
+--TEST--
+Test that a package requiring something it provides itself, satisfies itself even though a package exists.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "provided/pkg",
+                "version": "1.0.0"
+            }
+        }
+    ],
+    "require": {
+        "provided/pkg": "1.0.0"
+    },
+    "provide": {
+        "provided/pkg": "1.0.0"
+    }
+}
+
+--RUN--
+update
+
+--EXPECT--

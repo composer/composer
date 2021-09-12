@@ -12,10 +12,8 @@
 
 namespace Composer\Test\Repository;
 
-use Composer\Package\Loader\ArrayLoader;
 use Composer\Repository\PathRepository;
 use Composer\Test\TestCase;
-use Composer\Package\Version\VersionParser;
 
 class PathRepositoryTest extends TestCase
 {
@@ -87,11 +85,43 @@ class PathRepositoryTest extends TestCase
         $package = $packages[0];
         $names[] = $package->getName();
 
-        $package = $packages[count($packages) - 1];
+        $package = $packages[1];
         $names[] = $package->getName();
 
         sort($names);
-        $this->assertSame(array('test/path-unversioned', 'test/path-versioned'), $names);
+        $this->assertEquals(array('test/path-unversioned', 'test/path-versioned'), $names);
+    }
+
+    public function testLoadPackageWithExplicitVersions()
+    {
+        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
+            ->getMock();
+
+        $config = new \Composer\Config();
+        $versionGuesser = null;
+
+        $options = array(
+            'versions' => array(
+                'test/path-unversioned' => '4.3.2.1',
+                'test/path-versioned' => '3.2.1.0',
+            ),
+        );
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
+        $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);
+        $packages = $repository->getPackages();
+
+        $versions = array();
+
+        $this->assertEquals(2, $repository->count());
+
+        $package = $packages[0];
+        $versions[$package->getName()] = $package->getVersion();
+
+        $package = $packages[1];
+        $versions[$package->getName()] = $package->getVersion();
+
+        ksort($versions);
+        $this->assertSame(array('test/path-unversioned' => '4.3.2.1', 'test/path-versioned' => '3.2.1.0'), $versions);
     }
 
     /**

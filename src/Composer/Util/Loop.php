@@ -12,88 +12,123 @@
 
 namespace Composer\Util;
 
-use Composer\Util\HttpDownloader;
-use React\Promise\Promise;
+use React\Promise\CancellablePromiseInterface;
 use Symfony\Component\Console\Helper\ProgressBar;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
 class Loop
 {
+    /** @var HttpDownloader */
     private $httpDownloader;
+    /** @var ProcessExecutor|null */
     private $processExecutor;
-    private $currentPromises;
+    /** @var PromiseInterface[][] */
+    private $currentPromises = array();
+    /** @var int */
+    private $waitIndex = 0;
 
-    public function __construct(HttpDownloader $httpDownloader = null, ProcessExecutor $processExecutor = null)
+    public function __construct(HttpDownloader $httpDownloader, ProcessExecutor $processExecutor = null)
     {
         $this->httpDownloader = $httpDownloader;
-        if ($this->httpDownloader) {
-            $this->httpDownloader->enableAsync();
-        }
+        $this->httpDownloader->enableAsync();
+
         $this->processExecutor = $processExecutor;
         if ($this->processExecutor) {
             $this->processExecutor->enableAsync();
         }
     }
 
+    /**
+     * @return HttpDownloader
+     */
+    public function getHttpDownloader()
+    {
+        return $this->httpDownloader;
+    }
+
+    /**
+     * @return ProcessExecutor|null
+     */
+    public function getProcessExecutor()
+    {
+        return $this->processExecutor;
+    }
+
+    /**
+     * @param  PromiseInterface[] $promises
+     * @param  ?ProgressBar       $progress
+     * @return void
+     */
     public function wait(array $promises, ProgressBar $progress = null)
     {
         /** @var \Exception|null */
         $uncaught = null;
 
         \React\Promise\all($promises)->then(
-            function () { },
+            function () {
+            },
             function ($e) use (&$uncaught) {
                 $uncaught = $e;
             }
         );
 
-        $this->currentPromises = $promises;
+        // keep track of every group of promises that is waited on, so abortJobs can
+        // cancel them all, even if wait() was called within a wait()
+        $waitIndex = $this->waitIndex++;
+        $this->currentPromises[$waitIndex] = $promises;
 
         if ($progress) {
             $totalJobs = 0;
-            if ($this->httpDownloader) {
-                $totalJobs += $this->httpDownloader->countActiveJobs();
-            }
+            $totalJobs += $this->httpDownloader->countActiveJobs();
             if ($this->processExecutor) {
                 $totalJobs += $this->processExecutor->countActiveJobs();
             }
             $progress->start($totalJobs);
         }
 
+        $lastUpdate = 0;
         while (true) {
             $activeJobs = 0;
 
-            if ($this->httpDownloader) {
-                $activeJobs += $this->httpDownloader->countActiveJobs();
-            }
+            $activeJobs += $this->httpDownloader->countActiveJobs();
             if ($this->processExecutor) {
                 $activeJobs += $this->processExecutor->countActiveJobs();
             }
 
-            if ($progress) {
+            if ($progress && microtime(true) - $lastUpdate > 0.1) {
+                $lastUpdate = microtime(true);
                 $progress->setProgress($progress->getMaxSteps() - $activeJobs);
             }
 
             if (!$activeJobs) {
                 break;
             }
-
-            usleep(5000);
         }
 
-        $this->currentPromises = null;
+        // as we skip progress updates if they are too quick, make sure we do one last one here at 100%
+        if ($progress) {
+            $progress->finish();
+        }
+
+        unset($this->currentPromises[$waitIndex]);
         if ($uncaught) {
             throw $uncaught;
         }
     }
 
+    /**
+     * @return void
+     */
     public function abortJobs()
     {
-        if ($this->currentPromises) {
-            foreach ($this->currentPromises as $promise) {
-                $promise->cancel();
+        foreach ($this->currentPromises as $promiseGroup) {
+            foreach ($promiseGroup as $promise) {
+                if ($promise instanceof CancellablePromiseInterface) {
+                    $promise->cancel();
+                }
             }
         }
     }

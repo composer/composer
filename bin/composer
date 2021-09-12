@@ -10,11 +10,13 @@ require __DIR__.'/../src/bootstrap.php';
 
 use Composer\Console\Application;
 use Composer\XdebugHandler\XdebugHandler;
+use Composer\Util\Platform;
+use Composer\Util\ErrorHandler;
 
 error_reporting(-1);
 
 // Restart without Xdebug
-$xdebug = new XdebugHandler('Composer', '--ansi');
+$xdebug = new XdebugHandler('Composer');
 $xdebug->check();
 unset($xdebug);
 
@@ -24,7 +26,7 @@ if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '4.0', '>=')) {
 }
 
 if (function_exists('ini_set')) {
-    @ini_set('display_errors', 1);
+    @ini_set('display_errors', '1');
 
     // Set user defined memory limit
     if ($memoryLimit = getenv('COMPOSER_MEMORY_LIMIT')) {
@@ -57,7 +59,9 @@ if (function_exists('ini_set')) {
     unset($memoryLimit);
 }
 
-putenv('COMPOSER_BINARY='.realpath($_SERVER['argv'][0]));
+Platform::putEnv('COMPOSER_BINARY', realpath($_SERVER['argv'][0]));
+
+ErrorHandler::register();
 
 // run the command application
 $application = new Application();

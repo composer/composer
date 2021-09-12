@@ -38,7 +38,8 @@ Composer fires the following named events during its execution process:
 - **post-autoload-dump**: occurs after the autoloader has been dumped, either
   during `install`/`update`, or via the `dump-autoload` command.
 - **post-root-package-install**: occurs after the root package has been
-  installed, during the `create-project` command.
+  installed during the `create-project` command (but before its
+  dependencies are installed).
 - **post-create-project-cmd**: occurs after the `create-project` command has
   been executed.
 
@@ -161,10 +162,11 @@ class MyClass
 }
 ```
 
-**Note:** During a composer install or update process, a variable named
+**Note:** During a Composer `install` or `update` command run, a variable named
 `COMPOSER_DEV_MODE` will be added to the environment. If the command was run
 with the `--no-dev` flag, this variable will be set to 0, otherwise it will be
-set to 1.
+set to 1. The variable is also available while `dump-autoload` runs, and it
+will be set to same as the last `install` or `update` was run in.
 
 ## Event classes
 
@@ -176,15 +178,15 @@ Depending on the [script types](#event-names) you will get various event
 subclasses containing various getters with relevant data and associated
 objects:
 
-- Base class: [`Composer\EventDispatcher\Event`](https://getcomposer.org/apidoc/master/Composer/EventDispatcher/Event.html)
-- Command Events: [`Composer\Script\Event`](https://getcomposer.org/apidoc/master/Composer/Script/Event.html)
-- Installer Events: [`Composer\Installer\InstallerEvent`](https://getcomposer.org/apidoc/master/Composer/Installer/InstallerEvent.html)
-- Package Events: [`Composer\Installer\PackageEvent`](https://getcomposer.org/apidoc/master/Composer/Installer/PackageEvent.html)
+- Base class: [`Composer\EventDispatcher\Event`](https://github.com/composer/composer/blob/master/src/Composer/EventDispatcher/Event.php)
+- Command Events: [`Composer\Script\Event`](https://github.com/composer/composer/blob/master/src/Composer/Script/Event.php)
+- Installer Events: [`Composer\Installer\InstallerEvent`](https://github.com/composer/composer/blob/master/src/Composer/Installer/InstallerEvent.php)
+- Package Events: [`Composer\Installer\PackageEvent`](https://github.com/composer/composer/blob/master/src/Composer/Installer/PackageEvent.php)
 - Plugin Events:
-  - init: [`Composer\EventDispatcher\Event`](https://getcomposer.org/apidoc/master/Composer/EventDispatcher/Event.html)
-  - command: [`Composer\Plugin\CommandEvent`](https://getcomposer.org/apidoc/master/Composer/Plugin/CommandEvent.html)
-  - pre-file-download: [`Composer\Plugin\PreFileDownloadEvent`](https://getcomposer.org/apidoc/master/Composer/Plugin/PreFileDownloadEvent.html)
-  - post-file-download: [`Composer\Plugin\PostFileDownloadEvent`](https://getcomposer.org/apidoc/master/Composer/Plugin/PostFileDownloadEvent.html)
+  - init: [`Composer\EventDispatcher\Event`](https://github.com/composer/composer/blob/master/src/Composer/EventDispatcher/Event.php)
+  - command: [`Composer\Plugin\CommandEvent`](https://github.com/composer/composer/blob/master/src/Composer/Plugin/CommandEvent.php)
+  - pre-file-download: [`Composer\Plugin\PreFileDownloadEvent`](https://github.com/composer/composer/blob/master/src/Composer/Plugin/PreFileDownloadEvent.php)
+  - post-file-download: [`Composer\Plugin\PostFileDownloadEvent`](https://github.com/composer/composer/blob/master/src/Composer/Plugin/PostFileDownloadEvent.php)
 
 ## Running scripts manually
 
@@ -208,7 +210,7 @@ and can be retrieved as an array via `$event->getArguments()` by PHP handlers.
 If you add custom scripts that do not fit one of the predefined event name
 above, you can either run them with run-script or also run them as native
 Composer commands. For example the handler defined below is executable by
-simply running `composer test`:
+running `composer test`:
 
 ```json
 {
@@ -224,7 +226,7 @@ to the `phpunit` script.
 
 > **Note:** Before executing scripts, Composer's bin-dir is temporarily pushed
 > on top of the PATH environment variable so that binaries of dependencies
-> are easily accessible. In this example no matter if the `phpunit` binary is
+> are directly accessible. In this example no matter if the `phpunit` binary is
 > actually in `vendor/bin/phpunit` or `bin/phpunit` it will be found and executed.
 
 Although Composer is not intended to manage long-running processes and other

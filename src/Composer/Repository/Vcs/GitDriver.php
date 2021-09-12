@@ -25,12 +25,14 @@ use Composer\Config;
  */
 class GitDriver extends VcsDriver
 {
-    protected $cache;
+    /** @var array<string, string> Map of tag name to identifier */
     protected $tags;
+    /** @var array<string, string> Map of branch name to identifier */
     protected $branches;
+    /** @var string */
     protected $rootIdentifier;
+    /** @var string */
     protected $repoDir;
-    protected $infoCache = array();
 
     /**
      * {@inheritDoc}
@@ -39,6 +41,9 @@ class GitDriver extends VcsDriver
     {
         if (Filesystem::isLocalPath($this->url)) {
             $this->url = preg_replace('{[\\/]\.git/?$}', '', $this->url);
+            if (!is_dir($this->url)) {
+                throw new \RuntimeException('Failed to read package information from '.$this->url.' as the path does not exist');
+            }
             $this->repoDir = $this->url;
             $cacheUrl = realpath($this->url);
         } else {
@@ -229,7 +234,7 @@ class GitDriver extends VcsDriver
 
         try {
             $gitUtil->runCommand(function ($url) {
-                return 'git ls-remote --heads ' . ProcessExecutor::escape($url);
+                return 'git ls-remote --heads -- ' . ProcessExecutor::escape($url);
             }, $url, sys_get_temp_dir());
         } catch (\RuntimeException $e) {
             return false;

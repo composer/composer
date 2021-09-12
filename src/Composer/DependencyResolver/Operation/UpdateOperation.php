@@ -20,22 +20,26 @@ use Composer\Package\Version\VersionParser;
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class UpdateOperation extends SolverOperation
+class UpdateOperation extends SolverOperation implements OperationInterface
 {
+    const TYPE = 'update';
+
+    /**
+     * @var PackageInterface
+     */
     protected $initialPackage;
+
+    /**
+     * @var PackageInterface
+     */
     protected $targetPackage;
 
     /**
-     * Initializes update operation.
-     *
      * @param PackageInterface $initial initial package
      * @param PackageInterface $target  target package (updated)
-     * @param string           $reason  update reason
      */
-    public function __construct(PackageInterface $initial, PackageInterface $target, $reason = null)
+    public function __construct(PackageInterface $initial, PackageInterface $target)
     {
-        parent::__construct($reason);
-
         $this->initialPackage = $initial;
         $this->targetPackage = $target;
     }
@@ -58,16 +62,6 @@ class UpdateOperation extends SolverOperation
     public function getTargetPackage()
     {
         return $this->targetPackage;
-    }
-
-    /**
-     * Returns operation type.
-     *
-     * @return string
-     */
-    public function getOperationType()
-    {
-        return 'update';
     }
 
     /**
@@ -94,13 +88,5 @@ class UpdateOperation extends SolverOperation
         $actionName = VersionParser::isUpgrade($initialPackage->getVersion(), $targetPackage->getVersion()) ? 'Upgrading' : 'Downgrading';
 
         return $actionName.' <info>'.$initialPackage->getPrettyName().'</info> (<comment>'.$fromVersion.'</comment> => <comment>'.$toVersion.'</comment>)';
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function __toString()
-    {
-        return $this->show(false);
     }
 }

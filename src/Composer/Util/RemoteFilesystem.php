@@ -18,6 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
 use Composer\Util\Http\Response;
+use Composer\Util\Http\ProxyManager;
 
 /**
  * @internal
@@ -27,32 +28,53 @@ use Composer\Util\Http\Response;
  */
 class RemoteFilesystem
 {
+    /** @var IOInterface */
     private $io;
+    /** @var Config */
     private $config;
+    /** @var string */
     private $scheme;
+    /** @var int */
     private $bytesMax;
+    /** @var string */
     private $originUrl;
+    /** @var string */
     private $fileUrl;
+    /** @var ?string */
     private $fileName;
-    private $retry;
+    /** @var bool */
+    private $retry = false;
+    /** @var bool */
     private $progress;
+    /** @var ?int */
     private $lastProgress;
+    /** @var mixed[] */
     private $options = array();
+    /** @var array<string, array{cn: string, fp: string}> */
     private $peerCertificateMap = array();
+    /** @var bool */
     private $disableTls = false;
+    /** @var string[] */
     private $lastHeaders;
-    private $storeAuth;
+    /** @var bool */
+    private $storeAuth = false;
+    /** @var AuthHelper */
     private $authHelper;
+    /** @var bool */
     private $degradedMode = false;
+    /** @var int */
     private $redirects;
+    /** @var int */
     private $maxRedirects = 20;
+    /** @var ProxyManager */
+    private $proxyManager;
 
     /**
      * Constructor.
      *
      * @param IOInterface $io         The IO instance
      * @param Config      $config     The config
-     * @param array       $options    The options
+     * @param mixed[]     $options    The options
      * @param bool        $disableTls
      * @param AuthHelper  $authHelper
      */
@@ -72,16 +94,17 @@ class RemoteFilesystem
         $this->options = array_replace_recursive($this->options, $options);
         $this->config = $config;
         $this->authHelper = isset($authHelper) ? $authHelper : new AuthHelper($io, $config);
+        $this->proxyManager = ProxyManager::getInstance();
     }
 
     /**
      * Copy the remote file in local.
      *
-     * @param string $originUrl The origin URL
-     * @param string $fileUrl   The file URL
-     * @param string $fileName  the local filename
-     * @param bool   $progress  Display the progression
-     * @param array  $options   Additional context options
+     * @param string  $originUrl The origin URL
+     * @param string  $fileUrl   The file URL
+     * @param string  $fileName  the local filename
+     * @param bool    $progress  Display the progression
+     * @param mixed[] $options   Additional context options
      *
      * @return bool true
      */
@@ -93,10 +116,10 @@ class RemoteFilesystem
     /**
      * Get the content.
      *
-     * @param string $originUrl The origin URL
-     * @param string $fileUrl   The file URL
-     * @param bool   $progress  Display the progression
-     * @param array  $options   Additional context options
+     * @param string  $originUrl The origin URL
+     * @param string  $fileUrl   The file URL
+     * @param bool    $progress  Display the progression
+     * @param mixed[] $options   Additional context options
      *
      * @return bool|string The content
      */
@@ -108,7 +131,7 @@ class RemoteFilesystem
     /**
      * Retrieve the options set in the constructor
      *
-     * @return array Options
+     * @return mixed[] Options
      */
     public function getOptions()
     {
@@ -118,7 +141,8 @@ class RemoteFilesystem
     /**
      * Merges new options
      *
-     * @param array $options
+     * @param  mixed[] $options
+     * @return void
      */
     public function setOptions(array $options)
     {
@@ -138,7 +162,7 @@ class RemoteFilesystem
     /**
      * Returns the headers of the last request
      *
-     * @return array
+     * @return string[]
      */
     public function getLastHeaders()
     {
@@ -146,7 +170,7 @@ class RemoteFilesystem
     }
 
     /**
-     * @param  array    $headers array of returned headers like from getLastHeaders()
+     * @param  string[] $headers array of returned headers like from getLastHeaders()
      * @return int|null
      */
     public static function findStatusCode(array $headers)
@@ -164,7 +188,7 @@ class RemoteFilesystem
     }
 
     /**
-     * @param  array       $headers array of returned headers like from getLastHeaders()
+     * @param  string[]    $headers array of returned headers like from getLastHeaders()
      * @return string|null
      */
     public function findStatusMessage(array $headers)
@@ -184,11 +208,11 @@ class RemoteFilesystem
     /**
      * Get file content or copy action.
      *
-     * @param string $originUrl         The origin URL
-     * @param string $fileUrl           The file URL
-     * @param array  $additionalOptions context options
-     * @param string $fileName          the local filename
-     * @param bool   $progress          Display the progression
+     * @param string  $originUrl         The origin URL
+     * @param string  $fileUrl           The file URL
+     * @param mixed[] $additionalOptions context options
+     * @param string  $fileName          the local filename
+     * @param bool    $progress          Display the progression
      *
      * @throws TransportException|\Exception
      * @throws TransportException            When the file could not be downloaded
@@ -251,13 +275,13 @@ class RemoteFilesystem
 
         $ctx = StreamContextFactory::getContext($fileUrl, $options, array('notification' => array($this, 'callbackGet')));
 
-        $actualContextOptions = stream_context_get_options($ctx);
-        $usingProxy = !empty($actualContextOptions['http']['proxy']) ? ' using proxy ' . $actualContextOptions['http']['proxy'] : '';
+        $proxy = $this->proxyManager->getProxyForRequest($fileUrl);
+        $usingProxy = $proxy->getFormattedUrl(' using proxy (%s)');
         $this->io->writeError((strpos($origFileUrl, 'http') === 0 ? 'Downloading ' : 'Reading ') . Url::sanitize($origFileUrl) . $usingProxy, true, IOInterface::DEBUG);
-        unset($origFileUrl, $actualContextOptions);
+        unset($origFileUrl, $proxy, $usingProxy);
 
         // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
-        if ((!preg_match('{^http://(repo\.)?packagist\.org/p/}', $fileUrl) || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && empty($degradedPackagist) && $this->config) {
+        if ((!preg_match('{^http://(repo\.)?packagist\.org/p/}', $fileUrl) || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && empty($degradedPackagist)) {
             $this->config->prohibitUrlByConfig($fileUrl, $this->io);
         }
 
@@ -299,7 +323,7 @@ class RemoteFilesystem
                 $e->setStatusCode(self::findStatusCode($http_response_header));
                 try {
                     $e->setResponse($this->decodeResult($result, $http_response_header));
-                } catch (\Exception $e) {
+                } catch (\Exception $discarded) {
                     $e->setResponse($result);
                 }
 
@@ -372,7 +396,7 @@ class RemoteFilesystem
 
         // check for gitlab 404 when downloading archives
         if ($statusCode === 404
-            && $this->config && in_array($originUrl, $this->config->get('gitlab-domains'), true)
+            && in_array($originUrl, $this->config->get('gitlab-domains'), true)
             && false !== strpos($fileUrl, 'archive.zip')
         ) {
             $result = false;
@@ -490,7 +514,7 @@ class RemoteFilesystem
 
             $result = $this->get($this->originUrl, $this->fileUrl, $additionalOptions, $this->fileName, $this->progress);
 
-            if ($this->storeAuth && $this->config) {
+            if ($this->storeAuth) {
                 $this->authHelper->storeAuth($this->originUrl, $this->storeAuth);
                 $this->storeAuth = false;
             }
@@ -547,9 +571,8 @@ class RemoteFilesystem
                 // passing `null` to file_get_contents will convert `null` to `0` and return 0 bytes
                 $result = file_get_contents($fileUrl, false, $context);
             }
-
-        } catch (\Throwable $e) {
         } catch (\Exception $e) {
+        } catch (\Throwable $e) {
         }
 
         if ($maxFileSize !== null && Platform::strlen($result) >= $maxFileSize) {
@@ -594,7 +617,7 @@ class RemoteFilesystem
 
             case STREAM_NOTIFY_PROGRESS:
                 if ($this->bytesMax > 0 && $this->progress) {
-                    $progression = min(100, round($bytesTransferred / $this->bytesMax * 100));
+                    $progression = min(100, (int) round($bytesTransferred / $this->bytesMax * 100));
 
                     if ((0 === $progression % 5) && 100 !== $progression && $progression !== $this->lastProgress) {
                         $this->lastProgress = $progression;
@@ -739,6 +762,8 @@ class RemoteFilesystem
      * Fetch certificate common name and fingerprint for validation of SAN.
      *
      * @todo Remove when PHP 5.6 is minimum supported version.
+     *
+     * @return ?array{cn: string, fp: string}
      */
     private function getCertificateCnAndFp($url, $options)
     {
@@ -759,7 +784,7 @@ class RemoteFilesystem
         // Ideally this would just use stream_socket_client() to avoid sending a
         // HTTP request but that does not capture the certificate.
         if (false === $handle = @fopen($url, 'rb', false, $context)) {
-            return;
+            return null;
         }
 
         // Close non authenticated connection without reading any content.
@@ -778,6 +803,8 @@ class RemoteFilesystem
                 );
             }
         }
+
+        return null;
     }
 
     private function getUrlAuthority($url)
@@ -820,7 +847,7 @@ class RemoteFilesystem
                     $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
                 }
 
-                if (!$result) {
+                if ($result === false) {
                     throw new TransportException('Failed to decode zlib stream');
                 }
             }

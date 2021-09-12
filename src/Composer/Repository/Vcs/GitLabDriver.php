@@ -29,36 +29,45 @@ use Composer\Util\Http\Response;
  */
 class GitLabDriver extends VcsDriver
 {
+    /**
+     * @var string
+     * @phpstan-var 'https'|'http'
+     */
     private $scheme;
+    /** @var string */
     private $namespace;
+    /** @var string */
     private $repository;
 
     /**
-     * @var array Project data returned by GitLab API
+     * @var mixed[] Project data returned by GitLab API
      */
     private $project;
 
     /**
-     * @var array Keeps commits returned by GitLab API
+     * @var array<string, mixed[]> Keeps commits returned by GitLab API
      */
     private $commits = array();
 
-    /**
-     * @var array List of tag => reference
-     */
+    /** @var array<string, string> Map of tag name to identifier */
     private $tags;
 
-    /**
-     * @var array List of branch => reference
-     */
+    /** @var array<string, string> Map of branch name to identifier */
     private $branches;
 
     /**
      * Git Driver
      *
-     * @var GitDriver
+     * @var ?GitDriver
      */
-    protected $gitDriver;
+    protected $gitDriver = null;
+
+    /**
+     * Protocol to force use of for repository URLs.
+     *
+     * @var string One of ssh, http
+     */
+    protected $protocol;
 
     /**
      * Defaults to true unless we can make sure it is public
@@ -95,7 +104,15 @@ class GitLabDriver extends VcsDriver
             ? $match['scheme']
             : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https')
         ;
-        $this->originUrl = $this->determineOrigin($configuredDomains, $guessedDomain, $urlParts, $match['port']);
+        $this->originUrl = self::determineOrigin($configuredDomains, $guessedDomain, $urlParts, $match['port']);
+
+        if ($protocol = $this->config->get('gitlab-protocol')) {
+            // https treated as a synonym for http.
+            if (!in_array($protocol, array('git', 'http', 'https'))) {
+                throw new \RuntimeException('gitlab-protocol must be one of git, http.');
+            }
+            $this->protocol = $protocol === 'git' ? 'ssh' : 'http';
+        }
 
         if (false !== strpos($this->originUrl, ':') || false !== strpos($this->originUrl, '/')) {
             $this->hasNonstandardOrigin = true;
@@ -132,7 +149,7 @@ class GitLabDriver extends VcsDriver
 
         if (!isset($this->infoCache[$identifier])) {
             if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
-                $composer =  JsonFile::parseJson($res);
+                $composer = JsonFile::parseJson($res);
             } else {
                 $composer = $this->getBaseComposerInformation($identifier);
 
@@ -210,6 +227,10 @@ class GitLabDriver extends VcsDriver
      */
     public function getRepositoryUrl()
     {
+        if ($this->protocol) {
+            return $this->project["{$this->protocol}_url_to_repo"];
+        }
+
         return $this->isPrivate ? $this->project['ssh_url_to_repo'] : $this->project['http_url_to_repo'];
     }
 
@@ -360,7 +381,7 @@ class GitLabDriver extends VcsDriver
         if (isset($this->project['visibility'])) {
             $this->isPrivate = $this->project['visibility'] !== 'public';
         } else {
-            // client is not authendicated, therefore repository has to be public
+            // client is not authenticated, therefore repository has to be public
             $this->isPrivate = false;
         }
     }
@@ -563,6 +584,7 @@ class GitLabDriver extends VcsDriver
             if ($portNumber) {
                 return $guessedDomain.':'.$portNumber;
             }
+
             return $guessedDomain;
         }
 

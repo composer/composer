@@ -70,13 +70,6 @@ class ArrayDumper
             }
         }
 
-        if ($package->getArchiveName()) {
-            $data['archive']['name'] = $package->getArchiveName();
-        }
-        if ($package->getArchiveExcludes()) {
-            $data['archive']['exclude'] = $package->getArchiveExcludes();
-        }
-
         foreach (BasePackage::$supportedLinkTypes as $type => $opts) {
             if ($links = $package->{'get'.ucfirst($opts['method'])}()) {
                 foreach ($links as $link) {
@@ -102,6 +95,13 @@ class ArrayDumper
         $data = $this->dumpValues($package, $keys, $data);
 
         if ($package instanceof CompletePackageInterface) {
+            if ($package->getArchiveName()) {
+                $data['archive']['name'] = $package->getArchiveName();
+            }
+            if ($package->getArchiveExcludes()) {
+                $data['archive']['exclude'] = $package->getArchiveExcludes();
+            }
+
             $keys = array(
                 'scripts',
                 'license',

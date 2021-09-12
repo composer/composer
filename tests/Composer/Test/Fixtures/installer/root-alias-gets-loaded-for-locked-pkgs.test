@@ -1,0 +1,54 @@
+--TEST--
+Newly defined root alias does not get loaded if package is loaded from lock file
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "some/dep", "version": "dev-main" },
+                { "name": "foo/pkg", "version": "1.0.0", "require": {"some/dep": "^1"} }
+            ]
+        }
+    ],
+    "require": {
+        "some/dep": "dev-main as 1.0.0",
+        "foo/pkg": "^1.0"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        { "name": "some/dep", "version": "dev-main" }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--INSTALLED--
+[
+    { "name": "some/dep", "version": "dev-main" }
+]
+--RUN--
+update foo/pkg
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires foo/pkg ^1.0 -> satisfiable by foo/pkg[1.0.0].
+    - foo/pkg 1.0.0 requires some/dep ^1 -> found some/dep[dev-main] but it does not match the constraint.
+
+Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
+
+--EXPECT--

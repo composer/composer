@@ -21,10 +21,12 @@ use Composer\IO\NullIO;
 use Composer\Plugin\PreCommandRunEvent;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Terminal;
 
 /**
  * Base class for Composer commands
@@ -59,6 +61,7 @@ abstract class BaseCommand extends Command
             if ($application instanceof Application) {
                 /* @var $application    Application */
                 $this->composer = $application->getComposer($required, $disablePlugins);
+            /** @phpstan-ignore-next-line */
             } elseif ($required) {
                 throw new \RuntimeException(
                     'Could not create a Composer\Composer instance, you must inject '.
@@ -107,8 +110,8 @@ abstract class BaseCommand extends Command
         if (null === $this->io) {
             $application = $this->getApplication();
             if ($application instanceof Application) {
-                /* @var $application    Application */
                 $this->io = $application->getIO();
+            /** @phpstan-ignore-next-line */
             } else {
                 $this->io = new NullIO();
             }
@@ -175,6 +178,29 @@ abstract class BaseCommand extends Command
                 break;
         }
 
+        if ($input->hasOption('prefer-install') && $input->getOption('prefer-install')) {
+            if ($input->getOption('prefer-source')) {
+                throw new \InvalidArgumentException('--prefer-source can not be used together with --prefer-install');
+            }
+            if ($input->getOption('prefer-dist')) {
+                throw new \InvalidArgumentException('--prefer-dist can not be used together with --prefer-install');
+            }
+            switch ($input->getOption('prefer-install')) {
+                case 'dist':
+                    $input->setOption('prefer-dist', true);
+                    break;
+                case 'source':
+                    $input->setOption('prefer-source', true);
+                    break;
+                case 'auto':
+                    $preferDist = false;
+                    $preferSource = false;
+                    break;
+                default:
+                    throw new \UnexpectedValueException('--prefer-install accepts one of "dist", "source" or "auto", got '.$input->getOption('prefer-install'));
+            }
+        }
+
         if ($input->getOption('prefer-source') || $input->getOption('prefer-dist') || ($keepVcsRequiresPreferSource && $input->hasOption('keep-vcs') && $input->getOption('keep-vcs'))) {
             $preferSource = $input->getOption('prefer-source') || ($keepVcsRequiresPreferSource && $input->hasOption('keep-vcs') && $input->getOption('keep-vcs'));
             $preferDist = (bool) $input->getOption('prefer-dist');
@@ -212,9 +238,36 @@ abstract class BaseCommand extends Command
         if (method_exists($rendererStyle, 'setVerticalBorderChars')) {
             $rendererStyle->setVerticalBorderChars('');
         } else {
+            // TODO remove in composer 2.2
+            // @phpstan-ignore-next-line
             $rendererStyle->setVerticalBorderChar('');
         }
         $rendererStyle->setCellRowContentFormat('%s  ');
         $renderer->setRows($table)->render();
+    }
+
+    protected function getTerminalWidth()
+    {
+        if (class_exists('Symfony\Component\Console\Terminal')) {
+            $terminal = new Terminal();
+            $width = $terminal->getWidth();
+        } else {
+            // For versions of Symfony console before 3.2
+            // TODO remove in composer 2.2
+            // @phpstan-ignore-next-line
+            list($width) = $this->getApplication()->getTerminalDimensions();
+        }
+        if (null === $width) {
+            // In case the width is not detected, we're probably running the command
+            // outside of a real terminal, use space without a limit
+            $width = PHP_INT_MAX;
+        }
+        if (Platform::isWindows()) {
+            $width--;
+        } else {
+            $width = max(80, $width);
+        }
+
+        return $width;
     }
 }

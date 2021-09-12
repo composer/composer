@@ -59,7 +59,7 @@ class InitCommandTest extends TestCase
     {
         $command = new InitCommand;
         $author = $command->parseAuthorString(
-                'Johnathon "Johnny" Smith <john@example.com>'
+            'Johnathon "Johnny" Smith <john@example.com>'
         );
         $this->assertEquals('Johnathon "Johnny" Smith', $author['name']);
         $this->assertEquals('john@example.com', $author['email']);
@@ -73,7 +73,7 @@ class InitCommandTest extends TestCase
     {
         $command = new InitCommand;
         $author = $command->parseAuthorString(
-                'Johnathon (Johnny) Smith <john@example.com>'
+            'Johnathon (Johnny) Smith <john@example.com>'
         );
         $this->assertEquals('Johnathon (Johnny) Smith', $author['name']);
         $this->assertEquals('john@example.com', $author['email']);
@@ -91,5 +91,26 @@ class InitCommandTest extends TestCase
         $command = new InitCommand;
         $this->setExpectedException('InvalidArgumentException');
         $command->parseAuthorString('John Smith <john>');
+    }
+
+    public function testNamespaceFromValidPackageName()
+    {
+        $command = new InitCommand;
+        $namespace = $command->namespaceFromPackageName('new_projects.acme-extra/package-name');
+        $this->assertEquals('NewProjectsAcmeExtra\PackageName', $namespace);
+    }
+
+    public function testNamespaceFromInvalidPackageName()
+    {
+        $command = new InitCommand;
+        $namespace = $command->namespaceFromPackageName('invalid-package-name');
+        $this->assertNull($namespace);
+    }
+
+    public function testNamespaceFromMissingPackageName()
+    {
+        $command = new InitCommand;
+        $namespace = $command->namespaceFromPackageName('');
+        $this->assertNull($namespace);
     }
 }

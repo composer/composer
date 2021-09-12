@@ -33,6 +33,11 @@ class PreFileDownloadEvent extends Event
     private $processedUrl;
 
     /**
+     * @var string|null
+     */
+    private $customCacheKey;
+
+    /**
      * @var string
      */
     private $type;
@@ -43,13 +48,18 @@ class PreFileDownloadEvent extends Event
     private $context;
 
     /**
+     * @var mixed[]
+     */
+    private $transportOptions = array();
+
+    /**
      * Constructor.
      *
-     * @param string          $name            The event name
-     * @param HttpDownloader  $httpDownloader
-     * @param string          $processedUrl
-     * @param string          $type
-     * @param mixed           $context
+     * @param string         $name           The event name
+     * @param HttpDownloader $httpDownloader
+     * @param string         $processedUrl
+     * @param string         $type
+     * @param mixed          $context
      */
     public function __construct($name, HttpDownloader $httpDownloader, $processedUrl, $type, $context = null)
     {
@@ -89,6 +99,26 @@ class PreFileDownloadEvent extends Event
     }
 
     /**
+     * Retrieves a custom package cache key for this download.
+     *
+     * @return string|null
+     */
+    public function getCustomCacheKey()
+    {
+        return $this->customCacheKey;
+    }
+
+    /**
+     * Sets a custom package cache key for this download.
+     *
+     * @param string|null $customCacheKey New cache key
+     */
+    public function setCustomCacheKey($customCacheKey)
+    {
+        $this->customCacheKey = $customCacheKey;
+    }
+
+    /**
      * Returns the type of this download (package, metadata).
      *
      * @return string
@@ -102,11 +132,36 @@ class PreFileDownloadEvent extends Event
      * Returns the context of this download, if any.
      *
      * If this download is of type package, the package object is returned.
+     * If the type is metadata, an array{repository: RepositoryInterface} is returned.
      *
      * @return mixed
      */
     public function getContext()
     {
         return $this->context;
+    }
+
+    /**
+     * Returns transport options for the download.
+     *
+     * Only available for events with type metadata, for packages set the transport options on the package itself.
+     *
+     * @return array
+     */
+    public function getTransportOptions()
+    {
+        return $this->transportOptions;
+    }
+
+    /**
+     * Sets transport options for the download.
+     *
+     * Only available for events with type metadata, for packages set the transport options on the package itself.
+     *
+     * @param array $options
+     */
+    public function setTransportOptions(array $options)
+    {
+        $this->transportOptions = $options;
     }
 }

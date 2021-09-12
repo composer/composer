@@ -14,7 +14,6 @@ namespace Composer\Installer;
 
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
-use Composer\Package\Version\VersionParser;
 use Composer\IO\IOInterface;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -27,6 +26,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
  */
 class MetapackageInstaller implements InstallerInterface
 {
+    /** @var IOInterface */
     private $io;
 
     public function __construct(IOInterface $io)
@@ -56,6 +56,7 @@ class MetapackageInstaller implements InstallerInterface
     public function download(PackageInterface $package, PackageInterface $prevPackage = null)
     {
         // noop
+        return \React\Promise\resolve();
     }
 
     /**
@@ -64,6 +65,7 @@ class MetapackageInstaller implements InstallerInterface
     public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
         // noop
+        return \React\Promise\resolve();
     }
 
     /**
@@ -72,6 +74,7 @@ class MetapackageInstaller implements InstallerInterface
     public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
         // noop
+        return \React\Promise\resolve();
     }
 
     /**
@@ -82,6 +85,8 @@ class MetapackageInstaller implements InstallerInterface
         $this->io->writeError("  - " . InstallOperation::format($package));
 
         $repo->addPackage(clone $package);
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -97,6 +102,8 @@ class MetapackageInstaller implements InstallerInterface
 
         $repo->removePackage($initial);
         $repo->addPackage(clone $target);
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -111,6 +118,8 @@ class MetapackageInstaller implements InstallerInterface
         $this->io->writeError("  - " . UninstallOperation::format($package));
 
         $repo->removePackage($package);
+
+        return \React\Promise\resolve();
     }
 
     /**

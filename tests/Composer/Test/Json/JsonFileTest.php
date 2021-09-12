@@ -14,6 +14,7 @@ namespace Composer\Test\Json;
 
 use Seld\JsonLint\ParsingException;
 use Composer\Json\JsonFile;
+use Composer\Json\JsonValidationException;
 use Composer\Test\TestCase;
 
 class JsonFileTest extends TestCase
@@ -93,6 +94,149 @@ class JsonFileTest extends TestCase
     {
         $json = new JsonFile(__DIR__.'/Fixtures/composer.json');
         $this->assertTrue($json->validateSchema());
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+    }
+
+    public function testSchemaValidationError()
+    {
+        $file = tempnam(sys_get_temp_dir(), 'c');
+        file_put_contents($file, '{ "name": null }');
+        $json = new JsonFile($file);
+        $expectedMessage = sprintf('"%s" does not match the expected JSON schema', $file);
+        $expectedError = 'name : NULL value found, but a string is required';
+        try {
+            $json->validateSchema();
+            $this->fail('Expected exception to be thrown (strict)');
+        } catch (JsonValidationException $e) {
+            $this->assertEquals($expectedMessage, $e->getMessage());
+            $this->assertContains($expectedError, $e->getErrors());
+        }
+        try {
+            $json->validateSchema(JsonFile::LAX_SCHEMA);
+            $this->fail('Expected exception to be thrown (lax)');
+        } catch (JsonValidationException $e) {
+            $this->assertEquals($expectedMessage, $e->getMessage());
+            $this->assertContains($expectedError, $e->getErrors());
+        }
+        unlink($file);
+    }
+
+    public function testSchemaValidationLaxAdditionalProperties()
+    {
+        $file = tempnam(sys_get_temp_dir(), 'c');
+        file_put_contents($file, '{ "name": "vendor/package", "description": "generic description", "foo": "bar" }');
+        $json = new JsonFile($file);
+        try {
+            $json->validateSchema();
+            $this->fail('Expected exception to be thrown (strict)');
+        } catch (JsonValidationException $e) {
+            $this->assertEquals(sprintf('"%s" does not match the expected JSON schema', $file), $e->getMessage());
+            $this->assertEquals(array('The property foo is not defined and the definition does not allow additional properties'), $e->getErrors());
+        }
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+        unlink($file);
+    }
+
+    public function testSchemaValidationLaxRequired()
+    {
+        $file = tempnam(sys_get_temp_dir(), 'c');
+        $json = new JsonFile($file);
+
+        $expectedMessage = sprintf('"%s" does not match the expected JSON schema', $file);
+
+        file_put_contents($file, '{ }');
+        try {
+            $json->validateSchema();
+            $this->fail('Expected exception to be thrown (strict)');
+        } catch (JsonValidationException $e) {
+            $this->assertEquals($expectedMessage, $e->getMessage());
+            $errors = $e->getErrors();
+            $this->assertContains('name : The property name is required', $errors);
+            $this->assertContains('description : The property description is required', $errors);
+        }
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+
+        file_put_contents($file, '{ "name": "vendor/package" }');
+        try {
+            $json->validateSchema();
+            $this->fail('Expected exception to be thrown (strict)');
+        } catch (JsonValidationException $e) {
+            $this->assertEquals($expectedMessage, $e->getMessage());
+            $this->assertEquals(array('description : The property description is required'), $e->getErrors());
+        }
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+
+        file_put_contents($file, '{ "description": "generic description" }');
+        try {
+            $json->validateSchema();
+            $this->fail('Expected exception to be thrown (strict)');
+        } catch (JsonValidationException $e) {
+            $this->assertEquals($expectedMessage, $e->getMessage());
+            $this->assertEquals(array('name : The property name is required'), $e->getErrors());
+        }
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+
+        file_put_contents($file, '{ "type": "library" }');
+        try {
+            $json->validateSchema();
+            $this->fail('Expected exception to be thrown (strict)');
+        } catch (JsonValidationException $e) {
+            $this->assertEquals($expectedMessage, $e->getMessage());
+            $errors = $e->getErrors();
+            $this->assertContains('name : The property name is required', $errors);
+            $this->assertContains('description : The property description is required', $errors);
+        }
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+
+        file_put_contents($file, '{ "type": "project" }');
+        try {
+            $json->validateSchema();
+            $this->fail('Expected exception to be thrown (strict)');
+        } catch (JsonValidationException $e) {
+            $this->assertEquals($expectedMessage, $e->getMessage());
+            $errors = $e->getErrors();
+            $this->assertContains('name : The property name is required', $errors);
+            $this->assertContains('description : The property description is required', $errors);
+        }
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+
+        file_put_contents($file, '{ "name": "vendor/package", "description": "generic description" }');
+        $this->assertTrue($json->validateSchema());
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+
+        unlink($file);
+    }
+
+    public function testCustomSchemaValidationLax()
+    {
+        $file = tempnam(sys_get_temp_dir(), 'c');
+        file_put_contents($file, '{ "custom": "property", "another custom": "property" }');
+
+        $schema = tempnam(sys_get_temp_dir(), 'c');
+        file_put_contents($schema, '{ "properties": { "custom": { "type": "string" }}}');
+
+        $json = new JsonFile($file);
+
+        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA, $schema));
+
+        unlink($file);
+        unlink($schema);
+    }
+
+    public function testCustomSchemaValidationStrict()
+    {
+        $file = tempnam(sys_get_temp_dir(), 'c');
+        file_put_contents($file, '{ "custom": "property" }');
+
+        $schema = tempnam(sys_get_temp_dir(), 'c');
+        file_put_contents($schema, '{ "properties": { "custom": { "type": "string" }}}');
+
+        $json = new JsonFile($file);
+
+        $this->assertTrue($json->validateSchema(JsonFile::STRICT_SCHEMA, $schema));
+
+        unlink($file);
+        unlink($schema);
     }
 
     public function testParseErrorDetectMissingCommaMultiline()

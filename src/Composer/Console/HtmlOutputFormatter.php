@@ -19,6 +19,7 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
  */
 class HtmlOutputFormatter extends OutputFormatter
 {
+    /** @var array<int, string> */
     private static $availableForegroundColors = array(
         30 => 'black',
         31 => 'red',
@@ -29,6 +30,7 @@ class HtmlOutputFormatter extends OutputFormatter
         36 => 'cyan',
         37 => 'white',
     );
+    /** @var array<int, string> */
     private static $availableBackgroundColors = array(
         40 => 'black',
         41 => 'red',
@@ -39,6 +41,7 @@ class HtmlOutputFormatter extends OutputFormatter
         46 => 'cyan',
         47 => 'white',
     );
+    /** @var array<int, string> */
     private static $availableOptions = array(
         1 => 'bold',
         4 => 'underscore',

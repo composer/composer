@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Factory;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\StringInput;
@@ -58,6 +59,10 @@ EOT
 
     public function run(InputInterface $input, OutputInterface $output)
     {
+        if (!method_exists($input, '__toString')) {
+            throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
+        }
+
         // extract real command name
         $tokens = preg_split('{\s+}', $input->__toString());
         $args = array();
@@ -73,6 +78,11 @@ EOT
         // show help for this command if no command was found
         if (count($args) < 2) {
             return parent::run($input, $output);
+        }
+
+        // The COMPOSER env var should not apply to the global execution scope
+        if (getenv('COMPOSER')) {
+            Platform::clearEnv('COMPOSER');
         }
 
         // change to global dir
