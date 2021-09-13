@@ -302,6 +302,11 @@ if (extension_loaded('apc') && filter_var(ini_get('apc.enable_cli'), FILTER_VALI
     }
 }
 
+if (!class_exists('Phar')) {
+    echo 'PHP\'s phar extension is missing. Composer requires it to run. Enable the extension or recompile php without --disable-phar then try again.' . PHP_EOL;
+    exit(1);
+}
+
 Phar::mapPhar('composer.phar');
 
 EOF;
