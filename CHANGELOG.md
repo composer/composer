@@ -1,3 +1,11 @@
+### [2.1.7] 2021-09-14
+
+  * Added many type annotations internally, which may have an effect on CI/static analysis for people using Composer as a dependency. This work will continue in following releases
+  * Fixed regression in 2.1.6 when parsing classmaps with empty heredocs (#10067)
+  * Fixed regression in 2.1.6 where list command was not showing plugin commands (#10075)
+  * Fixed issue handling package updates where the package type changed (#10076)
+  * Fixed docker being detected as WSL when run inside WSL (#10094)
+
 ### [2.1.6] 2021-08-19
 
   * Updated internal PHAR signatures to be SHA512 instead of SHA1
@@ -1248,6 +1256,7 @@
 
   * Initial release
 
+[2.1.7]: https://github.com/composer/composer/compare/2.1.6...2.1.7
 [2.1.6]: https://github.com/composer/composer/compare/2.1.5...2.1.6
 [2.1.5]: https://github.com/composer/composer/compare/2.1.4...2.1.5
 [2.1.4]: https://github.com/composer/composer/compare/2.1.3...2.1.4
