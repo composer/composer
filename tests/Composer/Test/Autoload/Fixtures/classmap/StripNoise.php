@@ -19,6 +19,8 @@ class FailHeredocWhitespace
 }
 WHITESPACE . <<<  MARKERINTEXT
     In PHP < 7.3, the docblock marker could occur in the text as long as it did not occur at the very start of the line.
+     MARKERINTEXTwithtrail
+     MARKERINTEXT_
 class FailHeredocMarkerInText
 {
 }
