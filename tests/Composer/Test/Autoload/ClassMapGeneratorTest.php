@@ -62,6 +62,8 @@ class ClassMapGeneratorTest extends TestCase
             'Foo\\SlashedB' => realpath(__DIR__) . '/Fixtures/classmap/BackslashLineEndingString.php',
             'Unicode\\↑\\↑' => realpath(__DIR__) . '/Fixtures/classmap/Unicode.php',
             'ShortOpenTag' => realpath(__DIR__) . '/Fixtures/classmap/ShortOpenTag.php',
+            'Smarty_Internal_Compile_Block' => realpath(__DIR__) . '/Fixtures/classmap/InvalidUnicode.php',
+            'Smarty_Internal_Compile_Blockclose' => realpath(__DIR__) . '/Fixtures/classmap/InvalidUnicode.php',
             'ShortOpenTagDocblock' => realpath(__DIR__) . '/Fixtures/classmap/ShortOpenTagDocblock.php',
         );
 

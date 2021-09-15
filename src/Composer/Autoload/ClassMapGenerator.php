@@ -246,7 +246,7 @@ class ClassMapGenerator
         }
 
         // strip heredocs/nowdocs
-        $contents = preg_replace('{
+        $heredocRegex = '{
             # opening heredoc/nowdoc delimiter (word-chars)
             <<<[ \t]*+([\'"]?)(\w++)\\1
             # needs to be followed by a newline
@@ -260,7 +260,17 @@ class ClassMapGenerator
             )*
             # end delimiter
             [\t ]*+ \\2 (?=\b)
-        }xu', 'null', $contents);
+        }x';
+
+        // run first assuming the file is valid unicode
+        $contentWithoutHeredoc = preg_replace($heredocRegex.'u', 'null', $contents);
+        if (null === $contentWithoutHeredoc) {
+            // run again without unicode support if the file failed to be parsed
+            $contents = preg_replace($heredocRegex, 'null', $contents);
+        } else {
+            $contents = $contentWithoutHeredoc;
+        }
+        unset($contentWithoutHeredoc);
 
         // strip strings
         $contents = preg_replace('{"[^"\\\\]*+(\\\\.[^"\\\\]*+)*+"|\'[^\'\\\\]*+(\\\\.[^\'\\\\]*+)*+\'}s', 'null', $contents);
