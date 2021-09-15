@@ -1,3 +1,7 @@
+### [2.1.8] 2021-09-15
+
+  * Fixed regression in 2.1.7 when parsing classmaps in files containing invalid Unicode (#10102)
+
 ### [2.1.7] 2021-09-14
 
   * Added many type annotations internally, which may have an effect on CI/static analysis for people using Composer as a dependency. This work will continue in following releases
@@ -1256,6 +1260,7 @@
 
   * Initial release
 
+[2.1.8]: https://github.com/composer/composer/compare/2.1.7...2.1.8
 [2.1.7]: https://github.com/composer/composer/compare/2.1.6...2.1.7
 [2.1.6]: https://github.com/composer/composer/compare/2.1.5...2.1.6
 [2.1.5]: https://github.com/composer/composer/compare/2.1.4...2.1.5
