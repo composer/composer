@@ -18,6 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Composer\EventDispatcher\ScriptExecutionException;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\Json\JsonFile;
@@ -269,6 +270,8 @@ EOT
 
         try {
             return $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
+        } catch (ScriptExecutionException $e) {
+            throw $e;
         } catch (\Exception $e) {
             $this->revertComposerFile(false);
             throw $e;
