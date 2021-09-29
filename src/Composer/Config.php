@@ -23,6 +23,10 @@ use Composer\Util\ProcessExecutor;
  */
 class Config
 {
+    const SOURCE_DEFAULT = 'default';
+    const SOURCE_COMMAND = 'command';
+    const SOURCE_UNKNOWN = 'unknown';
+
     const RELATIVE_PATHS = 1;
 
     /** @var array<string, mixed> */
@@ -100,6 +104,8 @@ class Config
     private $useEnvironment;
     /** @var array<string, true> */
     private $warnedHosts = array();
+    /** @var array<string, string> */
+    private $sourceOfConfigValue = array();
 
     /**
      * @param bool   $useEnvironment Use COMPOSER_ environment variables to replace config settings
@@ -112,6 +118,14 @@ class Config
         $this->repositories = static::$defaultRepositories;
         $this->useEnvironment = (bool) $useEnvironment;
         $this->baseDir = $baseDir;
+
+        foreach ($this->config as $configKey => $configValue) {
+            $this->setSourceOfConfigValue($configValue, $configKey, self::SOURCE_DEFAULT);
+        }
+
+        foreach ($this->repositories as $configKey => $configValue) {
+            $this->setSourceOfConfigValue($configValue, 'repositories.' . $configKey, self::SOURCE_DEFAULT);
+        }
     }
 
     /**
@@ -150,18 +164,21 @@ class Config
      * Merges new config values with the existing ones (overriding)
      *
      * @param array<string, mixed> $config
+     * @param string $source
      *
      * @return void
      */
-    public function merge($config)
+    public function merge($config, $source = self::SOURCE_UNKNOWN)
     {
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
                 if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer')) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
+                    $this->setSourceOfConfigValue($val, $key, $source);
                 } elseif (in_array($key, array('gitlab-domains', 'github-domains')) && isset($this->config[$key])) {
                     $this->config[$key] = array_unique(array_merge($this->config[$key], $val));
+                    $this->setSourceOfConfigValue($val, $key, $source);
                 } elseif ('preferred-install' === $key && isset($this->config[$key])) {
                     if (is_array($val) || is_array($this->config[$key])) {
                         if (is_string($val)) {
@@ -169,8 +186,10 @@ class Config
                         }
                         if (is_string($this->config[$key])) {
                             $this->config[$key] = array('*' => $this->config[$key]);
+                            $this->sourceOfConfigValue[$key . '*'] = $source;
                         }
                         $this->config[$key] = array_merge($this->config[$key], $val);
+                        $this->setSourceOfConfigValue($val, $key, $source);
                         // the full match pattern needs to be last
                         if (isset($this->config[$key]['*'])) {
                             $wildcard = $this->config[$key]['*'];
@@ -179,9 +198,11 @@ class Config
                         }
                     } else {
                         $this->config[$key] = $val;
+                        $this->setSourceOfConfigValue($val, $key, $source);
                     }
                 } else {
                     $this->config[$key] = $val;
+                    $this->setSourceOfConfigValue($val, $key, $source);
                 }
             }
         }
@@ -210,11 +231,14 @@ class Config
                 // store repo
                 if (is_int($name)) {
                     $this->repositories[] = $repository;
+                    $this->setSourceOfConfigValue($repository, 'repositories.' . array_search($repository, $this->repositories, true), $source);
                 } else {
                     if ($name === 'packagist') { // BC support for default "packagist" named repo
                         $this->repositories[$name . '.org'] = $repository;
+                        $this->setSourceOfConfigValue($repository, 'repositories.' . $name . '.org', $source);
                     } else {
                         $this->repositories[$name] = $repository;
+                        $this->setSourceOfConfigValue($repository, 'repositories.' . $name, $source);
                     }
                 }
             }
@@ -257,6 +281,10 @@ class Config
                 $env = 'COMPOSER_' . strtoupper(strtr($key, '-', '_'));
 
                 $val = $this->getComposerEnv($env);
+                if ($val !== false) {
+                    $this->setSourceOfConfigValue($val, $key, $env);
+                }
+
                 $val = rtrim((string) $this->process(false !== $val ? $val : $this->config[$key], $flags), '/\\');
                 $val = Platform::expandPath($val);
 
@@ -275,6 +303,8 @@ class Config
                 $val = $this->getComposerEnv($env);
                 if (false === $val) {
                     $val = $this->config[$key];
+                } else {
+                    $this->setSourceOfConfigValue($val, $key, $env);
                 }
 
                 return $val !== 'false' && (bool) $val;
@@ -403,6 +433,35 @@ class Config
         }
 
         return $all;
+    }
+
+    /**
+     * @param string $key
+     * @return string
+     */
+    public function getSourceOfValue($key)
+    {
+        $this->get($key);
+
+        return isset($this->sourceOfConfigValue[$key]) ? $this->sourceOfConfigValue[$key] : self::SOURCE_UNKNOWN;
+    }
+
+    /**
+     * @param mixed  $configValue
+     * @param string $path
+     * @param string $source
+     *
+     * @return void
+     */
+    private function setSourceOfConfigValue($configValue, $path, $source)
+    {
+        $this->sourceOfConfigValue[$path] = $source;
+
+        if (is_array($configValue)) {
+            foreach ($configValue as $key => $value) {
+                $this->setSourceOfConfigValue($value, $path . '.' . $key, $source);
+            }
+        }
     }
 
     /**

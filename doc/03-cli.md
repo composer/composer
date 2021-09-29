@@ -736,6 +736,8 @@ See the [Config](06-config.md) chapter for valid configuration options.
   instead of relative.
 * **--json:** JSON decode the setting value, to be used with `extra.*` keys.
 * **--merge:** Merge the setting value with the current value, to be used with `extra.*` keys in combination with `--json`.
+* **--append:** When adding a repository, append it (lowest priority) to the existing ones instead of prepending it (highest priority).
+* **--source:** Display where the config value is loaded from.
 
 ### Modifying Repositories
 

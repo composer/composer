@@ -77,6 +77,7 @@ class ConfigCommand extends BaseCommand
                 new InputOption('json', 'j', InputOption::VALUE_NONE, 'JSON decode the setting value, to be used with extra.* keys'),
                 new InputOption('merge', 'm', InputOption::VALUE_NONE, 'Merge the setting value with the current value, to be used with extra.* keys in combination with --json'),
                 new InputOption('append', null, InputOption::VALUE_NONE, 'When adding a repository, append it (lowest priority) to the existing ones instead of prepending it (highest priority)'),
+                new InputOption('source', null, InputOption::VALUE_NONE, 'Display where the config value is loaded from'),
                 new InputArgument('setting-key', null, 'Setting key'),
                 new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
             ))
@@ -234,13 +235,13 @@ EOT
         }
 
         if (!$input->getOption('global')) {
-            $this->config->merge($this->configFile->read());
-            $this->config->merge(array('config' => $this->authConfigFile->exists() ? $this->authConfigFile->read() : array()));
+            $this->config->merge($this->configFile->read(), $this->configFile->getPath());
+            $this->config->merge(array('config' => $this->authConfigFile->exists() ? $this->authConfigFile->read() : array()), $this->authConfigFile->getPath());
         }
 
         // List the configuration of the file settings
         if ($input->getOption('list')) {
-            $this->listConfiguration($this->config->all(), $this->config->raw(), $output);
+            $this->listConfiguration($this->config->all(), $this->config->raw(), $output, null, (bool) $input->getOption('source'));
 
             return 0;
         }
@@ -305,7 +306,12 @@ EOT
                 $value = json_encode($value);
             }
 
-            $this->getIO()->write($value, true, IOInterface::QUIET);
+            $sourceOfConfigValue = '';
+            if ($input->getOption('source')) {
+                $sourceOfConfigValue = ' (' . $this->config->getSourceOfValue($settingKey) . ')';
+            }
+
+            $this->getIO()->write($value . $sourceOfConfigValue, true, IOInterface::QUIET);
 
             return 0;
         }
@@ -823,10 +829,11 @@ EOT
      * @param array<array|bool|string> $contents
      * @param array<array|string>      $rawContents
      * @param string|null              $k
+     * @param bool                     $showSource
      *
      * @return void
      */
-    protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, $k = null)
+    protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, $k = null, $showSource = false)
     {
         $origK = $k;
         $io = $this->getIO();
@@ -839,7 +846,7 @@ EOT
 
             if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
                 $k .= preg_replace('{^config\.}', '', $key . '.');
-                $this->listConfiguration($value, $rawVal, $output, $k);
+                $this->listConfiguration($value, $rawVal, $output, $k, $showSource);
                 $k = $origK;
 
                 continue;
@@ -857,10 +864,14 @@ EOT
                 $value = var_export($value, true);
             }
 
+            $source = '';
+            if ($showSource) {
+                $source = ' (' . $this->config->getSourceOfValue($k . $key) . ')';
+            }
             if (is_string($rawVal) && $rawVal != $value) {
-                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>', true, IOInterface::QUIET);
+                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>' . $source, true, IOInterface::QUIET);
             } else {
-                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>', true, IOInterface::QUIET);
+                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>' . $source, true, IOInterface::QUIET);
             }
         }
     }

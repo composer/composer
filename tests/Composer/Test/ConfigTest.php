@@ -340,4 +340,26 @@ class ConfigTest extends TestCase
         $this->assertEquals(0, $config->get('htaccess-protect'));
         putenv('COMPOSER_HTACCESS_PROTECT');
     }
+
+    public function testGetSourceOfValue()
+    {
+        $config = new Config;
+
+        $this->assertSame(Config::SOURCE_DEFAULT, $config->getSourceOfValue('process-timeout'));
+
+        $config->merge(
+            array('config' => array('process-timeout' => 1)),
+            'phpunit-test'
+        );
+
+        $this->assertSame('phpunit-test', $config->getSourceOfValue('process-timeout'));
+    }
+
+    public function testGetSourceOfValueEnvVariables()
+    {
+        putenv('COMPOSER_HTACCESS_PROTECT=0');
+        $config = new Config;
+        $this->assertEquals('COMPOSER_HTACCESS_PROTECT', $config->getSourceOfValue('htaccess-protect'));
+        putenv('COMPOSER_HTACCESS_PROTECT');
+    }
 }
