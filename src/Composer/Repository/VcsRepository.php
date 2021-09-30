@@ -282,7 +282,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                     if ($e->getCode() === 404) {
                         $this->emptyReferences[] = $identifier;
                     }
-                    if ($e->getCode() === 401 || $e->getCode() === 403) {
+                    if (in_array($e->getCode(), array(401, 403, 429), true)) {
                         throw $e;
                     }
                 }
@@ -371,7 +371,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 if ($e->getCode() === 404) {
                     $this->emptyReferences[] = $identifier;
                 }
-                if ($e->getCode() === 401 || $e->getCode() === 403) {
+                if (in_array($e->getCode(), array(401, 403, 429), true)) {
                     throw $e;
                 }
                 if ($isVeryVerbose) {
