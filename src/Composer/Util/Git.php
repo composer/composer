@@ -98,6 +98,7 @@ class Git
         $command = call_user_func($commandCallable, $url);
 
         $auth = null;
+        $credentials = array();
         if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
             $errorMsg = $this->process->getErrorOutput();
             // private github repository without ssh key access, try https with auth
@@ -121,6 +122,7 @@ class Git
                         return;
                     }
 
+                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
                     $errorMsg = $this->process->getErrorOutput();
                 }
             } elseif (preg_match('{^https://(bitbucket\.org)/(.*?)(?:\.git)?$}i', $url, $match)) { //bitbucket oauth
@@ -155,6 +157,7 @@ class Git
                         return;
                     }
 
+                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
                     $errorMsg = $this->process->getErrorOutput();
                 } else { // Falling back to ssh
                     $sshUrl = 'git@bitbucket.org:' . $match[2] . '.git';
@@ -196,6 +199,7 @@ class Git
                         return;
                     }
 
+                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
                     $errorMsg = $this->process->getErrorOutput();
                 }
             } elseif ($this->isAuthenticationFailure($url, $match)) { // private non-github/gitlab/bitbucket repo that failed to authenticate
@@ -236,6 +240,7 @@ class Git
                         return;
                     }
 
+                    $credentials = array(rawurlencode($auth['username']), rawurlencode($auth['password']));
                     $errorMsg = $this->process->getErrorOutput();
                 }
             }
@@ -244,6 +249,10 @@ class Git
                 $this->filesystem->removeDirectory($origCwd);
             }
 
+            if (count($credentials) > 0) {
+                $command = $this->maskCredentials($command, $credentials);
+                $errorMsg = $this->maskCredentials($errorMsg, $credentials);
+            }
             $this->throwException('Failed to execute ' . $command . "\n\n" . $errorMsg, $url);
         }
     }
@@ -411,5 +420,24 @@ class Git
         }
 
         return self::$version;
+    }
+
+    private function maskCredentials(string $error, array $credentials)
+    {
+        $maskedCredentials = array();
+
+        foreach ($credentials as $credential) {
+            if (in_array($credential, array('private-token', 'x-token-auth', 'oauth2', 'gitlab-ci-token', 'x-oauth-basic'))) {
+                $maskedCredentials[] = $credential;
+            } elseif (strlen($credential) > 6) {
+                $maskedCredentials[] = substr($credential, 0, 3) . '...' . substr($credential, -3);
+            } elseif (strlen($credential) > 3) {
+                $maskedCredentials[] = substr($credential, 0, 3) . '...';
+            } else {
+                $maskedCredentials[] = 'XXX';
+            }
+        }
+
+        return str_replace($credentials, $maskedCredentials, $error);
     }
 }
