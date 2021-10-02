@@ -1178,6 +1178,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     throw $e;
                 }
 
+                // try to detect offline state (if dns resolution fails it is pretty likely to keep failing) and avoid retrying in that case
+                if ($e instanceof TransportException && $e->getStatusCode() === null) {
+                    $responseInfo = $e->getResponseInfo();
+                    if (isset($responseInfo['namelookup_time']) && $responseInfo['namelookup_time'] == 0) {
+                        $retries = 0;
+                    }
+                }
+
                 if ($retries) {
                     usleep(100000);
                     continue;
@@ -1349,7 +1357,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $data;
         };
 
-        $reject = function ($e) use (&$retries, $httpDownloader, $filename, $options, &$reject, $accept, $io, $url, &$degradedMode, $repo) {
+        $reject = function ($e) use (&$retries, $httpDownloader, $filename, $options, &$reject, $accept, $io, $url, &$degradedMode, $repo, $lastModifiedTime) {
             if ($e instanceof TransportException && $e->getStatusCode() === 404) {
                 $repo->packagesNotFoundCache[$filename] = true;
 
@@ -1359,6 +1367,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             // special error code returned when network is being artificially disabled
             if ($e instanceof TransportException && $e->getStatusCode() === 499) {
                 $retries = 0;
+            }
+
+            // try to detect offline state (if dns resolution fails it is pretty likely to keep failing) and avoid retrying in that case
+            if ($e instanceof TransportException && $e->getStatusCode() === null) {
+                $responseInfo = $e->getResponseInfo();
+                if (isset($responseInfo['namelookup_time']) && $responseInfo['namelookup_time'] == 0) {
+                    $retries = 0;
+                }
             }
 
             if (--$retries > 0) {
@@ -1371,6 +1387,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $io->writeError('<warning>'.$url.' could not be fully loaded ('.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
             }
             $degradedMode = true;
+
+            // if the file is in the cache, we fake a 304 Not Modified to allow the process to continue
+            if ($lastModifiedTime) {
+                return $accept(new Response(array('url' => $url), 304, array(), ''));
+            }
 
             // special error code returned when network is being artificially disabled
             if ($e instanceof TransportException && $e->getStatusCode() === 499) {
