@@ -214,10 +214,7 @@ class ClassMapGenerator
      */
     private static function findClasses($path)
     {
-        $extraTypes = PHP_VERSION_ID < 50400 ? '' : '|trait';
-        if (PHP_VERSION_ID >= 80100 || (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>='))) {
-            $extraTypes .= '|enum';
-        }
+        $extraTypes = self::getExtraTypes();
 
         // Use @ here instead of Silencer to actively suppress 'unhelpful' output
         // @link https://github.com/composer/composer/pull/4886
@@ -241,57 +238,14 @@ class ClassMapGenerator
         }
 
         // return early if there is no chance of matching anything in this file
-        if (!preg_match('{\b(?:class|interface'.$extraTypes.')\s}i', $contents)) {
+        preg_match_all('{\b(?:class|interface'.$extraTypes.')\s}i', $contents, $matches);
+        if (!$matches) {
             return array();
         }
 
-        // strip heredocs/nowdocs
-        $heredocRegex = '{
-            # opening heredoc/nowdoc delimiter (word-chars)
-            <<<[ \t]*+([\'"]?)(\w++)\\1
-            # needs to be followed by a newline
-            (?:\r\n|\n|\r)
-            # the meat of it, matching line by line until end delimiter
-            (?:
-                # a valid line is optional white-space (possessive match) not followed by the end delimiter, then anything goes for the rest of the line
-                [\t ]*+(?!\\2 \b)[^\r\n]*+
-                # end of line(s)
-                [\r\n]++
-            )*
-            # end delimiter
-            [\t ]*+ \\2 (?=\b)
-        }x';
-
-        // run first assuming the file is valid unicode
-        $contentWithoutHeredoc = preg_replace($heredocRegex.'u', 'null', $contents);
-        if (null === $contentWithoutHeredoc) {
-            // run again without unicode support if the file failed to be parsed
-            $contents = preg_replace($heredocRegex, 'null', $contents);
-        } else {
-            $contents = $contentWithoutHeredoc;
-        }
-        unset($contentWithoutHeredoc);
-
-        // strip strings
-        $contents = preg_replace('{"[^"\\\\]*+(\\\\.[^"\\\\]*+)*+"|\'[^\'\\\\]*+(\\\\.[^\'\\\\]*+)*+\'}s', 'null', $contents);
-        // strip leading non-php code if needed
-        if (strpos($contents, '<?') !== 0) {
-            $contents = preg_replace('{^.+?<\?}s', '<?', $contents, 1, $replacements);
-            if ($replacements === 0) {
-                return array();
-            }
-        }
-        // strip non-php blocks in the file
-        $contents = preg_replace('{\?>(?:[^<]++|<(?!\?))*+<\?}s', '?><?', $contents);
-        // strip trailing non-php code if needed
-        $pos = strrpos($contents, '?>');
-        if (false !== $pos && false === strpos(substr($contents, $pos), '<?')) {
-            $contents = substr($contents, 0, $pos);
-        }
-        // strip comments if short open tags are in the file
-        if (preg_match('{(<\?)(?!(php|hh))}i', $contents)) {
-            $contents = preg_replace('{//.* | /\*(?:[^*]++|\*(?!/))*\*/}x', '', $contents);
-        }
+        $p = new PhpFileCleaner($contents, count($matches[0]));
+        $contents = $p->clean();
+        unset($p);
 
         preg_match_all('{
             (?:
@@ -327,5 +281,19 @@ class ClassMapGenerator
         }
 
         return $classes;
+    }
+
+    private static function getExtraTypes()
+    {
+        static $extraTypes = null;
+        if (null === $extraTypes) {
+            $extraTypes = PHP_VERSION_ID < 50400 ? '' : '|trait';
+            if (PHP_VERSION_ID >= 80100 || (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>='))) {
+                $extraTypes .= '|enum';
+            }
+            PhpFileCleaner::setTypeConfig(array_merge(array('class', 'interface'), array_filter(explode('|', $extraTypes))));
+        }
+
+        return $extraTypes;
     }
 }
