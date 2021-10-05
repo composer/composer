@@ -445,7 +445,7 @@ class ProcessExecutor
     /**
      * Escapes a string to be used as a shell argument.
      *
-     * @param string $argument The argument that will be escaped
+     * @param ?string $argument The argument that will be escaped
      *
      * @return string The escaped argument
      */
@@ -457,7 +457,7 @@ class ProcessExecutor
     /**
      * Copy of Symfony's Process::escapeArgument() which is private
      *
-     * @param string $argument
+     * @param ?string $argument
      *
      * @return string
      */
