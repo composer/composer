@@ -129,7 +129,7 @@ EOT
 
         $process = new ProcessExecutor($this->getIO());
         if (Platform::isWindows()) {
-            return $process->execute('start "web" explorer "' . $url . '"', $output);
+            return $process->execute('start "web" explorer ' . $url, $output);
         }
 
         $linux = $process->execute('which xdg-open', $output);

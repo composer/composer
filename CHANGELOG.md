@@ -1,3 +1,7 @@
+### [1.10.23] 2021-10-05
+
+  * Security: Fixed command injection vulnerability on Windows (GHSA-frqg-7g38-6gcf / CVE-2021-41116)
+
 ### [1.10.22] 2021-04-27
 
   * Security: Fixed command injection vulnerability in HgDriver/HgDownloader and hardened other VCS drivers and downloaders (GHSA-h5h8-pc6h-jvvx / CVE-2021-29472)
@@ -938,6 +942,7 @@
 
   * Initial release
 
+[1.10.23]: https://github.com/composer/composer/compare/1.10.22...1.10.23
 [1.10.22]: https://github.com/composer/composer/compare/1.10.21...1.10.22
 [1.10.21]: https://github.com/composer/composer/compare/1.10.20...1.10.21
 [1.10.20]: https://github.com/composer/composer/compare/1.10.19...1.10.20
