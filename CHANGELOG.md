@@ -1,3 +1,12 @@
+### [2.1.9] 2021-10-05
+
+  * Fixed classmap parsing with a new class parser which does not rely on regexes anymore (#10107)
+  * Fixed inline git credentials showing up in output in some conditions (#10115)
+  * Fixed support for running updates while offline as long as the cache contains enough information (#10116)
+  * Fixed `show --all foo/bar` which as of 2.0.0 was not showing all versions anymore but only the installed one (#10095)
+  * Fixed VCS repos ignoring some versions silently when the API rate limit is reached (#10132)
+  * Fixed CA bundle to remove the expired Let's Encrypt root CA
+
 ### [2.1.8] 2021-09-15
 
   * Fixed regression in 2.1.7 when parsing classmaps in files containing invalid Unicode (#10102)
@@ -1260,6 +1269,7 @@
 
   * Initial release
 
+[2.1.9]: https://github.com/composer/composer/compare/2.1.8...2.1.9
 [2.1.8]: https://github.com/composer/composer/compare/2.1.7...2.1.8
 [2.1.7]: https://github.com/composer/composer/compare/2.1.6...2.1.7
 [2.1.6]: https://github.com/composer/composer/compare/2.1.5...2.1.6
