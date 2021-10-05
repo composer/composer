@@ -47,7 +47,7 @@ class SvnTest extends TestCase
         return array(
             array('http://till:test@svn.example.org/', $this->getCmd(" --username 'till' --password 'test' ")),
             array('http://svn.apache.org/', ''),
-            array('svn://johndoe@example.org', $this->getCmd(" --username 'johndoe' --password '' ")),
+            array('svn://johndoe@example.org', $this->getCmd(" --username 'johndoe' --password \"\" ")),
         );
     }
 
