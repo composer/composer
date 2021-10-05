@@ -1,5 +1,6 @@
 ### [2.1.9] 2021-10-05
 
+  * Security: Fixed command injection vulnerability on Windows (GHSA-frqg-7g38-6gcf / CVE-2021-41116)
   * Fixed classmap parsing with a new class parser which does not rely on regexes anymore (#10107)
   * Fixed inline git credentials showing up in output in some conditions (#10115)
   * Fixed support for running updates while offline as long as the cache contains enough information (#10116)
@@ -328,11 +329,10 @@
   * Fixed package ordering when autoloading and especially when loading plugins, to make sure dependencies are loaded before their dependents
   * Fixed suggest output being very spammy, it now is only one line long and shows more rarely
   * Fixed conflict rules like e.g. >=5 from matching dev-master, as it is not normalized to 9999999-dev internally anymore
-=======
+
 ### [1.10.23] 2021-10-05
 
   * Security: Fixed command injection vulnerability on Windows (GHSA-frqg-7g38-6gcf / CVE-2021-41116)
->>>>>>> 1.10
 
 ### [1.10.22] 2021-04-27
 
