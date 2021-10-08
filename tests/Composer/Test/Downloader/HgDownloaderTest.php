@@ -15,7 +15,6 @@ namespace Composer\Test\Downloader;
 use Composer\Downloader\HgDownloader;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
-use Composer\Util\Platform;
 
 class HgDownloaderTest extends TestCase
 {
@@ -156,10 +155,5 @@ class HgDownloaderTest extends TestCase
         $downloader = $this->getDownloaderMock(null);
 
         $this->assertEquals('source', $downloader->getInstallationSource());
-    }
-
-    private function getCmd($cmd)
-    {
-        return Platform::isWindows() ? strtr($cmd, "'", '"') : $cmd;
     }
 }
