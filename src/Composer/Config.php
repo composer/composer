@@ -68,6 +68,7 @@ class Config
         'use-github-api' => true,
         'lock' => true,
         'platform-check' => 'php-only',
+        'git-shallow-clone' => false,
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth

@@ -365,4 +365,9 @@ throw, but you can set this config option to `["example.org"]` to allow using sv
 URLs on that hostname. This is a better/safer alternative to disabling `secure-http`
 altogether.
 
+## git-shallow-clone
+
+Defaults to `false`. If set to `true`, Composer will do a git shallow clone (with depth set to 1) instead of a regular git clone.
+
+
 &larr; [Repositories](05-repositories.md)  |  [Runtime](07-runtime.md) &rarr;

@@ -257,7 +257,7 @@ class Git
         }
     }
 
-    public function syncMirror($url, $dir)
+    public function syncMirror($url, $dir, $shallowClone = false)
     {
         if (getenv('COMPOSER_DISABLE_NETWORK') && getenv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
             $this->io->writeError('<warning>Aborting git mirror sync of '.$url.' as network is disabled</warning>');
@@ -286,11 +286,25 @@ class Git
         // clean up directory and do a fresh clone into it
         $this->filesystem->removeDirectory($dir);
 
-        $commandCallable = function ($url) use ($dir) {
-            return sprintf('git clone --mirror -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
-        };
+        if ($shallowClone) {
+            $commandCallable = function ($url) use ($dir) {
+                return sprintf('git clone --depth=1 --mirror -- %s %s && git remote set-branches origin "*"', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
+            };
 
-        $this->runCommand($commandCallable, $url, $dir, true);
+            $this->runCommand($commandCallable, $url, $dir, true);
+
+            $commandCallable = function() {
+                return sprintf('git fetch --depth=1');
+            };
+
+            $this->runCommand($commandCallable, $url, $dir);
+        } else {
+            $commandCallable = function ($url) use ($dir) {
+                return sprintf('git clone --mirror -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
+            };
+
+            $this->runCommand($commandCallable, $url, $dir, true);
+        }
 
         return true;
     }

@@ -67,7 +67,7 @@ class GitDriver extends VcsDriver
             }
 
             $gitUtil = new GitUtil($this->io, $this->config, $this->process, $fs);
-            if (!$gitUtil->syncMirror($this->url, $this->repoDir)) {
+            if (!$gitUtil->syncMirror($this->url, $this->repoDir, $this->config->get('git-shallow-clone'))) {
                 if (!is_dir($this->repoDir)) {
                     throw new \RuntimeException('Failed to clone '.$this->url.' to read package information from it');
                 }
