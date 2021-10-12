@@ -39,6 +39,8 @@ interface PluginInterface
      *
      * @param Composer    $composer
      * @param IOInterface $io
+     *
+     * @return void
      */
     public function activate(Composer $composer, IOInterface $io);
 
@@ -51,6 +53,8 @@ interface PluginInterface
      *
      * @param Composer    $composer
      * @param IOInterface $io
+     *
+     * @return void
      */
     public function deactivate(Composer $composer, IOInterface $io);
 
@@ -61,6 +65,8 @@ interface PluginInterface
      *
      * @param Composer    $composer
      * @param IOInterface $io
+     *
+     * @return void
      */
     public function uninstall(Composer $composer, IOInterface $io);
 }

@@ -117,23 +117,41 @@ class Installer
      */
     protected $autoloadGenerator;
 
+    /** @var bool */
     protected $preferSource = false;
+    /** @var bool */
     protected $preferDist = false;
+    /** @var bool */
     protected $optimizeAutoloader = false;
+    /** @var bool */
     protected $classMapAuthoritative = false;
+    /** @var bool */
     protected $apcuAutoloader = false;
-    protected $apcuAutoloaderPrefix;
+    /** @var string|null */
+    protected $apcuAutoloaderPrefix = null;
+    /** @var bool */
     protected $devMode = false;
+    /** @var bool */
     protected $dryRun = false;
+    /** @var bool */
     protected $verbose = false;
+    /** @var bool */
     protected $update = false;
+    /** @var bool */
     protected $install = true;
+    /** @var bool */
     protected $dumpAutoloader = true;
+    /** @var bool */
     protected $runScripts = true;
+    /** @var bool|string[] */
     protected $ignorePlatformReqs = false;
+    /** @var bool */
     protected $preferStable = false;
+    /** @var bool */
     protected $preferLowest = false;
+    /** @var bool */
     protected $writeLock;
+    /** @var bool */
     protected $executeOperations = true;
 
     /** @var bool */
@@ -141,9 +159,10 @@ class Installer
     /**
      * Array of package names/globs flagged for update
      *
-     * @var array|null
+     * @var string[]|null
      */
     protected $updateAllowList = null;
+    /** @var Request::UPDATE_* */
     protected $updateAllowTransitiveDependencies = Request::UPDATE_ONLY_LISTED;
 
     /**

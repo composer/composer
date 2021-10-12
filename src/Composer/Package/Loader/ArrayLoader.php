@@ -31,7 +31,9 @@ use Composer\Package\Version\VersionParser;
  */
 class ArrayLoader implements LoaderInterface
 {
+    /** @var VersionParser */
     protected $versionParser;
+    /** @var bool */
     protected $loadOptions;
 
     public function __construct(VersionParser $parser = null, $loadOptions = false)

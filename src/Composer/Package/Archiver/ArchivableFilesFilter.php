@@ -17,6 +17,7 @@ use PharData;
 
 class ArchivableFilesFilter extends FilterIterator
 {
+    /** @var string[] */
     private $dirs = array();
 
     /**

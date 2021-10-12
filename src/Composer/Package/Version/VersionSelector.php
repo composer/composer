@@ -21,6 +21,7 @@ use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * Selects the best possible version for a package
@@ -30,10 +31,13 @@ use Composer\Semver\Constraint\Constraint;
  */
 class VersionSelector
 {
+    /** @var RepositorySet */
     private $repositorySet;
 
+    /** @var array<string, ConstraintInterface[]> */
     private $platformConstraints = array();
 
+    /** @var VersionParser */
     private $parser;
 
     /**

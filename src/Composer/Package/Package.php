@@ -34,7 +34,7 @@ class Package extends BasePackage
     protected $sourceUrl;
     /** @var ?string */
     protected $sourceReference;
-    /** @var ?array */
+    /** @var ?array<int, array{url: string, preferred: bool}> */
     protected $sourceMirrors;
     /** @var ?string */
     protected $distType;
@@ -44,7 +44,7 @@ class Package extends BasePackage
     protected $distReference;
     /** @var ?string */
     protected $distSha1Checksum;
-    /** @var ?array */
+    /** @var ?array<int, array{url: string, preferred: bool}> */
     protected $distMirrors;
     /** @var string */
     protected $version;

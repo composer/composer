@@ -40,6 +40,7 @@ abstract class BasePackage implements PackageInterface
     const STABILITY_ALPHA = 15;
     const STABILITY_DEV = 20;
 
+    /** @var array<string, self::STABILITY_*> */
     public static $stabilities = array(
         'stable' => self::STABILITY_STABLE,
         'RC' => self::STABILITY_RC,

@@ -55,6 +55,8 @@ interface PackageInterface
      * Allows the solver to set an id for this package to refer to it.
      *
      * @param int $id
+     *
+     * @return void
      */
     public function setId($id);
 
@@ -98,6 +100,8 @@ interface PackageInterface
      *
      * @param string $type source/dist
      * @phpstan-param 'source'|'dist'|null $type
+     *
+     * @return void
      */
     public function setInstallationSource($type);
 
@@ -140,12 +144,12 @@ interface PackageInterface
     /**
      * Returns the source mirrors of this package
      *
-     * @return ?array
+     * @return ?array<int, array{url: string, preferred: bool}>
      */
     public function getSourceMirrors();
 
     /**
-     * @param  ?array $mirrors
+     * @param  ?array<int, array{url: string, preferred: bool}> $mirrors
      * @return void
      */
     public function setSourceMirrors($mirrors);
@@ -188,12 +192,12 @@ interface PackageInterface
     /**
      * Returns the dist mirrors of this package
      *
-     * @return ?array
+     * @return ?array<int, array{url: string, preferred: bool}>
      */
     public function getDistMirrors();
 
     /**
-     * @param  ?array $mirrors
+     * @param  ?array<int, array{url: string, preferred: bool}> $mirrors
      * @return void
      */
     public function setDistMirrors($mirrors);
@@ -326,6 +330,8 @@ interface PackageInterface
      * Stores a reference to the repository that owns the package
      *
      * @param RepositoryInterface $repository
+     *
+     * @return void
      */
     public function setRepository(RepositoryInterface $repository);
 
@@ -385,6 +391,8 @@ interface PackageInterface
 
     /**
      * Configures the list of options to download package dist files
+     *
+     * @param mixed[] $options
      *
      * @return void
      */

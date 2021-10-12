@@ -21,6 +21,7 @@ use Composer\Package\CompleteAliasPackage;
  */
 class JsonLoader
 {
+    /** @var LoaderInterface */
     private $loader;
 
     public function __construct(LoaderInterface $loader)

@@ -20,23 +20,39 @@ use Symfony\Component\Process\Process;
  */
 class Perforce
 {
+    /** @var string */
     protected $path;
+    /** @var ?string */
     protected $p4Depot;
+    /** @var string */
     protected $p4Client;
+    /** @var ?string */
     protected $p4User;
+    /** @var ?string */
     protected $p4Password;
+    /** @var int */
     protected $p4Port;
+    /** @var string */
     protected $p4Stream;
+    /** @var string */
     protected $p4ClientSpec;
+    /** @var ?string */
     protected $p4DepotType;
+    /** @var ?string */
     protected $p4Branch;
+    /** @var ProcessExecutor */
     protected $process;
+    /** @var string */
     protected $uniquePerforceClientName;
+    /** @var bool */
     protected $windowsFlag;
+    /** @var string */
     protected $commandResult;
 
+    /** @var IOInterface */
     protected $io;
 
+    /** @var Filesystem */
     protected $filesystem;
 
     public function __construct($repoConfig, $port, $path, ProcessExecutor $process, $isWindows, IOInterface $io)

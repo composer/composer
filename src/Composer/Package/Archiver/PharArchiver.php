@@ -19,6 +19,7 @@ namespace Composer\Package\Archiver;
  */
 class PharArchiver implements ArchiverInterface
 {
+    /** @var array<string, int> */
     protected static $formats = array(
         'zip' => \Phar::ZIP,
         'tar' => \Phar::TAR,
@@ -26,6 +27,7 @@ class PharArchiver implements ArchiverInterface
         'tar.bz2' => \Phar::TAR,
     );
 
+    /** @var array<string, int> */
     protected static $compressFormats = array(
         'tar.gz' => \Phar::GZ,
         'tar.bz2' => \Phar::BZ2,

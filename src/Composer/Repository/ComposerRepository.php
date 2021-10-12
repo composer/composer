@@ -91,9 +91,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $allowSslDowngrade = false;
     /** @var ?EventDispatcher */
     private $eventDispatcher;
-    /** @var ?array<string, array{url: string, preferred: bool}> */
+    /** @var ?array<string, array<int, array{url: string, preferred: bool}>> */
     private $sourceMirrors;
-    /** @var ?array<string, array{url: string, preferred: bool}> */
+    /** @var ?array<int, array{url: string, preferred: bool}> */
     private $distMirrors;
     /** @var bool */
     private $degradedMode = false;

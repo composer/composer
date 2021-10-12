@@ -22,7 +22,7 @@ interface RootPackageInterface extends CompletePackageInterface
     /**
      * Returns a set of package names and their aliases
      *
-     * @return array
+     * @return array<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
     public function getAliases();
 
@@ -38,7 +38,7 @@ interface RootPackageInterface extends CompletePackageInterface
      *
      * array('foo/bar' => 'dev')
      *
-     * @return array
+     * @return array<string, BasePackage::STABILITY_*>
      */
     public function getStabilityFlags();
 
@@ -47,7 +47,7 @@ interface RootPackageInterface extends CompletePackageInterface
      *
      * array('foo/bar' => 'abcd1234')
      *
-     * @return array
+     * @return array<string, string>
      */
     public function getReferences();
 
@@ -61,7 +61,7 @@ interface RootPackageInterface extends CompletePackageInterface
     /**
      * Returns the root package's configuration
      *
-     * @return array
+     * @return mixed[]
      */
     public function getConfig();
 
@@ -69,6 +69,8 @@ interface RootPackageInterface extends CompletePackageInterface
      * Set the required packages
      *
      * @param Link[] $requires A set of package links
+     *
+     * @return void
      */
     public function setRequires(array $requires);
 
@@ -76,6 +78,8 @@ interface RootPackageInterface extends CompletePackageInterface
      * Set the recommended packages
      *
      * @param Link[] $devRequires A set of package links
+     *
+     * @return void
      */
     public function setDevRequires(array $devRequires);
 
@@ -83,6 +87,8 @@ interface RootPackageInterface extends CompletePackageInterface
      * Set the conflicting packages
      *
      * @param Link[] $conflicts A set of package links
+     *
+     * @return void
      */
     public function setConflicts(array $conflicts);
 
@@ -90,6 +96,8 @@ interface RootPackageInterface extends CompletePackageInterface
      * Set the provided virtual packages
      *
      * @param Link[] $provides A set of package links
+     *
+     * @return void
      */
     public function setProvides(array $provides);
 
@@ -97,34 +105,44 @@ interface RootPackageInterface extends CompletePackageInterface
      * Set the packages this one replaces
      *
      * @param Link[] $replaces A set of package links
+     *
+     * @return void
      */
     public function setReplaces(array $replaces);
 
     /**
      * Set the repositories
      *
-     * @param array $repositories
+     * @param mixed[] $repositories
+     *
+     * @return void
      */
     public function setRepositories(array $repositories);
 
     /**
      * Set the autoload mapping
      *
-     * @param array $autoload Mapping of autoloading rules
+     * @param array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>} $autoload Mapping of autoloading rules
+     *
+     * @return void
      */
     public function setAutoload(array $autoload);
 
     /**
      * Set the dev autoload mapping
      *
-     * @param array $devAutoload Mapping of dev autoloading rules
+     * @param array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>} $devAutoload Mapping of dev autoloading rules
+     *
+     * @return void
      */
     public function setDevAutoload(array $devAutoload);
 
     /**
      * Set the stabilityFlags
      *
-     * @param array $stabilityFlags
+     * @param array<string, BasePackage::STABILITY_*> $stabilityFlags
+     *
+     * @return void
      */
     public function setStabilityFlags(array $stabilityFlags);
 
@@ -132,6 +150,8 @@ interface RootPackageInterface extends CompletePackageInterface
      * Set the minimumStability
      *
      * @param string $minimumStability
+     *
+     * @return void
      */
     public function setMinimumStability($minimumStability);
 
@@ -139,39 +159,51 @@ interface RootPackageInterface extends CompletePackageInterface
      * Set the preferStable
      *
      * @param bool $preferStable
+     *
+     * @return void
      */
     public function setPreferStable($preferStable);
 
     /**
      * Set the config
      *
-     * @param array $config
+     * @param mixed[] $config
+     *
+     * @return void
      */
     public function setConfig(array $config);
 
     /**
      * Set the references
      *
-     * @param array $references
+     * @param array<string, string> $references
+     *
+     * @return void
      */
     public function setReferences(array $references);
 
     /**
      * Set the aliases
      *
-     * @param array $aliases
+     * @param array<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
+     *
+     * @return void
      */
     public function setAliases(array $aliases);
 
     /**
      * Set the suggested packages
      *
-     * @param array $suggests A set of package names/comments
+     * @param array<string, string> $suggests A set of package names/comments
+     *
+     * @return void
      */
     public function setSuggests(array $suggests);
 
     /**
-     * @param array $extra
+     * @param mixed[] $extra
+     *
+     * @return void
      */
     public function setExtra(array $extra);
 }

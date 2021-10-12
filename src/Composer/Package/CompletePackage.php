@@ -19,17 +19,29 @@ namespace Composer\Package;
  */
 class CompletePackage extends Package implements CompletePackageInterface
 {
+    /** @var mixed[] */
     protected $repositories = array();
+    /** @var string[] */
     protected $license = array();
+    /** @var string[] */
     protected $keywords = array();
+    /** @var array<array{name?: string, homepage?: string, email?: string, role?: string}> */
     protected $authors = array();
-    protected $description;
-    protected $homepage;
+    /** @var ?string */
+    protected $description = null;
+    /** @var ?string */
+    protected $homepage = null;
+    /** @var array<string, string[]> Map of script name to array of handlers */
     protected $scripts = array();
+    /** @var array{issues?: string, forum?: string, wiki?: string, source?: string, email?: string, irc?: string, docs?: string, rss?: string, chat?: string} */
     protected $support = array();
+    /** @var array<array{url?: string, type?: string}> */
     protected $funding = array();
+    /** @var bool|string */
     protected $abandoned = false;
-    protected $archiveName;
+    /** @var ?string */
+    protected $archiveName = null;
+    /** @var string[] */
     protected $archiveExcludes = array();
 
     /**

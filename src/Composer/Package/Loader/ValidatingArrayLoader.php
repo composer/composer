@@ -27,12 +27,19 @@ class ValidatingArrayLoader implements LoaderInterface
     const CHECK_UNBOUND_CONSTRAINTS = 1;
     const CHECK_STRICT_CONSTRAINTS = 2;
 
+    /** @var LoaderInterface */
     private $loader;
+    /** @var VersionParser */
     private $versionParser;
+    /** @var string[] */
     private $errors;
+    /** @var string[] */
     private $warnings;
+    /** @var mixed[] */
     private $config;
+    /** @var bool */
     private $strictName;
+    /** @var int One or more of self::CHECK_* constants */
     private $flags;
 
     public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null, $flags = 0)
@@ -388,7 +395,7 @@ class ValidatingArrayLoader implements LoaderInterface
         }
 
         $package = $this->loader->load($this->config, $class);
-        $this->config = null;
+        $this->config = array();
 
         return $package;
     }

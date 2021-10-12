@@ -59,10 +59,11 @@ class RootPackageLoader extends ArrayLoader
 
     /**
      * @template PackageClass of RootPackage
-     * @param  array                        $config package data
-     * @param  class-string<PackageClass>   $class  FQCN to be instantiated
+     *
      * @param  string                       $cwd    cwd of the root package to be used to guess the version if it is not provided
      * @return RootPackage|RootAliasPackage
+     *
+     * @phpstan-param class-string<PackageClass> $class
      */
     public function load(array $config, $class = 'Composer\Package\RootPackage', $cwd = null)
     {
@@ -183,6 +184,9 @@ class RootPackageLoader extends ArrayLoader
         return $package;
     }
 
+    /**
+     * @return array<array{package: string, version: string, alias: string, alias_normalized: string}>
+     */
     private function extractAliases(array $requires, array $aliases)
     {
         foreach ($requires as $reqName => $reqVersion) {
@@ -203,6 +207,7 @@ class RootPackageLoader extends ArrayLoader
 
     /**
      * @internal
+     * @return array<string, BasePackage::STABILITY_*>
      */
     public static function extractStabilityFlags(array $requires, $minimumStability, array $stabilityFlags)
     {
@@ -259,6 +264,7 @@ class RootPackageLoader extends ArrayLoader
 
     /**
      * @internal
+     * @return array<string, string>
      */
     public static function extractReferences(array $requires, array $references)
     {

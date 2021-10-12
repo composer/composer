@@ -20,8 +20,9 @@ use Composer\Util\Filesystem;
  */
 class ZipArchiver implements ArchiverInterface
 {
+    /** @var array<string, bool> */
     protected static $formats = array(
-        'zip' => 1,
+        'zip' => true,
     );
 
     /**

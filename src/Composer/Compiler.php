@@ -27,8 +27,11 @@ use Seld\PharUtils\Linter;
  */
 class Compiler
 {
+    /** @var string */
     private $version;
+    /** @var string */
     private $branchAliasVersion = '';
+    /** @var \DateTime */
     private $versionDate;
 
     /**
@@ -313,7 +316,7 @@ EOF;
 
         // add warning once the phar is older than 60 days
         if (preg_match('{^[a-f0-9]+$}', $this->version)) {
-            $warningTime = $this->versionDate->format('U') + 60 * 86400;
+            $warningTime = ((int) $this->versionDate->format('U')) + 60 * 86400;
             $stub .= "define('COMPOSER_DEV_WARNING_TIME', $warningTime);\n";
         }
 

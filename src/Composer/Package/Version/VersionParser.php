@@ -15,11 +15,13 @@ namespace Composer\Package\Version;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser as SemverVersionParser;
 use Composer\Semver\Semver;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 class VersionParser extends SemverVersionParser
 {
     const DEFAULT_BRANCH_ALIAS = '9999999-dev';
 
+    /** @var array<string, ConstraintInterface> Constraint parsing cache */
     private static $constraints = array();
 
     /**

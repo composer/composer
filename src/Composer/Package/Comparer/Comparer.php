@@ -19,8 +19,11 @@ namespace Composer\Package\Comparer;
  */
 class Comparer
 {
+    /** @var string Source directory */
     private $source;
+    /** @var string Target directory */
     private $update;
+    /** @var array{changed?: string[], removed?: string[], added?: string[]} */
     private $changed;
 
     public function setSource($source)

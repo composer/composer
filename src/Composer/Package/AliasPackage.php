@@ -20,11 +20,17 @@ use Composer\Package\Version\VersionParser;
  */
 class AliasPackage extends BasePackage
 {
+    /** @var string */
     protected $version;
+    /** @var string */
     protected $prettyVersion;
+    /** @var bool */
     protected $dev;
+    /** @var bool */
     protected $rootPackageAlias = false;
+    /** @var string */
     protected $stability;
+    /** @var bool */
     protected $hasSelfVersionRequires = false;
 
     /** @var BasePackage */

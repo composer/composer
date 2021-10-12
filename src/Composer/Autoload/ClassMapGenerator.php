@@ -33,7 +33,7 @@ class ClassMapGenerator
     /**
      * Generate a class map file
      *
-     * @param \Traversable|array<string> $dirs Directories or a single path to search in
+     * @param \Traversable<string>|array<string> $dirs Directories or a single path to search in
      * @param string                     $file The name of the class map file
      */
     public static function dump($dirs, $file)
@@ -58,6 +58,8 @@ class ClassMapGenerator
      *
      * @throws \RuntimeException When the path is neither an existing file nor directory
      * @return array             A class map array
+     *
+     * @phpstan-param \Traversable<\SplFileInfo>|string|array<string> $path
      */
     public static function createMap($path, $excluded = null, IOInterface $io = null, $namespace = null, $autoloadType = null, &$scannedFiles = array())
     {

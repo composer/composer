@@ -46,8 +46,10 @@ class Locker
     private $dumper;
     /** @var ProcessExecutor */
     private $process;
-    private $lockDataCache;
-    private $virtualFileWritten;
+    /** @var mixed[]|null */
+    private $lockDataCache = null;
+    /** @var bool */
+    private $virtualFileWritten = false;
 
     /**
      * Initializes packages locker.

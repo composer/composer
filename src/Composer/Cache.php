@@ -24,12 +24,19 @@ use Symfony\Component\Finder\Finder;
  */
 class Cache
 {
+    /** @var bool|null */
     private static $cacheCollected = null;
+    /** @var IOInterface */
     private $io;
+    /** @var string */
     private $root;
+    /** @var bool */
     private $enabled = true;
+    /** @var string */
     private $allowlist;
+    /** @var Filesystem */
     private $filesystem;
+    /** @var bool */
     private $readOnly;
 
     /**

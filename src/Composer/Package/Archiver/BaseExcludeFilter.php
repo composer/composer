@@ -25,7 +25,7 @@ abstract class BaseExcludeFilter
     protected $sourcePath;
 
     /**
-     * @var array
+     * @var array<array{0: string, 1: bool, 2: bool}> array of [$pattern, $negate, $stripLeadingSlash] arrays
      */
     protected $excludePatterns;
 

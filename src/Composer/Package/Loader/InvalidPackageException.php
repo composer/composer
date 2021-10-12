@@ -17,8 +17,11 @@ namespace Composer\Package\Loader;
  */
 class InvalidPackageException extends \Exception
 {
+    /** @var string[] */
     private $errors;
+    /** @var string[] */
     private $warnings;
+    /** @var mixed[] package config */
     private $data;
 
     public function __construct(array $errors, array $warnings, array $data)

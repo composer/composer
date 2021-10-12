@@ -203,7 +203,7 @@ class BaseDependencyCommand extends BaseCommand
             /**
              * @var PackageInterface $package
              * @var Link             $link
-             * @var array|bool     $children
+             * @var mixed[]|bool     $children
              */
             list($package, $link, $children) = $result;
 

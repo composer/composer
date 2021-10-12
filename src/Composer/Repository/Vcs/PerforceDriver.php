@@ -47,8 +47,6 @@ class PerforceDriver extends VcsDriver
 
         $this->perforce->writeP4ClientSpec();
         $this->perforce->connectClient();
-
-        return true;
     }
 
     private function initPerforce($repoConfig)
