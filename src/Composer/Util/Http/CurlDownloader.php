@@ -566,7 +566,7 @@ class CurlDownloader
         }
 
         $details = '';
-        if ($response->getHeader('content-type') === 'application/json') {
+        if (in_array(strtolower($response->getHeader('content-type')), array('application/json', 'application/json; charset=utf-8'), true)) {
             $details = ':'.PHP_EOL.substr($response->getBody(), 0, 200).(strlen($response->getBody()) > 200 ? '...' : '');
         }
 
