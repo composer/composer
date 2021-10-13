@@ -1030,8 +1030,9 @@ it points to `$XDG_CONFIG_HOME/composer`. On other \*nix systems, it points to
 #### COMPOSER_HOME/config.json
 
 You may put a `config.json` file into the location which `COMPOSER_HOME` points
-to. Composer will merge this configuration with your project's `composer.json`
-when you run the `install` and `update` commands.
+to. Composer will partially (only `config` and `repositories` keys) merge this
+configuration with your project's `composer.json` when you run the `install` and
+`update` commands.
 
 This file allows you to set [repositories](05-repositories.md) and
 [configuration](06-config.md) for the user's projects.
