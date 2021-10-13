@@ -401,7 +401,7 @@ class EventDispatcherTest extends TestCase
 
         $dispatcher->dispatch('helloWorld', new CommandEvent('helloWorld', $composer, $io));
         $expected = "> helloWorld: @hello World".PHP_EOL.
-            "> hello: echo Hello " .escapeshellarg('World').PHP_EOL;
+            "> hello: echo Hello " .$this->getCmd("'World'").PHP_EOL;
 
         $this->assertEquals($expected, $io->getOutput());
     }

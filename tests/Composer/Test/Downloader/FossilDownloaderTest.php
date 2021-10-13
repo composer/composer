@@ -15,7 +15,6 @@ namespace Composer\Test\Downloader;
 use Composer\Downloader\FossilDownloader;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
-use Composer\Util\Platform;
 
 class FossilDownloaderTest extends TestCase
 {
@@ -167,10 +166,5 @@ class FossilDownloaderTest extends TestCase
         $downloader = $this->getDownloaderMock(null);
 
         $this->assertEquals('source', $downloader->getInstallationSource());
-    }
-
-    private function getCmd($cmd)
-    {
-        return Platform::isWindows() ? strtr($cmd, "'", '"') : $cmd;
     }
 }

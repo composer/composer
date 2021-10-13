@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\IO\IOInterface;
+use Composer\Util\Platform;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessUtils;
 
@@ -155,7 +156,15 @@ class ProcessExecutor
     }
 
     /**
-     * Copy of Symfony's Process::escapeArgument() which is private
+     * Escapes a string to be used as a shell argument for Symfony Process.
+     *
+     * This method expects cmd.exe to be started with the /V:ON option, which
+     * enables delayed environment variable expansion using ! as the delimiter.
+     * If this is not the case, any escaped ^^!var^^! will be transformed to
+     * ^!var^! and introduce two unintended carets.
+     *
+     * Modified from https://github.com/johnstevenson/winbox-args
+     * MIT Licensed (c) John Stevenson <john-stevenson@blueyonder.co.uk>
      *
      * @param string $argument
      *
@@ -163,25 +172,34 @@ class ProcessExecutor
      */
     private static function escapeArgument($argument)
     {
-        if ('' === $argument || null === $argument) {
-            return '""';
+        if ('' === ($argument = (string) $argument)) {
+            return escapeshellarg($argument);
         }
-        if ('\\' !== \DIRECTORY_SEPARATOR) {
+
+        if (!Platform::isWindows()) {
             return "'".str_replace("'", "'\\''", $argument)."'";
         }
-        if (false !== strpos($argument, "\0")) {
-            $argument = str_replace("\0", '?', $argument);
-        }
-        if (!preg_match('/[\/()%!^"<>&|\s]/', $argument)) {
-            return $argument;
-        }
-        $argument = preg_replace('/(\\\\+)$/', '$1$1', $argument);
 
-        return '"'.str_replace(array('"', '^', '%', '!', "\n"), array('""', '"^^"', '"^%"', '"^!"', '!LF!'), $argument).'"';
-    }
+        // New lines break cmd.exe command parsing
+        $argument = strtr($argument, "\n", ' ');
 
-    private static function isSurroundedBy($arg, $char)
-    {
-        return 2 < strlen($arg) && $char === $arg[0] && $char === $arg[strlen($arg) - 1];
+        $quote = strpbrk($argument, " \t") !== false;
+        $argument = preg_replace('/(\\\\*)"/', '$1$1\\"', $argument, -1, $dquotes);
+        $meta = $dquotes || preg_match('/%[^%]+%|![^!]+!/', $argument);
+
+        if (!$meta && !$quote) {
+            $quote = strpbrk($argument, '^&|<>()') !== false;
+        }
+
+        if ($quote) {
+            $argument = '"'.preg_replace('/(\\\\*)$/', '$1$1', $argument).'"';
+        }
+
+        if ($meta) {
+            $argument = preg_replace('/(["^&|<>()%])/', '^$1', $argument);
+            $argument = preg_replace('/(!)/', '^^$1', $argument);
+        }
+
+        return $argument;
     }
 }

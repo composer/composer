@@ -524,7 +524,7 @@ composer https://github.com/old/url (push)
 
     public function testUpdateDoesntThrowsRuntimeExceptionIfGitCommandFailsAtFirstButIsAbleToRecover()
     {
-        $expectedFirstGitUpdateCommand = $this->winCompat("(git remote set-url composer -- \"\" && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- \"\"");
+        $expectedFirstGitUpdateCommand = $this->winCompat("(git remote set-url composer -- '' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- ''");
         $expectedSecondGitUpdateCommand = $this->winCompat("(git remote set-url composer -- 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- 'https://github.com/composer/composer'");
 
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -701,7 +701,7 @@ composer https://github.com/old/url (push)
             $cmd = str_replace('cd ', 'cd /D ', $cmd);
             $cmd = str_replace('composerPath', getcwd().'/composerPath', $cmd);
 
-            return strtr($cmd, "'", '"');
+            return $this->getCmd($cmd);
         }
 
         return $cmd;
