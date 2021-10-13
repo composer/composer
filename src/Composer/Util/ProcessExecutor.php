@@ -180,9 +180,8 @@ class ProcessExecutor
             return "'".str_replace("'", "'\\''", $argument)."'";
         }
 
-        if (strpbrk($argument, "\r\n") !== false) {
-            $argument = preg_replace("/(\r\n|\n|\r)/", ' ', $argument);
-        }
+        // New lines break cmd.exe command parsing
+        $argument = strtr($argument, "\n", ' ');
 
         $quote = strpbrk($argument, " \t") !== false;
         $argument = preg_replace('/(\\\\*)"/', '$1$1\\"', $argument, -1, $dquotes);

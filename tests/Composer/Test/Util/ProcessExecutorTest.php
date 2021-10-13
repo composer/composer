@@ -144,8 +144,8 @@ class ProcessExecutorTest extends TestCase
             // unix single-quote must be escaped
             'unix-sq'       => array("a'bc", "a'bc", "'a'\\''bc'"),
 
-            // CR LF must be replaced
-            'crlf'          => array("a\r\nb\nc\rd", '"a b c d"', "'a\r\nb\nc\rd'"),
+            // new lines must be replaced
+            'new lines'     => array("a\nb\nc", '"a b c"', "'a\nb\nc'"),
 
             // whitespace <space> must be quoted
             'ws space'      => array('a b c', '"a b c"', "'a b c'"),
