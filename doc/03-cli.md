@@ -1029,11 +1029,15 @@ it points to `$XDG_CONFIG_HOME/composer`. On other \*nix systems, it points to
 
 #### COMPOSER_HOME/config.json
 
-You may put a `config.json` file into the location which `COMPOSER_HOME` points to. Composer will partially merge this configuration with your project's `composer.json` when you run the `install` and `update` commands.
+You may put a `config.json` file into the location which `COMPOSER_HOME` points
+to. Composer will partially merge this configuration with your project's `composer.json`
+when you run the `install` and `update` commands.
 
-This file allows you to set [repositories](05-repositories.md) and [configuration](06-config.md) for the user's projects.
+This file allows you to set [repositories](05-repositories.md) and
+[configuration](06-config.md) for the user's projects.
 
-In case global configuration matches _local_ configuration, the _local_ configuration in the project's `composer.json` always wins.
+In case global configuration matches _local_ configuration, the _local_
+configuration in the project's `composer.json` always wins.
 
 ### COMPOSER_HTACCESS_PROTECT
 
