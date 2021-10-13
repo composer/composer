@@ -413,7 +413,7 @@ EOT
             $version = curl_version();
 
             return '<comment>'.$version['version'].'</comment> '.
-                'libz <comment>'.(isset($version['libz_version']) ? $version['libz_version'] : 'missing').'</comment> '.
+                'libz <comment>'.(!empty($version['libz_version']) ? $version['libz_version'] : 'missing').'</comment> '.
                 'ssl <comment>'.(isset($version['ssl_version']) ? $version['ssl_version'] : 'missing').'</comment>';
         }
 
