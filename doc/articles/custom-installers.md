@@ -210,6 +210,6 @@ different installation path.
 
 [1]: ../04-schema.md#type
 [2]: ../04-schema.md#extra
-[3]: https://github.com/composer/composer/blob/master/src/Composer/Plugin/PluginInterface.php
-[4]: https://github.com/composer/composer/blob/master/src/Composer/Installer/InstallerInterface.php
-[5]: https://github.com/composer/composer/blob/master/src/Composer/Installer/LibraryInstaller.php
+[3]: https://github.com/composer/composer/blob/main/src/Composer/Plugin/PluginInterface.php
+[4]: https://github.com/composer/composer/blob/main/src/Composer/Installer/InstallerInterface.php
+[5]: https://github.com/composer/composer/blob/main/src/Composer/Installer/LibraryInstaller.php

@@ -178,15 +178,15 @@ Depending on the [script types](#event-names) you will get various event
 subclasses containing various getters with relevant data and associated
 objects:
 
-- Base class: [`Composer\EventDispatcher\Event`](https://github.com/composer/composer/blob/master/src/Composer/EventDispatcher/Event.php)
-- Command Events: [`Composer\Script\Event`](https://github.com/composer/composer/blob/master/src/Composer/Script/Event.php)
-- Installer Events: [`Composer\Installer\InstallerEvent`](https://github.com/composer/composer/blob/master/src/Composer/Installer/InstallerEvent.php)
-- Package Events: [`Composer\Installer\PackageEvent`](https://github.com/composer/composer/blob/master/src/Composer/Installer/PackageEvent.php)
+- Base class: [`Composer\EventDispatcher\Event`](https://github.com/composer/composer/blob/main/src/Composer/EventDispatcher/Event.php)
+- Command Events: [`Composer\Script\Event`](https://github.com/composer/composer/blob/main/src/Composer/Script/Event.php)
+- Installer Events: [`Composer\Installer\InstallerEvent`](https://github.com/composer/composer/blob/main/src/Composer/Installer/InstallerEvent.php)
+- Package Events: [`Composer\Installer\PackageEvent`](https://github.com/composer/composer/blob/main/src/Composer/Installer/PackageEvent.php)
 - Plugin Events:
-  - init: [`Composer\EventDispatcher\Event`](https://github.com/composer/composer/blob/master/src/Composer/EventDispatcher/Event.php)
-  - command: [`Composer\Plugin\CommandEvent`](https://github.com/composer/composer/blob/master/src/Composer/Plugin/CommandEvent.php)
-  - pre-file-download: [`Composer\Plugin\PreFileDownloadEvent`](https://github.com/composer/composer/blob/master/src/Composer/Plugin/PreFileDownloadEvent.php)
-  - post-file-download: [`Composer\Plugin\PostFileDownloadEvent`](https://github.com/composer/composer/blob/master/src/Composer/Plugin/PostFileDownloadEvent.php)
+  - init: [`Composer\EventDispatcher\Event`](https://github.com/composer/composer/blob/main/src/Composer/EventDispatcher/Event.php)
+  - command: [`Composer\Plugin\CommandEvent`](https://github.com/composer/composer/blob/main/src/Composer/Plugin/CommandEvent.php)
+  - pre-file-download: [`Composer\Plugin\PreFileDownloadEvent`](https://github.com/composer/composer/blob/main/src/Composer/Plugin/PreFileDownloadEvent.php)
+  - post-file-download: [`Composer\Plugin\PostFileDownloadEvent`](https://github.com/composer/composer/blob/main/src/Composer/Plugin/PostFileDownloadEvent.php)
 
 ## Running scripts manually
 

@@ -82,12 +82,12 @@ class Compiler
         if ($process->run() == 0) {
             $this->version = trim($process->getOutput());
         } else {
-            // get branch-alias defined in composer.json for dev-master (if any)
+            // get branch-alias defined in composer.json for dev-main (if any)
             $localConfig = __DIR__.'/../../composer.json';
             $file = new JsonFile($localConfig);
             $localConfig = $file->read();
-            if (isset($localConfig['extra']['branch-alias']['dev-master'])) {
-                $this->branchAliasVersion = $localConfig['extra']['branch-alias']['dev-master'];
+            if (isset($localConfig['extra']['branch-alias']['dev-main'])) {
+                $this->branchAliasVersion = $localConfig['extra']['branch-alias']['dev-main'];
             }
         }
 

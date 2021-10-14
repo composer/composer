@@ -95,7 +95,7 @@ possible for safety.
 ----
 
 A few other methods are available for more complex usages, please refer to the
-source/docblocks of [the class itself](https://github.com/composer/composer/blob/master/src/Composer/InstalledVersions.php).
+source/docblocks of [the class itself](https://github.com/composer/composer/blob/main/src/Composer/InstalledVersions.php).
 
 ### Knowing the path in which a package is installed
 
