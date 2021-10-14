@@ -122,3 +122,27 @@ jobs:
       - name: "Run complete test suite on 7.3"
         if: "matrix.php-version == '7.3'"
         run: "vendor/bin/simple-phpunit --configuration tests/complete.phpunit.xml"
+
+  validation:
+    name: "Composer validation"
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          extensions: "intl, zip"
+          ini-values: "memory_limit=-1, phar.readonly=0, error_reporting=E_ALL, display_errors=On"
+          php-version: "7.4"
+          tools: composer
+
+      - name: "Install dependencies"
+        run: "composer install ${{ env.COMPOSER_FLAGS }}"
+
+      - name: "Validate composer.json"
+        run: "bin/composer validate --strict"
