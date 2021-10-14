@@ -387,6 +387,14 @@ EOT
 
         $status = $install->run();
         if ($status !== 0) {
+            if ($status === Installer::ERROR_DEPENDENCY_RESOLUTION_FAILED) {
+                foreach ($this->normalizeRequirements($input->getArgument('packages')) as $req) {
+                    if (!isset($req['version'])) {
+                        $io->writeError('You can also try re-running composer require with an explicit version constraint, e.g. "composer require '.$req['name'].':*" to figure out if any version is installable, or "composer require '.$req['name'].':^2.1" if you know which you need.');
+                        break;
+                    }
+                }
+            }
             $this->revertComposerFile(false);
         }
 
