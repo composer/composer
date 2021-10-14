@@ -103,6 +103,16 @@ class PoolBuilder
     private $skippedLoad = array();
 
     /**
+     * Keeps a list of dependencies which are locked but were auto-unlocked as they are path repositories
+     *
+     * This half-unlocked state means the package itself will update but the UPDATE_LISTED_WITH_TRANSITIVE_DEPS*
+     * flags will not apply until the package really gets unlocked in some other way than being a path repo
+     *
+     * @var array<string, true>
+     */
+    private $pathRepoUnlocked = array();
+
+    /**
      * Keeps a list of dependencies which are root requirements, and as such
      * have already their maximum required range loaded and can not be
      * extended by markPackageNameForLoading
@@ -155,6 +165,17 @@ class PoolBuilder
 
             foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
                 if (!$this->isUpdateAllowed($lockedPackage)) {
+                    // Path repo packages are never loaded from lock, to force them to always remain in sync
+                    // unless symlinking is disabled in which case we probably should rather treat them like
+                    // regular packages
+                    if ($lockedPackage->getDistType() === 'path') {
+                        $transportOptions = $lockedPackage->getTransportOptions();
+                        if (!isset($transportOptions['symlink']) || $transportOptions['symlink'] !== false) {
+                            $this->pathRepoUnlocked[$lockedPackage->getName()] = true;
+                            continue;
+                        }
+                    }
+
                     $request->lockPackage($lockedPackage);
                     $this->skippedLoad[$lockedPackage->getName()][] = $lockedPackage;
                     // remember which packages we skipped loading remote content for in this partial update
@@ -360,7 +381,7 @@ class PoolBuilder
             }
             foreach ($result['packages'] as $package) {
                 $this->loadedPerRepo[$repoIndex][$package->getName()][$package->getVersion()] = $package;
-                $this->loadPackage($request, $package);
+                $this->loadPackage($request, $package, !isset($this->pathRepoUnlocked[$package->getName()]));
             }
         }
     }
@@ -369,7 +390,7 @@ class PoolBuilder
      * @param bool $propagateUpdate
      * @return void
      */
-    private function loadPackage(Request $request, BasePackage $package, $propagateUpdate = true)
+    private function loadPackage(Request $request, BasePackage $package, $propagateUpdate)
     {
         $index = $this->indexCounter++;
         $this->packages[$index] = $package;
@@ -526,16 +547,6 @@ class PoolBuilder
      */
     private function isUpdateAllowed(BasePackage $package)
     {
-        // Path repo packages are never loaded from lock, to force them to always remain in sync
-        // unless symlinking is disabled in which case we probably should rather treat them like
-        // regular packages
-        if ($package->getDistType() === 'path') {
-            $transportOptions = $package->getTransportOptions();
-            if (!isset($transportOptions['symlink']) || $transportOptions['symlink'] !== false) {
-                return true;
-            }
-        }
-
         foreach ($this->updateAllowList as $pattern => $void) {
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
             if (preg_match($patternRegexp, $package->getName())) {
@@ -604,7 +615,7 @@ class PoolBuilder
             }
         }
 
-        unset($this->skippedLoad[$name], $this->loadedPackages[$name], $this->maxExtendedReqs[$name]);
+        unset($this->skippedLoad[$name], $this->loadedPackages[$name], $this->maxExtendedReqs[$name], $this->pathRepoUnlocked[$name]);
 
         // remove locked package by this name which was already initialized
         foreach ($request->getLockedPackages() as $lockedPackage) {
