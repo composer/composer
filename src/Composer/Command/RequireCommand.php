@@ -332,7 +332,7 @@ EOT
         $composer->getEventDispatcher()->setRunScripts(!$input->getOption('no-scripts'));
 
         $this->dependencyResolutionCompleted = false;
-        $composer->getEventDispatcher()->addListener(InstallerEvents::PRE_OPERATIONS_EXEC, [$this, 'markSolverComplete'], 10000);
+        $composer->getEventDispatcher()->addListener(InstallerEvents::PRE_OPERATIONS_EXEC, array($this, 'markSolverComplete'), 10000);
 
         if ($input->getOption('dry-run')) {
             $rootPackage = $composer->getPackage();
