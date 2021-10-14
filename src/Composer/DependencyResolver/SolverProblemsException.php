@@ -21,6 +21,8 @@ use Composer\Package\PackageInterface;
  */
 class SolverProblemsException extends \RuntimeException
 {
+    const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
+
     /** @var Problem[] */
     protected $problems;
     /** @var array<Rule[]> */
@@ -35,7 +37,7 @@ class SolverProblemsException extends \RuntimeException
         $this->problems = $problems;
         $this->learnedPool = $learnedPool;
 
-        parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', 2);
+        parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', self::ERROR_DEPENDENCY_RESOLUTION_FAILED);
     }
 
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
