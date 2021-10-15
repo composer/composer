@@ -21,10 +21,13 @@ use Symfony\Component\Process\Process;
  */
 class AllFunctionalTest extends TestCase
 {
+    /** @var string|false */
     protected $oldcwd;
-    protected $oldenv;
-    protected $oldenvCache;
+    /** @var ?string */
     protected $testDir;
+    /**
+     * @var string
+     */
     private static $pharPath;
 
     public function setUp()
@@ -36,7 +39,9 @@ class AllFunctionalTest extends TestCase
 
     public function tearDown()
     {
-        chdir($this->oldcwd);
+        if ($this->oldcwd) {
+            chdir($this->oldcwd);
+        }
 
         if ($this->testDir) {
             $fs = new Filesystem;
@@ -182,6 +187,9 @@ class AllFunctionalTest extends TestCase
         }
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public function getTestFiles()
     {
         $tests = array();
@@ -192,6 +200,10 @@ class AllFunctionalTest extends TestCase
         return $tests;
     }
 
+    /**
+     * @param string $file
+     * @return array<string, int|string>
+     */
     private function parseTestFile($file)
     {
         $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
@@ -250,6 +262,10 @@ class AllFunctionalTest extends TestCase
         return $data;
     }
 
+    /**
+     * @param string $output
+     * @return string
+     */
     private function cleanOutput($output)
     {
         $processed = '';
