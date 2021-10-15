@@ -26,7 +26,7 @@ use React\Promise\Promise;
  * @internal
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
- * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int, storeAuth: bool}
+ * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int, retries: int, storeAuth: bool}
  * @phpstan-type Job array{url: string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: resource, filename: string|false, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable}
  */
 class CurlDownloader
@@ -47,6 +47,8 @@ class CurlDownloader
     private $selectTimeout = 5.0;
     /** @var int */
     private $maxRedirects = 20;
+    /** @var int */
+    private $maxRetries = 3;
     /** @var ProxyManager */
     private $proxyManager;
     /** @var bool */
@@ -149,7 +151,7 @@ class CurlDownloader
      * @param mixed[]  $options
      * @param ?string  $copyTo
      *
-     * @param array{retryAuthFailure?: bool, redirects?: int, storeAuth?: bool} $attributes
+     * @param array{retryAuthFailure?: bool, redirects?: int, retries?: int, storeAuth?: bool} $attributes
      *
      * @return int internal job id
      */
@@ -158,6 +160,7 @@ class CurlDownloader
         $attributes = array_merge(array(
             'retryAuthFailure' => true,
             'redirects' => 0,
+            'retries' => 0,
             'storeAuth' => false,
         ), $attributes);
 
@@ -267,7 +270,7 @@ class CurlDownloader
 
         $usingProxy = $proxy->getFormattedUrl(' using proxy (%s)');
         $ifModified = false !== stripos(implode(',', $options['http']['header']), 'if-modified-since:') ? ' if modified' : '';
-        if ($attributes['redirects'] === 0) {
+        if ($attributes['redirects'] === 0 && $attributes['retries'] === 0) {
             $this->io->writeError('Downloading ' . Url::sanitize($url) . $usingProxy . $ifModified, true, IOInterface::DEBUG);
         }
 
@@ -346,6 +349,16 @@ class CurlDownloader
                     }
                     $progress['error_code'] = $errno;
 
+                    if (
+                        (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')
+                        && in_array($errno, array(7 /* CURLE_COULDNT_CONNECT */, 16 /* CURLE_HTTP2 */), true)
+                        && $job['attributes']['retries'] < $this->maxRetries
+                    ) {
+                        $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to curl error '. $errno, true, IOInterface::DEBUG);
+                        $this->restartJob($job, $job['url'], array('retries' => $job['attributes']['retries'] + 1));
+                        continue;
+                    }
+
                     if ($errno === 28 /* CURLE_OPERATION_TIMEDOUT */ && isset($progress['namelookup_time']) && $progress['namelookup_time'] == 0 && !$timeoutWarning) {
                         $timeoutWarning = true;
                         $this->io->writeError('<warning>A connection timeout was encountered. If you intend to run Composer without connecting to the internet, run the command again prefixed with COMPOSER_DISABLE_NETWORK=1 to make Composer run in offline mode.</warning>');
@@ -400,6 +413,16 @@ class CurlDownloader
 
                 // fail 4xx and 5xx responses and capture the response
                 if ($statusCode >= 400 && $statusCode <= 599) {
+                    if (
+                        (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')
+                        && in_array($statusCode, array(423, 425, 500, 502, 503, 504, 507, 510), true)
+                        && $job['attributes']['retries'] < $this->maxRetries
+                    ) {
+                        $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to status code '. $statusCode, true, IOInterface::DEBUG);
+                        $this->restartJob($job, $job['url'], array('retries' => $job['attributes']['retries'] + 1));
+                        continue;
+                    }
+
                     throw $this->failResponse($job, $response, $response->getStatusMessage());
                 }
 
