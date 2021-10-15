@@ -68,6 +68,8 @@ class ConsoleIO extends BaseIO
 
     /**
      * @param float $startTime
+     *
+     * @return void
      */
     public function enableDebugging($startTime)
     {
@@ -147,10 +149,13 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * @param array|string $messages
-     * @param bool         $newline
-     * @param bool         $stderr
-     * @param int          $verbosity
+     * @param array{string}|string $messages
+     * @param bool                 $newline
+     * @param bool                 $stderr
+     * @param int                  $verbosity
+     * @param bool                 $raw
+     *
+     * @return void
      */
     private function doWrite($messages, $newline, $stderr, $verbosity, $raw = false)
     {
@@ -203,11 +208,13 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * @param array|string $messages
+     * @param array{string}|string $messages
      * @param bool         $newline
      * @param int|null     $size
      * @param bool         $stderr
      * @param int          $verbosity
+     *
+     * @return void
      */
     private function doOverwrite($messages, $newline, $size, $stderr, $verbosity)
     {
