@@ -27,6 +27,26 @@ use Composer\DependencyResolver\Operation\InstallOperation;
 abstract class ArchiveDownloader extends FileDownloader
 {
     /**
+     * @var array<string, true>
+     * @protected
+     */
+    public $cleanupExecuted = array();
+
+    public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    {
+        unset($this->cleanupExecuted[$package->getName()]);
+
+        return parent::prepare($type, $package, $path, $prevPackage);
+    }
+
+    public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    {
+        $this->cleanupExecuted[$package->getName()] = true;
+
+        return parent::cleanup($type, $package, $path, $prevPackage);
+    }
+
+    /**
      * {@inheritDoc}
      * @throws \RuntimeException
      * @throws \UnexpectedValueException

@@ -149,8 +149,12 @@ class ZipDownloader extends ArchiveDownloader
         try {
             $promise = $this->process->executeAsync($command);
 
-            return $promise->then(function ($process) use ($tryFallback, $command, $package, $file) {
+            return $promise->then(function ($process) use ($tryFallback, $command, $package, $file, $self) {
                 if (!$process->isSuccessful()) {
+                    if (isset($self->cleanupExecuted[$package->getName()])) {
+                        throw new \RuntimeException('Failed to extract '.$package->getName().' as the installation was aborted by another package operation.');
+                    }
+
                     $output = $process->getErrorOutput();
                     $output = str_replace(', '.$file.'.zip or '.$file.'.ZIP', '', $output);
 
