@@ -30,7 +30,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @return void
      */
     public function resetAuthentications()
     {
@@ -87,6 +87,8 @@ abstract class BaseIO implements IOInterface
      * @param string $repositoryName The unique name of repository
      * @param string $username       The username
      * @param string $password       The password
+     *
+     * @return void
      */
     protected function checkAndSetAuthentication($repositoryName, $username, $password = null)
     {
