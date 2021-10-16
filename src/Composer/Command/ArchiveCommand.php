@@ -146,7 +146,7 @@ EOT
     }
 
     /**
-     * @return BasePackage&CompletePackageInterface|false
+     * @return (BasePackage&CompletePackageInterface)|false
      */
     protected function selectPackage(IOInterface $io, $packageName, $version = null)
     {
