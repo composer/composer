@@ -305,6 +305,8 @@ class CurlDownloader
      */
     public function tick()
     {
+        static $timeoutWarning = false;
+
         if (!$this->jobs) {
             return;
         }
@@ -343,6 +345,12 @@ class CurlDownloader
                         $error = curl_strerror($errno);
                     }
                     $progress['error_code'] = $errno;
+
+                    if ($errno === 28 /* CURLE_OPERATION_TIMEDOUT */ && isset($progress['namelookup_time']) && $progress['namelookup_time'] == 0 && !$timeoutWarning) {
+                        $timeoutWarning = true;
+                        $this->io->writeError('<warning>A connection timeout was encountered. If you intend to run Composer without connecting to the internet, run the command again prefixed with COMPOSER_DISABLE_NETWORK=1 to make Composer run in offline mode.</warning>');
+                    }
+
                     throw new TransportException('curl error '.$errno.' while downloading '.Url::sanitize($progress['url']).': '.$error);
                 }
                 $statusCode = $progress['http_code'];
