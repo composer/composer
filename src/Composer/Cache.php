@@ -75,11 +75,17 @@ class Cache
         return $this->readOnly;
     }
 
+    /**
+     * @return bool
+     */
     public static function isUsable($path)
     {
         return !preg_match('{(^|[\\\\/])(\$null|nul|NUL|/dev/null)([\\\\/]|$)}', $path);
     }
 
+    /**
+     * @return bool
+     */
     public function isEnabled()
     {
         if ($this->enabled === null) {
@@ -97,11 +103,17 @@ class Cache
         return $this->enabled;
     }
 
+    /**
+     * @return string
+     */
     public function getRoot()
     {
         return $this->root;
     }
 
+    /**
+     * @return string|false
+     */
     public function read($file)
     {
         if ($this->isEnabled()) {
@@ -116,6 +128,9 @@ class Cache
         return false;
     }
 
+    /**
+     * @return bool
+     */
     public function write($file, $contents)
     {
         if ($this->isEnabled() && !$this->readOnly) {
@@ -154,6 +169,7 @@ class Cache
 
     /**
      * Copy a file into the cache
+     * @return bool
      */
     public function copyFrom($file, $source)
     {
@@ -175,6 +191,7 @@ class Cache
 
     /**
      * Copy a file out of the cache
+     * @return bool
      */
     public function copyTo($file, $target)
     {
@@ -198,6 +215,9 @@ class Cache
         return false;
     }
 
+    /**
+     * @return bool
+     */
     public function gcIsNecessary()
     {
         if (self::$cacheCollected) {
@@ -216,6 +236,9 @@ class Cache
         return !mt_rand(0, 50);
     }
 
+    /**
+     * @return bool
+     */
     public function remove($file)
     {
         if ($this->isEnabled()) {
@@ -228,6 +251,9 @@ class Cache
         return false;
     }
 
+    /**
+     * @return bool
+     */
     public function clear()
     {
         if ($this->isEnabled()) {
@@ -239,6 +265,9 @@ class Cache
         return false;
     }
 
+    /**
+     * @return bool
+     */
     public function gc($ttl, $maxSize)
     {
         if ($this->isEnabled()) {
@@ -269,6 +298,9 @@ class Cache
         return false;
     }
 
+    /**
+     * @return string|false
+     */
     public function sha1($file)
     {
         if ($this->isEnabled()) {
@@ -281,6 +313,9 @@ class Cache
         return false;
     }
 
+    /**
+     * @return string|false
+     */
     public function sha256($file)
     {
         if ($this->isEnabled()) {
@@ -293,6 +328,9 @@ class Cache
         return false;
     }
 
+    /**
+     * @return Finder
+     */
     protected function getFinder()
     {
         return Finder::create()->in($this->root)->files();

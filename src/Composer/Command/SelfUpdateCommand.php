@@ -369,6 +369,9 @@ TAGSPUBKEY
         $io->write('Public keys stored in '.$config->get('home'));
     }
 
+    /**
+     * @return int
+     */
     protected function rollback(OutputInterface $output, $rollbackDir, $localFilename)
     {
         $rollbackVersion = $this->getLastBackupVersion($rollbackDir);
@@ -464,6 +467,9 @@ TAGSPUBKEY
         }
     }
 
+    /**
+     * @return string|false
+     */
     protected function getLastBackupVersion($rollbackDir)
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
@@ -477,6 +483,9 @@ TAGSPUBKEY
         return false;
     }
 
+    /**
+     * @return Finder
+     */
     protected function getOldInstallationFinder($rollbackDir)
     {
         return Finder::create()

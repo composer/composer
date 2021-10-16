@@ -97,6 +97,9 @@ EOT
         return $return;
     }
 
+    /**
+     * @return bool
+     */
     private function handlePackage(CompletePackageInterface $package, $showHomepage, $showOnly)
     {
         $support = $package->getSupport();
@@ -122,6 +125,7 @@ EOT
      * opens a url in your system default browser
      *
      * @param string $url
+     * @return void
      */
     private function openBrowser($url)
     {
@@ -129,7 +133,8 @@ EOT
 
         $process = new ProcessExecutor($this->getIO());
         if (Platform::isWindows()) {
-            return $process->execute('start "web" explorer ' . $url, $output);
+            $process->execute('start "web" explorer ' . $url, $output);
+            return;
         }
 
         $linux = $process->execute('which xdg-open', $output);

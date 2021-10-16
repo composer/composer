@@ -461,7 +461,7 @@ EOT
     /**
      * @private
      * @param  string $author
-     * @return array
+     * @return array{name: string, email: string}
      */
     public function parseAuthorString($author)
     {
@@ -485,6 +485,9 @@ EOT
         return $this->getRepos()->search($name);
     }
 
+    /**
+     * @return CompositeRepository
+     */
     protected function getRepos()
     {
         if (!$this->repos) {
@@ -663,6 +666,9 @@ EOT
         return $requires;
     }
 
+    /**
+     * @return array<int, array{name: string, email: string}>
+     */
     protected function formatAuthors($author)
     {
         return array($this->parseAuthorString($author));
@@ -775,6 +781,9 @@ EOT
         file_put_contents($ignoreFile, $contents . $vendor. "\n");
     }
 
+    /**
+     * @return bool
+     */
     protected function isValidEmail($email)
     {
         // assume it's valid if we can't validate it
@@ -790,6 +799,9 @@ EOT
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 
+    /**
+     * @return RepositorySet
+     */
     private function getRepositorySet(InputInterface $input, $minimumStability = null)
     {
         $key = $minimumStability ?: 'default';
@@ -802,6 +814,9 @@ EOT
         return $this->repositorySets[$key];
     }
 
+    /**
+     * @return string
+     */
     private function getMinimumStability(InputInterface $input)
     {
         if ($input->hasOption('stability')) {
@@ -936,6 +951,9 @@ EOT
         );
     }
 
+    /**
+     * @return string
+     */
     private function getPlatformExceptionDetails(PackageInterface $candidate, PlatformRepository $platformRepo = null)
     {
         $details = array();
@@ -993,6 +1011,9 @@ EOT
         return array_keys(array_slice($similarPackages, 0, 5));
     }
 
+    /**
+     * @return void
+     */
     private function updateDependencies($output)
     {
         try {
@@ -1004,6 +1025,9 @@ EOT
         }
     }
 
+    /**
+     * @return void
+     */
     private function runDumpAutoloadCommand($output)
     {
         try {
@@ -1015,6 +1039,9 @@ EOT
         }
     }
 
+    /**
+     * @return bool
+     */
     private function hasDependencies($options)
     {
         $requires = (array) $options['require'];

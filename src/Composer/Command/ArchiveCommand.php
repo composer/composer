@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Composer;
+use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryFactory;
@@ -108,6 +109,9 @@ EOT
         return $returnCode;
     }
 
+    /**
+     * @return int
+     */
     protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.', $fileName = null, $ignoreFilters = false, Composer $composer = null)
     {
         if ($composer) {
@@ -142,7 +146,7 @@ EOT
     }
 
     /**
-     * @return CompletePackageInterface|false
+     * @return BasePackage&CompletePackageInterface|false
      */
     protected function selectPackage(IOInterface $io, $packageName, $version = null)
     {

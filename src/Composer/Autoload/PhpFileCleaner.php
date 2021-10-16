@@ -54,6 +54,9 @@ class PhpFileCleaner
         $this->maxMatches = $maxMatches;
     }
 
+    /**
+     * @return string
+     */
     public function clean()
     {
         $clean = '';
@@ -212,11 +215,17 @@ class PhpFileCleaner
         }
     }
 
+    /**
+     * @return bool
+     */
     private function peek($char)
     {
         return $this->index + 1 < $this->len && $this->contents[$this->index + 1] === $char;
     }
 
+    /**
+     * @return bool
+     */
     private function match($regex, array &$match = null)
     {
         if (\preg_match($regex, $this->contents, $match, 0, $this->index)) {

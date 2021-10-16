@@ -109,6 +109,9 @@ EOT
         return $composer->getEventDispatcher()->dispatchScript($script, $devMode, $args);
     }
 
+    /**
+     * @return int
+     */
     protected function listScripts(OutputInterface $output)
     {
         $scripts = $this->getComposer()->getPackage()->getScripts();

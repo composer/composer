@@ -65,9 +65,6 @@ EOT
         ;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer(false);
@@ -195,6 +192,9 @@ EOT
         return $this->exitCode;
     }
 
+    /**
+     * @return string|true
+     */
     private function checkComposerSchema()
     {
         $validator = new ConfigValidator($this->getIO());
@@ -219,6 +219,9 @@ EOT
         return true;
     }
 
+    /**
+     * @return string|true
+     */
     private function checkGit()
     {
         if (!function_exists('proc_open')) {
@@ -233,6 +236,9 @@ EOT
         return true;
     }
 
+    /**
+     * @return string|string[]|true
+     */
     private function checkHttp($proto, Config $config)
     {
         $result = $this->checkConnectivity();
@@ -268,6 +274,9 @@ EOT
         return true;
     }
 
+    /**
+     * @return string|true|\Exception
+     */
     private function checkHttpProxy()
     {
         $result = $this->checkConnectivity();
@@ -293,6 +302,9 @@ EOT
         return true;
     }
 
+    /**
+     * @return string|true|\Exception
+     */
     private function checkGithubOauth($domain, $token)
     {
         $result = $this->checkConnectivity();
@@ -322,7 +334,7 @@ EOT
      * @param  string             $domain
      * @param  string             $token
      * @throws TransportException
-     * @return array|string
+     * @return mixed|string
      */
     private function getGithubRateLimit($domain, $token = null)
     {
@@ -341,6 +353,9 @@ EOT
         return $data['resources']['core'];
     }
 
+    /**
+     * @return string|true
+     */
     private function checkDiskSpace($config)
     {
         $minSpaceFree = 1024 * 1024;
@@ -353,6 +368,9 @@ EOT
         return true;
     }
 
+    /**
+     * @return string[]|true
+     */
     private function checkPubKeys($config)
     {
         $home = $config->get('home');
@@ -382,6 +400,9 @@ EOT
         return $errors ?: true;
     }
 
+    /**
+     * @return string|\Exception|true
+     */
     private function checkVersion($config)
     {
         $result = $this->checkConnectivity();
@@ -403,6 +424,9 @@ EOT
         return true;
     }
 
+    /**
+     * @return string
+     */
     private function getCurlVersion()
     {
         if (extension_loaded('curl')) {
@@ -469,6 +493,9 @@ EOT
         }
     }
 
+    /**
+     * @return string|true
+     */
     private function checkPlatform()
     {
         $output = '';
@@ -699,7 +726,7 @@ EOT
     /**
      * Check if allow_url_fopen is ON
      *
-     * @return true|string
+     * @return string|true
      */
     private function checkConnectivity()
     {

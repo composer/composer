@@ -1737,6 +1737,9 @@ EOF;
         }
     }
 
+    /**
+     * @return array<string, mixed[]>
+     */
     public function platformCheckProvider()
     {
         $versionParser = new VersionParser();

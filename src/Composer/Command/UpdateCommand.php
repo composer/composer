@@ -304,6 +304,9 @@ EOT
         throw new \RuntimeException('Installation aborted.');
     }
 
+    /**
+     * @return Link
+     */
     private function appendConstraintToLink(Link $link, $constraint)
     {
         $parser = new VersionParser;

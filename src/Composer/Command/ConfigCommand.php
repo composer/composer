@@ -58,9 +58,6 @@ class ConfigCommand extends BaseCommand
      */
     protected $authConfigSource;
 
-    /**
-     * {@inheritDoc}
-     */
     protected function configure()
     {
         $this
@@ -148,9 +145,6 @@ EOT
         ;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
         parent::initialize($input, $output);
@@ -204,9 +198,6 @@ EOT
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         // Open file in editor

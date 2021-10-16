@@ -417,6 +417,9 @@ EOT
         return $status;
     }
 
+    /**
+     * @return bool
+     */
     private function updateFileCleanly($json, array $new, $requireKey, $removeKey, $sortPackages)
     {
         $contents = file_get_contents($json->getPath());
