@@ -348,7 +348,7 @@ class CurlDownloader
 
                     if ($errno === 28 /* CURLE_OPERATION_TIMEDOUT */ && isset($progress['namelookup_time']) && $progress['namelookup_time'] == 0 && !$timeoutWarning) {
                         $timeoutWarning = true;
-                        $this->io->writeError('<warning>A connection timeout was encountered, if you are completely offline try running the command again prefixed with COMPOSER_DISABLE_NETWORK=1 to make Composer run in offline mode, removing the timeout delays.</warning>');
+                        $this->io->writeError('<warning>A connection timeout was encountered. If you intend to run Composer without connecting to the internet, run the command again prefixed with COMPOSER_DISABLE_NETWORK=1 to make Composer run in offline mode.</warning>');
                     }
 
                     throw new TransportException('curl error '.$errno.' while downloading '.Url::sanitize($progress['url']).': '.$error);
