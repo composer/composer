@@ -31,11 +31,17 @@ class HhvmDetector
         $this->processExecutor = $processExecutor;
     }
 
+    /**
+     * @return void
+     */
     public function reset()
     {
         self::$hhvmVersion = null;
     }
 
+    /**
+     * @return string|false|null
+     */
     public function getVersion()
     {
         if (null !== self::$hhvmVersion) {
