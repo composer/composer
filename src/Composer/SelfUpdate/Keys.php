@@ -17,6 +17,11 @@ namespace Composer\SelfUpdate;
  */
 class Keys
 {
+    /**
+     * @param string $path
+     *
+     * @return string
+     */
     public static function fingerprint($path)
     {
         $hash = strtoupper(hash('sha256', preg_replace('{\s}', '', file_get_contents($path))));
