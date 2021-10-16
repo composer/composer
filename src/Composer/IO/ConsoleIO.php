@@ -149,7 +149,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * @param array{string}|string $messages
+     * @param string[]|string $messages
      * @param bool                 $newline
      * @param bool                 $stderr
      * @param int                  $verbosity
@@ -208,7 +208,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * @param array{string}|string $messages
+     * @param string[]|string $messages
      * @param bool         $newline
      * @param int|null     $size
      * @param bool         $stderr

@@ -30,7 +30,6 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
      * @return void
      */
     public function resetAuthentications()

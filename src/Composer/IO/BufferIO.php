@@ -70,7 +70,7 @@ class BufferIO extends ConsoleIO
     }
 
     /**
-     * @param array{string} $inputs
+     * @param string[] $inputs
      *
      * @see createStream
      *
@@ -87,7 +87,7 @@ class BufferIO extends ConsoleIO
     }
 
     /**
-     * @param array{string} $inputs
+     * @param string[] $inputs
      *
      * @return false|resource stream
      */
