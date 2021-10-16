@@ -28,6 +28,9 @@ class ArchiveManagerTest extends ArchiverTest
      */
     protected $manager;
 
+    /**
+     * @var string
+     */
     protected $targetDir;
 
     public function setUp()

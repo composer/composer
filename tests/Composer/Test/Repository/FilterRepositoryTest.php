@@ -20,6 +20,9 @@ use Composer\Package\BasePackage;
 
 class FilterRepositoryTest extends TestCase
 {
+    /**
+     * @var ArrayRepository
+     */
     private $arrayRepo;
 
     public function setUp()

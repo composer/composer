@@ -17,6 +17,9 @@ use Composer\Semver\VersionParser;
 
 class InstalledVersionsTest extends TestCase
 {
+    /**
+     * @var string
+     */
     private $root;
 
     public static function setUpBeforeClass()

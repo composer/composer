@@ -16,6 +16,11 @@ use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\LockArrayRepository;
 use Composer\DependencyResolver\DefaultPolicy;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
+use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
@@ -24,15 +29,23 @@ use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
+use Composer\DependencyResolver\Pool;
 
 class SolverTest extends TestCase
 {
+    /** @var RepositorySet */
     protected $repoSet;
+    /** @var ArrayRepository */
     protected $repo;
+    /** @var LockArrayRepository */
     protected $repoLocked;
+    /** @var Request */
     protected $request;
+    /** @var DefaultPolicy */
     protected $policy;
+    /** @var Solver|null */
     protected $solver;
+    /** @var Pool */
     protected $pool;
 
     public function setUp()
@@ -1046,23 +1059,25 @@ class SolverTest extends TestCase
 
         $result = array();
         foreach ($transaction->getOperations() as $operation) {
-            if ('update' === $operation->getOperationType()) {
+            if ($operation instanceof UpdateOperation) {
                 $result[] = array(
                     'job' => 'update',
                     'from' => $operation->getInitialPackage(),
                     'to' => $operation->getTargetPackage(),
                 );
-            } elseif (in_array($operation->getOperationType(), array('markAliasInstalled', 'markAliasUninstalled'))) {
+            } elseif ($operation instanceof MarkAliasInstalledOperation || $operation instanceof MarkAliasUninstalledOperation) {
                 $result[] = array(
                     'job' => $operation->getOperationType(),
                     'package' => $operation->getPackage(),
                 );
-            } else {
+            } elseif ($operation instanceof UninstallOperation || $operation instanceof InstallOperation) {
                 $job = ('uninstall' === $operation->getOperationType() ? 'remove' : 'install');
                 $result[] = array(
                     'job' => $job,
                     'package' => $operation->getPackage(),
                 );
+            } else {
+                throw new \LogicException('Unexpected operation: '.get_class($operation));
             }
         }
 

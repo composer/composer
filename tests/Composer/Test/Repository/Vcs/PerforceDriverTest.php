@@ -24,13 +24,37 @@ use Composer\Test\Mock\ProcessExecutorMock;
  */
 class PerforceDriverTest extends TestCase
 {
+    /**
+     * @var Config
+     */
     protected $config;
+    /**
+     * @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected $io;
+    /**
+     * @var ProcessExecutorMock
+     */
     protected $process;
+    /**
+     * @var \Composer\Util\HttpDownloader&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected $httpDownloader;
+    /**
+     * @var string
+     */
     protected $testPath;
+    /**
+     * @var PerforceDriver
+     */
     protected $driver;
+    /**
+     * @var array<string, string>
+     */
     protected $repoConfig;
+    /**
+     * @var Perforce&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected $perforce;
 
     const TEST_URL = 'TEST_PERFORCE_URL';
@@ -41,7 +65,11 @@ class PerforceDriverTest extends TestCase
     {
         $this->testPath = $this->getUniqueTmpDirectory();
         $this->config = $this->getTestConfig($this->testPath);
-        $this->repoConfig = $this->getTestRepoConfig();
+        $this->repoConfig = array(
+            'url' => self::TEST_URL,
+            'depot' => self::TEST_DEPOT,
+            'branch' => self::TEST_BRANCH,
+        );
         $this->io = $this->getMockIOInterface();
         $this->process = new ProcessExecutorMock;
         $this->httpDownloader = $this->getMockHttpDownloader();
@@ -55,14 +83,6 @@ class PerforceDriverTest extends TestCase
         //cleanup directory under test path
         $fs = new Filesystem;
         $fs->removeDirectory($this->testPath);
-        $this->driver = null;
-        $this->perforce = null;
-        $this->httpDownloader = null;
-        $this->process = null;
-        $this->io = null;
-        $this->repoConfig = null;
-        $this->config = null;
-        $this->testPath = null;
     }
 
     protected function overrideDriverInternalPerforce(Perforce $perforce)
@@ -79,15 +99,6 @@ class PerforceDriverTest extends TestCase
         $config->merge(array('config' => array('home' => $testPath)));
 
         return $config;
-    }
-
-    protected function getTestRepoConfig()
-    {
-        return array(
-            'url' => self::TEST_URL,
-            'depot' => self::TEST_DEPOT,
-            'branch' => self::TEST_BRANCH,
-        );
     }
 
     protected function getMockIOInterface()

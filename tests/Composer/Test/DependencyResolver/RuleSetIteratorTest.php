@@ -22,7 +22,9 @@ use Composer\Test\TestCase;
 
 class RuleSetIteratorTest extends TestCase
 {
+    /** @var array<RuleSet::TYPE_*, Rule[]> */
     protected $rules;
+    /** @var Pool */
     protected $pool;
 
     protected function setUp()

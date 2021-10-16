@@ -25,7 +25,13 @@ use Composer\Package\BasePackage;
 
 abstract class TestCase extends PolyfillTestCase
 {
+    /**
+     * @var ?VersionParser
+     */
     private static $parser;
+    /**
+     * @var array<string, bool>
+     */
     private static $executableCache = array();
 
     /**

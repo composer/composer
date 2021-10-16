@@ -26,9 +26,18 @@ use Composer\Config;
  */
 class VcsRepositoryTest extends TestCase
 {
+    /**
+     * @var string
+     */
     private static $composerHome;
+    /**
+     * @var string
+     */
     private static $gitRepo;
-    private $skipped;
+    /**
+     * @var ?string
+     */
+    private $skipped = null;
 
     protected function initialize()
     {

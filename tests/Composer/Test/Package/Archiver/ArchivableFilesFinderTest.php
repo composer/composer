@@ -19,8 +19,17 @@ use Symfony\Component\Process\Process;
 
 class ArchivableFilesFinderTest extends TestCase
 {
+    /**
+     * @var string
+     */
     protected $sources;
+    /**
+     * @var ArchivableFilesFinder
+     */
     protected $finder;
+    /**
+     * @var Filesystem
+     */
     protected $fs;
 
     protected function setUp()

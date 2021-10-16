@@ -24,10 +24,25 @@ use Composer\Util\Http\Response;
  */
 class GitLabDriverTest extends TestCase
 {
+    /**
+     * @var string
+     */
     private $home;
+    /**
+     * @var Config
+     */
     private $config;
+    /**
+     * @var \Prophecy\Prophecy\ObjectProphecy
+     */
     private $io;
+    /**
+     * @var \Prophecy\Prophecy\ObjectProphecy
+     */
     private $process;
+    /**
+     * @var \Prophecy\Prophecy\ObjectProphecy
+     */
     private $httpDownloader;
 
     public function setUp()

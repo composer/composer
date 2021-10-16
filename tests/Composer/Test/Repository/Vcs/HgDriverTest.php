@@ -19,11 +19,11 @@ use Composer\Config;
 
 class HgDriverTest extends TestCase
 {
-    /** @type \Composer\IO\IOInterface|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $io;
-    /** @type Config */
+    /** @var Config */
     private $config;
-    /** @type string */
+    /** @var string */
     private $home;
 
     public function setUp()

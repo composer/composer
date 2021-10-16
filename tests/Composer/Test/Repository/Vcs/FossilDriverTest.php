@@ -19,7 +19,13 @@ use Composer\Util\Filesystem;
 
 class FossilDriverTest extends TestCase
 {
+    /**
+     * @var string
+     */
     protected $home;
+    /**
+     * @var Config
+     */
     protected $config;
 
     public function setUp()

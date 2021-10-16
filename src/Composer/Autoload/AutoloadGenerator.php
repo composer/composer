@@ -719,7 +719,7 @@ EOF;
             $package = $item[0];
             foreach (array_merge($package->getReplaces(), $package->getProvides()) as $link) {
                 if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
-                    $extensionProviders[$match[1]][] = $link->getConstraint() ?: new MatchAllConstraint();
+                    $extensionProviders[$match[1]][] = $link->getConstraint();
                 }
             }
         }
@@ -736,7 +736,8 @@ EOF;
                     continue;
                 }
 
-                if ('php' === $link->getTarget() && ($constraint = $link->getConstraint())) {
+                if ('php' === $link->getTarget()) {
+                    $constraint = $link->getConstraint();
                     if ($constraint->getLowerBound()->compareTo($lowestPhpVersion, '>')) {
                         $lowestPhpVersion = $constraint->getLowerBound();
                     }
@@ -746,7 +747,7 @@ EOF;
                     // skip extension checks if they have a valid provider/replacer
                     if (isset($extensionProviders[$match[1]])) {
                         foreach ($extensionProviders[$match[1]] as $provided) {
-                            if (!$link->getConstraint() || $provided->matches($link->getConstraint())) {
+                            if ($provided->matches($link->getConstraint())) {
                                 continue 2;
                             }
                         }

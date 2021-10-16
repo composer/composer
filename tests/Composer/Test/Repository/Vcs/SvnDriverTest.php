@@ -20,7 +20,13 @@ use Composer\Test\Mock\ProcessExecutorMock;
 
 class SvnDriverTest extends TestCase
 {
+    /**
+     * @var string
+     */
     protected $home;
+    /**
+     * @var Config
+     */
     protected $config;
 
     public function setUp()

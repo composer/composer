@@ -21,6 +21,9 @@ use Composer\Test\TestCase;
  */
 class IniHelperTest extends TestCase
 {
+    /**
+     * @var string|false
+     */
     public static $envOriginal;
 
     public function testWithNoIni()

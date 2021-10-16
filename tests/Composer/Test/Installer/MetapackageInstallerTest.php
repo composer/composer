@@ -17,8 +17,17 @@ use Composer\Test\TestCase;
 
 class MetapackageInstallerTest extends TestCase
 {
+    /**
+     * @var \Composer\Repository\InstalledRepositoryInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     private $repository;
+    /**
+     * @var MetapackageInstaller
+     */
     private $installer;
+    /**
+     * @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     private $io;
 
     protected function setUp()

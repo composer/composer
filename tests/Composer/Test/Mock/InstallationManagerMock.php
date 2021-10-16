@@ -24,9 +24,21 @@ use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 
 class InstallationManagerMock extends InstallationManager
 {
+    /**
+     * @var PackageInterface[]
+     */
     private $installed = array();
+    /**
+     * @var PackageInterface[][]
+     */
     private $updated = array();
+    /**
+     * @var PackageInterface[]
+     */
     private $uninstalled = array();
+    /**
+     * @var string[]
+     */
     private $trace = array();
 
     public function __construct()

@@ -24,15 +24,15 @@ use Composer\Util\Http\Response;
  */
 class GitBitbucketDriverTest extends TestCase
 {
-    /** @type \Composer\IO\IOInterface|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $io;
-    /** @type \Composer\Config */
+    /** @var Config */
     private $config;
-    /** @type \Composer\Util\HttpDownloader|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\Util\HttpDownloader&\PHPUnit\Framework\MockObject\MockObject */
     private $httpDownloader;
-    /** @type string */
+    /** @var string */
     private $home;
-    /** @type string */
+    /** @var string */
     private $originUrl = 'bitbucket.org';
 
     protected function setUp()

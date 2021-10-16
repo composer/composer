@@ -24,9 +24,21 @@ use React\Promise\Promise;
  */
 class ProcessExecutorMock extends ProcessExecutor
 {
+    /**
+     * @var array<array{cmd: string, return: int, stdout: string, stderr: string, callback: ?callable}>
+     */
     private $expectations = array();
+    /**
+     * @var bool
+     */
     private $strict = false;
+    /**
+     * @var array{return: int, stdout: string, stderr: string}
+     */
     private $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => '');
+    /**
+     * @var string[]
+     */
     private $log = array();
 
     /**
@@ -47,7 +59,7 @@ class ProcessExecutorMock extends ProcessExecutor
             return array_merge($default, $expect);
         }, $expectations);
         $this->strict = $strict;
-        $this->defaultHandler = array_merge($default, $defaultHandler);
+        $this->defaultHandler = array_merge($this->defaultHandler, $defaultHandler);
     }
 
     public function assertComplete(TestCase $testCase)

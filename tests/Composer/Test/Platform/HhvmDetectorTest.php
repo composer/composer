@@ -20,6 +20,9 @@ use Symfony\Component\Process\ExecutableFinder;
 
 class HhvmDetectorTest extends TestCase
 {
+    /**
+     * @var HhvmDetector
+     */
     private $hhvmDetector;
 
     protected function setUp()
