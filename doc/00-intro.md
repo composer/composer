@@ -49,7 +49,7 @@ Linux and macOS.
 
 Composer offers a convenient installer that you can execute directly from the
 command line. Feel free to [download this file](https://getcomposer.org/installer)
-or review it on [GitHub](https://github.com/composer/getcomposer.org/blob/master/web/installer)
+or review it on [GitHub](https://github.com/composer/getcomposer.org/blob/main/web/installer)
 if you wish to know more about the inner workings of the installer. The source
 is plain PHP.
 
