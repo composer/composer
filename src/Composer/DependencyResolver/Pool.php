@@ -107,7 +107,10 @@ class Pool implements \Countable
     }
 
     /**
-     * @see whatProvides
+     * @param  string              $name       The package name to be searched for
+     * @param  ConstraintInterface $constraint A constraint that all returned
+     *                                         packages must match or null to return all
+     * @return BasePackage[]
      */
     private function computeWhatProvides($name, $constraint)
     {
@@ -126,6 +129,9 @@ class Pool implements \Countable
         return $matches;
     }
 
+    /**
+     * @return BasePackage
+     */
     public function literalToPackage($literal)
     {
         $packageId = abs($literal);
@@ -133,6 +139,9 @@ class Pool implements \Countable
         return $this->packageById($packageId);
     }
 
+    /**
+     * @return string
+     */
     public function literalToPrettyString($literal, $installedMap)
     {
         $package = $this->literalToPackage($literal);
@@ -195,6 +204,9 @@ class Pool implements \Countable
         return false;
     }
 
+    /**
+     * @return bool
+     */
     public function isUnacceptableFixedOrLockedPackage(BasePackage $package)
     {
         return \in_array($package, $this->unacceptableFixedOrLockedPackages, true);

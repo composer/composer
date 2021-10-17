@@ -241,11 +241,17 @@ class Factory
         return $config;
     }
 
+    /**
+     * @return string
+     */
     public static function getComposerFile()
     {
         return trim(getenv('COMPOSER')) ?: './composer.json';
     }
 
+    /**
+     * @return string
+     */
     public static function getLockFile($composerFile)
     {
         return "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
@@ -253,6 +259,9 @@ class Factory
                 : $composerFile . '.lock';
     }
 
+    /**
+     * @return array{highlight: OutputFormatterStyle, warning: OutputFormatterStyle}
+     */
     public static function createAdditionalStyles()
     {
         return array(
@@ -596,6 +605,9 @@ class Factory
         }
     }
 
+    /**
+     * @return Package\Loader\RootPackageLoader
+     */
     protected function loadRootPackage(RepositoryManager $rm, Config $config, VersionParser $parser, VersionGuesser $guesser, IOInterface $io)
     {
         return new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser, $io);

@@ -102,6 +102,7 @@ class Problem
 
     /**
      * @internal
+     * @return string
      */
     public static function formatDeduplicatedRules($rules, $indent, RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
     {
@@ -144,6 +145,9 @@ class Problem
         return "\n$indent- ".implode("\n$indent- ", $result);
     }
 
+    /**
+     * @return bool
+     */
     public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
     {
         foreach ($this->reasons as $sectionRules) {
@@ -153,6 +157,8 @@ class Problem
                 }
             }
         }
+
+        return false;
     }
 
     /**
@@ -160,6 +166,8 @@ class Problem
      *
      * @param string $id     A canonical identifier for the reason
      * @param Rule   $reason The reason descriptor
+     *
+     * @return void
      */
     protected function addReason($id, Rule $reason)
     {
@@ -172,6 +180,9 @@ class Problem
         }
     }
 
+    /**
+     * @return void
+     */
     public function nextSection()
     {
         $this->section++;
@@ -179,6 +190,7 @@ class Problem
 
     /**
      * @internal
+     * @return array{0: string, 1: string}
      */
     public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, $constraint = null)
     {
@@ -331,6 +343,7 @@ class Problem
 
     /**
      * @internal
+     * @return string
      */
     public static function getPackageList(array $packages, $isVerbose)
     {
@@ -360,6 +373,11 @@ class Problem
         return implode(', ', $prepared);
     }
 
+    /**
+     * @param  string $version
+     * @param  string $packageName
+     * @return string
+     */
     private static function getPlatformPackageVersion(Pool $pool, $packageName, $version)
     {
         $available = $pool->whatProvides($packageName);
@@ -410,6 +428,9 @@ class Problem
         return $filtered;
     }
 
+    /**
+     * @return bool
+     */
     private static function hasMultipleNames(array $packages)
     {
         $name = null;
@@ -424,6 +445,9 @@ class Problem
         return false;
     }
 
+    /**
+     * @return array{0: string, 1: string}
+     */
     private static function computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, array $higherRepoPackages, array $allReposPackages, $reason)
     {
         $nextRepoPackages = array();

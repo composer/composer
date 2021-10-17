@@ -100,12 +100,18 @@ class RuleSet implements \IteratorAggregate, \Countable
         }
     }
 
+    /**
+     * @return int
+     */
     #[\ReturnTypeWillChange]
     public function count()
     {
         return $this->nextRuleId;
     }
 
+    /**
+     * @return Rule
+     */
     public function ruleById($id)
     {
         return $this->ruleById[$id];
@@ -148,6 +154,9 @@ class RuleSet implements \IteratorAggregate, \Countable
         return new RuleSetIterator($rules);
     }
 
+    /**
+     * @return RuleSetIterator
+     */
     public function getIteratorWithout($types)
     {
         if (!\is_array($types)) {
@@ -172,6 +181,9 @@ class RuleSet implements \IteratorAggregate, \Countable
         return array_keys($types);
     }
 
+    /**
+     * @return string
+     */
     public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null, $isVerbose = false)
     {
         $string = "\n";

@@ -163,6 +163,9 @@ class DownloadManager
         return $downloader;
     }
 
+    /**
+     * @return string
+     */
     public function getDownloaderType(DownloaderInterface $downloader)
     {
         return array_search($downloader, $this->downloaders);

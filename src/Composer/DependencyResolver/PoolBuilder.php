@@ -139,6 +139,9 @@ class PoolBuilder
         $this->io = $io;
     }
 
+    /**
+     * @return Pool
+     */
     public function buildPool(array $repositories, Request $request)
     {
         if ($request->getUpdateAllowList()) {
@@ -261,6 +264,9 @@ class PoolBuilder
         return $pool;
     }
 
+    /**
+     * @return void
+     */
     private function markPackageNameForLoading(Request $request, $name, ConstraintInterface $constraint)
     {
         // Skip platform requires at this stage
@@ -316,6 +322,9 @@ class PoolBuilder
         unset($this->loadedPackages[$name]);
     }
 
+    /**
+     * @return void
+     */
     private function loadPackagesMarkedForLoading(Request $request, $repositories)
     {
         foreach ($this->packagesToLoad as $name => $constraint) {
@@ -348,6 +357,9 @@ class PoolBuilder
         }
     }
 
+    /**
+     * @return void
+     */
     private function loadPackage(Request $request, BasePackage $package, $propagateUpdate = true)
     {
         $index = $this->indexCounter++;
@@ -445,6 +457,7 @@ class PoolBuilder
 
     /**
      * Checks whether the update allow list allows this package in the lock file to be updated
+     *
      * @return bool
      */
     private function isUpdateAllowed(PackageInterface $package)
@@ -469,6 +482,9 @@ class PoolBuilder
         return false;
     }
 
+    /**
+     * @return void
+     */
     private function warnAboutNonMatchingUpdateAllowList(Request $request)
     {
         foreach ($this->updateAllowList as $pattern => $void) {
@@ -496,6 +512,8 @@ class PoolBuilder
     /**
      * Reverts the decision to use a locked package if a partial update with transitive dependencies
      * found that this package actually needs to be updated
+     *
+     * @return void
      */
     private function unlockPackage(Request $request, $name)
     {
@@ -534,6 +552,9 @@ class PoolBuilder
         }
     }
 
+    /**
+     * @return void
+     */
     private function removeLoadedPackage(Request $request, PackageInterface $package, $index)
     {
         unset($this->packages[$index]);

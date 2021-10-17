@@ -52,6 +52,9 @@ class PerforceDownloader extends VcsDownloader
         return \React\Promise\resolve();
     }
 
+    /**
+     * @return string|null
+     */
     private function getLabelFromSourceReference($ref)
     {
         $pos = strpos($ref, '@');
@@ -78,6 +81,9 @@ class PerforceDownloader extends VcsDownloader
         $this->perforce = Perforce::create($repoConfig, $url, $path, $this->process, $this->io);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function getRepoConfig(VcsRepository $repository)
     {
         return $repository->getRepoConfig();

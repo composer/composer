@@ -76,6 +76,9 @@ class Solver
         return \count($this->rules);
     }
 
+    /**
+     * @return Pool
+     */
     public function getPool()
     {
         return $this->pool;
@@ -83,6 +86,9 @@ class Solver
 
     // aka solver_makeruledecisions
 
+    /**
+     * @return void
+     */
     private function makeAssertionRuleDecisions()
     {
         $decisionStart = \count($this->decisions) - 1;
@@ -153,6 +159,9 @@ class Solver
         }
     }
 
+    /**
+     * @return void
+     */
     protected function setupFixedMap(Request $request)
     {
         $this->fixedMap = array();
@@ -164,6 +173,8 @@ class Solver
     /**
      * @param Request    $request
      * @param bool|array $ignorePlatformReqs
+     *
+     * @return void
      */
     protected function checkForRootRequireProblems(Request $request, $ignorePlatformReqs)
     {
@@ -251,6 +262,8 @@ class Solver
      * Reverts a decision at the given level.
      *
      * @param int $level
+     *
+     * @return void
      */
     private function revert($level)
     {
@@ -513,6 +526,9 @@ class Solver
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
 
+    /**
+     * @return void
+     */
     private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen)
     {
         $why = spl_object_hash($conflictRule);
@@ -599,6 +615,8 @@ class Solver
      * we have enabled or disabled some of our rules. We now re-enable all
      * of our learnt rules except the ones that were learnt from rules that
      * are now disabled.
+     *
+     * @return void
      */
     private function enableDisableLearnedRules()
     {
@@ -622,6 +640,9 @@ class Solver
         }
     }
 
+    /**
+     * @return void
+     */
     private function runSat()
     {
         $this->propagateIndex = 0;

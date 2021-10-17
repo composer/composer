@@ -218,6 +218,9 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         return trim($output) ?: null;
     }
 
+    /**
+     * @return null|string
+     */
     public function getUnpushedChanges(PackageInterface $package, $path)
     {
         GitUtil::cleanEnv();
@@ -590,6 +593,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         return is_dir($path.'/.git');
     }
 
+    /**
+     * @param  string $reference
+     * @return string
+     */
     protected function getShortHash($reference)
     {
         if (!$this->io->isVerbose() && preg_match('{^[0-9a-f]{40}$}', $reference)) {

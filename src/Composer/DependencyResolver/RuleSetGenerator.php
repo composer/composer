@@ -122,6 +122,9 @@ class RuleSetGenerator
         return new Rule2Literals(-$issuer->id, -$provider->id, $reason, $reasonData);
     }
 
+    /**
+     * @return Rule
+     */
     protected function createMultiConflictRule(array $packages, $reason, $reasonData = null)
     {
         $literals = array();
@@ -144,6 +147,8 @@ class RuleSetGenerator
      *
      * @param int  $type    A TYPE_* constant defining the rule type
      * @param Rule $newRule The rule about to be added
+     *
+     * @return void
      */
     private function addRule($type, Rule $newRule = null)
     {
@@ -154,6 +159,9 @@ class RuleSetGenerator
         $this->rules->add($newRule, $type);
     }
 
+    /**
+     * @return void
+     */
     protected function addRulesForPackage(BasePackage $package, $ignorePlatformReqs)
     {
         /** @var \SplQueue<BasePackage> */
@@ -202,6 +210,9 @@ class RuleSetGenerator
         }
     }
 
+    /**
+     * @return void
+     */
     protected function addConflictRules($ignorePlatformReqs = false)
     {
         /** @var BasePackage $package */
@@ -237,6 +248,9 @@ class RuleSetGenerator
         }
     }
 
+    /**
+     * @return void
+     */
     protected function addRulesForRequest(Request $request, $ignorePlatformReqs)
     {
         foreach ($request->getFixedPackages() as $package) {
@@ -278,6 +292,9 @@ class RuleSetGenerator
         }
     }
 
+    /**
+     * @return void
+     */
     protected function addRulesForRootAliases($ignorePlatformReqs)
     {
         foreach ($this->pool->getPackages() as $package) {
@@ -295,6 +312,7 @@ class RuleSetGenerator
 
     /**
      * @param bool|array $ignorePlatformReqs
+     * @return RuleSet
      */
     public function getRulesFor(Request $request, $ignorePlatformReqs = false)
     {

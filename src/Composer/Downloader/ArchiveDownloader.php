@@ -32,6 +32,9 @@ abstract class ArchiveDownloader extends FileDownloader
      */
     public $cleanupExecuted = array();
 
+    /**
+     * @return PromiseInterface|null
+     */
     public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
         unset($this->cleanupExecuted[$package->getName()]);
@@ -39,6 +42,9 @@ abstract class ArchiveDownloader extends FileDownloader
         return parent::prepare($type, $package, $path, $prevPackage);
     }
 
+    /**
+     * @return PromiseInterface|null
+     */
     public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
         $this->cleanupExecuted[$package->getName()] = true;
@@ -50,6 +56,7 @@ abstract class ArchiveDownloader extends FileDownloader
      * {@inheritDoc}
      * @throws \RuntimeException
      * @throws \UnexpectedValueException
+     * @return PromiseInterface
      */
     public function install(PackageInterface $package, $path, $output = true)
     {

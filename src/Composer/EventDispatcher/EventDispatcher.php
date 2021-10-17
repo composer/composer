@@ -77,6 +77,7 @@ class EventDispatcher
      * Set whether script handlers are active or not
      *
      * @param bool $runScripts
+     * @return $this
      */
     public function setRunScripts($runScripts = true)
     {
@@ -336,6 +337,9 @@ class EventDispatcher
         return $returnMax;
     }
 
+    /**
+     * @return int
+     */
     protected function executeTty($exec)
     {
         if ($this->io->isInteractive()) {
@@ -345,6 +349,9 @@ class EventDispatcher
         return $this->process->execute($exec);
     }
 
+    /**
+     * @return string
+     */
     protected function getPhpExecCommand()
     {
         $finder = new PhpExecutableFinder();
@@ -536,7 +543,7 @@ class EventDispatcher
     /**
      * Pops the active event from the stack
      *
-     * @return mixed
+     * @return string|null
      */
     protected function popEvent()
     {

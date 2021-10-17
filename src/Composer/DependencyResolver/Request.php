@@ -123,46 +123,73 @@ class Request
         $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;
     }
 
+    /**
+     * @return string[]
+     */
     public function getUpdateAllowList()
     {
         return $this->updateAllowList;
     }
 
+    /**
+     * @return bool
+     */
     public function getUpdateAllowTransitiveDependencies()
     {
         return $this->updateAllowTransitiveDependencies !== self::UPDATE_ONLY_LISTED;
     }
 
+    /**
+     * @return bool
+     */
     public function getUpdateAllowTransitiveRootDependencies()
     {
         return $this->updateAllowTransitiveDependencies === self::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
     }
 
+    /**
+     * @return array<string, ConstraintInterface>
+     */
     public function getRequires()
     {
         return $this->requires;
     }
 
+    /**
+     * @return array<string, PackageInterface>
+     */
     public function getFixedPackages()
     {
         return $this->fixedPackages;
     }
 
+    /**
+     * @return bool
+     */
     public function isFixedPackage(PackageInterface $package)
     {
         return isset($this->fixedPackages[spl_object_hash($package)]);
     }
 
+    /**
+     * @return array<string, PackageInterface>
+     */
     public function getLockedPackages()
     {
         return $this->lockedPackages;
     }
 
+    /**
+     * @return bool
+     */
     public function isLockedPackage(PackageInterface $package)
     {
         return isset($this->lockedPackages[spl_object_hash($package)]) || isset($this->fixedLockedPackages[spl_object_hash($package)]);
     }
 
+    /**
+     * @return array<string, PackageInterface>
+     */
     public function getFixedOrLockedPackages()
     {
         return array_merge($this->fixedPackages, $this->lockedPackages);
@@ -170,6 +197,9 @@ class Request
 
     // TODO look into removing the packageIds option, the only place true is used is for the installed map in the solver problems
     // some locked packages may not be in the pool so they have a package->id of -1
+    /**
+     * @return array<int|string, PackageInterface>
+     */
     public function getPresentMap($packageIds = false)
     {
         $presentMap = array();
@@ -187,6 +217,9 @@ class Request
         return $presentMap;
     }
 
+    /**
+     * @return PackageInterface[]
+     */
     public function getFixedPackagesMap()
     {
         $fixedPackagesMap = array();
@@ -198,6 +231,9 @@ class Request
         return $fixedPackagesMap;
     }
 
+    /**
+     * @return ?LockArrayRepository
+     */
     public function getLockedRepository()
     {
         return $this->lockedRepository;
