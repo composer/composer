@@ -71,26 +71,34 @@ class AutoloadGenerator
     private $runScripts = false;
 
     /**
-     * @var bool|array
+     * @var bool|string[]
      */
     private $ignorePlatformReqs = false;
 
+    /**
+     * @param EventDispatcher $eventDispatcher
+     * @param ?IOInterface $io
+     */
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->io = $io;
     }
 
+    /**
+     * @param bool $devMode
+     * @return void
+     */
     public function setDevMode($devMode = true)
     {
         $this->devMode = (bool) $devMode;
     }
 
     /**
-     * Whether or not generated autoloader considers the class map
-     * authoritative.
+     * Whether generated autoloader considers the class map authoritative.
      *
      * @param bool $classMapAuthoritative
+     * @return void
      */
     public function setClassMapAuthoritative($classMapAuthoritative)
     {
@@ -98,10 +106,11 @@ class AutoloadGenerator
     }
 
     /**
-     * Whether or not generated autoloader considers APCu caching.
+     * Whether generated autoloader considers APCu caching.
      *
      * @param bool        $apcu
      * @param string|null $apcuPrefix
+     * @return void
      */
     public function setApcu($apcu, $apcuPrefix = null)
     {
@@ -110,9 +119,10 @@ class AutoloadGenerator
     }
 
     /**
-     * Set whether to run scripts or not
+     * Whether to run scripts or not
      *
      * @param bool $runScripts
+     * @return void
      */
     public function setRunScripts($runScripts = true)
     {
@@ -120,13 +130,14 @@ class AutoloadGenerator
     }
 
     /**
-     * Sets whether platform requirements should be ignored
+     * Whether platform requirements should be ignored.
      *
      * If this is set to true, the platform check file will not be generated
      * If this is set to false, the platform check file will be generated with all requirements
      * If this is set to string[], those packages will be ignored from the platform check file
      *
-     * @param array|bool $ignorePlatformReqs
+     * @param bool|string[] $ignorePlatformReqs
+     * @return void
      */
     public function setIgnorePlatformRequirements($ignorePlatformReqs)
     {
@@ -140,7 +151,15 @@ class AutoloadGenerator
     }
 
     /**
+     * @param Config $config
+     * @param InstalledRepositoryInterface $localRepo
+     * @param RootPackageInterface $rootPackage
+     * @param InstallationManager $installationManager
+     * @param string $targetDir
+     * @param bool $scanPsrPackages
+     * @param string $suffix
      * @return int
+     * @throws \Seld\JsonLint\ParsingException
      */
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, $targetDir, $scanPsrPackages = false, $suffix = '')
     {
@@ -410,8 +429,17 @@ EOF;
     }
 
     /**
+     * @param Filesystem $filesystem
+     * @param string $basePath
+     * @param string $vendorPath
+     * @param array<int, string>|array<string, array<string>>|array<string, string>|string $dir
      * @param ?array<int, string> $excluded
-     * @return array<string, string>
+     * @param ?string $namespaceFilter
+     * @param ?string $autoloadType
+     * @param array<class-string, string> $classMap
+     * @param array<class-string, array<int, string>> $ambiguousClasses
+     * @param array<string, true> $scannedFiles
+     * @return array<class-string, string>
      */
     private function addClassMapCode(Filesystem $filesystem, $basePath, $vendorPath, $dir, $excluded, $namespaceFilter, $autoloadType, array $classMap, array &$ambiguousClasses, array &$scannedFiles)
     {
@@ -428,7 +456,12 @@ EOF;
     }
 
     /**
+     * @param array<int, string>|array<string, array<string>>|array<string, string>|string $dir
      * @param ?array<int, string> $excluded
+     * @param ?string $namespaceFilter
+     * @param ?string $autoloadType
+     * @param ?bool $showAmbiguousWarning
+     * @param array<string, true> $scannedFiles
      * @return array<class-string, string>
      */
     private function generateClassMap($dir, $excluded, $namespaceFilter, $autoloadType, $showAmbiguousWarning, array &$scannedFiles)
@@ -457,7 +490,9 @@ EOF;
     }
 
     /**
-     * @param RootPackageInterface $rootPackage
+     * @param InstallationManager $installationManager
+     * @param PackageInterface $rootPackage
+     * @param PackageInterface[] $packages
      * @return array<int, array{0: PackageInterface, 1: string}>
      */
     public function buildPackageMap(InstallationManager $installationManager, PackageInterface $rootPackage, array $packages)
@@ -481,6 +516,8 @@ EOF;
     }
 
     /**
+     * @param PackageInterface $package
+     * @return void
      * @throws \InvalidArgumentException Throws an exception, if the package has illegal settings.
      */
     protected function validatePackage(PackageInterface $package)
@@ -503,12 +540,17 @@ EOF;
     /**
      * Compiles an ordered list of namespace => path mappings
      *
-     * @param  array                $packageMap          array of array(package, installDir-relative-to-composer.json)
-     * @param  RootPackageInterface $rootPackage         root package instance
-     * @param  bool|string[]        $filteredDevPackages If an array, the list of packages that must be removed. If bool, whether to filter out require-dev packages
-     * @return array                array('psr-0' => array('Ns\\Foo' => array('installDir')))
-     *
-     * @phpstan-param array<int, array{0: PackageInterface, 1: string}> $packageMap
+     * @param array<int, array{0: PackageInterface, 1: string}> $packageMap array of array(package, installDir-relative-to-composer.json)
+     * @param RootPackageInterface $rootPackage         root package instance
+     * @param bool|string[]        $filteredDevPackages If an array, the list of packages that must be removed. If bool, whether to filter out require-dev packages
+     * @return array<string, array<int, string>|array<string, array<string>>|array<string, string>>
+     * @phpstan-return array{
+     * 'psr-0': array<int, string>|array<string, array<string>>|array<string, string>,
+     * 'psr-4': array<int, string>|array<string, array<string>>|array<string, string>,
+     * 'classmap': array<int, string>|array<string, array<string>>|array<string, string>,
+     * 'files': array<int, string>|array<string, array<string>>|array<string, string>,
+     * 'exclude-from-classmap': array<int, string>|array<string, array<string>>|array<string, string>,
+     * }
      */
     public function parseAutoloads(array $packageMap, PackageInterface $rootPackage, $filteredDevPackages = false)
     {
@@ -543,9 +585,10 @@ EOF;
     }
 
     /**
-     * Registers an autoloader based on an autoload map returned by parseAutoloads
+     * Registers an autoloader based on an autoload-map returned by parseAutoloads
      *
-     * @param  array       $autoloads see parseAutoloads return value
+     * @param array<string, array> $autoloads see parseAutoloads return value
+     * @param ?string $vendorDir
      * @return ClassLoader
      */
     public function createLoader(array $autoloads, $vendorDir = null)
@@ -584,13 +627,13 @@ EOF;
     }
 
     /**
+     * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
+     * @param Filesystem $filesystem
      * @param string $basePath
      * @param string $vendorPath
      * @param string $vendorPathCode
      * @param string $appBaseDirCode
      * @return ?string
-     *
-     * @phpstan-param array<int, array{0: PackageInterface, 1: string}> $packageMap
      */
     protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)
     {
@@ -634,6 +677,7 @@ EOF;
 
     /**
      * @param array<string, string> $files
+     * @param Filesystem $filesystem
      * @param string $basePath
      * @param string $vendorPath
      * @param string $vendorPathCode
@@ -667,6 +711,7 @@ EOF;
     }
 
     /**
+     * @param Filesystem $filesystem
      * @param string $basePath
      * @param string $vendorPath
      * @param string $path
@@ -703,11 +748,11 @@ EOF;
     }
 
     /**
+     * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
+     * @param string[] $ignorePlatformReqs
      * @param bool $checkPlatform
      * @param string[] $devPackageNames
      * @return ?string
-     *
-     * @phpstan-param array<int, array{0: PackageInterface, 1: string}> $packageMap
      */
     protected function getPlatformCheck(array $packageMap, array $ignorePlatformReqs, $checkPlatform, array $devPackageNames)
     {
@@ -889,6 +934,17 @@ AUTOLOAD;
     }
 
     /**
+     * @param bool $useClassMap
+     * @param bool $useIncludePath
+     * @param ?string $targetDirLoader
+     * @param bool $useIncludeFiles
+     * @param string $vendorPathCode unused in this method
+     * @param string $appBaseDirCode unused in this method
+     * @param string $suffix
+     * @param bool $useGlobalIncludePath
+     * @param string $prependAutoloader 'true'|'false'
+     * @param string $staticPhpVersion
+     * @param bool $checkPlatform
      * @return string
      */
     protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $staticPhpVersion, $checkPlatform)
@@ -1067,6 +1123,11 @@ FOOTER;
     }
 
     /**
+     * @param string $suffix
+     * @param string $targetDir
+     * @param string $vendorPath input for findShortestPathCode
+     * @param string $basePath input for findShortestPathCode
+     * @param string $staticPhpVersion
      * @return string
      */
     protected function getStaticFile($suffix, $targetDir, $vendorPath, $basePath, &$staticPhpVersion)
@@ -1165,6 +1226,9 @@ INITIALIZER;
     }
 
     /**
+     * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
+     * @param string|'psr-0'|'psr-4'|'classmap'|'files' $type
+     * @param RootPackageInterface $rootPackage
      * @return array<int, string>|array<string, array<string>>|array<string, string>
      */
     protected function parseAutoloadsType(array $packageMap, $type, RootPackageInterface $rootPackage)
@@ -1250,7 +1314,8 @@ INITIALIZER;
     }
 
     /**
-     * @param  string $path
+     * @param PackageInterface $package
+     * @param string $path
      * @return string
      */
     protected function getFileIdentifier(PackageInterface $package, $path)
@@ -1261,7 +1326,7 @@ INITIALIZER;
     /**
      * Filters out dev-dependencies
      *
-     * @param  array                $packageMap
+     * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
      * @param  RootPackageInterface $rootPackage
      * @return array<int, array{0: PackageInterface, 1: string}>
      *
@@ -1318,10 +1383,8 @@ INITIALIZER;
      *
      * Packages of equal weight retain the original order
      *
-     * @param  array $packageMap
+     * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
      * @return array<int, array{0: PackageInterface, 1: string}>
-     *
-     * @phpstan-param array<int, array{0: PackageInterface, 1: string}> $packageMap
      */
     protected function sortPackageMap(array $packageMap)
     {
