@@ -18,7 +18,7 @@ use Symfony\Component\Process\ExecutableFinder;
 
 class HhvmDetector
 {
-    /** @var string|false|null */
+    /** @var string|null */
     private static $hhvmVersion = null;
     /** @var ?ExecutableFinder */
     private $executableFinder;
@@ -40,7 +40,7 @@ class HhvmDetector
     }
 
     /**
-     * @return string|false|null
+     * @return string|null
      */
     public function getVersion()
     {
@@ -50,7 +50,6 @@ class HhvmDetector
 
         self::$hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;
         if (self::$hhvmVersion === null && !Platform::isWindows()) {
-            self::$hhvmVersion = false;
             $this->executableFinder = $this->executableFinder ?: new ExecutableFinder();
             $hhvmPath = $this->executableFinder->find('hhvm');
             if ($hhvmPath !== null) {
@@ -61,11 +60,11 @@ class HhvmDetector
                     self::$hhvmVersion
                 );
                 if ($exitCode !== 0) {
-                    self::$hhvmVersion = false;
+                    self::$hhvmVersion = null;
                 }
             }
         }
 
-        return self::$hhvmVersion;
+        return self::$hhvmVersion ?: null;
     }
 }

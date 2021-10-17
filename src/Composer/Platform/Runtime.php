@@ -48,7 +48,7 @@ class Runtime
 
     /**
      * @param callable $callable
-     * @param string[] $arguments
+     * @param mixed[] $arguments
      *
      * @return mixed
      */
@@ -69,7 +69,7 @@ class Runtime
 
     /**
      * @param class-string $class
-     * @param string[] $arguments
+     * @param mixed[] $arguments
      *
      * @return object
      * @throws \ReflectionException
