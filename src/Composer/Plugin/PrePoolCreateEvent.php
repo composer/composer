@@ -142,7 +142,7 @@ class PrePoolCreateEvent extends Event
     }
 
     /**
-     * @return PackageInterface[]
+     * @return BasePackage[]
      */
     public function getPackages()
     {
@@ -150,7 +150,7 @@ class PrePoolCreateEvent extends Event
     }
 
     /**
-     * @return PackageInterface[]
+     * @return BasePackage[]
      */
     public function getUnacceptableFixedPackages()
     {
@@ -158,7 +158,7 @@ class PrePoolCreateEvent extends Event
     }
 
     /**
-     * @param PackageInterface[] $packages
+     * @param BasePackage[] $packages
      */
     public function setPackages(array $packages)
     {
@@ -166,7 +166,7 @@ class PrePoolCreateEvent extends Event
     }
 
     /**
-     * @param PackageInterface[] $packages
+     * @param BasePackage[] $packages
      */
     public function setUnacceptableFixedPackages(array $packages)
     {

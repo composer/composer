@@ -12,11 +12,11 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Package\BasePackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
-use Composer\Package\BasePackage;
 
 /**
  * A package pool contains all packages for dependency resolution
@@ -37,6 +37,10 @@ class Pool implements \Countable
     /** @var BasePackage[] */
     protected $unacceptableFixedOrLockedPackages;
 
+    /**
+     * @param BasePackage[] $packages
+     * @param BasePackage[] $unacceptableFixedOrLockedPackages
+     */
     public function __construct(array $packages = array(), array $unacceptableFixedOrLockedPackages = array())
     {
         $this->versionParser = new VersionParser;
@@ -44,6 +48,10 @@ class Pool implements \Countable
         $this->unacceptableFixedOrLockedPackages = $unacceptableFixedOrLockedPackages;
     }
 
+    /**
+     * @param BasePackage[] $packages
+     * @return void
+     */
     private function setPackages(array $packages)
     {
         $id = 1;
@@ -91,10 +99,10 @@ class Pool implements \Countable
     /**
      * Searches all packages providing the given package name and match the constraint
      *
-     * @param  string              $name       The package name to be searched for
-     * @param  ConstraintInterface $constraint A constraint that all returned
+     * @param string $name The package name to be searched for
+     * @param ?ConstraintInterface $constraint A constraint that all returned
      *                                         packages must match or null to return all
-     * @return BasePackage[]       A set of packages
+     * @return BasePackage[] A set of packages
      */
     public function whatProvides($name, ConstraintInterface $constraint = null)
     {
@@ -130,6 +138,7 @@ class Pool implements \Countable
     }
 
     /**
+     * @param int $literal
      * @return BasePackage
      */
     public function literalToPackage($literal)
@@ -140,6 +149,8 @@ class Pool implements \Countable
     }
 
     /**
+     * @param int $literal
+     * @param array<int, BasePackage> $installedMap
      * @return string
      */
     public function literalToPrettyString($literal, $installedMap)
@@ -159,9 +170,7 @@ class Pool implements \Countable
      * Checks if the package matches the given constraint directly or through
      * provided or replaced packages
      *
-     * @param  BasePackage         $candidate
      * @param  string              $name       Name of the package to be matched
-     * @param  ConstraintInterface $constraint The constraint to verify
      * @return bool
      */
     public function match(BasePackage $candidate, $name, ConstraintInterface $constraint = null)

@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\BasePackage;
 use Composer\Package\Link;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -26,8 +27,10 @@ class Rule2Literals extends Rule
     protected $literal2;
 
     /**
-     * @param int              $literal1
-     * @param int              $literal2
+     * @param int $literal1
+     * @param int $literal2
+     * @param Rule::RULE_* $reason A RULE_* constant
+     * @param Link|BasePackage|ConstraintInterface|string $reasonData
      */
     public function __construct($literal1, $literal2, $reason, $reasonData)
     {
@@ -48,7 +51,9 @@ class Rule2Literals extends Rule
         return array($this->literal1, $this->literal2);
     }
 
-    /** @return string */
+    /**
+     * @inerhitDoc
+     */
     public function getHash()
     {
         return $this->literal1.','.$this->literal2;

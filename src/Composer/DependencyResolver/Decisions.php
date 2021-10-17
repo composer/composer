@@ -16,7 +16,7 @@ namespace Composer\DependencyResolver;
  * Stores decisions on installing, removing or keeping packages
  *
  * @author Nils Adermann <naderman@naderman.de>
- * @implements \Iterator<array{0: int, 1: mixed}>
+ * @implements \Iterator<array{0: int, 1: Rule}>
  */
 class Decisions implements \Iterator, \Countable
 {
@@ -27,7 +27,9 @@ class Decisions implements \Iterator, \Countable
     protected $pool;
     /** @var array<int, int> */
     protected $decisionMap;
-    /** @var array<array{0: int, 1: mixed}> */
+    /**
+     * @var array<array{0: int, 1: Rule}>
+     */
     protected $decisionQueue = array();
 
     public function __construct(Pool $pool)
@@ -36,7 +38,12 @@ class Decisions implements \Iterator, \Countable
         $this->decisionMap = array();
     }
 
-    public function decide($literal, $level, $why)
+    /**
+     * @param int $literal
+     * @param int $level
+     * @return void
+     */
+    public function decide($literal, $level, Rule $why)
     {
         $this->addDecision($literal, $level);
         $this->decisionQueue[] = array(
@@ -46,6 +53,7 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
+     * @param int $literal
      * @return bool
      */
     public function satisfy($literal)
@@ -59,6 +67,7 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
+     * @param int $literal
      * @return bool
      */
     public function conflict($literal)
@@ -72,6 +81,7 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
+     * @param int $literalOrPackageId
      * @return bool
      */
     public function decided($literalOrPackageId)
@@ -80,6 +90,7 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
+     * @param int $literalOrPackageId
      * @return bool
      */
     public function undecided($literalOrPackageId)
@@ -88,6 +99,7 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
+     * @param int $literalOrPackageId
      * @return bool
      */
     public function decidedInstall($literalOrPackageId)
@@ -98,6 +110,7 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
+     * @param int $literalOrPackageId
      * @return int
      */
     public function decisionLevel($literalOrPackageId)
@@ -111,13 +124,14 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
-     * @return mixed|null
+     * @param int $literalOrPackageId
+     * @return Rule|null
      */
     public function decisionRule($literalOrPackageId)
     {
         $packageId = abs($literalOrPackageId);
 
-        foreach ($this->decisionQueue as $i => $decision) {
+        foreach ($this->decisionQueue as $decision) {
             if ($packageId === abs($decision[self::DECISION_LITERAL])) {
                 return $decision[self::DECISION_REASON];
             }
@@ -127,7 +141,8 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
-     * @return array{0: int, 1: mixed} a literal and decision reason
+     * @param int $queueOffset
+     * @return array{0: int, 1: Rule} a literal and decision reason
      */
     public function atOffset($queueOffset)
     {
@@ -135,6 +150,7 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
+     * @param int $queueOffset
      * @return bool
      */
     public function validOffset($queueOffset)
@@ -143,7 +159,7 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
-     * @return mixed
+     * @return Rule
      */
     public function lastReason()
     {
@@ -169,6 +185,7 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
+     * @param int $offset
      * @return void
      */
     public function resetToOffset($offset)
@@ -207,7 +224,7 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
-     * @return array{0: int, 1: mixed}|false
+     * @return array{0: int, 1: Rule}|false
      */
     #[\ReturnTypeWillChange]
     public function current()
@@ -251,6 +268,8 @@ class Decisions implements \Iterator, \Countable
     }
 
     /**
+     * @param int $literal
+     * @param int $level
      * @return void
      */
     protected function addDecision($literal, $level)
@@ -289,9 +308,6 @@ class Decisions implements \Iterator, \Countable
         return $str;
     }
 
-    /**
-     * @return string
-     */
     public function __toString()
     {
         return $this->toString();

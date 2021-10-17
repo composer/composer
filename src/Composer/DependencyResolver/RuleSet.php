@@ -56,6 +56,11 @@ class RuleSet implements \IteratorAggregate, \Countable
         }
     }
 
+    /**
+     * @param Rule $rule
+     * @param 255|self::TYPE_* $type
+     * @return void
+     */
     public function add(Rule $rule, $type)
     {
         if (!isset(self::$types[$type])) {
@@ -110,6 +115,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     }
 
     /**
+     * @param int $id
      * @return Rule
      */
     public function ruleById($id)
@@ -155,6 +161,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     }
 
     /**
+     * @param array{self::TYPE_*}|self::TYPE_* $types
      * @return RuleSetIterator
      */
     public function getIteratorWithout($types)
@@ -182,6 +189,10 @@ class RuleSet implements \IteratorAggregate, \Countable
     }
 
     /**
+     * @param ?RepositorySet $repositorySet
+     * @param ?Request $request
+     * @param ?Pool $pool
+     * @param bool $isVerbose
      * @return string
      */
     public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null, $isVerbose = false)

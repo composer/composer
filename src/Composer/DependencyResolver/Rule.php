@@ -12,11 +12,11 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\Link;
-use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
-use Composer\Repository\RepositorySet;
+use Composer\Package\BasePackage;
+use Composer\Package\Link;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositorySet;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
@@ -68,19 +68,35 @@ abstract class Rule
             (255 << self::BITFIELD_TYPE);
     }
 
+    /**
+     * @return int[]
+     */
     abstract public function getLiterals();
 
+    /**
+     * @return int|string
+     */
     abstract public function getHash();
 
     abstract public function __toString();
 
+    /**
+     * @param Rule $rule
+     * @return bool
+     */
     abstract public function equals(Rule $rule);
 
+    /**
+     * @return int
+     */
     public function getReason()
     {
         return ($this->bitfield & (255 << self::BITFIELD_REASON)) >> self::BITFIELD_REASON;
     }
 
+    /**
+     * @phpstan-return ReasonData
+     */
     public function getReasonData()
     {
         return $this->reasonData;
@@ -108,38 +124,63 @@ abstract class Rule
         return null;
     }
 
+    /**
+     * @param 255|RuleSet::TYPE_* $type
+     * @return void
+     */
     public function setType($type)
     {
         $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_TYPE)) | ((255 & $type) << self::BITFIELD_TYPE);
     }
 
+    /**
+     * @return int
+     */
     public function getType()
     {
         return ($this->bitfield & (255 << self::BITFIELD_TYPE)) >> self::BITFIELD_TYPE;
     }
 
+    /**
+     * @return void
+     */
     public function disable()
     {
         $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_DISABLED)) | (1 << self::BITFIELD_DISABLED);
     }
 
+    /**
+     * @return void
+     */
     public function enable()
     {
         $this->bitfield &= ~(255 << self::BITFIELD_DISABLED);
     }
 
+    /**
+     * @return bool
+     */
     public function isDisabled()
     {
         return (bool) (($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
+    /**
+     * @return bool
+     */
     public function isEnabled()
     {
         return !(($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
 
+    /**
+     * @return bool
+     */
     abstract public function isAssertion();
 
+    /**
+     * @return bool
+     */
     public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
     {
         if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
@@ -187,6 +228,15 @@ abstract class Rule
         return false;
     }
 
+    /**
+     * @param RepositorySet $repositorySet
+     * @param Request $request
+     * @param Pool $pool
+     * @param bool $isVerbose
+     * @param BasePackage[] $installedMap
+     * @param BasePackage[] $learnedPool
+     * @return string
+     */
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
     {
         $literals = $this->getLiterals();
@@ -396,9 +446,9 @@ abstract class Rule
     }
 
     /**
-     * @param Pool  $pool
-     * @param array $packages
-     *
+     * @param Pool $pool
+     * @param BasePackage[]|numeric[] $packages
+     * @param bool $isVerbose
      * @return string
      */
     protected function formatPackagesUnique($pool, array $packages, $isVerbose)
@@ -412,6 +462,10 @@ abstract class Rule
         return Problem::getPackageList($packages, $isVerbose);
     }
 
+    /**
+     * @param BasePackage $package
+     * @return BasePackage
+     */
     private function deduplicateDefaultBranchAlias(BasePackage $package)
     {
         if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {

@@ -58,7 +58,11 @@ class LockTransaction extends Transaction
         parent::__construct($this->presentMap, $this->resultPackages['all']);
     }
 
+
     // TODO make this a bit prettier instead of the two text indexes?
+    /**
+     * @return void
+     */
     public function setResultPackages(Pool $pool, Decisions $decisions)
     {
         $this->resultPackages = array('all' => array(), 'non-dev' => array(), 'dev' => array());
@@ -76,6 +80,9 @@ class LockTransaction extends Transaction
         }
     }
 
+    /**
+     * @return void
+     */
     public function setNonDevPackages(LockTransaction $extractionResult)
     {
         $packages = $extractionResult->getNewLockPackages(false);
@@ -96,6 +103,8 @@ class LockTransaction extends Transaction
 
     // TODO additionalFixedRepository needs to be looked at here as well?
     /**
+     * @param bool $devMode
+     * @param bool $updateMirrors
      * @return BasePackage[]
      */
     public function getNewLockPackages($devMode, $updateMirrors = false)
@@ -126,6 +135,8 @@ class LockTransaction extends Transaction
 
     /**
      * Checks which of the given aliases from composer.json are actually in use for the lock file
+     * @param array<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
+     * @return array<int, array{package: string}>
      */
     public function getAliases($aliases)
     {

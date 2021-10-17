@@ -18,12 +18,13 @@ use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
-use Composer\Package\CompletePackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\StabilityFilter;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PrePoolCreateEvent;
+use Composer\Repository\LockArrayRepository;
 use Composer\Repository\PlatformRepository;
+use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RootPackageRepository;
 use Composer\Semver\CompilingMatcher;
 use Composer\Semver\Constraint\Constraint;
@@ -86,12 +87,11 @@ class PoolBuilder
      */
     private $loadedPerRepo = array();
     /**
-     * @var PackageInterface[]
+     * @var BasePackage[]
      */
     private $packages = array();
     /**
-     * @var PackageInterface[]
-     * @phpstan-var list<PackageInterface>
+     * @var BasePackage[]
      */
     private $unacceptableFixedOrLockedPackages = array();
     /** @var string[] */
@@ -140,6 +140,7 @@ class PoolBuilder
     }
 
     /**
+     * @param RepositoryInterface[] $repositories
      * @return Pool
      */
     public function buildPool(array $repositories, Request $request)
@@ -265,6 +266,7 @@ class PoolBuilder
     }
 
     /**
+     * @param string $name
      * @return void
      */
     private function markPackageNameForLoading(Request $request, $name, ConstraintInterface $constraint)
@@ -323,6 +325,7 @@ class PoolBuilder
     }
 
     /**
+     * @param RepositoryInterface[] $repositories
      * @return void
      */
     private function loadPackagesMarkedForLoading(Request $request, $repositories)
@@ -358,6 +361,7 @@ class PoolBuilder
     }
 
     /**
+     * @param bool $propagateUpdate
      * @return void
      */
     private function loadPackage(Request $request, BasePackage $package, $propagateUpdate = true)
@@ -446,6 +450,7 @@ class PoolBuilder
     /**
      * Checks if a particular name is required directly in the request
      *
+     * @param string $name packageName
      * @return bool
      */
     private function isRootRequire(Request $request, $name)
@@ -460,7 +465,7 @@ class PoolBuilder
      *
      * @return bool
      */
-    private function isUpdateAllowed(PackageInterface $package)
+    private function isUpdateAllowed(BasePackage $package)
     {
         // Path repo packages are never loaded from lock, to force them to always remain in sync
         // unless symlinking is disabled in which case we probably should rather treat them like
@@ -513,6 +518,7 @@ class PoolBuilder
      * Reverts the decision to use a locked package if a partial update with transitive dependencies
      * found that this package actually needs to be updated
      *
+     * @param string $name
      * @return void
      */
     private function unlockPackage(Request $request, $name)
@@ -553,9 +559,10 @@ class PoolBuilder
     }
 
     /**
+     * @param int $index
      * @return void
      */
-    private function removeLoadedPackage(Request $request, PackageInterface $package, $index)
+    private function removeLoadedPackage(Request $request, BasePackage $package, $index)
     {
         unset($this->packages[$index]);
         if (isset($this->aliasMap[spl_object_hash($package)])) {

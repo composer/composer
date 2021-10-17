@@ -12,10 +12,6 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\BasePackage;
-use Composer\Package\Link;
-use Composer\Semver\Constraint\ConstraintInterface;
-
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -45,6 +41,9 @@ class GenericRule extends Rule
         return $this->literals;
     }
 
+    /**
+     * @inerhitDoc
+     */
     public function getHash()
     {
         $data = unpack('ihash', md5(implode(',', $this->literals), true));

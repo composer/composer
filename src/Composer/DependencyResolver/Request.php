@@ -12,8 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\Package;
 use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MatchAllConstraint;
@@ -55,11 +55,19 @@ class Request
     /** @var false|self::UPDATE_* */
     protected $updateAllowTransitiveDependencies = false;
 
+    /**
+     * @param ?LockArrayRepository $lockedRepository
+     */
     public function __construct(LockArrayRepository $lockedRepository = null)
     {
         $this->lockedRepository = $lockedRepository;
     }
 
+    /**
+     * @param string $packageName
+     * @param ?ConstraintInterface $constraint
+     * @return void
+     */
     public function requireName($packageName, ConstraintInterface $constraint = null)
     {
         $packageName = strtolower($packageName);
@@ -78,6 +86,8 @@ class Request
      *
      * This is used for platform packages which cannot be modified by Composer. A rule enforcing their installation is
      * generated for dependency resolution. Partial updates with dependencies cannot in any way modify these packages.
+     *
+     * @return void
      */
     public function fixPackage(BasePackage $package)
     {
@@ -93,6 +103,8 @@ class Request
      * However unlike fixed packages there will not be a special rule enforcing their installation for the solver, so
      * if nothing requires these packages they will be removed. Additionally in a partial update these packages can be
      * unlocked, meaning other versions can be installed if explicitly requested as part of the update.
+     *
+     * @return void
      */
     public function lockPackage(BasePackage $package)
     {
@@ -105,6 +117,8 @@ class Request
      * This is necessary for the composer install step which verifies the lock file integrity and should not allow
      * removal of any packages. At the same time lock packages there cannot simply be marked fixed, as error reporting
      * would then report them as platform packages, so this still marks them as locked packages at the same time.
+     *
+     * @return void
      */
     public function fixLockedPackage(BasePackage $package)
     {
@@ -112,11 +126,19 @@ class Request
         $this->fixedLockedPackages[spl_object_hash($package)] = $package;
     }
 
+    /**
+     * @return void
+     */
     public function unlockPackage(BasePackage $package)
     {
         unset($this->lockedPackages[spl_object_hash($package)]);
     }
 
+    /**
+     * @param string[] $updateAllowList
+     * @param false|self::UPDATE_* $updateAllowTransitiveDependencies
+     * @return void
+     */
     public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies)
     {
         $this->updateAllowList = $updateAllowList;
@@ -182,7 +204,7 @@ class Request
     /**
      * @return bool
      */
-    public function isLockedPackage(BasePackage $package)
+    public function isLockedPackage(PackageInterface $package)
     {
         return isset($this->lockedPackages[spl_object_hash($package)]) || isset($this->fixedLockedPackages[spl_object_hash($package)]);
     }
@@ -195,10 +217,14 @@ class Request
         return array_merge($this->fixedPackages, $this->lockedPackages);
     }
 
-    // TODO look into removing the packageIds option, the only place true is used is for the installed map in the solver problems
-    // some locked packages may not be in the pool so they have a package->id of -1
     /**
+     * @param bool $packageIds
      * @return array<int|string, BasePackage>
+     *
+     * @TODO look into removing the packageIds option, the only place true is used
+     *       is for the installed map in the solver problems.
+     *       Some locked packages may not be in the pool,
+     *       so they have a package->id of -1
      */
     public function getPresentMap($packageIds = false)
     {

@@ -28,6 +28,10 @@ class DefaultPolicy implements PolicyInterface
     /** @var bool */
     private $preferLowest;
 
+    /**
+     * @param bool $preferStable
+     * @param bool $preferLowest
+     */
     public function __construct($preferStable = false, $preferLowest = false)
     {
         $this->preferStable = $preferStable;
@@ -35,6 +39,8 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
+     * @param string $operator One of Constraint::STR_OP_*
+     * @phpstan-param Constraint::STR_OP_* $operator
      * @return bool
      */
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
@@ -101,6 +107,8 @@ class DefaultPolicy implements PolicyInterface
 
     /**
      * @protected
+     * @param ?string $requiredPackage
+     * @param bool $ignoreReplace
      * @return int
      */
     public function compareByPriority(Pool $pool, BasePackage $a, BasePackage $b, $requiredPackage = null, $ignoreReplace = false)

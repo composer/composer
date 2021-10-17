@@ -14,8 +14,9 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
-use Composer\Package\PackageInterface;
+use Composer\Package\Link;
 use Composer\Repository\PlatformRepository;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -29,9 +30,9 @@ class RuleSetGenerator
     protected $pool;
     /** @var RuleSet */
     protected $rules;
-    /** @var array<int, PackageInterface> */
+    /** @var array<int, BasePackage> */
     protected $addedMap = array();
-    /** @var array<string, PackageInterface[]> */
+    /** @var array<string, BasePackage[]> */
     protected $addedPackagesByNames = array();
 
     public function __construct(PolicyInterface $policy, Pool $pool)
@@ -47,13 +48,11 @@ class RuleSetGenerator
      * This rule is of the form (-A|B|C), where B and C are the providers of
      * one requirement of the package A.
      *
-     * @param  BasePackage  $package    The package with a requirement
-     * @param  array        $providers  The providers of the requirement
-     * @param  Rule::RULE_* $reason     A RULE_* constant describing the
-     *                                  reason for generating this rule
-     * @param  mixed        $reasonData Any data, e.g. the requirement name,
-     *                                  that goes with the reason
-     * @return Rule|null    The generated rule or null if tautological
+     * @param  BasePackage $package The package with a requirement
+     * @param  BasePackage[] $providers The providers of the requirement
+     * @param  Rule::RULE_* $reason A RULE_* constant describing the reason for generating this rule
+     * @param  mixed $reasonData Any data, e.g. the requirement name, that goes with the reason
+     * @return Rule|null The generated rule or null if tautological
      *
      * @phpstan-param ReasonData $reasonData
      */
@@ -102,13 +101,11 @@ class RuleSetGenerator
      * The rule for conflicting packages A and B is (-A|-B). A is called the issuer
      * and B the provider.
      *
-     * @param  BasePackage  $issuer     The package declaring the conflict
-     * @param  BasePackage  $provider   The package causing the conflict
-     * @param  Rule::RULE_* $reason     A RULE_* constant describing the
-     *                                  reason for generating this rule
-     * @param  mixed        $reasonData Any data, e.g. the package name, that
-     *                                  goes with the reason
-     * @return Rule|null    The generated rule
+     * @param BasePackage $issuer The package declaring the conflict
+     * @param BasePackage $provider The package causing the conflict
+     * @param Rule::RULE_* $reason A RULE_* constant describing the reason for generating this rule
+     * @param mixed $reasonData Any data, e.g. the package name, that goes with the reason
+     * @return ?Rule The generated rule
      *
      * @phpstan-param ReasonData $reasonData
      */
@@ -123,9 +120,12 @@ class RuleSetGenerator
     }
 
     /**
+     * @param BasePackage[] $packages
+     * @param Rule::RULE_* $reason A RULE_* constant
+     * @param Link|BasePackage|ConstraintInterface|string $reasonData
      * @return Rule
      */
-    protected function createMultiConflictRule(array $packages, $reason, $reasonData = null)
+    protected function createMultiConflictRule(array $packages, $reason, $reasonData)
     {
         $literals = array();
         foreach ($packages as $package) {
@@ -145,7 +145,7 @@ class RuleSetGenerator
      * To be able to directly pass in the result of one of the rule creation
      * methods null is allowed which will not insert a rule.
      *
-     * @param int  $type    A TYPE_* constant defining the rule type
+     * @param 255|RuleSet::TYPE_* $type A TYPE_* constant defining the rule type
      * @param Rule $newRule The rule about to be added
      *
      * @return void
@@ -160,6 +160,8 @@ class RuleSetGenerator
     }
 
     /**
+     * @param BasePackage $package
+     * @param bool|string[] $ignorePlatformReqs
      * @return void
      */
     protected function addRulesForPackage(BasePackage $package, $ignorePlatformReqs)
@@ -211,6 +213,7 @@ class RuleSetGenerator
     }
 
     /**
+     * @param bool|string[] $ignorePlatformReqs
      * @return void
      */
     protected function addConflictRules($ignorePlatformReqs = false)
@@ -249,6 +252,8 @@ class RuleSetGenerator
     }
 
     /**
+     * @param Request $request
+     * @param bool|string[] $ignorePlatformReqs
      * @return void
      */
     protected function addRulesForRequest(Request $request, $ignorePlatformReqs)
@@ -293,6 +298,7 @@ class RuleSetGenerator
     }
 
     /**
+     * @param bool|string[] $ignorePlatformReqs
      * @return void
      */
     protected function addRulesForRootAliases($ignorePlatformReqs)
@@ -311,7 +317,7 @@ class RuleSetGenerator
     }
 
     /**
-     * @param bool|array $ignorePlatformReqs
+     * @param bool|string[] $ignorePlatformReqs
      * @return RuleSet
      */
     public function getRulesFor(Request $request, $ignorePlatformReqs = false)

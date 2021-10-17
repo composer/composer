@@ -38,6 +38,7 @@ class RuleWatchGraph
      * watch changes in any literals.
      *
      * @param RuleWatchNode $node The rule node to be inserted into the graph
+     * @return void
      */
     public function insert(RuleWatchNode $node)
     {
@@ -153,6 +154,7 @@ class RuleWatchGraph
      * @param int           $fromLiteral A literal the node used to watch
      * @param int           $toLiteral   A literal the node should watch now
      * @param RuleWatchNode $node        The rule node to be moved
+     * @return void
      */
     protected function moveWatch($fromLiteral, $toLiteral, RuleWatchNode $node)
     {

@@ -171,9 +171,8 @@ class Solver
     }
 
     /**
-     * @param Request    $request
-     * @param bool|array $ignorePlatformReqs
-     *
+     * @param Request $request
+     * @param bool|string[] $ignorePlatformReqs
      * @return void
      */
     protected function checkForRootRequireProblems(Request $request, $ignorePlatformReqs)
@@ -193,7 +192,7 @@ class Solver
 
     /**
      * @param  Request         $request
-     * @param  bool|array      $ignorePlatformReqs
+     * @param  bool|string[]      $ignorePlatformReqs
      * @return LockTransaction
      */
     public function solve(Request $request, $ignorePlatformReqs = false)
@@ -332,11 +331,6 @@ class Solver
                     "Trying to revert to invalid level ".(int) $newLevel." from level ".(int) $level."."
                 );
             }
-            if (!$newRule) {
-                throw new SolverBugException(
-                    "No rule was learned from analyzing $rule at level $level."
-                );
-            }
 
             $level = $newLevel;
 
@@ -358,7 +352,7 @@ class Solver
 
     /**
      * @param  int   $level
-     * @param  array $decisionQueue
+     * @param  int[] $decisionQueue
      * @param  Rule  $rule
      * @return int
      */
@@ -380,7 +374,7 @@ class Solver
     /**
      * @param  int   $level
      * @param  Rule  $rule
-     * @return array
+     * @return array{int, int, GenericRule, int}
      */
     protected function analyze($level, Rule $rule)
     {
@@ -527,6 +521,9 @@ class Solver
     }
 
     /**
+     * @param Problem $problem
+     * @param Rule $conflictRule
+     * @param array<string, true> $ruleSeen
      * @return void
      */
     private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen)
