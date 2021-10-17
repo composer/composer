@@ -50,8 +50,8 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
-     * @param  int[] $literals
-     * @param  bool  $requiredPackage
+     * @param  int[]  $literals
+     * @param  string $requiredPackage
      * @return int[]
      */
     public function selectPreferredPackages(Pool $pool, array $literals, $requiredPackage = null)
