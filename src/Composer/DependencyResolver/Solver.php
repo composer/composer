@@ -13,7 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\IO\IOInterface;
-use Composer\Package\PackageInterface;
+use Composer\Package\BasePackage;
 use Composer\Repository\PlatformRepository;
 
 /**
@@ -36,7 +36,7 @@ class Solver
     protected $watchGraph;
     /** @var Decisions */
     protected $decisions;
-    /** @var PackageInterface[] */
+    /** @var BasePackage[] */
     protected $fixedMap;
 
     /** @var int */

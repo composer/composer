@@ -22,6 +22,10 @@ use Composer\Util\Silencer;
 use Symfony\Component\Process\ExecutableFinder;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\BasePackage;
+use Composer\Package\RootPackage;
+use Composer\Package\RootAliasPackage;
+use Composer\Package\CompletePackage;
+use Composer\Package\CompleteAliasPackage;
 
 abstract class TestCase extends PolyfillTestCase
 {
@@ -74,7 +78,16 @@ abstract class TestCase extends PolyfillTestCase
         return $constraint;
     }
 
-    protected function getPackage($name, $version, $class = 'Composer\Package\Package')
+    /**
+     * @template PackageClass of PackageInterface
+     *
+     * @param  string $class  FQCN to be instantiated
+     *
+     * @return CompletePackage|CompleteAliasPackage|RootPackage|RootAliasPackage
+     *
+     * @phpstan-param class-string<PackageClass> $class
+     */
+    protected function getPackage($name, $version, $class = 'Composer\Package\CompletePackage')
     {
         $normVersion = self::getVersionParser()->normalize($version);
 

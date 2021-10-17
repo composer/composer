@@ -31,8 +31,8 @@ class InstalledRepositoryTest extends TestCase
         $arrayRepoTwo->addPackage($bar = $this->getPackage('bar', '1'));
         $arrayRepoTwo->addPackage($bar2 = $this->getPackage('bar', '2'));
 
-        $foo->setReplaces(array(new Link('foo', 'provided', new MatchAllConstraint())));
-        $bar2->setProvides(array(new Link('bar', 'provided', new MatchAllConstraint())));
+        $foo->setReplaces(array('provided' => new Link('foo', 'provided', new MatchAllConstraint())));
+        $bar2->setProvides(array('provided' => new Link('bar', 'provided', new MatchAllConstraint())));
 
         $repo = new InstalledRepository(array($arrayRepoOne, $arrayRepoTwo));
 

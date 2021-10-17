@@ -84,13 +84,13 @@ class Installer
     protected $config;
 
     /**
-     * @var RootPackageInterface
+     * @var RootPackageInterface&BasePackage
      */
     protected $package;
 
     // TODO can we get rid of the below and just use the package itself?
     /**
-     * @var RootPackageInterface
+     * @var RootPackageInterface&BasePackage
      */
     protected $fixedRootPackage;
 
@@ -187,7 +187,7 @@ class Installer
      *
      * @param IOInterface          $io
      * @param Config               $config
-     * @param RootPackageInterface $package
+     * @param RootPackageInterface&BasePackage $package
      * @param DownloadManager      $downloadManager
      * @param RepositoryManager    $repositoryManager
      * @param Locker               $locker
@@ -845,6 +845,7 @@ class Installer
     }
 
     /**
+     * @param RootPackageInterface&BasePackage $rootPackage
      * @return Request
      */
     private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo, LockArrayRepository $lockedRepository = null)

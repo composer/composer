@@ -13,7 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\Package\Package;
-use Composer\Package\PackageInterface;
+use Composer\Package\BasePackage;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\MatchAllConstraint;
@@ -44,11 +44,11 @@ class Request
     protected $lockedRepository;
     /** @var array<string, ConstraintInterface> */
     protected $requires = array();
-    /** @var array<string, PackageInterface> */
+    /** @var array<string, BasePackage> */
     protected $fixedPackages = array();
-    /** @var array<string, PackageInterface> */
+    /** @var array<string, BasePackage> */
     protected $lockedPackages = array();
-    /** @var array<string, PackageInterface> */
+    /** @var array<string, BasePackage> */
     protected $fixedLockedPackages = array();
     /** @var string[] */
     protected $updateAllowList = array();
@@ -79,7 +79,7 @@ class Request
      * This is used for platform packages which cannot be modified by Composer. A rule enforcing their installation is
      * generated for dependency resolution. Partial updates with dependencies cannot in any way modify these packages.
      */
-    public function fixPackage(PackageInterface $package)
+    public function fixPackage(BasePackage $package)
     {
         $this->fixedPackages[spl_object_hash($package)] = $package;
     }
@@ -94,7 +94,7 @@ class Request
      * if nothing requires these packages they will be removed. Additionally in a partial update these packages can be
      * unlocked, meaning other versions can be installed if explicitly requested as part of the update.
      */
-    public function lockPackage(PackageInterface $package)
+    public function lockPackage(BasePackage $package)
     {
         $this->lockedPackages[spl_object_hash($package)] = $package;
     }
@@ -106,13 +106,13 @@ class Request
      * removal of any packages. At the same time lock packages there cannot simply be marked fixed, as error reporting
      * would then report them as platform packages, so this still marks them as locked packages at the same time.
      */
-    public function fixLockedPackage(PackageInterface $package)
+    public function fixLockedPackage(BasePackage $package)
     {
         $this->fixedPackages[spl_object_hash($package)] = $package;
         $this->fixedLockedPackages[spl_object_hash($package)] = $package;
     }
 
-    public function unlockPackage(PackageInterface $package)
+    public function unlockPackage(BasePackage $package)
     {
         unset($this->lockedPackages[spl_object_hash($package)]);
     }
@@ -156,7 +156,7 @@ class Request
     }
 
     /**
-     * @return array<string, PackageInterface>
+     * @return array<string, BasePackage>
      */
     public function getFixedPackages()
     {
@@ -166,13 +166,13 @@ class Request
     /**
      * @return bool
      */
-    public function isFixedPackage(PackageInterface $package)
+    public function isFixedPackage(BasePackage $package)
     {
         return isset($this->fixedPackages[spl_object_hash($package)]);
     }
 
     /**
-     * @return array<string, PackageInterface>
+     * @return array<string, BasePackage>
      */
     public function getLockedPackages()
     {
@@ -182,13 +182,13 @@ class Request
     /**
      * @return bool
      */
-    public function isLockedPackage(PackageInterface $package)
+    public function isLockedPackage(BasePackage $package)
     {
         return isset($this->lockedPackages[spl_object_hash($package)]) || isset($this->fixedLockedPackages[spl_object_hash($package)]);
     }
 
     /**
-     * @return array<string, PackageInterface>
+     * @return array<string, BasePackage>
      */
     public function getFixedOrLockedPackages()
     {
@@ -198,7 +198,7 @@ class Request
     // TODO look into removing the packageIds option, the only place true is used is for the installed map in the solver problems
     // some locked packages may not be in the pool so they have a package->id of -1
     /**
-     * @return array<int|string, PackageInterface>
+     * @return array<int|string, BasePackage>
      */
     public function getPresentMap($packageIds = false)
     {
@@ -218,7 +218,7 @@ class Request
     }
 
     /**
-     * @return PackageInterface[]
+     * @return BasePackage[]
      */
     public function getFixedPackagesMap()
     {
