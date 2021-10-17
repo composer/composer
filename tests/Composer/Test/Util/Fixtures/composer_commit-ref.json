@@ -1,5 +1,8 @@
 {
     "require": {
         "some/package": "dev-master#fgb42d"
+    },
+    "require-dev": {
+        "some/package2": "dev-master#fgb42d"
     }
 }

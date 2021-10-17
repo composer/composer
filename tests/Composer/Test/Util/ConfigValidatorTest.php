@@ -30,7 +30,11 @@ class ConfigValidatorTest extends TestCase
         list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_commit-ref.json');
 
         $this->assertContains(
-            'The package "some/package" is pointing to a commit-ref, this is bad practice and can cause unforeseen issues.',
+            'The package "some/package" is pointing to a commit-ref which is root package feature only and it will be ignored in dependent packages.',
+            $warnings
+        );
+        $this->assertNotContains(
+            '"some/package2"',
             $warnings
         );
     }
