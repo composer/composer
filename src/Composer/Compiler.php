@@ -280,6 +280,9 @@ class Compiler
         return $output;
     }
 
+    /**
+     * @return string
+     */
     private function getStub()
     {
         $stub = <<<'EOF'

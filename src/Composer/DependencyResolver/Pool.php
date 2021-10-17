@@ -80,6 +80,7 @@ class Pool implements \Countable
 
     /**
      * Returns how many packages have been loaded into the pool
+     * @return int
      */
     #[\ReturnTypeWillChange]
     public function count()

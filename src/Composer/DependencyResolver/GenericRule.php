@@ -37,6 +37,9 @@ class GenericRule extends Rule
         $this->literals = $literals;
     }
 
+    /**
+     * @return int[]
+     */
     public function getLiterals()
     {
         return $this->literals;
@@ -62,6 +65,9 @@ class GenericRule extends Rule
         return $this->literals === $rule->getLiterals();
     }
 
+    /**
+     * @return bool
+     */
     public function isAssertion()
     {
         return 1 === \count($this->literals);

@@ -468,6 +468,9 @@ class Application extends BaseApplication
         return $this->io;
     }
 
+    /**
+     * @return string
+     */
     public function getHelp()
     {
         return self::$logo . parent::getHelp();
@@ -548,6 +551,9 @@ class Application extends BaseApplication
         return $definition;
     }
 
+    /**
+     * @return Command\BaseCommand[]
+     */
     private function getPluginCommands()
     {
         $commands = array();

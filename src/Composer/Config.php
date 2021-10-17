@@ -119,6 +119,9 @@ class Config
         $this->configSource = $source;
     }
 
+    /**
+     * @return ConfigSourceInterface
+     */
     public function getConfigSource()
     {
         return $this->configSource;
@@ -129,6 +132,9 @@ class Config
         $this->authConfigSource = $source;
     }
 
+    /**
+     * @return ConfigSourceInterface
+     */
     public function getAuthConfigSource()
     {
         return $this->authConfigSource;
@@ -373,6 +379,9 @@ class Config
         }
     }
 
+    /**
+     * @return array<string, mixed[]>
+     */
     public function all($flags = 0)
     {
         $all = array(
@@ -385,6 +394,9 @@ class Config
         return $all;
     }
 
+    /**
+     * @return array<string, mixed[]>
+     */
     public function raw()
     {
         return array(

@@ -34,6 +34,9 @@ class DefaultPolicy implements PolicyInterface
         $this->preferLowest = $preferLowest;
     }
 
+    /**
+     * @return bool
+     */
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
     {
         if ($this->preferStable && ($stabA = $a->getStability()) !== ($stabB = $b->getStability())) {
@@ -46,6 +49,11 @@ class DefaultPolicy implements PolicyInterface
         return $constraint->matchSpecific($version, true);
     }
 
+    /**
+     * @param  int[] $literals
+     * @param  bool  $requiredPackage
+     * @return int[]
+     */
     public function selectPreferredPackages(Pool $pool, array $literals, $requiredPackage = null)
     {
         $packages = $this->groupLiteralsByName($pool, $literals);
@@ -72,6 +80,10 @@ class DefaultPolicy implements PolicyInterface
         return $selected;
     }
 
+    /**
+     * @param  int[] $literals
+     * @return array<string, int[]>
+     */
     protected function groupLiteralsByName(Pool $pool, $literals)
     {
         $packages = array();
@@ -89,6 +101,7 @@ class DefaultPolicy implements PolicyInterface
 
     /**
      * @protected
+     * @return int
      */
     public function compareByPriority(Pool $pool, BasePackage $a, BasePackage $b, $requiredPackage = null, $ignoreReplace = false)
     {
@@ -159,6 +172,10 @@ class DefaultPolicy implements PolicyInterface
         return false;
     }
 
+    /**
+     * @param  int[] $literals
+     * @return int[]
+     */
     protected function pruneToBestVersion(Pool $pool, $literals)
     {
         $operator = $this->preferLowest ? '<' : '>';
@@ -186,6 +203,9 @@ class DefaultPolicy implements PolicyInterface
      * Assumes that locally aliased (in root package requires) packages take priority over branch-alias ones
      *
      * If no package is a local alias, nothing happens
+     *
+     * @param  int[] $literals
+     * @return int[]
      */
     protected function pruneRemoteAliases(Pool $pool, array $literals)
     {

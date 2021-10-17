@@ -95,6 +95,9 @@ class LockTransaction extends Transaction
     }
 
     // TODO additionalFixedRepository needs to be looked at here as well?
+    /**
+     * @return BasePackage[]
+     */
     public function getNewLockPackages($devMode, $updateMirrors = false)
     {
         $packages = array();

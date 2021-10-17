@@ -42,6 +42,9 @@ class MultiConflictRule extends Rule
         $this->literals = $literals;
     }
 
+    /**
+     * @return int[]
+     */
     public function getLiterals()
     {
         return $this->literals;
@@ -71,6 +74,9 @@ class MultiConflictRule extends Rule
         return false;
     }
 
+    /**
+     * @return bool
+     */
     public function isAssertion()
     {
         return false;

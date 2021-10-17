@@ -67,6 +67,9 @@ class Composer
      */
     const RUNTIME_API_VERSION = '2.1.0';
 
+    /**
+     * @return string
+     */
     public static function getVersion()
     {
         // no replacement done, this must be a source checkout
