@@ -92,6 +92,12 @@ class Version
         return self::convertVersionId($versionId, 100);
     }
 
+    /**
+     * @param int $versionId
+     * @param int $base
+     *
+     * @return string
+     */
     private static function convertVersionId($versionId, $base)
     {
         return sprintf(

@@ -31,11 +31,17 @@ class HhvmDetector
         $this->processExecutor = $processExecutor;
     }
 
+    /**
+     * @return void
+     */
     public function reset()
     {
         self::$hhvmVersion = null;
     }
 
+    /**
+     * @return string|null
+     */
     public function getVersion()
     {
         if (null !== self::$hhvmVersion) {
@@ -44,7 +50,6 @@ class HhvmDetector
 
         self::$hhvmVersion = defined('HHVM_VERSION') ? HHVM_VERSION : null;
         if (self::$hhvmVersion === null && !Platform::isWindows()) {
-            self::$hhvmVersion = false;
             $this->executableFinder = $this->executableFinder ?: new ExecutableFinder();
             $hhvmPath = $this->executableFinder->find('hhvm');
             if ($hhvmPath !== null) {
@@ -60,6 +65,6 @@ class HhvmDetector
             }
         }
 
-        return self::$hhvmVersion;
+        return self::$hhvmVersion ?: null;
     }
 }
