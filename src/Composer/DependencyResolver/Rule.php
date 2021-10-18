@@ -443,7 +443,7 @@ abstract class Rule
     }
 
     /**
-     * @param BasePackage[]|numeric[] $packages
+     * @param array<int|BasePackage> $packages An array containing packages or literals
      * @param bool $isVerbose
      * @return string
      */

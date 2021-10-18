@@ -160,7 +160,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     }
 
     /**
-     * @param array{self::TYPE_*}|self::TYPE_* $types
+     * @param array<self::TYPE_*>|self::TYPE_* $types
      * @return RuleSetIterator
      */
     public function getIteratorWithout($types)

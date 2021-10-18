@@ -242,7 +242,7 @@ class Transaction
     }
 
     /**
-     * @return array|PackageInterface[]
+     * @return PackageInterface[]
      */
     protected function getProvidersInResult(Link $link)
     {

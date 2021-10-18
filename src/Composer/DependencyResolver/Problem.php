@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositorySet;
@@ -69,8 +70,8 @@ class Problem
      * A human readable textual representation of the problem's reasons
      *
      * @param bool $isVerbose
-     * @param array<int, mixed> $installedMap A map of all present packages
-     * @param array<string, mixed> $learnedPool
+     * @param array<int|string, BasePackage> $installedMap A map of all present packages
+     * @param array<Rule[]> $learnedPool
      * @return string
      */
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
@@ -108,8 +109,8 @@ class Problem
      * @param Rule[] $rules
      * @param string $indent
      * @param bool $isVerbose
-     * @param array<int, mixed> $installedMap
-     * @param array<string, mixed> $learnedPool
+     * @param array<int|string, BasePackage> $installedMap A map of all present packages
+     * @param array<Rule[]> $learnedPool
      * @return string
      * @internal
      */

@@ -51,7 +51,7 @@ class Rule2Literals extends Rule
     }
 
     /**
-     * @inerhitDoc
+     * @inheritDoc
      */
     public function getHash()
     {

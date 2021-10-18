@@ -48,7 +48,7 @@ class MultiConflictRule extends Rule
     }
 
     /**
-     * @inerhitDoc
+     * @inheritDoc
      */
     public function getHash()
     {

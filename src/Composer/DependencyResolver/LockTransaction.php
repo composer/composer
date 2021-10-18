@@ -136,7 +136,7 @@ class LockTransaction extends Transaction
     /**
      * Checks which of the given aliases from composer.json are actually in use for the lock file
      * @param array<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
-     * @return array<int, array{package: string}>
+     * @return array<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
     public function getAliases($aliases)
     {
