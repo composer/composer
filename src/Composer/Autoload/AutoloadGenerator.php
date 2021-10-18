@@ -22,7 +22,6 @@ use Composer\Package\RootPackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Bound;
-use Composer\Semver\Constraint\MatchAllConstraint;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Script\ScriptEvents;
@@ -1223,7 +1222,7 @@ INITIALIZER;
 
     /**
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
-     * @param string|'psr-0'|'psr-4'|'classmap'|'files' $type
+     * @param string $type one of: 'psr-0'|'psr-4'|'classmap'|'files'
      * @param RootPackageInterface $rootPackage
      * @return array<int, string>|array<string, array<string>>|array<string, string>
      */
