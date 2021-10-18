@@ -533,11 +533,11 @@ EOF;
      * @param bool|string[] $filteredDevPackages If an array, the list of packages that must be removed. If bool, whether to filter out require-dev packages
      * @return array
      * @phpstan-return array{
-     * 'psr-0': array<int, string>|array<string, array<string>>|array<string, string>,
-     * 'psr-4': array<int, string>|array<string, array<string>>|array<string, string>,
-     * 'classmap': array<int, string>|array<string, array<string>>|array<string, string>,
-     * 'files': array<int, string>|array<string, array<string>>|array<string, string>,
-     * 'exclude-from-classmap': array<int, string>|array<string, array<string>>|array<string, string>,
+     *     'psr-0': array<string, array<string>>,
+     *     'psr-4': array<string, array<string>>,
+     *     'classmap': array<int, string>,
+     *     'files': array<string, string>,
+     *     'exclude-from-classmap': array<int, string>,
      * }
      */
     public function parseAutoloads(array $packageMap, PackageInterface $rootPackage, $filteredDevPackages = false)
