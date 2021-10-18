@@ -14,7 +14,6 @@ namespace Composer\DependencyResolver;
 
 use Composer\Util\IniHelper;
 use Composer\Repository\RepositorySet;
-use Composer\Package\PackageInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -41,9 +40,6 @@ class SolverProblemsException extends \RuntimeException
     }
 
     /**
-     * @param RepositorySet $repositorySet
-     * @param Request $request
-     * @param Pool $pool
      * @param bool $isVerbose
      * @param bool $isDevExtraction
      * @return string

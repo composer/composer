@@ -12,10 +12,6 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Package\BasePackage;
-use Composer\Package\Link;
-use Composer\Semver\Constraint\ConstraintInterface;
-
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
@@ -30,7 +26,9 @@ class Rule2Literals extends Rule
      * @param int $literal1
      * @param int $literal2
      * @param Rule::RULE_* $reason A RULE_* constant
-     * @param Link|BasePackage|ConstraintInterface|string $reasonData
+     * @param mixed $reasonData
+     *
+     * @phpstan-param ReasonData $reasonData
      */
     public function __construct($literal1, $literal2, $reason, $reasonData)
     {

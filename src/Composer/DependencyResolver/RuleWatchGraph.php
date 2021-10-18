@@ -88,7 +88,7 @@ class RuleWatchGraph
      *                                   register decisions resulting from propagation
      * @return Rule|null If a conflict is found the conflicting rule is returned
      */
-    public function propagateLiteral($decidedLiteral, $level, $decisions)
+    public function propagateLiteral($decidedLiteral, $level, Decisions $decisions)
     {
         // we invert the decided literal here, example:
         // A was decided => (-A|B) now requires B to be true, so we look for

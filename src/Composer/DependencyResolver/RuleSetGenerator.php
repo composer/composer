@@ -14,9 +14,7 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
-use Composer\Package\Link;
 use Composer\Repository\PlatformRepository;
-use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -122,8 +120,10 @@ class RuleSetGenerator
     /**
      * @param BasePackage[] $packages
      * @param Rule::RULE_* $reason A RULE_* constant
-     * @param Link|BasePackage|ConstraintInterface|string $reasonData
+     * @param mixed $reasonData
      * @return Rule
+     *
+     * @phpstan-param ReasonData $reasonData
      */
     protected function createMultiConflictRule(array $packages, $reason, $reasonData)
     {
@@ -160,7 +160,6 @@ class RuleSetGenerator
     }
 
     /**
-     * @param BasePackage $package
      * @param bool|string[] $ignorePlatformReqs
      * @return void
      */
@@ -252,7 +251,6 @@ class RuleSetGenerator
     }
 
     /**
-     * @param Request $request
      * @param bool|string[] $ignorePlatformReqs
      * @return void
      */

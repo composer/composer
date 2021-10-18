@@ -40,8 +40,9 @@ class DefaultPolicy implements PolicyInterface
 
     /**
      * @param string $operator One of Constraint::STR_OP_*
-     * @phpstan-param Constraint::STR_OP_* $operator
      * @return bool
+     *
+     * @phpstan-param Constraint::STR_OP_* $operator
      */
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
     {
@@ -162,8 +163,6 @@ class DefaultPolicy implements PolicyInterface
      * Replace constraints are ignored. This method should only be used for
      * prioritisation, not for actual constraint verification.
      *
-     * @param  BasePackage $source
-     * @param  BasePackage $target
      * @return bool
      */
     protected function replaces(BasePackage $source, BasePackage $target)

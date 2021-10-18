@@ -55,9 +55,6 @@ class Request
     /** @var false|self::UPDATE_* */
     protected $updateAllowTransitiveDependencies = false;
 
-    /**
-     * @param ?LockArrayRepository $lockedRepository
-     */
     public function __construct(LockArrayRepository $lockedRepository = null)
     {
         $this->lockedRepository = $lockedRepository;
@@ -65,7 +62,6 @@ class Request
 
     /**
      * @param string $packageName
-     * @param ?ConstraintInterface $constraint
      * @return void
      */
     public function requireName($packageName, ConstraintInterface $constraint = null)

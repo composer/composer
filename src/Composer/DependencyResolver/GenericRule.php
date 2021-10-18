@@ -21,7 +21,7 @@ class GenericRule extends Rule
     protected $literals;
 
     /**
-     * @param int[]                           $literals
+     * @param int[] $literals
      */
     public function __construct(array $literals, $reason, $reasonData)
     {

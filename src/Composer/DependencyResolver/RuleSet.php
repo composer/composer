@@ -57,7 +57,6 @@ class RuleSet implements \IteratorAggregate, \Countable
     }
 
     /**
-     * @param Rule $rule
      * @param 255|self::TYPE_* $type
      * @return void
      */
@@ -189,9 +188,6 @@ class RuleSet implements \IteratorAggregate, \Countable
     }
 
     /**
-     * @param ?RepositorySet $repositorySet
-     * @param ?Request $request
-     * @param ?Pool $pool
      * @param bool $isVerbose
      * @return string
      */

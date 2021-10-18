@@ -56,11 +56,6 @@ class Solver
     /** @var IOInterface */
     protected $io;
 
-    /**
-     * @param PolicyInterface $policy
-     * @param Pool            $pool
-     * @param IOInterface     $io
-     */
     public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io)
     {
         $this->io = $io;
@@ -171,7 +166,6 @@ class Solver
     }
 
     /**
-     * @param Request $request
      * @param bool|string[] $ignorePlatformReqs
      * @return void
      */
@@ -191,7 +185,6 @@ class Solver
     }
 
     /**
-     * @param  Request         $request
      * @param  bool|string[]      $ignorePlatformReqs
      * @return LockTransaction
      */
@@ -303,7 +296,6 @@ class Solver
      *
      * @param  int        $level
      * @param  string|int $literal
-     * @param  Rule       $rule
      * @return int
      */
     private function setPropagateLearn($level, $literal, Rule $rule)
@@ -353,7 +345,6 @@ class Solver
     /**
      * @param  int   $level
      * @param  int[] $decisionQueue
-     * @param  Rule  $rule
      * @return int
      */
     private function selectAndInstall($level, array $decisionQueue, Rule $rule)
@@ -373,7 +364,6 @@ class Solver
 
     /**
      * @param  int   $level
-     * @param  Rule  $rule
      * @return array{int, int, GenericRule, int}
      */
     protected function analyze($level, Rule $rule)
@@ -521,8 +511,6 @@ class Solver
     }
 
     /**
-     * @param Problem $problem
-     * @param Rule $conflictRule
      * @param array<string, true> $ruleSeen
      * @return void
      */
@@ -554,7 +542,6 @@ class Solver
     }
 
     /**
-     * @param  Rule $conflictRule
      * @return int
      */
     private function analyzeUnsolvable(Rule $conflictRule)

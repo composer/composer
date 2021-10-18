@@ -54,8 +54,8 @@ abstract class Rule
     protected $reasonData;
 
     /**
-     * @param self::RULE_*                                $reason     A RULE_* constant describing the reason for generating this rule
-     * @param Link|BasePackage|ConstraintInterface|string $reasonData
+     * @param self::RULE_* $reason     A RULE_* constant describing the reason for generating this rule
+     * @param mixed        $reasonData
      *
      * @phpstan-param ReasonData $reasonData
      */
@@ -103,7 +103,7 @@ abstract class Rule
     }
 
     /**
-     * @return ?string
+     * @return string|null
      */
     public function getRequiredPackage()
     {
@@ -229,9 +229,6 @@ abstract class Rule
     }
 
     /**
-     * @param RepositorySet $repositorySet
-     * @param Request $request
-     * @param Pool $pool
      * @param bool $isVerbose
      * @param BasePackage[] $installedMap
      * @param BasePackage[] $learnedPool
@@ -446,12 +443,11 @@ abstract class Rule
     }
 
     /**
-     * @param Pool $pool
      * @param BasePackage[]|numeric[] $packages
      * @param bool $isVerbose
      * @return string
      */
-    protected function formatPackagesUnique($pool, array $packages, $isVerbose)
+    protected function formatPackagesUnique(Pool $pool, array $packages, $isVerbose)
     {
         foreach ($packages as $index => $package) {
             if (!\is_object($package)) {
@@ -463,7 +459,6 @@ abstract class Rule
     }
 
     /**
-     * @param BasePackage $package
      * @return BasePackage
      */
     private function deduplicateDefaultBranchAlias(BasePackage $package)

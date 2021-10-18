@@ -68,9 +68,6 @@ class Problem
     /**
      * A human readable textual representation of the problem's reasons
      *
-     * @param RepositorySet $repositorySet
-     * @param Request $request
-     * @param Pool $pool
      * @param bool $isVerbose
      * @param array<int, mixed> $installedMap A map of all present packages
      * @param array<string, mixed> $learnedPool
@@ -110,9 +107,6 @@ class Problem
     /**
      * @param Rule[] $rules
      * @param string $indent
-     * @param RepositorySet $repositorySet
-     * @param Request $request
-     * @param Pool $pool
      * @param bool $isVerbose
      * @param array<int, mixed> $installedMap
      * @param array<string, mixed> $learnedPool
@@ -161,9 +155,6 @@ class Problem
     }
 
     /**
-     * @param RepositorySet $repositorySet
-     * @param Request $request
-     * @param Pool $pool
      * @return bool
      */
     public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
@@ -207,15 +198,11 @@ class Problem
 
     /**
      * @internal
-     * @param RepositorySet $repositorySet
-     * @param Request $request
-     * @param Pool $pool
      * @param bool $isVerbose
      * @param string $packageName
-     * @param ?ConstraintInterface $constraint
      * @return array{0: string, 1: string}
      */
-    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, $constraint = null)
+    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, ConstraintInterface $constraint = null)
     {
         // handle php/hhvm
         if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
