@@ -206,6 +206,13 @@ class JsonConfigSource implements ConfigSourceInterface
         });
     }
 
+    /**
+     * @param string      $method
+     * @param mixed|array $args
+     * @param callable    $fallback
+     *
+     * @return void
+     */
     protected function manipulateJson($method, $args, $fallback)
     {
         $args = func_get_args();
@@ -290,7 +297,7 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * Prepend a reference to an element to the beginning of an array.
      *
-     * @param  array $array
+     * @param  mixed[] $array
      * @param  mixed $value
      * @return int
      */
