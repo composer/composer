@@ -231,7 +231,7 @@ abstract class Rule
     /**
      * @param bool $isVerbose
      * @param BasePackage[] $installedMap
-     * @param BasePackage[] $learnedPool
+     * @param array<Rule[]> $learnedPool
      * @return string
      */
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
