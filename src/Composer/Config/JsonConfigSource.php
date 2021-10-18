@@ -207,9 +207,9 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
-     * @param string      $method
-     * @param mixed|array $args
-     * @param callable    $fallback
+     * @param string $method
+     * @param mixed ...$args
+     * @param callable $fallback
      *
      * @return void
      */
