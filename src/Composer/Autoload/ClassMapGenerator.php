@@ -18,7 +18,6 @@
 
 namespace Composer\Autoload;
 
-use spec\Prophecy\Argument\Token\NotInArrayTokenSpec;
 use Symfony\Component\Finder\Finder;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;

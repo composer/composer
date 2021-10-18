@@ -75,10 +75,6 @@ class AutoloadGenerator
      */
     private $ignorePlatformReqs = false;
 
-    /**
-     * @param EventDispatcher $eventDispatcher
-     * @param ?IOInterface $io
-     */
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
@@ -541,9 +537,9 @@ EOF;
      * Compiles an ordered list of namespace => path mappings
      *
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap array of array(package, installDir-relative-to-composer.json)
-     * @param RootPackageInterface $rootPackage         root package instance
-     * @param bool|string[]        $filteredDevPackages If an array, the list of packages that must be removed. If bool, whether to filter out require-dev packages
-     * @return array<string, array<int, string>|array<string, array<string>>|array<string, string>>
+     * @param RootPackageInterface $rootPackage root package instance
+     * @param bool|string[] $filteredDevPackages If an array, the list of packages that must be removed. If bool, whether to filter out require-dev packages
+     * @return array
      * @phpstan-return array{
      * 'psr-0': array<int, string>|array<string, array<string>>|array<string, string>,
      * 'psr-4': array<int, string>|array<string, array<string>>|array<string, string>,
