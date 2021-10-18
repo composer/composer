@@ -54,7 +54,6 @@ abstract class BasePackage implements PackageInterface
      * @var int
      * @internal
      * @readonly
-     * @todo remove direct usage, look into creating a PackageInterfaceCollection
      */
     public $id;
     /** @var string */

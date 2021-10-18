@@ -285,7 +285,7 @@ class ClassMapGenerator
     }
 
     /**
-     * @return ?string
+     * @return string
      */
     private static function getExtraTypes()
     {

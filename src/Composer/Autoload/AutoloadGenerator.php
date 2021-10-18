@@ -146,10 +146,6 @@ class AutoloadGenerator
     }
 
     /**
-     * @param Config $config
-     * @param InstalledRepositoryInterface $localRepo
-     * @param RootPackageInterface $rootPackage
-     * @param InstallationManager $installationManager
      * @param string $targetDir
      * @param bool $scanPsrPackages
      * @param string $suffix
@@ -424,10 +420,9 @@ EOF;
     }
 
     /**
-     * @param Filesystem $filesystem
      * @param string $basePath
      * @param string $vendorPath
-     * @param array<int, string>|array<string, array<string>>|array<string, string>|string $dir
+     * @param string $dir
      * @param ?array<int, string> $excluded
      * @param ?string $namespaceFilter
      * @param ?string $autoloadType
@@ -451,11 +446,11 @@ EOF;
     }
 
     /**
-     * @param array<int, string>|array<string, array<string>>|array<string, string>|string $dir
+     * @param string $dir
      * @param ?array<int, string> $excluded
      * @param ?string $namespaceFilter
      * @param ?string $autoloadType
-     * @param ?bool $showAmbiguousWarning
+     * @param bool $showAmbiguousWarning
      * @param array<string, true> $scannedFiles
      * @return array<class-string, string>
      */
@@ -486,7 +481,6 @@ EOF;
 
     /**
      * @param InstallationManager $installationManager
-     * @param PackageInterface $rootPackage
      * @param PackageInterface[] $packages
      * @return array<int, array{0: PackageInterface, 1: string}>
      */
@@ -511,7 +505,6 @@ EOF;
     }
 
     /**
-     * @param PackageInterface $package
      * @return void
      * @throws \InvalidArgumentException Throws an exception, if the package has illegal settings.
      */
@@ -623,7 +616,6 @@ EOF;
 
     /**
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
-     * @param Filesystem $filesystem
      * @param string $basePath
      * @param string $vendorPath
      * @param string $vendorPathCode
@@ -672,7 +664,6 @@ EOF;
 
     /**
      * @param array<string, string> $files
-     * @param Filesystem $filesystem
      * @param string $basePath
      * @param string $vendorPath
      * @param string $vendorPathCode
@@ -706,7 +697,6 @@ EOF;
     }
 
     /**
-     * @param Filesystem $filesystem
      * @param string $basePath
      * @param string $vendorPath
      * @param string $path
@@ -1223,7 +1213,6 @@ INITIALIZER;
     /**
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
      * @param string $type one of: 'psr-0'|'psr-4'|'classmap'|'files'
-     * @param RootPackageInterface $rootPackage
      * @return array<int, string>|array<string, array<string>>|array<string, string>
      */
     protected function parseAutoloadsType(array $packageMap, $type, RootPackageInterface $rootPackage)
@@ -1309,7 +1298,6 @@ INITIALIZER;
     }
 
     /**
-     * @param PackageInterface $package
      * @param string $path
      * @return string
      */
