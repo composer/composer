@@ -30,6 +30,8 @@ final class GithubActionError
      * @param string      $message
      * @param null|string $file
      * @param null|int    $line
+     *
+     * @return void
      */
     public function emit($message, $file = null, $line = null)
     {
