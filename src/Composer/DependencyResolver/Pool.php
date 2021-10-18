@@ -115,12 +115,12 @@ class Pool implements \Countable
     }
 
     /**
-     * @param  string              $name       The package name to be searched for
-     * @param  ConstraintInterface $constraint A constraint that all returned
-     *                                         packages must match or null to return all
+     * @param  string               $name       The package name to be searched for
+     * @param  ?ConstraintInterface $constraint A constraint that all returned
+     *                                          packages must match or null to return all
      * @return BasePackage[]
      */
-    private function computeWhatProvides($name, $constraint)
+    private function computeWhatProvides($name, ConstraintInterface $constraint = null)
     {
         if (!isset($this->packageByName[$name])) {
             return array();
