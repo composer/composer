@@ -15,7 +15,6 @@ namespace Composer\Plugin;
 use Composer\EventDispatcher\Event;
 use Composer\Repository\RepositoryInterface;
 use Composer\DependencyResolver\Request;
-use Composer\Package\PackageInterface;
 use Composer\Package\BasePackage;
 
 /**
@@ -54,11 +53,11 @@ class PrePoolCreateEvent extends Event
      */
     private $rootReferences;
     /**
-     * @var PackageInterface[]
+     * @var BasePackage[]
      */
     private $packages;
     /**
-     * @var PackageInterface[]
+     * @var BasePackage[]
      */
     private $unacceptableFixedPackages;
 
@@ -69,6 +68,8 @@ class PrePoolCreateEvent extends Event
      * @param int[]                 $stabilityFlags         array of package name => BasePackage::STABILITY_* value
      * @param array[]               $rootAliases            array of package => version => [alias, alias_normalized]
      * @param string[]              $rootReferences
+     * @param BasePackage[]         $packages
+     * @param BasePackage[]         $unacceptableFixedPackages
      *
      * @phpstan-param array<string, BasePackage::STABILITY_*> $acceptableStabilities
      * @phpstan-param array<string, BasePackage::STABILITY_*> $stabilityFlags
