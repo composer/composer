@@ -296,7 +296,7 @@ class Problem
         if ($packages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
             // we must first verify if a valid package would be found in a lower priority repository
             if ($allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
-                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, $packages, $allReposPackages, 'minimum-stability');
+                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $packages, $allReposPackages, 'minimum-stability', $constraint);
             }
 
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match your minimum-stability.');
@@ -306,7 +306,7 @@ class Problem
         if ($packages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
             // we must first verify if a valid package would be found in a lower priority repository
             if ($allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
-                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, $packages, $allReposPackages, 'constraint');
+                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $packages, $allReposPackages, 'constraint', $constraint);
             }
 
             $suffix = '';
@@ -464,13 +464,12 @@ class Problem
     /**
      * @param bool $isVerbose
      * @param string $packageName
-     * @param ?ConstraintInterface $constraint
      * @param PackageInterface[] $higherRepoPackages
      * @param PackageInterface[] $allReposPackages
      * @param string $reason
      * @return array{0: string, 1: string}
      */
-    private static function computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, array $higherRepoPackages, array $allReposPackages, $reason)
+    private static function computeCheckForLowerPrioRepo($isVerbose, $packageName, array $higherRepoPackages, array $allReposPackages, $reason, ConstraintInterface $constraint = null)
     {
         $nextRepoPackages = array();
         $nextRepo = null;
@@ -507,10 +506,9 @@ class Problem
     /**
      * Turns a constraint into text usable in a sentence describing a request
      *
-     * @param  ?ConstraintInterface $constraint
      * @return string
      */
-    protected static function constraintToText($constraint)
+    protected static function constraintToText(ConstraintInterface $constraint = null)
     {
         return $constraint ? ' '.$constraint->getPrettyString() : '';
     }
