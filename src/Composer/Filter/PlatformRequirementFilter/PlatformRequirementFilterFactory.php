@@ -2,18 +2,12 @@
 
 namespace Composer\Filter\PlatformRequirementFilter;
 
-abstract class PlatformRequirementFilter
+final class PlatformRequirementFilterFactory
 {
-    /**
-     * @param string $req
-     * @return bool
-     */
-    abstract public function isReqIgnored($req);
-
     /**
      * @param mixed $boolOrList
      *
-     * @return PlatformRequirementFilter
+     * @return PlatformRequirementFilterInterface
      */
     public static function fromBoolOrList($boolOrList)
     {
@@ -34,7 +28,7 @@ abstract class PlatformRequirementFilter
     }
 
     /**
-     * @return PlatformRequirementFilter
+     * @return PlatformRequirementFilterInterface
      */
     public static function ignoreAll()
     {
@@ -42,26 +36,10 @@ abstract class PlatformRequirementFilter
     }
 
     /**
-     * @return PlatformRequirementFilter
+     * @return PlatformRequirementFilterInterface
      */
     public static function ignoreNothing()
     {
         return new IgnoreNothingPlatformRequirementFilter();
-    }
-
-    /**
-     * @return bool
-     */
-    public function isAllIgnored()
-    {
-        return $this instanceof IgnoreAllPlatformRequirementFilter;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isNothingIgnored()
-    {
-        return $this instanceof IgnoreNothingPlatformRequirementFilter;
     }
 }

@@ -13,7 +13,7 @@
 namespace Composer\Test;
 
 use Composer\DependencyResolver\Request;
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Installer;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -341,7 +341,7 @@ class InstallerTest extends TestCase
             $installer
                 ->setDevMode(!$input->getOption('no-dev'))
                 ->setDryRun($input->getOption('dry-run'))
-                ->setPlatformRequirementFilter(PlatformRequirementFilter::fromBoolOrList($ignorePlatformReqs));
+                ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
 
             return $installer->run();
         });
@@ -386,7 +386,7 @@ class InstallerTest extends TestCase
                 ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
                 ->setPreferStable($input->getOption('prefer-stable'))
                 ->setPreferLowest($input->getOption('prefer-lowest'))
-                ->setPlatformRequirementFilter(PlatformRequirementFilter::fromBoolOrList($ignorePlatformReqs));
+                ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
 
             return $installer->run();
         });

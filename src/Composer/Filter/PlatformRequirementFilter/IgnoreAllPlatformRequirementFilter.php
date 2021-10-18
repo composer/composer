@@ -4,7 +4,7 @@ namespace Composer\Filter\PlatformRequirementFilter;
 
 use Composer\Repository\PlatformRepository;
 
-final class IgnoreAllPlatformRequirementFilter extends PlatformRequirementFilter
+final class IgnoreAllPlatformRequirementFilter implements PlatformRequirementFilterInterface
 {
     /**
      * @param string $req

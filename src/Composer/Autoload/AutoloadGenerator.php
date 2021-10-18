@@ -14,7 +14,9 @@ namespace Composer\Autoload;
 
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
@@ -70,7 +72,7 @@ class AutoloadGenerator
     private $runScripts = false;
 
     /**
-     * @var PlatformRequirementFilter
+     * @var PlatformRequirementFilterInterface
      */
     private $platformRequirementFilter;
 
@@ -79,7 +81,7 @@ class AutoloadGenerator
         $this->eventDispatcher = $eventDispatcher;
         $this->io = $io;
 
-        $this->platformRequirementFilter = PlatformRequirementFilter::ignoreNothing();
+        $this->platformRequirementFilter = PlatformRequirementFilterFactory::ignoreNothing();
     }
 
     /**
@@ -142,13 +144,13 @@ class AutoloadGenerator
     {
         trigger_error('AutoloadGenerator::setIgnorePlatformRequirements is deprecated since Composer 2.2, use setPlatformRequirementFilter instead.', E_USER_DEPRECATED);
 
-        $this->setPlatformRequirementFilter(PlatformRequirementFilter::fromBoolOrList($ignorePlatformReqs));
+        $this->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
     }
 
     /**
      * @return void
      */
-    public function setPlatformRequirementFilter(PlatformRequirementFilter $platformRequirementFilter)
+    public function setPlatformRequirementFilter(PlatformRequirementFilterInterface $platformRequirementFilter)
     {
         $this->platformRequirementFilter = $platformRequirementFilter;
     }
@@ -399,7 +401,7 @@ EOF;
             unlink($includeFilesFilePath);
         }
         $filesystem->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
-        $checkPlatform = $config->get('platform-check') && !$this->platformRequirementFilter->isAllIgnored();
+        $checkPlatform = $config->get('platform-check') && !($this->platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter);
         $platformCheckContent = null;
         if ($checkPlatform) {
             $platformCheckContent = $this->getPlatformCheck($packageMap, $config->get('platform-check'), $devPackageNames);

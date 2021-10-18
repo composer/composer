@@ -12,7 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 
@@ -168,7 +169,7 @@ class Solver
     /**
      * @return void
      */
-    protected function checkForRootRequireProblems(Request $request, PlatformRequirementFilter $platformRequirementFilter)
+    protected function checkForRootRequireProblems(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter)
     {
         foreach ($request->getRequires() as $packageName => $constraint) {
             if ($platformRequirementFilter->isReqIgnored($packageName)) {
@@ -186,9 +187,9 @@ class Solver
     /**
      * @return LockTransaction
      */
-    public function solve(Request $request, PlatformRequirementFilter $platformRequirementFilter = null)
+    public function solve(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null)
     {
-        $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilter::ignoreNothing();
+        $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
 
         $this->setupFixedMap($request);
 

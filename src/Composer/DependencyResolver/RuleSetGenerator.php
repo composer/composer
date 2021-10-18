@@ -12,7 +12,8 @@
 
 namespace Composer\DependencyResolver;
 
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Repository\PlatformRepository;
@@ -163,7 +164,7 @@ class RuleSetGenerator
     /**
      * @return void
      */
-    protected function addRulesForPackage(BasePackage $package, PlatformRequirementFilter $platformRequirementFilter)
+    protected function addRulesForPackage(BasePackage $package, PlatformRequirementFilterInterface $platformRequirementFilter)
     {
         /** @var \SplQueue<BasePackage> */
         $workQueue = new \SplQueue;
@@ -214,7 +215,7 @@ class RuleSetGenerator
     /**
      * @return void
      */
-    protected function addConflictRules(PlatformRequirementFilter $platformRequirementFilter)
+    protected function addConflictRules(PlatformRequirementFilterInterface $platformRequirementFilter)
     {
         /** @var BasePackage $package */
         foreach ($this->addedMap as $package) {
@@ -252,7 +253,7 @@ class RuleSetGenerator
     /**
      * @return void
      */
-    protected function addRulesForRequest(Request $request, PlatformRequirementFilter $platformRequirementFilter)
+    protected function addRulesForRequest(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter)
     {
         foreach ($request->getFixedPackages() as $package) {
             if ($package->id == -1) {
@@ -296,7 +297,7 @@ class RuleSetGenerator
     /**
      * @return void
      */
-    protected function addRulesForRootAliases(PlatformRequirementFilter $platformRequirementFilter)
+    protected function addRulesForRootAliases(PlatformRequirementFilterInterface $platformRequirementFilter)
     {
         foreach ($this->pool->getPackages() as $package) {
             // ensure that rules for root alias packages and aliases of packages which were loaded are also loaded
@@ -314,9 +315,9 @@ class RuleSetGenerator
     /**
      * @return RuleSet
      */
-    public function getRulesFor(Request $request, PlatformRequirementFilter $platformRequirementFilter = null)
+    public function getRulesFor(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null)
     {
-        $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilter::ignoreNothing();
+        $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
 
         $this->addRulesForRequest($request, $platformRequirementFilter);
 

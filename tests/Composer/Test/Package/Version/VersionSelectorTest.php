@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Package\Version;
 
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\Package;
 use Composer\Package\Link;
@@ -71,7 +71,7 @@ class VersionSelectorTest extends TestCase
 
         $best = $versionSelector->findBestCandidate($packageName);
         $this->assertSame($package1, $best, 'Latest version supporting php 5.5 should be returned (1.0.0)');
-        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilter::ignoreAll());
+        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
         $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
     }
 
@@ -97,7 +97,7 @@ class VersionSelectorTest extends TestCase
 
         $best = $versionSelector->findBestCandidate($packageName);
         $this->assertSame($package1, $best, 'Latest version supporting ext-zip 5.3.0 should be returned (1.0.0)');
-        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilter::ignoreAll());
+        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
         $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
     }
 
@@ -122,7 +122,7 @@ class VersionSelectorTest extends TestCase
 
         $best = $versionSelector->findBestCandidate($packageName);
         $this->assertSame($package1, $best, 'Latest version not requiring ext-barfoo should be returned (1.0.0)');
-        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilter::ignoreAll());
+        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
         $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
     }
 
@@ -148,7 +148,7 @@ class VersionSelectorTest extends TestCase
 
         $best = $versionSelector->findBestCandidate($packageName);
         $this->assertSame($package1, $best, 'Latest version supporting composer 1 should be returned (1.0.0)');
-        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilter::ignoreAll());
+        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', PlatformRequirementFilterFactory::ignoreAll());
         $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (1.1.0)');
     }
 

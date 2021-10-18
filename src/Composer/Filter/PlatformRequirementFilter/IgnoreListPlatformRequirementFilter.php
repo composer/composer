@@ -4,7 +4,7 @@ namespace Composer\Filter\PlatformRequirementFilter;
 
 use Composer\Repository\PlatformRepository;
 
-final class IgnoreListPlatformRequirementFilter extends PlatformRequirementFilter
+final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFilterInterface
 {
     /**
      * @var string[]

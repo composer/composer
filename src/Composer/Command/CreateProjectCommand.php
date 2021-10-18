@@ -14,7 +14,9 @@ namespace Composer\Command;
 
 use Composer\Config;
 use Composer\Factory;
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Installer;
 use Composer\Installer\ProjectInstaller;
 use Composer\Installer\SuggestedPackagesReporter;
@@ -160,7 +162,7 @@ EOT
             $input->getOption('no-scripts'),
             $input->getOption('no-progress'),
             $input->getOption('no-install'),
-            PlatformRequirementFilter::fromBoolOrList($ignorePlatformReqs),
+            PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs),
             !$input->getOption('no-secure-http'),
             $input->getOption('add-repository')
         );
@@ -185,7 +187,7 @@ EOT
      * @return int
      * @throws \Exception
      */
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName = null, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositories = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, PlatformRequirementFilter $platformRequirementFilter = null, $secureHttp = true, $addRepository = false)
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName = null, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositories = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, PlatformRequirementFilterInterface $platformRequirementFilter = null, $secureHttp = true, $addRepository = false)
     {
         $oldCwd = getcwd();
 
@@ -193,7 +195,7 @@ EOT
             $repositories = (array) $repositories;
         }
 
-        $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilter::ignoreNothing();
+        $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
 
         // we need to manually load the configuration to pass the auth credentials to the io interface!
         $io->loadConfiguration($config);
@@ -349,7 +351,7 @@ EOT
      * @return bool
      * @throws \Exception
      */
-    protected function installRootPackage(IOInterface $io, Config $config, $packageName, PlatformRequirementFilter $platformRequirementFilter, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, array $repositories = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $secureHttp = true)
+    protected function installRootPackage(IOInterface $io, Config $config, $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, array $repositories = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $secureHttp = true)
     {
         if (!$secureHttp) {
             $config->merge(array('config' => array('secure-http' => false)));
@@ -430,7 +432,7 @@ EOT
 
         if (!$package) {
             $errorMessage = "Could not find package $name with " . ($packageVersion ? "version $packageVersion" : "stability $stability");
-            if (!$platformRequirementFilter->isAllIgnored() && $versionSelector->findBestCandidate($name, $packageVersion, $stability, PlatformRequirementFilter::ignoreAll())) {
+            if (!($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter) && $versionSelector->findBestCandidate($name, $packageVersion, $stability, PlatformRequirementFilterFactory::ignoreAll())) {
                 throw new \InvalidArgumentException($errorMessage .' in a version installable using your PHP version, PHP extensions and Composer version.');
             }
 

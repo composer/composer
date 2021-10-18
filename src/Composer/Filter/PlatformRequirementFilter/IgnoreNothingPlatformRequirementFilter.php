@@ -2,7 +2,7 @@
 
 namespace Composer\Filter\PlatformRequirementFilter;
 
-final class IgnoreNothingPlatformRequirementFilter extends PlatformRequirementFilter
+final class IgnoreNothingPlatformRequirementFilter implements PlatformRequirementFilterInterface
 {
     /**
      * @param string $req

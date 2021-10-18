@@ -27,7 +27,8 @@ use Composer\DependencyResolver\SolverProblemsException;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\SuggestedPackagesReporter;
@@ -177,7 +178,7 @@ class Installer
     protected $suggestedPackagesReporter;
 
     /**
-     * @var PlatformRequirementFilter
+     * @var PlatformRequirementFilterInterface
      */
     protected $platformRequirementFilter;
 
@@ -211,7 +212,7 @@ class Installer
         $this->eventDispatcher = $eventDispatcher;
         $this->autoloadGenerator = $autoloadGenerator;
         $this->suggestedPackagesReporter = new SuggestedPackagesReporter($this->io);
-        $this->platformRequirementFilter = PlatformRequirementFilter::ignoreNothing();
+        $this->platformRequirementFilter = PlatformRequirementFilterFactory::ignoreNothing();
 
         $this->writeLock = $config->get('lock');
     }
@@ -1254,14 +1255,14 @@ class Installer
     {
         trigger_error('Installer::setIgnorePlatformRequirements is deprecated since Composer 2.2, use setPlatformRequirementFilter instead.', E_USER_DEPRECATED);
 
-        return $this->setPlatformRequirementFilter(PlatformRequirementFilter::fromBoolOrList($ignorePlatformReqs));
+        return $this->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
     }
 
     /**
-     * @param PlatformRequirementFilter $platformRequirementFilter
+     * @param PlatformRequirementFilterInterface $platformRequirementFilter
      * @return Installer
      */
-    public function setPlatformRequirementFilter(PlatformRequirementFilter $platformRequirementFilter)
+    public function setPlatformRequirementFilter(PlatformRequirementFilterInterface $platformRequirementFilter)
     {
         $this->platformRequirementFilter = $platformRequirementFilter;
 

@@ -2,10 +2,10 @@
 
 namespace Composer\Test\Filter\PlatformRequirementFilter;
 
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Test\TestCase;
 
-final class PlatformRequirementFilterTest extends TestCase
+final class PlatformRequirementFilterFactoryTest extends TestCase
 {
     /**
      * @dataProvider dataFromBoolOrList
@@ -15,7 +15,7 @@ final class PlatformRequirementFilterTest extends TestCase
      */
     public function testFromBoolOrList($boolOrList, $expectedInstance)
     {
-        $this->assertInstanceOf($expectedInstance, PlatformRequirementFilter::fromBoolOrList($boolOrList));
+        $this->assertInstanceOf($expectedInstance, PlatformRequirementFilterFactory::fromBoolOrList($boolOrList));
     }
 
     /**
@@ -34,32 +34,20 @@ final class PlatformRequirementFilterTest extends TestCase
     {
         $this->setExpectedException('InvalidArgumentException', 'PlatformRequirementFilter: Unknown $boolOrList parameter NULL. Please report at https://github.com/composer/composer/issues/new.');
 
-        PlatformRequirementFilter::fromBoolOrList(null);
+        PlatformRequirementFilterFactory::fromBoolOrList(null);
     }
 
     public function testIgnoreAll()
     {
-        $platformRequirementFilter = PlatformRequirementFilter::ignoreAll();
+        $platformRequirementFilter = PlatformRequirementFilterFactory::ignoreAll();
 
         $this->assertInstanceOf('Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter', $platformRequirementFilter);
     }
 
     public function testIgnoreNothing()
     {
-        $platformRequirementFilter = PlatformRequirementFilter::ignoreNothing();
+        $platformRequirementFilter = PlatformRequirementFilterFactory::ignoreNothing();
 
         $this->assertInstanceOf('Composer\Filter\PlatformRequirementFilter\IgnoreNothingPlatformRequirementFilter', $platformRequirementFilter);
-    }
-
-    public function testIsAllIgnored()
-    {
-        $this->assertTrue(PlatformRequirementFilter::ignoreAll()->isAllIgnored());
-        $this->assertFalse(PlatformRequirementFilter::ignoreNothing()->isAllIgnored());
-    }
-
-    public function testIsNothingIgnored()
-    {
-        $this->assertTrue(PlatformRequirementFilter::ignoreNothing()->isNothingIgnored());
-        $this->assertFalse(PlatformRequirementFilter::ignoreAll()->isNothingIgnored());
     }
 }
