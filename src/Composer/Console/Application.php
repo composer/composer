@@ -368,7 +368,9 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @param \Exception $exception
+     *
+     * @return void
      */
     private function hintCommonErrors($exception)
     {
@@ -451,6 +453,8 @@ class Application extends BaseApplication
 
     /**
      * Removes the cached composer instance
+     *
+     * @return void
      */
     public function resetComposer()
     {

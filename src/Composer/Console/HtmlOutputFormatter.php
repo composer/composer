@@ -13,6 +13,7 @@
 namespace Composer\Console;
 
 use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -51,7 +52,7 @@ class HtmlOutputFormatter extends OutputFormatter
     );
 
     /**
-     * @param array $styles Array of "name => FormatterStyle" instances
+     * @param array<string, OutputFormatterStyle> $styles Array of "name => FormatterStyle" instances
      */
     public function __construct(array $styles = array())
     {
@@ -59,6 +60,8 @@ class HtmlOutputFormatter extends OutputFormatter
     }
 
     /**
+     * @param string $message
+     *
      * @return string
      */
     public function format($message)
@@ -71,6 +74,8 @@ class HtmlOutputFormatter extends OutputFormatter
     }
 
     /**
+     * @param string[] $matches
+     *
      * @return string
      */
     private function formatHtml($matches)
