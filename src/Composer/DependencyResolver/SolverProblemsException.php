@@ -14,7 +14,6 @@ namespace Composer\DependencyResolver;
 
 use Composer\Util\IniHelper;
 use Composer\Repository\RepositorySet;
-use Composer\Package\PackageInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
@@ -29,7 +28,7 @@ class SolverProblemsException extends \RuntimeException
     protected $learnedPool;
 
     /**
-     * @param Problem[]          $problems
+     * @param Problem[] $problems
      * @param array<Rule[]> $learnedPool
      */
     public function __construct(array $problems, array $learnedPool)
@@ -41,6 +40,8 @@ class SolverProblemsException extends \RuntimeException
     }
 
     /**
+     * @param bool $isVerbose
+     * @param bool $isDevExtraction
      * @return string
      */
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
@@ -123,6 +124,7 @@ class SolverProblemsException extends \RuntimeException
     }
 
     /**
+     * @param Rule[][] $reasonSets
      * @return bool
      */
     private function hasExtensionProblems(array $reasonSets)

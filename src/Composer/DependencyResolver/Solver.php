@@ -56,11 +56,6 @@ class Solver
     /** @var IOInterface */
     protected $io;
 
-    /**
-     * @param PolicyInterface $policy
-     * @param Pool            $pool
-     * @param IOInterface     $io
-     */
     public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io)
     {
         $this->io = $io;
@@ -171,9 +166,7 @@ class Solver
     }
 
     /**
-     * @param Request    $request
-     * @param bool|array $ignorePlatformReqs
-     *
+     * @param bool|string[] $ignorePlatformReqs
      * @return void
      */
     protected function checkForRootRequireProblems(Request $request, $ignorePlatformReqs)
@@ -192,8 +185,7 @@ class Solver
     }
 
     /**
-     * @param  Request         $request
-     * @param  bool|array      $ignorePlatformReqs
+     * @param  bool|string[]      $ignorePlatformReqs
      * @return LockTransaction
      */
     public function solve(Request $request, $ignorePlatformReqs = false)
@@ -304,7 +296,6 @@ class Solver
      *
      * @param  int        $level
      * @param  string|int $literal
-     * @param  Rule       $rule
      * @return int
      */
     private function setPropagateLearn($level, $literal, Rule $rule)
@@ -332,11 +323,6 @@ class Solver
                     "Trying to revert to invalid level ".(int) $newLevel." from level ".(int) $level."."
                 );
             }
-            if (!$newRule) {
-                throw new SolverBugException(
-                    "No rule was learned from analyzing $rule at level $level."
-                );
-            }
 
             $level = $newLevel;
 
@@ -358,8 +344,7 @@ class Solver
 
     /**
      * @param  int   $level
-     * @param  array $decisionQueue
-     * @param  Rule  $rule
+     * @param  int[] $decisionQueue
      * @return int
      */
     private function selectAndInstall($level, array $decisionQueue, Rule $rule)
@@ -379,8 +364,7 @@ class Solver
 
     /**
      * @param  int   $level
-     * @param  Rule  $rule
-     * @return array
+     * @return array{int, int, GenericRule, int}
      */
     protected function analyze($level, Rule $rule)
     {
@@ -527,6 +511,7 @@ class Solver
     }
 
     /**
+     * @param array<string, true> $ruleSeen
      * @return void
      */
     private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen)
@@ -557,7 +542,6 @@ class Solver
     }
 
     /**
-     * @param  Rule $conflictRule
      * @return int
      */
     private function analyzeUnsolvable(Rule $conflictRule)

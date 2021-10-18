@@ -52,6 +52,7 @@ class UninstallOperation extends SolverOperation implements OperationInterface
     }
 
     /**
+     * @param bool $lock
      * @return string
      */
     public static function format(PackageInterface $package, $lock = false)

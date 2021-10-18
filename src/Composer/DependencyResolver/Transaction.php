@@ -46,6 +46,10 @@ class Transaction
      */
     protected $resultPackagesByName = array();
 
+    /**
+     * @param PackageInterface[] $presentPackages
+     * @param PackageInterface[] $resultPackages
+     */
     public function __construct($presentPackages, $resultPackages)
     {
         $this->presentPackages = $presentPackages;
@@ -53,12 +57,18 @@ class Transaction
         $this->operations = $this->calculateOperations();
     }
 
-    /** @return OperationInterface[] */
+    /**
+     * @return OperationInterface[]
+     */
     public function getOperations()
     {
         return $this->operations;
     }
 
+    /**
+     * @param PackageInterface[] $resultPackages
+     * @return void
+     */
     private function setResultPackageMaps($resultPackages)
     {
         $packageSort = function (PackageInterface $a, PackageInterface $b) {
@@ -88,6 +98,9 @@ class Transaction
         }
     }
 
+    /**
+     * @return OperationInterface[]
+     */
     protected function calculateOperations()
     {
         $operations = array();
@@ -228,6 +241,9 @@ class Transaction
         return $roots;
     }
 
+    /**
+     * @return PackageInterface[]
+     */
     protected function getProvidersInResult(Link $link)
     {
         if (!isset($this->resultPackagesByName[$link->getTarget()])) {

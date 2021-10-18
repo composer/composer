@@ -28,6 +28,10 @@ class DefaultPolicy implements PolicyInterface
     /** @var bool */
     private $preferLowest;
 
+    /**
+     * @param bool $preferStable
+     * @param bool $preferLowest
+     */
     public function __construct($preferStable = false, $preferLowest = false)
     {
         $this->preferStable = $preferStable;
@@ -35,7 +39,10 @@ class DefaultPolicy implements PolicyInterface
     }
 
     /**
+     * @param string $operator One of Constraint::STR_OP_*
      * @return bool
+     *
+     * @phpstan-param Constraint::STR_OP_* $operator
      */
     public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
     {
@@ -101,6 +108,8 @@ class DefaultPolicy implements PolicyInterface
 
     /**
      * @protected
+     * @param ?string $requiredPackage
+     * @param bool $ignoreReplace
      * @return int
      */
     public function compareByPriority(Pool $pool, BasePackage $a, BasePackage $b, $requiredPackage = null, $ignoreReplace = false)
@@ -154,8 +163,6 @@ class DefaultPolicy implements PolicyInterface
      * Replace constraints are ignored. This method should only be used for
      * prioritisation, not for actual constraint verification.
      *
-     * @param  BasePackage $source
-     * @param  BasePackage $target
      * @return bool
      */
     protected function replaces(BasePackage $source, BasePackage $target)

@@ -52,6 +52,7 @@ class RuleWatchNode
      * likely to quickly lead to further decisions.
      *
      * @param Decisions $decisions The decisions made so far by the solver
+     * @return void
      */
     public function watch2OnHighest(Decisions $decisions)
     {
@@ -104,6 +105,7 @@ class RuleWatchNode
      *
      * @param int $from The previously watched literal
      * @param int $to   The literal to be watched now
+     * @return void
      */
     public function moveWatch($from, $to)
     {

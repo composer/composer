@@ -14,6 +14,8 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\LockArrayRepository;
@@ -47,6 +49,7 @@ class Problem
      * Add a rule as a reason
      *
      * @param Rule $rule A rule which is a reason for this problem
+     * @return void
      */
     public function addRule(Rule $rule)
     {
@@ -56,7 +59,7 @@ class Problem
     /**
      * Retrieve all reasons for this problem
      *
-     * @return array The problem's reasons
+     * @return array<int, array<int, Rule>> The problem's reasons
      */
     public function getReasons()
     {
@@ -66,7 +69,9 @@ class Problem
     /**
      * A human readable textual representation of the problem's reasons
      *
-     * @param  array  $installedMap A map of all present packages
+     * @param bool $isVerbose
+     * @param array<int|string, BasePackage> $installedMap A map of all present packages
+     * @param array<Rule[]> $learnedPool
      * @return string
      */
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
@@ -101,8 +106,13 @@ class Problem
     }
 
     /**
-     * @internal
+     * @param Rule[] $rules
+     * @param string $indent
+     * @param bool $isVerbose
+     * @param array<int|string, BasePackage> $installedMap A map of all present packages
+     * @param array<Rule[]> $learnedPool
      * @return string
+     * @internal
      */
     public static function formatDeduplicatedRules($rules, $indent, RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
     {
@@ -166,7 +176,6 @@ class Problem
      *
      * @param string $id     A canonical identifier for the reason
      * @param Rule   $reason The reason descriptor
-     *
      * @return void
      */
     protected function addReason($id, Rule $reason)
@@ -190,9 +199,11 @@ class Problem
 
     /**
      * @internal
+     * @param bool $isVerbose
+     * @param string $packageName
      * @return array{0: string, 1: string}
      */
-    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, $constraint = null)
+    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, ConstraintInterface $constraint = null)
     {
         // handle php/hhvm
         if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
@@ -343,6 +354,8 @@ class Problem
 
     /**
      * @internal
+     * @param PackageInterface[] $packages
+     * @param bool $isVerbose
      * @return string
      */
     public static function getPackageList(array $packages, $isVerbose)
@@ -395,7 +408,9 @@ class Problem
     }
 
     /**
-     * @param  string[]     $versions an array of pretty versions, with normalized versions as keys
+     * @param string[] $versions an array of pretty versions, with normalized versions as keys
+     * @param int $max
+     * @param int $maxDev
      * @return list<string> a list of pretty versions and '...' where versions were removed
      */
     private static function condenseVersionList(array $versions, $max, $maxDev = 16)
@@ -429,6 +444,7 @@ class Problem
     }
 
     /**
+     * @param PackageInterface[] $packages
      * @return bool
      */
     private static function hasMultipleNames(array $packages)
@@ -446,6 +462,12 @@ class Problem
     }
 
     /**
+     * @param bool $isVerbose
+     * @param string $packageName
+     * @param ?ConstraintInterface $constraint
+     * @param PackageInterface[] $higherRepoPackages
+     * @param PackageInterface[] $allReposPackages
+     * @param string $reason
      * @return array{0: string, 1: string}
      */
     private static function computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, array $higherRepoPackages, array $allReposPackages, $reason)
