@@ -14,6 +14,7 @@ namespace Composer\DependencyResolver;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ * @phpstan-import-type ReasonData from Rule
  */
 class Rule2Literals extends Rule
 {
