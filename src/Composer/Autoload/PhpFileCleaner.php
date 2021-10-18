@@ -10,6 +10,7 @@ class PhpFileCleaner
 {
     /** @var array<array{name: string, length: int, pattern: string}> */
     private static $typeConfig;
+
     /** @var string */
     private static $restPattern;
 
@@ -34,6 +35,10 @@ class PhpFileCleaner
     /** @var int */
     private $index = 0;
 
+    /**
+     * @param string[] $types
+     * @return void
+     */
     public static function setTypeConfig($types)
     {
         foreach ($types as $type) {
@@ -47,6 +52,10 @@ class PhpFileCleaner
         self::$restPattern = '{[^?"\'</'.implode('', array_keys(self::$typeConfig)).']+}A';
     }
 
+    /**
+     * @param string $contents
+     * @param int $maxMatches
+     */
     public function __construct($contents, $maxMatches)
     {
         $this->contents = $contents;
@@ -126,6 +135,9 @@ class PhpFileCleaner
         return $clean;
     }
 
+    /**
+     * @return void
+     */
     private function skipToPhp()
     {
         while ($this->index < $this->len) {
@@ -138,6 +150,10 @@ class PhpFileCleaner
         }
     }
 
+    /**
+     * @param string $delimiter
+     * @return void
+     */
     private function skipString($delimiter)
     {
         $this->index += 1;
@@ -154,6 +170,9 @@ class PhpFileCleaner
         }
     }
 
+    /**
+     * @return void
+     */
     private function skipComment()
     {
         $this->index += 2;
@@ -167,6 +186,9 @@ class PhpFileCleaner
         }
     }
 
+    /**
+     * @return void
+     */
     private function skipToNewline()
     {
         while ($this->index < $this->len) {
@@ -177,6 +199,10 @@ class PhpFileCleaner
         }
     }
 
+    /**
+     * @param string $delimiter
+     * @return void
+     */
     private function skipHeredoc($delimiter)
     {
         $firstDelimiterChar = $delimiter[0];
@@ -216,6 +242,7 @@ class PhpFileCleaner
     }
 
     /**
+     * @param string $char
      * @return bool
      */
     private function peek($char)
@@ -224,6 +251,8 @@ class PhpFileCleaner
     }
 
     /**
+     * @param string $regex
+     * @param ?array<int, string> $match
      * @return bool
      */
     private function match($regex, array &$match = null)
