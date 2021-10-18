@@ -32,9 +32,8 @@ class RuleSet implements \IteratorAggregate, \Countable
      */
     public $ruleById = array();
 
-    /** @var array<255|0|1|4, string> */
+    /** @var array<0|1|4, string> */
     protected static $types = array(
-        255 => 'UNKNOWN',
         self::TYPE_PACKAGE => 'PACKAGE',
         self::TYPE_REQUEST => 'REQUEST',
         self::TYPE_LEARNED => 'LEARNED',
@@ -57,7 +56,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     }
 
     /**
-     * @param 255|self::TYPE_* $type
+     * @param self::TYPE_* $type
      * @return void
      */
     public function add(Rule $rule, $type)
@@ -182,7 +181,6 @@ class RuleSet implements \IteratorAggregate, \Countable
     public function getTypes()
     {
         $types = self::$types;
-        unset($types[255]);
 
         return array_keys($types);
     }
