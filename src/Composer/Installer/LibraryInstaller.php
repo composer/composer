@@ -272,7 +272,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * @return FulfilledPromise|Promise|PromiseInterface|RejectedPromise|null
+     * @return PromiseInterface|null
      */
     protected function updateCode(PackageInterface $initial, PackageInterface $target)
     {
