@@ -422,7 +422,13 @@ class Git
         return self::$version;
     }
 
-    private function maskCredentials(string $error, array $credentials)
+    /**
+     * @param string   $error
+     * @param string[] $credentials
+     *
+     * @return string
+     */
+    private function maskCredentials($error, array $credentials)
     {
         $maskedCredentials = array();
 
