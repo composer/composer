@@ -21,6 +21,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
+use React\Promise\PromiseInterface;
 
 class InstallationManagerMock extends InstallationManager
 {
@@ -65,7 +66,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * @return void
+     * @return PromiseInterface|void|null
      */
     public function install(InstalledRepositoryInterface $repo, InstallOperation $operation)
     {
@@ -75,7 +76,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * @return void
+     * @return PromiseInterface|void|null
      */
     public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation)
     {
@@ -88,7 +89,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * @return void
+     * @return PromiseInterface|void|null
      */
     public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation)
     {
