@@ -58,12 +58,12 @@ class Perforce
     protected $filesystem;
 
     /**
-     * @param RepoConfig      $repoConfig
-     * @param string          $port
-     * @param string          $path
-     * @param ProcessExecutor $process
-     * @param bool            $isWindows
-     * @param IOInterface     $io
+     * @phpstan-param RepoConfig $repoConfig
+     * @param string             $port
+     * @param string             $path
+     * @param ProcessExecutor    $process
+     * @param bool               $isWindows
+     * @param IOInterface        $io
      */
     public function __construct($repoConfig, $port, $path, ProcessExecutor $process, $isWindows, IOInterface $io)
     {
@@ -76,11 +76,11 @@ class Perforce
     }
 
     /**
-     * @param RepoConfig      $repoConfig
-     * @param string          $port
-     * @param string          $path
-     * @param ProcessExecutor $process
-     * @param IOInterface     $io
+     * @phpstan-param RepoConfig $repoConfig
+     * @param string             $port
+     * @param string             $path
+     * @param ProcessExecutor    $process
+     * @param IOInterface        $io
      *
      * @return self
      */
@@ -103,7 +103,7 @@ class Perforce
     }
 
     /**
-     * @param RepoConfig $repoConfig
+     * @phpstan-param RepoConfig $repoConfig
      *
      * @return void
      */
