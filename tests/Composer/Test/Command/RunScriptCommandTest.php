@@ -88,6 +88,7 @@ class RunScriptCommandTest extends TestCase
         $command->run($input, $output);
     }
 
+    /** @return bool[][] **/
     public function getDevOptions()
     {
         return array(
@@ -98,6 +99,7 @@ class RunScriptCommandTest extends TestCase
         );
     }
 
+    /** @return object **/
     private function createComposerInstance()
     {
         $composer = new Composer;
