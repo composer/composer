@@ -145,7 +145,7 @@ class RuleSetGenerator
      * To be able to directly pass in the result of one of the rule creation
      * methods null is allowed which will not insert a rule.
      *
-     * @param 255|RuleSet::TYPE_* $type A TYPE_* constant defining the rule type
+     * @param RuleSet::TYPE_* $type A TYPE_* constant defining the rule type
      * @param Rule $newRule The rule about to be added
      *
      * @return void

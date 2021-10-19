@@ -125,7 +125,7 @@ abstract class Rule
     }
 
     /**
-     * @param 255|RuleSet::TYPE_* $type
+     * @param RuleSet::TYPE_* $type
      * @return void
      */
     public function setType($type)
