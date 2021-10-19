@@ -52,7 +52,6 @@ class BinaryInstaller
     }
 
     /**
-     * @param PackageInterface $package
      * @param string $installPath
      * @param bool $warnOnOverwrite
      *
