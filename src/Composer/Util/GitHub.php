@@ -132,11 +132,11 @@ class GitHub
     }
 
     /**
-     * Extract ratelimit from response.
+     * Extract rate limit from response.
      *
-     * @param array $headers Headers from Composer\Downloader\TransportException.
+     * @param string[] $headers Headers from Composer\Downloader\TransportException.
      *
-     * @return array Associative array with the keys limit and reset.
+     * @return array{limit: int|'?', reset: string}
      */
     public function getRateLimit(array $headers)
     {
@@ -167,7 +167,7 @@ class GitHub
     /**
      * Finds whether a request failed due to rate limiting
      *
-     * @param array $headers Headers from Composer\Downloader\TransportException.
+     * @param string[] $headers Headers from Composer\Downloader\TransportException.
      *
      * @return bool
      */

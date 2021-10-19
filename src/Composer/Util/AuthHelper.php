@@ -37,6 +37,8 @@ class AuthHelper
     /**
      * @param string      $origin
      * @param string|bool $storeAuth
+     *
+     * @return void
      */
     public function storeAuth($origin, $storeAuth)
     {
@@ -192,10 +194,11 @@ class AuthHelper
     }
 
     /**
-     * @param  array  $headers
-     * @param  string $origin
-     * @param  string $url
-     * @return array  updated headers array
+     * @param string[] $headers
+     * @param string   $origin
+     * @param string   $url
+     *
+     * @return string[] updated headers array
      */
     public function addAuthenticationHeader(array $headers, $origin, $url)
     {
