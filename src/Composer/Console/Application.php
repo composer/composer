@@ -368,11 +368,9 @@ class Application extends BaseApplication
     }
 
     /**
-     * @param \Exception $exception
-     *
      * @return void
      */
-    private function hintCommonErrors($exception)
+    private function hintCommonErrors(\Exception $exception)
     {
         $io = $this->getIO();
 
