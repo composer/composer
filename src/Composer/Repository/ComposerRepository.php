@@ -1038,8 +1038,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         // legacy repo handling
         if (!isset($data['packages']) && !isset($data['includes'])) {
             foreach ($data as $pkg) {
-                foreach ($pkg['versions'] as $metadata) {
-                    $packages[] = $metadata;
+                if (isset($pkg['versions']) && is_array($pkg['versions'])) {
+                    foreach ($pkg['versions'] as $metadata) {
+                        $packages[] = $metadata;
+                    }
                 }
             }
 
