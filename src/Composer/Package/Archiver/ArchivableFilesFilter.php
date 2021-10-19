@@ -36,6 +36,12 @@ class ArchivableFilesFilter extends FilterIterator
         return true;
     }
 
+    /**
+     * @param PharData $phar
+     * @param string $sources
+     *
+     * @return void
+     */
     public function addEmptyDir(PharData $phar, $sources)
     {
         foreach ($this->dirs as $filepath) {
