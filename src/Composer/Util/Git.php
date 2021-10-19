@@ -330,8 +330,6 @@ class Git
     }
 
     /**
-     * @param ProcessExecutor $process
-     *
      * @return string
      */
     public static function getNoShowSignatureFlag(ProcessExecutor $process)
@@ -425,8 +423,6 @@ class Git
     }
 
     /**
-     * @param Config $config
-     *
      * @return non-empty-string
      */
     public static function getGitHubDomainsRegex(Config $config)
@@ -435,8 +431,6 @@ class Git
     }
 
     /**
-     * @param Config $config
-     *
      * @return non-empty-string
      */
     public static function getGitLabDomainsRegex(Config $config)

@@ -751,8 +751,6 @@ class Perforce
     }
 
     /**
-     * @param Filesystem $fs
-     *
      * @return void
      */
     public function setFilesystem(Filesystem $fs)
