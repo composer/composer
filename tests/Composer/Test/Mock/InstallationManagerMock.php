@@ -64,6 +64,9 @@ class InstallationManagerMock extends InstallationManager
         return $repo->hasPackage($package);
     }
 
+    /**
+     * @return void
+     */
     public function install(InstalledRepositoryInterface $repo, InstallOperation $operation)
     {
         $this->installed[] = $operation->getPackage();
@@ -71,6 +74,9 @@ class InstallationManagerMock extends InstallationManager
         $repo->addPackage(clone $operation->getPackage());
     }
 
+    /**
+     * @return void
+     */
     public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation)
     {
         $this->updated[] = array($operation->getInitialPackage(), $operation->getTargetPackage());
@@ -81,6 +87,9 @@ class InstallationManagerMock extends InstallationManager
         }
     }
 
+    /**
+     * @return void
+     */
     public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation)
     {
         $this->uninstalled[] = $operation->getPackage();
