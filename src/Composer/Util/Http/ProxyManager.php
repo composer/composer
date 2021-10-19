@@ -71,6 +71,8 @@ class ProxyManager
 
     /**
      * Clears the persistent instance
+     *
+     * @return void
      */
     public static function reset()
     {
@@ -130,6 +132,8 @@ class ProxyManager
 
     /**
      * Initializes proxy values from the environment
+     *
+     * @return void
      */
     private function initProxyData()
     {
@@ -160,8 +164,10 @@ class ProxyManager
     /**
      * Sets initial data
      *
-     * @param string $url    Proxy url
-     * @param 'http'|'https' $scheme Environment variable scheme
+     * @param non-empty-string $url    Proxy url
+     * @param 'http'|'https'   $scheme Environment variable scheme
+     *
+     * @return non-empty-string
      */
     private function setData($url, $scheme)
     {

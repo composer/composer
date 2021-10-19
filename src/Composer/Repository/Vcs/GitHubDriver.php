@@ -469,7 +469,7 @@ class GitHubDriver extends VcsDriver
                         }
                     }
 
-                    $rateLimited = $gitHubUtil->isRateLimited($e->getHeaders());
+                    $rateLimited = $gitHubUtil->isRateLimited((array) $e->getHeaders());
 
                     if (!$this->io->hasAuthentication($this->originUrl)) {
                         if (!$this->io->isInteractive()) {
@@ -575,7 +575,7 @@ class GitHubDriver extends VcsDriver
     protected function getNextPage(Response $response)
     {
         $header = $response->getHeader('link');
-        
+
         if (!$header) {
             return;
         }

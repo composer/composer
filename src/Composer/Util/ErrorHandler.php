@@ -82,6 +82,8 @@ class ErrorHandler
      * Register error handler.
      *
      * @param IOInterface|null $io
+     *
+     * @return void
      */
     public static function register(IOInterface $io = null)
     {

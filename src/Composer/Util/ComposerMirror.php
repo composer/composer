@@ -19,6 +19,16 @@ namespace Composer\Util;
  */
 class ComposerMirror
 {
+    /**
+     * @param string      $mirrorUrl
+     * @param string      $packageName
+     * @param string      $version
+     * @param string|null $reference
+     * @param string|null $type
+     * @param string|null $prettyVersion
+     *
+     * @return string
+     */
     public static function processUrl($mirrorUrl, $packageName, $version, $reference, $type, $prettyVersion = null)
     {
         if ($reference) {
@@ -36,6 +46,14 @@ class ComposerMirror
         return str_replace($from, $to, $mirrorUrl);
     }
 
+    /**
+     * @param string      $mirrorUrl
+     * @param string      $packageName
+     * @param string      $url
+     * @param string|null $type
+     *
+     * @return string
+     */
     public static function processGitUrl($mirrorUrl, $packageName, $url, $type)
     {
         if (preg_match('#^(?:(?:https?|git)://github\.com/|git@github\.com:)([^/]+)/(.+?)(?:\.git)?$#', $url, $match)) {
@@ -53,6 +71,14 @@ class ComposerMirror
         );
     }
 
+    /**
+     * @param string $mirrorUrl
+     * @param string $packageName
+     * @param string $url
+     * @param string $type
+     *
+     * @return string
+     */
     public static function processHgUrl($mirrorUrl, $packageName, $url, $type)
     {
         return self::processGitUrl($mirrorUrl, $packageName, $url, $type);
