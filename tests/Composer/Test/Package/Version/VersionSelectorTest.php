@@ -100,6 +100,31 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
     }
 
+    public function testLatestVersionIsReturnedThatMatchesPlatformExt()
+    {
+        $packageName = 'foobar';
+
+        $platform = new PlatformRepository();
+        $repositorySet = $this->createMockRepositorySet();
+        $versionSelector = new VersionSelector($repositorySet, $platform);
+
+        $parser = new VersionParser;
+        $package1 = $this->createPackage('1.0.0');
+        $package2 = $this->createPackage('2.0.0');
+        $package2->setRequires(array('ext-barfoo' => new Link($packageName, 'ext-barfoo', $parser->parseConstraints('*'), Link::TYPE_REQUIRE, '*')));
+        $packages = array($package1, $package2);
+
+        $repositorySet->expects($this->any())
+            ->method('findPackages')
+            ->with($packageName, null)
+            ->will($this->returnValue($packages));
+
+        $best = $versionSelector->findBestCandidate($packageName);
+        $this->assertSame($package1, $best, 'Latest version not requiring ext-barfoo should be returned (1.0.0)');
+        $best = $versionSelector->findBestCandidate($packageName, null, 'stable', true);
+        $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
+    }
+
     public function testLatestVersionIsReturnedThatMatchesComposerRequirements()
     {
         $packageName = 'foobar';
