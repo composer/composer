@@ -66,7 +66,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * @return PromiseInterface|null
+     * @return PromiseInterface|void|null
      */
     public function install(InstalledRepositoryInterface $repo, InstallOperation $operation)
     {
@@ -76,7 +76,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * @return PromiseInterface|null
+     * @return PromiseInterface|void|null
      */
     public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation)
     {
@@ -89,7 +89,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * @return PromiseInterface|null
+     * @return PromiseInterface|void|null
      */
     public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation)
     {
