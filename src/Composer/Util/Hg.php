@@ -86,7 +86,7 @@ class Hg
      * @param non-empty-string $message
      * @param string           $url
      *
-     * @return never-return
+     * @return never
      */
     private function throwException($message, $url)
     {
