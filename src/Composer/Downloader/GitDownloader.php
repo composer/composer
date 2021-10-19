@@ -21,6 +21,7 @@ use Composer\Util\Url;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Cache;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -329,7 +330,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         if (!$changes = $this->getLocalChanges($package, $path)) {
-            return;
+            return \React\Promise\resolve();
         }
 
         if (!$this->io->isInteractive()) {
@@ -398,6 +399,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                     break;
             }
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
@@ -485,12 +488,24 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         throw new \RuntimeException(Url::sanitize('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()));
     }
 
+    /**
+     * @param string      $path
+     * @param string|null $url
+     *
+     * @return void
+     */
     protected function updateOriginUrl($path, $url)
     {
         $this->process->execute(sprintf('git remote set-url origin -- %s', ProcessExecutor::escape($url)), $output, $path);
         $this->setPushUrl($path, $url);
     }
 
+    /**
+     * @param string      $path
+     * @param string|null $url
+     *
+     * @return void
+     */
     protected function setPushUrl($path, $url)
     {
         // set push url for github projects
@@ -521,7 +536,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * @param  string            $path
+     * @param string $path
+     *
+     * @return PromiseInterface
+     *
      * @throws \RuntimeException
      */
     protected function discardChanges($path)
@@ -532,10 +550,15 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         $this->hasDiscardedChanges[$path] = true;
+
+        return \React\Promise\resolve();
     }
 
     /**
-     * @param  string            $path
+     * @param string $path
+     *
+     * @return PromiseInterface
+     *
      * @throws \RuntimeException
      */
     protected function stashChanges($path)
@@ -546,10 +569,15 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         $this->hasStashedChanges[$path] = true;
+
+        return \React\Promise\resolve();
     }
 
     /**
-     * @param  string            $path
+     * @param string $path
+     *
+     * @return void
+     *
      * @throws \RuntimeException
      */
     protected function viewDiff($path)
@@ -562,6 +590,11 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $this->io->writeError($output);
     }
 
+    /**
+     * @param string $path
+     *
+     * @return string
+     */
     protected function normalizePath($path)
     {
         if (Platform::isWindows() && strlen($path) > 0) {

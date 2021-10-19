@@ -259,6 +259,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @param  string            $path
      * @param  bool              $update  if true (update) the changes can be stashed and reapplied after an update,
      *                                    if false (remove) the changes should be assumed to be lost if the operation is not aborted
+     *
+     * @return PromiseInterface
+     *
      * @throws \RuntimeException in case the operation must be aborted
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)
@@ -274,7 +277,10 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * Reapply previously stashes changes if applicable, only called after an update (regardless if successful or not)
      *
-     * @param  string            $path
+     * @param string $path
+     *
+     * @return void
+     *
      * @throws \RuntimeException in case the operation must be aborted or the patch does not apply cleanly
      */
     protected function reapplyChanges($path)
@@ -336,6 +342,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     abstract protected function hasMetadataRepository($path);
 
     /**
+     * @param string[] $urls
+     *
      * @return string[]
      */
     private function prepareUrls(array $urls)

@@ -54,9 +54,13 @@ abstract class ArchiveDownloader extends FileDownloader
 
     /**
      * {@inheritDoc}
+     *
+     * @param bool $output
+     *
+     * @return PromiseInterface
+     *
      * @throws \RuntimeException
      * @throws \UnexpectedValueException
-     * @return PromiseInterface
      */
     public function install(PackageInterface $package, $path, $output = true)
     {
