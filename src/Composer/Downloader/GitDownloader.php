@@ -121,7 +121,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
         $sourceUrl = $package->getSourceUrl();
-        if ($url !== $sourceUrl && $sourceUrl !== null ) {
+        if ($url !== $sourceUrl && $sourceUrl !== null) {
             $this->updateOriginUrl($path, $sourceUrl);
         } else {
             $this->setPushUrl($path, $url);
