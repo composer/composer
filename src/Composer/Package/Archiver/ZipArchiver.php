@@ -84,6 +84,9 @@ class ZipArchiver implements ArchiverInterface
         return isset(static::$formats[$format]) && $this->compressionAvailable();
     }
 
+    /**
+     * @return bool
+     */
     private function compressionAvailable()
     {
         return class_exists('ZipArchive');

@@ -52,7 +52,7 @@ class GitExcludeFilter extends BaseExcludeFilter
      *
      * @param string $line A line from .gitignore
      *
-     * @return array An exclude pattern for filter()
+     * @return array{0: string, 1: bool, 2: bool} An exclude pattern for filter()
      */
     public function parseGitIgnoreLine($line)
     {
@@ -64,7 +64,7 @@ class GitExcludeFilter extends BaseExcludeFilter
      *
      * @param string $line A line from .gitattributes
      *
-     * @return array|null An exclude pattern for filter()
+     * @return array{0: string, 1: bool, 2: bool}|null An exclude pattern for filter()
      */
     public function parseGitAttributesLine($line)
     {

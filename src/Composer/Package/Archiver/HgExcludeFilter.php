@@ -54,7 +54,7 @@ class HgExcludeFilter extends BaseExcludeFilter
      *
      * @param string $line A line from .hgignore
      *
-     * @return array|null An exclude pattern for filter()
+     * @return array{0: string, 1: bool, 2: bool}|null An exclude pattern for filter()
      */
     public function parseHgIgnoreLine($line)
     {
@@ -80,7 +80,7 @@ class HgExcludeFilter extends BaseExcludeFilter
      *
      * @param string $line A line from .hgignore in glob mode
      *
-     * @return array An exclude pattern for filter()
+     * @return array{0: string, 1: bool, 2: bool} An exclude pattern for filter()
      */
     protected function patternFromGlob($line)
     {
@@ -95,7 +95,7 @@ class HgExcludeFilter extends BaseExcludeFilter
      *
      * @param string $line A line from .hgignore in regexp mode
      *
-     * @return array An exclude pattern for filter()
+     * @return array{0: string, 1: bool, 2: bool} An exclude pattern for filter()
      */
     public function patternFromRegex($line)
     {
