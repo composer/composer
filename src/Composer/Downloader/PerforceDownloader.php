@@ -68,9 +68,8 @@ class PerforceDownloader extends VcsDownloader
     }
 
     /**
-     * @param PackageInterface $package
-     * @param string           $path
-     * @param string           $url
+     * @param string $path
+     * @param string $url
      *
      * @return void
      */
