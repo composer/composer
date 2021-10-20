@@ -502,8 +502,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * @param string      $path
-     * @param string|null $url
+     * @param string $path
+     * @param string $url
      *
      * @return void
      */
