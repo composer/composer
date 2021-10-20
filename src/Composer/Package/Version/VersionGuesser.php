@@ -26,6 +26,8 @@ use Composer\Util\Svn as SvnUtil;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Samuel Roze <samuel.roze@gmail.com>
+ *
+ * @phpstan-type Version array{version: string|null, commit: string|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}
  */
 class VersionGuesser
 {
@@ -57,10 +59,10 @@ class VersionGuesser
     }
 
     /**
-     * @param array  $packageConfig
-     * @param string $path          Path to guess into
+     * @param array<string, mixed> $packageConfig
+     * @param string               $path Path to guess into
      *
-     * @return null|array versionData, 'version', 'pretty_version' and 'commit' keys, if the version is a feature branch, 'feature_version' and 'feature_pretty_version' keys may also be returned
+     * @phpstan-return Version|null
      */
     public function guessVersion(array $packageConfig, $path)
     {
@@ -91,6 +93,11 @@ class VersionGuesser
         return null;
     }
 
+    /**
+     * @phpstan-param Version $versionData
+     *
+     * @phpstan-return Version
+     */
     private function postprocess(array $versionData)
     {
         if (!empty($versionData['feature_version']) && $versionData['feature_version'] === $versionData['version'] && $versionData['feature_pretty_version'] === $versionData['pretty_version']) {
@@ -108,6 +115,12 @@ class VersionGuesser
         return $versionData;
     }
 
+    /**
+     * @param array<string, mixed> $packageConfig
+     * @param string               $path
+     *
+     * @phpstan-return Version
+     */
     private function guessGitVersion(array $packageConfig, $path)
     {
         GitUtil::cleanEnv();
@@ -188,6 +201,11 @@ class VersionGuesser
         return array('version' => $version, 'commit' => $commit, 'pretty_version' => $prettyVersion);
     }
 
+    /**
+     * @param string $path
+     *
+     * @return array{version: string, pretty_version: string}|null
+     */
     private function versionFromGitTags($path)
     {
         // try to fetch current version from git tags
@@ -203,6 +221,12 @@ class VersionGuesser
         return null;
     }
 
+    /**
+     * @param array<string, mixed> $packageConfig
+     * @param string               $path
+     *
+     * @phpstan-return Version|null
+     */
     private function guessHgVersion(array $packageConfig, $path)
     {
         // try to fetch current version from hg branch
@@ -232,8 +256,19 @@ class VersionGuesser
 
             return $result;
         }
+
+        return null;
     }
 
+    /**
+     * @param array<string, mixed> $packageConfig
+     * @param string|null          $version
+     * @param string[]             $branches
+     * @param non-empty-string     $scmCmdline
+     * @param string               $path
+     *
+     * @return array{version: string|null, pretty_version: string|null}
+     */
     private function guessFeatureVersion(array $packageConfig, $version, array $branches, $scmCmdline, $path)
     {
         $prettyVersion = $version;
@@ -292,6 +327,12 @@ class VersionGuesser
         return array('version' => $version, 'pretty_version' => $prettyVersion);
     }
 
+    /**
+     * @param array<string, mixed> $packageConfig
+     * @param string|null          $branchName
+     *
+     * @return bool
+     */
     private function isFeatureBranch(array $packageConfig, $branchName)
     {
         $nonFeatureBranches = '';
@@ -302,6 +343,11 @@ class VersionGuesser
         return !preg_match('{^(' . $nonFeatureBranches . '|master|main|latest|next|current|support|tip|trunk|default|develop|\d+\..+)$}', $branchName, $match);
     }
 
+    /**
+     * @param string $path
+     *
+     * @phpstan-return Version
+     */
     private function guessFossilVersion($path)
     {
         $version = null;
@@ -326,6 +372,12 @@ class VersionGuesser
         return array('version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion);
     }
 
+    /**
+     * @param array<string, mixed> $packageConfig
+     * @param string               $path
+     *
+     * @phpstan-return Version|null
+     */
     private function guessSvnVersion(array $packageConfig, $path)
     {
         SvnUtil::cleanEnv();
@@ -357,5 +409,7 @@ class VersionGuesser
                 return array('version' => $version, 'commit' => '', 'pretty_version' => $prettyVersion);
             }
         }
+
+        return null;
     }
 }

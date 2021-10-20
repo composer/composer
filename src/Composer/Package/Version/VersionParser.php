@@ -42,9 +42,9 @@ class VersionParser extends SemverVersionParser
      * The parsing results in an array of arrays, each of which
      * contain a 'name' key with value and optionally a 'version' key with value.
      *
-     * @param array $pairs a set of package/version pairs separated by ":", "=" or " "
+     * @param string[] $pairs a set of package/version pairs separated by ":", "=" or " "
      *
-     * @return array[] array of arrays containing a name and (if provided) a version
+     * @return array<array{name: string, version?: string}> array of arrays containing a name and (if provided) a version
      */
     public function parseNameVersionPairs(array $pairs)
     {
@@ -70,6 +70,9 @@ class VersionParser extends SemverVersionParser
     }
 
     /**
+     * @param string $normalizedFrom
+     * @param string $normalizedTo
+     *
      * @return bool
      */
     public static function isUpgrade($normalizedFrom, $normalizedTo)
