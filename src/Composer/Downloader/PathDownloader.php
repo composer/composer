@@ -247,7 +247,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @param mixed[] $transportOptions
      *
-     * @return array{int, non-empty-list<int>}
+     * @phpstan-return array{self::STRATEGY_*, non-empty-list<self::STRATEGY_*>}
      */
     private function computeAllowedStrategies(array $transportOptions)
     {
