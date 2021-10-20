@@ -50,7 +50,7 @@ class Comparer
      * @param bool $toString
      * @param bool $explicated
      *
-     * @return string|false
+     * @return array{changed?: string[], removed?: string[], added?: string[]}|string|false false if no change, string only if $toString is true
      */
     public function getChanged($toString = false, $explicated = false)
     {
