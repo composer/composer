@@ -23,6 +23,9 @@ use Composer\Package\RootPackageInterface;
  */
 class ArrayDumper
 {
+    /**
+     * @return array<string, mixed>
+     */
     public function dump(PackageInterface $package)
     {
         $keys = array(
@@ -139,6 +142,12 @@ class ArrayDumper
         return $data;
     }
 
+    /**
+     * @param array<int|string, string> $keys
+     * @param array<string, mixed>      $data
+     *
+     * @return array<string, mixed>
+     */
     private function dumpValues(PackageInterface $package, array $keys, array $data)
     {
         foreach ($keys as $method => $key) {
