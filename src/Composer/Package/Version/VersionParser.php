@@ -44,7 +44,7 @@ class VersionParser extends SemverVersionParser
      *
      * @param string[] $pairs a set of package/version pairs separated by ":", "=" or " "
      *
-     * @return array<array{name: string, version?: string}> array of arrays containing a name and (if provided) a version
+     * @return list<array{name: string, version?: string}>
      */
     public function parseNameVersionPairs(array $pairs)
     {

@@ -57,11 +57,11 @@ class VersionSelector
      * Given a package name and optional version, returns the latest PackageInterface
      * that matches.
      *
-     * @param string                           $packageName
-     * @param string                           $targetPackageVersion
-     * @param string                           $preferredStability
-     * @param bool|string[]                    $ignorePlatformReqs
-     * @phpstan-param RepositorySet::ALLOW_*|0 $repoSetFlags
+     * @param string        $packageName
+     * @param string        $targetPackageVersion
+     * @param string        $preferredStability
+     * @param bool|string[] $ignorePlatformReqs
+     * @param int           $repoSetFlags
      *
      * @return PackageInterface|false
      */

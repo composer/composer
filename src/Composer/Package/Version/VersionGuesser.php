@@ -27,7 +27,7 @@ use Composer\Util\Svn as SvnUtil;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Samuel Roze <samuel.roze@gmail.com>
  *
- * @phpstan-type Version array{version: string|null, commit: string|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}
+ * @phpstan-type Version array{version: string, commit: string|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}
  */
 class VersionGuesser
 {
@@ -62,6 +62,7 @@ class VersionGuesser
      * @param array<string, mixed> $packageConfig
      * @param string               $path Path to guess into
      *
+     * @return array|null
      * @phpstan-return Version|null
      */
     public function guessVersion(array $packageConfig, $path)
@@ -94,8 +95,11 @@ class VersionGuesser
     }
 
     /**
+     * @param array $versionData
+     *
      * @phpstan-param Version $versionData
      *
+     * @return array
      * @phpstan-return Version
      */
     private function postprocess(array $versionData)
@@ -119,7 +123,7 @@ class VersionGuesser
      * @param array<string, mixed> $packageConfig
      * @param string               $path
      *
-     * @phpstan-return Version
+     * @return array{version: string|null, commit: string|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}
      */
     private function guessGitVersion(array $packageConfig, $path)
     {
@@ -225,7 +229,7 @@ class VersionGuesser
      * @param array<string, mixed> $packageConfig
      * @param string               $path
      *
-     * @phpstan-return Version|null
+     * @return array{version: string|null, commit: ''|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}|null
      */
     private function guessHgVersion(array $packageConfig, $path)
     {
@@ -261,11 +265,13 @@ class VersionGuesser
     }
 
     /**
-     * @param array<string, mixed> $packageConfig
-     * @param string|null          $version
-     * @param string[]             $branches
-     * @param non-empty-string     $scmCmdline
-     * @param string               $path
+     * @param array<string, mixed>     $packageConfig
+     * @param string|null              $version
+     * @param string[]                 $branches
+     * @param string                   $scmCmdline
+     * @param string                   $path
+     *
+     * @phpstan-param non-empty-string $scmCmdline
      *
      * @return array{version: string|null, pretty_version: string|null}
      */
@@ -346,7 +352,7 @@ class VersionGuesser
     /**
      * @param string $path
      *
-     * @phpstan-return Version
+     * @return array{version: string|null, commit: '', pretty_version: string|null}
      */
     private function guessFossilVersion($path)
     {
@@ -376,7 +382,7 @@ class VersionGuesser
      * @param array<string, mixed> $packageConfig
      * @param string               $path
      *
-     * @phpstan-return Version|null
+     * @return array{version: string, commit: '', pretty_version: string}|null
      */
     private function guessSvnVersion(array $packageConfig, $path)
     {
