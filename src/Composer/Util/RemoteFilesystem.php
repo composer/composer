@@ -324,7 +324,7 @@ class RemoteFilesystem
                 try {
                     $e->setResponse($this->decodeResult($result, $http_response_header));
                 } catch (\Exception $discarded) {
-                    $e->setResponse($result);
+                    $e->setResponse($this->normalizeResult($result));
                 }
 
                 $this->io->writeError('Content-Length mismatch, received '.Platform::strlen($result).' out of '.$contentLength.' bytes: (' . base64_encode($result).')', true, IOInterface::DEBUG);
@@ -868,7 +868,7 @@ class RemoteFilesystem
      * @param string|false $result
      * @param string[]     $http_response_header
      *
-     * @return string|false
+     * @return string|null
      */
     private function decodeResult($result, $http_response_header)
     {
@@ -889,6 +889,20 @@ class RemoteFilesystem
                     throw new TransportException('Failed to decode zlib stream');
                 }
             }
+        }
+
+        return $this->normalizeResult($result);
+    }
+
+    /**
+     * @param string|false $result
+     *
+     * @return string|null
+     */
+    private function normalizeResult($result)
+    {
+        if ($result === false) {
+            return null;
         }
 
         return $result;

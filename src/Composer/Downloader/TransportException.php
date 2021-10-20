@@ -19,7 +19,7 @@ class TransportException extends \RuntimeException
 {
     /** @var ?array<string> */
     protected $headers;
-    /** @var false|string|null */
+    /** @var ?string */
     protected $response;
     /** @var ?int */
     protected $statusCode;
@@ -45,7 +45,7 @@ class TransportException extends \RuntimeException
     }
 
     /**
-     * @param string|false $response
+     * @param ?string $response
      *
      * @return void
      */
@@ -55,7 +55,7 @@ class TransportException extends \RuntimeException
     }
 
     /**
-     * @return false|string|null
+     * @return ?string
      */
     public function getResponse()
     {
