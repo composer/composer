@@ -144,7 +144,7 @@ class PluginInstallerTest extends TestCase
         $installer->install($this->repository, $this->packages[0]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertCount(1, $plugins);
+        $this->assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore-line
         $this->assertEquals('activate v1'.PHP_EOL, $this->io->getOutput());
     }
 
@@ -160,7 +160,10 @@ class PluginInstallerTest extends TestCase
         $installer->install($this->repository, $this->packages[3]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertCount(2, $plugins);
+        $this->assertEquals('plugin1', $plugins[0]->name); // @phpstan-ignore-line
+        $this->assertEquals('installer-v4', $plugins[0]->version); // @phpstan-ignore-line
+        $this->assertEquals('plugin2', $plugins[1]->name); // @phpstan-ignore-line
+        $this->assertEquals('installer-v4', $plugins[1]->version); // @phpstan-ignore-line
         $this->assertEquals('activate v4-plugin1'.PHP_EOL.'activate v4-plugin2'.PHP_EOL, $this->io->getOutput());
     }
 
@@ -181,6 +184,7 @@ class PluginInstallerTest extends TestCase
 
         $plugins = $this->pm->getPlugins();
         $this->assertCount(1, $plugins);
+        $this->assertEquals('installer-v2', $plugins[1]->version); // @phpstan-ignore-line
         $this->assertEquals('activate v1'.PHP_EOL.'deactivate v1'.PHP_EOL.'activate v2'.PHP_EOL, $this->io->getOutput());
     }
 
@@ -220,7 +224,7 @@ class PluginInstallerTest extends TestCase
         $installer->update($this->repository, $this->packages[1], $this->packages[2]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertCount(1, $plugins);
+        $this->assertEquals('installer-v3', $plugins[1]->version); // @phpstan-ignore-line
         $this->assertEquals('activate v2'.PHP_EOL.'deactivate v2'.PHP_EOL.'activate v3'.PHP_EOL, $this->io->getOutput());
     }
 
@@ -238,6 +242,7 @@ class PluginInstallerTest extends TestCase
 
         $plugins = $this->pm->getPlugins();
         $this->assertCount(1, $plugins);
+        $this->assertEquals('installer-v1', $plugins[0]->version); // @phpstan-ignore-line
         $this->assertEquals('activate v1'.PHP_EOL, $this->io->getOutput());
     }
 

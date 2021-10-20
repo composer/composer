@@ -8,6 +8,8 @@ use Composer\Plugin\PluginInterface;
 
 class Plugin implements PluginInterface
 {
+    public $version = 'installer-v1';
+
     public function activate(Composer $composer, IOInterface $io)
     {
         $io->write('activate v1');

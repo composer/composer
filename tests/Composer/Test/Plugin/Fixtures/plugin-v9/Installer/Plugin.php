@@ -10,6 +10,8 @@ use Composer\Plugin\PluginInterface;
 
 class Plugin implements PluginInterface
 {
+    public $version = 'installer-v9';
+
     public function activate(Composer $composer, IOInterface $io)
     {
         $io->write('activate v9');
