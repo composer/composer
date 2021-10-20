@@ -67,6 +67,8 @@ class FossilDriver extends VcsDriver
 
     /**
      * Check that fossil can be invoked via command line.
+     *
+     * @return void
      */
     protected function checkFossil()
     {
@@ -77,6 +79,8 @@ class FossilDriver extends VcsDriver
 
     /**
      * Clone or update existing local fossil repository.
+     *
+     * @return void
      */
     protected function updateLocalRepo()
     {

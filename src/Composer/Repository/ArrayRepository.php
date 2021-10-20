@@ -38,6 +38,9 @@ class ArrayRepository implements RepositoryInterface
      */
     protected $packageMap = null;
 
+    /**
+     * @param array<PackageInterface> $packages
+     */
     public function __construct(array $packages = array())
     {
         foreach ($packages as $package) {
@@ -188,6 +191,8 @@ class ArrayRepository implements RepositoryInterface
      * Adds a new package to the repository
      *
      * @param PackageInterface $package
+     *
+     * @return void
      */
     public function addPackage(PackageInterface $package)
     {
@@ -236,6 +241,9 @@ class ArrayRepository implements RepositoryInterface
 
     /**
      * @phpstan-param PackageInterface&BasePackage $package
+     * @param string $alias
+     * @param string $prettyAlias
+     *
      * @return AliasPackage|CompleteAliasPackage
      */
     protected function createAliasPackage(PackageInterface $package, $alias, $prettyAlias)
@@ -255,6 +263,8 @@ class ArrayRepository implements RepositoryInterface
      * Removes package from repository.
      *
      * @param PackageInterface $package package instance
+     *
+     * @return void
      */
     public function removePackage(PackageInterface $package)
     {
@@ -305,6 +315,8 @@ class ArrayRepository implements RepositoryInterface
 
     /**
      * Initializes the packages array. Mostly meant as an extension point.
+     *
+     * @return void
      */
     protected function initialize()
     {

@@ -31,6 +31,9 @@ class FilterRepository implements RepositoryInterface
     /** @var RepositoryInterface */
     private $repo;
 
+    /**
+     * @param array{only?: array<string>, exclude?: array<string>, canonical?: bool} $options
+     */
     public function __construct(RepositoryInterface $repo, array $options)
     {
         if (isset($options['only'])) {
@@ -191,6 +194,11 @@ class FilterRepository implements RepositoryInterface
         return 0;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return bool
+     */
     private function isAllowed($name)
     {
         if (!$this->only && !$this->exclude) {

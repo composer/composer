@@ -34,6 +34,9 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     /** @var IOInterface */
     private $io;
 
+    /**
+     * @param array{url: string}&mixed[] $repoConfig
+     */
     public function __construct(array $repoConfig, IOInterface $io)
     {
         parent::__construct();
@@ -64,6 +67,11 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         $this->scanDirectory($this->lookup);
     }
 
+    /**
+     * @param string $path
+     *
+     * @return void
+     */
     private function scanDirectory($path)
     {
         $io = $this->io;
@@ -90,6 +98,9 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         }
     }
 
+    /**
+     * @return \Composer\Package\CompletePackage|false
+     */
     private function getComposerInformation(\SplFileInfo $file)
     {
         $json = null;

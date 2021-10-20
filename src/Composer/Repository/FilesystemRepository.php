@@ -154,6 +154,12 @@ class FilesystemRepository extends WritableArrayRepository
         }
     }
 
+    /**
+     * @param array<mixed> $array
+     * @param int $level
+     *
+     * @return string
+     */
     private function dumpToPhpCode(array $array = array(), $level = 0)
     {
         $lines = "array(\n";
@@ -186,7 +192,11 @@ class FilesystemRepository extends WritableArrayRepository
     }
 
     /**
-     * @return ?array
+     * @param array<string, string> $installPaths
+     * @param bool $devMode
+     * @param string $repoDir
+     *
+     * @return ?array<mixed>
      */
     private function generateInstalledVersions(InstallationManager $installationManager, array $installPaths, $devMode, $repoDir)
     {

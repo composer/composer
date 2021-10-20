@@ -132,6 +132,8 @@ class GitLabDriver extends VcsDriver
      * Mainly useful for tests.
      *
      * @internal
+     *
+     * @return void
      */
     public function setHttpDownloader(HttpDownloader $httpDownloader)
     {
@@ -223,7 +225,7 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @return string
      */
     public function getRepositoryUrl()
     {
@@ -373,6 +375,9 @@ class GitLabDriver extends VcsDriver
         return $references;
     }
 
+    /**
+     * @return void
+     */
     protected function fetchProject()
     {
         // we need to fetch the default branch from the api
@@ -386,6 +391,9 @@ class GitLabDriver extends VcsDriver
         }
     }
 
+    /**
+     * @return true
+     */
     protected function attemptCloneFallback()
     {
         if ($this->isPrivate === false) {
@@ -423,11 +431,19 @@ class GitLabDriver extends VcsDriver
         return 'git@' . $this->originUrl . ':'.$this->namespace.'/'.$this->repository.'.git';
     }
 
+    /**
+     * @return string
+     */
     protected function generatePublicUrl()
     {
         return $this->scheme . '://' . $this->originUrl . '/'.$this->namespace.'/'.$this->repository.'.git';
     }
 
+    /**
+     * @param string $url
+     *
+     * @return void
+     */
     protected function setupGitDriver($url)
     {
         $this->gitDriver = new GitDriver(
@@ -442,6 +458,8 @@ class GitLabDriver extends VcsDriver
 
     /**
      * {@inheritDoc}
+     *
+     * @param bool $fetchingRepoData
      */
     protected function getContents($url, $fetchingRepoData = false)
     {
@@ -470,6 +488,7 @@ class GitLabDriver extends VcsDriver
                     if (!$moreThanGuestAccess) {
                         $this->io->writeError('<warning>GitLab token with Guest only access detected</warning>');
 
+                        // TODO: IDK why it's returning here, because `attemptCloneFallback` is returning `true` or throws
                         return $this->attemptCloneFallback();
                     }
                 }
@@ -558,6 +577,9 @@ class GitLabDriver extends VcsDriver
         return true;
     }
 
+    /**
+     * @return string|null
+     */
     protected function getNextPage(Response $response)
     {
         $header = $response->getHeader('link');
@@ -568,13 +590,17 @@ class GitLabDriver extends VcsDriver
                 return $match[1];
             }
         }
+
+        return null;
     }
 
     /**
-     * @param  array       $configuredDomains
-     * @param  string      $guessedDomain
-     * @param  array       $urlParts
-     * @return bool|string
+     * @param  array<string> $configuredDomains
+     * @param  string        $guessedDomain
+     * @param  array<string> $urlParts
+     * @param string         $portNumber
+     *
+     * @return string|false
      */
     private static function determineOrigin(array $configuredDomains, $guessedDomain, array &$urlParts, $portNumber)
     {
