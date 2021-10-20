@@ -588,13 +588,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     /**
      * @param  string      $name package name
-     * @param int[]|null $acceptableStabilities
+     * @param array<string, int>|null $acceptableStabilities
      * @phpstan-param array<string, BasePackage::STABILITY_*>|null $acceptableStabilities
-     * @param int[]|null $stabilityFlags an array of package name => BasePackage::STABILITY_* value
+     * @param array<string, int>|null $stabilityFlags an array of package name => BasePackage::STABILITY_* value
      * @phpstan-param array<string, BasePackage::STABILITY_*>|null $stabilityFlags
-     * @param array<string, mixed> $alreadyLoaded
+     * @param array<string, array<string, PackageInterface>> $alreadyLoaded
      *
-     * @return array<mixed>
+     * @return array<string, BasePackage>
      */
     private function whatProvides($name, array $acceptableStabilities = null, array $stabilityFlags = null, array $alreadyLoaded = array())
     {
@@ -756,13 +756,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     /**
      * @param array<string, ConstraintInterface|null> $packageNames array of package name => ConstraintInterface|null - if a constraint is provided, only packages matching it will be loaded
-     * @param int[]|null $acceptableStabilities
+     * @param array<string, int>|null $acceptableStabilities
      * @phpstan-param array<string, BasePackage::STABILITY_*>|null $acceptableStabilities
-     * @param int[]|null $stabilityFlags an array of package name => BasePackage::STABILITY_* value
+     * @param array<string, int>|null $stabilityFlags an array of package name => BasePackage::STABILITY_* value
      * @phpstan-param array<string, BasePackage::STABILITY_*>|null $stabilityFlags
-     * @param array<string, mixed> $alreadyLoaded
+     * @param array<string, array<string, PackageInterface>> $alreadyLoaded
      *
-     * @return array{namesFound: array, packages: array}
+     * @return array{namesFound: array<string, true>, packages: array<string, BasePackage>}
      */
     private function loadAsyncPackages(array $packageNames, array $acceptableStabilities = null, array $stabilityFlags = null, array $alreadyLoaded = array())
     {
@@ -872,9 +872,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * @param ConstraintInterface|null $constraint
      * @param string $name package name (must be lowercased already)
      * @param array<string, mixed> $versionData
-     * @param int[]|null $acceptableStabilities
+     * @param array<string, int>|null $acceptableStabilities
      * @phpstan-param array<string, BasePackage::STABILITY_*>|null $acceptableStabilities
-     * @param int[]|null $stabilityFlags an array of package name => BasePackage::STABILITY_* value
+     * @param array<string, int>|null $stabilityFlags an array of package name => BasePackage::STABILITY_* value
      * @phpstan-param array<string, BasePackage::STABILITY_*>|null $stabilityFlags
      *
      * @return bool
@@ -917,7 +917,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @return mixed[]|true
+     * @return array<string, mixed>
      */
     protected function loadRootServerFile()
     {
