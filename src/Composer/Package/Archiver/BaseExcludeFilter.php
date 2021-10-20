@@ -118,7 +118,7 @@ abstract class BaseExcludeFilter
      *
      * @param string $rule An exclude rule in gitignore syntax
      *
-     * @return array{0: string, 1: bool, false} An exclude pattern
+     * @return array{0: string, 1: bool, 2: bool} An exclude pattern
      */
     protected function generatePattern($rule)
     {

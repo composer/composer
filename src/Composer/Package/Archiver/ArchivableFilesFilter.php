@@ -37,7 +37,6 @@ class ArchivableFilesFilter extends FilterIterator
     }
 
     /**
-     * @param PharData $phar
      * @param string $sources
      *
      * @return void
