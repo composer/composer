@@ -120,8 +120,9 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
-        if ($url !== $package->getSourceUrl()) {
-            $this->updateOriginUrl($path, $package->getSourceUrl());
+        $sourceUrl = $package->getSourceUrl();
+        if ($url !== $sourceUrl && $sourceUrl !== null ) {
+            $this->updateOriginUrl($path, $sourceUrl);
         } else {
             $this->setPushUrl($path, $url);
         }
@@ -194,7 +195,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                 $updateOriginUrl = true;
             }
         }
-        if ($updateOriginUrl) {
+        if ($updateOriginUrl && $target->getSourceUrl() !== null) {
             $this->updateOriginUrl($path, $target->getSourceUrl());
         }
 
@@ -489,8 +490,8 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * @param string      $path
-     * @param string|null $url
+     * @param string $path
+     * @param string $url
      *
      * @return void
      */
