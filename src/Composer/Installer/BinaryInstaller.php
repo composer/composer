@@ -110,8 +110,6 @@ class BinaryInstaller
     }
 
     /**
-     * @param PackageInterface $package
-     *
      * @return void
      */
     public function removeBinaries(PackageInterface $package)
@@ -140,6 +138,7 @@ class BinaryInstaller
 
     /**
      * @param string $bin
+     *
      * @return string
      */
     public static function determineBinaryCaller($bin)
@@ -159,8 +158,6 @@ class BinaryInstaller
     }
 
     /**
-     * @param PackageInterface $package
-     *
      * @return string[]
      */
     protected function getBinaries(PackageInterface $package)
@@ -172,7 +169,6 @@ class BinaryInstaller
      * @param string $binPath
      * @param string $link
      * @param string $bin
-     * @param PackageInterface $package
      *
      * @return void
      */
