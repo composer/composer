@@ -187,9 +187,9 @@ class RootPackageLoader extends ArrayLoader
 
     /**
      * @param array<string, string>                                                                   $requires
-     * @param array<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
+     * @param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      *
-     * @return array<array{package: string, version: string, alias: string, alias_normalized: string}>
+     * @return list<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
     private function extractAliases(array $requires, array $aliases)
     {
