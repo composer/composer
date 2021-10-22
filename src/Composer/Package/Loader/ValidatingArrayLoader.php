@@ -42,6 +42,10 @@ class ValidatingArrayLoader implements LoaderInterface
     /** @var int One or more of self::CHECK_* constants */
     private $flags;
 
+    /**
+     * @param bool $strictName
+     * @param int  $flags
+     */
     public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null, $flags = 0)
     {
         $this->loader = $loader;
@@ -50,6 +54,9 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->flags = $flags;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
     {
         $this->errors = array();
@@ -400,20 +407,32 @@ class ValidatingArrayLoader implements LoaderInterface
         return $package;
     }
 
+    /**
+     * @return string[]
+     */
     public function getWarnings()
     {
         return $this->warnings;
     }
 
+    /**
+     * @return string[]
+     */
     public function getErrors()
     {
         return $this->errors;
     }
 
+    /**
+     * @param string $name
+     * @param bool   $isLink
+     *
+     * @return string|null
+     */
     public static function hasPackageNamingError($name, $isLink = false)
     {
         if (PlatformRepository::isPlatformPackage($name)) {
-            return;
+            return null;
         }
 
         if (!preg_match('{^[a-z0-9](?:[_.-]?[a-z0-9]+)*/[a-z0-9](?:(?:[_.]?|-{0,2})[a-z0-9]+)*$}iD', $name)) {
@@ -440,8 +459,20 @@ class ValidatingArrayLoader implements LoaderInterface
 
             return $name.' is invalid, it should not contain uppercase characters. We suggest using '.$suggestName.' instead.';
         }
+
+        return null;
     }
 
+    /**
+     * @param string $property
+     * @param string $regex
+     * @param bool   $mandatory
+     *
+     * @return bool
+     *
+     * @phpstan-param non-empty-string $property
+     * @phpstan-param non-empty-string $regex
+     */
     private function validateRegex($property, $regex, $mandatory = false)
     {
         if (!$this->validateString($property, $mandatory)) {
@@ -463,6 +494,14 @@ class ValidatingArrayLoader implements LoaderInterface
         return true;
     }
 
+    /**
+     * @param string $property
+     * @param bool   $mandatory
+     *
+     * @return bool
+     *
+     * @phpstan-param non-empty-string $property
+     */
     private function validateString($property, $mandatory = false)
     {
         if (isset($this->config[$property]) && !is_string($this->config[$property])) {
@@ -484,6 +523,14 @@ class ValidatingArrayLoader implements LoaderInterface
         return true;
     }
 
+    /**
+     * @param string $property
+     * @param bool   $mandatory
+     *
+     * @return bool
+     *
+     * @phpstan-param non-empty-string $property
+     */
     private function validateArray($property, $mandatory = false)
     {
         if (isset($this->config[$property]) && !is_array($this->config[$property])) {
@@ -505,6 +552,16 @@ class ValidatingArrayLoader implements LoaderInterface
         return true;
     }
 
+    /**
+     * @param string      $property
+     * @param string|null $regex
+     * @param bool        $mandatory
+     *
+     * @return bool
+     *
+     * @phpstan-param non-empty-string      $property
+     * @phpstan-param non-empty-string|null $property
+     */
     private function validateFlatArray($property, $regex = null, $mandatory = false)
     {
         if (!$this->validateArray($property, $mandatory)) {
@@ -531,6 +588,14 @@ class ValidatingArrayLoader implements LoaderInterface
         return $pass;
     }
 
+    /**
+     * @param string $property
+     * @param bool $mandatory
+     *
+     * @return bool
+     *
+     * @phpstan-param non-empty-string $property
+     */
     private function validateUrl($property, $mandatory = false)
     {
         if (!$this->validateString($property, $mandatory)) {
@@ -547,6 +612,12 @@ class ValidatingArrayLoader implements LoaderInterface
         return true;
     }
 
+    /**
+     * @param mixed    $value
+     * @param string[] $schemes
+     *
+     * @return bool
+     */
     private function filterUrl($value, array $schemes = array('http', 'https'))
     {
         if ($value === '') {

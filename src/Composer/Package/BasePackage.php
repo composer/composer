@@ -23,7 +23,7 @@ use Composer\Repository\PlatformRepository;
 abstract class BasePackage implements PackageInterface
 {
     /**
-     * @phpstan-var array<string, array{description: string, method: Link::TYPE_*}>
+     * @phpstan-var array<non-empty-string, array{description: string, method: Link::TYPE_*}>
      * @internal
      */
     public static $supportedLinkTypes = array(
