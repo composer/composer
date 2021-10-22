@@ -559,7 +559,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @return bool
      *
-     * @phpstan-param non-empty-string      $property
+     * @phpstan-param non-empty-string      $regex
      * @phpstan-param non-empty-string|null $property
      */
     private function validateFlatArray($property, $regex = null, $mandatory = false)
