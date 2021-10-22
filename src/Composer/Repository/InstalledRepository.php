@@ -36,8 +36,7 @@ class InstalledRepository extends CompositeRepository
      * @param string $name
      * @param ConstraintInterface|string|null $constraint
      *
-     * @return PackageInterface[]
-     * @phpstan-return array<BasePackage&PackageInterface>
+     * @return BasePackage[]
      */
     public function findPackagesWithReplacersAndProviders($name, $constraint = null)
     {
