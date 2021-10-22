@@ -64,7 +64,7 @@ class RootPackageLoader extends ArrayLoader
      *
      * @param string|null $cwd
      *
-     * @return RootPackageInterface
+     * @return RootPackage|RootAliasPackage
      */
     public function load(array $config, $class = 'Composer\Package\RootPackage', $cwd = null)
     {
