@@ -16,7 +16,6 @@ use Composer\Package\BasePackage;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Package\RootAliasPackage;
-use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryFactory;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
