@@ -187,7 +187,7 @@ class RootPackageLoader extends ArrayLoader
     }
 
     /**
-     * @param array<string, string>                                                                   $requires
+     * @param array<string, string>                                                                  $requires
      * @param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      *
      * @return list<array{package: string, version: string, alias: string, alias_normalized: string}>
