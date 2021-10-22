@@ -64,6 +64,8 @@ class RootPackageLoader extends ArrayLoader
      * @param string|null $cwd
      *
      * @return RootPackage|RootAliasPackage
+     *
+     * @phpstan-param class-string<PackageClass> $class
      */
     public function load(array $config, $class = 'Composer\Package\RootPackage', $cwd = null)
     {
