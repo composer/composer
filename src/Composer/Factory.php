@@ -230,13 +230,15 @@ class Factory
             $authData = json_decode($composerAuthEnv, true);
 
             if (null === $authData) {
-                throw new \UnexpectedValueException('COMPOSER_AUTH environment variable is malformed, should be a valid JSON object');
+                if ($io) {
+                    $io->writeError('<error>COMPOSER_AUTH environment variable is malformed, should be a valid JSON object</error>');
+                }
+            } else {
+                if ($io && $io->isDebug()) {
+                    $io->writeError('Loading auth config from COMPOSER_AUTH');
+                }
+                $config->merge(array('config' => $authData));
             }
-
-            if ($io && $io->isDebug()) {
-                $io->writeError('Loading auth config from COMPOSER_AUTH');
-            }
-            $config->merge(array('config' => $authData));
         }
 
         return $config;
