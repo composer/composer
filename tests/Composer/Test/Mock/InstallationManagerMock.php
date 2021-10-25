@@ -21,6 +21,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
+use React\Promise\PromiseInterface;
 
 class InstallationManagerMock extends InstallationManager
 {
@@ -64,13 +65,21 @@ class InstallationManagerMock extends InstallationManager
         return $repo->hasPackage($package);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function install(InstalledRepositoryInterface $repo, InstallOperation $operation)
     {
         $this->installed[] = $operation->getPackage();
         $this->trace[] = strip_tags((string) $operation);
         $repo->addPackage(clone $operation->getPackage());
+
+        return null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation)
     {
         $this->updated[] = array($operation->getInitialPackage(), $operation->getTargetPackage());
@@ -79,13 +88,20 @@ class InstallationManagerMock extends InstallationManager
         if (!$repo->hasPackage($operation->getTargetPackage())) {
             $repo->addPackage(clone $operation->getTargetPackage());
         }
+
+        return null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation)
     {
         $this->uninstalled[] = $operation->getPackage();
         $this->trace[] = strip_tags((string) $operation);
         $repo->removePackage($operation->getPackage());
+
+        return null;
     }
 
     public function markAliasInstalled(InstalledRepositoryInterface $repo, MarkAliasInstalledOperation $operation)

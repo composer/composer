@@ -117,6 +117,8 @@ class PluginInstaller extends LibraryInstaller
     /**
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @private
+     *
+     * @return void
      */
     public function rollbackInstall(\Exception $e, InstalledRepositoryInterface $repo, PackageInterface $package)
     {

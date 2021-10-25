@@ -95,6 +95,8 @@ class Event
 
     /**
      * Prevents the event from being passed to further listeners
+     *
+     * @return void
      */
     public function stopPropagation()
     {
