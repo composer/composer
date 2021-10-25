@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Package\BasePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\LoaderInterface;
 use Composer\Util\Tar;
@@ -99,7 +100,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @return \Composer\Package\CompletePackage|false
+     * @return ?BasePackage
      */
     private function getComposerInformation(\SplFileInfo $file)
     {
@@ -125,7 +126,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if (null === $json) {
-            return false;
+            return null;
         }
 
         $package = JsonFile::parseJson($json, $file->getPathname().'#composer.json');
