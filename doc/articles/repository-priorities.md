@@ -16,7 +16,7 @@ Canonical repositories are better for a few reasons:
 has been found somewhere. It also avoids loading duplicate packages in case
 the same package is present in several of your repositories.
 - Security wise, it is safer to treat them canonically as it means that packages you
-expect to come from your most important repositories will never be loaded from 
+expect to come from your most important repositories will never be loaded from
 another repository instead. Let's
 say you have a private repository which is not canonical, and you require your
 private package `foo/bar ^2.0` for example. Now if someone publishes
@@ -62,7 +62,7 @@ You can also filter packages which a repository will be able to load, either by
 selecting which ones you want, or by excluding those you do not want.
 
 For example here we want to pick only the package `foo/bar` and all the packages from
-`some-vendor/` from this composer repository.
+`some-vendor/` from this Composer repository.
 
 ```json
 {
