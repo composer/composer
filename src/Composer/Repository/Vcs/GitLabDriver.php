@@ -392,7 +392,10 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
+     * @phpstan-impure
+     *
      * @return true
+     * @throws \RuntimeException
      */
     protected function attemptCloneFallback()
     {
@@ -521,9 +524,9 @@ class GitLabDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive()) {
-                        if ($this->attemptCloneFallback()) {
-                            return new Response(array('url' => 'dummy'), 200, array(), 'null');
-                        }
+                        $this->attemptCloneFallback();
+
+                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
                     }
                     $this->io->writeError('<warning>Failed to download ' . $this->namespace . '/' . $this->repository . ':' . $e->getMessage() . '</warning>');
                     $gitLabUtil->authorizeOAuthInteractively($this->scheme, $this->originUrl, 'Your credentials are required to fetch private repository metadata (<info>'.$this->url.'</info>)');
@@ -536,9 +539,9 @@ class GitLabDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive() && $fetchingRepoData) {
-                        if ($this->attemptCloneFallback()) {
-                            return new Response(array('url' => 'dummy'), 200, array(), 'null');
-                        }
+                        $this->attemptCloneFallback();
+
+                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
                     }
 
                     throw $e;

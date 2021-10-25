@@ -442,9 +442,9 @@ class GitHubDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive()) {
-                        if ($this->attemptCloneFallback()) {
-                            return new Response(array('url' => 'dummy'), 200, array(), 'null');
-                        }
+                        $this->attemptCloneFallback();
+
+                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
                     }
 
                     $scopesIssued = array();
@@ -472,9 +472,9 @@ class GitHubDriver extends VcsDriver
                     }
 
                     if (!$this->io->isInteractive() && $fetchingRepoData) {
-                        if ($this->attemptCloneFallback()) {
-                            return new Response(array('url' => 'dummy'), 200, array(), 'null');
-                        }
+                        $this->attemptCloneFallback();
+
+                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
                     }
 
                     $rateLimited = $gitHubUtil->isRateLimited((array) $e->getHeaders());
@@ -550,7 +550,10 @@ class GitHubDriver extends VcsDriver
     }
 
     /**
+     * @phpstan-impure
+     *
      * @return true
+     * @throws \RuntimeException
      */
     protected function attemptCloneFallback()
     {

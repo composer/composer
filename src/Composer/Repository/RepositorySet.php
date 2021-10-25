@@ -168,7 +168,7 @@ class RepositorySet
      * @param  string                   $name
      * @param  ConstraintInterface|null $constraint
      * @param  int                      $flags      any of the ALLOW_* constants from this class to tweak what is returned
-     * @return PackageInterface[]
+     * @return BasePackage[]
      */
     public function findPackages($name, ConstraintInterface $constraint = null, $flags = 0)
     {

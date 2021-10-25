@@ -393,9 +393,9 @@ abstract class BitbucketDriver extends VcsDriver
                 }
 
                 if (!$this->io->isInteractive() && $fetchingRepoData) {
-                    if ($this->attemptCloneFallback()) {
-                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
-                    }
+                    $this->attemptCloneFallback();
+
+                    return new Response(array('url' => 'dummy'), 200, array(), 'null');
                 }
             }
 
@@ -414,6 +414,7 @@ abstract class BitbucketDriver extends VcsDriver
      * @phpstan-impure
      *
      * @return true
+     * @throws \RuntimeException
      */
     protected function attemptCloneFallback()
     {

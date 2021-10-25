@@ -60,7 +60,7 @@ class InstalledRepository extends CompositeRepository
                 foreach (array_merge($candidate->getProvides(), $candidate->getReplaces()) as $link) {
                     if (
                         $name === $link->getTarget()
-                        && ($constraint === null || $link->getConstraint() === null || $constraint->matches($link->getConstraint()))
+                        && ($constraint === null || $constraint->matches($link->getConstraint()))
                     ) {
                         $matches[] = $candidate;
                         continue 2;
