@@ -29,13 +29,13 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
     /** @var string */
     protected $lookup;
-    /** @var mixed[] */
+    /** @var array{url: string} */
     protected $repoConfig;
     /** @var IOInterface */
     private $io;
 
     /**
-     * @param array{url: string}&mixed[] $repoConfig
+     * @param array{url: string} $repoConfig
      */
     public function __construct(array $repoConfig, IOInterface $io)
     {
