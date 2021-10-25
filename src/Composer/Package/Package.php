@@ -58,8 +58,10 @@ class Package extends BasePackage
     protected $binaries = array();
     /** @var bool */
     protected $dev;
-    /** @var string */
-    /** @phpstan-var 'stable'|'RC'|'beta'|'alpha'|'dev' */
+    /**
+     * @var string
+     * @phpstan-var 'stable'|'RC'|'beta'|'alpha'|'dev'
+     */
     protected $stability;
     /** @var ?string */
     protected $notificationUrl;
