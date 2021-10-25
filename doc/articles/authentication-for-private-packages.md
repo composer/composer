@@ -63,7 +63,7 @@ For all authentication methods it is possible to edit them using the command lin
 To manually edit it, run:
 
 ```sh
-composer config --global --editor [--auth]
+php composer.phar config --global --editor [--auth]
 ```
 
 For specific authentication implementations, see their sections;
@@ -80,7 +80,7 @@ To fix this you need to open the file in an editor and fix the error. To find th
 your global `auth.json`, execute:
 
 ```sh
-composer config --global home
+php composer.phar config --global home
 ```
 
 The folder will contain your global `auth.json` if it exists.
@@ -115,13 +115,13 @@ Read more about the usage of this environment variable [here](../03-cli.md#compo
 ### Command line http-basic
 
 ```sh
-composer config [--global] http-basic.example.org username password
+php composer.phar config [--global] http-basic.example.org username password
 ```
 
 ### Manual http-basic
 
 ```sh
-composer config [--global] --editor --auth
+php composer.phar config [--global] --editor --auth
 ```
 
 ```json
@@ -147,13 +147,13 @@ If the username e.g. is an email address it needs to be passed as `name%40exampl
 ### Command line inline http-basic
 
 ```sh
-composer config [--global] repositories composer.unique-name https://username:password@repo.example.org
+php composer.phar config [--global] repositories composer.unique-name https://username:password@repo.example.org
 ```
 
 ### Manual inline http-basic
 
 ```sh
-composer config [--global] --editor
+php composer.phar config [--global] --editor
 ```
 
 ```json
@@ -172,7 +172,7 @@ composer config [--global] --editor
 ### Manual custom token authentication
 
 ```sh
-composer config [--global] --editor
+php composer.phar config [--global] --editor
 ```
 
 ```json
@@ -201,13 +201,13 @@ composer config [--global] --editor
 ### Command line gitlab-oauth
 
 ```sh
-composer config [--global] gitlab-oauth.example.org token
+php composer.phar config [--global] gitlab-oauth.example.org token
 ```
 
 ### Manual gitlab-oauth
 
 ```sh
-composer config [--global] --editor --auth
+php composer.phar config [--global] --editor --auth
 ```
 
 ```json
@@ -226,18 +226,18 @@ composer config [--global] --editor --auth
 To create a new access token, go to your [access tokens section on GitLab](https://gitlab.com/-/profile/personal_access_tokens)
 (or the equivalent URL on your private instance) and create a new token. See also [the GitLab access token documentation](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#creating-a-personal-access-token) for more informations.
 
-When creating a gitlab token manually, make sure it has either the `read_api` or `api` scope. 
+When creating a gitlab token manually, make sure it has either the `read_api` or `api` scope.
 
 ### Command line gitlab-token
 
 ```sh
-composer config [--global] gitlab-token.example.org token
+php composer.phar config [--global] gitlab-token.example.org token
 ```
 
 ### Manual gitlab-token
 
 ```sh
-composer config [--global] --editor --auth
+php composer.phar config [--global] --editor --auth
 ```
 
 ```json
@@ -256,13 +256,13 @@ Read more about it [here](https://github.com/blog/1509-personal-api-tokens).
 ### Command line github-oauth
 
 ```sh
-composer config [--global] github-oauth.github.com token
+php composer.phar config [--global] github-oauth.github.com token
 ```
 
 ### Manual github-oauth
 
 ```sh
-composer config [--global] --editor --auth
+php composer.phar config [--global] --editor --auth
 ```
 
 ```json
@@ -280,13 +280,13 @@ The BitBucket driver uses OAuth to access your private repositories via the BitB
 ### Command line bitbucket-oauth
 
 ```sh
-composer config [--global] bitbucket-oauth.bitbucket.org consumer-key consumer-secret
+php composer.phar config [--global] bitbucket-oauth.bitbucket.org consumer-key consumer-secret
 ```
 
 ### Manual bitbucket-oauth
 
 ```sh
-composer config [--global] --editor --auth
+php composer.phar config [--global] --editor --auth
 ```
 
 ```json

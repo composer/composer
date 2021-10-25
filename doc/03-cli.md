@@ -9,7 +9,7 @@ can give you more information.
 
 As Composer uses [symfony/console](https://github.com/symfony/console) you can call commands by short name if it's not ambiguous.
 ```sh
-composer dump
+php composer.phar dump
 ```
 calls `composer dump-autoload`.
 

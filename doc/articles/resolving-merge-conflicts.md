@@ -43,8 +43,8 @@ Before committing, make sure the resulting `composer.json` and `composer.lock` f
 To do this, run the following commands:
 
 ```sh
-composer validate
-composer install [--dry-run]
+php composer.phar validate
+php composer.phar install [--dry-run]
 ```
 
 ## Important considerations

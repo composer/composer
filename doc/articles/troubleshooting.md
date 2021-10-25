@@ -312,7 +312,7 @@ As a workaround, open a SSH connection to your Git host before running Composer:
 
 ```bash
 ssh -t git@mygitserver.tld
-composer update
+php composer.phar update
 ```
 
 See also https://github.com/composer/composer/issues/4180 for more information.
