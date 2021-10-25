@@ -168,6 +168,9 @@ abstract class BasePackage implements PackageInterface
         return $this->getName().'-'.$this->getVersion();
     }
 
+    /**
+     * @return bool
+     */
     public function equals(PackageInterface $package)
     {
         $self = $this;
@@ -231,6 +234,11 @@ abstract class BasePackage implements PackageInterface
         return $this->getPrettyVersion() . ' ' . $reference;
     }
 
+    /**
+     * @return int
+     *
+     * @phpstan-return self::STABILITY_*
+     */
     public function getStabilityPriority()
     {
         return self::$stabilities[$this->getStability()];

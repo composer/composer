@@ -29,6 +29,7 @@ class AliasPackage extends BasePackage
     /** @var bool */
     protected $rootPackageAlias = false;
     /** @var string */
+    /** @phpstan-var 'stable'|'RC'|'beta'|'alpha'|'dev' */
     protected $stability;
     /** @var bool */
     protected $hasSelfVersionRequires = false;
@@ -214,6 +215,9 @@ class AliasPackage extends BasePackage
         return $links;
     }
 
+    /**
+     * @return bool
+     */
     public function hasSelfVersionRequires()
     {
         return $this->hasSelfVersionRequires;

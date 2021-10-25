@@ -59,6 +59,7 @@ class Package extends BasePackage
     /** @var bool */
     protected $dev;
     /** @var string */
+    /** @phpstan-var 'stable'|'RC'|'beta'|'alpha'|'dev' */
     protected $stability;
     /** @var ?string */
     protected $notificationUrl;
@@ -114,6 +115,8 @@ class Package extends BasePackage
 
     /**
      * @param string $type
+     *
+     * @return void
      */
     public function setType($type)
     {
@@ -138,6 +141,8 @@ class Package extends BasePackage
 
     /**
      * @param string $targetDir
+     *
+     * @return void
      */
     public function setTargetDir($targetDir)
     {
@@ -157,7 +162,9 @@ class Package extends BasePackage
     }
 
     /**
-     * @param array $extra
+     * @param mixed[] $extra
+     *
+     * @return void
      */
     public function setExtra(array $extra)
     {
@@ -173,7 +180,9 @@ class Package extends BasePackage
     }
 
     /**
-     * @param array $binaries
+     * @param string[] $binaries
+     *
+     * @return void
      */
     public function setBinaries(array $binaries)
     {
@@ -190,6 +199,8 @@ class Package extends BasePackage
 
     /**
      * {@inheritDoc}
+     *
+     * @return void
      */
     public function setInstallationSource($type)
     {
@@ -206,6 +217,8 @@ class Package extends BasePackage
 
     /**
      * @param string $type
+     *
+     * @return void
      */
     public function setSourceType($type)
     {
@@ -222,6 +235,8 @@ class Package extends BasePackage
 
     /**
      * @param string $url
+     *
+     * @return void
      */
     public function setSourceUrl($url)
     {
@@ -238,6 +253,8 @@ class Package extends BasePackage
 
     /**
      * @param string $reference
+     *
+     * @return void
      */
     public function setSourceReference($reference)
     {
@@ -254,6 +271,8 @@ class Package extends BasePackage
 
     /**
      * {@inheritDoc}
+     *
+     * @return void
      */
     public function setSourceMirrors($mirrors)
     {
@@ -278,6 +297,8 @@ class Package extends BasePackage
 
     /**
      * @param string $type
+     *
+     * @return void
      */
     public function setDistType($type)
     {
@@ -294,6 +315,8 @@ class Package extends BasePackage
 
     /**
      * @param string $url
+     *
+     * @return void
      */
     public function setDistUrl($url)
     {
@@ -310,6 +333,8 @@ class Package extends BasePackage
 
     /**
      * @param string $reference
+     *
+     * @return void
      */
     public function setDistReference($reference)
     {
@@ -326,6 +351,8 @@ class Package extends BasePackage
 
     /**
      * @param string $sha1checksum
+     *
+     * @return void
      */
     public function setDistSha1Checksum($sha1checksum)
     {
@@ -342,6 +369,8 @@ class Package extends BasePackage
 
     /**
      * {@inheritDoc}
+     *
+     * @return void
      */
     public function setDistMirrors($mirrors)
     {
@@ -400,6 +429,8 @@ class Package extends BasePackage
      * Set the releaseDate
      *
      * @param \DateTime $releaseDate
+     *
+     * @return void
      */
     public function setReleaseDate(\DateTime $releaseDate)
     {
@@ -418,6 +449,8 @@ class Package extends BasePackage
      * Set the required packages
      *
      * @param array<string, Link> $requires A set of package links
+     *
+     * @return void
      */
     public function setRequires(array $requires)
     {
@@ -436,6 +469,8 @@ class Package extends BasePackage
      * Set the conflicting packages
      *
      * @param array<string, Link> $conflicts A set of package links
+     *
+     * @return void
      */
     public function setConflicts(array $conflicts)
     {
@@ -455,6 +490,8 @@ class Package extends BasePackage
      * Set the provided virtual packages
      *
      * @param array<string, Link> $provides A set of package links
+     *
+     * @return void
      */
     public function setProvides(array $provides)
     {
@@ -474,6 +511,8 @@ class Package extends BasePackage
      * Set the packages this one replaces
      *
      * @param array<string, Link> $replaces A set of package links
+     *
+     * @return void
      */
     public function setReplaces(array $replaces)
     {
@@ -493,6 +532,8 @@ class Package extends BasePackage
      * Set the recommended packages
      *
      * @param array<string, Link> $devRequires A set of package links
+     *
+     * @return void
      */
     public function setDevRequires(array $devRequires)
     {
@@ -511,6 +552,8 @@ class Package extends BasePackage
      * Set the suggested packages
      *
      * @param array<string, string> $suggests A set of package names/comments
+     *
+     * @return void
      */
     public function setSuggests(array $suggests)
     {
@@ -529,6 +572,10 @@ class Package extends BasePackage
      * Set the autoload mapping
      *
      * @param array $autoload Mapping of autoloading rules
+     *
+     * @return void
+     *
+     * @phpstan-param array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>} $autoload
      */
     public function setAutoload(array $autoload)
     {
@@ -547,6 +594,10 @@ class Package extends BasePackage
      * Set the dev autoload mapping
      *
      * @param array $devAutoload Mapping of dev autoloading rules
+     *
+     * @return void
+     *
+     * @phpstan-param array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>} $devAutoload
      */
     public function setDevAutoload(array $devAutoload)
     {
@@ -564,7 +615,9 @@ class Package extends BasePackage
     /**
      * Sets the list of paths added to PHP's include path.
      *
-     * @param array $includePaths List of directories.
+     * @param string[] $includePaths List of directories.
+     *
+     * @return void
      */
     public function setIncludePaths(array $includePaths)
     {
@@ -583,6 +636,8 @@ class Package extends BasePackage
      * Sets the notification URL
      *
      * @param string $notificationUrl
+     *
+     * @return void
      */
     public function setNotificationUrl($notificationUrl)
     {
@@ -599,6 +654,8 @@ class Package extends BasePackage
 
     /**
      * @param bool $defaultBranch
+     *
+     * @return void
      */
     public function setIsDefaultBranch($defaultBranch)
     {
@@ -639,6 +696,8 @@ class Package extends BasePackage
      *
      * @param string $version       The package's normalized version
      * @param string $prettyVersion The package's non-normalized version
+     *
+     * @return void
      */
     public function replaceVersion($version, $prettyVersion)
     {
@@ -649,6 +708,17 @@ class Package extends BasePackage
         $this->dev = $this->stability === 'dev';
     }
 
+    /**
+     * @param string|null  $url
+     * @param mixed[]|null $mirrors
+     * @param string|null  $ref
+     * @param string|null  $type
+     * @param string       $urlType
+     *
+     * @return string[]
+     *
+     * @phpstan-param list<array{url: string, preferred: bool}>|null $mirrors
+     */
     protected function getUrls($url, $mirrors, $ref, $type, $urlType)
     {
         if (!$url) {
