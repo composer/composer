@@ -488,8 +488,9 @@ class GitLabDriver extends VcsDriver
                     if (!$moreThanGuestAccess) {
                         $this->io->writeError('<warning>GitLab token with Guest only access detected</warning>');
 
-                        // TODO: IDK why it's returning here, because `attemptCloneFallback` is returning `true` or throws
-                        return $this->attemptCloneFallback();
+                        $this->attemptCloneFallback();
+
+                        return new Response(array('url' => 'dummy'), 200, array(), 'null');
                     }
                 }
 

@@ -333,6 +333,7 @@ class RepositorySet
 
     /**
      * @param array[] $aliases
+     * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      *
      * @return array<string, array<string, array{alias: string, alias_normalized: string}>>
      */

@@ -268,11 +268,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @param array<PackageInterface&BasePackage> $packages
+     * @param array<BasePackage> $packages
      * @param ConstraintInterface|null $constraint
      * @param bool $returnFirstMatch
      *
-     * @return (PackageInterface&BasePackage)|array<PackageInterface&BasePackage>|null
+     * @return BasePackage|array<BasePackage>|null
      */
     private function filterPackages(array $packages, $constraint = null, $returnFirstMatch = false)
     {

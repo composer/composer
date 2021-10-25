@@ -487,7 +487,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
      * @param bool $isVeryVerbose
      * @param bool $isDefaultBranch
      *
-     * @return \Composer\Package\CompletePackage|null|false
+     * @return \Composer\Package\CompletePackage|\Composer\Package\CompleteAliasPackage|null|false null if no cache present, false if the absence of a version was cached
      */
     private function getCachedPackageVersion($version, $identifier, $isVerbose, $isVeryVerbose, $isDefaultBranch = false)
     {
