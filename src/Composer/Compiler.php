@@ -37,7 +37,10 @@ class Compiler
     /**
      * Compiles composer into a single phar file
      *
-     * @param  string            $pharFile The full path to the file to create
+     * @param string $pharFile The full path to the file to create
+     *
+     * @return void
+     *
      * @throws \RuntimeException
      */
     public function compile($pharFile = 'composer.phar')
@@ -214,6 +217,13 @@ class Compiler
         return strtr($relativePath, '\\', '/');
     }
 
+    /**
+     * @param \Phar        $phar
+     * @param \SplFileInfo $file
+     * @param bool         $strip
+     *
+     * @return void
+     */
     private function addFile($phar, $file, $strip = true)
     {
         $path = $this->getRelativeFilePath($file);
@@ -239,6 +249,11 @@ class Compiler
         $phar->addFromString($path, $content);
     }
 
+    /**
+     * @param \Phar $phar
+     *
+     * @return void
+     */
     private function addComposerBin($phar)
     {
         $content = file_get_contents(__DIR__.'/../../bin/composer');

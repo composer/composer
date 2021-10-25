@@ -1132,8 +1132,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (isset($data['includes'])) {
             foreach ($data['includes'] as $include => $metadata) {
-                if (isset($metadata['sha1']) && $this->cache->sha1($include) === $metadata['sha1']) {
-                    $includedData = json_decode($this->cache->read($include), true);
+                if (isset($metadata['sha1']) && $this->cache->sha1((string) $include) === $metadata['sha1']) {
+                    $includedData = json_decode($this->cache->read((string) $include), true);
                 } else {
                     $includedData = $this->fetchFile($include);
                 }
@@ -1250,7 +1250,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                             $json = json_encode($data);
                         }
                     }
-                    $this->cache->write($cacheKey, $json);
+                    $this->cache->write($cacheKey, (string) $json);
                 }
 
                 $response->collect();
@@ -1349,7 +1349,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $json = json_encode($data);
                 }
                 if (!$this->cache->isReadOnly()) {
-                    $this->cache->write($cacheKey, $json);
+                    $this->cache->write($cacheKey, (string) $json);
                 }
 
                 return $data;
@@ -1453,7 +1453,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $json = JsonFile::encode($data, JsonFile::JSON_UNESCAPED_SLASHES | JsonFile::JSON_UNESCAPED_UNICODE);
             }
             if (!$cache->isReadOnly()) {
-                $cache->write($cacheKey, $json);
+                $cache->write($cacheKey, (string) $json);
             }
             $repo->freshMetadataUrls[$filename] = true;
 

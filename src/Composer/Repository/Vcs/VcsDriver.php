@@ -96,7 +96,7 @@ abstract class VcsDriver implements VcsDriverInterface
             $composer = $this->getBaseComposerInformation($identifier);
 
             if ($this->shouldCache($identifier)) {
-                $this->cache->write($identifier, json_encode($composer));
+                $this->cache->write($identifier, (string) json_encode($composer));
             }
 
             $this->infoCache[$identifier] = $composer;

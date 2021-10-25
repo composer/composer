@@ -308,7 +308,7 @@ class Locker
     /**
      * @return string[][]
      *
-     * @phpstan-return list<array<string, string>>
+     * @phpstan-return list<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
     public function getAliases()
     {
@@ -350,7 +350,7 @@ class Locker
      *
      * @return bool
      *
-     * @phpstan-param list<array<string, string>> $aliases
+     * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      */
     public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides, $write = true)
     {

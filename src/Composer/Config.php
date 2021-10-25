@@ -114,6 +114,9 @@ class Config
         $this->baseDir = $baseDir;
     }
 
+    /**
+     * @return void
+     */
     public function setConfigSource(ConfigSourceInterface $source)
     {
         $this->configSource = $source;
@@ -127,6 +130,9 @@ class Config
         return $this->configSource;
     }
 
+    /**
+     * @return void
+     */
     public function setAuthConfigSource(ConfigSourceInterface $source)
     {
         $this->authConfigSource = $source;
@@ -143,7 +149,9 @@ class Config
     /**
      * Merges new config values with the existing ones (overriding)
      *
-     * @param array $config
+     * @param array<string, mixed> $config
+     *
+     * @return void
      */
     public function merge($config)
     {
@@ -184,13 +192,13 @@ class Config
             foreach ($newRepos as $name => $repository) {
                 // disable a repository by name
                 if (false === $repository) {
-                    $this->disableRepoByName($name);
+                    $this->disableRepoByName((string) $name);
                     continue;
                 }
 
                 // disable a repository with an anonymous {"name": false} repo
                 if (is_array($repository) && 1 === count($repository) && false === current($repository)) {
-                    $this->disableRepoByName(key($repository));
+                    $this->disableRepoByName((string) key($repository));
                     continue;
                 }
 
@@ -215,7 +223,7 @@ class Config
     }
 
     /**
-     * @return array
+     * @return array<int|string, mixed>
      */
     public function getRepositories()
     {
@@ -228,7 +236,10 @@ class Config
      * @param  string            $key
      * @param  int               $flags Options (see class constants)
      * @throws \RuntimeException
+     *
      * @return mixed
+     *
+     * @phpstan-param self::RELATIVE_PATHS|0 $flags
      */
     public function get($key, $flags = 0)
     {
@@ -380,7 +391,11 @@ class Config
     }
 
     /**
+     * @param int $flags
+     *
      * @return array<string, mixed[]>
+     *
+     * @phpstan-param self::RELATIVE_PATHS|0 $flags
      */
     public function all($flags = 0)
     {
@@ -421,7 +436,10 @@ class Config
      *
      * @param  string|int|null $value a config string that can contain {$refs-to-other-config}
      * @param  int             $flags Options (see class constants)
+     *
      * @return string|int|null
+     *
+     * @phpstan-param self::RELATIVE_PATHS|0 $flags
      */
     private function process($value, $flags)
     {
@@ -471,6 +489,11 @@ class Config
         return false;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return void
+     */
     private function disableRepoByName($name)
     {
         if (isset($this->repositories[$name])) {
@@ -485,6 +508,8 @@ class Config
      *
      * @param string      $url
      * @param IOInterface $io
+     *
+     * @return void
      */
     public function prohibitUrlByConfig($url, IOInterface $io = null)
     {
@@ -527,6 +552,8 @@ class Config
      *     "vendor/bin/long-running-script --watch"
      *   ]
      * }
+     *
+     * @return void
      */
     public static function disableProcessTimeout()
     {

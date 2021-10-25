@@ -61,6 +61,8 @@ class Cache
 
     /**
      * @param bool $readOnly
+     *
+     * @return void
      */
     public function setReadOnly($readOnly)
     {
@@ -76,6 +78,8 @@ class Cache
     }
 
     /**
+     * @param string $path
+     *
      * @return bool
      */
     public static function isUsable($path)
@@ -112,6 +116,8 @@ class Cache
     }
 
     /**
+     * @param string $file
+     *
      * @return string|false
      */
     public function read($file)
@@ -129,6 +135,9 @@ class Cache
     }
 
     /**
+     * @param string $file
+     * @param string $contents
+     *
      * @return bool
      */
     public function write($file, $contents)
@@ -169,6 +178,10 @@ class Cache
 
     /**
      * Copy a file into the cache
+     *
+     * @param string $file
+     * @param string $source
+     *
      * @return bool
      */
     public function copyFrom($file, $source)
@@ -191,6 +204,10 @@ class Cache
 
     /**
      * Copy a file out of the cache
+     *
+     * @param string $file
+     * @param string $target
+     *
      * @return bool
      */
     public function copyTo($file, $target)
@@ -237,6 +254,8 @@ class Cache
     }
 
     /**
+     * @param string $file
+     *
      * @return bool
      */
     public function remove($file)
@@ -266,6 +285,9 @@ class Cache
     }
 
     /**
+     * @param int $ttl
+     * @param int $maxSize
+     *
      * @return bool
      */
     public function gc($ttl, $maxSize)
@@ -299,6 +321,8 @@ class Cache
     }
 
     /**
+     * @param string $file
+     *
      * @return string|false
      */
     public function sha1($file)
@@ -314,6 +338,8 @@ class Cache
     }
 
     /**
+     * @param string $file
+     *
      * @return string|false
      */
     public function sha256($file)
