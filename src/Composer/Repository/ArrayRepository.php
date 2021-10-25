@@ -30,11 +30,11 @@ use Composer\Semver\Constraint\Constraint;
  */
 class ArrayRepository implements RepositoryInterface
 {
-    /** @var ?array<PackageInterface&BasePackage> */
+    /** @var ?array<BasePackage> */
     protected $packages = null;
 
     /**
-     * @var ?array<PackageInterface&BasePackage> indexed by package unique name and used to cache hasPackage calls
+     * @var ?array<BasePackage> indexed by package unique name and used to cache hasPackage calls
      */
     protected $packageMap = null;
 
@@ -240,13 +240,12 @@ class ArrayRepository implements RepositoryInterface
     }
 
     /**
-     * @phpstan-param PackageInterface&BasePackage $package
      * @param string $alias
      * @param string $prettyAlias
      *
      * @return AliasPackage|CompleteAliasPackage
      */
-    protected function createAliasPackage(PackageInterface $package, $alias, $prettyAlias)
+    protected function createAliasPackage(BasePackage $package, $alias, $prettyAlias)
     {
         while ($package instanceof AliasPackage) {
             $package = $package->getAliasOf();
