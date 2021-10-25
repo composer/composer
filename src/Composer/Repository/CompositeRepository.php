@@ -49,7 +49,7 @@ class CompositeRepository implements RepositoryInterface
     /**
      * Returns all the wrapped repositories
      *
-     * @return array
+     * @return RepositoryInterface[]
      */
     public function getRepositories()
     {
@@ -164,7 +164,7 @@ class CompositeRepository implements RepositoryInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
     public function removePackage(PackageInterface $package)
     {
@@ -193,6 +193,8 @@ class CompositeRepository implements RepositoryInterface
     /**
      * Add a repository.
      * @param RepositoryInterface $repository
+     *
+     * @return void
      */
     public function addRepository(RepositoryInterface $repository)
     {

@@ -58,7 +58,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     protected $processExecutor;
     /** @var bool */
     protected $branchErrorOccurred = false;
-    /** @var array<string, class-string> */
+    /** @var array<string, class-string<VcsDriverInterface>> */
     private $drivers;
     /** @var ?VcsDriverInterface */
     private $driver;
@@ -69,6 +69,10 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     /** @var array<'tags'|'branches', array<string, \Throwable>> */
     private $versionTransportExceptions = array();
 
+    /**
+     * @param array{url: string, type?: string}&array<string, mixed> $repoConfig
+     * @param array<string, class-string<VcsDriverInterface>>|null $drivers
+     */
     public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null, ProcessExecutor $process = null, array $drivers = null, VersionCacheInterface $versionCache = null)
     {
         parent::__construct();
@@ -113,11 +117,17 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         return $this->repoConfig;
     }
 
+    /**
+     * @return void
+     */
     public function setLoader(LoaderInterface $loader)
     {
         $this->loader = $loader;
     }
 
+    /**
+     * @return VcsDriverInterface|null
+     */
     public function getDriver()
     {
         if ($this->driver) {
@@ -149,18 +159,29 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 return $this->driver;
             }
         }
+
+        return null;
     }
 
+    /**
+     * @return bool
+     */
     public function hadInvalidBranches()
     {
         return $this->branchErrorOccurred;
     }
 
+    /**
+     * @return string[]
+     */
     public function getEmptyReferences()
     {
         return $this->emptyReferences;
     }
 
+    /**
+     * @return array<'tags'|'branches', array<string, \Throwable>>
+     */
     public function getVersionTransportExceptions()
     {
         return $this->versionTransportExceptions;
@@ -399,6 +420,13 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
     }
 
+    /**
+     * @param VcsDriverInterface $driver
+     * @param array{name?: string, dist?: array{type: string, url: string, reference: string, shasum: string}, source?: array{type: string, url: string, reference: string}} $data
+     * @param string $identifier
+     *
+     * @return array{name: string|null, dist: array{type: string, url: string, reference: string, shasum: string}|null, source: array{type: string, url: string, reference: string}}
+     */
     protected function preProcess(VcsDriverInterface $driver, array $data, $identifier)
     {
         // keep the name of the main identifier for all packages
@@ -417,6 +445,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         return $data;
     }
 
+    /**
+     * @param string $branch
+     *
+     * @return string|false
+     */
     private function validateBranch($branch)
     {
         try {
@@ -432,6 +465,11 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         return false;
     }
 
+    /**
+     * @param string $version
+     *
+     * @return string|false
+     */
     private function validateTag($version)
     {
         try {
@@ -442,10 +480,19 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         return false;
     }
 
+    /**
+     * @param string $version
+     * @param string $identifier
+     * @param bool $isVerbose
+     * @param bool $isVeryVerbose
+     * @param bool $isDefaultBranch
+     *
+     * @return \Composer\Package\CompletePackage|\Composer\Package\CompleteAliasPackage|null|false null if no cache present, false if the absence of a version was cached
+     */
     private function getCachedPackageVersion($version, $identifier, $isVerbose, $isVeryVerbose, $isDefaultBranch = false)
     {
         if (!$this->versionCache) {
-            return;
+            return null;
         }
 
         $cachedPackage = $this->versionCache->getVersionPackage($version, $identifier);

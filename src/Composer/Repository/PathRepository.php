@@ -95,7 +95,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
     /**
      * Initializes path repository.
      *
-     * @param array       $repoConfig
+     * @param array{url: string, options?: array{symlink?: bool, relative?: bool, versions?: array<string, string>}} $repoConfig
      * @param IOInterface $io
      * @param Config      $config
      */

@@ -49,6 +49,11 @@ class PerforceDriver extends VcsDriver
         $this->perforce->connectClient();
     }
 
+    /**
+     * @param array<string, mixed> $repoConfig
+     *
+     * @return void
+     */
     private function initPerforce($repoConfig)
     {
         if (!empty($this->perforce)) {
@@ -171,11 +176,17 @@ class PerforceDriver extends VcsDriver
         $this->perforce = null;
     }
 
+    /**
+     * @return string
+     */
     public function getDepot()
     {
         return $this->depot;
     }
 
+    /**
+     * @return string
+     */
     public function getBranch()
     {
         return $this->branch;
