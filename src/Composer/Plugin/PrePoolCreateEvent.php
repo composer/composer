@@ -160,6 +160,8 @@ class PrePoolCreateEvent extends Event
 
     /**
      * @param BasePackage[] $packages
+     *
+     * @return void
      */
     public function setPackages(array $packages)
     {
@@ -168,6 +170,8 @@ class PrePoolCreateEvent extends Event
 
     /**
      * @param BasePackage[] $packages
+     *
+     * @return void
      */
     public function setUnacceptableFixedPackages(array $packages)
     {
