@@ -365,9 +365,8 @@ class InstallationManager
         $batches = array();
         $batch = array();
         foreach ($operations as $index => $operation) {
-            if (in_array($operation->getOperationType(), array('update', 'install'), true)) {
-                /** @var InstallOperation|MarkAliasInstalledOperation|MarkAliasUninstalledOperation|UninstallOperation|UpdateOperation $operation */
-                $package = $operation->getOperationType() === 'update' ? $operation->getTargetPackage() : $operation->getPackage();
+            if ($operation instanceof InstallOperation || $operation instanceof UpdateOperation) {
+                $package = $operation instanceof UpdateOperation ? $operation->getTargetPackage() : $operation->getPackage();
                 if ($package->getType() === 'composer-plugin' || $package->getType() === 'composer-installer') {
                     if ($batch) {
                         $batches[] = $batch;
