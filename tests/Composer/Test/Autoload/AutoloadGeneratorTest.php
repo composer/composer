@@ -1292,7 +1292,7 @@ EOF;
             ->with(ScriptEvents::POST_AUTOLOAD_DUMP, false);
 
         $package = new RootPackage('root/a', '1.0', '1.0');
-        $package->setAutoload(array('psr-0' => array('foo/bar/non/existing/')));
+        $package->setAutoload(array('psr-0' => array('foo/bar/non/existing/' => '')));
 
         $this->repository->expects($this->once())
             ->method('getCanonicalPackages')

@@ -168,6 +168,9 @@ abstract class BasePackage implements PackageInterface
         return $this->getName().'-'.$this->getVersion();
     }
 
+    /**
+     * @return bool
+     */
     public function equals(PackageInterface $package)
     {
         $self = $this;
@@ -231,9 +234,19 @@ abstract class BasePackage implements PackageInterface
         return $this->getPrettyVersion() . ' ' . $reference;
     }
 
+    /**
+     * @return int
+     *
+     * @phpstan-return self::STABILITY_*
+     */
     public function getStabilityPriority()
     {
-        return self::$stabilities[$this->getStability()];
+        $stability = $this->getStability();
+        if (!array_key_exists($stability, self::$stabilities)) {
+            throw new \InvalidArgumentException(sprintf('Package stability "%s" is invalid.', $stability));
+        }
+
+        return self::$stabilities[$stability];
     }
 
     public function __clone()

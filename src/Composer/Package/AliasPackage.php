@@ -214,6 +214,9 @@ class AliasPackage extends BasePackage
         return $links;
     }
 
+    /**
+     * @return bool
+     */
     public function hasSelfVersionRequires()
     {
         return $this->hasSelfVersionRequires;
