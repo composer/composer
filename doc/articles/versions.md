@@ -78,7 +78,7 @@ If you want Composer to check out a branch instead of a tag, you need to point i
 
 In the above example, if you wanted to check out the `my-feature` branch, you would specify `dev-my-feature` as the version constraint in your `require` clause. This would result in Composer cloning the `my-library` repository into my `vendor` directory and checking out the `my-feature` branch.
 
-When branch names look like versions, we have to clarify for composer that we're trying to check out a branch and not a tag. In the above example, we have two version branches: `v1` and `v2`. To get Composer to check out one of these branches, you must specify a version constraint that looks like this: `v1.x-dev`. The `.x` is an arbitrary string that Composer requires to tell it that we're talking about the `v1` branch and not a `v1` tag (alternatively, you can name the branch `v1.x` instead of `v1`). In the case of a branch with a version-like name (`v1`, in this case), you append `-dev` as a suffix, rather than using `dev-` as a prefix.
+When branch names look like versions, we have to clarify for Composer that we're trying to check out a branch and not a tag. In the above example, we have two version branches: `v1` and `v2`. To get Composer to check out one of these branches, you must specify a version constraint that looks like this: `v1.x-dev`. The `.x` is an arbitrary string that Composer requires to tell it that we're talking about the `v1` branch and not a `v1` tag (alternatively, you can name the branch `v1.x` instead of `v1`). In the case of a branch with a version-like name (`v1`, in this case), you append `-dev` as a suffix, rather than using `dev-` as a prefix.
 
 ### Stabilities
 
@@ -213,7 +213,7 @@ Examples:
 
 To allow various stabilities without enforcing them at the constraint level
 however, you may use [stability-flags](../04-schema.md#package-links) like
-`@<stability>` (e.g. `@dev`) to let composer know that a given package
+`@<stability>` (e.g. `@dev`) to let Composer know that a given package
 can be installed in a different stability than your default minimum-stability
 setting. All available stability flags are listed on the minimum-stability
 section of the [schema page](../04-schema.md#minimum-stability).
