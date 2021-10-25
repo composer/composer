@@ -102,6 +102,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
     /**
      * {@inheritDoc}
+     *
+     * @param bool $output
      */
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
@@ -324,6 +326,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
     /**
      * {@inheritDoc}
+     *
+     * @param bool $output
      */
     public function install(PackageInterface $package, $path, $output = true)
     {
@@ -351,6 +355,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * TODO mark private in v3
      * @protected This is public due to PHP 5.3
+     *
+     * @return void
      */
     public function clearLastCacheWrite(PackageInterface $package)
     {
@@ -363,6 +369,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * TODO mark private in v3
      * @protected This is public due to PHP 5.3
+     *
+     * @param string $path
+     *
+     * @return void
      */
     public function addCleanupPath(PackageInterface $package, $path)
     {
@@ -372,6 +382,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * TODO mark private in v3
      * @protected This is public due to PHP 5.3
+     *
+     * @param string $path
+     *
+     * @return void
      */
     public function removeCleanupPath(PackageInterface $package, $path)
     {
@@ -406,6 +420,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
     /**
      * {@inheritDoc}
+     *
+     * @param bool $output
      */
     public function remove(PackageInterface $package, $path, $output = true)
     {

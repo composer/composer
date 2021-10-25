@@ -244,6 +244,11 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         return ': Mirroring from '.$package->getDistUrl();
     }
 
+    /**
+     * @param mixed[] $transportOptions
+     *
+     * @phpstan-return array{self::STRATEGY_*, non-empty-list<self::STRATEGY_*>}
+     */
     private function computeAllowedStrategies(array $transportOptions)
     {
         // When symlink transport option is null, both symlink and mirror are allowed

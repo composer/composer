@@ -38,7 +38,7 @@ class PerforceDownloader extends VcsDownloader
     public function doInstall(PackageInterface $package, $path, $url)
     {
         $ref = $package->getSourceReference();
-        $label = $this->getLabelFromSourceReference($ref);
+        $label = $this->getLabelFromSourceReference((string) $ref);
 
         $this->io->writeError('Cloning ' . $ref);
         $this->initPerforce($package, $path, $url);
@@ -53,6 +53,8 @@ class PerforceDownloader extends VcsDownloader
     }
 
     /**
+     * @param string $ref
+     *
      * @return string|null
      */
     private function getLabelFromSourceReference($ref)
@@ -65,6 +67,12 @@ class PerforceDownloader extends VcsDownloader
         return null;
     }
 
+    /**
+     * @param string $path
+     * @param string $url
+     *
+     * @return void
+     */
     public function initPerforce(PackageInterface $package, $path, $url)
     {
         if (!empty($this->perforce)) {
@@ -115,7 +123,10 @@ class PerforceDownloader extends VcsDownloader
         return $this->perforce->getCommitLogs($fromReference, $toReference);
     }
 
-    public function setPerforce($perforce)
+    /**
+     * @return void
+     */
+    public function setPerforce(Perforce $perforce)
     {
         $this->perforce = $perforce;
     }
