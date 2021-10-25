@@ -241,12 +241,7 @@ abstract class BasePackage implements PackageInterface
      */
     public function getStabilityPriority()
     {
-        $stability = $this->getStability();
-        if (!array_key_exists($stability, self::$stabilities)) {
-            throw new \InvalidArgumentException(sprintf('Package stability "%s" is invalid.', $stability));
-        }
-
-        return self::$stabilities[$stability];
+        return self::$stabilities[$this->getStability()];
     }
 
     public function __clone()
