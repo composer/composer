@@ -12,7 +12,6 @@
 
 namespace Composer\Package\Loader;
 
-use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
@@ -20,9 +19,7 @@ use Composer\Package\RootPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
-use Composer\Package\Package;
 use Composer\Package\RootAliasPackage;
-use Composer\Package\RootPackageInterface;
 use Composer\Package\Version\VersionParser;
 
 /**
@@ -36,6 +33,9 @@ class ArrayLoader implements LoaderInterface
     /** @var bool */
     protected $loadOptions;
 
+    /**
+     * @param bool $loadOptions
+     */
     public function __construct(VersionParser $parser = null, $loadOptions = false)
     {
         if (!$parser) {
@@ -46,14 +46,7 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @template PackageClass of CompletePackageInterface
-     *
-     * @param  array  $config package data
-     * @param  string $class  FQCN to be instantiated
-     *
-     * @return CompletePackage|CompleteAliasPackage|RootPackage|RootAliasPackage
-     *
-     * @phpstan-param class-string<PackageClass> $class
+     * @inheritDoc
      */
     public function load(array $config, $class = 'Composer\Package\CompletePackage')
     {
@@ -83,7 +76,8 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param  array                                      $versions
+     * @param list<array<mixed>> $versions
+     *
      * @return list<CompletePackage|CompleteAliasPackage>
      */
     public function loadPackages(array $versions)
@@ -105,9 +99,12 @@ class ArrayLoader implements LoaderInterface
 
     /**
      * @template PackageClass of CompletePackageInterface
-     * @param  array                       $config package data
-     * @param  string                      $class  FQCN to be instantiated
+     *
+     * @param mixed[] $config package data
+     * @param string  $class  FQCN to be instantiated
+     *
      * @return CompletePackage|RootPackage
+     *
      * @phpstan-param class-string<PackageClass> $class
      */
     private function createObject(array $config, $class)
@@ -135,8 +132,9 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param  CompletePackage                                                   $package
-     * @param  array                                                             $config  package data
+     * @param CompletePackage $package
+     * @param mixed[]         $config package data
+     *
      * @return RootPackage|RootAliasPackage|CompletePackage|CompleteAliasPackage
      */
     private function configureObject(PackageInterface $package, array $config)
@@ -311,9 +309,10 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param  array            $linkCache
-     * @param  PackageInterface $package
-     * @param  array            $config
+     * @param array<string, array<string, array<string, array<string, array{string, Link}>>>> $linkCache
+     * @param PackageInterface                                                                $package
+     * @param mixed[]                                                                         $config
+     *
      * @return void
      */
     private function configureCachedLinks(&$linkCache, $package, array $config)
@@ -346,11 +345,14 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param  string       $source        source package name
-     * @param  string       $sourceVersion source package version (pretty version ideally)
-     * @param  Link::TYPE_* $description   link description (e.g. requires, replaces, ..)
-     * @param  array        $links         array of package name => constraint mappings
+     * @param  string                $source        source package name
+     * @param  string                $sourceVersion source package version (pretty version ideally)
+     * @param  string                $description   link description (e.g. requires, replaces, ..)
+     * @param  array<string, string> $links         array of package name => constraint mappings
+     *
      * @return Link[]
+     *
+     * @phpstan-param Link::TYPE_* $description
      */
     public function parseLinks($source, $sourceVersion, $description, $links)
     {
@@ -387,7 +389,8 @@ class ArrayLoader implements LoaderInterface
     /**
      * Retrieves a branch alias (dev-master => 1.0.x-dev for example) if it exists
      *
-     * @param  array       $config the entire package config
+     * @param mixed[] $config the entire package config
+     *
      * @return string|null normalized version of the branch alias or null if there is none
      */
     public function getBranchAlias(array $config)
