@@ -24,6 +24,12 @@ if (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '4.0', '>=')) {
     echo 'HHVM 4.0 has dropped support for Composer, please use PHP instead. Aborting.'.PHP_EOL;
     exit(1);
 }
+if (!extension_loaded('iconv') && !extension_loaded('mbstring')) {
+    echo 'The iconv OR mbstring extension is required and both are missing.'
+        .PHP_EOL.'Install either of them or recompile php without --disable-iconv.'
+        .PHP_EOL.'Aborting.'.PHP_EOL;
+    exit(1);
+}
 
 if (function_exists('ini_set')) {
     @ini_set('display_errors', '1');
