@@ -40,8 +40,7 @@ parameters:
         - '~^Call to an undefined method (PHPUnit\\Framework\\MockObject\\MockObject|Prophecy\\Prophecy\\ObjectProphecy)::.*$~'
 
         # Ignore some irrelevant errors in test files
-        - '~Method Composer\\Test\\[^:]+::(setUp(BeforeClass)?|tearDown(AfterClass)?|test[^(]+|get[^(]*?Mock[^(]*)\(\) has no return typehint specified.~'
-        - '~Method Composer\\Test\\[^:]+::test[^(]+\(\) has parameter \$\w+ with no typehint specified.~'
+        - '~Method Composer\\Test\\[^:]+::(setUp(BeforeClass)?|tearDown(AfterClass)?|test[^(]+)\(\) has no return typehint specified.~'
         - '~Method Composer\\Test\\[^:]+::(data\w+|provide\w+|\w+Provider)\(\) has no return typehint specified.~'
 
         # Level 6 TODO
