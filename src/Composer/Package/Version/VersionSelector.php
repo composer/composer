@@ -82,14 +82,20 @@ class VersionSelector
                 $reqs = $pkg->getRequires();
 
                 foreach ($reqs as $name => $link) {
-                    if (!in_array($name, $ignorePlatformReqs, true) && isset($platformConstraints[$name])) {
-                        foreach ($platformConstraints[$name] as $constraint) {
-                            if ($link->getConstraint()->matches($constraint)) {
-                                continue 2;
+                    if (!in_array($name, $ignorePlatformReqs, true)) {
+                        if (isset($platformConstraints[$name])) {
+                            foreach ($platformConstraints[$name] as $constraint) {
+                                if ($link->getConstraint()->matches($constraint)) {
+                                    continue 2;
+                                }
                             }
-                        }
 
-                        return false;
+                            return false;
+                        } elseif (PlatformRepository::isPlatformPackage($name)) {
+                            // Package requires a platform package that is unknown on current platform.
+                            // It means that current platform cannot validate this constraint and so package is not installable.
+                            return false;
+                        }
                     }
                 }
 

@@ -869,10 +869,10 @@ EOT
                 return array($name, $requiredVersion ?: '*');
             }
 
-            // Check whether the PHP version was the problem
+            // Check whether the package requirements were the problem
             if (true !== $ignorePlatformReqs && ($candidate = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, true))) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Package %s%s has a PHP requirement incompatible with your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
+                    'Package %s%s has requirements incompatible with your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
                     $name,
                     $requiredVersion ? ' at version '.$requiredVersion : ''
                 ));
