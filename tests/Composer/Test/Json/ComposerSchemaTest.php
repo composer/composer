@@ -90,7 +90,7 @@ class ComposerSchemaTest extends TestCase
         $this->assertTrue($this->check($json), 'stable');
     }
 
-    private function check($json)
+    private function check(string $json):mixed
     {
         $validator = new Validator();
         $validator->check(json_decode($json), (object) array('$ref' => 'file://' . __DIR__ . '/../../../../res/composer-schema.json'));
