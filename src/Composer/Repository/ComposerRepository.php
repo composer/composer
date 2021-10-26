@@ -1132,8 +1132,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (isset($data['includes'])) {
             foreach ($data['includes'] as $include => $metadata) {
-                if (isset($metadata['sha1']) && $this->cache->sha1($include) === $metadata['sha1']) {
-                    $includedData = json_decode($this->cache->read($include), true);
+                if (isset($metadata['sha1']) && $this->cache->sha1((string) $include) === $metadata['sha1']) {
+                    $includedData = json_decode($this->cache->read((string) $include), true);
                 } else {
                     $includedData = $this->fetchFile($include);
                 }
@@ -1215,7 +1215,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
 
                 $response = $this->httpDownloader->get($filename, $options);
-                $json = $response->getBody();
+                $json = (string) $response->getBody();
                 if ($sha256 && $sha256 !== hash('sha256', $json)) {
                     // undo downgrade before trying again if http seems to be hijacked or modifying content somehow
                     if ($this->allowSslDowngrade) {
@@ -1247,7 +1247,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         $lastModifiedDate = $response->getHeader('last-modified');
                         if ($lastModifiedDate) {
                             $data['last-modified'] = $lastModifiedDate;
-                            $json = json_encode($data);
+                            $json = JsonFile::encode($data, 0);
                         }
                     }
                     $this->cache->write($cacheKey, $json);
@@ -1329,7 +1329,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 }
                 $options['http']['header'][] = 'If-Modified-Since: '.$lastModifiedTime;
                 $response = $this->httpDownloader->get($filename, $options);
-                $json = $response->getBody();
+                $json = (string) $response->getBody();
                 if ($json === '' && $response->getStatusCode() === 304) {
                     return true;
                 }
@@ -1346,7 +1346,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $response->collect();
                 if ($lastModifiedDate) {
                     $data['last-modified'] = $lastModifiedDate;
-                    $json = json_encode($data);
+                    $json = JsonFile::encode($data, 0);
                 }
                 if (!$this->cache->isReadOnly()) {
                     $this->cache->write($cacheKey, $json);
@@ -1431,7 +1431,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 return array('packages' => array());
             }
 
-            $json = $response->getBody();
+            $json = (string) $response->getBody();
             if ($json === '' && $response->getStatusCode() === 304) {
                 $repo->freshMetadataUrls[$filename] = true;
 
