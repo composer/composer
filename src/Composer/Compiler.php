@@ -218,13 +218,11 @@ class Compiler
     }
 
     /**
-     * @param \Phar        $phar
-     * @param \SplFileInfo $file
-     * @param bool         $strip
+     * @param bool $strip
      *
      * @return void
      */
-    private function addFile($phar, $file, $strip = true)
+    private function addFile(\Phar $phar, \SplFileInfo $file, $strip = true)
     {
         $path = $this->getRelativeFilePath($file);
         $content = file_get_contents($file);
@@ -250,11 +248,9 @@ class Compiler
     }
 
     /**
-     * @param \Phar $phar
-     *
      * @return void
      */
-    private function addComposerBin($phar)
+    private function addComposerBin(\Phar $phar)
     {
         $content = file_get_contents(__DIR__.'/../../bin/composer');
         $content = preg_replace('{^#!/usr/bin/env php\s*}', '', $content);
