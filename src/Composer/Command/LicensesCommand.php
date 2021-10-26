@@ -102,7 +102,7 @@ EOT
                     $table->addRow(array(
                         $package->getPrettyName(),
                         $package->getFullPrettyVersion(),
-                        implode(', ', $package->getLicense()) ?: 'none',
+                        implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : array()) ?: 'none',
                     ));
                 }
                 $table->render();
@@ -113,7 +113,7 @@ EOT
                 foreach ($packages as $package) {
                     $dependencies[$package->getPrettyName()] = array(
                         'version' => $package->getFullPrettyVersion(),
-                        'license' => $package->getLicense(),
+                        'license' => $package instanceof CompletePackageInterface ? $package->getLicense() : array(),
                     );
                 }
 
@@ -128,7 +128,7 @@ EOT
             case 'summary':
                 $usedLicenses = array();
                 foreach ($packages as $package) {
-                    $license = $package->getLicense();
+                    $license = $package instanceof CompletePackageInterface ? $package->getLicense() : array();
                     $licenseName = $license[0];
                     if (!isset($usedLicenses[$licenseName])) {
                         $usedLicenses[$licenseName] = 0;
