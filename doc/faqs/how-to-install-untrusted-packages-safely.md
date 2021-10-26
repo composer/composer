@@ -17,3 +17,6 @@ The `exec` command will always run third party code as the user which runs `comp
 
 In some cases, like in CI systems or such where you want to install untrusted dependencies, the
 safest way to do it is to run the above command.
+
+See [Environment variable - COMPOSER_ALLOW_SUPERUSER](../03-cli.md#composer-allow-superuser) 
+for more info on how to disable warning
