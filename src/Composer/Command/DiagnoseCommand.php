@@ -48,6 +48,9 @@ class DiagnoseCommand extends BaseCommand
     /** @var int */
     protected $exitCode = 0;
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -65,6 +68,12 @@ EOT
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     *
+     * @return int|void
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer(false);
@@ -237,6 +246,9 @@ EOT
     }
 
     /**
+     * @param string $proto
+     * @param Config $config
+     *
      * @return string|string[]|true
      */
     private function checkHttp($proto, Config $config)
@@ -303,6 +315,9 @@ EOT
     }
 
     /**
+     * @param string $domain
+     * @param string $token
+     *
      * @return string|true|\Exception
      */
     private function checkGithubOauth($domain, $token)
@@ -354,6 +369,8 @@ EOT
     }
 
     /**
+     * @param Config $config
+     *
      * @return string|true
      */
     private function checkDiskSpace($config)
@@ -369,6 +386,8 @@ EOT
     }
 
     /**
+     * @param Config $config
+     *
      * @return string[]|true
      */
     private function checkPubKeys($config)
@@ -401,6 +420,8 @@ EOT
     }
 
     /**
+     * @param Config $config
+     *
      * @return string|\Exception|true
      */
     private function checkVersion($config)
@@ -446,6 +467,8 @@ EOT
 
     /**
      * @param bool|string|string[]|\Exception $result
+     *
+     * @return void
      */
     private function outputResult($result)
     {

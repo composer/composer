@@ -38,6 +38,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ArchiveCommand extends BaseCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -110,7 +113,18 @@ EOT
     }
 
     /**
+     * @param IOInterface $io
+     * @param Config $config
+     * @param string|null $packageName
+     * @param string|null $version
+     * @param string $format
+     * @param string $dest
+     * @param string|null $fileName
+     * @param bool $ignoreFilters
+     * @param Composer|null $composer
+     *
      * @return int
+     * @throws \Exception
      */
     protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.', $fileName = null, $ignoreFilters = false, Composer $composer = null)
     {
@@ -146,6 +160,10 @@ EOT
     }
 
     /**
+     * @param IOInterface $io
+     * @param string|null $packageName
+     * @param string|null $version
+     *
      * @return (BasePackage&CompletePackageInterface)|false
      */
     protected function selectPackage(IOInterface $io, $packageName, $version = null)

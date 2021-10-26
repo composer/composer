@@ -37,6 +37,7 @@ class StatusCommand extends BaseCommand
     const EXIT_CODE_VERSION_CHANGES = 4;
 
     /**
+     * @return void
      * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
      */
     protected function configure()

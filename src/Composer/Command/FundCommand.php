@@ -28,6 +28,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class FundCommand extends BaseCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this->setName('fund')
@@ -38,6 +41,12 @@ class FundCommand extends BaseCommand
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     *
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer();
@@ -125,6 +134,11 @@ class FundCommand extends BaseCommand
         return 0;
     }
 
+    /**
+     * @param array[] $fundings
+     * @param CompletePackageInterface $package
+     * @return array[]
+     */
     private function insertFundingData(array $fundings, CompletePackageInterface $package)
     {
         foreach ($package->getFunding() as $fundingOption) {

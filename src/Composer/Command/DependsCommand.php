@@ -24,6 +24,8 @@ class DependsCommand extends BaseDependencyCommand
 {
     /**
      * Configure command metadata.
+     *
+     * @return void
      */
     protected function configure()
     {

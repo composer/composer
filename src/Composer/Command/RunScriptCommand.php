@@ -44,6 +44,9 @@ class RunScriptCommand extends BaseCommand
         ScriptEvents::POST_AUTOLOAD_DUMP,
     );
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this

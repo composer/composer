@@ -23,6 +23,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class OutdatedCommand extends ShowCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this

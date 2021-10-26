@@ -56,6 +56,9 @@ class RequireCommand extends InitCommand
     /** @var bool */
     private $dependencyResolutionCompleted = false;
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -106,6 +109,12 @@ EOT
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int
+     * @throws \Seld\JsonLint\ParsingException
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
@@ -280,6 +289,11 @@ EOT
         }
     }
 
+    /**
+     * @param array<string, string> $newRequirements
+     * @param string $requireKey
+     * @return string[]
+     */
     private function getInconsistentRequireKeys(array $newRequirements, $requireKey)
     {
         $requireKeys = $this->getPackagesByRequireKey();
@@ -296,6 +310,9 @@ EOT
         return $inconsistentRequirements;
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function getPackagesByRequireKey()
     {
         $composerDefinition = $this->json->read();
@@ -318,12 +335,23 @@ EOT
 
     /**
      * @private
+     * @return void
      */
     public function markSolverComplete()
     {
         $this->dependencyResolutionCompleted = true;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @param IOInterface $io
+     * @param array<string, string> $requirements
+     * @param string $requireKey
+     * @param string $removeKey
+     * @return int
+     * @throws \Exception
+     */
     private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, $requireKey, $removeKey)
     {
         // Update packages
@@ -418,6 +446,11 @@ EOT
     }
 
     /**
+     * @param JsonFile $json
+     * @param array<string, string> $new
+     * @param string $requireKey
+     * @param string $removeKey
+     * @param bool $sortPackages
      * @return bool
      */
     private function updateFileCleanly($json, array $new, $requireKey, $removeKey, $sortPackages)
@@ -447,6 +480,10 @@ EOT
         return;
     }
 
+    /**
+     * @param bool $hardExit
+     * @return void
+     */
     public function revertComposerFile($hardExit = true)
     {
         $io = $this->getIO();

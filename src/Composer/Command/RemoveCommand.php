@@ -31,6 +31,9 @@ use Composer\Package\BasePackage;
  */
 class RemoveCommand extends BaseCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -70,6 +73,12 @@ EOT
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     *
+     * @return void
+     */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         if ($input->getOption('unused')) {
@@ -117,6 +126,13 @@ EOT
         }
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     *
+     * @return int
+     * @throws \Seld\JsonLint\ParsingException
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $packages = $input->getArgument('packages');

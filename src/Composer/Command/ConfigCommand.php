@@ -58,6 +58,9 @@ class ConfigCommand extends BaseCommand
      */
     protected $authConfigSource;
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -145,6 +148,13 @@ EOT
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     *
+     * @return void
+     * @throws \Exception
+     */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
         parent::initialize($input, $output);
@@ -198,6 +208,13 @@ EOT
         }
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     *
+     * @return int
+     * @throws \Seld\JsonLint\ParsingException
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         // Open file in editor
@@ -750,6 +767,14 @@ EOT
         throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
     }
 
+    /**
+     * @param string $key
+     * @param array<callable> $callbacks
+     * @param array<string> $values
+     * @param string $method
+     *
+     * @return false|void
+     */
     protected function handleSingleValue($key, array $callbacks, array $values, $method)
     {
         list($validator, $normalizer) = $callbacks;
@@ -777,6 +802,14 @@ EOT
         return call_user_func(array($this->configSource, $method), $key, $normalizedValue);
     }
 
+    /**
+     * @param string $key
+     * @param array<callable> $callbacks
+     * @param array<string> $values
+     * @param string $method
+     *
+     * @return false|void
+     */
     protected function handleMultiValue($key, array $callbacks, array $values, $method)
     {
         list($validator, $normalizer) = $callbacks;
@@ -793,10 +826,12 @@ EOT
     /**
      * Display the contents of the file in a pretty formatted way
      *
-     * @param array           $contents
-     * @param array           $rawContents
-     * @param OutputInterface $output
-     * @param string|null     $k
+     * @param array<array|bool|string> $contents
+     * @param array<array|string>      $rawContents
+     * @param OutputInterface          $output
+     * @param string|null              $k
+     *
+     * @return void
      */
     protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, $k = null)
     {

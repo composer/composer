@@ -38,6 +38,9 @@ class SelfUpdateCommand extends BaseCommand
     const HOMEPAGE = 'getcomposer.org';
     const OLD_INSTALL_EXT = '-old.phar';
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -70,6 +73,12 @@ EOT
         ;
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return int|void
+     * @throws FilesystemException
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $config = Factory::createConfig();
@@ -324,6 +333,13 @@ TAGSPUBKEY
         return 0;
     }
 
+    /**
+     * @param IOInterface $io
+     * @param Config $config
+     *
+     * @return void
+     * @throws \Exception
+     */
     protected function fetchKeys(IOInterface $io, Config $config)
     {
         if (!$io->isInteractive()) {
@@ -370,7 +386,11 @@ TAGSPUBKEY
     }
 
     /**
+     * @param OutputInterface $output
+     * @param string $rollbackDir
+     * @param string $localFilename
      * @return int
+     * @throws FilesystemException
      */
     protected function rollback(OutputInterface $output, $rollbackDir, $localFilename)
     {
@@ -451,6 +471,12 @@ TAGSPUBKEY
         }
     }
 
+    /**
+     * @param string $rollbackDir
+     * @param string|null $except
+     *
+     * @return void
+     */
     protected function cleanBackups($rollbackDir, $except = null)
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
@@ -468,6 +494,7 @@ TAGSPUBKEY
     }
 
     /**
+     * @param string $rollbackDir
      * @return string|false
      */
     protected function getLastBackupVersion($rollbackDir)
@@ -484,6 +511,7 @@ TAGSPUBKEY
     }
 
     /**
+     * @param string $rollbackDir
      * @return Finder
      */
     protected function getOldInstallationFinder($rollbackDir)
