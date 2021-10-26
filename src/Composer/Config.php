@@ -238,8 +238,6 @@ class Config
      * @throws \RuntimeException
      *
      * @return mixed
-     *
-     * @phpstan-param self::RELATIVE_PATHS|0 $flags
      */
     public function get($key, $flags = 0)
     {
@@ -394,8 +392,6 @@ class Config
      * @param int $flags
      *
      * @return array<string, mixed[]>
-     *
-     * @phpstan-param self::RELATIVE_PATHS|0 $flags
      */
     public function all($flags = 0)
     {
@@ -438,8 +434,6 @@ class Config
      * @param  int             $flags Options (see class constants)
      *
      * @return string|int|null
-     *
-     * @phpstan-param self::RELATIVE_PATHS|0 $flags
      */
     private function process($value, $flags)
     {
