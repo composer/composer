@@ -13,6 +13,7 @@
 namespace Composer\Console;
 
 use Composer\IO\IOInterface;
+use Composer\Util\Platform;
 
 final class GithubActionError
 {
@@ -35,7 +36,7 @@ final class GithubActionError
      */
     public function emit($message, $file = null, $line = null)
     {
-        if (getenv('GITHUB_ACTIONS') && !getenv('COMPOSER_TESTS_ARE_RUNNING')) {
+        if (Platform::getEnv('GITHUB_ACTIONS') && !Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING')) {
             // newlines need to be encoded
             // see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
             $message = str_replace("\n", '%0A', $message);

@@ -330,7 +330,7 @@ class Config
                 return (int) $this->config['cache-ttl'];
 
             case 'home':
-                $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(getenv('HOME') ?: getenv('USERPROFILE'), '/\\') . '/', $this->config[$key]);
+                $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE'), '/\\') . '/', $this->config[$key]);
 
                 return rtrim($this->process($val, $flags), '/\\');
 
@@ -477,7 +477,7 @@ class Config
     private function getComposerEnv($var)
     {
         if ($this->useEnvironment) {
-            return getenv($var);
+            return Platform::getEnv($var);
         }
 
         return false;

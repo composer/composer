@@ -57,17 +57,17 @@ class Factory
      */
     protected static function getHomeDir()
     {
-        $home = getenv('COMPOSER_HOME');
+        $home = Platform::getEnv('COMPOSER_HOME');
         if ($home) {
             return $home;
         }
 
         if (Platform::isWindows()) {
-            if (!getenv('APPDATA')) {
+            if (!Platform::getEnv('APPDATA')) {
                 throw new \RuntimeException('The APPDATA or COMPOSER_HOME environment variable must be set for composer to run correctly');
             }
 
-            return rtrim(strtr(getenv('APPDATA'), '\\', '/'), '/') . '/Composer';
+            return rtrim(strtr(Platform::getEnv('APPDATA'), '\\', '/'), '/') . '/Composer';
         }
 
         $userDir = self::getUserDir();
@@ -75,7 +75,7 @@ class Factory
 
         if (self::useXdg()) {
             // XDG Base Directory Specifications
-            $xdgConfig = getenv('XDG_CONFIG_HOME');
+            $xdgConfig = Platform::getEnv('XDG_CONFIG_HOME');
             if (!$xdgConfig) {
                 $xdgConfig = $userDir . '/.config';
             }
@@ -102,18 +102,18 @@ class Factory
      */
     protected static function getCacheDir($home)
     {
-        $cacheDir = getenv('COMPOSER_CACHE_DIR');
+        $cacheDir = Platform::getEnv('COMPOSER_CACHE_DIR');
         if ($cacheDir) {
             return $cacheDir;
         }
 
-        $homeEnv = getenv('COMPOSER_HOME');
+        $homeEnv = Platform::getEnv('COMPOSER_HOME');
         if ($homeEnv) {
             return $homeEnv . '/cache';
         }
 
         if (Platform::isWindows()) {
-            if ($cacheDir = getenv('LOCALAPPDATA')) {
+            if ($cacheDir = Platform::getEnv('LOCALAPPDATA')) {
                 $cacheDir .= '/Composer';
             } else {
                 $cacheDir = $home . '/cache';
@@ -137,7 +137,7 @@ class Factory
         }
 
         if (self::useXdg()) {
-            $xdgCache = getenv('XDG_CACHE_HOME') ?: $userDir . '/.cache';
+            $xdgCache = Platform::getEnv('XDG_CACHE_HOME') ?: $userDir . '/.cache';
 
             return $xdgCache . '/composer';
         }
@@ -151,7 +151,7 @@ class Factory
      */
     protected static function getDataDir($home)
     {
-        $homeEnv = getenv('COMPOSER_HOME');
+        $homeEnv = Platform::getEnv('COMPOSER_HOME');
         if ($homeEnv) {
             return $homeEnv;
         }
@@ -162,7 +162,7 @@ class Factory
 
         $userDir = self::getUserDir();
         if ($home !== $userDir . '/.composer' && self::useXdg()) {
-            $xdgData = getenv('XDG_DATA_HOME') ?: $userDir . '/.local/share';
+            $xdgData = Platform::getEnv('XDG_DATA_HOME') ?: $userDir . '/.local/share';
 
             return $xdgData . '/composer';
         }
@@ -226,7 +226,7 @@ class Factory
         $config->setAuthConfigSource(new JsonConfigSource($file, true));
 
         // load COMPOSER_AUTH environment variable if set
-        if ($composerAuthEnv = getenv('COMPOSER_AUTH')) {
+        if ($composerAuthEnv = Platform::getEnv('COMPOSER_AUTH')) {
             $authData = json_decode($composerAuthEnv, true);
 
             if (null === $authData) {
@@ -249,7 +249,7 @@ class Factory
      */
     public static function getComposerFile()
     {
-        return trim(getenv('COMPOSER')) ?: './composer.json';
+        return trim(Platform::getEnv('COMPOSER')) ?: './composer.json';
     }
 
     /**
@@ -714,7 +714,7 @@ class Factory
      */
     private static function getUserDir()
     {
-        $home = getenv('HOME');
+        $home = Platform::getEnv('HOME');
         if (!$home) {
             throw new \RuntimeException('The HOME or COMPOSER_HOME environment variable must be set for composer to run correctly');
         }
