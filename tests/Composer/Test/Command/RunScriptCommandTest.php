@@ -99,7 +99,7 @@ class RunScriptCommandTest extends TestCase
         );
     }
 
-    /** @return object **/
+    /** @return Composer **/
     private function createComposerInstance()
     {
         $composer = new Composer;
