@@ -28,19 +28,19 @@ class InstallationManagerMock extends InstallationManager
     /**
      * @var PackageInterface[]
      */
-    private $installed = array();
+    private array $installed = [];
     /**
      * @var PackageInterface[][]
      */
-    private $updated = array();
+    private array $updated = [];
     /**
      * @var PackageInterface[]
      */
-    private $uninstalled = array();
+    private array $uninstalled = [];
     /**
      * @var string[]
      */
-    private $trace = array();
+    private array $trace = [];
 
     public function __construct()
     {
@@ -122,21 +122,25 @@ class InstallationManagerMock extends InstallationManager
         parent::markAliasUninstalled($repo, $operation);
     }
 
+    /** @return string[] */
     public function getTrace()
     {
         return $this->trace;
     }
 
+    /** @return PackageInterface[] */
     public function getInstalledPackages()
     {
         return $this->installed;
     }
 
+    /** @return PackageInterface[][] */
     public function getUpdatedPackages()
     {
         return $this->updated;
     }
 
+    /** @return PackageInterface[] */
     public function getUninstalledPackages()
     {
         return $this->uninstalled;
@@ -147,6 +151,7 @@ class InstallationManagerMock extends InstallationManager
         // noop
     }
 
+    /** @return PackageInterface[] */
     public function getInstalledPackagesByType()
     {
         return $this->installed;
