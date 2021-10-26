@@ -368,9 +368,9 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @return void
      */
-    private function hintCommonErrors($exception)
+    private function hintCommonErrors(\Exception $exception)
     {
         $io = $this->getIO();
 
@@ -451,6 +451,8 @@ class Application extends BaseApplication
 
     /**
      * Removes the cached composer instance
+     *
+     * @return void
      */
     public function resetComposer()
     {
@@ -468,6 +470,9 @@ class Application extends BaseApplication
         return $this->io;
     }
 
+    /**
+     * @return string
+     */
     public function getHelp()
     {
         return self::$logo . parent::getHelp();
@@ -548,6 +553,9 @@ class Application extends BaseApplication
         return $definition;
     }
 
+    /**
+     * @return Command\BaseCommand[]
+     */
     private function getPluginCommands()
     {
         $commands = array();

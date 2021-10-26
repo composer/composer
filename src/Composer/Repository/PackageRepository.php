@@ -28,7 +28,7 @@ class PackageRepository extends ArrayRepository
     /**
      * Initializes filesystem repository.
      *
-     * @param array $config package definition
+     * @param array{package: array} $config package definition
      */
     public function __construct(array $config)
     {

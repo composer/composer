@@ -258,6 +258,9 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         return $installPath;
     }
 
+    /**
+     * @return PromiseInterface|null
+     */
     protected function installCode(PackageInterface $package)
     {
         $downloadPath = $this->getInstallPath($package);
@@ -265,6 +268,9 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         return $this->downloadManager->install($package, $downloadPath);
     }
 
+    /**
+     * @return PromiseInterface|null
+     */
     protected function updateCode(PackageInterface $initial, PackageInterface $target)
     {
         $initialDownloadPath = $this->getInstallPath($initial);
@@ -298,6 +304,9 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         return $this->downloadManager->update($initial, $target, $targetDownloadPath);
     }
 
+    /**
+     * @return PromiseInterface|null
+     */
     protected function removeCode(PackageInterface $package)
     {
         $downloadPath = $this->getPackageBasePath($package);
@@ -305,6 +314,9 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         return $this->downloadManager->remove($package, $downloadPath);
     }
 
+    /**
+     * @return void
+     */
     protected function initializeVendorDir()
     {
         $this->filesystem->ensureDirectoryExists($this->vendorDir);

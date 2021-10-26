@@ -30,14 +30,17 @@ use Composer\Semver\Constraint\Constraint;
  */
 class ArrayRepository implements RepositoryInterface
 {
-    /** @var ?array<PackageInterface&BasePackage> */
+    /** @var ?array<BasePackage> */
     protected $packages = null;
 
     /**
-     * @var ?array<PackageInterface&BasePackage> indexed by package unique name and used to cache hasPackage calls
+     * @var ?array<BasePackage> indexed by package unique name and used to cache hasPackage calls
      */
     protected $packageMap = null;
 
+    /**
+     * @param array<PackageInterface> $packages
+     */
     public function __construct(array $packages = array())
     {
         foreach ($packages as $package) {
@@ -188,6 +191,8 @@ class ArrayRepository implements RepositoryInterface
      * Adds a new package to the repository
      *
      * @param PackageInterface $package
+     *
+     * @return void
      */
     public function addPackage(PackageInterface $package)
     {
@@ -235,10 +240,12 @@ class ArrayRepository implements RepositoryInterface
     }
 
     /**
-     * @phpstan-param PackageInterface&BasePackage $package
+     * @param string $alias
+     * @param string $prettyAlias
+     *
      * @return AliasPackage|CompleteAliasPackage
      */
-    protected function createAliasPackage(PackageInterface $package, $alias, $prettyAlias)
+    protected function createAliasPackage(BasePackage $package, $alias, $prettyAlias)
     {
         while ($package instanceof AliasPackage) {
             $package = $package->getAliasOf();
@@ -255,6 +262,8 @@ class ArrayRepository implements RepositoryInterface
      * Removes package from repository.
      *
      * @param PackageInterface $package package instance
+     *
+     * @return void
      */
     public function removePackage(PackageInterface $package)
     {
@@ -305,6 +314,8 @@ class ArrayRepository implements RepositoryInterface
 
     /**
      * Initializes the packages array. Mostly meant as an extension point.
+     *
+     * @return void
      */
     protected function initialize()
     {

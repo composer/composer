@@ -73,7 +73,7 @@ class RepositoryFactory
     /**
      * @param  IOInterface         $io
      * @param  Config              $config
-     * @param  array               $repoConfig
+     * @param  array<string, mixed> $repoConfig
      * @return RepositoryInterface
      */
     public static function createRepo(IOInterface $io, Config $config, array $repoConfig, RepositoryManager $rm = null)
@@ -140,6 +140,8 @@ class RepositoryFactory
     }
 
     /**
+     * @param array<int|string, mixed> $repoConfigs
+     *
      * @return RepositoryInterface[]
      */
     private static function createRepos(RepositoryManager $rm, array $repoConfigs)
@@ -168,6 +170,13 @@ class RepositoryFactory
         return $repos;
     }
 
+    /**
+     * @param int|string $index
+     * @param array{url?: string} $repo
+     * @param array<string, mixed> $existingRepos
+     *
+     * @return string
+     */
     public static function generateRepositoryName($index, array $repo, array $existingRepos)
     {
         $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;

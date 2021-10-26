@@ -38,6 +38,7 @@ class RuleWatchGraph
      * watch changes in any literals.
      *
      * @param RuleWatchNode $node The rule node to be inserted into the graph
+     * @return void
      */
     public function insert(RuleWatchNode $node)
     {
@@ -87,7 +88,7 @@ class RuleWatchGraph
      *                                   register decisions resulting from propagation
      * @return Rule|null If a conflict is found the conflicting rule is returned
      */
-    public function propagateLiteral($decidedLiteral, $level, $decisions)
+    public function propagateLiteral($decidedLiteral, $level, Decisions $decisions)
     {
         // we invert the decided literal here, example:
         // A was decided => (-A|B) now requires B to be true, so we look for
@@ -153,6 +154,7 @@ class RuleWatchGraph
      * @param int           $fromLiteral A literal the node used to watch
      * @param int           $toLiteral   A literal the node should watch now
      * @param RuleWatchNode $node        The rule node to be moved
+     * @return void
      */
     protected function moveWatch($fromLiteral, $toLiteral, RuleWatchNode $node)
     {

@@ -45,6 +45,13 @@ class Hg
         $this->process = $process;
     }
 
+    /**
+     * @param callable    $commandCallable
+     * @param string      $url
+     * @param string|null $cwd
+     *
+     * @return void
+     */
     public function runCommand($commandCallable, $url, $cwd)
     {
         $this->config->prohibitUrlByConfig($url, $this->io);
@@ -75,6 +82,12 @@ class Hg
         $this->throwException('Failed to clone ' . $url . ', ' . "\n\n" . $error, $url);
     }
 
+    /**
+     * @param non-empty-string $message
+     * @param string           $url
+     *
+     * @return never
+     */
     private function throwException($message, $url)
     {
         if (null === self::getVersion($this->process)) {

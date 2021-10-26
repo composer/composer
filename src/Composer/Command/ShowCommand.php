@@ -433,7 +433,7 @@ EOT
                             $packageViewData['latest-status'] = $this->getUpdateStatus($latestPackage, $package);
                             $latestLength = max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
                         }
-                        if ($writeDescription) {
+                        if ($writeDescription && $package instanceof CompletePackageInterface) {
                             $packageViewData['description'] = $package->getDescription();
                         }
                         if ($writePath) {

@@ -77,6 +77,7 @@ class EventDispatcher
      * Set whether script handlers are active or not
      *
      * @param bool $runScripts
+     * @return $this
      */
     public function setRunScripts($runScripts = true)
     {
@@ -105,12 +106,12 @@ class EventDispatcher
     /**
      * Dispatch a script event.
      *
-     * @param  string $eventName      The constant in ScriptEvents
-     * @param  bool   $devMode
-     * @param  array  $additionalArgs Arguments passed by the user
-     * @param  array  $flags          Optional flags to pass data not as argument
-     * @return int    return code of the executed script if any, for php scripts a false return
-     *                               value is changed to 1, anything else to 0
+     * @param  string               $eventName      The constant in ScriptEvents
+     * @param  bool                 $devMode
+     * @param  array<int, mixed>    $additionalArgs Arguments passed by the user
+     * @param  array<string, mixed> $flags          Optional flags to pass data not as argument
+     * @return int                                  return code of the executed script if any, for php scripts a false return
+     *                                              value is changed to 1, anything else to 0
      */
     public function dispatchScript($eventName, $devMode = false, $additionalArgs = array(), $flags = array())
     {
@@ -120,11 +121,11 @@ class EventDispatcher
     /**
      * Dispatch a package event.
      *
-     * @param string              $eventName  The constant in PackageEvents
-     * @param bool                $devMode    Whether or not we are in dev mode
-     * @param RepositoryInterface $localRepo  The installed repository
-     * @param array               $operations The list of operations
-     * @param OperationInterface  $operation  The package being installed/updated/removed
+     * @param string               $eventName  The constant in PackageEvents
+     * @param bool                 $devMode    Whether or not we are in dev mode
+     * @param RepositoryInterface  $localRepo  The installed repository
+     * @param OperationInterface[] $operations The list of operations
+     * @param OperationInterface   $operation  The package being installed/updated/removed
      *
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
@@ -336,6 +337,11 @@ class EventDispatcher
         return $returnMax;
     }
 
+    /**
+     * @param string $exec
+     *
+     * @return int
+     */
     protected function executeTty($exec)
     {
         if ($this->io->isInteractive()) {
@@ -345,6 +351,9 @@ class EventDispatcher
         return $this->process->execute($exec);
     }
 
+    /**
+     * @return string
+     */
     protected function getPhpExecCommand()
     {
         $finder = new PhpExecutableFinder();
@@ -365,6 +374,8 @@ class EventDispatcher
      * @param string $className
      * @param string $methodName
      * @param Event  $event      Event invoking the PHP callable
+     *
+     * @return mixed
      */
     protected function executeEventPhpScript($className, $methodName, Event $event)
     {
@@ -383,6 +394,8 @@ class EventDispatcher
      * @param string   $eventName The event name - typically a constant
      * @param callable $listener  A callable expecting an event argument
      * @param int      $priority  A higher value represents a higher priority
+     *
+     * @return void
      */
     public function addListener($eventName, $listener, $priority = 0)
     {
@@ -391,6 +404,8 @@ class EventDispatcher
 
     /**
      * @param callable|object $listener A callable or an object instance for which all listeners should be removed
+     *
+     * @return void
      */
     public function removeListener($listener)
     {
@@ -411,6 +426,8 @@ class EventDispatcher
      * @see EventSubscriberInterface
      *
      * @param EventSubscriberInterface $subscriber
+     *
+     * @return void
      */
     public function addSubscriber(EventSubscriberInterface $subscriber)
     {
@@ -431,7 +448,7 @@ class EventDispatcher
      * Retrieves all listeners for a given event
      *
      * @param  Event $event
-     * @return array All listeners: callables and scripts
+     * @return array<callable|string> All listeners: callables and scripts
      */
     protected function getListeners(Event $event)
     {
@@ -465,7 +482,7 @@ class EventDispatcher
      * Finds all listeners defined as scripts in the package
      *
      * @param  Event $event Event object
-     * @return array Listeners
+     * @return string[] Listeners
      */
     protected function getScriptListeners(Event $event)
     {
@@ -536,13 +553,16 @@ class EventDispatcher
     /**
      * Pops the active event from the stack
      *
-     * @return mixed
+     * @return string|null
      */
     protected function popEvent()
     {
         return array_pop($this->eventStack);
     }
 
+    /**
+     * @return void
+     */
     private function ensureBinDirIsInPath()
     {
         $pathStr = 'PATH';

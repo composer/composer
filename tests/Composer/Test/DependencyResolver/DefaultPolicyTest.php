@@ -190,8 +190,8 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
 
-        $packageA->setProvides(array(new Link('A', 'X', new Constraint('==', '1.0'), Link::TYPE_PROVIDE)));
-        $packageB->setProvides(array(new Link('B', 'X', new Constraint('==', '1.0'), Link::TYPE_PROVIDE)));
+        $packageA->setProvides(array('x' => new Link('A', 'X', new Constraint('==', '1.0'), Link::TYPE_PROVIDE)));
+        $packageB->setProvides(array('x' => new Link('B', 'X', new Constraint('==', '1.0'), Link::TYPE_PROVIDE)));
 
         $this->repositorySet->addRepository($this->repo);
 
@@ -210,7 +210,7 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
 
-        $packageB->setReplaces(array(new Link('B', 'A', new Constraint('==', '1.0'), Link::TYPE_REPLACE)));
+        $packageB->setReplaces(array('a' => new Link('B', 'A', new Constraint('==', '1.0'), Link::TYPE_REPLACE)));
 
         $this->repositorySet->addRepository($this->repo);
 
@@ -230,8 +230,8 @@ class DefaultPolicyTest extends TestCase
         $this->repo->addPackage($packageB = $this->getPackage('vendor-b/replacer', '1.0'));
         $this->repo->addPackage($packageA = $this->getPackage('vendor-a/replacer', '1.0'));
 
-        $packageA->setReplaces(array(new Link('vendor-a/replacer', 'vendor-a/package', new Constraint('==', '1.0'), Link::TYPE_REPLACE)));
-        $packageB->setReplaces(array(new Link('vendor-b/replacer', 'vendor-a/package', new Constraint('==', '1.0'), Link::TYPE_REPLACE)));
+        $packageA->setReplaces(array('vendor-a/package' => new Link('vendor-a/replacer', 'vendor-a/package', new Constraint('==', '1.0'), Link::TYPE_REPLACE)));
+        $packageB->setReplaces(array('vendor-a/package' => new Link('vendor-b/replacer', 'vendor-a/package', new Constraint('==', '1.0'), Link::TYPE_REPLACE)));
 
         $this->repositorySet->addRepository($this->repo);
 

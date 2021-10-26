@@ -14,6 +14,8 @@ namespace Composer\DependencyResolver;
 
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
+use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\LockArrayRepository;
@@ -47,6 +49,7 @@ class Problem
      * Add a rule as a reason
      *
      * @param Rule $rule A rule which is a reason for this problem
+     * @return void
      */
     public function addRule(Rule $rule)
     {
@@ -56,7 +59,7 @@ class Problem
     /**
      * Retrieve all reasons for this problem
      *
-     * @return array The problem's reasons
+     * @return array<int, array<int, Rule>> The problem's reasons
      */
     public function getReasons()
     {
@@ -66,7 +69,9 @@ class Problem
     /**
      * A human readable textual representation of the problem's reasons
      *
-     * @param  array  $installedMap A map of all present packages
+     * @param bool $isVerbose
+     * @param array<int|string, BasePackage> $installedMap A map of all present packages
+     * @param array<Rule[]> $learnedPool
      * @return string
      */
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
@@ -101,6 +106,12 @@ class Problem
     }
 
     /**
+     * @param Rule[] $rules
+     * @param string $indent
+     * @param bool $isVerbose
+     * @param array<int|string, BasePackage> $installedMap A map of all present packages
+     * @param array<Rule[]> $learnedPool
+     * @return string
      * @internal
      */
     public static function formatDeduplicatedRules($rules, $indent, RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
@@ -144,6 +155,9 @@ class Problem
         return "\n$indent- ".implode("\n$indent- ", $result);
     }
 
+    /**
+     * @return bool
+     */
     public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
     {
         foreach ($this->reasons as $sectionRules) {
@@ -153,6 +167,8 @@ class Problem
                 }
             }
         }
+
+        return false;
     }
 
     /**
@@ -160,6 +176,7 @@ class Problem
      *
      * @param string $id     A canonical identifier for the reason
      * @param Rule   $reason The reason descriptor
+     * @return void
      */
     protected function addReason($id, Rule $reason)
     {
@@ -172,6 +189,9 @@ class Problem
         }
     }
 
+    /**
+     * @return void
+     */
     public function nextSection()
     {
         $this->section++;
@@ -179,8 +199,11 @@ class Problem
 
     /**
      * @internal
+     * @param bool $isVerbose
+     * @param string $packageName
+     * @return array{0: string, 1: string}
      */
-    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, $constraint = null)
+    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, ConstraintInterface $constraint = null)
     {
         // handle php/hhvm
         if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
@@ -273,7 +296,7 @@ class Problem
         if ($packages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
             // we must first verify if a valid package would be found in a lower priority repository
             if ($allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
-                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, $packages, $allReposPackages, 'minimum-stability');
+                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $packages, $allReposPackages, 'minimum-stability', $constraint);
             }
 
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match your minimum-stability.');
@@ -283,7 +306,7 @@ class Problem
         if ($packages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
             // we must first verify if a valid package would be found in a lower priority repository
             if ($allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
-                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, $packages, $allReposPackages, 'constraint');
+                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $packages, $allReposPackages, 'constraint', $constraint);
             }
 
             $suffix = '';
@@ -331,6 +354,9 @@ class Problem
 
     /**
      * @internal
+     * @param PackageInterface[] $packages
+     * @param bool $isVerbose
+     * @return string
      */
     public static function getPackageList(array $packages, $isVerbose)
     {
@@ -360,6 +386,11 @@ class Problem
         return implode(', ', $prepared);
     }
 
+    /**
+     * @param  string $version
+     * @param  string $packageName
+     * @return string
+     */
     private static function getPlatformPackageVersion(Pool $pool, $packageName, $version)
     {
         $available = $pool->whatProvides($packageName);
@@ -377,7 +408,9 @@ class Problem
     }
 
     /**
-     * @param  string[]     $versions an array of pretty versions, with normalized versions as keys
+     * @param string[] $versions an array of pretty versions, with normalized versions as keys
+     * @param int $max
+     * @param int $maxDev
      * @return list<string> a list of pretty versions and '...' where versions were removed
      */
     private static function condenseVersionList(array $versions, $max, $maxDev = 16)
@@ -410,6 +443,10 @@ class Problem
         return $filtered;
     }
 
+    /**
+     * @param PackageInterface[] $packages
+     * @return bool
+     */
     private static function hasMultipleNames(array $packages)
     {
         $name = null;
@@ -424,7 +461,15 @@ class Problem
         return false;
     }
 
-    private static function computeCheckForLowerPrioRepo($isVerbose, $packageName, $constraint, array $higherRepoPackages, array $allReposPackages, $reason)
+    /**
+     * @param bool $isVerbose
+     * @param string $packageName
+     * @param PackageInterface[] $higherRepoPackages
+     * @param PackageInterface[] $allReposPackages
+     * @param string $reason
+     * @return array{0: string, 1: string}
+     */
+    private static function computeCheckForLowerPrioRepo($isVerbose, $packageName, array $higherRepoPackages, array $allReposPackages, $reason, ConstraintInterface $constraint = null)
     {
         $nextRepoPackages = array();
         $nextRepo = null;
@@ -461,10 +506,9 @@ class Problem
     /**
      * Turns a constraint into text usable in a sentence describing a request
      *
-     * @param  ?ConstraintInterface $constraint
      * @return string
      */
-    protected static function constraintToText($constraint)
+    protected static function constraintToText(ConstraintInterface $constraint = null)
     {
         return $constraint ? ' '.$constraint->getPrettyString() : '';
     }

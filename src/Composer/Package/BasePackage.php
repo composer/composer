@@ -23,7 +23,7 @@ use Composer\Repository\PlatformRepository;
 abstract class BasePackage implements PackageInterface
 {
     /**
-     * @phpstan-var array<string, array{description: string, method: Link::TYPE_*}>
+     * @phpstan-var array<non-empty-string, array{description: string, method: Link::TYPE_*}>
      * @internal
      */
     public static $supportedLinkTypes = array(
@@ -168,6 +168,9 @@ abstract class BasePackage implements PackageInterface
         return $this->getName().'-'.$this->getVersion();
     }
 
+    /**
+     * @return bool
+     */
     public function equals(PackageInterface $package)
     {
         $self = $this;
@@ -231,6 +234,11 @@ abstract class BasePackage implements PackageInterface
         return $this->getPrettyVersion() . ' ' . $reference;
     }
 
+    /**
+     * @return int
+     *
+     * @phpstan-return self::STABILITY_*
+     */
     public function getStabilityPriority()
     {
         return self::$stabilities[$this->getStability()];

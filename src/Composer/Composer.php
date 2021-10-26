@@ -67,6 +67,9 @@ class Composer
      */
     const RUNTIME_API_VERSION = '2.1.0';
 
+    /**
+     * @return string
+     */
     public static function getVersion()
     {
         // no replacement done, this must be a source checkout
@@ -138,7 +141,6 @@ class Composer
     private $archiveManager;
 
     /**
-     * @param  RootPackageInterface $package
      * @return void
      */
     public function setPackage(RootPackageInterface $package)
@@ -155,7 +157,7 @@ class Composer
     }
 
     /**
-     * @param Config $config
+     * @return void
      */
     public function setConfig(Config $config)
     {
@@ -171,7 +173,7 @@ class Composer
     }
 
     /**
-     * @param Locker $locker
+     * @return void
      */
     public function setLocker(Locker $locker)
     {
@@ -187,7 +189,7 @@ class Composer
     }
 
     /**
-     * @param Loop $loop
+     * @return void
      */
     public function setLoop(Loop $loop)
     {
@@ -203,7 +205,7 @@ class Composer
     }
 
     /**
-     * @param RepositoryManager $manager
+     * @return void
      */
     public function setRepositoryManager(RepositoryManager $manager)
     {
@@ -219,7 +221,7 @@ class Composer
     }
 
     /**
-     * @param DownloadManager $manager
+     * @return void
      */
     public function setDownloadManager(DownloadManager $manager)
     {
@@ -235,7 +237,7 @@ class Composer
     }
 
     /**
-     * @param ArchiveManager $manager
+     * @return void
      */
     public function setArchiveManager(ArchiveManager $manager)
     {
@@ -251,7 +253,7 @@ class Composer
     }
 
     /**
-     * @param InstallationManager $manager
+     * @return void
      */
     public function setInstallationManager(InstallationManager $manager)
     {
@@ -267,7 +269,7 @@ class Composer
     }
 
     /**
-     * @param PluginManager $manager
+     * @return void
      */
     public function setPluginManager(PluginManager $manager)
     {
@@ -283,7 +285,7 @@ class Composer
     }
 
     /**
-     * @param EventDispatcher $eventDispatcher
+     * @return void
      */
     public function setEventDispatcher(EventDispatcher $eventDispatcher)
     {
@@ -299,7 +301,7 @@ class Composer
     }
 
     /**
-     * @param AutoloadGenerator $autoloadGenerator
+     * @return void
      */
     public function setAutoloadGenerator(AutoloadGenerator $autoloadGenerator)
     {

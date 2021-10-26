@@ -186,7 +186,7 @@ The array of versions can also optionally be minified using
 [composer/metadata-minifier](https://packagist.org/packages/composer/metadata-minifier).
 If you do that, you should add a `"minified": "composer/2.0"` key
 at the top level to indicate to Composer it must expand the version
-list back into the original data. See 
+list back into the original data. See
 https://repo.packagist.org/p2/monolog/monolog.json for an example.
 
 Any requested package which does not exist MUST return a 404 status code,
@@ -199,7 +199,7 @@ the 404-requests, you can also specify an `"available-packages"` key in
 `packages.json` which should be an array with all the package names that your
 repository contain. Alternatively you can specify an
 `"available-package-patterns"` key which is an array of package name patterns
-(with `*` matching any string, e.g. `vendor/*` would make composer look up
+(with `*` matching any string, e.g. `vendor/*` would make Composer look up
 every matching package name in this repository).
 
 This field is optional.
@@ -411,7 +411,7 @@ attempt to use github's zip files.
 
 Please note:
 * **To let Composer choose which driver to use** the repository type needs to be defined as "vcs"
-* **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update composer cache and install the package from dist.
+* **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update Composer cache and install the package from dist.
 
 #### BitBucket Driver Configuration
 
@@ -750,7 +750,7 @@ You can disable the default Packagist.org repository by adding this to your
 You can disable Packagist.org globally by using the global config flag:
 
 ```bash
-composer config -g repo.packagist false
+php composer.phar config -g repo.packagist false
 ```
 
 &larr; [Schema](04-schema.md)  |  [Config](06-config.md) &rarr;

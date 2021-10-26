@@ -52,6 +52,8 @@ class ArchiveManager
 
     /**
      * @param ArchiverInterface $archiver
+     *
+     * @return void
      */
     public function addArchiver(ArchiverInterface $archiver)
     {

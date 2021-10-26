@@ -32,6 +32,9 @@ class ProjectInstaller implements InstallerInterface
     /** @var Filesystem */
     private $filesystem;
 
+    /**
+     * @param string $installPath
+     */
     public function __construct($installPath, DownloadManager $dm, Filesystem $fs)
     {
         $this->installPath = rtrim(strtr($installPath, '\\', '/'), '/').'/';

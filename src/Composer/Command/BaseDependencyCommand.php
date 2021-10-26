@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
+use Composer\Package\CompletePackageInterface;
 use Composer\Package\RootPackage;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\CompositeRepository;
@@ -121,7 +122,7 @@ class BaseDependencyCommand extends BaseCommand
         } elseif ($renderTree) {
             $this->initStyles($output);
             $root = $packages[0];
-            $this->getIO()->write(sprintf('<info>%s</info> %s %s', $root->getPrettyName(), $root->getPrettyVersion(), $root->getDescription()));
+            $this->getIO()->write(sprintf('<info>%s</info> %s %s', $root->getPrettyName(), $root->getPrettyVersion(), $root instanceof CompletePackageInterface ? $root->getDescription() : ''));
             $this->printTree($results);
         } else {
             $this->printTable($output, $results);

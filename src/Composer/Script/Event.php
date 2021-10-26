@@ -47,12 +47,12 @@ class Event extends BaseEvent
     /**
      * Constructor.
      *
-     * @param string      $name     The event name
-     * @param Composer    $composer The composer object
-     * @param IOInterface $io       The IOInterface object
-     * @param bool        $devMode  Whether or not we are in dev mode
-     * @param array       $args     Arguments passed by the user
-     * @param array       $flags    Optional flags to pass data not as argument
+     * @param string $name The event name
+     * @param Composer $composer The composer object
+     * @param IOInterface $io The IOInterface object
+     * @param bool $devMode Whether or not we are in dev mode
+     * @param array<string|int|float|bool|null> $args Arguments passed by the user
+     * @param mixed[] $flags Optional flags to pass data not as argument
      */
     public function __construct($name, Composer $composer, IOInterface $io, $devMode = false, array $args = array(), array $flags = array())
     {

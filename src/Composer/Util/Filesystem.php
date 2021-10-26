@@ -32,6 +32,11 @@ class Filesystem
         $this->processExecutor = $executor;
     }
 
+    /**
+     * @param string $file
+     *
+     * @return bool
+     */
     public function remove($file)
     {
         if (is_dir($file)) {
@@ -62,6 +67,12 @@ class Filesystem
         return \count($finder) === 0;
     }
 
+    /**
+     * @param string $dir
+     * @param bool   $ensureDirectoryExists
+     *
+     * @return void
+     */
     public function emptyDirectory($dir, $ensureDirectoryExists = true)
     {
         if (is_link($dir) && file_exists($dir)) {
@@ -163,6 +174,7 @@ class Filesystem
 
     /**
      * @param string $directory
+     * @param bool   $fallbackToPhp
      *
      * @return bool|null Returns null, when no edge case was hit. Otherwise a bool whether removal was successfull
      */
@@ -240,6 +252,11 @@ class Filesystem
         return $this->rmdir($directory);
     }
 
+    /**
+     * @param string $directory
+     *
+     * @return void
+     */
     public function ensureDirectoryExists($directory)
     {
         if (!is_dir($directory)) {
@@ -326,6 +343,8 @@ class Filesystem
      *
      * @param string $source
      * @param string $target
+     *
+     * @return void
      */
     public function copyThenRemove($source, $target)
     {
@@ -370,6 +389,12 @@ class Filesystem
         return $result;
     }
 
+    /**
+     * @param string $source
+     * @param string $target
+     *
+     * @return void
+     */
     public function rename($source, $target)
     {
         if (true === @rename($source, $target)) {
@@ -605,13 +630,18 @@ class Filesystem
         return (bool) preg_match('{^(file://(?!//)|/(?!/)|/?[a-z]:[\\\\/]|\.\.[\\\\/]|[a-z0-9_.-]+[\\\\/])}i', $path);
     }
 
+    /**
+     * @param string $path
+     *
+     * @return string
+     */
     public static function getPlatformPath($path)
     {
         if (Platform::isWindows()) {
             $path = preg_replace('{^(?:file:///([a-z]):?/)}i', 'file://$1:/', $path);
         }
 
-        return preg_replace('{^file://}i', '', $path);
+        return (string) preg_replace('{^file://}i', '', $path);
     }
 
     /**
@@ -641,6 +671,11 @@ class Filesystem
         return false;
     }
 
+    /**
+     * @param string $directory
+     *
+     * @return int
+     */
     protected function directorySize($directory)
     {
         $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);
@@ -767,6 +802,8 @@ class Filesystem
      *
      * @param string $target
      * @param string $junction
+     *
+     * @return void
      */
     public function junction($target, $junction)
     {
@@ -845,6 +882,12 @@ class Filesystem
         return $this->rmdir($junction);
     }
 
+    /**
+     * @param string $path
+     * @param string $content
+     *
+     * @return int|false
+     */
     public function filePutContentsIfModified($path, $content)
     {
         $currentContent = @file_get_contents($path);
@@ -860,6 +903,8 @@ class Filesystem
      *
      * @param string $source
      * @param string $target
+     *
+     * @return void
      */
     public function safeCopy($source, $target)
     {
@@ -876,6 +921,11 @@ class Filesystem
     /**
      * compare 2 files
      * https://stackoverflow.com/questions/3060125/can-i-use-file-get-contents-to-compare-two-files
+     *
+     * @param string $a
+     * @param string $b
+     *
+     * @return bool
      */
     private function filesAreEqual($a, $b)
     {

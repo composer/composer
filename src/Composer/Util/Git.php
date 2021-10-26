@@ -40,6 +40,14 @@ class Git
         $this->filesystem = $fs;
     }
 
+    /**
+     * @param callable    $commandCallable
+     * @param string      $url
+     * @param string|null $cwd
+     * @param bool        $initialClone
+     *
+     * @return void
+     */
     public function runCommand($commandCallable, $url, $cwd, $initialClone = false)
     {
         // Ensure we are allowed to use this URL by config
@@ -257,6 +265,12 @@ class Git
         }
     }
 
+    /**
+     * @param string $url
+     * @param string $dir
+     *
+     * @return bool
+     */
     public function syncMirror($url, $dir)
     {
         if (getenv('COMPOSER_DISABLE_NETWORK') && getenv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
@@ -295,6 +309,13 @@ class Git
         return true;
     }
 
+    /**
+     * @param string $url
+     * @param string $dir
+     * @param string $ref
+     *
+     * @return bool
+     */
     public function fetchRefOrSyncMirror($url, $dir, $ref)
     {
         if ($this->checkRefIsInMirror($dir, $ref)) {
@@ -308,6 +329,9 @@ class Git
         return false;
     }
 
+    /**
+     * @return string
+     */
     public static function getNoShowSignatureFlag(ProcessExecutor $process)
     {
         $gitVersion = self::getVersion($process);
@@ -318,6 +342,12 @@ class Git
         return '';
     }
 
+    /**
+     * @param string $dir
+     * @param string $ref
+     *
+     * @return bool
+     */
     private function checkRefIsInMirror($dir, $ref)
     {
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
@@ -331,6 +361,12 @@ class Git
         return false;
     }
 
+    /**
+     * @param string   $url
+     * @param string[] $match
+     *
+     * @return bool
+     */
     private function isAuthenticationFailure($url, &$match)
     {
         if (!preg_match('{^(https?://)([^/]+)(.*)$}i', $url, $match)) {
@@ -355,6 +391,9 @@ class Git
         return false;
     }
 
+    /**
+     * @return void
+     */
     public static function cleanEnv()
     {
         if (PHP_VERSION_ID < 50400 && ini_get('safe_mode') && false === strpos(ini_get('safe_mode_allowed_env_vars'), 'GIT_ASKPASS')) {
@@ -383,16 +422,28 @@ class Git
         Platform::clearEnv('DYLD_LIBRARY_PATH');
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getGitHubDomainsRegex(Config $config)
     {
         return '(' . implode('|', array_map('preg_quote', $config->get('github-domains'))) . ')';
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getGitLabDomainsRegex(Config $config)
     {
         return '(' . implode('|', array_map('preg_quote', $config->get('gitlab-domains'))) . ')';
     }
 
+    /**
+     * @param non-empty-string $message
+     * @param string           $url
+     *
+     * @return never
+     */
     private function throwException($message, $url)
     {
         // git might delete a directory when it fails and php will not know
@@ -422,7 +473,13 @@ class Git
         return self::$version;
     }
 
-    private function maskCredentials(string $error, array $credentials)
+    /**
+     * @param string   $error
+     * @param string[] $credentials
+     *
+     * @return string
+     */
+    private function maskCredentials($error, array $credentials)
     {
         $maskedCredentials = array();
 

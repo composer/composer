@@ -193,7 +193,7 @@ objects:
 If you would like to run the scripts for an event manually, the syntax is:
 
 ```sh
-composer run-script [--dev] [--no-dev] script
+php composer.phar run-script [--dev] [--no-dev] script
 ```
 
 For example `composer run-script post-install-cmd` will run any
@@ -276,7 +276,7 @@ To disable the timeout of a single script call, you must use the `run-script` co
 command and specify the `--timeout` parameter:
 
 ```
-composer run-script --timeout=0 test
+php composer.phar run-script --timeout=0 test
 ```
 
 ## Referencing scripts

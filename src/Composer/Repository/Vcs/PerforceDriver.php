@@ -49,13 +49,18 @@ class PerforceDriver extends VcsDriver
         $this->perforce->connectClient();
     }
 
+    /**
+     * @param array<string, mixed> $repoConfig
+     *
+     * @return void
+     */
     private function initPerforce($repoConfig)
     {
         if (!empty($this->perforce)) {
             return;
         }
 
-        if (!Cache::isUsable($this->config->get('cache-vcs-dir'))) {
+        if (!Cache::isUsable((string) $this->config->get('cache-vcs-dir'))) {
             throw new \RuntimeException('PerforceDriver requires a usable cache directory, and it looks like you set it to be disabled');
         }
 
@@ -171,11 +176,17 @@ class PerforceDriver extends VcsDriver
         $this->perforce = null;
     }
 
+    /**
+     * @return string
+     */
     public function getDepot()
     {
         return $this->depot;
     }
 
+    /**
+     * @return string
+     */
     public function getBranch()
     {
         return $this->branch;

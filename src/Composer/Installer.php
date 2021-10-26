@@ -84,13 +84,13 @@ class Installer
     protected $config;
 
     /**
-     * @var RootPackageInterface
+     * @var RootPackageInterface&BasePackage
      */
     protected $package;
 
     // TODO can we get rid of the below and just use the package itself?
     /**
-     * @var RootPackageInterface
+     * @var RootPackageInterface&BasePackage
      */
     protected $fixedRootPackage;
 
@@ -187,7 +187,7 @@ class Installer
      *
      * @param IOInterface          $io
      * @param Config               $config
-     * @param RootPackageInterface $package
+     * @param RootPackageInterface&BasePackage $package
      * @param DownloadManager      $downloadManager
      * @param RepositoryManager    $repositoryManager
      * @param Locker               $locker
@@ -372,6 +372,11 @@ class Installer
         return 0;
     }
 
+    /**
+     * @param bool $doInstall
+     *
+     * @return int
+     */
     protected function doUpdate(InstalledRepositoryInterface $localRepo, $doInstall)
     {
         $platformRepo = $this->createPlatformRepo(true);
@@ -573,6 +578,13 @@ class Installer
     /**
      * Run the solver a second time on top of the existing update result with only the current result set in the pool
      * and see what packages would get removed if we only had the non-dev packages in the solver request
+     *
+     * @param array<int, array<string, string>> $aliases
+     *
+     * @return int
+     *
+     * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
+     * @phpstan-return self::ERROR_*
      */
     protected function extractDevPackages(LockTransaction $lockTransaction, PlatformRepository $platformRepo, array $aliases, PolicyInterface $policy, LockArrayRepository $lockedRepository = null)
     {
@@ -740,6 +752,11 @@ class Installer
         return 0;
     }
 
+    /**
+     * @param bool $forUpdate
+     *
+     * @return PlatformRepository
+     */
     protected function createPlatformRepo($forUpdate)
     {
         if ($forUpdate) {
@@ -752,11 +769,13 @@ class Installer
     }
 
     /**
-     * @param  bool                     $forUpdate
-     * @param  PlatformRepository       $platformRepo
-     * @param  array                    $rootAliases
-     * @param  RepositoryInterface|null $lockedRepository
+     * @param  bool                              $forUpdate
+     * @param  array<int, array<string, string>> $rootAliases
+     * @param  RepositoryInterface|null          $lockedRepository
+     *
      * @return RepositorySet
+     *
+     * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $rootAliases
      */
     private function createRepositorySet($forUpdate, PlatformRepository $platformRepo, array $rootAliases = array(), $lockedRepository = null)
     {
@@ -822,6 +841,8 @@ class Installer
     }
 
     /**
+     * @param bool $forUpdate
+     *
      * @return DefaultPolicy
      */
     private function createPolicy($forUpdate)
@@ -845,6 +866,7 @@ class Installer
     }
 
     /**
+     * @param RootPackageInterface&BasePackage $rootPackage
      * @return Request
      */
     private function createRequest(RootPackageInterface $rootPackage, PlatformRepository $platformRepo, LockArrayRepository $lockedRepository = null)
@@ -878,6 +900,12 @@ class Installer
         return $request;
     }
 
+    /**
+     * @param LockArrayRepository|null $lockedRepository
+     * @param bool                     $includeDevRequires
+     *
+     * @return void
+     */
     private function requirePackagesForUpdate(Request $request, LockArrayRepository $lockedRepository = null, $includeDevRequires = true)
     {
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
@@ -906,8 +934,11 @@ class Installer
     }
 
     /**
-     * @param  bool  $forUpdate
-     * @return array
+     * @param bool $forUpdate
+     *
+     * @return array<int, array<string, string>>
+     *
+     * @phpstan-return list<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
     private function getRootAliases($forUpdate)
     {
@@ -921,8 +952,9 @@ class Installer
     }
 
     /**
-     * @param  array $links
-     * @return array
+     * @param Link[] $links
+     *
+     * @return array<string, string>
      */
     private function extractPlatformRequirements(array $links)
     {
@@ -941,7 +973,7 @@ class Installer
      *
      * This is to prevent any accidental modification of the existing repos on disk
      *
-     * @param RepositoryManager $rm
+     * @return void
      */
     private function mockLocalRepositories(RepositoryManager $rm)
     {
@@ -1207,7 +1239,8 @@ class Installer
      * If this is set to false, no platform requirements are ignored
      * If this is set to string[], those packages will be ignored
      *
-     * @param  bool|array $ignorePlatformReqs
+     * @param  bool|string[] $ignorePlatformReqs
+     *
      * @return Installer
      */
     public function setIgnorePlatformRequirements($ignorePlatformReqs)
@@ -1240,7 +1273,8 @@ class Installer
      * restrict the update operation to a few packages, all other packages
      * that are already installed will be kept at their current version
      *
-     * @param  array     $packages
+     * @param string[] $packages
+     *
      * @return Installer
      */
     public function setUpdateAllowList(array $packages)

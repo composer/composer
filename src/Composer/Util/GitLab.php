@@ -160,6 +160,14 @@ class GitLab
         throw new \RuntimeException('Invalid GitLab credentials 5 times in a row, aborting.');
     }
 
+    /**
+     * @param string $scheme
+     * @param string $originUrl
+     *
+     * @return array{access_token: non-empty-string, token_type: non-empty-string, expires_in: positive-int}
+     *
+     * @see https://docs.gitlab.com/ee/api/oauth2.html#resource-owner-password-credentials-flow
+     */
     private function createToken($scheme, $originUrl)
     {
         $username = $this->io->ask('Username: ');

@@ -57,10 +57,12 @@ class VersionSelector
      * Given a package name and optional version, returns the latest PackageInterface
      * that matches.
      *
-     * @param  string                 $packageName
-     * @param  string                 $targetPackageVersion
-     * @param  string                 $preferredStability
-     * @param  bool|array             $ignorePlatformReqs
+     * @param string        $packageName
+     * @param string        $targetPackageVersion
+     * @param string        $preferredStability
+     * @param bool|string[] $ignorePlatformReqs
+     * @param int           $repoSetFlags
+     *
      * @return PackageInterface|false
      */
     public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $ignorePlatformReqs = false, $repoSetFlags = 0)
@@ -187,6 +189,13 @@ class VersionSelector
         return $package->getPrettyVersion();
     }
 
+    /**
+     * @param string $version
+     * @param string $prettyVersion
+     * @param string $stability
+     *
+     * @return string
+     */
     private function transformVersion($version, $prettyVersion, $stability)
     {
         // attempt to transform 2.1.1 to 2.1
@@ -215,6 +224,9 @@ class VersionSelector
         return '^' . $version;
     }
 
+    /**
+     * @return VersionParser
+     */
     private function getParser()
     {
         if ($this->parser === null) {

@@ -13,7 +13,7 @@
 namespace Composer\DependencyResolver;
 
 use Composer\IO\IOInterface;
-use Composer\Package\PackageInterface;
+use Composer\Package\BasePackage;
 use Composer\Repository\PlatformRepository;
 
 /**
@@ -36,7 +36,7 @@ class Solver
     protected $watchGraph;
     /** @var Decisions */
     protected $decisions;
-    /** @var PackageInterface[] */
+    /** @var BasePackage[] */
     protected $fixedMap;
 
     /** @var int */
@@ -56,11 +56,6 @@ class Solver
     /** @var IOInterface */
     protected $io;
 
-    /**
-     * @param PolicyInterface $policy
-     * @param Pool            $pool
-     * @param IOInterface     $io
-     */
     public function __construct(PolicyInterface $policy, Pool $pool, IOInterface $io)
     {
         $this->io = $io;
@@ -76,6 +71,9 @@ class Solver
         return \count($this->rules);
     }
 
+    /**
+     * @return Pool
+     */
     public function getPool()
     {
         return $this->pool;
@@ -83,6 +81,9 @@ class Solver
 
     // aka solver_makeruledecisions
 
+    /**
+     * @return void
+     */
     private function makeAssertionRuleDecisions()
     {
         $decisionStart = \count($this->decisions) - 1;
@@ -153,6 +154,9 @@ class Solver
         }
     }
 
+    /**
+     * @return void
+     */
     protected function setupFixedMap(Request $request)
     {
         $this->fixedMap = array();
@@ -162,8 +166,8 @@ class Solver
     }
 
     /**
-     * @param Request    $request
-     * @param bool|array $ignorePlatformReqs
+     * @param bool|string[] $ignorePlatformReqs
+     * @return void
      */
     protected function checkForRootRequireProblems(Request $request, $ignorePlatformReqs)
     {
@@ -181,8 +185,7 @@ class Solver
     }
 
     /**
-     * @param  Request         $request
-     * @param  bool|array      $ignorePlatformReqs
+     * @param  bool|string[]      $ignorePlatformReqs
      * @return LockTransaction
      */
     public function solve(Request $request, $ignorePlatformReqs = false)
@@ -251,6 +254,8 @@ class Solver
      * Reverts a decision at the given level.
      *
      * @param int $level
+     *
+     * @return void
      */
     private function revert($level)
     {
@@ -291,7 +296,6 @@ class Solver
      *
      * @param  int        $level
      * @param  string|int $literal
-     * @param  Rule       $rule
      * @return int
      */
     private function setPropagateLearn($level, $literal, Rule $rule)
@@ -319,11 +323,6 @@ class Solver
                     "Trying to revert to invalid level ".(int) $newLevel." from level ".(int) $level."."
                 );
             }
-            if (!$newRule) {
-                throw new SolverBugException(
-                    "No rule was learned from analyzing $rule at level $level."
-                );
-            }
 
             $level = $newLevel;
 
@@ -345,8 +344,7 @@ class Solver
 
     /**
      * @param  int   $level
-     * @param  array $decisionQueue
-     * @param  Rule  $rule
+     * @param  int[] $decisionQueue
      * @return int
      */
     private function selectAndInstall($level, array $decisionQueue, Rule $rule)
@@ -366,8 +364,7 @@ class Solver
 
     /**
      * @param  int   $level
-     * @param  Rule  $rule
-     * @return array
+     * @return array{int, int, GenericRule, int}
      */
     protected function analyze($level, Rule $rule)
     {
@@ -513,6 +510,10 @@ class Solver
         return array($learnedLiterals[0], $ruleLevel, $newRule, $why);
     }
 
+    /**
+     * @param array<string, true> $ruleSeen
+     * @return void
+     */
     private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen)
     {
         $why = spl_object_hash($conflictRule);
@@ -541,7 +542,6 @@ class Solver
     }
 
     /**
-     * @param  Rule $conflictRule
      * @return int
      */
     private function analyzeUnsolvable(Rule $conflictRule)
@@ -599,6 +599,8 @@ class Solver
      * we have enabled or disabled some of our rules. We now re-enable all
      * of our learnt rules except the ones that were learnt from rules that
      * are now disabled.
+     *
+     * @return void
      */
     private function enableDisableLearnedRules()
     {
@@ -622,6 +624,9 @@ class Solver
         }
     }
 
+    /**
+     * @return void
+     */
     private function runSat()
     {
         $this->propagateIndex = 0;

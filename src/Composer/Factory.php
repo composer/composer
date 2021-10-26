@@ -171,12 +171,13 @@ class Factory
     }
 
     /**
-     * @param  IOInterface|null $io
+     * @param string|null $cwd
+     *
      * @return Config
      */
     public static function createConfig(IOInterface $io = null, $cwd = null)
     {
-        $cwd = $cwd ?: getcwd();
+        $cwd = $cwd ?: (string) getcwd();
 
         $config = new Config(true, $cwd);
 
@@ -241,11 +242,19 @@ class Factory
         return $config;
     }
 
+    /**
+     * @return string
+     */
     public static function getComposerFile()
     {
         return trim(getenv('COMPOSER')) ?: './composer.json';
     }
 
+    /**
+     * @param string $composerFile
+     *
+     * @return string
+     */
     public static function getLockFile($composerFile)
     {
         return "json" === pathinfo($composerFile, PATHINFO_EXTENSION)
@@ -253,6 +262,9 @@ class Factory
                 : $composerFile . '.lock';
     }
 
+    /**
+     * @return array{highlight: OutputFormatterStyle, warning: OutputFormatterStyle}
+     */
     public static function createAdditionalStyles()
     {
         return array(
@@ -277,18 +289,19 @@ class Factory
     /**
      * Creates a Composer instance
      *
-     * @param  IOInterface               $io             IO instance
-     * @param  array|string|null         $localConfig    either a configuration array or a filename to read from, if null it will
-     *                                                   read from the default filename
-     * @param  bool                      $disablePlugins Whether plugins should not be loaded
-     * @param  bool                      $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
+     * @param  IOInterface                       $io             IO instance
+     * @param  array<string, mixed>|string|null  $localConfig    either a configuration array or a filename to read from, if null it will
+     *                                                           read from the default filename
+     * @param  bool                              $disablePlugins Whether plugins should not be loaded
+     * @param  string|null                       $cwd
+     * @param  bool                              $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
      * @throws \InvalidArgumentException
      * @throws \UnexpectedValueException
      * @return Composer
      */
     public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true)
     {
-        $cwd = $cwd ?: getcwd();
+        $cwd = $cwd ?: (string) getcwd();
 
         // load Composer configuration
         if (null === $localConfig) {
@@ -456,6 +469,8 @@ class Factory
     /**
      * @param Repository\RepositoryManager $rm
      * @param string                       $vendorDir
+     *
+     * @return void
      */
     protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage, ProcessExecutor $process = null)
     {
@@ -468,7 +483,9 @@ class Factory
     }
 
     /**
-     * @param  Config        $config
+     * @param bool $disablePlugins
+     * @param bool $fullLoad
+     *
      * @return Composer|null
      */
     protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins, $fullLoad = false)
@@ -569,9 +586,7 @@ class Factory
     }
 
     /**
-     * @param Installer\InstallationManager $im
-     * @param Composer                      $composer
-     * @param IO\IOInterface                $io
+     * @return void
      */
     protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io, ProcessExecutor $process = null)
     {
@@ -585,7 +600,9 @@ class Factory
 
     /**
      * @param InstalledRepositoryInterface   $repo repository to purge packages from
-     * @param Installer\InstallationManager $im   manager to check whether packages are still installed
+     * @param Installer\InstallationManager  $im   manager to check whether packages are still installed
+     *
+     * @return void
      */
     protected function purgePackages(InstalledRepositoryInterface $repo, Installer\InstallationManager $im)
     {
@@ -596,6 +613,9 @@ class Factory
         }
     }
 
+    /**
+     * @return Package\Loader\RootPackageLoader
+     */
     protected function loadRootPackage(RepositoryManager $rm, Config $config, VersionParser $parser, VersionGuesser $guesser, IOInterface $io)
     {
         return new Package\Loader\RootPackageLoader($rm, $config, $parser, $guesser, $io);
@@ -620,7 +640,7 @@ class Factory
      *
      * @param  IOInterface    $io      IO instance
      * @param  Config         $config  Config instance
-     * @param  array          $options Array of options passed directly to HttpDownloader constructor
+     * @param  mixed[]        $options Array of options passed directly to HttpDownloader constructor
      * @return HttpDownloader
      */
     public static function createHttpDownloader(IOInterface $io, Config $config, $options = array())

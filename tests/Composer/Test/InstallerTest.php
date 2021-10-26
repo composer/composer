@@ -26,6 +26,7 @@ use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Package\RootPackageInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\Link;
 use Composer\Package\Locker;
 use Composer\Test\Mock\FactoryMock;
@@ -58,6 +59,7 @@ class InstallerTest extends TestCase
 
     /**
      * @dataProvider provideInstaller
+     * @param RootPackageInterface&BasePackage $rootPackage
      */
     public function testInstaller(RootPackageInterface $rootPackage, $repositories, array $options)
     {

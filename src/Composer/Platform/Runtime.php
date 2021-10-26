@@ -15,8 +15,9 @@ namespace Composer\Platform;
 class Runtime
 {
     /**
-     * @param  string       $constant
-     * @param  class-string $class
+     * @param string $constant
+     * @param class-string $class
+     *
      * @return bool
      */
     public function hasConstant($constant, $class = null)
@@ -25,8 +26,9 @@ class Runtime
     }
 
     /**
-     * @param  string       $constant
-     * @param  class-string $class
+     * @param string $constant
+     * @param class-string $class
+     *
      * @return mixed
      */
     public function getConstant($constant, $class = null)
@@ -35,7 +37,8 @@ class Runtime
     }
 
     /**
-     * @param  string $fn
+     * @param string $fn
+     *
      * @return bool
      */
     public function hasFunction($fn)
@@ -44,8 +47,9 @@ class Runtime
     }
 
     /**
-     * @param  callable $callable
-     * @param  array    $arguments
+     * @param callable $callable
+     * @param mixed[] $arguments
+     *
      * @return mixed
      */
     public function invoke($callable, array $arguments = array())
@@ -54,7 +58,8 @@ class Runtime
     }
 
     /**
-     * @param  class-string $class
+     * @param class-string $class
+     *
      * @return bool
      */
     public function hasClass($class)
@@ -63,9 +68,11 @@ class Runtime
     }
 
     /**
-     * @param  class-string $class
-     * @param  array        $arguments
+     * @param class-string $class
+     * @param mixed[] $arguments
+     *
      * @return object
+     * @throws \ReflectionException
      */
     public function construct($class, array $arguments = array())
     {
@@ -85,7 +92,8 @@ class Runtime
     }
 
     /**
-     * @param  string $extension
+     * @param string $extension
+     *
      * @return string
      */
     public function getExtensionVersion($extension)
@@ -94,8 +102,10 @@ class Runtime
     }
 
     /**
-     * @param  string $extension
+     * @param string $extension
+     *
      * @return string
+     * @throws \ReflectionException
      */
     public function getExtensionInfo($extension)
     {
