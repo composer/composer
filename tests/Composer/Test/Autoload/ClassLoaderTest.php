@@ -40,7 +40,7 @@ class ClassLoaderTest extends TestCase
     /**
      * Provides arguments for ->testLoadClass().
      *
-     * @return array Array of parameter sets to test with.
+     * @return array<array<string>> Array of parameter sets to test with.
      */
     public function getLoadClassTests()
     {

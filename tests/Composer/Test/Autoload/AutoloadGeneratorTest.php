@@ -84,7 +84,7 @@ class AutoloadGeneratorTest extends TestCase
      * Note: must be public for compatibility with PHP 5.3 runtimes where
      * closures cannot access private members of the classes they are created
      * in.
-     * @var array
+     * @var array<string, callable|boolean>
      */
     public $configValueMap;
 
@@ -1706,6 +1706,12 @@ EOF;
     }
 
     /**
+     * @param array<string, Link>  $requires
+     * @param string|null          $expectedFixture
+     * @param array<string, Link>  $provides
+     * @param array<string, Link>  $replaces
+     * @param bool                 $ignorePlatformReqs
+     *
      * @dataProvider platformCheckProvider
      */
     public function testGeneratesPlatformCheck(array $requires, $expectedFixture, array $provides = array(), array $replaces = array(), $ignorePlatformReqs = false)
@@ -1828,6 +1834,13 @@ EOF;
         );
     }
 
+    /**
+     * @param string $name
+     * @param string $dir
+     * @param string $type
+     *
+     * @return void
+     */
     private function assertAutoloadFiles($name, $dir, $type = 'namespaces')
     {
         $a = __DIR__.'/Fixtures/autoload_'.$name.'.php';
@@ -1835,6 +1848,15 @@ EOF;
         $this->assertFileContentEquals($a, $b);
     }
 
+    /**
+     * @param string $expected
+     * @param string $actual
+     * @param string $message
+     * @param bool   $canonicalize
+     * @param bool   $ignoreCase
+     *
+     * @return void
+     */
     public static function assertFileContentEquals($expected, $actual, $message = '', $canonicalize = false, $ignoreCase = false)
     {
         self::assertEqualsNormalized(
@@ -1848,6 +1870,17 @@ EOF;
         );
     }
 
+    /**
+     * @param string $expected
+     * @param string $actual
+     * @param string $message
+     * @param int    $delta
+     * @param int    $maxDepth
+     * @param bool   $canonicalize
+     * @param bool   $ignoreCase
+     *
+     * @return void
+     */
     public static function assertEqualsNormalized($expected, $actual, $message = '', $delta = 0, $maxDepth = 10, $canonicalize = false, $ignoreCase = false)
     {
         parent::assertEquals(str_replace("\r", '', $expected), str_replace("\r", '', $actual), $message, $delta, $maxDepth, $canonicalize, $ignoreCase);

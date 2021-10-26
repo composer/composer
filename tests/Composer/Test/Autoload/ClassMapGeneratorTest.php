@@ -33,6 +33,9 @@ class ClassMapGeneratorTest extends TestCase
         $this->assertEqualsNormalized($expected, ClassMapGenerator::createMap($directory));
     }
 
+    /**
+     * @return array<array<string|array<string>>>
+     */
     public function getTestCreateMapTests()
     {
         if (PHP_VERSION_ID == 50303) {
@@ -268,7 +271,12 @@ class ClassMapGeneratorTest extends TestCase
         $this->assertEqualsNormalized($expected, $result);
     }
 
-    protected function assertEqualsNormalized($expected, $actual, $message = '')
+    /**
+     * @param array<class-string> $expected
+     * @param array<class-string> $actual
+     * @param string $message
+     */
+    protected function assertEqualsNormalized($expected, $actual, $message = ''): void
     {
         foreach ($expected as $ns => $path) {
             $expected[$ns] = strtr($path, '\\', '/');
@@ -279,7 +287,7 @@ class ClassMapGeneratorTest extends TestCase
         $this->assertEquals($expected, $actual, $message);
     }
 
-    private function checkIfFinderIsAvailable()
+    private function checkIfFinderIsAvailable(): void
     {
         if (!class_exists('Symfony\\Component\\Finder\\Finder')) {
             $this->markTestSkipped('Finder component is not available');
