@@ -275,8 +275,9 @@ class ClassMapGeneratorTest extends TestCase
      * @param array<class-string> $expected
      * @param array<class-string> $actual
      * @param string $message
+     * @return  void
      */
-    protected function assertEqualsNormalized($expected, $actual, $message = ''): void
+    protected function assertEqualsNormalized($expected, $actual, $message = '')
     {
         foreach ($expected as $ns => $path) {
             $expected[$ns] = strtr($path, '\\', '/');
@@ -287,7 +288,8 @@ class ClassMapGeneratorTest extends TestCase
         $this->assertEquals($expected, $actual, $message);
     }
 
-    private function checkIfFinderIsAvailable(): void
+    /** @return void */
+    private function checkIfFinderIsAvailable()
     {
         if (!class_exists('Symfony\\Component\\Finder\\Finder')) {
             $this->markTestSkipped('Finder component is not available');
