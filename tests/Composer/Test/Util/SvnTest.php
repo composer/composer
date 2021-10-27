@@ -36,11 +36,6 @@ class SvnTest extends TestCase
         $this->assertEquals($expect, $reflMethod->invoke($svn));
     }
 
-    /**
-     * Provide some examples for {@self::testCredentials()}.
-     *
-     * @return array
-     */
     public function urlProvider()
     {
         return array(
