@@ -140,6 +140,9 @@ class PoolBuilderTest extends TestCase
         $this->assertSame($expect, $result);
     }
 
+    /**
+     * @return array<string, array<string>>
+     */
     public function getIntegrationTests()
     {
         $fixturesDir = realpath(__DIR__.'/Fixtures/poolbuilder/');
@@ -173,6 +176,11 @@ class PoolBuilderTest extends TestCase
         return $tests;
     }
 
+    /**
+     * @param \SplFileInfo $file
+     * @param string $fixturesDir
+     * @return array<string, string>
+     */
     protected function readTestFile(\SplFileInfo $file, $fixturesDir)
     {
         $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
