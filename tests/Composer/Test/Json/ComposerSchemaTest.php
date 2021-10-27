@@ -90,6 +90,11 @@ class ComposerSchemaTest extends TestCase
         $this->assertTrue($this->check($json), 'stable');
     }
 
+    /**
+     *
+     * @param string $json
+     * @return mixed
+     */
     private function check($json)
     {
         $validator = new Validator();
