@@ -26,14 +26,21 @@ use Composer\Test\Mock\ProcessExecutorMock;
  */
 class PerforceDownloaderTest extends TestCase
 {
+    /** @var ?\Composer\Config */
     protected $config;
-    /** @var ?PerforceDownloader */
+    /** @var null|\Composer\Downloader\PerforceDownloader */
     protected $downloader;
+    /** @var null|(\Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject) */
     protected $io;
+    /** @var null|(\Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject) */
     protected $package;
+    /** @var \Composer\Test\Mock\ProcessExecutorMock */
     protected $processExecutor;
+    /** @var ?string[] */
     protected $repoConfig;
+    /** @var null|(\Composer\Repository\VcsRepository&\PHPUnit\Framework\MockObject\MockObject) */
     protected $repository;
+    /** @var string */
     protected $testPath;
 
     protected function setUp()
@@ -62,6 +69,9 @@ class PerforceDownloaderTest extends TestCase
         }
     }
 
+    /**
+     * @return \Composer\Config
+     */
     protected function getConfig()
     {
         $config = new Config();
@@ -71,11 +81,17 @@ class PerforceDownloaderTest extends TestCase
         return $config;
     }
 
+    /**
+     * @return \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected function getMockIoInterface()
     {
         return $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
+    /**
+     * @return \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected function getMockPackageInterface(VcsRepository $repository)
     {
         $package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -84,11 +100,20 @@ class PerforceDownloaderTest extends TestCase
         return $package;
     }
 
+    /**
+     * @return string[]
+     */
     protected function getRepoConfig()
     {
         return array('url' => 'TEST_URL', 'p4user' => 'TEST_USER');
     }
 
+    /**
+     * @param string[] $repoConfig
+     * @param \Composer\IO\IOInterface $io
+     * @param \Composer\Config $config
+     * @return \Composer\Repository\VcsRepository&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected function getMockRepository(array $repoConfig, IOInterface $io, Config $config)
     {
         $repository = $this->getMockBuilder('Composer\Repository\VcsRepository')

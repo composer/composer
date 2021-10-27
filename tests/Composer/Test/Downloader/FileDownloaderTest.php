@@ -25,9 +25,20 @@ use Composer\Util\Loop;
 
 class FileDownloaderTest extends TestCase
 {
+    /** @var \Composer\Util\HttpDownloader&\PHPUnit\Framework\MockObject\MockObject */
     private $httpDownloader;
+    /** @var \Composer\Config&\PHPUnit\Framework\MockObject\MockObject */
     private $config;
 
+    /**
+     * @param \Composer\IO\IOInterface $io
+     * @param \Composer\Config&\PHPUnit\Framework\MockObject\MockObject $config
+     * @param \Composer\EventDispatcher\EventDispatcher $eventDispatcher
+     * @param \Composer\Cache $cache
+     * @param \Composer\Util\HttpDownloader&\PHPUnit\Framework\MockObject\MockObject $httpDownloader
+     * @param \Composer\Util\Filesystem $filesystem
+     * @return \Composer\Downloader\FileDownloader
+     */
     protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $httpDownloader = null, $filesystem = null)
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();

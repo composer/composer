@@ -45,6 +45,10 @@ class GitDownloaderTest extends TestCase
         $this->initGitVersion(false);
     }
 
+    /**
+     * @param string|bool $version
+     * @return void
+     */
     private function initGitVersion($version)
     {
         // reset the static version cache
@@ -53,6 +57,10 @@ class GitDownloaderTest extends TestCase
         $refl->setValue(null, $version);
     }
 
+    /**
+     * @param ?\Composer\Config $config
+     * @return \Composer\Config
+     */
     protected function setupConfig($config = null)
     {
         if (!$config) {
@@ -66,6 +74,12 @@ class GitDownloaderTest extends TestCase
         return $config;
     }
 
+    /**
+     * @param \Composer\IO\IOInterface $io
+     * @param \Composer\Config $config
+     * @param \Composer\Test\Mock\ProcessExecutorMock $executor
+     * @param \Composer\Util\Filesystem $filesystem
+     */
     protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
@@ -639,6 +653,10 @@ composer https://github.com/old/url (push)
         $this->assertEquals('source', $downloader->getInstallationSource());
     }
 
+    /**
+     * @param string $cmd
+     * @return string
+     */
     private function winCompat($cmd)
     {
         if (Platform::isWindows()) {
