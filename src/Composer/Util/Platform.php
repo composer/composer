@@ -83,10 +83,10 @@ class Platform
         return preg_replace_callback('#^(\$|(?P<percent>%))(?P<var>\w++)(?(percent)%)(?P<path>.*)#', function ($matches) {
             // Treat HOME as an alias for USERPROFILE on Windows for legacy reasons
             if (Platform::isWindows() && $matches['var'] == 'HOME') {
-                return (self::getEnv('HOME') ?: self::getEnv('USERPROFILE')) . $matches['path'];
+                return (Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE')) . $matches['path'];
             }
 
-            return self::getEnv($matches['var']) . $matches['path'];
+            return Platform::getEnv($matches['var']) . $matches['path'];
         }, $path);
     }
 
