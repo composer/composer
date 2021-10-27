@@ -84,29 +84,30 @@ class ProcessExecutorMock extends ProcessExecutor
     public function execute($command, &$output = null, $cwd = null)
     {
         if (func_num_args() > 1) {
-            return $this->doExecute($command, $cwd, $output);
+            return $this->doExecute($command, $cwd, false, $output);
         }
 
-        return $this->doExecute($command, $cwd);
+        return $this->doExecute($command, $cwd, false);
     }
 
     public function executeTty($command, $cwd = null)
     {
         if (Platform::isTty()) {
-            return $this->doExecute($command, $cwd);
+            return $this->doExecute($command, $cwd, true);
         }
 
-        return $this->doExecute($command, $cwd);
+        return $this->doExecute($command, $cwd, false);
     }
 
     /**
      *
      * @param string $command
      * @param string $cwd
+     * @param bool $tty
      * @param callable $output
      * @return mixed
      */
-    private function doExecute($command, $cwd,  &$output = null)
+    private function doExecute($command, $cwd, $tty, &$output = null)
     {
         $this->captureOutput = func_num_args() > 3;
         $this->errorOutput = '';
