@@ -881,7 +881,7 @@ EOT
      * @param  string                    $minimumStability
      * @param  bool                      $fixed
      * @throws \InvalidArgumentException
-     * @return array<string>     name version
+     * @return array{string, string}     name version
      */
     private function findBestVersionAndNameForPackage(InputInterface $input, $name, PlatformRepository $platformRepo = null, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null, $fixed = null)
     {
