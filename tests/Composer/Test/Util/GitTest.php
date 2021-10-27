@@ -43,6 +43,9 @@ class GitTest extends TestCase
 
     /**
      * @dataProvider publicGithubNoCredentialsProvider
+     *
+     * @param string $protocol
+     * @param string $expectedUrl
      */
     public function testRunCommandPublicGitHubRepositoryNotInitialClone($protocol, $expectedUrl)
     {
@@ -96,6 +99,12 @@ class GitTest extends TestCase
 
     /**
      * @dataProvider privateGithubWithCredentialsProvider
+     *
+     * @param string $gitUrl
+     * @param string $protocol
+     * @param string $gitHubToken
+     * @param string $expectedUrl
+     * @param int    $expectedFailuresBeforeSuccess
      */
     public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithAuthentication($gitUrl, $protocol, $gitHubToken, $expectedUrl, $expectedFailuresBeforeSuccess)
     {
@@ -143,6 +152,11 @@ class GitTest extends TestCase
         );
     }
 
+    /**
+     * @param string $protocol
+     *
+     * @return void
+     */
     private function mockConfig($protocol)
     {
         $this->config

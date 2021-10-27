@@ -19,6 +19,10 @@ class NoProxyPatternTest extends TestCase
 {
     /**
      * @dataProvider dataHostName
+     *
+     * @param string $noproxy
+     * @param string $url
+     * @param bool   $expected
      */
     public function testHostName($noproxy, $url, $expected)
     {
@@ -46,6 +50,10 @@ class NoProxyPatternTest extends TestCase
 
     /**
      * @dataProvider dataIpAddress
+     *
+     * @param string $noproxy
+     * @param string $url
+     * @param bool   $expected
      */
     public function testIpAddress($noproxy, $url, $expected)
     {
@@ -71,6 +79,10 @@ class NoProxyPatternTest extends TestCase
 
     /**
      * @dataProvider dataIpRange
+     *
+     * @param string $noproxy
+     * @param string $url
+     * @param bool   $expected
      */
     public function testIpRange($noproxy, $url, $expected)
     {
@@ -96,6 +108,10 @@ class NoProxyPatternTest extends TestCase
 
     /**
      * @dataProvider dataPort
+     *
+     * @param string $noproxy
+     * @param string $url
+     * @param bool   $expected
      */
     public function testPort($noproxy, $url, $expected)
     {
@@ -121,6 +137,8 @@ class NoProxyPatternTest extends TestCase
      * Appends a scheme to the test url if it is missing
      *
      * @param string $url
+     *
+     * @return string
      */
     private function getUrl($url)
     {

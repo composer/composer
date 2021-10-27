@@ -104,8 +104,9 @@ class PackageSorterTest extends TestCase
 
     /**
      * @dataProvider sortingOrdersDependenciesHigherThanPackageDataProvider
-     * @param array $packages
-     * @param array $expectedOrderedList
+     *
+     * @param Package[] $packages
+     * @param string[]  $expectedOrderedList
      */
     public function testSortingOrdersDependenciesHigherThanPackage($packages, $expectedOrderedList)
     {
@@ -117,6 +118,12 @@ class PackageSorterTest extends TestCase
         self::assertSame($expectedOrderedList, $sortedPackageNames);
     }
 
+    /**
+     * @param string   $name
+     * @param string[] $requires
+     *
+     * @return Package
+     */
     private function createPackage($name, $requires)
     {
         $package = new Package($name, '1.0.0.0', '1.0.0');

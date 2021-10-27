@@ -446,7 +446,7 @@ class ProcessExecutor
     /**
      * Escapes a string to be used as a shell argument.
      *
-     * @param ?string $argument The argument that will be escaped
+     * @param string|false|null $argument The argument that will be escaped
      *
      * @return string The escaped argument
      */
@@ -466,7 +466,7 @@ class ProcessExecutor
      * Modified from https://github.com/johnstevenson/winbox-args
      * MIT Licensed (c) John Stevenson <john-stevenson@blueyonder.co.uk>
      *
-     * @param ?string $argument
+     * @param string|false|null $argument
      *
      * @return string
      */

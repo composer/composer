@@ -22,13 +22,13 @@ use Composer\Util\Bitbucket;
  */
 class AuthHelperTest extends TestCase
 {
-    /** @type \Composer\IO\IOInterface|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $io;
 
-    /** @type \Composer\Config|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\Config&\PHPUnit\Framework\MockObject\MockObject */
     private $config;
 
-    /** @type AuthHelper */
+    /** @var AuthHelper */
     private $authHelper;
 
     protected function setUp()
@@ -293,9 +293,11 @@ class AuthHelperTest extends TestCase
     /**
      * @dataProvider basicHttpAuthenticationProvider
      *
-     * @param string $url
-     * @param string $origin
-     * @param array  $auth
+     * @param string                                                      $url
+     * @param string                                                      $origin
+     * @param array<string, string|null>                                  $auth
+     *
+     * @phpstan-param array{username: string|null, password: string|null} $auth
      */
     public function testAddAuthenticationHeaderWithBasicHttpAuthentication($url, $origin, $auth)
     {
@@ -358,7 +360,7 @@ class AuthHelperTest extends TestCase
             'password' => 'my_password',
         );
 
-        /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $configSource */
+        /** @var \Composer\Config\ConfigSourceInterface&\PHPUnit\Framework\MockObject\MockObject $configSource */
         $configSource = $this
             ->getMockBuilder('Composer\Config\ConfigSourceInterface')
             ->disableOriginalConstructor()
@@ -392,7 +394,7 @@ class AuthHelperTest extends TestCase
         $answer = 'y';
         $configSourceName = 'https://api.gitlab.com/source';
 
-        /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $configSource */
+        /** @var \Composer\Config\ConfigSourceInterface&\PHPUnit\Framework\MockObject\MockObject $configSource */
         $configSource = $this
             ->getMockBuilder('Composer\Config\ConfigSourceInterface')
             ->disableOriginalConstructor()
@@ -440,7 +442,7 @@ class AuthHelperTest extends TestCase
         $answer = 'n';
         $configSourceName = 'https://api.gitlab.com/source';
 
-        /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $configSource */
+        /** @var \Composer\Config\ConfigSourceInterface&\PHPUnit\Framework\MockObject\MockObject $configSource */
         $configSource = $this
             ->getMockBuilder('Composer\Config\ConfigSourceInterface')
             ->disableOriginalConstructor()
@@ -480,7 +482,7 @@ class AuthHelperTest extends TestCase
         $answer = 'invalid';
         $configSourceName = 'https://api.gitlab.com/source';
 
-        /** @var \Composer\Config\ConfigSourceInterface|\PHPUnit_Framework_MockObject_MockObject $configSource */
+        /** @var \Composer\Config\ConfigSourceInterface&\PHPUnit\Framework\MockObject\MockObject $configSource */
         $configSource = $this
             ->getMockBuilder('Composer\Config\ConfigSourceInterface')
             ->disableOriginalConstructor()
@@ -512,8 +514,12 @@ class AuthHelperTest extends TestCase
     }
 
     /**
-     * @param string $origin
-     * @param array  $auth
+     * @param string                     $origin
+     * @param array<string, string|null> $auth
+     *
+     * @return void
+     *
+     * @phpstan-param array{username: string|null, password: string|null} $auth
      */
     private function expectsAuthentication($origin, $auth)
     {

@@ -91,6 +91,11 @@ class IniHelperTest extends TestCase
         }
     }
 
+    /**
+     * @param string[] $paths
+     *
+     * @return void
+     */
     protected function setEnv(array $paths)
     {
         putenv('COMPOSER_ORIGINAL_INIS='.implode(PATH_SEPARATOR, $paths));

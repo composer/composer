@@ -21,9 +21,13 @@ use Composer\Util\ProcessExecutor;
  */
 class PerforceTest extends TestCase
 {
+    /** @var Perforce */
     protected $perforce;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\Composer\Util\ProcessExecutor */
     protected $processExecutor;
+    /** @var array<string, string> */
     protected $repoConfig;
+    /** @var \PHPUnit\Framework\MockObject\MockObject&\Composer\IO\IOInterface */
     protected $io;
 
     const TEST_DEPOT = 'depot';
@@ -41,14 +45,9 @@ class PerforceTest extends TestCase
         $this->createNewPerforceWithWindowsFlag(true);
     }
 
-    protected function tearDown()
-    {
-        $this->perforce = null;
-        $this->io = null;
-        $this->repoConfig = null;
-        $this->processExecutor = null;
-    }
-
+    /**
+     * @return array<string, string>
+     */
     public function getTestRepoConfig()
     {
         return array(
@@ -59,11 +58,19 @@ class PerforceTest extends TestCase
         );
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\IO\IOInterface
+     */
     public function getMockIOInterface()
     {
         return $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
+    /**
+     * @param bool $flag
+     *
+     * @return void
+     */
     protected function createNewPerforceWithWindowsFlag($flag)
     {
         $this->perforce = new Perforce($this->repoConfig, self::TEST_PORT, self::TEST_PATH, $this->processExecutor, $flag, $this->io);
@@ -435,7 +442,7 @@ class PerforceTest extends TestCase
 
     public function testCheckStreamWithoutStream()
     {
-        $result = $this->perforce->checkStream('depot');
+        $result = $this->perforce->checkStream();
         $this->assertFalse($result);
         $this->assertFalse($this->perforce->isStream());
     }
@@ -452,7 +459,7 @@ class PerforceTest extends TestCase
                     }
                 )
             );
-        $result = $this->perforce->checkStream('depot');
+        $result = $this->perforce->checkStream();
         $this->assertTrue($result);
         $this->assertTrue($this->perforce->isStream());
     }
@@ -653,6 +660,9 @@ class PerforceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return string
+     */
     public static function getComposerJson()
     {
         $composer_json = array(
@@ -670,6 +680,11 @@ class PerforceTest extends TestCase
         return implode($composer_json);
     }
 
+    /**
+     * @param bool $withStream
+     *
+     * @return string[]
+     */
     private function getExpectedClientSpec($withStream)
     {
         $expectedArray = array(
@@ -702,6 +717,9 @@ class PerforceTest extends TestCase
         return $expectedArray;
     }
 
+    /**
+     * @return void
+     */
     private function setPerforceToStream()
     {
         $this->perforce->setStream('//depot/branch');

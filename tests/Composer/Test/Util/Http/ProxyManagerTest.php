@@ -68,6 +68,13 @@ class ProxyManagerTest extends TestCase
 
     /**
      * @dataProvider dataRequest
+     *
+     * @param array<string, mixed> $server
+     * @param string               $url
+     * @param string               $expectedUrl
+     * @param mixed[]              $expectedOptions
+     * @param bool                 $expectedSecure
+     * @param string               $expectedMessage
      */
     public function testGetProxyForRequest($server, $url, $expectedUrl, $expectedOptions, $expectedSecure, $expectedMessage)
     {
@@ -126,6 +133,10 @@ class ProxyManagerTest extends TestCase
 
     /**
      * @dataProvider dataStatus
+     *
+     * @param array<string, mixed> $server
+     * @param bool                 $expectedStatus
+     * @param string               $expectedMessage
      */
     public function testGetStatus($server, $expectedStatus, $expectedMessage)
     {
