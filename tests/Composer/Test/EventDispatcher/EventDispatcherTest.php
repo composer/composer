@@ -17,6 +17,7 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallerEvents;
 use Composer\Config;
 use Composer\Composer;
+use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
 use Composer\Script\ScriptEvents;
@@ -52,7 +53,8 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
-     * @dataProvider getValidCommands
+     * @dataProvider provideValidCommands
+     *
      * @param string $command
      */
     public function testDispatcherCanExecuteSingleCommandLineScript($command)
@@ -82,7 +84,8 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
-     * @dataProvider getDevModes
+     * @dataProvider provideDevModes
+     *
      * @param bool $devMode
      */
     public function testDispatcherPassDevModeToAutoloadGeneratorForScriptEvents($devMode)
@@ -120,7 +123,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher->hasEventListeners($event);
     }
 
-    public function getDevModes()
+    public function provideDevModes()
     {
         return array(
             array(true),
@@ -128,6 +131,9 @@ class EventDispatcherTest extends TestCase
         );
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Autoload\AutoloadGenerator
+     */
     private function getGeneratorMockForDevModePassingTest()
     {
         $generator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')
@@ -152,6 +158,9 @@ class EventDispatcherTest extends TestCase
         return $generator;
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Repository\RepositoryManager
+     */
     private function getRepositoryManagerMockForDevModePassingTest()
     {
         $rm = $this->getMockBuilder('Composer\Repository\RepositoryManager')
@@ -312,6 +321,9 @@ class EventDispatcherTest extends TestCase
         putenv('COMPOSER_BIN_DIR' . ($composerBinDirBkp === false ? '' : '=' . $composerBinDirBkp));
     }
 
+    /**
+     * @return void
+     */
     public static function createsVendorBinFolderChecksEnvDoesNotContainsBin()
     {
         mkdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR), 0700, true);
@@ -324,6 +336,9 @@ class EventDispatcherTest extends TestCase
         self::assertFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
     }
 
+    /**
+     * @return void
+     */
     public static function createsVendorBinFolderChecksEnvContainsBin()
     {
         $val = getenv('PATH');
@@ -335,6 +350,9 @@ class EventDispatcherTest extends TestCase
         self::assertNotFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
     }
 
+    /**
+     * @return void
+     */
     public static function getTestEnv()
     {
         $val = getenv('ABC');
@@ -465,7 +483,12 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatch('root', new ScriptEvent('root', $composer, $io));
     }
 
-    private function getDispatcherStubForListenersTest($listeners, $io)
+    /**
+     * @param array<callable|string> $listeners
+     *
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\EventDispatcher\EventDispatcher
+     */
+    private function getDispatcherStubForListenersTest($listeners, IOInterface $io)
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
@@ -482,7 +505,7 @@ class EventDispatcherTest extends TestCase
         return $dispatcher;
     }
 
-    public function getValidCommands()
+    public function provideValidCommands()
     {
         return array(
             array('phpunit'),
@@ -575,21 +598,33 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_OPERATIONS_EXEC, true, true, $transaction);
     }
 
+    /**
+     * @return void
+     */
     public static function call()
     {
         throw new \RuntimeException();
     }
 
+    /**
+     * @return true
+     */
     public static function someMethod()
     {
         return true;
     }
 
+    /**
+     * @return true
+     */
     public static function someMethod2()
     {
         return true;
     }
 
+    /**
+     * @return Composer
+     */
     private function createComposerInstance()
     {
         $composer = new Composer;
