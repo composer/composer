@@ -277,25 +277,13 @@ class BinaryInstaller
  * @generated
  */
 
-\$binPath = realpath(__DIR__ . "/" . $binPathExported);
-
-if (PHP_VERSION_ID >= 80000) {
-    include \$binPath;
-    exit(0);
-}
-
-\$contents = file_get_contents(\$binPath);
-\$contents = preg_replace('{^#!/.+\\r?\\n<\\?(php)?}', '', \$contents, 1, \$replaced);
-if (\$replaced) {
+if (PHP_VERSION_ID < 80000) {
     ob_start(function (\$buffer, \$phase) {
         return (PHP_OUTPUT_HANDLER_START & \$phase) && '#!' === substr(\$buffer, 0, 2) ? '' : \$buffer;
     }, 1);
-
-    include \$binPath;
-    exit(0);
 }
-include \$binPath;
 
+include __DIR__ . "/" . $binPathExported;
 PROXY;
             }
         }
