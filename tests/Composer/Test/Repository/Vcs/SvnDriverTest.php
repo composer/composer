@@ -85,6 +85,9 @@ class SvnDriverTest extends TestCase
 
     /**
      * @dataProvider supportProvider
+     *
+     * @param string $url
+     * @param bool   $assertion
      */
     public function testSupport($url, $assertion)
     {

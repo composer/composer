@@ -85,6 +85,9 @@ class PerforceDriverTest extends TestCase
         $fs->removeDirectory($this->testPath);
     }
 
+    /**
+     * @return void
+     */
     protected function overrideDriverInternalPerforce(Perforce $perforce)
     {
         $reflectionClass = new \ReflectionClass($this->driver);
@@ -93,6 +96,11 @@ class PerforceDriverTest extends TestCase
         $property->setValue($this->driver, $perforce);
     }
 
+    /**
+     * @param string $testPath
+     *
+     * @return Config
+     */
     protected function getTestConfig($testPath)
     {
         $config = new Config();
@@ -101,16 +109,25 @@ class PerforceDriverTest extends TestCase
         return $config;
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\IO\IOInterface
+     */
     protected function getMockIOInterface()
     {
         return $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Util\HttpDownloader
+     */
     protected function getMockHttpDownloader()
     {
         return $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Util\Perforce
+     */
     protected function getMockPerforce()
     {
         $methods = array('p4login', 'checkStream', 'writeP4ClientSpec', 'connectClient', 'getComposerInformation', 'cleanupClientSpec');

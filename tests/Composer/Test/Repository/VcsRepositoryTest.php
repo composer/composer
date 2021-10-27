@@ -39,6 +39,9 @@ class VcsRepositoryTest extends TestCase
      */
     private $skipped = null;
 
+    /**
+     * @return void
+     */
     protected function initialize()
     {
         $locator = new ExecutableFinder();
