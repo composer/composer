@@ -149,7 +149,7 @@ class RemoteFilesystemTest extends TestCase
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
         $this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0);
-        $this->assertTrue(true);
+        $this->assertTrue(true, 'callbackGet must pass through 404');
     }
 
     public function testGetContents()
