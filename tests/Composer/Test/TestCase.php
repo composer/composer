@@ -23,9 +23,12 @@ use Symfony\Component\Process\ExecutableFinder;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\BasePackage;
 use Composer\Package\RootPackage;
+use Composer\Package\AliasPackage;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\CompleteAliasPackage;
+use Composer\Package\CompletePackageInterface;
+use Composer\Package\Package;
 
 abstract class TestCase extends PolyfillTestCase
 {
@@ -57,6 +60,9 @@ abstract class TestCase extends PolyfillTestCase
         throw new \RuntimeException('Failed to create a unique temporary directory.');
     }
 
+    /**
+     * @return VersionParser
+     */
     protected static function getVersionParser()
     {
         if (!self::$parser) {
@@ -66,6 +72,11 @@ abstract class TestCase extends PolyfillTestCase
         return self::$parser;
     }
 
+    /**
+     * @param Constraint::STR_OP_* $operator
+     * @param string $version
+     * @return Constraint
+     */
     protected function getVersionConstraint($operator, $version)
     {
         $constraint = new Constraint(
@@ -82,6 +93,8 @@ abstract class TestCase extends PolyfillTestCase
      * @template PackageClass of PackageInterface
      *
      * @param  string $class  FQCN to be instantiated
+     * @param  string $name
+     * @param  string $version
      *
      * @return CompletePackage|CompleteAliasPackage|RootPackage|RootAliasPackage
      *
@@ -94,18 +107,28 @@ abstract class TestCase extends PolyfillTestCase
         return new $class($name, $normVersion, $version);
     }
 
-    protected function getAliasPackage($package, $version)
+    /**
+     * @param string $version
+     * @return AliasPackage|RootAliasPackage|CompleteAliasPackage
+     */
+    protected function getAliasPackage(Package $package, $version)
     {
         $normVersion = self::getVersionParser()->normalize($version);
 
-        $class = 'Composer\Package\AliasPackage';
-        if ($package instanceof RootPackageInterface) {
-            $class = 'Composer\Package\RootAliasPackage';
+        if ($package instanceof RootPackage) {
+            return new RootAliasPackage($package, $normVersion, $version);
+        }
+        if ($package instanceof CompletePackage) {
+            return new CompleteAliasPackage($package, $normVersion, $version);
         }
 
-        return new $class($package, $normVersion, $version);
+        return new AliasPackage($package, $normVersion, $version);
     }
 
+    /**
+     * @param array<string, array<string, string>> $config
+     * @return void
+     */
     protected function configureLinks(PackageInterface $package, array $config)
     {
         $arrayLoader = new ArrayLoader();
@@ -125,6 +148,10 @@ abstract class TestCase extends PolyfillTestCase
         }
     }
 
+    /**
+     * @param  string $directory
+     * @return void
+     */
     protected static function ensureDirectoryExistsAndClear($directory)
     {
         $fs = new Filesystem();
@@ -140,6 +167,8 @@ abstract class TestCase extends PolyfillTestCase
      * Check whether or not the given name is an available executable.
      *
      * @param string $executableName The name of the binary to test.
+     *
+     * @return void
      *
      * @throws \PHPUnit\Framework\SkippedTestError
      */
@@ -159,6 +188,7 @@ abstract class TestCase extends PolyfillTestCase
      * @param string      $exception
      * @param string|null $message
      * @param int|null    $code
+     * @return void
      */
     public function setExpectedException($exception, $message = null, $code = null)
     {
