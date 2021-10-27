@@ -107,6 +107,9 @@ class MetapackageInstallerTest extends TestCase
         $this->installer->uninstall($this->repository, $package);
     }
 
+    /**
+     * @return \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     private function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')
