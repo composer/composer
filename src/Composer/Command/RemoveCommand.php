@@ -74,9 +74,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
      * @return void
      */
     protected function interact(InputInterface $input, OutputInterface $output)
@@ -127,9 +124,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
      * @return int
      * @throws \Seld\JsonLint\ParsingException
      */

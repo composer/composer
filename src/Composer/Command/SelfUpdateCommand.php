@@ -74,9 +74,7 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int|void
+     * @return int
      * @throws FilesystemException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -114,7 +112,8 @@ EOT
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
 
         if ($input->getOption('update-keys')) {
-            return $this->fetchKeys($io, $config);
+            $this->fetchKeys($io, $config);
+            return 0;
         }
 
         // ensure composer.phar location is accessible
@@ -334,9 +333,6 @@ TAGSPUBKEY
     }
 
     /**
-     * @param IOInterface $io
-     * @param Config $config
-     *
      * @return void
      * @throws \Exception
      */
@@ -386,7 +382,6 @@ TAGSPUBKEY
     }
 
     /**
-     * @param OutputInterface $output
      * @param string $rollbackDir
      * @param string $localFilename
      * @return int

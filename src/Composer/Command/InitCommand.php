@@ -92,9 +92,6 @@ EOT
     /**
      * {@inheritdoc}
      *
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
      * @return int
      * @throws \Seld\JsonLint\ParsingException
      */
@@ -515,8 +512,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @param array<string> $requires
      * @param PlatformRepository|null $platformRepo
      * @param string $preferredStability
@@ -839,7 +834,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
      * @param string|null $minimumStability
      *
      * @return RepositorySet
@@ -880,7 +874,6 @@ EOT
      *
      * This returns a version with the ~ operator prefixed when possible.
      *
-     * @param  InputInterface            $input
      * @param  string                    $name
      * @param  PlatformRepository|null   $platformRepo
      * @param  string                    $preferredStability
@@ -888,7 +881,7 @@ EOT
      * @param  string                    $minimumStability
      * @param  bool                      $fixed
      * @throws \InvalidArgumentException
-     * @return array<string>             name version
+     * @return array<string>     name version
      */
     private function findBestVersionAndNameForPackage(InputInterface $input, $name, PlatformRepository $platformRepo = null, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null, $fixed = null)
     {
@@ -1059,11 +1052,9 @@ EOT
     }
 
     /**
-     * @param OutputInterface $output
-     *
      * @return void
      */
-    private function updateDependencies($output)
+    private function updateDependencies(OutputInterface $output)
     {
         try {
             $updateCommand = $this->getApplication()->find('update');
@@ -1075,10 +1066,9 @@ EOT
     }
 
     /**
-     * @param OutputInterface $output
      * @return void
      */
-    private function runDumpAutoloadCommand($output)
+    private function runDumpAutoloadCommand(OutputInterface $output)
     {
         try {
             $command = $this->getApplication()->find('dump-autoload');

@@ -100,7 +100,6 @@ EOT
     }
 
     /**
-     * @param CompletePackageInterface $package
      * @param bool $showHomepage
      * @param bool $showOnly
      * @return bool

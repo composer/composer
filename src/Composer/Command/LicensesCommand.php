@@ -54,9 +54,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
      * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -160,8 +157,6 @@ EOT
     /**
      * Find package requires and child requires
      *
-     * @param  RepositoryInterface             $repo
-     * @param  PackageInterface                $package
      * @param  array<string, PackageInterface> $bucket
      * @return array<string, PackageInterface>
      */

@@ -42,9 +42,6 @@ class FundCommand extends BaseCommand
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
      * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -136,7 +133,6 @@ class FundCommand extends BaseCommand
 
     /**
      * @param array[] $fundings
-     * @param CompletePackageInterface $package
      * @return array[]
      */
     private function insertFundingData(array $fundings, CompletePackageInterface $package)

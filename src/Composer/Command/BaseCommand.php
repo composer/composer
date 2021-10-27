@@ -23,6 +23,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
@@ -74,8 +75,6 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * @param Composer $composer
-     *
      * @return void
      */
     public function setComposer(Composer $composer)
@@ -125,8 +124,6 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * @param IOInterface $io
-     *
      * @return void
      */
     public function setIO(IOInterface $io)
@@ -162,8 +159,6 @@ abstract class BaseCommand extends Command
     /**
      * Returns preferSource and preferDist values based on the configuration.
      *
-     * @param Config         $config
-     * @param InputInterface $input
      * @param bool           $keepVcsRequiresPreferSource
      *
      * @return bool[] An array composed of the preferSource and preferDist values
@@ -249,8 +244,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * @param array<mixed> $table
-     * @param OutputInterface $output
+     * @param array<TableSeparator|array> $table
      *
      * @return void
      */

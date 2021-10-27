@@ -149,9 +149,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
      * @return void
      * @throws \Exception
      */
@@ -209,9 +206,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
      * @return int
      * @throws \Seld\JsonLint\ParsingException
      */
@@ -828,7 +822,6 @@ EOT
      *
      * @param array<array|bool|string> $contents
      * @param array<array|string>      $rawContents
-     * @param OutputInterface          $output
      * @param string|null              $k
      *
      * @return void

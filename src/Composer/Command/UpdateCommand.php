@@ -109,8 +109,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @return int
      * @throws \Exception
      */
@@ -251,10 +249,6 @@ EOT
     }
 
     /**
-     * @param IOInterface $io
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param Composer $composer
      * @param array<string> $packages
      * @return array<string>
      */
@@ -322,7 +316,6 @@ EOT
     }
 
     /**
-     * @param Link $link
      * @param string $constraint
      * @return Link
      */

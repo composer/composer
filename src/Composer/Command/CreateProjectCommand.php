@@ -119,10 +119,7 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @return int|void
+     * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -169,9 +166,6 @@ EOT
     }
 
     /**
-     * @param IOInterface $io
-     * @param Config $config
-     * @param InputInterface $input
      * @param string|null $packageName
      * @param string|null $directory
      * @param string|null $packageVersion
@@ -337,8 +331,6 @@ EOT
     }
 
     /**
-     * @param IOInterface $io
-     * @param Config $config
      * @param string $packageName
      * @param string|null $directory
      * @param string|null $packageVersion

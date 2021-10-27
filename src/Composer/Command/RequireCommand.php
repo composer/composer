@@ -110,8 +110,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
      * @return int
      * @throws \Seld\JsonLint\ParsingException
      */
@@ -343,9 +341,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @param IOInterface $io
      * @param array<string, string> $requirements
      * @param string $requireKey
      * @param string $removeKey
@@ -446,14 +441,13 @@ EOT
     }
 
     /**
-     * @param JsonFile $json
      * @param array<string, string> $new
      * @param string $requireKey
      * @param string $removeKey
      * @param bool $sortPackages
      * @return bool
      */
-    private function updateFileCleanly($json, array $new, $requireKey, $removeKey, $sortPackages)
+    private function updateFileCleanly(JsonFile $json, array $new, $requireKey, $removeKey, $sortPackages)
     {
         $contents = file_get_contents($json->getPath());
 

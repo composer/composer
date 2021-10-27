@@ -61,9 +61,6 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
      * @return int|void
      * @throws \Symfony\Component\Console\Exception\ExceptionInterface
      */

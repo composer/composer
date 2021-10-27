@@ -113,15 +113,12 @@ EOT
     }
 
     /**
-     * @param IOInterface $io
-     * @param Config $config
      * @param string|null $packageName
      * @param string|null $version
      * @param string $format
      * @param string $dest
      * @param string|null $fileName
      * @param bool $ignoreFilters
-     * @param Composer|null $composer
      *
      * @return int
      * @throws \Exception
@@ -160,7 +157,6 @@ EOT
     }
 
     /**
-     * @param IOInterface $io
      * @param string|null $packageName
      * @param string|null $version
      *

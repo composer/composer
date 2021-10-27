@@ -47,8 +47,6 @@ class BaseDependencyCommand extends BaseCommand
     /**
      * Execute the command.
      *
-     * @param  InputInterface  $input
-     * @param  OutputInterface $output
      * @param  bool            $inverted Whether to invert matching process (why-not vs why behaviour)
      * @return int             Exit code of the operation.
      */
@@ -134,7 +132,6 @@ class BaseDependencyCommand extends BaseCommand
     /**
      * Assembles and prints a bottom-up table of the dependencies.
      *
-     * @param OutputInterface $output
      * @param array[]         $results
      *
      * @return void
@@ -172,8 +169,6 @@ class BaseDependencyCommand extends BaseCommand
 
     /**
      * Init styles for tree
-     *
-     * @param OutputInterface $output
      *
      * @return void
      */

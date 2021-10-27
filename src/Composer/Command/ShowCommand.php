@@ -570,8 +570,6 @@ EOT
     }
 
     /**
-     * @param PackageInterface $latestPackage
-     * @param PackageInterface $package
      * @return array|string|string[]
      */
     protected function getVersionStyle(PackageInterface $latestPackage, PackageInterface $package)
@@ -582,12 +580,10 @@ EOT
     /**
      * finds a package by name and version if provided
      *
-     * @param  InstalledRepository        $installedRepo
-     * @param  RepositoryInterface        $repos
      * @param  string                     $name
      * @param  ConstraintInterface|string $version
      * @throws \InvalidArgumentException
-     * @return array{CompletePackageInterface, array<string, string>}
+     * @return array{CompletePackageInterface|null, array<string, string>}
      */
     protected function getPackage(InstalledRepository $installedRepo, RepositoryInterface $repos, $name, $version = null)
     {
@@ -628,9 +624,7 @@ EOT
     /**
      * Prints package info.
      *
-     * @param CompletePackageInterface $package
      * @param array<string, string>    $versions
-     * @param InstalledRepository      $installedRepo
      * @param PackageInterface|null    $latestPackage
      *
      * @return void
@@ -658,9 +652,7 @@ EOT
     /**
      * Prints package metadata.
      *
-     * @param CompletePackageInterface $package
      * @param array<string, string>    $versions
-     * @param InstalledRepository      $installedRepo
      * @param PackageInterface|null    $latestPackage
      *
      * @return void
@@ -728,9 +720,7 @@ EOT
     /**
      * Prints all available versions of this package and highlights the installed one if any.
      *
-     * @param CompletePackageInterface $package
-     * @param array<string, string>    $versions
-     * @param InstalledRepository      $installedRepo
+     * @param array<string, string> $versions
      *
      * @return void
      */
@@ -758,7 +748,6 @@ EOT
     /**
      * print link objects
      *
-     * @param CompletePackageInterface $package
      * @param string                   $linkType
      * @param string                   $title
      *
@@ -779,8 +768,6 @@ EOT
 
     /**
      * Prints the licenses of a package with metadata
-     *
-     * @param CompletePackageInterface $package
      *
      * @return void
      */
@@ -812,10 +799,7 @@ EOT
     /**
      * Prints package info in JSON format.
      *
-     * @param CompletePackageInterface $package
      * @param array<string, string>    $versions
-     * @param InstalledRepository      $installedRepo
-     * @param PackageInterface|null    $latestPackage
      *
      * @return void
      */
@@ -901,7 +885,6 @@ EOT
 
     /**
      * @param array<string, string|string[]|null> $json
-     * @param CompletePackageInterface $package
      * @return array<string, string|string[]|null>
      */
     private function appendLicenses($json, CompletePackageInterface $package)
@@ -929,7 +912,6 @@ EOT
 
     /**
      * @param array<string, string|string[]|null> $json
-     * @param CompletePackageInterface $package
      * @return array<string, string|string[]|null>
      */
     private function appendAutoload($json, CompletePackageInterface $package)
@@ -963,7 +945,6 @@ EOT
 
     /**
      * @param array<string, string|string[]|null> $json
-     * @param CompletePackageInterface $package
      * @return array<string, string|string[]|null>
      */
     private function appendLinks($json, CompletePackageInterface $package)
@@ -977,7 +958,6 @@ EOT
 
     /**
      * @param array<string, string|string[]|null> $json
-     * @param CompletePackageInterface $package
      * @param string $linkType
      * @return array<string, string|string[]|null>
      */
@@ -999,7 +979,6 @@ EOT
     /**
      * Init styles for tree
      *
-     * @param OutputInterface $output
      * @return void
      */
     protected function initStyles(OutputInterface $output)
@@ -1067,9 +1046,6 @@ EOT
     /**
      * Generate the package tree
      *
-     * @param  PackageInterface    $package
-     * @param  InstalledRepository $installedRepo
-     * @param  RepositoryInterface $remoteRepos
      * @return array<string, array<int, array<string, array|string>>|string|null>
      */
     protected function generatePackageTree(
@@ -1167,10 +1143,7 @@ EOT
     /**
      * Display a package tree
      *
-     * @param  string                $name
-     * @param  Link                  $link
-     * @param  InstalledRepository   $installedRepo
-     * @param  RepositoryInterface   $remoteRepos
+     * @param  string   $name
      * @param  string[] $packagesInTree
      * @return array<int, array<string, array<int, array<string, string>>|string>>
      */
@@ -1227,8 +1200,6 @@ EOT
     }
 
     /**
-     * @param PackageInterface $latestPackage
-     * @param PackageInterface $package
      * @return string
      */
     private function getUpdateStatus(PackageInterface $latestPackage, PackageInterface $package)
@@ -1268,10 +1239,7 @@ EOT
     /**
      * Given a package, this finds the latest package matching it
      *
-     * @param PackageInterface   $package
-     * @param Composer           $composer
-     * @param PlatformRepository $platformRepo
-     * @param bool               $minorOnly
+     * @param bool $minorOnly
      *
      * @return PackageInterface|false
      */
@@ -1324,8 +1292,6 @@ EOT
     /**
      * Find package requires and child requires
      *
-     * @param  RepositoryInterface     $repo
-     * @param  PackageInterface        $package
      * @param  array<PackageInterface> $bucket
      * @return array<PackageInterface>
      */

@@ -67,9 +67,6 @@ EOT
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
      * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -164,7 +161,6 @@ EOT
     }
 
     /**
-     * @param IOInterface $io
      * @param string $name
      * @param string[] $errors
      * @param string[] $warnings
@@ -176,7 +172,7 @@ EOT
      *
      * @return void
      */
-    private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false)
+    private function outputResult(IOInterface $io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false)
     {
         $doPrintSchemaUrl = false;
 

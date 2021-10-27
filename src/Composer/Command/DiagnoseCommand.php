@@ -69,10 +69,7 @@ EOT
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     *
-     * @return int|void
+     * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -247,7 +244,6 @@ EOT
 
     /**
      * @param string $proto
-     * @param Config $config
      *
      * @return string|string[]|true
      */
@@ -369,11 +365,9 @@ EOT
     }
 
     /**
-     * @param Config $config
-     *
      * @return string|true
      */
-    private function checkDiskSpace($config)
+    private function checkDiskSpace(Config $config)
     {
         $minSpaceFree = 1024 * 1024;
         if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
@@ -386,11 +380,9 @@ EOT
     }
 
     /**
-     * @param Config $config
-     *
      * @return string[]|true
      */
-    private function checkPubKeys($config)
+    private function checkPubKeys(Config $config)
     {
         $home = $config->get('home');
         $errors = array();
@@ -420,11 +412,9 @@ EOT
     }
 
     /**
-     * @param Config $config
-     *
      * @return string|\Exception|true
      */
-    private function checkVersion($config)
+    private function checkVersion(Config $config)
     {
         $result = $this->checkConnectivity();
         if ($result !== true) {
