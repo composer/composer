@@ -25,7 +25,7 @@ class SvnTest extends TestCase
      * @param string $url    The SVN url.
      * @param string $expect The expectation for the test.
      *
-     * @dataProvider provideCredentialUrls
+     * @dataProvider urlProvider
      */
     public function testCredentials($url, $expect)
     {
@@ -36,7 +36,12 @@ class SvnTest extends TestCase
         $this->assertEquals($expect, $reflMethod->invoke($svn));
     }
 
-    public function provideCredentialUrls()
+    /**
+     * Provide some examples for {@self::testCredentials()}.
+     *
+     * @return array
+     */
+    public function urlProvider()
     {
         return array(
             array('http://till:test@svn.example.org/', $this->getCmd(" --username 'till' --password 'test' ")),
