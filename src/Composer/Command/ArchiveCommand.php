@@ -157,7 +157,7 @@ EOT
     }
 
     /**
-     * @param string|null $packageName
+     * @param string      $packageName
      * @param string|null $version
      *
      * @return (BasePackage&CompletePackageInterface)|false

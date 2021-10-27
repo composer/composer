@@ -763,11 +763,11 @@ EOT
 
     /**
      * @param string $key
-     * @param array<callable> $callbacks
+     * @param array{callable, callable} $callbacks Validator and normalizer callbacks
      * @param array<string> $values
      * @param string $method
      *
-     * @return false|void
+     * @return void
      */
     protected function handleSingleValue($key, array $callbacks, array $values, $method)
     {
@@ -793,16 +793,16 @@ EOT
             }
         }
 
-        return call_user_func(array($this->configSource, $method), $key, $normalizedValue);
+        call_user_func(array($this->configSource, $method), $key, $normalizedValue);
     }
 
     /**
      * @param string $key
-     * @param array<callable> $callbacks
+     * @param array{callable, callable} $callbacks Validator and normalizer callbacks
      * @param array<string> $values
      * @param string $method
      *
-     * @return false|void
+     * @return void
      */
     protected function handleMultiValue($key, array $callbacks, array $values, $method)
     {
@@ -814,7 +814,7 @@ EOT
             ));
         }
 
-        return call_user_func(array($this->configSource, $method), $key, $normalizer($values));
+        call_user_func(array($this->configSource, $method), $key, $normalizer($values));
     }
 
     /**

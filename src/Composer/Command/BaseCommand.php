@@ -234,7 +234,7 @@ abstract class BaseCommand extends Command
     /**
      * @param array<string> $requirements
      *
-     * @return array|array[]
+     * @return list<array{name: string, version?: string}>
      */
     protected function normalizeRequirements(array $requirements)
     {
