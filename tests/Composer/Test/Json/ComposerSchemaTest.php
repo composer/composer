@@ -91,7 +91,6 @@ class ComposerSchemaTest extends TestCase
     }
 
     /**
-     *
      * @param string $json
      * @return mixed
      */

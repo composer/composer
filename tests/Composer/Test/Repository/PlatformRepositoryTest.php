@@ -13,7 +13,6 @@
 namespace Composer\Test\Repository;
 
 use Composer\Package\Link;
-use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;

@@ -200,7 +200,7 @@ class SolverTest extends TestCase
      *
      * This is not something that can happen with packages on e.g. Packagist, but custom installers with custom repositories might do something like this;
      * in fact, some PaaSes do the exact thing above, installing binary builds of PHP and extensions as Composer packages with a custom installer in a separate step before the "userland" `composer install`.
-     * 
+     *
      * If version selectors are sufficiently permissive (e.g. "ourcustom/php":"*", "ourcustom/ext-foobar":"*"), then it may happen that the Solver won't pick the highest possible PHP version, as it has already settled on an "ext-foobar" (they're all the same version to the Solver, it doesn't know about the different requirements in each of the otherwise identical packages) if that was listed in "require" before "php".
      * That's "unfixable", and not even broken, behavior (what if the "ext-foobar" has higher versions for the lower "PHP"? who wins then? any combination of the packages is "correct"), but it shouldn't randomly change.
      * This test asserts this behavior to prevent regressions.

@@ -86,7 +86,6 @@ class GitTest extends TestCase
 
         $this->mockConfig('https');
 
-
         $this->process->expects(array(
             array('cmd' => 'git command', 'return' => 1),
             array('cmd' => 'git --version', 'return' => 0),

@@ -255,13 +255,13 @@ class ClassMapGeneratorTest extends TestCase
     public function testCreateMapDoesNotHitRegexBacktraceLimit()
     {
         $expected = array(
-            'Foo\\StripNoise'            => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/StripNoise.php',
-            'Foo\\VeryLongHeredoc'       => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongHeredoc.php',
+            'Foo\\StripNoise' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/StripNoise.php',
+            'Foo\\VeryLongHeredoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongHeredoc.php',
             'Foo\\ClassAfterLongHereDoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongHeredoc.php',
-            'Foo\\VeryLongPHP73Heredoc'  => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Heredoc.php',
-            'Foo\\VeryLongPHP73Nowdoc'   => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Nowdoc.php',
-            'Foo\\ClassAfterLongNowDoc'  => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Nowdoc.php',
-            'Foo\\VeryLongNowdoc'        => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongNowdoc.php',
+            'Foo\\VeryLongPHP73Heredoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Heredoc.php',
+            'Foo\\VeryLongPHP73Nowdoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Nowdoc.php',
+            'Foo\\ClassAfterLongNowDoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Nowdoc.php',
+            'Foo\\VeryLongNowdoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongNowdoc.php',
         );
 
         ini_set('pcre.backtrack_limit', '30000');

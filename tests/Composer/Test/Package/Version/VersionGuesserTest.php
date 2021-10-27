@@ -66,7 +66,7 @@ class VersionGuesserTest extends TestCase
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
-                'stdout' => "* master $commitHash Commit message\n(no branch) $anotherCommitHash Commit message\n"
+                'stdout' => "* master $commitHash Commit message\n(no branch) $anotherCommitHash Commit message\n",
             ),
         ), true);
 
@@ -94,7 +94,7 @@ class VersionGuesserTest extends TestCase
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
                 // Assumption here is that arbitrary would be the default branch
-                'stdout' => "  arbitrary $commitHash Commit message\n* current $anotherCommitHash Another message\n"
+                'stdout' => "  arbitrary $commitHash Commit message\n* current $anotherCommitHash Another message\n",
             ),
         ), true);
 
@@ -118,11 +118,11 @@ class VersionGuesserTest extends TestCase
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
-                'stdout' => "  arbitrary $commitHash Commit message\n* feature $anotherCommitHash Another message\n"
+                'stdout' => "  arbitrary $commitHash Commit message\n* feature $anotherCommitHash Another message\n",
             ),
             array(
                 'cmd' => 'git rev-list arbitrary..feature',
-                'stdout' => "$anotherCommitHash\n"
+                'stdout' => "$anotherCommitHash\n",
             ),
         ), true);
 
@@ -244,7 +244,6 @@ class VersionGuesserTest extends TestCase
     public function testDetachedCommitHeadBecomesDevHashGit2()
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
-
 
         $process = new ProcessExecutorMock;
         $process->expects(array(

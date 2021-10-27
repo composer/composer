@@ -21,7 +21,6 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
-use React\Promise\PromiseInterface;
 
 class InstallationManagerMock extends InstallationManager
 {

@@ -16,8 +16,6 @@ use Composer\Downloader\TransportException;
 use Composer\Util\GitHub;
 use Composer\Util\Http\Response;
 use Composer\Test\TestCase;
-use RecursiveArrayIterator;
-use RecursiveIteratorIterator;
 
 /**
  * @author Rob Bast <rob.bast@gmail.com>

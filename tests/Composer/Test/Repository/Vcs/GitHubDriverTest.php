@@ -20,7 +20,6 @@ use Composer\Util\Http\Response;
 use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Config;
 use Composer\Util\ProcessExecutor;
-use Symfony\Component\Process\Process;
 
 class GitHubDriverTest extends TestCase
 {

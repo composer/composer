@@ -138,6 +138,7 @@ EOT
         $process = new ProcessExecutor($this->getIO());
         if (Platform::isWindows()) {
             $process->execute('start "web" explorer ' . $url, $output);
+
             return;
         }
 

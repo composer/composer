@@ -151,12 +151,14 @@ class GitDownloaderTest extends TestCase
 
         $process = new ProcessExecutorMock;
         $process->expects(array(
-            array('cmd' => $this->winCompat(sprintf("git clone --mirror -- 'https://example.com/composer/composer' '%s'", $cachePath)), 'callback' => function () use ($cachePath) { @mkdir($cachePath, 0777, true); }),
+            array('cmd' => $this->winCompat(sprintf("git clone --mirror -- 'https://example.com/composer/composer' '%s'", $cachePath)), 'callback' => function () use ($cachePath) {
+                @mkdir($cachePath, 0777, true);
+            }),
             array('cmd' => 'git rev-parse --git-dir', 'stdout' => '.'),
             $this->winCompat('git rev-parse --quiet --verify \'1234567890123456789012345678901234567890^{commit}\''),
             $this->winCompat(sprintf("git clone --no-checkout '%1\$s' 'composerPath' --dissociate --reference '%1\$s' && cd 'composerPath' && git remote set-url origin -- 'https://example.com/composer/composer' && git remote add composer -- 'https://example.com/composer/composer'", $cachePath)),
             'git branch -r',
-            $this->winCompat("(git checkout 'master' -- || git checkout -B 'master' 'composer/master' --) && git reset --hard '1234567890123456789012345678901234567890' --")
+            $this->winCompat("(git checkout 'master' -- || git checkout -B 'master' 'composer/master' --) && git reset --hard '1234567890123456789012345678901234567890' --"),
         ), true);
 
         $downloader = $this->getDownloaderMock(null, $config, $process);

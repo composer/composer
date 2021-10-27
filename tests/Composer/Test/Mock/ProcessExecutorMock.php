@@ -45,7 +45,7 @@ class ProcessExecutorMock extends ProcessExecutor
      * @param array<string|array{cmd: string, return?: int, stdout?: string, stderr?: string, callback?: callable}> $expectations
      * @param bool                                                                                                 $strict         set to true if you want to provide *all* expected commands, and not just a subset you are interested in testing
      * @param array{return: int, stdout?: string, stderr?: string}                                                 $defaultHandler default command handler for undefined commands if not in strict mode
-     * 
+     *
      * @return void
      */
     public function expects(array $expectations, $strict = false, array $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => ''))
@@ -100,7 +100,6 @@ class ProcessExecutorMock extends ProcessExecutor
     }
 
     /**
-     *
      * @param string $command
      * @param string $cwd
      * @param bool $tty

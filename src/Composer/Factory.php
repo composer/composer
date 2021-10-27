@@ -20,7 +20,6 @@ use Composer\Package\Version\VersionGuesser;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\RepositoryFactory;
-use Composer\Repository\WritableRepositoryInterface;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;

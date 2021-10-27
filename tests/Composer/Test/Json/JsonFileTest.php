@@ -370,10 +370,9 @@ class JsonFileTest extends TestCase
     }
 
     /**
-     *
      * @param string $json
      * @param mixed $data
-     * @param integer|null $options
+     * @param int|null $options
      * @return void
      */
     private function assertJsonFormat($json, $data, $options = null)

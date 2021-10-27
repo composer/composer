@@ -13,7 +13,6 @@
 namespace Composer\Command;
 
 use Composer\Json\JsonFile;
-use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;

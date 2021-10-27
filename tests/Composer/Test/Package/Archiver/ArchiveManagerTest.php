@@ -16,7 +16,6 @@ use Composer\IO\NullIO;
 use Composer\Factory;
 use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\CompletePackage;
-use Composer\Package\PackageInterface;
 use Composer\Util\Loop;
 use Composer\Test\Mock\FactoryMock;
 use Composer\Util\ProcessExecutor;

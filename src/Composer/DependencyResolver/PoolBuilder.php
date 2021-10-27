@@ -22,7 +22,6 @@ use Composer\Package\PackageInterface;
 use Composer\Package\Version\StabilityFilter;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PrePoolCreateEvent;
-use Composer\Repository\LockArrayRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RootPackageRepository;

@@ -188,6 +188,7 @@ abstract class TestCase extends PolyfillTestCase
             $cmd = preg_replace_callback("/('[^']*')/", function ($m) {
                 // Double-quotes are used only when needed
                 $char = (strpbrk($m[1], " \t^&|<>()") !== false || $m[1] === "''") ? '"' : '';
+
                 return str_replace("'", $char, $m[1]);
             }, $cmd);
         }

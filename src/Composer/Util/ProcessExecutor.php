@@ -13,9 +13,7 @@
 namespace Composer\Util;
 
 use Composer\IO\IOInterface;
-use Composer\Util\Platform;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\ProcessUtils;
 use Symfony\Component\Process\Exception\RuntimeException;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;

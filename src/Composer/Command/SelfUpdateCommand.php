@@ -113,6 +113,7 @@ EOT
 
         if ($input->getOption('update-keys')) {
             $this->fetchKeys($io, $config);
+
             return 0;
         }
 
