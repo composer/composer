@@ -249,6 +249,8 @@ class PluginInstallerTest extends TestCase
     /**
      * @param string            $newPluginApiVersion
      * @param CompletePackage[] $plugins
+     * 
+     * @return void
      */
     private function setPluginApiVersionWithPlugins($newPluginApiVersion, array $plugins = array())
     {
@@ -351,7 +353,7 @@ class PluginInstallerTest extends TestCase
     {
         $plugin = $this->getMockBuilder('Composer\Plugin\PluginInterface')
                        ->getMock();
-
+        /** @phpstan-ignore-next-line */
         $this->assertNull($this->pm->getPluginCapability($plugin, 'Fake\Ability'));
     }
 
@@ -377,6 +379,7 @@ class PluginInstallerTest extends TestCase
         $this->assertSame(array('a' => 1, 'b' => 2, 'plugin' => $plugin), $capability->args);
     }
 
+    /** @return mixed[] */
     public function invalidImplementationClassNames()
     {
         return array(
@@ -391,6 +394,7 @@ class PluginInstallerTest extends TestCase
         );
     }
 
+    /** @return mixed[] */
     public function nonExistingOrInvalidImplementationClassTypes()
     {
         return array(
@@ -401,6 +405,10 @@ class PluginInstallerTest extends TestCase
 
     /**
      * @dataProvider invalidImplementationClassNames
+     * @param callable $invalidImplementationClassNames
+     * @param string $expect
+     * 
+     * @return void
      */
     public function testQueryingWithInvalidCapabilityClassNameThrows($invalidImplementationClassNames, $expect = 'UnexpectedValueException')
     {
@@ -420,6 +428,7 @@ class PluginInstallerTest extends TestCase
         $this->pm->getPluginCapability($plugin, $capabilityApi);
     }
 
+    /** @return void */
     public function testQueryingNonProvidedCapabilityReturnsNullSafely()
     {
         $capabilityApi = 'Composer\Plugin\Capability\MadeUpCapability';
@@ -432,12 +441,16 @@ class PluginInstallerTest extends TestCase
                ->will($this->returnCallback(function () {
                    return array();
                }));
-
+        
+        /** @phpstan-ignore-next-line */
         $this->assertNull($this->pm->getPluginCapability($plugin, $capabilityApi));
     }
 
     /**
      * @dataProvider nonExistingOrInvalidImplementationClassTypes
+     * @param callable $wrongImplementationClassTypes
+     * 
+     * @return void
      */
     public function testQueryingWithNonExistingOrWrongCapabilityClassTypesThrows($wrongImplementationClassTypes)
     {
