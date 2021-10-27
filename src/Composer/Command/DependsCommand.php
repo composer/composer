@@ -24,6 +24,8 @@ class DependsCommand extends BaseDependencyCommand
 {
     /**
      * Configure command metadata.
+     *
+     * @return void
      */
     protected function configure()
     {
@@ -51,8 +53,6 @@ EOT
     /**
      * Execute the function.
      *
-     * @param  InputInterface  $input
-     * @param  OutputInterface $output
      * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output)

@@ -54,6 +54,8 @@ class InitCommand extends BaseCommand
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function configure()
     {
@@ -89,6 +91,9 @@ EOT
 
     /**
      * {@inheritdoc}
+     *
+     * @return int
+     * @throws \Seld\JsonLint\ParsingException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -220,6 +225,8 @@ EOT
 
     /**
      * {@inheritdoc}
+     *
+     * @return void
      */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
@@ -480,6 +487,10 @@ EOT
         );
     }
 
+    /**
+     * @param string $name
+     * @return list<array{name: string, description: ?string}>
+     */
     protected function findPackages($name)
     {
         return $this->getRepos()->search($name);
@@ -500,6 +511,16 @@ EOT
         return $this->repos;
     }
 
+    /**
+     * @param array<string> $requires
+     * @param PlatformRepository|null $platformRepo
+     * @param string $preferredStability
+     * @param bool $checkProvidedVersions
+     * @param bool $fixed
+     *
+     * @return array<string>
+     * @throws \Exception
+     */
     final protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), PlatformRepository $platformRepo = null, $preferredStability = 'stable', $checkProvidedVersions = true, $fixed = false)
     {
         if ($requires) {
@@ -667,6 +688,8 @@ EOT
     }
 
     /**
+     * @param string $author
+     *
      * @return array<int, array{name: string, email: string}>
      */
     protected function formatAuthors($author)
@@ -702,6 +725,9 @@ EOT
         return join('\\', $namespace);
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function getGitConfig()
     {
         if (null !== $this->gitConfig) {
@@ -767,6 +793,12 @@ EOT
         return false;
     }
 
+    /**
+     * @param string $ignoreFile
+     * @param string $vendor
+     *
+     * @return void
+     */
     protected function addVendorIgnore($ignoreFile, $vendor = '/vendor/')
     {
         $contents = "";
@@ -782,6 +814,8 @@ EOT
     }
 
     /**
+     * @param string $email
+     *
      * @return bool
      */
     protected function isValidEmail($email)
@@ -800,6 +834,8 @@ EOT
     }
 
     /**
+     * @param string|null $minimumStability
+     *
      * @return RepositorySet
      */
     private function getRepositorySet(InputInterface $input, $minimumStability = null)
@@ -838,7 +874,6 @@ EOT
      *
      * This returns a version with the ~ operator prefixed when possible.
      *
-     * @param  InputInterface            $input
      * @param  string                    $name
      * @param  PlatformRepository|null   $platformRepo
      * @param  string                    $preferredStability
@@ -846,7 +881,7 @@ EOT
      * @param  string                    $minimumStability
      * @param  bool                      $fixed
      * @throws \InvalidArgumentException
-     * @return array                     name version
+     * @return array{string, string}     name version
      */
     private function findBestVersionAndNameForPackage(InputInterface $input, $name, PlatformRepository $platformRepo = null, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null, $fixed = null)
     {
@@ -987,6 +1022,11 @@ EOT
         return ':'.PHP_EOL.'  - ' . implode(PHP_EOL.'  - ', $details);
     }
 
+    /**
+     * @param string $package
+     *
+     * @return array<string>
+     */
     private function findSimilar($package)
     {
         try {
@@ -1014,7 +1054,7 @@ EOT
     /**
      * @return void
      */
-    private function updateDependencies($output)
+    private function updateDependencies(OutputInterface $output)
     {
         try {
             $updateCommand = $this->getApplication()->find('update');
@@ -1028,7 +1068,7 @@ EOT
     /**
      * @return void
      */
-    private function runDumpAutoloadCommand($output)
+    private function runDumpAutoloadCommand(OutputInterface $output)
     {
         try {
             $command = $this->getApplication()->find('dump-autoload');
@@ -1040,6 +1080,7 @@ EOT
     }
 
     /**
+     * @param array<string, string|array<string>> $options
      * @return bool
      */
     private function hasDependencies($options)

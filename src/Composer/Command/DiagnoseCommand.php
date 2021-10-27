@@ -48,6 +48,9 @@ class DiagnoseCommand extends BaseCommand
     /** @var int */
     protected $exitCode = 0;
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -65,6 +68,9 @@ EOT
         ;
     }
 
+    /**
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer(false);
@@ -237,6 +243,8 @@ EOT
     }
 
     /**
+     * @param string $proto
+     *
      * @return string|string[]|true
      */
     private function checkHttp($proto, Config $config)
@@ -303,6 +311,9 @@ EOT
     }
 
     /**
+     * @param string $domain
+     * @param string $token
+     *
      * @return string|true|\Exception
      */
     private function checkGithubOauth($domain, $token)
@@ -356,7 +367,7 @@ EOT
     /**
      * @return string|true
      */
-    private function checkDiskSpace($config)
+    private function checkDiskSpace(Config $config)
     {
         $minSpaceFree = 1024 * 1024;
         if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
@@ -371,7 +382,7 @@ EOT
     /**
      * @return string[]|true
      */
-    private function checkPubKeys($config)
+    private function checkPubKeys(Config $config)
     {
         $home = $config->get('home');
         $errors = array();
@@ -403,7 +414,7 @@ EOT
     /**
      * @return string|\Exception|true
      */
-    private function checkVersion($config)
+    private function checkVersion(Config $config)
     {
         $result = $this->checkConnectivity();
         if ($result !== true) {
@@ -446,6 +457,8 @@ EOT
 
     /**
      * @param bool|string|string[]|\Exception $result
+     *
+     * @return void
      */
     private function outputResult($result)
     {

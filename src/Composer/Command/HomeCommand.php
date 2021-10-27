@@ -30,6 +30,8 @@ class HomeCommand extends BaseCommand
 {
     /**
      * {@inheritDoc}
+     *
+     * @return void
      */
     protected function configure()
     {
@@ -98,6 +100,8 @@ EOT
     }
 
     /**
+     * @param bool $showHomepage
+     * @param bool $showOnly
      * @return bool
      */
     private function handlePackage(CompletePackageInterface $package, $showHomepage, $showOnly)

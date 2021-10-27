@@ -29,6 +29,9 @@ use Composer\Plugin\PluginEvents;
  */
 class SearchCommand extends BaseCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this

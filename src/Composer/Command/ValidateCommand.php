@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Factory;
+use Composer\IO\IOInterface;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -35,6 +36,7 @@ class ValidateCommand extends BaseCommand
 {
     /**
      * configure
+     * @return void
      */
     protected function configure()
     {
@@ -65,9 +67,6 @@ EOT
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
      * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -161,7 +160,19 @@ EOT
         return max($eventCode, $exitCode);
     }
 
-    private function outputResult($io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false)
+    /**
+     * @param string $name
+     * @param string[] $errors
+     * @param string[] $warnings
+     * @param bool $checkPublish
+     * @param string[] $publishErrors
+     * @param bool $checkLock
+     * @param string[] $lockErrors
+     * @param bool $printSchemaUrl
+     *
+     * @return void
+     */
+    private function outputResult(IOInterface $io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false)
     {
         $doPrintSchemaUrl = false;
 

@@ -47,8 +47,6 @@ class BaseDependencyCommand extends BaseCommand
     /**
      * Execute the command.
      *
-     * @param  InputInterface  $input
-     * @param  OutputInterface $output
      * @param  bool            $inverted Whether to invert matching process (why-not vs why behaviour)
      * @return int             Exit code of the operation.
      */
@@ -134,8 +132,9 @@ class BaseDependencyCommand extends BaseCommand
     /**
      * Assembles and prints a bottom-up table of the dependencies.
      *
-     * @param OutputInterface $output
-     * @param array           $results
+     * @param array[]         $results
+     *
+     * @return void
      */
     protected function printTable(OutputInterface $output, $results)
     {
@@ -171,7 +170,7 @@ class BaseDependencyCommand extends BaseCommand
     /**
      * Init styles for tree
      *
-     * @param OutputInterface $output
+     * @return void
      */
     protected function initStyles(OutputInterface $output)
     {
@@ -192,9 +191,11 @@ class BaseDependencyCommand extends BaseCommand
     /**
      * Recursively prints a tree of the selected results.
      *
-     * @param array  $results Results to be printed at this level.
-     * @param string $prefix  Prefix of the current tree level.
-     * @param int    $level   Current level of recursion.
+     * @param array[] $results Results to be printed at this level.
+     * @param string  $prefix  Prefix of the current tree level.
+     * @param int     $level   Current level of recursion.
+     *
+     * @return void
      */
     protected function printTree($results, $prefix = '', $level = 1)
     {
@@ -222,6 +223,11 @@ class BaseDependencyCommand extends BaseCommand
         }
     }
 
+    /**
+     * @param string $line
+     *
+     * @return void
+     */
     private function writeTreeLine($line)
     {
         $io = $this->getIO();
