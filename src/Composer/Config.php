@@ -462,7 +462,7 @@ class Config
             return $path;
         }
 
-        return $this->baseDir . '/' . $path;
+        return $this->baseDir ? $this->baseDir . '/' . $path : $path;
     }
 
     /**

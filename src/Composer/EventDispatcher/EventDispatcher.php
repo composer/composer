@@ -565,17 +565,18 @@ class EventDispatcher
      */
     private function ensureBinDirIsInPath()
     {
-        $pathStr = 'PATH';
-        if (!isset($_SERVER[$pathStr]) && isset($_SERVER['Path'])) {
-            $pathStr = 'Path';
+        $pathEnv = 'PATH';
+        if (false === Platform::getEnv('PATH') && false !== Platform::getEnv('Path')) {
+            $pathEnv = 'Path';
         }
 
         // add the bin dir to the PATH to make local binaries of deps usable in scripts
         $binDir = $this->composer->getConfig()->get('bin-dir');
         if (is_dir($binDir)) {
             $binDir = realpath($binDir);
-            if (isset($_SERVER[$pathStr]) && !preg_match('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $_SERVER[$pathStr])) {
-                Platform::putEnv($pathStr, $binDir.PATH_SEPARATOR.Platform::getEnv($pathStr));
+            $pathValue = Platform::getEnv($pathEnv);
+            if (!preg_match('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $pathValue)) {
+                Platform::putEnv($pathEnv, $binDir.PATH_SEPARATOR.$pathValue);
             }
         }
     }
