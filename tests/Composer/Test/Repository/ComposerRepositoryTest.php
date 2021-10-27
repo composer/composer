@@ -23,7 +23,7 @@ use Composer\Package\Version\VersionParser;
 class ComposerRepositoryTest extends TestCase
 {
     /**
-     * @dataProvider provideLoadData
+     * @dataProvider loadDataProvider
      *
      * @param mixed[]              $expected
      * @param array<string, mixed> $repoPackages
@@ -68,7 +68,7 @@ class ComposerRepositoryTest extends TestCase
         $this->assertCount(count($expected), $packages);
     }
 
-    public function provideLoadData()
+    public function loadDataProvider()
     {
         return array(
             // Old repository format
