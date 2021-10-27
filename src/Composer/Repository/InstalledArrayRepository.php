@@ -27,7 +27,7 @@ class InstalledArrayRepository extends WritableArrayRepository implements Instal
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isFresh()
     {

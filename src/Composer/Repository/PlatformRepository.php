@@ -490,7 +490,7 @@ class PlatformRepository extends ArrayRepository
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function addPackage(PackageInterface $package)
     {

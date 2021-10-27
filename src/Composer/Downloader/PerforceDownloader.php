@@ -25,7 +25,7 @@ class PerforceDownloader extends VcsDownloader
     protected $perforce;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
     {
@@ -33,7 +33,7 @@ class PerforceDownloader extends VcsDownloader
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function doInstall(PackageInterface $package, $path, $url)
     {
@@ -98,7 +98,7 @@ class PerforceDownloader extends VcsDownloader
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
@@ -106,7 +106,7 @@ class PerforceDownloader extends VcsDownloader
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getLocalChanges(PackageInterface $package, $path)
     {
@@ -116,7 +116,7 @@ class PerforceDownloader extends VcsDownloader
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
@@ -132,7 +132,7 @@ class PerforceDownloader extends VcsDownloader
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function hasMetadataRepository($path)
     {

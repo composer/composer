@@ -84,7 +84,7 @@ abstract class VcsDriver implements VcsDriverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getComposerInformation($identifier)
     {
@@ -128,7 +128,7 @@ abstract class VcsDriver implements VcsDriverInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function hasComposerFile($identifier)
     {
@@ -172,7 +172,7 @@ abstract class VcsDriver implements VcsDriverInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function cleanup()
     {

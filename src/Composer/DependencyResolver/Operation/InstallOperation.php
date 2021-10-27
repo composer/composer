@@ -44,7 +44,7 @@ class InstallOperation extends SolverOperation implements OperationInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function show($lock)
     {

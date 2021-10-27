@@ -53,7 +53,7 @@ class InitCommand extends BaseCommand
     private $repositorySets;
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      *
      * @return void
      */
@@ -90,7 +90,7 @@ EOT
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      *
      * @return int
      * @throws \Seld\JsonLint\ParsingException
@@ -224,7 +224,7 @@ EOT
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      *
      * @return void
      */

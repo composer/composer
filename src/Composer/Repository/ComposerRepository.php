@@ -188,7 +188,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function findPackage($name, $constraint)
     {
@@ -228,7 +228,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function findPackages($name, $constraint = null)
     {
@@ -460,7 +460,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function search($query, $mode = 0, $type = null)
     {
@@ -730,7 +730,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function initialize()
     {

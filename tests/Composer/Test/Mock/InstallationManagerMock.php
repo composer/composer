@@ -66,7 +66,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function install(InstalledRepositoryInterface $repo, InstallOperation $operation)
     {
@@ -78,7 +78,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation)
     {
@@ -93,7 +93,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation)
     {

@@ -29,7 +29,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class HomeCommand extends BaseCommand
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @return void
      */
@@ -58,7 +58,7 @@ EOT
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {

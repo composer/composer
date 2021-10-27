@@ -108,7 +108,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isDev()
     {
@@ -126,7 +126,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getType()
     {
@@ -134,7 +134,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getStability()
     {
@@ -152,7 +152,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getTargetDir()
     {
@@ -174,7 +174,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getExtra()
     {
@@ -192,7 +192,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getBinaries()
     {
@@ -200,7 +200,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @return void
      */
@@ -210,7 +210,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getInstallationSource()
     {
@@ -228,7 +228,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSourceType()
     {
@@ -246,7 +246,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSourceUrl()
     {
@@ -264,7 +264,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSourceReference()
     {
@@ -272,7 +272,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @return void
      */
@@ -282,7 +282,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSourceMirrors()
     {
@@ -290,7 +290,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSourceUrls()
     {
@@ -308,7 +308,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDistType()
     {
@@ -326,7 +326,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDistUrl()
     {
@@ -344,7 +344,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDistReference()
     {
@@ -362,7 +362,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDistSha1Checksum()
     {
@@ -370,7 +370,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @return void
      */
@@ -380,7 +380,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDistMirrors()
     {
@@ -388,7 +388,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDistUrls()
     {
@@ -396,7 +396,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getTransportOptions()
     {
@@ -404,7 +404,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setTransportOptions(array $options)
     {
@@ -412,7 +412,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getVersion()
     {
@@ -420,7 +420,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getPrettyVersion()
     {
@@ -440,7 +440,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getReleaseDate()
     {
@@ -460,7 +460,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRequires()
     {
@@ -480,7 +480,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      * @return array<string, Link>
      */
     public function getConflicts()
@@ -501,7 +501,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      * @return array<string, Link>
      */
     public function getProvides()
@@ -522,7 +522,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      * @return array<string, Link>
      */
     public function getReplaces()
@@ -543,7 +543,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDevRequires()
     {
@@ -563,7 +563,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSuggests()
     {
@@ -585,7 +585,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getAutoload()
     {
@@ -607,7 +607,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDevAutoload()
     {
@@ -627,7 +627,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getIncludePaths()
     {
@@ -647,7 +647,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getNotificationUrl()
     {
@@ -665,7 +665,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isDefaultBranch()
     {
@@ -673,7 +673,7 @@ class Package extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setSourceDistReferences($reference)
     {

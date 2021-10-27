@@ -88,7 +88,7 @@ class GitLabDriver extends VcsDriver
      *
      * SSH urls use https by default. Set "secure-http": false on the repository config to use http instead.
      *
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function initialize()
     {
@@ -141,7 +141,7 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getComposerInformation($identifier)
     {
@@ -177,7 +177,7 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getFileContent($file, $identifier)
     {
@@ -209,7 +209,7 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getChangeDate($identifier)
     {
@@ -237,7 +237,7 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getUrl()
     {
@@ -249,7 +249,7 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDist($identifier)
     {
@@ -259,7 +259,7 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSource($identifier)
     {
@@ -271,7 +271,7 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRootIdentifier()
     {
@@ -283,7 +283,7 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getBranches()
     {
@@ -299,7 +299,7 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getTags()
     {
@@ -460,7 +460,7 @@ class GitLabDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @param bool $fetchingRepoData
      */
@@ -556,7 +556,7 @@ class GitLabDriver extends VcsDriver
      * Uses the config `gitlab-domains` to see if the driver supports the url for the
      * repository given.
      *
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {

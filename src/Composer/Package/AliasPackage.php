@@ -81,7 +81,7 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getVersion()
     {
@@ -89,7 +89,7 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getStability()
     {
@@ -97,7 +97,7 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getPrettyVersion()
     {
@@ -105,7 +105,7 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isDev()
     {
@@ -113,7 +113,7 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRequires()
     {
@@ -121,7 +121,7 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      * @return array<string|int, Link>
      */
     public function getConflicts()
@@ -130,7 +130,7 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      * @return array<string|int, Link>
      */
     public function getProvides()
@@ -139,7 +139,7 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      * @return array<string|int, Link>
      */
     public function getReplaces()
@@ -148,7 +148,7 @@ class AliasPackage extends BasePackage
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDevRequires()
     {

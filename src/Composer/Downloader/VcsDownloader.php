@@ -50,7 +50,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getInstallationSource()
     {
@@ -58,7 +58,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
@@ -91,7 +91,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
@@ -108,7 +108,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
@@ -121,7 +121,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function install(PackageInterface $package, $path)
     {
@@ -156,7 +156,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
@@ -220,7 +220,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function remove(PackageInterface $package, $path)
     {
@@ -236,7 +236,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getVcsReference(PackageInterface $package, $path)
     {

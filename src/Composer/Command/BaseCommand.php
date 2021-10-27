@@ -132,7 +132,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @return void
      */

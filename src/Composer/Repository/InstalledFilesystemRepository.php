@@ -25,7 +25,7 @@ class InstalledFilesystemRepository extends FilesystemRepository implements Inst
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isFresh()
     {

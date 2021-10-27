@@ -53,7 +53,7 @@ abstract class ArchiveDownloader extends FileDownloader
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @param bool $output
      *
@@ -215,7 +215,7 @@ abstract class ArchiveDownloader extends FileDownloader
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function getInstallOperationAppendix(PackageInterface $package, $path)
     {

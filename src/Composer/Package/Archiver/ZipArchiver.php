@@ -26,7 +26,7 @@ class ZipArchiver implements ArchiverInterface
     );
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function archive($sources, $target, $format, array $excludes = array(), $ignoreFilters = false)
     {
@@ -77,7 +77,7 @@ class ZipArchiver implements ArchiverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function supports($format, $sourceType)
     {

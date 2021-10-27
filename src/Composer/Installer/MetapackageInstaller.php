@@ -35,7 +35,7 @@ class MetapackageInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function supports($packageType)
     {
@@ -43,7 +43,7 @@ class MetapackageInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -51,7 +51,7 @@ class MetapackageInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function download(PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -60,7 +60,7 @@ class MetapackageInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -69,7 +69,7 @@ class MetapackageInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -78,7 +78,7 @@ class MetapackageInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -90,7 +90,7 @@ class MetapackageInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
@@ -107,7 +107,7 @@ class MetapackageInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -123,7 +123,7 @@ class MetapackageInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getInstallPath(PackageInterface $package)
     {

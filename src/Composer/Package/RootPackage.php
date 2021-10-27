@@ -43,7 +43,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getMinimumStability()
     {
@@ -51,7 +51,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setStabilityFlags(array $stabilityFlags)
     {
@@ -59,7 +59,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getStabilityFlags()
     {
@@ -75,7 +75,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getPreferStable()
     {
@@ -91,7 +91,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getConfig()
     {
@@ -107,7 +107,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getReferences()
     {
@@ -123,7 +123,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getAliases()
     {

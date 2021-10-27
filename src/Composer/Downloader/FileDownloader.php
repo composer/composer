@@ -93,7 +93,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getInstallationSource()
     {
@@ -101,7 +101,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @param bool $output
      */
@@ -286,7 +286,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
@@ -294,7 +294,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
@@ -325,7 +325,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @param bool $output
      */
@@ -398,7 +398,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
@@ -419,7 +419,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      *
      * @param bool $output
      */
@@ -483,7 +483,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      * @throws \RuntimeException
      */
     public function getLocalChanges(PackageInterface $package, $targetDir)

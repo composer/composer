@@ -44,7 +44,7 @@ class MarkAliasInstalledOperation extends SolverOperation implements OperationIn
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function show($lock)
     {

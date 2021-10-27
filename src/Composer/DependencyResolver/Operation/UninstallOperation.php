@@ -44,7 +44,7 @@ class UninstallOperation extends SolverOperation implements OperationInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function show($lock)
     {

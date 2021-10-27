@@ -25,7 +25,7 @@ class VersionParser extends SemverVersionParser
     private static $constraints = array();
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function parseConstraints($constraints)
     {

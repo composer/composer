@@ -67,7 +67,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function supports($packageType)
     {
@@ -75,7 +75,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -93,7 +93,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function download(PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -104,7 +104,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -115,7 +115,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -126,7 +126,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -155,7 +155,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
@@ -184,7 +184,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -215,7 +215,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getInstallPath(PackageInterface $package)
     {

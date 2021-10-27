@@ -97,7 +97,7 @@ EOT
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isProxyCommand()
     {

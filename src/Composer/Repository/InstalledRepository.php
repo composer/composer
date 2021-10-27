@@ -257,7 +257,7 @@ class InstalledRepository extends CompositeRepository
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function addRepository(RepositoryInterface $repository)
     {
