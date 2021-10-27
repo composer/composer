@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Package\RootPackageInterface;
+use Composer\Package\RootAliasPackage;
 use Composer\Repository\FilesystemRepository;
 use Composer\Test\TestCase;
 use Composer\Json\JsonFile;
@@ -135,6 +136,7 @@ class FilesystemRepositoryTest extends TestCase
         $rootPackage->setSourceReference('sourceref-by-default');
         $rootPackage->setDistReference('distref');
         $this->configureLinks($rootPackage, array('provide' => array('foo/impl' => '2.0')));
+        /** @var RootAliasPackage $rootPackage */
         $rootPackage = $this->getAliasPackage($rootPackage, '1.10.x-dev');
 
         $repository = new FilesystemRepository($json, true, $rootPackage);
