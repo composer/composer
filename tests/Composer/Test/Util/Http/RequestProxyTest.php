@@ -19,6 +19,9 @@ class RequestProxyTest extends TestCase
 {
     /**
      * @dataProvider dataSecure
+     *
+     * @param string $url
+     * @param bool   $expectedSecure
      */
     public function testIsSecure($url, $expectedSecure)
     {
@@ -39,6 +42,10 @@ class RequestProxyTest extends TestCase
 
     /**
      * @dataProvider dataProxyUrl
+     *
+     * @param string $url
+     * @param string $format
+     * @param string $expected
      */
     public function testGetFormattedUrlFormat($url, $format, $expected)
     {

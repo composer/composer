@@ -22,21 +22,28 @@ use Composer\Test\Mock\ProcessExecutorMock;
  */
 class BitbucketTest extends TestCase
 {
+    /** @var string */
     private $username = 'username';
+    /** @var string */
     private $password = 'password';
+    /** @var string */
     private $consumer_key = 'consumer_key';
+    /** @var string */
     private $consumer_secret = 'consumer_secret';
+    /** @var string */
     private $message = 'mymessage';
+    /** @var string */
     private $origin = 'bitbucket.org';
+    /** @var string */
     private $token = 'bitbuckettoken';
 
-    /** @type \Composer\IO\ConsoleIO|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\IO\ConsoleIO|\PHPUnit_Framework_MockObject_MockObject */
     private $io;
-    /** @type \Composer\Util\HttpDownloader|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\Util\HttpDownloader|\PHPUnit_Framework_MockObject_MockObject */
     private $httpDownloader;
-    /** @type \Composer\Config|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\Config|\PHPUnit_Framework_MockObject_MockObject */
     private $config;
-    /** @type Bitbucket */
+    /** @var Bitbucket */
     private $bitbucket;
     /** @var int */
     private $time;
@@ -400,6 +407,11 @@ class BitbucketTest extends TestCase
         $this->assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
+    /**
+     * @param bool $removeBasicAuth
+     *
+     * @return void
+     */
     private function setExpectationsForStoringAccessToken($removeBasicAuth = false)
     {
         $configSourceMock = $this->getMockBuilder('Composer\Config\ConfigSourceInterface')->getMock();

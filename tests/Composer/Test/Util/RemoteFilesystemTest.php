@@ -148,7 +148,7 @@ class RemoteFilesystemTest extends TestCase
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
-        $this->assertNull($this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0));
+        $this->callCallbackGet($fs, STREAM_NOTIFY_FAILURE, 0, 'HTTP/1.1 404 Not Found', 404, 0, 0);
     }
 
     public function testGetContents()
@@ -341,7 +341,14 @@ class RemoteFilesystemTest extends TestCase
         $this->assertEquals(array('bitbucket.org', 'bbuseruploads.s3.amazonaws.com'), $domains);
     }
 
-    private function callGetOptionsForUrl($io, array $args = array(), array $options = array(), $fileUrl = '')
+    /**
+     * @param mixed[] $args
+     * @param mixed[] $options
+     * @param string  $fileUrl
+     *
+     * @return mixed[]
+     */
+    private function callGetOptionsForUrl(IOInterface $io, array $args = array(), array $options = array(), $fileUrl = '')
     {
         $fs = new RemoteFilesystem($io, $this->getConfigMock(), $options);
         $ref = new ReflectionMethod($fs, 'getOptionsForUrl');
@@ -373,6 +380,16 @@ class RemoteFilesystemTest extends TestCase
         return $config;
     }
 
+    /**
+     * @param int    $notificationCode
+     * @param int    $severity
+     * @param string $message
+     * @param int    $messageCode
+     * @param int    $bytesTransferred
+     * @param int    $bytesMax
+     *
+     * @return void
+     */
     private function callCallbackGet(RemoteFilesystem $fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
     {
         $ref = new ReflectionMethod($fs, 'callbackGet');
@@ -380,6 +397,13 @@ class RemoteFilesystemTest extends TestCase
         $ref->invoke($fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax);
     }
 
+    /**
+     * @param object|string $object
+     * @param string        $attribute
+     * @param mixed         $value
+     *
+     * @return void
+     */
     private function setAttribute($object, $attribute, $value)
     {
         $attr = new ReflectionProperty($object, $attribute);
@@ -387,6 +411,13 @@ class RemoteFilesystemTest extends TestCase
         $attr->setValue($object, $value);
     }
 
+    /**
+     * @param mixed         $value
+     * @param string        $attribute
+     * @param object|string $object
+     *
+     * @return void
+     */
     private function assertAttributeEqualsCustom($value, $attribute, $object)
     {
         $attr = new ReflectionProperty($object, $attribute);
@@ -403,8 +434,7 @@ class RemoteFilesystemTest extends TestCase
     }
 
     /**
-     * @param array      $mockedMethods
-     * @param AuthHelper $authHelper
+     * @param string[] $mockedMethods
      *
      * @return RemoteFilesystem|MockObject
      */
@@ -423,7 +453,7 @@ class RemoteFilesystemTest extends TestCase
     }
 
     /**
-     * @param array $mockedMethods
+     * @param string[] $mockedMethods
      *
      * @return AuthHelper|MockObject
      */

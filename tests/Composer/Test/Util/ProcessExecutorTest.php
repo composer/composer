@@ -69,6 +69,9 @@ class ProcessExecutorTest extends TestCase
 
     /**
      * @dataProvider hidePasswordProvider
+     *
+     * @param string $command
+     * @param string $expectedCommandOutput
      */
     public function testHidePasswords($command, $expectedCommandOutput)
     {
@@ -133,6 +136,10 @@ class ProcessExecutorTest extends TestCase
      * Test various arguments are escaped as expected
      *
      * @dataProvider dataEscapeArguments
+     *
+     * @param string|false|null $argument
+     * @param string            $win
+     * @param string            $unix
      */
     public function testEscapeArgument($argument, $win, $unix)
     {

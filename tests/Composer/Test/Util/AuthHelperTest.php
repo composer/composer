@@ -22,13 +22,13 @@ use Composer\Util\Bitbucket;
  */
 class AuthHelperTest extends TestCase
 {
-    /** @type \Composer\IO\IOInterface|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\IO\IOInterface|\PHPUnit_Framework_MockObject_MockObject */
     private $io;
 
-    /** @type \Composer\Config|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\Config|\PHPUnit_Framework_MockObject_MockObject */
     private $config;
 
-    /** @type AuthHelper */
+    /** @var AuthHelper */
     private $authHelper;
 
     protected function setUp()
@@ -293,9 +293,11 @@ class AuthHelperTest extends TestCase
     /**
      * @dataProvider basicHttpAuthenticationProvider
      *
-     * @param string $url
-     * @param string $origin
-     * @param array  $auth
+     * @param string                                                      $url
+     * @param string                                                      $origin
+     * @param array<string, string|null>                                  $auth
+     *
+     * @phpstan-param array{username: string|null, password: string|null} $auth
      */
     public function testAddAuthenticationHeaderWithBasicHttpAuthentication($url, $origin, $auth)
     {
@@ -512,8 +514,12 @@ class AuthHelperTest extends TestCase
     }
 
     /**
-     * @param string $origin
-     * @param array  $auth
+     * @param string                     $origin
+     * @param array<string, string|null> $auth
+     *
+     * @return void
+     *
+     * @phpstan-param array{username: string|null, password: string|null} $auth
      */
     private function expectsAuthentication($origin, $auth)
     {

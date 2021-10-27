@@ -296,7 +296,7 @@ class Perforce
     }
 
     /**
-     * @param string $user
+     * @param string|null $user
      *
      * @return void
      */

@@ -45,6 +45,8 @@ class ProxyHelperTest extends TestCase
 
     /**
      * @dataProvider dataMalformed
+     *
+     * @param string $url
      */
     public function testThrowsOnMalformedUrl($url)
     {
@@ -64,6 +66,9 @@ class ProxyHelperTest extends TestCase
 
     /**
      * @dataProvider dataFormatting
+     *
+     * @param string $url
+     * @param string $expected
      */
     public function testUrlFormatting($url, $expected)
     {
@@ -85,6 +90,10 @@ class ProxyHelperTest extends TestCase
 
     /**
      * @dataProvider dataCaseOverrides
+     *
+     * @param array<string, mixed> $server
+     * @param string               $expected
+     * @param int                  $index
      */
     public function testLowercaseOverridesUppercase(array $server, $expected, $index)
     {
@@ -106,6 +115,10 @@ class ProxyHelperTest extends TestCase
 
     /**
      * @dataProvider dataCGIOverrides
+     *
+     * @param array<string, mixed> $server
+     * @param string               $expected
+     * @param int                  $index
      */
     public function testCGIUpperCaseOverridesHttp(array $server, $expected, $index)
     {
@@ -142,6 +155,11 @@ class ProxyHelperTest extends TestCase
 
     /**
      * @dataProvider dataContextOptions
+     *
+     * @param string                $url
+     * @param array<string, string> $expected
+     *
+     * @phpstan-param array{http: array{proxy: string, header?: string}} $expected
      */
     public function testGetContextOptions($url, $expected)
     {
@@ -167,6 +185,9 @@ class ProxyHelperTest extends TestCase
 
     /**
      * @dataProvider dataRequestFullUri
+     *
+     * @param string  $requestUrl
+     * @param mixed[] $expected
      */
     public function testSetRequestFullUri($requestUrl, $expected)
     {
