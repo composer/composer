@@ -1,0 +1,8 @@
+{
+    "name": "mirrored/path-pkg",
+    "version": "2.0.0",
+    "require": {
+        "mirrored/transitive": "2.*",
+        "mirrored/transitive2": "2.*"
+    }
+}
