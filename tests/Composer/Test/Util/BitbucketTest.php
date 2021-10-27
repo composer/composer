@@ -37,11 +37,11 @@ class BitbucketTest extends TestCase
     /** @var string */
     private $token = 'bitbuckettoken';
 
-    /** @var \Composer\IO\ConsoleIO|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\IO\ConsoleIO&\PHPUnit\Framework\MockObject\MockObject */
     private $io;
-    /** @var \Composer\Util\HttpDownloader|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\Util\HttpDownloader&\PHPUnit\Framework\MockObject\MockObject */
     private $httpDownloader;
-    /** @var \Composer\Config|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\Config&\PHPUnit\Framework\MockObject\MockObject */
     private $config;
     /** @var Bitbucket */
     private $bitbucket;
