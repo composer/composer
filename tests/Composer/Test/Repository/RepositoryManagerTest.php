@@ -18,6 +18,7 @@ use Composer\Util\Filesystem;
 
 class RepositoryManagerTest extends TestCase
 {
+    /** @var string */
     protected $tmpdir;
 
     public function setUp()
@@ -51,7 +52,11 @@ class RepositoryManagerTest extends TestCase
     }
 
     /**
-     * @dataProvider creationCases
+     * @dataProvider provideRepoCreationTestCases
+     *
+     * @param string               $type
+     * @param array<string, mixed> $options
+     * @param string|null          $exception
      */
     public function testRepoCreation($type, $options, $exception = null)
     {
@@ -89,7 +94,7 @@ class RepositoryManagerTest extends TestCase
         $this->assertInstanceOf('Composer\Repository\RepositoryInterface', $rm->createRepository($type, $options));
     }
 
-    public function creationCases()
+    public function provideRepoCreationTestCases()
     {
         $cases = array(
             array('composer', array('url' => 'http://example.org')),

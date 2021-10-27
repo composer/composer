@@ -20,8 +20,6 @@ use Composer\Util\Filesystem;
 
 class FilesystemRepositoryTest extends TestCase
 {
-    private $root;
-
     public function testRepositoryRead()
     {
         $json = $this->createJsonFileMock();
@@ -129,7 +127,6 @@ class FilesystemRepositoryTest extends TestCase
     public function testRepositoryWritesInstalledPhp()
     {
         $dir = $this->getUniqueTmpDirectory();
-        $this->root = $dir;
         chdir($dir);
 
         $json = new JsonFile($dir.'/installed.json');
@@ -196,6 +193,9 @@ class FilesystemRepositoryTest extends TestCase
         $this->assertSame(require __DIR__.'/Fixtures/installed.php', require $dir.'/installed.php');
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Json\JsonFile
+     */
     private function createJsonFileMock()
     {
         return $this->getMockBuilder('Composer\Json\JsonFile')

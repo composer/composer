@@ -24,6 +24,9 @@ class ComposerRepositoryTest extends TestCase
 {
     /**
      * @dataProvider loadDataProvider
+     *
+     * @param mixed[]              $expected
+     * @param array<string, mixed> $repoPackages
      */
     public function testLoadData(array $expected, array $repoPackages)
     {
@@ -161,11 +164,6 @@ class ComposerRepositoryTest extends TestCase
         $this->assertSame($packages['2'], $packages['2-alias']->getAliasOf());
     }
 
-    public function isPackageAcceptableReturnTrue()
-    {
-        return true;
-    }
-
     public function testSearchWithType()
     {
         $repoConfig = array(
@@ -219,7 +217,7 @@ class ComposerRepositoryTest extends TestCase
     }
 
     /**
-     * @dataProvider canonicalizeUrlProvider
+     * @dataProvider provideCanonicalizeUrlTestCases
      *
      * @param string $expected
      * @param string $url
@@ -249,7 +247,7 @@ class ComposerRepositoryTest extends TestCase
         $this->assertSame($expected, $method->invoke($repository, $url));
     }
 
-    public function canonicalizeUrlProvider()
+    public function provideCanonicalizeUrlTestCases()
     {
         return array(
             array(
