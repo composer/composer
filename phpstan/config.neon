@@ -3,7 +3,7 @@ includes:
     - ./baseline.neon
 
 parameters:
-    level: 6
+    level: 5
 
     excludePaths:
        - '../tests/Composer/Test/Fixtures/*'
