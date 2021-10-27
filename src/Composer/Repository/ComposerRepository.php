@@ -1356,8 +1356,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             return true;
         }
-
-        throw new \LogicException('Should not happen');
     }
 
     /**
