@@ -63,7 +63,14 @@ class AliasPackage extends BasePackage
         $this->version = $version;
         $this->prettyVersion = $prettyVersion;
         $this->aliasOf = $aliasOf;
-        $this->stability = VersionParser::parseStability($version);
+
+        /**
+         * The following var is required for matching the phpstan enum typing
+         * @var 'stable'|'RC'|'beta'|'alpha'|'dev' $parsedStability
+         */
+        $parsedStability = VersionParser::parseStability($version);
+        $this->stability = $parsedStability;
+
         $this->dev = $this->stability === 'dev';
 
         foreach (Link::$TYPES as $type) {
