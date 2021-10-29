@@ -23,6 +23,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
+use Composer\Downloader\FileDownloader;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Loop;
 use Composer\Util\Platform;
@@ -65,6 +66,7 @@ class InstallationManager
     public function reset()
     {
         $this->notifiablePackages = array();
+        FileDownloader::$downloadMetadata = array();
     }
 
     /**
@@ -662,10 +664,18 @@ class InstallationManager
 
                 $postData = array('downloads' => array());
                 foreach ($packages as $package) {
-                    $postData['downloads'][] = array(
+                    $packageNotification = array(
                         'name' => $package->getPrettyName(),
                         'version' => $package->getVersion(),
                     );
+                    if (strpos($repoUrl, 'packagist.org/') !== false) {
+                        if (isset(FileDownloader::$downloadMetadata[$package->getName()])) {
+                            $packageNotification['downloaded'] = FileDownloader::$downloadMetadata[$package->getName()];
+                        } else {
+                            $packageNotification['downloaded'] = false;
+                        }
+                    }
+                    $postData['downloads'][] = $packageNotification;
                 }
 
                 $opts = array(

@@ -58,6 +58,13 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /** @var ProcessExecutor */
     protected $process;
     /**
+     * @var array<string, int|string>
+     * @private
+     * @internal
+     */
+    public static $downloadMetadata = array();
+
+    /**
      * @private this is only public for php 5.3 support in closures
      *
      * @var array<string, string> Map of package name to cache key
@@ -218,6 +225,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $accept = function ($response) use ($cache, $package, $fileName, $self, &$urls) {
             $url = reset($urls);
             $cacheKey = $url['cacheKey'];
+            FileDownloader::$downloadMetadata[$package->getName()] = @filesize($fileName) ?: $response->getHeader('Content-Length') ?: '?';
 
             if ($cache && !$cache->isReadOnly()) {
                 $self->lastCacheWrites[$package->getName()] = $cacheKey;
