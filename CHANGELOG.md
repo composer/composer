@@ -1,3 +1,15 @@
+### [2.1.10] 2021-10-29
+
+  * Added type annotations to all classes, which may have an effect on CI/static analysis for people using Composer as a dependency (#10159)
+  * Fixed CurlDownloader requesting gzip encoding even when no gzip support is present (#10153)
+  * Fixed regression in 2.1.6 where the help command was not working for plugin commands (#10147)
+  * Fixed warning showing when an invalid cache dir is configured but unused (#10125)
+  * Fixed `require` command reverting changes even though dependency resolution succeeded when something fails in scripts for example (#10118)
+  * Fixed `require` not finding the right package version when some newly required extension is missing from the system (#10167)
+  * Fixed proxied binary file issues, now using output buffering (e1dbd65aff)
+  * Fixed and improved error reporting in several edge cases (#9804, #10136, #10163, #10224, #10209)
+  * Fixed some more Windows CLI parameter escaping edge cases
+
 ### [2.1.9] 2021-10-05
 
   * Security: Fixed command injection vulnerability on Windows (GHSA-frqg-7g38-6gcf / CVE-2021-41116)
@@ -1274,6 +1286,7 @@
 
   * Initial release
 
+[2.1.10]: https://github.com/composer/composer/compare/2.1.9...2.1.10
 [2.1.9]: https://github.com/composer/composer/compare/2.1.8...2.1.9
 [2.1.8]: https://github.com/composer/composer/compare/2.1.7...2.1.8
 [2.1.7]: https://github.com/composer/composer/compare/2.1.6...2.1.7
