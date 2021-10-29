@@ -26,19 +26,19 @@ use Composer\Test\Mock\ProcessExecutorMock;
  */
 class PerforceDownloaderTest extends TestCase
 {
-    /** @var ?\Composer\Config */
+    /** @var \Composer\Config */
     protected $config;
-    /** @var null|\Composer\Downloader\PerforceDownloader */
+    /** @var \Composer\Downloader\PerforceDownloader */
     protected $downloader;
-    /** @var null|(\Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject) */
+    /** @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     protected $io;
-    /** @var null|(\Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject) */
+    /** @var \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject */
     protected $package;
     /** @var \Composer\Test\Mock\ProcessExecutorMock */
     protected $processExecutor;
-    /** @var ?string[] */
+    /** @var string[] */
     protected $repoConfig;
-    /** @var null|(\Composer\Repository\VcsRepository&\PHPUnit\Framework\MockObject\MockObject) */
+    /** @var \Composer\Repository\VcsRepository&\PHPUnit\Framework\MockObject\MockObject */
     protected $repository;
     /** @var string */
     protected $testPath;
@@ -53,20 +53,6 @@ class PerforceDownloaderTest extends TestCase
         $this->repository = $this->getMockRepository($this->repoConfig, $this->io, $this->config);
         $this->package = $this->getMockPackageInterface($this->repository);
         $this->downloader = new PerforceDownloader($this->io, $this->config, $this->processExecutor);
-    }
-
-    protected function tearDown()
-    {
-        $this->downloader = null;
-        $this->package = null;
-        $this->repository = null;
-        $this->io = null;
-        $this->config = null;
-        $this->repoConfig = null;
-        if (is_dir($this->testPath)) {
-            $fs = new Filesystem;
-            $fs->removeDirectory($this->testPath);
-        }
     }
 
     /**
