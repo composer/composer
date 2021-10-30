@@ -48,7 +48,7 @@ class FileDownloaderTest extends TestCase
     protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $httpDownloader = null, $filesystem = null)
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $config = $config ?: $this->getMockBuilder('Composer\Config')->getMock();
+        $config = $config ?: $this->config;
         $httpDownloader = $httpDownloader ?: $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
         $httpDownloader
             ->expects($this->any())
