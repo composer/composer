@@ -38,9 +38,9 @@ final class GithubActionError
         if (getenv('GITHUB_ACTIONS') && !getenv('COMPOSER_TESTS_ARE_RUNNING')) {
             // newlines need to be encoded
             // see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
-                $message = str_replace("%", '%25', $message);
-                $message = str_replace("\r", '%0D', $message);
-                $message = str_replace("\n", '%0A', $message);
+            $message = str_replace("%", '%25', $message);
+            $message = str_replace("\r", '%0D', $message);
+            $message = str_replace("\n", '%0A', $message);
             
             if ($file && $line) {
                 $this->io->write("::error file=". $file .",line=". $line ."::". $message);
