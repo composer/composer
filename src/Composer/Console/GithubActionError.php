@@ -41,7 +41,7 @@ final class GithubActionError
             $message = str_replace("%", '%25', $message);
             $message = str_replace("\r", '%0D', $message);
             $message = str_replace("\n", '%0A', $message);
-            
+
             if ($file && $line) {
                 $this->io->write("::error file=". $file .",line=". $line ."::". $message);
             } elseif ($file) {
