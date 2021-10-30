@@ -1039,12 +1039,18 @@ class SolverTest extends TestCase
         $this->assertTrue($this->solver->testFlagLearnedPositiveLiteral);
     }
 
+    /**
+     * @return void
+     */
     protected function reposComplete()
     {
         $this->repoSet->addRepository($this->repo);
         $this->repoSet->addRepository($this->repoLocked);
     }
 
+    /**
+     * @return void
+     */
     protected function createSolver()
     {
         $io = new NullIO();
@@ -1052,6 +1058,10 @@ class SolverTest extends TestCase
         $this->solver = new Solver($this->policy, $this->pool, $io);
     }
 
+    /**
+     * @param array<array<string, string>> $expected
+     * @return void
+     */
     protected function checkSolverResult(array $expected)
     {
         $this->createSolver();
