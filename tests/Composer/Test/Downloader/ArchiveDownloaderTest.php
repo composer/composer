@@ -16,6 +16,7 @@ use Composer\Test\TestCase;
 
 class ArchiveDownloaderTest extends TestCase
 {
+    /** @var \Composer\Config&\PHPUnit\Framework\MockObject\MockObject */
     protected $config;
 
     public function testGetFileName()

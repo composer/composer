@@ -21,13 +21,15 @@ use Composer\Util\Loop;
 
 class ZipDownloaderTest extends TestCase
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private $testDir;
+    /** @var \Composer\Util\HttpDownloader */
     private $httpDownloader;
+    /** @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $io;
+    /** @var \Composer\Config&\PHPUnit\Framework\MockObject\MockObject */
     private $config;
+    /** @var \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $package;
 
     public function setUp()
@@ -47,6 +49,12 @@ class ZipDownloaderTest extends TestCase
         $this->setPrivateProperty('hasZipArchive', null);
     }
 
+    /**
+     * @param string $name
+     * @param mixed $value
+     * @param ?\Composer\Test\Downloader\MockedZipDownloader $obj
+     * @return void
+     */
     public function setPrivateProperty($name, $value, $obj = null)
     {
         $reflectionClass = new \ReflectionClass('Composer\Downloader\ZipDownloader');
@@ -296,6 +304,10 @@ class ZipDownloaderTest extends TestCase
         $this->wait($promise);
     }
 
+    /**
+     * @param ?\React\Promise\PromiseInterface $promise
+     * @return void
+     */
     private function wait($promise)
     {
         if (null === $promise) {
