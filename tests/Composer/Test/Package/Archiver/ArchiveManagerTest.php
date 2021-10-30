@@ -98,6 +98,12 @@ class ArchiveManagerTest extends ArchiverTest
         unlink($target);
     }
 
+    /**
+     * @param string      $format
+     * @param string|null $fileName
+     *
+     * @return string
+     */
     protected function getTargetName(CompletePackage $package, $format, $fileName = null)
     {
         if (null === $fileName) {
@@ -111,6 +117,8 @@ class ArchiveManagerTest extends ArchiverTest
 
     /**
      * Create local git repository to run tests against!
+     *
+     * @return void
      */
     protected function setupGitRepo()
     {

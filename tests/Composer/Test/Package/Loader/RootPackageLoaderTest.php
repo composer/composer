@@ -15,6 +15,7 @@ namespace Composer\Test\Package\Loader;
 use Composer\Config;
 use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\BasePackage;
+use Composer\Package\RootAliasPackage;
 use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
@@ -24,6 +25,11 @@ use Prophecy\Argument;
 
 class RootPackageLoaderTest extends TestCase
 {
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return RootPackage|RootAliasPackage
+     */
     protected function loadPackage($data)
     {
         $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')
