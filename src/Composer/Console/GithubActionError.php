@@ -49,7 +49,11 @@ final class GithubActionError
         }
     }
     
-    private function escapeData(string $data):string {
+    /**
+     * @param string $data
+     * @return string
+     */
+    private function escapeData($data) {
         // see https://github.com/actions/toolkit/blob/4f7fb6513a355689f69f0849edeb369a4dc81729/packages/core/src/command.ts#L80-L85
         $data = str_replace("%", '%25', $data);
         $data = str_replace("\r", '%0D', $data);
@@ -58,7 +62,11 @@ final class GithubActionError
         return $data;
     }
     
-    private function escapeProperty(string $property):string {
+    /**
+     * @param string $property
+     * @return string
+     */
+    private function escapeProperty($property) {
         // see https://github.com/actions/toolkit/blob/4f7fb6513a355689f69f0849edeb369a4dc81729/packages/core/src/command.ts#L87-L94
         $property = str_replace("%", '%25', $property);
         $property = str_replace("\r", '%0D', $property);
