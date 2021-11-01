@@ -41,7 +41,8 @@ class GitBitbucketDriver extends BitbucketDriver
             if ($this->vcsType !== 'git') {
                 throw new \RuntimeException(
                     $this->url.' does not appear to be a git repository, use '.
-                    $this->cloneHttpsUrl.' if this is a mercurial bitbucket repository'
+                    $this->cloneHttpsUrl.' but remember that Bitbucket no longer supports the mercurial repositories. '.
+                    'https://bitbucket.org/blog/sunsetting-mercurial-support-in-bitbucket'
                 );
             }
 

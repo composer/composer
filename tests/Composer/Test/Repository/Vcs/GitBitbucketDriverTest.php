@@ -84,7 +84,7 @@ class GitBitbucketDriverTest extends TestCase
     {
         $this->setExpectedException(
             '\RuntimeException',
-            'https://bitbucket.org/user/repo.git does not appear to be a git repository, use https://bitbucket.org/user/repo if this is a mercurial bitbucket repository'
+            'https://bitbucket.org/user/repo.git does not appear to be a git repository, use https://bitbucket.org/user/repo but remember that Bitbucket no longer supports the mercurial repositories. https://bitbucket.org/blog/sunsetting-mercurial-support-in-bitbucket'
         );
 
         $this->httpDownloader->expects($this->once())
