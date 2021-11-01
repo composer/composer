@@ -256,7 +256,7 @@ class LockerTest extends TestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|\Composer\Json\JsonFile
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Json\JsonFile
      */
     private function createJsonFileMock()
     {
@@ -266,7 +266,7 @@ class LockerTest extends TestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|\Composer\Installer\InstallationManager
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Installer\InstallationManager
      */
     private function createInstallationManagerMock()
     {
@@ -278,7 +278,7 @@ class LockerTest extends TestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|\Composer\Package\PackageInterface
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Package\PackageInterface
      */
     private function createPackageMock()
     {

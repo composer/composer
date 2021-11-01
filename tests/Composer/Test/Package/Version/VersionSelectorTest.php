@@ -371,7 +371,7 @@ class VersionSelectorTest extends TestCase
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|\Composer\Repository\RepositorySet
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Repository\RepositorySet
      */
     private function createMockRepositorySet()
     {
