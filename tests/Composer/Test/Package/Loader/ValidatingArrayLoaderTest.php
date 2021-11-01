@@ -20,6 +20,8 @@ class ValidatingArrayLoaderTest extends TestCase
 {
     /**
      * @dataProvider successProvider
+     *
+     * @param array<string, mixed> $config
      */
     public function testLoadSuccess($config)
     {
@@ -206,6 +208,9 @@ class ValidatingArrayLoaderTest extends TestCase
 
     /**
      * @dataProvider errorProvider
+     *
+     * @param array<string, mixed> $config
+     * @param string[]             $expectedErrors
      */
     public function testLoadFailureThrowsException($config, $expectedErrors)
     {
@@ -224,6 +229,9 @@ class ValidatingArrayLoaderTest extends TestCase
 
     /**
      * @dataProvider warningProvider
+     *
+     * @param array<string, mixed> $config
+     * @param string[]             $expectedWarnings
      */
     public function testLoadWarnings($config, $expectedWarnings)
     {
@@ -239,6 +247,10 @@ class ValidatingArrayLoaderTest extends TestCase
 
     /**
      * @dataProvider warningProvider
+     *
+     * @param array<string, mixed> $config
+     * @param string[]             $expectedWarnings
+     * @param bool                 $mustCheck
      */
     public function testLoadSkipsWarningDataWhenIgnoringErrors($config, $expectedWarnings, $mustCheck = true)
     {

@@ -134,6 +134,11 @@ class ArrayLoaderTest extends TestCase
         return array(array($validConfig));
     }
 
+    /**
+     * @param array<string, mixed> $config
+     *
+     * @return array<string, mixed>
+     */
     protected function fixConfigWhenLoadConfigIsFalse($config)
     {
         $expectedConfig = $config;
@@ -147,6 +152,8 @@ class ArrayLoaderTest extends TestCase
      * allows require-dev libraries to have transport options included.
      *
      * @dataProvider parseDumpProvider
+     *
+     * @param array<string, mixed> $config
      */
     public function testParseDumpDefaultLoadConfig($config)
     {
@@ -158,6 +165,8 @@ class ArrayLoaderTest extends TestCase
 
     /**
      * @dataProvider parseDumpProvider
+     *
+     * @param array<string, mixed> $config
      */
     public function testParseDumpTrueLoadConfig($config)
     {
@@ -170,6 +179,8 @@ class ArrayLoaderTest extends TestCase
 
     /**
      * @dataProvider parseDumpProvider
+     *
+     * @param array<string, mixed> $config
      */
     public function testParseDumpFalseLoadConfig($config)
     {
@@ -262,7 +273,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertFalse($package->isAbandoned());
     }
 
-    public function pluginApiVersions()
+    public function providePluginApiVersions()
     {
         return array(
             array('1.0'),
@@ -284,7 +295,9 @@ class ArrayLoaderTest extends TestCase
     }
 
     /**
-     * @dataProvider pluginApiVersions
+     * @dataProvider providePluginApiVersions
+     *
+     * @param string $apiVersion
      */
     public function testPluginApiVersionAreKeptAsDeclared($apiVersion)
     {
