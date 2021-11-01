@@ -255,17 +255,13 @@ class BinaryInstaller
         $binContents = file_get_contents($bin);
         // For php files, we generate a PHP proxy instead of a shell one,
         // which allows calling the proxy with a custom php process
-        if (preg_match('{^(?:#!(?:/usr)?/bin/env php|#!(?:/usr)?/bin/php|<?php)\r?\n}', $binContents, $match)) {
-            // verify the file is not a phar file, because those do not support php-proxying
-            if (false === ($pos = strpos($binContents, '__HALT_COMPILER')) || false === strpos(substr($binContents, 0, $pos), 'Phar::mapPhar')) {
-                $proxyCode = trim($match[0]);
-                // carry over the existing shebang if present, otherwise add our own
-                if ($proxyCode === "<?php") {
-                    $proxyCode = "#!/usr/bin/env php";
-                }
-                $binPathExported = var_export($binPath, true);
+        if (preg_match('{^(#!.*\r?\n)?<\?php}', $binContents, $match)) {
+            // carry over the existing shebang if present, otherwise add our own
+            $proxyCode = empty($match[1]) ? '#!/usr/bin/env php' : trim($match[1]);
 
-                return $proxyCode . "\n" . <<<PROXY
+            $binPathExported = var_export($binPath, true);
+
+            return $proxyCode . "\n" . <<<PROXY
 <?php
 
 /**
@@ -277,18 +273,95 @@ class BinaryInstaller
  * @generated
  */
 
-if (PHP_VERSION_ID < 80000) {
-    ob_start(function (\$buffer, \$phase) {
-        return (PHP_OUTPUT_HANDLER_START & \$phase) && '#!' === substr(\$buffer, 0, 2) ? '' : \$buffer;
-    }, 1);
-}
+namespace Composer;
 
-include __DIR__ . "/" . $binPathExported;
-PROXY;
+\$binPath = __DIR__ . "/" . $binPathExported;
+
+if (PHP_VERSION_ID < 80000) {
+    if (!class_exists('Composer\BinProxyWrapper')) {
+        /**
+         * @internal
+         */
+        final class BinProxyWrapper
+        {
+            private \$handle;
+            private \$position;
+
+            public function stream_open(\$path, \$mode, \$options, &\$opened_path)
+            {
+                // get rid of composer-bin-proxy:// prefix for __FILE__ & __DIR__ resolution
+                \$opened_path = substr(\$path, 21);
+                \$this->handle = fopen(\$opened_path, \$mode);
+                \$this->position = 0;
+
+                // remove all traces of this stream wrapper once it has been used
+                stream_wrapper_unregister('composer-bin-proxy');
+
+                return (bool) \$this->handle;
+            }
+
+            public function stream_read(\$count)
+            {
+                \$data = fread(\$this->handle, \$count);
+
+                if (\$this->position === 0) {
+                    \$data = preg_replace('{^#!.*\\r?\\n}', '', \$data);
+                }
+
+                \$this->position += strlen(\$data);
+
+                return \$data;
+            }
+
+            public function stream_cast(\$castAs)
+            {
+                return \$this->handle;
+            }
+
+            public function stream_close()
+            {
+                fclose(\$this->handle);
+            }
+
+            public function stream_lock(\$operation)
+            {
+                return \$operation ? flock(\$this->handle, \$operation) : true;
+            }
+
+            public function stream_tell()
+            {
+                return \$this->position;
+            }
+
+            public function stream_eof()
+            {
+                return feof(\$this->handle);
+            }
+
+            public function stream_stat()
+            {
+                return fstat(\$this->handle);
+            }
+
+            public function stream_set_option(\$option, \$arg1, \$arg2)
+            {
+                return true;
             }
         }
+    }
 
-        $proxyCode = <<<PROXY
+    if (function_exists('stream_wrapper_register') && stream_wrapper_register('composer-bin-proxy', 'Composer\BinProxyWrapper')) {
+        include("composer-bin-proxy://" . \$binPath);
+        exit(0);
+    }
+}
+
+include \$binPath;
+
+PROXY;
+        }
+
+        return <<<PROXY
 #!/usr/bin/env sh
 
 dir=\$(cd "\${0%[/\\\\]*}" > /dev/null; cd $binDir && pwd)
@@ -305,7 +378,5 @@ fi
 "\${dir}/$binFile" "\$@"
 
 PROXY;
-
-        return $proxyCode;
     }
 }
