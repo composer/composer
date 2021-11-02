@@ -27,6 +27,8 @@ class ClassMapGeneratorTest extends TestCase
 {
     /**
      * @dataProvider getTestCreateMapTests
+     * @param string $directory
+     * @param array<string, string> $expected
      */
     public function testCreateMap($directory, $expected)
     {

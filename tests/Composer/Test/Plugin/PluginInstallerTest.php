@@ -353,7 +353,6 @@ class PluginInstallerTest extends TestCase
     {
         $plugin = $this->getMockBuilder('Composer\Plugin\PluginInterface')
                        ->getMock();
-        /** @phpstan-ignore-next-line */
         $this->assertNull($this->pm->getPluginCapability($plugin, 'Fake\Ability'));
     }
 
@@ -442,7 +441,6 @@ class PluginInstallerTest extends TestCase
                    return array();
                }));
 
-        /** @phpstan-ignore-next-line */
         $this->assertNull($this->pm->getPluginCapability($plugin, $capabilityApi));
     }
 

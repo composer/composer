@@ -87,6 +87,10 @@ class ApplicationTest extends TestCase
         $application->doRun($inputMock, $outputMock);
     }
 
+    /**
+     * @param  string $command
+     * @return void
+     */
     public function ensureNoDevWarning($command)
     {
         $application = new Application;

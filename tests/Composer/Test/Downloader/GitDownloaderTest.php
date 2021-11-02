@@ -79,6 +79,7 @@ class GitDownloaderTest extends TestCase
      * @param \Composer\Config $config
      * @param \Composer\Test\Mock\ProcessExecutorMock $executor
      * @param \Composer\Util\Filesystem $filesystem
+     * @return GitDownloader
      */
     protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
     {
@@ -238,6 +239,9 @@ class GitDownloaderTest extends TestCase
 
     /**
      * @dataProvider pushUrlProvider
+     * @param string[] $protocols
+     * @param string $url
+     * @param string $pushUrl
      */
     public function testDownloadAndSetPushUrlUseCustomVariousProtocolsForGithub($protocols, $url, $pushUrl)
     {

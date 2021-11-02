@@ -102,6 +102,7 @@ class AllFunctionalTest extends TestCase
     /**
      * @dataProvider getTestFiles
      * @depends testBuildPhar
+     * @param string $testFile
      */
     public function testIntegration($testFile)
     {

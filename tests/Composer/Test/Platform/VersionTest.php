@@ -27,7 +27,7 @@ class VersionTest extends TestCase
      * 2) git log --pretty=%h --all -- crypto/opensslv.h include/openssl/opensslv.h | while read hash ; do (git show $hash:crypto/opensslv.h; git show $hash:include/openssl/opensslv.h)  | grep "define OPENSSL_VERSION_TEXT"  ; done > versions.txt
      * 3) cat versions.txt | awk -F "OpenSSL " '{print $2}'  | awk -F " " '{print $1}' | sed -e "s:\([0-9]*\.[0-9]*\.[0-9]*\):1.2.3:g" -e "s:1\.2\.3[a-z]\(-.*\)\{0,1\}$:1.2.3a\1:g"  -e "s:1\.2\.3[a-z]\{2\}\(-.*\)\{0,1\}$:1.2.3zh\1:g"  -e "s:beta[0-9]:beta3:g"  -e "s:pre[0-9]*:pre2:g" | sort | uniq
      */
-    public static function getOpenSslVersions()
+    public static function provideOpenSslVersions()
     {
         return array(
             // Generated
@@ -73,7 +73,7 @@ class VersionTest extends TestCase
     }
 
     /**
-     * @dataProvider getOpenSslVersions
+     * @dataProvider provideOpenSslVersions
      * @param string      $input
      * @param string      $parsedVersion
      * @param bool        $fipsExpected
@@ -88,7 +88,7 @@ class VersionTest extends TestCase
         self::assertSame($normalizedVersion, $this->getVersionParser()->normalize($parsedVersion));
     }
 
-    public function getLibJpegVersions()
+    public function provideLibJpegVersions()
     {
         return array(
             array('9', '9.0'),
@@ -100,7 +100,7 @@ class VersionTest extends TestCase
     }
 
     /**
-     * @dataProvider getLibJpegVersions
+     * @dataProvider provideLibJpegVersions
      * @param string $input
      * @param string $parsedVersion
      */
@@ -109,7 +109,7 @@ class VersionTest extends TestCase
         self::assertSame($parsedVersion, Version::parseLibjpeg($input));
     }
 
-    public function getZoneinfoVersions()
+    public function provideZoneinfoVersions()
     {
         return array(
             array('2019c', '2019.3'),
@@ -120,7 +120,7 @@ class VersionTest extends TestCase
     }
 
     /**
-     * @dataProvider getZoneinfoVersions
+     * @dataProvider provideZoneinfoVersions
      * @param string $input
      * @param string $parsedVersion
      */

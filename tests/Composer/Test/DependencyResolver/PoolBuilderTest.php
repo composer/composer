@@ -29,6 +29,13 @@ class PoolBuilderTest extends TestCase
 {
     /**
      * @dataProvider getIntegrationTests
+     * @param string $file
+     * @param string $message
+     * @param mixed[] $expect
+     * @param mixed[] $root
+     * @param mixed[] $requestData
+     * @param mixed[] $packageRepos
+     * @param mixed[] $fixed
      */
     public function testPoolBuilder($file, $message, $expect, $root, $requestData, $packageRepos, $fixed)
     {
