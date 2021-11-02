@@ -37,11 +37,12 @@ final class GithubActionError
     {
         if (getenv('GITHUB_ACTIONS') && !getenv('COMPOSER_TESTS_ARE_RUNNING')) {
             $message = $this->escapeData($message);
-            $file = $this->escapeProperty($file);
 
             if ($file && $line) {
+                $file = $this->escapeProperty($file);
                 $this->io->write("::error file=". $file .",line=". $line ."::". $message);
             } elseif ($file) {
+                $file = $this->escapeProperty($file);
                 $this->io->write("::error file=". $file ."::". $message);
             } else {
                 $this->io->write("::error ::". $message);
