@@ -1,3 +1,8 @@
+### [2.1.11] 2021-11-02
+
+  * Fixed issues in proxied binary files when using declare() on php <8 (#10249)
+  * Fixed GitHub Actions output escaping issues (#10243)
+
 ### [2.1.10] 2021-10-29
 
   * Added type annotations to all classes, which may have an effect on CI/static analysis for people using Composer as a dependency (#10159)
@@ -1286,6 +1291,7 @@
 
   * Initial release
 
+[2.1.11]: https://github.com/composer/composer/compare/2.1.10...2.1.11
 [2.1.10]: https://github.com/composer/composer/compare/2.1.9...2.1.10
 [2.1.9]: https://github.com/composer/composer/compare/2.1.8...2.1.9
 [2.1.8]: https://github.com/composer/composer/compare/2.1.7...2.1.8
