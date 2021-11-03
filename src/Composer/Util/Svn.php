@@ -283,7 +283,7 @@ class Svn
             throw new \LogicException("No svn auth detected.");
         }
 
-        return isset($this->credentials['password']) ? $this->credentials['password'] : '';
+        return $this->credentials['password'];
     }
 
     /**
@@ -366,9 +366,7 @@ class Svn
         }
 
         $this->credentials['username'] = $uri['user'];
-        if (!empty($uri['pass'])) {
-            $this->credentials['password'] = $uri['pass'];
-        }
+        $this->credentials['password'] = !empty($uri['pass']) ? $uri['pass'] : '';
 
         return $this->hasAuth = true;
     }

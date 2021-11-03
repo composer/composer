@@ -244,7 +244,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * @param array<TableSeparator|array> $table
+     * @param array<TableSeparator|mixed[]> $table
      *
      * @return void
      */

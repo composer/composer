@@ -32,8 +32,6 @@ class GitBitbucketDriverTest extends TestCase
     private $httpDownloader;
     /** @var string */
     private $home;
-    /** @var string */
-    private $originUrl = 'bitbucket.org';
 
     protected function setUp()
     {
