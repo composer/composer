@@ -90,7 +90,7 @@ class GitHub
         }
         $note .= ' ' . date('Y-m-d Hi');
 
-        $url = 'https://'.$originUrl.'/settings/tokens/new?scopes=repo&description=' . str_replace('%20', '+', rawurlencode($note));
+        $url = 'https://'.$originUrl.'/settings/tokens/new?scopes=repo:status,public_repo&description=' . str_replace('%20', '+', rawurlencode($note));
         $this->io->writeError(sprintf('Head to %s', $url));
         $this->io->writeError(sprintf('to retrieve a token. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
 
