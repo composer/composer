@@ -156,8 +156,8 @@ class ProxyHelper
     /**
      * Formats a url from its component parts
      *
-     * @param  array{scheme: string, host: string, port?: int, user?: string, pass?: string} $proxy
-     * @param  bool                                                                          $includeAuth
+     * @param  array{scheme?: string, host: string, port?: int, user?: string, pass?: string} $proxy
+     * @param  bool                                                                           $includeAuth
      *
      * @return string The formatted value
      */

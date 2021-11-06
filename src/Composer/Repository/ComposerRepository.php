@@ -1045,7 +1045,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @return array[]
+     * @return mixed[]
      */
     private function loadDataFromServer()
     {
@@ -1067,7 +1067,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @param array{providers?: array, provider-includes?: array} $data
+     * @param array{providers?: mixed[], provider-includes?: mixed[]} $data
      *
      * @return void
      */
@@ -1097,9 +1097,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @param array[] $data
+     * @param mixed[] $data
      *
-     * @return array[]
+     * @return mixed[]
      */
     private function loadIncludes($data)
     {
@@ -1144,7 +1144,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      * TODO v3 should make this private once we can drop PHP 5.3 support
      * @private
      *
-     * @param array[] $packages
+     * @param mixed[] $packages
      * @param string|null $source
      *
      * @return list<CompletePackage|CompleteAliasPackage>

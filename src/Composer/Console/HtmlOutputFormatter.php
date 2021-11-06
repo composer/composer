@@ -82,12 +82,12 @@ class HtmlOutputFormatter extends OutputFormatter
     {
         $out = '<span style="';
         foreach (explode(';', $matches[1]) as $code) {
-            if (isset(self::$availableForegroundColors[$code])) {
-                $out .= 'color:'.self::$availableForegroundColors[$code].';';
-            } elseif (isset(self::$availableBackgroundColors[$code])) {
-                $out .= 'background-color:'.self::$availableBackgroundColors[$code].';';
-            } elseif (isset(self::$availableOptions[$code])) {
-                switch (self::$availableOptions[$code]) {
+            if (isset(self::$availableForegroundColors[(int) $code])) {
+                $out .= 'color:'.self::$availableForegroundColors[(int) $code].';';
+            } elseif (isset(self::$availableBackgroundColors[(int) $code])) {
+                $out .= 'background-color:'.self::$availableBackgroundColors[(int) $code].';';
+            } elseif (isset(self::$availableOptions[(int) $code])) {
+                switch (self::$availableOptions[(int) $code]) {
                     case 'bold':
                         $out .= 'font-weight:bold;';
                         break;

@@ -42,7 +42,7 @@ class Solver
 
     /** @var int */
     protected $propagateIndex;
-    /** @var array[] */
+    /** @var mixed[] */
     protected $branches = array();
     /** @var Problem[] */
     protected $problems = array();

@@ -132,8 +132,8 @@ class FundCommand extends BaseCommand
     }
 
     /**
-     * @param array[] $fundings
-     * @return array[]
+     * @param mixed[] $fundings
+     * @return mixed[]
      */
     private function insertFundingData(array $fundings, CompletePackageInterface $package)
     {

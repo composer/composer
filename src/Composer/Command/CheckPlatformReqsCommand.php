@@ -173,7 +173,7 @@ EOT
     }
 
     /**
-     * @param array[] $results
+     * @param mixed[] $results
      *
      * @return void
      */

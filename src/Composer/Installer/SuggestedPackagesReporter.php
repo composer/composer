@@ -180,7 +180,7 @@ class SuggestedPackagesReporter
     /**
      * @param  InstalledRepository|null $installedRepo    If passed in, suggested packages which are installed already will be skipped
      * @param  PackageInterface|null    $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
-     * @return array[]
+     * @return mixed[]
      */
     private function getFilteredSuggestions(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
     {
