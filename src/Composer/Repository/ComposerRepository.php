@@ -478,9 +478,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $results = array();
             foreach ($search['results'] as $result) {
                 // do not show virtual packages in results as they are not directly useful from a composer perspective
-                if (empty($result['virtual'])) {
-                    $results[] = array('name' => $result['name'], 'description' => $result['description']);
+                if (!empty($result['virtual'])) {
+                    continue;
                 }
+
+                $results[] = $result;
             }
 
             return $results;

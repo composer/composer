@@ -131,4 +131,24 @@ class ArrayRepositoryTest extends TestCase
             $repo->search('foo', 0, 'composer-plugin')
         );
     }
+
+    public function testSearchWithAbandonedPackages()
+    {
+        $repo = new ArrayRepository();
+
+        $package1 = $this->getPackage('foo1', '1');
+        $package1->setAbandoned(true);
+        $repo->addPackage($package1);
+        $package2 = $this->getPackage('foo2', '1');
+        $package2->setAbandoned('bar');
+        $repo->addPackage($package2);
+
+        $this->assertSame(
+            array(
+                array('name' => 'foo1', 'description' => null, 'abandoned' => true),
+                array('name' => 'foo2', 'description' => null, 'abandoned' => 'bar'),
+            ),
+            $repo->search('foo')
+        );
+    }
 }
