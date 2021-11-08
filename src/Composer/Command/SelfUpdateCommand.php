@@ -213,7 +213,7 @@ EOT
             return 0;
         }
 
-        $tempFilename = $tmpDir . '/' . basename($localFilename, '.phar').'-temp.phar';
+        $tempFilename = $tmpDir . '/' . basename($localFilename, '.phar').'-temp'.rand(0, 10000000).'.phar';
         $backupFile = sprintf(
             '%s/%s-%s%s',
             $rollbackDir,
