@@ -604,6 +604,11 @@ EOT
         }
         $matches = $pool->whatProvides($name, $constraint);
         foreach ($matches as $index => $package) {
+            // avoid showing the 9999999-dev alias if the default branch has no branch-alias set
+            if ($package instanceof AliasPackage && $package->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                $package = $package->getAliasOf();
+            }
+
             // select an exact match if it is in the installed repo and no specific version was required
             if (null === $version && $installedRepo->hasPackage($package)) {
                 $matchedPackage = $package;
