@@ -301,6 +301,7 @@ class Git
         $this->filesystem->removeDirectory($dir);
 
         $commandCallable = function ($url) use ($dir) {
+            $url = Platform::expandPath($url);
             return sprintf('git clone --mirror -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
         };
 
