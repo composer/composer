@@ -98,7 +98,7 @@ class GitHub
         $this->io->writeError(sprintf('When you need to access _private_ GitHub repositories as well, go to %s', $url));
         $this->io->writeError('Note that such tokens have broad read/write permissions on your behalf, even if not needed by Composer.');
         $this->io->writeError(sprintf('Tokens will be stored in plain text in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
-        $this->io->writeError('For additional information, check https://getcomposer.org/doc/articles/authentication-for-private-packages.md#github-oauth.');
+        $this->io->writeError('For additional information, check https://getcomposer.org/doc/articles/authentication-for-private-packages.md#github-oauth');
 
         $token = trim($this->io->askAndHideAnswer('Token (hidden): '));
 
