@@ -90,9 +90,15 @@ class GitHub
         }
         $note .= ' ' . date('Y-m-d Hi');
 
+        $url = 'https://'.$originUrl.'/settings/tokens/new?scopes=&description=' . str_replace('%20', '+', rawurlencode($note));
+        $this->io->writeError(sprintf('When working with _public_ GitHub repositories only, head to %s to retrieve a token.', $url));
+        $this->io->writeError('This token will have read-only permission for public information only.');
+
         $url = 'https://'.$originUrl.'/settings/tokens/new?scopes=repo&description=' . str_replace('%20', '+', rawurlencode($note));
-        $this->io->writeError(sprintf('Head to %s', $url));
-        $this->io->writeError(sprintf('to retrieve a token. It will be stored in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
+        $this->io->writeError(sprintf('When you need to access _private_ GitHub repositories as well, go to %s', $url));
+        $this->io->writeError('Note that such tokens have broad read/write permissions on your behalf, even if not needed by Composer.');
+        $this->io->writeError(sprintf('Tokens will be stored in plain text in "%s" for future use by Composer.', $this->config->getAuthConfigSource()->getName()));
+        $this->io->writeError('For additional information, check https://getcomposer.org/doc/articles/authentication-for-private-packages.md#github-oauth');
 
         $token = trim($this->io->askAndHideAnswer('Token (hidden): '));
 
