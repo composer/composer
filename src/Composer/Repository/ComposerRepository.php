@@ -482,11 +482,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     continue;
                 }
 
-                if (isset($result['abandoned']) && '' === $result['abandoned']) {
-                    // The API returns '' in case a package is abandoned but does not have a replacement
-                    $result['abandoned'] = true;
-                }
-
                 $results[] = $result;
             }
 

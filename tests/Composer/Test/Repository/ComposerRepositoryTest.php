@@ -227,7 +227,7 @@ class ComposerRepositoryTest extends TestCase
                 array(
                     'name' => 'foo1',
                     'description' => null,
-                    'abandoned' => '',
+                    'abandoned' => true,
                 ),
                 array(
                     'name' => 'foo2',
