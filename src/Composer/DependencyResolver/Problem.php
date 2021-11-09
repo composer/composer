@@ -126,6 +126,10 @@ class Problem
                 $template = preg_replace('{^\S+ \S+ }', '%s%s ', $message);
                 $messages[] = $template;
                 $templates[$template][$m[1]][$parser->normalize($m[2])] = $m[2];
+                $sourcePackage = $rule->getSourcePackage($pool);
+                foreach ($pool->getRemovedVersionsByPackage(spl_object_hash($sourcePackage)) as $version => $prettyVersion) {
+                    $templates[$template][$m[1]][$version] = $prettyVersion;
+                }
             } elseif ($message !== '') {
                 $messages[] = $message;
             }
@@ -267,7 +271,7 @@ class Problem
                     return $rootReqs[$packageName]->matches(new Constraint('==', $p->getVersion()));
                 });
                 if (0 === count($filtered)) {
-                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with your root composer.json require ('.$rootReqs[$packageName]->getPrettyString().').');
+                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with your root composer.json require ('.$rootReqs[$packageName]->getPrettyString().').');
                 }
             }
 
@@ -277,7 +281,7 @@ class Problem
                     return $fixedConstraint->matches(new Constraint('==', $p->getVersion()));
                 });
                 if (0 === count($filtered)) {
-                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but the package is fixed to '.$lockedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.');
+                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but the package is fixed to '.$lockedPackage->getPrettyVersion().' (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.');
                 }
             }
 
@@ -286,27 +290,27 @@ class Problem
             });
 
             if (!$nonLockedPackages) {
-                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.');
+                return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' in the lock file but not in remote repositories, make sure you avoid updating this package to keep the one from the lock file.');
             }
 
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.');
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but these were not loaded, likely because '.(self::hasMultipleNames($packages) ? 'they conflict' : 'it conflicts').' with another require.');
         }
 
         // check if the package is found when bypassing stability checks
         if ($packages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
             // we must first verify if a valid package would be found in a lower priority repository
             if ($allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
-                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $packages, $allReposPackages, 'minimum-stability', $constraint);
+                return self::computeCheckForLowerPrioRepo($pool, $isVerbose, $packageName, $packages, $allReposPackages, 'minimum-stability', $constraint);
             }
 
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match your minimum-stability.');
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match your minimum-stability.');
         }
 
         // check if the package is found when bypassing the constraint and stability checks
         if ($packages = $repositorySet->findPackages($packageName, null, RepositorySet::ALLOW_UNACCEPTABLE_STABILITIES)) {
             // we must first verify if a valid package would be found in a lower priority repository
             if ($allReposPackages = $repositorySet->findPackages($packageName, $constraint, RepositorySet::ALLOW_SHADOWED_REPOSITORIES)) {
-                return self::computeCheckForLowerPrioRepo($isVerbose, $packageName, $packages, $allReposPackages, 'constraint', $constraint);
+                return self::computeCheckForLowerPrioRepo($pool, $isVerbose, $packageName, $packages, $allReposPackages, 'constraint', $constraint);
             }
 
             $suffix = '';
@@ -326,7 +330,7 @@ class Problem
                 $suffix = ' See https://getcomposer.org/dep-on-root for details and assistance.';
             }
 
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.' . $suffix);
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.' . $suffix);
         }
 
         if (!preg_match('{^[A-Za-z0-9_./-]+$}', $packageName)) {
@@ -356,15 +360,26 @@ class Problem
      * @internal
      * @param PackageInterface[] $packages
      * @param bool $isVerbose
+     * @param bool $useRemovedVersionGroup
      * @return string
      */
-    public static function getPackageList(array $packages, $isVerbose)
+    public static function getPackageList(array $packages, $isVerbose, Pool $pool = null, ConstraintInterface $constraint = null, $useRemovedVersionGroup = false)
     {
         $prepared = array();
         $hasDefaultBranch = array();
         foreach ($packages as $package) {
             $prepared[$package->getName()]['name'] = $package->getPrettyName();
             $prepared[$package->getName()]['versions'][$package->getVersion()] = $package->getPrettyVersion().($package instanceof AliasPackage ? ' (alias of '.$package->getAliasOf()->getPrettyVersion().')' : '');
+            if ($pool && $constraint) {
+                foreach ($pool->getRemovedVersions($package->getName(), $constraint) as $version => $prettyVersion) {
+                    $prepared[$package->getName()]['versions'][$version] = $prettyVersion;
+                }
+            }
+            if ($pool && $useRemovedVersionGroup) {
+                foreach ($pool->getRemovedVersionsByPackage(spl_object_hash($package)) as $version => $prettyVersion) {
+                    $prepared[$package->getName()]['versions'][$version] = $prettyVersion;
+                }
+            }
             if ($package->isDefaultBranch()) {
                 $hasDefaultBranch[$package->getName()] = true;
             }
@@ -469,7 +484,7 @@ class Problem
      * @param string $reason
      * @return array{0: string, 1: string}
      */
-    private static function computeCheckForLowerPrioRepo($isVerbose, $packageName, array $higherRepoPackages, array $allReposPackages, $reason, ConstraintInterface $constraint = null)
+    private static function computeCheckForLowerPrioRepo(Pool $pool, $isVerbose, $packageName, array $higherRepoPackages, array $allReposPackages, $reason, ConstraintInterface $constraint = null)
     {
         $nextRepoPackages = array();
         $nextRepo = null;
@@ -488,7 +503,7 @@ class Problem
             if ($topPackage instanceof RootPackageInterface) {
                 return array(
                     "- Root composer.json requires $packageName".self::constraintToText($constraint).', it is ',
-                    'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.$topPackage->getPrettyName().' is the root package and cannot be modified. See https://getcomposer.org/dep-on-root for details and assistance.',
+                    'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose, $pool, $constraint).' from '.$nextRepo->getRepoName().' but '.$topPackage->getPrettyName().' is the root package and cannot be modified. See https://getcomposer.org/dep-on-root for details and assistance.',
                 );
             }
         }
@@ -497,10 +512,10 @@ class Problem
             $singular = count($higherRepoPackages) === 1;
 
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ',
-                'found '.self::getPackageList($nextRepoPackages, $isVerbose).' in the lock file and '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' but ' . ($singular ? 'it does' : 'these do') . ' not match your '.$reason.' and ' . ($singular ? 'is' : 'are') . ' therefore not installable. Make sure you either fix the '.$reason.' or avoid updating this package to keep the one from the lock file.', );
+                'found '.self::getPackageList($nextRepoPackages, $isVerbose, $pool, $constraint).' in the lock file and '.self::getPackageList($higherRepoPackages, $isVerbose, $pool, $constraint).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' but ' . ($singular ? 'it does' : 'these do') . ' not match your '.$reason.' and ' . ($singular ? 'is' : 'are') . ' therefore not installable. Make sure you either fix the '.$reason.' or avoid updating this package to keep the one from the lock file.', );
         }
 
-        return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your '.$reason.' and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');
+        return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose, $pool, $constraint).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose, $pool, $constraint).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages with higher priority do not match your '.$reason.' and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.');
     }
 
     /**

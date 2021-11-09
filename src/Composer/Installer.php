@@ -460,6 +460,8 @@ class Installer
         $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
         $this->io->writeError("Analyzed ".$ruleSetSize." rules to resolve dependencies", true, IOInterface::VERBOSE);
 
+        $pool = null;
+
         if (!$lockTransaction->getOperations()) {
             $this->io->writeError('Nothing to modify in lock file');
         }
