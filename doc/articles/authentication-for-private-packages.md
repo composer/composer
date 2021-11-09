@@ -250,8 +250,13 @@ php composer.phar config [--global] --editor --auth
 
 ## github-oauth
 
-To create a new access token, head to your [token settings section on Github](https://github.com/settings/tokens) and [generate a new token](https://github.com/settings/tokens/new). For public repositories when rate limited, the `public_repo` scope is required, for private repositories the `repo:status` scope is needed.
-Read more about it [here](https://github.com/blog/1509-personal-api-tokens).
+To create a new access token, head to your [token settings section on Github](https://github.com/settings/tokens) and [generate a new token](https://github.com/settings/tokens/new).
+
+For public repositories when rate limited, a token *without* any particular scope is sufficient (see `(no scope)` in the [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps)). Such tokens grant read-only access to public information.
+
+For private repositories, the `repo` scope is needed. Note that the token will be given broad read/write access to all of your private repositories and much more - see the [scopes documentation](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps) for a complete list. As of writing (November 2021), it seems not to be possible to further limit permissions for such tokens.
+
+Read more about [Personal Access Tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token), or subscribe to the [roadmap item for better scoped tokens in GitHub](https://github.com/github/roadmap/issues/184).
 
 ### Command line github-oauth
 

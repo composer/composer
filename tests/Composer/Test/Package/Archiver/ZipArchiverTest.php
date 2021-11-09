@@ -39,6 +39,9 @@ class ZipArchiverTest extends ArchiverTest
         );
     }
 
+    /**
+     * @param array<string, string> $files
+     */
     public function testZipArchive(array $files = array())
     {
         if (!class_exists('ZipArchive')) {
@@ -79,7 +82,10 @@ class ZipArchiverTest extends ArchiverTest
 
     /**
      * Create a local dummy repository to run tests against!
-     * @param array $files
+     *
+     * @param array<string, string|null> $files
+     *
+     * @return void
      */
     protected function setupDummyRepo(array &$files)
     {
@@ -95,6 +101,13 @@ class ZipArchiverTest extends ArchiverTest
         chdir($currentWorkDir);
     }
 
+    /**
+     * @param string $path
+     * @param string $content
+     * @param string $currentWorkDir
+     *
+     * @return void
+     */
     protected function writeFile($path, $content, $currentWorkDir)
     {
         if (!file_exists(dirname($path))) {

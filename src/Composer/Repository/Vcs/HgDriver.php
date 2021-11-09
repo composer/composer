@@ -34,7 +34,7 @@ class HgDriver extends VcsDriver
     protected $repoDir;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function initialize()
     {
@@ -83,7 +83,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRootIdentifier()
     {
@@ -97,7 +97,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getUrl()
     {
@@ -105,7 +105,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSource($identifier)
     {
@@ -113,7 +113,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDist($identifier)
     {
@@ -121,7 +121,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getFileContent($file, $identifier)
     {
@@ -136,7 +136,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getChangeDate($identifier)
     {
@@ -153,7 +153,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getTags()
     {
@@ -175,7 +175,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getBranches()
     {
@@ -205,7 +205,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {

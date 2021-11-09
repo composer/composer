@@ -57,7 +57,11 @@ class PoolTest extends TestCase
         $this->assertEquals(array(), $pool->whatProvides('foo'));
     }
 
-    protected function createPool(array $packages = array())
+    /**
+     * @param array<\Composer\Package\BasePackage>|null $packages
+     * @return \Composer\DependencyResolver\Pool
+     */
+    protected function createPool($packages = array())
     {
         return new Pool($packages);
     }

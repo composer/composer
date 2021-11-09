@@ -17,6 +17,9 @@ use PHPUnit\Framework\TestCase;
 
 class HttpDownloaderTest extends TestCase
 {
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Config
+     */
     private function getConfigMock()
     {
         $config = $this->getMockBuilder('Composer\Config')->getMock();

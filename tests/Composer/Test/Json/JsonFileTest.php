@@ -354,6 +354,11 @@ class JsonFileTest extends TestCase
         $this->assertEquals($data, $doubleData);
     }
 
+    /**
+     * @param string $text
+     * @param string $json
+     * @return void
+     */
     private function expectParseException($text, $json)
     {
         try {
@@ -364,6 +369,12 @@ class JsonFileTest extends TestCase
         }
     }
 
+    /**
+     * @param string $json
+     * @param mixed $data
+     * @param int|null $options
+     * @return void
+     */
     private function assertJsonFormat($json, $data, $options = null)
     {
         $file = new JsonFile('composer.json');

@@ -58,7 +58,6 @@ class LockTransaction extends Transaction
         parent::__construct($this->presentMap, $this->resultPackages['all']);
     }
 
-
     // TODO make this a bit prettier instead of the two text indexes?
     /**
      * @return void

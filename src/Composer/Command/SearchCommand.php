@@ -29,6 +29,9 @@ use Composer\Plugin\PluginEvents;
  */
 class SearchCommand extends BaseCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -90,12 +93,13 @@ EOT
             $nameLength += 1;
             foreach ($results as $result) {
                 $description = isset($result['description']) ? $result['description'] : '';
-                $remaining = $width - $nameLength - 2;
+                $warning = !empty($result['abandoned']) ? '<warning>! Abandoned !</warning> ' : '';
+                $remaining = $width - $nameLength - strlen($warning) - 2;
                 if (strlen($description) > $remaining) {
                     $description = substr($description, 0, $remaining - 3) . '...';
                 }
 
-                $io->write(str_pad($result['name'], $nameLength, ' ') . $description);
+                $io->write(str_pad($result['name'], $nameLength, ' ') . $warning . $description);
             }
         } elseif ($format === 'json') {
             $io->write(JsonFile::encode($results));

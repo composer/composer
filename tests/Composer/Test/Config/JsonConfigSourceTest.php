@@ -24,6 +24,11 @@ class JsonConfigSourceTest extends TestCase
     /** @var string */
     private $workingDir;
 
+    /**
+     * @param string $name
+     *
+     * @return string
+     */
     protected function fixturePath($name)
     {
         return __DIR__.'/Fixtures/'.$name;
@@ -143,6 +148,17 @@ class JsonConfigSourceTest extends TestCase
         $this->assertFileEquals($compareAgainst, $composerJson);
     }
 
+    /**
+     * @param string $type
+     * @param string $name
+     * @param string $value
+     * @param string $fixtureBasename
+     * @param string $before
+     *
+     * @return string[]
+     *
+     * @phpstan-return array{string, string, string, string, string}
+     */
     protected function addLinkDataArguments($type, $name, $value, $fixtureBasename, $before)
     {
         return array(
@@ -156,8 +172,6 @@ class JsonConfigSourceTest extends TestCase
 
     /**
      * Provide data for testAddLink
-     *
-     * @return array
      */
     public function provideAddLinkData()
     {
@@ -192,6 +206,16 @@ class JsonConfigSourceTest extends TestCase
         );
     }
 
+    /**
+     * @param string      $type
+     * @param string      $name
+     * @param string      $fixtureBasename
+     * @param string|null $after
+     *
+     * @return string[]
+     *
+     * @phpstan-return array{string, string, string, string}
+     */
     protected function removeLinkDataArguments($type, $name, $fixtureBasename, $after = null)
     {
         return array(
@@ -204,8 +228,6 @@ class JsonConfigSourceTest extends TestCase
 
     /**
      * Provide data for testRemoveLink
-     *
-     * @return array
      */
     public function provideRemoveLinkData()
     {

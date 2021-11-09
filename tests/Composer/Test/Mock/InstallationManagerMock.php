@@ -21,7 +21,6 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
 use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
-use React\Promise\PromiseInterface;
 
 class InstallationManagerMock extends InstallationManager
 {
@@ -66,7 +65,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function install(InstalledRepositoryInterface $repo, InstallOperation $operation)
     {
@@ -78,7 +77,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation)
     {
@@ -93,7 +92,7 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation)
     {
@@ -122,21 +121,25 @@ class InstallationManagerMock extends InstallationManager
         parent::markAliasUninstalled($repo, $operation);
     }
 
+    /** @return string[] */
     public function getTrace()
     {
         return $this->trace;
     }
 
+    /** @return PackageInterface[] */
     public function getInstalledPackages()
     {
         return $this->installed;
     }
 
+    /** @return PackageInterface[][] */
     public function getUpdatedPackages()
     {
         return $this->updated;
     }
 
+    /** @return PackageInterface[] */
     public function getUninstalledPackages()
     {
         return $this->uninstalled;
@@ -147,6 +150,7 @@ class InstallationManagerMock extends InstallationManager
         // noop
     }
 
+    /** @return PackageInterface[] */
     public function getInstalledPackagesByType()
     {
         return $this->installed;

@@ -255,6 +255,9 @@ class LockerTest extends TestCase
         $this->assertFalse($locker->isFresh());
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Json\JsonFile
+     */
     private function createJsonFileMock()
     {
         return $this->getMockBuilder('Composer\Json\JsonFile')
@@ -262,6 +265,9 @@ class LockerTest extends TestCase
             ->getMock();
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Installer\InstallationManager
+     */
     private function createInstallationManagerMock()
     {
         $mock = $this->getMockBuilder('Composer\Installer\InstallationManager')
@@ -271,12 +277,20 @@ class LockerTest extends TestCase
         return $mock;
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Package\PackageInterface
+     */
     private function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\PackageInterface')
             ->getMock();
     }
 
+    /**
+     * @param array<string, string> $customData
+     *
+     * @return false|string
+     */
     private function getJsonContent(array $customData = array())
     {
         $data = array_merge(array(

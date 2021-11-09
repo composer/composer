@@ -36,7 +36,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     const STRATEGY_MIRROR = 20;
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
@@ -72,7 +72,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function install(PackageInterface $package, $path, $output = true)
     {
@@ -158,7 +158,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function remove(PackageInterface $package, $path, $output = true)
     {
@@ -203,7 +203,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getVcsReference(PackageInterface $package, $path)
     {
@@ -221,7 +221,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function getInstallOperationAppendix(PackageInterface $package, $path)
     {

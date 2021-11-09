@@ -32,7 +32,7 @@ abstract class SolverOperation implements OperationInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function __toString()
     {

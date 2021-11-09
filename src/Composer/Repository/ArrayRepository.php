@@ -54,7 +54,7 @@ class ArrayRepository implements RepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array())
     {
@@ -94,7 +94,7 @@ class ArrayRepository implements RepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function findPackage($name, $constraint)
     {
@@ -118,7 +118,7 @@ class ArrayRepository implements RepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function findPackages($name, $constraint = null)
     {
@@ -143,7 +143,7 @@ class ArrayRepository implements RepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function search($query, $mode = 0, $type = null)
     {
@@ -166,6 +166,10 @@ class ArrayRepository implements RepositoryInterface
                     'name' => $package->getPrettyName(),
                     'description' => $package instanceof CompletePackageInterface ? $package->getDescription() : null,
                 );
+
+                if ($package instanceof CompletePackageInterface && $package->isAbandoned()) {
+                    $matches[$name]['abandoned'] = $package->getReplacementPackage() ?: true;
+                }
             }
         }
 
@@ -173,7 +177,7 @@ class ArrayRepository implements RepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function hasPackage(PackageInterface $package)
     {
@@ -214,7 +218,7 @@ class ArrayRepository implements RepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getProviders($packageName)
     {
@@ -282,7 +286,7 @@ class ArrayRepository implements RepositoryInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getPackages()
     {

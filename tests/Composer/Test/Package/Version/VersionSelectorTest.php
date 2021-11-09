@@ -293,7 +293,12 @@ class VersionSelectorTest extends TestCase
     }
 
     /**
-     * @dataProvider getRecommendedRequireVersionPackages
+     * @dataProvider provideRecommendedRequireVersionPackages
+     *
+     * @param string      $prettyVersion
+     * @param string      $expectedVersion
+     * @param string|null $branchAlias
+     * @param string      $packageName
      */
     public function testFindRecommendedRequireVersion($prettyVersion, $expectedVersion, $branchAlias = null, $packageName = 'foo/bar')
     {
@@ -313,7 +318,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($expectedVersion, $recommended);
     }
 
-    public function getRecommendedRequireVersionPackages()
+    public function provideRecommendedRequireVersionPackages()
     {
         return array(
             // real version, expected recommendation, [branch-alias], [pkg name]
@@ -353,6 +358,11 @@ class VersionSelectorTest extends TestCase
         );
     }
 
+    /**
+     * @param string $version
+     *
+     * @return Package
+     */
     private function createPackage($version)
     {
         $parser = new VersionParser();
@@ -360,6 +370,9 @@ class VersionSelectorTest extends TestCase
         return new Package('foo', $parser->normalize($version), $version);
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Repository\RepositorySet
+     */
     private function createMockRepositorySet()
     {
         return $this->getMockBuilder('Composer\Repository\RepositorySet')

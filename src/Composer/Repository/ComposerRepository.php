@@ -188,7 +188,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function findPackage($name, $constraint)
     {
@@ -228,7 +228,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function findPackages($name, $constraint = null)
     {
@@ -460,7 +460,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function search($query, $mode = 0, $type = null)
     {
@@ -478,9 +478,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $results = array();
             foreach ($search['results'] as $result) {
                 // do not show virtual packages in results as they are not directly useful from a composer perspective
-                if (empty($result['virtual'])) {
-                    $results[] = array('name' => $result['name'], 'description' => $result['description']);
+                if (!empty($result['virtual'])) {
+                    continue;
                 }
+
+                $results[] = $result;
             }
 
             return $results;
@@ -730,7 +732,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function initialize()
     {

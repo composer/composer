@@ -31,7 +31,7 @@ class PerforceDriver extends VcsDriver
     protected $perforce = null;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function initialize()
     {
@@ -69,7 +69,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getFileContent($file, $identifier)
     {
@@ -77,7 +77,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getChangeDate($identifier)
     {
@@ -85,7 +85,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRootIdentifier()
     {
@@ -93,7 +93,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getBranches()
     {
@@ -101,7 +101,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getTags()
     {
@@ -109,7 +109,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDist($identifier)
     {
@@ -117,7 +117,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSource($identifier)
     {
@@ -130,7 +130,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getUrl()
     {
@@ -138,7 +138,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function hasComposerFile($identifier)
     {
@@ -148,7 +148,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getContents($url)
     {
@@ -156,7 +156,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
@@ -168,7 +168,7 @@ class PerforceDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function cleanup()
     {

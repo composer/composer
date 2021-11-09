@@ -117,7 +117,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
@@ -129,7 +129,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
@@ -522,7 +522,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getLongVersion()
     {
@@ -540,7 +540,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function getDefaultInputDefinition()
     {

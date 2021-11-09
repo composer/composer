@@ -18,7 +18,10 @@ use Composer\Test\TestCase;
 class VersionParserTest extends TestCase
 {
     /**
-     * @dataProvider getParseNameVersionPairsData
+     * @dataProvider provideParseNameVersionPairsData
+     *
+     * @param string[]                     $pairs
+     * @param array<array<string, string>> $result
      */
     public function testParseNameVersionPairs($pairs, $result)
     {
@@ -27,7 +30,7 @@ class VersionParserTest extends TestCase
         $this->assertSame($result, $versionParser->parseNameVersionPairs($pairs));
     }
 
-    public function getParseNameVersionPairsData()
+    public function provideParseNameVersionPairsData()
     {
         return array(
             array(array('php:^7.0'), array(array('name' => 'php', 'version' => '^7.0'))),
@@ -39,14 +42,18 @@ class VersionParserTest extends TestCase
     }
 
     /**
-     * @dataProvider getIsUpgradeTests
+     * @dataProvider provideIsUpgradeTests
+     *
+     * @param string $from
+     * @param string $to
+     * @param bool   $expected
      */
     public function testIsUpgrade($from, $to, $expected)
     {
         $this->assertSame($expected, VersionParser::isUpgrade($from, $to));
     }
 
-    public function getIsUpgradeTests()
+    public function provideIsUpgradeTests()
     {
         return array(
             array('0.9.0.0', '1.0.0.0', true),

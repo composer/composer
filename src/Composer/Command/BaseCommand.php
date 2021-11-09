@@ -23,6 +23,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
@@ -74,7 +75,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * @param Composer $composer
+     * @return void
      */
     public function setComposer(Composer $composer)
     {
@@ -83,6 +84,8 @@ abstract class BaseCommand extends Command
 
     /**
      * Removes the cached composer instance
+     *
+     * @return void
      */
     public function resetComposer()
     {
@@ -121,7 +124,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * @param IOInterface $io
+     * @return void
      */
     public function setIO(IOInterface $io)
     {
@@ -129,7 +132,9 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
+     *
+     * @return void
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
@@ -154,8 +159,6 @@ abstract class BaseCommand extends Command
     /**
      * Returns preferSource and preferDist values based on the configuration.
      *
-     * @param Config         $config
-     * @param InputInterface $input
      * @param bool           $keepVcsRequiresPreferSource
      *
      * @return bool[] An array composed of the preferSource and preferDist values
@@ -209,6 +212,11 @@ abstract class BaseCommand extends Command
         return array($preferSource, $preferDist);
     }
 
+    /**
+     * @param array<string, string> $requirements
+     *
+     * @return array<string, string>
+     */
     protected function formatRequirements(array $requirements)
     {
         $requires = array();
@@ -223,6 +231,11 @@ abstract class BaseCommand extends Command
         return $requires;
     }
 
+    /**
+     * @param array<string> $requirements
+     *
+     * @return list<array{name: string, version?: string}>
+     */
     protected function normalizeRequirements(array $requirements)
     {
         $parser = new VersionParser();
@@ -230,6 +243,11 @@ abstract class BaseCommand extends Command
         return $parser->parseNameVersionPairs($requirements);
     }
 
+    /**
+     * @param array<TableSeparator|array> $table
+     *
+     * @return void
+     */
     protected function renderTable(array $table, OutputInterface $output)
     {
         $renderer = new Table($output);
@@ -246,6 +264,9 @@ abstract class BaseCommand extends Command
         $renderer->setRows($table)->render();
     }
 
+    /**
+     * @return int
+     */
     protected function getTerminalWidth()
     {
         if (class_exists('Symfony\Component\Console\Terminal')) {

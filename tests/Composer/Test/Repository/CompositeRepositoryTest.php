@@ -128,6 +128,9 @@ class CompositeRepositoryTest extends TestCase
 
     /**
      * @dataProvider provideMethodCalls
+     *
+     * @param string  $method
+     * @param mixed[] $args
      */
     public function testNoRepositories($method, $args)
     {

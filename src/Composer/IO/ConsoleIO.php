@@ -77,7 +77,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isInteractive()
     {
@@ -85,7 +85,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isDecorated()
     {
@@ -93,7 +93,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isVerbose()
     {
@@ -101,7 +101,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isVeryVerbose()
     {
@@ -109,7 +109,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isDebug()
     {
@@ -117,7 +117,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function write($messages, $newline = true, $verbosity = self::NORMAL)
     {
@@ -125,7 +125,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function writeError($messages, $newline = true, $verbosity = self::NORMAL)
     {
@@ -133,7 +133,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function writeRaw($messages, $newline = true, $verbosity = self::NORMAL)
     {
@@ -141,7 +141,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function writeErrorRaw($messages, $newline = true, $verbosity = self::NORMAL)
     {
@@ -192,7 +192,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function overwrite($messages, $newline = true, $size = null, $verbosity = self::NORMAL)
     {
@@ -200,7 +200,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function overwriteError($messages, $newline = true, $size = null, $verbosity = self::NORMAL)
     {
@@ -264,7 +264,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function ask($question, $default = null)
     {
@@ -276,7 +276,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function askConfirmation($question, $default = true)
     {
@@ -288,7 +288,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function askAndValidate($question, $validator, $attempts = null, $default = null)
     {
@@ -302,7 +302,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function askAndHideAnswer($question)
     {
@@ -315,7 +315,7 @@ class ConsoleIO extends BaseIO
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function select($question, $choices, $default, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false)
     {

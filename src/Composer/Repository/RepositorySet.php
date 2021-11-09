@@ -22,8 +22,6 @@ use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
-use Composer\Package\CompletePackageInterface;
-use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\StabilityFilter;
 

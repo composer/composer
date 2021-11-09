@@ -13,9 +13,7 @@
 namespace Composer\Util;
 
 use Composer\IO\IOInterface;
-use Composer\Util\Platform;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\ProcessUtils;
 use Symfony\Component\Process\Exception\RuntimeException;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
@@ -446,7 +444,7 @@ class ProcessExecutor
     /**
      * Escapes a string to be used as a shell argument.
      *
-     * @param ?string $argument The argument that will be escaped
+     * @param string|false|null $argument The argument that will be escaped
      *
      * @return string The escaped argument
      */
@@ -466,7 +464,7 @@ class ProcessExecutor
      * Modified from https://github.com/johnstevenson/winbox-args
      * MIT Licensed (c) John Stevenson <john-stevenson@blueyonder.co.uk>
      *
-     * @param ?string $argument
+     * @param string|false|null $argument
      *
      * @return string
      */

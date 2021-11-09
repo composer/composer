@@ -76,7 +76,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getName()
     {
@@ -84,7 +84,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getPrettyName()
     {
@@ -92,7 +92,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getNames($provides = true)
     {
@@ -114,7 +114,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setId($id)
     {
@@ -122,7 +122,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getId()
     {
@@ -130,7 +130,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setRepository(RepositoryInterface $repository)
     {
@@ -141,7 +141,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRepository()
     {
@@ -200,7 +200,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getFullPrettyVersion($truncate = true, $displayMode = PackageInterface::DISPLAY_SOURCE_REF_IF_DEV)
     {

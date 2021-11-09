@@ -21,7 +21,7 @@ use Composer\IO\IOInterface;
 class GitBitbucketDriver extends BitbucketDriver
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRootIdentifier()
     {
@@ -53,7 +53,7 @@ class GitBitbucketDriver extends BitbucketDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
@@ -71,7 +71,7 @@ class GitBitbucketDriver extends BitbucketDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     protected function setupFallbackDriver($url)
     {
@@ -86,7 +86,7 @@ class GitBitbucketDriver extends BitbucketDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     protected function generateSshUrl()
     {

@@ -22,6 +22,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ClearCacheCommand extends BaseCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -39,6 +42,9 @@ EOT
         ;
     }
 
+    /**
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $config = Factory::createConfig();

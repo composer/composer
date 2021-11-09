@@ -21,8 +21,19 @@ use Composer\Test\TestCase;
 
 class InstallationManagerTest extends TestCase
 {
+    /**
+     * @var \Composer\Repository\InstalledRepositoryInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected $repository;
+
+    /**
+     * @var \Composer\Util\Loop&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected $loop;
+
+    /**
+     * @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected $io;
 
     public function setUp()
@@ -282,12 +293,18 @@ class InstallationManagerTest extends TestCase
         $manager->ensureBinariesPresence($package);
     }
 
+    /**
+     * @return \Composer\Installer\InstallerInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     private function createInstallerMock()
     {
         return $this->getMockBuilder('Composer\Installer\InstallerInterface')
             ->getMock();
     }
 
+    /**
+     * @return \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     private function createPackageMock()
     {
         $mock = $this->getMockBuilder('Composer\Package\PackageInterface')

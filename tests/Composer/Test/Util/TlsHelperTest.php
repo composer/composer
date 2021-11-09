@@ -17,7 +17,13 @@ use Composer\Test\TestCase;
 
 class TlsHelperTest extends TestCase
 {
-    /** @dataProvider dataCheckCertificateHost */
+    /**
+     * @dataProvider dataCheckCertificateHost
+     *
+     * @param bool     $expectedResult
+     * @param string   $hostname
+     * @param string[] $certNames
+     */
     public function testCheckCertificateHost($expectedResult, $hostname, $certNames)
     {
         $certificate['subject']['commonName'] = $expectedCn = array_shift($certNames);

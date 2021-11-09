@@ -16,16 +16,17 @@ use Composer\Downloader\TransportException;
 use Composer\Util\GitHub;
 use Composer\Util\Http\Response;
 use Composer\Test\TestCase;
-use RecursiveArrayIterator;
-use RecursiveIteratorIterator;
 
 /**
  * @author Rob Bast <rob.bast@gmail.com>
  */
 class GitHubTest extends TestCase
 {
+    /** @var string */
     private $password = 'password';
+    /** @var string */
     private $message = 'mymessage';
+    /** @var string */
     private $origin = 'github.com';
 
     public function testUsernamePasswordAuthenticationFlow()
@@ -100,6 +101,9 @@ class GitHubTest extends TestCase
         $this->assertFalse($github->authorizeOAuthInteractively($this->origin));
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\IO\ConsoleIO
+     */
     private function getIOMock()
     {
         $io = $this
@@ -111,11 +115,17 @@ class GitHubTest extends TestCase
         return $io;
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Config
+     */
     private function getConfigMock()
     {
         return $this->getMockBuilder('Composer\Config')->getMock();
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Util\HttpDownloader
+     */
     private function getHttpDownloaderMock()
     {
         $httpDownloader = $this
@@ -127,6 +137,9 @@ class GitHubTest extends TestCase
         return $httpDownloader;
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Config\JsonConfigSource
+     */
     private function getAuthJsonMock()
     {
         $authjson = $this
@@ -143,6 +156,9 @@ class GitHubTest extends TestCase
         return $authjson;
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Config\JsonConfigSource
+     */
     private function getConfJsonMock()
     {
         $confjson = $this
@@ -157,17 +173,5 @@ class GitHubTest extends TestCase
         ;
 
         return $confjson;
-    }
-
-    public static function recursiveFind($array, $needle)
-    {
-        $iterator = new RecursiveArrayIterator($array);
-        $recursive = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
-
-        foreach ($recursive as $key => $value) {
-            if ($key === $needle) {
-                return $value;
-            }
-        }
     }
 }

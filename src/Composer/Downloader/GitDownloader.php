@@ -55,7 +55,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
     {
@@ -80,7 +80,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function doInstall(PackageInterface $package, $path, $url)
     {
@@ -138,7 +138,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
@@ -203,7 +203,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getLocalChanges(PackageInterface $package, $path)
     {
@@ -318,7 +318,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)
     {
@@ -405,7 +405,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function reapplyChanges($path)
     {
@@ -522,7 +522,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
@@ -618,7 +618,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function hasMetadataRepository($path)
     {

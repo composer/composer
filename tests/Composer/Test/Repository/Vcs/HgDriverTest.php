@@ -46,6 +46,8 @@ class HgDriverTest extends TestCase
 
     /**
      * @dataProvider supportsDataProvider
+     *
+     * @param string $repositoryUrl
      */
     public function testSupports($repositoryUrl)
     {

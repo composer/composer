@@ -174,7 +174,7 @@ use Composer\Installer\LibraryInstaller;
 class TemplateInstaller extends LibraryInstaller
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getInstallPath(PackageInterface $package)
     {
@@ -191,7 +191,7 @@ class TemplateInstaller extends LibraryInstaller
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function supports($packageType)
     {

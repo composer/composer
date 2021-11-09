@@ -19,6 +19,11 @@ class JsonManipulatorTest extends TestCase
 {
     /**
      * @dataProvider linkProvider
+     * @param string $json
+     * @param string $type
+     * @param string $package
+     * @param string $constraint
+     * @param string $expected
      */
     public function testAddLink($json, $type, $package, $constraint, $expected)
     {
@@ -1289,6 +1294,12 @@ class JsonManipulatorTest extends TestCase
 
     /**
      * @dataProvider providerAddLinkAndSortPackages
+     * @param string $json
+     * @param string $type
+     * @param string $package
+     * @param string $constraint
+     * @param bool $sortPackages
+     * @param string $expected
      */
     public function testAddLinkAndSortPackages($json, $type, $package, $constraint, $sortPackages, $expected)
     {
@@ -1369,6 +1380,10 @@ class JsonManipulatorTest extends TestCase
 
     /**
      * @dataProvider removeSubNodeProvider
+     * @param string $json
+     * @param string $name
+     * @param string $expected
+     * @param ?string $expectedContent
      */
     public function testRemoveSubNode($json, $name, $expected, $expectedContent = null)
     {

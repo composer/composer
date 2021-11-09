@@ -54,7 +54,7 @@ class ProjectInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -62,7 +62,7 @@ class ProjectInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function download(PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -78,7 +78,7 @@ class ProjectInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -86,7 +86,7 @@ class ProjectInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -94,7 +94,7 @@ class ProjectInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -102,7 +102,7 @@ class ProjectInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
@@ -110,7 +110,7 @@ class ProjectInstaller implements InstallerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {

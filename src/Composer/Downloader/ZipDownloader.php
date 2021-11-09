@@ -36,7 +36,7 @@ class ZipDownloader extends ArchiveDownloader
     private $zipArchiveObject;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {

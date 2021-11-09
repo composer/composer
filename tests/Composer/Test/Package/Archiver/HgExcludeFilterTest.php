@@ -18,7 +18,10 @@ use Composer\Test\TestCase;
 class HgExcludeFilterTest extends TestCase
 {
     /**
-     * @dataProvider patterns
+     * @dataProvider providePatterns
+     *
+     * @param string  $ignore
+     * @param mixed[] $expected
      */
     public function testPatternEscape($ignore, $expected)
     {
@@ -27,7 +30,7 @@ class HgExcludeFilterTest extends TestCase
         $this->assertEquals($expected, $filter->patternFromRegex($ignore));
     }
 
-    public function patterns()
+    public function providePatterns()
     {
         return array(
             array('.#', array('#.\\##', false, true)),

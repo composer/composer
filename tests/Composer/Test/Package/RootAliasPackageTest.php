@@ -80,6 +80,9 @@ class RootAliasPackageTest extends TestCase
         $this->assertNotEmpty($alias->getReplaces());
     }
 
+    /**
+     * @return \Prophecy\Prophecy\ObjectProphecy
+     */
     protected function getMockRootPackageInterface()
     {
         $root = $this->prophesize('Composer\\Package\\RootPackage');

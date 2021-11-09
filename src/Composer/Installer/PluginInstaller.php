@@ -40,7 +40,7 @@ class PluginInstaller extends LibraryInstaller
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function supports($packageType)
     {
@@ -48,7 +48,7 @@ class PluginInstaller extends LibraryInstaller
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function download(PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -61,7 +61,7 @@ class PluginInstaller extends LibraryInstaller
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -84,7 +84,7 @@ class PluginInstaller extends LibraryInstaller
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {

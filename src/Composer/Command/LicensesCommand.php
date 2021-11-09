@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Json\JsonFile;
+use Composer\Package\CompletePackageInterface;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
@@ -28,6 +29,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 class LicensesCommand extends BaseCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -48,6 +52,9 @@ EOT
         ;
     }
 
+    /**
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer();
@@ -91,7 +98,7 @@ EOT
                     $table->addRow(array(
                         $package->getPrettyName(),
                         $package->getFullPrettyVersion(),
-                        implode(', ', $package->getLicense()) ?: 'none',
+                        implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : array()) ?: 'none',
                     ));
                 }
                 $table->render();
@@ -102,7 +109,7 @@ EOT
                 foreach ($packages as $package) {
                     $dependencies[$package->getPrettyName()] = array(
                         'version' => $package->getFullPrettyVersion(),
-                        'license' => $package->getLicense(),
+                        'license' => $package instanceof CompletePackageInterface ? $package->getLicense() : array(),
                     );
                 }
 
@@ -117,7 +124,7 @@ EOT
             case 'summary':
                 $usedLicenses = array();
                 foreach ($packages as $package) {
-                    $license = $package->getLicense();
+                    $license = $package instanceof CompletePackageInterface ? $package->getLicense() : array();
                     $licenseName = $license[0];
                     if (!isset($usedLicenses[$licenseName])) {
                         $usedLicenses[$licenseName] = 0;
@@ -149,10 +156,8 @@ EOT
     /**
      * Find package requires and child requires
      *
-     * @param  RepositoryInterface $repo
-     * @param  PackageInterface    $package
-     * @param  array               $bucket
-     * @return array
+     * @param  array<string, PackageInterface> $bucket
+     * @return array<string, PackageInterface>
      */
     private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, $bucket = array())
     {
@@ -178,9 +183,9 @@ EOT
     /**
      * Adds packages to the package list
      *
-     * @param  array $packages the list of packages to add
-     * @param  array $bucket   the list to add packages to
-     * @return array
+     * @param  PackageInterface[]              $packages the list of packages to add
+     * @param  array<string, PackageInterface> $bucket   the list to add packages to
+     * @return array<string, PackageInterface>
      */
     public function appendPackages(array $packages, array $bucket)
     {

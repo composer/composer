@@ -51,6 +51,12 @@ class FilesystemTest extends TestCase
 
     /**
      * @dataProvider providePathCouplesAsCode
+     *
+     * @param string $a
+     * @param string $b
+     * @param bool   $directory
+     * @param string $expected
+     * @param bool   $static
      */
     public function testFindShortestPathCode($a, $b, $directory, $expected, $static = false)
     {
@@ -109,6 +115,11 @@ class FilesystemTest extends TestCase
 
     /**
      * @dataProvider providePathCouples
+     *
+     * @param string $a
+     * @param string $b
+     * @param string $expected
+     * @param bool   $directory
      */
     public function testFindShortestPath($a, $b, $expected, $directory = false)
     {
@@ -191,6 +202,9 @@ class FilesystemTest extends TestCase
 
     /**
      * @dataProvider provideNormalizedPaths
+     *
+     * @param string $expected
+     * @param string $actual
      */
     public function testNormalizePath($expected, $actual)
     {

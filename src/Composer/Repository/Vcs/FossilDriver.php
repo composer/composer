@@ -35,7 +35,7 @@ class FossilDriver extends VcsDriver
     protected $checkoutDir;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function initialize()
     {
@@ -118,7 +118,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRootIdentifier()
     {
@@ -130,7 +130,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getUrl()
     {
@@ -138,7 +138,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSource($identifier)
     {
@@ -146,7 +146,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDist($identifier)
     {
@@ -154,7 +154,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getFileContent($file, $identifier)
     {
@@ -169,7 +169,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getChangeDate($identifier)
     {
@@ -180,7 +180,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getTags()
     {
@@ -199,7 +199,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getBranches()
     {
@@ -219,7 +219,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {

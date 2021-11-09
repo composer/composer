@@ -24,6 +24,9 @@ class ComposerRepositoryTest extends TestCase
 {
     /**
      * @dataProvider loadDataProvider
+     *
+     * @param mixed[]              $expected
+     * @param array<string, mixed> $repoPackages
      */
     public function testLoadData(array $expected, array $repoPackages)
     {
@@ -161,11 +164,6 @@ class ComposerRepositoryTest extends TestCase
         $this->assertSame($packages['2'], $packages['2-alias']->getAliasOf());
     }
 
-    public function isPackageAcceptableReturnTrue()
-    {
-        return true;
-    }
-
     public function testSearchWithType()
     {
         $repoConfig = array(
@@ -218,8 +216,57 @@ class ComposerRepositoryTest extends TestCase
         );
     }
 
+    public function testSearchWithAbandonedPackages()
+    {
+        $repoConfig = array(
+            'url' => 'http://example.org',
+        );
+
+        $result = array(
+            'results' => array(
+                array(
+                    'name' => 'foo1',
+                    'description' => null,
+                    'abandoned' => true,
+                ),
+                array(
+                    'name' => 'foo2',
+                    'description' => null,
+                    'abandoned' => 'bar',
+                ),
+            ),
+        );
+
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $httpDownloader->expects($this->at(1))
+            ->method('get')
+            ->with($url = 'http://example.org/packages.json')
+            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode(array('search' => '/search.json?q=%query%'))));
+
+        $httpDownloader->expects($this->at(2))
+            ->method('get')
+            ->with($url = 'http://example.org/search.json?q=foo')
+            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode($result)));
+
+        $repository = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), $httpDownloader, $eventDispatcher);
+
+        $this->assertSame(
+            array(
+                array('name' => 'foo1', 'description' => null, 'abandoned' => true),
+                array('name' => 'foo2', 'description' => null, 'abandoned' => 'bar'),
+            ),
+            $repository->search('foo')
+        );
+    }
+
     /**
-     * @dataProvider canonicalizeUrlProvider
+     * @dataProvider provideCanonicalizeUrlTestCases
      *
      * @param string $expected
      * @param string $url
@@ -249,7 +296,7 @@ class ComposerRepositoryTest extends TestCase
         $this->assertSame($expected, $method->invoke($repository, $url));
     }
 
-    public function canonicalizeUrlProvider()
+    public function provideCanonicalizeUrlTestCases()
     {
         return array(
             array(

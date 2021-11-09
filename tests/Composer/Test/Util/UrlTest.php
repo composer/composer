@@ -20,6 +20,11 @@ class UrlTest extends TestCase
 {
     /**
      * @dataProvider distRefsProvider
+     *
+     * @param string               $url
+     * @param string               $expectedUrl
+     * @param array<string, mixed> $conf
+     * @param string               $ref
      */
     public function testUpdateDistReference($url, $expectedUrl, $conf = array(), $ref = 'newref')
     {
@@ -61,6 +66,9 @@ class UrlTest extends TestCase
 
     /**
      * @dataProvider sanitizeProvider
+     *
+     * @param string $expected
+     * @param string $url
      */
     public function testSanitize($expected, $url)
     {

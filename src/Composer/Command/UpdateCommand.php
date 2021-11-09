@@ -36,6 +36,9 @@ use Symfony\Component\Console\Question\Question;
  */
 class UpdateCommand extends BaseCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -105,6 +108,10 @@ EOT
         ;
     }
 
+    /**
+     * @return int
+     * @throws \Exception
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = $this->getIO();
@@ -241,6 +248,10 @@ EOT
         return $install->run();
     }
 
+    /**
+     * @param array<string> $packages
+     * @return array<string>
+     */
     private function getPackagesInteractively(IOInterface $io, InputInterface $input, OutputInterface $output, Composer $composer, array $packages)
     {
         if (!$input->isInteractive()) {
@@ -305,6 +316,7 @@ EOT
     }
 
     /**
+     * @param string $constraint
      * @return Link
      */
     private function appendConstraintToLink(Link $link, $constraint)

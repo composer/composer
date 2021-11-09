@@ -12,7 +12,7 @@
 
 namespace Composer\Test\Repository;
 
-use Composer\Package\Package;
+use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
 use Composer\Test\TestCase;
@@ -35,7 +35,7 @@ class PlatformRepositoryTest extends TestCase
         self::assertSame('2.1.0', $hhvm->getPrettyVersion());
     }
 
-    public function getPhpFlavorTestCases()
+    public function providePhpFlavorTestCases()
     {
         return array(
             array(
@@ -112,7 +112,13 @@ class PlatformRepositoryTest extends TestCase
         );
     }
 
-    /** @dataProvider getPhpFlavorTestCases */
+    /**
+     * @dataProvider providePhpFlavorTestCases
+     *
+     * @param array<string, mixed>  $constants
+     * @param array<string, string> $packages
+     * @param array<string, mixed>  $functions
+     */
     public function testPhpVersion(array $constants, array $packages, array $functions = array())
     {
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
@@ -178,7 +184,7 @@ class PlatformRepositoryTest extends TestCase
         self::assertNull($package);
     }
 
-    public static function getLibraryTestCases()
+    public static function provideLibraryTestCases()
     {
         return array(
             'amqp' => array(
@@ -1074,7 +1080,7 @@ Linked Version => 1.2.11',
     }
 
     /**
-     * @dataProvider getLibraryTestCases
+     * @dataProvider provideLibraryTestCases
      *
      * @param string|string[]            $extensions
      * @param string|null                $info
@@ -1190,6 +1196,13 @@ Linked Version => 1.2.11',
         }
     }
 
+    /**
+     * @param string           $context
+     * @param string[]         $expectedLinks
+     * @param Link[]           $links
+     *
+     * @return void
+     */
     private function assertPackageLinks($context, array $expectedLinks, PackageInterface $sourcePackage, array $links)
     {
         self::assertCount(count($expectedLinks), $links, sprintf('%s: expected package count to match', $context));
@@ -1206,6 +1219,13 @@ class ResourceBundleStub
 {
     const STUB_VERSION = '32.0.1';
 
+    /**
+     * @param string $locale
+     * @param string $bundleName
+     * @param bool   $fallback
+     *
+     * @return ResourceBundleStub
+     */
     public static function create($locale, $bundleName, $fallback)
     {
         Assert::assertSame(3, func_num_args());
@@ -1216,6 +1236,11 @@ class ResourceBundleStub
         return new self();
     }
 
+    /**
+     * @param string|int $field
+     *
+     * @return string
+     */
     public function get($field)
     {
         Assert::assertSame(1, func_num_args());
@@ -1227,13 +1252,23 @@ class ResourceBundleStub
 
 class ImagickStub
 {
+    /**
+     * @var string
+     */
     private $versionString;
 
+    /**
+     * @param string $versionString
+     */
     public function __construct($versionString)
     {
         $this->versionString = $versionString;
     }
 
+    /**
+     * @return array<string, string>
+     * @phpstan-return array{versionString: string}
+     */
     public function getVersion()
     {
         Assert::assertSame(0, func_num_args());

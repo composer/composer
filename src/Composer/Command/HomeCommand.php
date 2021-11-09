@@ -29,7 +29,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 class HomeCommand extends BaseCommand
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
+     *
+     * @return void
      */
     protected function configure()
     {
@@ -56,7 +58,7 @@ EOT
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -98,6 +100,8 @@ EOT
     }
 
     /**
+     * @param bool $showHomepage
+     * @param bool $showOnly
      * @return bool
      */
     private function handlePackage(CompletePackageInterface $package, $showHomepage, $showOnly)
@@ -134,6 +138,7 @@ EOT
         $process = new ProcessExecutor($this->getIO());
         if (Platform::isWindows()) {
             $process->execute('start "web" explorer ' . $url, $output);
+
             return;
         }
 

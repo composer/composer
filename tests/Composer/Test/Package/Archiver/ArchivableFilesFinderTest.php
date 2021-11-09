@@ -302,6 +302,9 @@ class ArchivableFilesFinderTest extends TestCase
         ));
     }
 
+    /**
+     * @return string[]
+     */
     protected function getArchivableFiles()
     {
         $files = array();
@@ -316,11 +319,17 @@ class ArchivableFilesFinderTest extends TestCase
         return $files;
     }
 
+    /**
+     * @param string $command
+     *
+     * @return string[]
+     */
     protected function getArchivedFiles($command)
     {
         if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
             $process = Process::fromShellCommandline($command, $this->sources);
         } else {
+            // @phpstan-ignore-next-line symfony/process 2.8 accepts a string but not 5.3 which is used only for PHPStan
             $process = new Process($command, $this->sources);
         }
         $process->run();
@@ -339,6 +348,11 @@ class ArchivableFilesFinderTest extends TestCase
         return $files;
     }
 
+    /**
+     * @param string[] $expectedFiles
+     *
+     * @return void
+     */
     protected function assertArchivableFiles($expectedFiles)
     {
         $actualFiles = $this->getArchivableFiles();

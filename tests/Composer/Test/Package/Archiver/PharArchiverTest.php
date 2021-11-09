@@ -48,6 +48,8 @@ class PharArchiverTest extends ArchiverTest
 
     /**
      * Create a local dummy repository to run tests against!
+     *
+     * @return void
      */
     protected function setupDummyRepo()
     {
@@ -63,13 +65,20 @@ class PharArchiverTest extends ArchiverTest
         chdir($currentWorkDir);
     }
 
+    /**
+     * @param string $path
+     * @param string $content
+     * @param string $currentWorkDir
+     *
+     * @return void
+     */
     protected function writeFile($path, $content, $currentWorkDir)
     {
         if (!file_exists(dirname($path))) {
             mkdir(dirname($path), 0777, true);
         }
 
-        $result = file_put_contents($path, 'a');
+        $result = file_put_contents($path, $content);
         if (false === $result) {
             chdir($currentWorkDir);
             throw new \RuntimeException('Could not save file.');

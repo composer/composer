@@ -20,7 +20,14 @@ use Composer\Test\TestCase;
  */
 class SuggestedPackagesReporterTest extends TestCase
 {
+    /**
+     * @var \PHPUnit\Framework\MockObject\MockObject
+     */
     private $io;
+
+    /**
+     * @var \Composer\Installer\SuggestedPackagesReporter
+     */
     private $suggestedPackagesReporter;
 
     protected function setUp()
@@ -267,6 +274,9 @@ class SuggestedPackagesReporterTest extends TestCase
         $this->suggestedPackagesReporter->output(SuggestedPackagesReporter::MODE_BY_PACKAGE, $repository);
     }
 
+    /**
+     * @return array<string, string>
+     */
     private function getSuggestedPackageArray()
     {
         return array(
@@ -276,6 +286,9 @@ class SuggestedPackagesReporterTest extends TestCase
         );
     }
 
+    /**
+     * @return \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     private function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')
