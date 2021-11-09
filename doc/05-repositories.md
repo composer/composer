@@ -412,6 +412,7 @@ attempt to use github's zip files.
 Please note:
 * **To let Composer choose which driver to use** the repository type needs to be defined as "vcs"
 * **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update Composer cache and install the package from dist.
+* VCS driver `git-bitbucket` is depreceted in favor of `bitbucket`
 
 #### BitBucket Driver Configuration
 

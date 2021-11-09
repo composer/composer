@@ -37,6 +37,7 @@ class RepositoryFactoryTest extends TestCase
             'pear',
             'git',
             'bitbucket',
+            'git-bitbucket',
             'github',
             'gitlab',
             'svn',
