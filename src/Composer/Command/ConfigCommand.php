@@ -213,7 +213,7 @@ EOT
     {
         // Open file in editor
         if ($input->getOption('editor')) {
-            $editor = escapeshellcmd(getenv('EDITOR'));
+            $editor = escapeshellcmd(Platform::getEnv('EDITOR'));
             if (!$editor) {
                 if (Platform::isWindows()) {
                     $editor = 'notepad';

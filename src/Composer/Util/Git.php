@@ -273,7 +273,7 @@ class Git
      */
     public function syncMirror($url, $dir)
     {
-        if (getenv('COMPOSER_DISABLE_NETWORK') && getenv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
+        if (Platform::getEnv('COMPOSER_DISABLE_NETWORK') && Platform::getEnv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
             $this->io->writeError('<warning>Aborting git mirror sync of '.$url.' as network is disabled</warning>');
 
             return false;
@@ -401,20 +401,20 @@ class Git
         }
 
         // added in git 1.7.1, prevents prompting the user for username/password
-        if (getenv('GIT_ASKPASS') !== 'echo') {
+        if (Platform::getEnv('GIT_ASKPASS') !== 'echo') {
             Platform::putEnv('GIT_ASKPASS', 'echo');
         }
 
         // clean up rogue git env vars in case this is running in a git hook
-        if (getenv('GIT_DIR')) {
+        if (Platform::getEnv('GIT_DIR')) {
             Platform::clearEnv('GIT_DIR');
         }
-        if (getenv('GIT_WORK_TREE')) {
+        if (Platform::getEnv('GIT_WORK_TREE')) {
             Platform::clearEnv('GIT_WORK_TREE');
         }
 
         // Run processes with predictable LANGUAGE
-        if (getenv('LANGUAGE') !== 'C') {
+        if (Platform::getEnv('LANGUAGE') !== 'C') {
             Platform::putEnv('LANGUAGE', 'C');
         }
 

@@ -122,7 +122,7 @@ final class StreamContextFactory
                 $phpVersion,
                 $httpVersion,
                 $platformPhpVersion ? '; Platform-PHP '.$platformPhpVersion : '',
-                getenv('CI') ? '; CI' : ''
+                Platform::getEnv('CI') ? '; CI' : ''
             );
         }
 
