@@ -14,6 +14,7 @@ namespace Composer;
 
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Symfony\Component\Finder\Finder;
 
@@ -242,7 +243,7 @@ class Cache
         }
 
         self::$cacheCollected = true;
-        if (getenv('COMPOSER_TEST_SUITE')) {
+        if (Platform::getEnv('COMPOSER_TEST_SUITE')) {
             return false;
         }
 

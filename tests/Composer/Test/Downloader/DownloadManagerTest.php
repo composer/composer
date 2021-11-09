@@ -632,6 +632,11 @@ class DownloadManagerTest extends TestCase
 
     /**
      * @dataProvider updatesProvider
+     * @param ?string $prevPkgSource
+     * @param ?bool $prevPkgIsDev
+     * @param string[] $targetAvailable
+     * @param bool $targetIsDev
+     * @param string[] $expected
      */
     public function testGetAvailableSourcesUpdateSticksToSameSource($prevPkgSource, $prevPkgIsDev, $targetAvailable, $targetIsDev, $expected)
     {

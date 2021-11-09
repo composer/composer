@@ -99,7 +99,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         } else {
             $msg = "Cloning ".$this->getShortHash($ref);
             $command = 'git clone --no-checkout -- %url% %path% && cd '.$flag.'%path% && git remote add composer -- %url% && git fetch composer && git remote set-url origin -- %sanitizedUrl% && git remote set-url composer -- %sanitizedUrl%';
-            if (getenv('COMPOSER_DISABLE_NETWORK')) {
+            if (Platform::getEnv('COMPOSER_DISABLE_NETWORK')) {
                 throw new \RuntimeException('The required git reference for '.$package->getName().' is not in cache and network is disabled, aborting');
             }
         }
@@ -157,7 +157,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         } else {
             $msg = "Checking out ".$this->getShortHash($ref);
             $command = '(git remote set-url composer -- %url% && git rev-parse --quiet --verify %ref% || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- %sanitizedUrl%';
-            if (getenv('COMPOSER_DISABLE_NETWORK')) {
+            if (Platform::getEnv('COMPOSER_DISABLE_NETWORK')) {
                 throw new \RuntimeException('The required git reference for '.$target->getName().' is not in cache and network is disabled, aborting');
             }
         }

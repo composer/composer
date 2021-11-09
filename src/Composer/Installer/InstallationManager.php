@@ -488,7 +488,7 @@ class InstallationManager
         if (
             $this->outputProgress
             && $this->io instanceof ConsoleIO
-            && !getenv('CI')
+            && !Platform::getEnv('CI')
             && !$this->io->isDebug()
             && count($promises) > 1
         ) {

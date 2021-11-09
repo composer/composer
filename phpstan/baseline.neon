@@ -9,3 +9,8 @@ parameters:
             message: "#^Parameter \\#2 \\$capabilityClassName of method Composer\\\\Plugin\\\\PluginManager\\:\\:getPluginCapability\\(\\) expects class\\-string\\<Composer\\\\Plugin\\\\Capability\\\\Capability\\>, string given\\.$#"
             count: 2
             path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
+
+        -
+            message: "#^Unable to resolve the template type CapabilityClass in call to method Composer\\\\Plugin\\\\PluginManager::getPluginCapability\\(\\)$#"
+            count: 2
+            path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php

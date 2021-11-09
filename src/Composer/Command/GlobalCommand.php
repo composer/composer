@@ -88,7 +88,7 @@ EOT
         }
 
         // The COMPOSER env var should not apply to the global execution scope
-        if (getenv('COMPOSER')) {
+        if (Platform::getEnv('COMPOSER')) {
             Platform::clearEnv('COMPOSER');
         }
 

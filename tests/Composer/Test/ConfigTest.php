@@ -18,6 +18,9 @@ class ConfigTest extends TestCase
 {
     /**
      * @dataProvider dataAddPackagistRepository
+     * @param mixed[] $expected
+     * @param mixed[] $localConfig
+     * @param ?mixed[] $systemConfig
      */
     public function testAddPackagistRepository($expected, $localConfig, $systemConfig = null)
     {
@@ -265,7 +268,7 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @return array List of test URLs that should pass strict security
+     * @return string[][] List of test URLs that should pass strict security
      */
     public function allowedUrlProvider()
     {
@@ -286,7 +289,7 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @return array List of test URLs that should not pass strict security
+     * @return string[][] List of test URLs that should not pass strict security
      */
     public function prohibitedUrlProvider()
     {

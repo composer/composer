@@ -21,6 +21,7 @@ use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\RootPackage;
 use Composer\Repository\RepositoryManager;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 
 /**
@@ -83,8 +84,8 @@ class RootPackageLoader extends ArrayLoader
             $commit = null;
 
             // override with env var if available
-            if (getenv('COMPOSER_ROOT_VERSION')) {
-                $config['version'] = getenv('COMPOSER_ROOT_VERSION');
+            if (Platform::getEnv('COMPOSER_ROOT_VERSION')) {
+                $config['version'] = Platform::getEnv('COMPOSER_ROOT_VERSION');
             } else {
                 $versionData = $this->versionGuesser->guessVersion($config, $cwd ?: getcwd());
                 if ($versionData) {

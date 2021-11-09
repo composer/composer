@@ -35,8 +35,10 @@ class CompletePackageTest extends TestCase
     }
 
     /**
-     * Tests memory package naming semantics
      * @dataProvider providerVersioningSchemes
+     *
+     * @param string $name
+     * @param string $version
      */
     public function testPackageHasExpectedNamingSemantics($name, $version)
     {
@@ -47,8 +49,10 @@ class CompletePackageTest extends TestCase
     }
 
     /**
-     * Tests memory package versioning semantics
      * @dataProvider providerVersioningSchemes
+     *
+     * @param string $name
+     * @param string $version
      */
     public function testPackageHasExpectedVersioningSemantics($name, $version)
     {
@@ -60,8 +64,10 @@ class CompletePackageTest extends TestCase
     }
 
     /**
-     * Tests memory package marshalling/serialization semantics
      * @dataProvider providerVersioningSchemes
+     *
+     * @param string $name
+     * @param string $version
      */
     public function testPackageHasExpectedMarshallingSemantics($name, $version)
     {

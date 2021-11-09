@@ -88,7 +88,12 @@ class ArrayDumperTest extends TestCase
     }
 
     /**
-     * @dataProvider getKeys
+     * @dataProvider provideKeys
+     *
+     * @param string $key
+     * @param mixed  $value
+     * @param string $method
+     * @param mixed  $expectedValue
      */
     public function testKeys($key, $value, $method = null, $expectedValue = null)
     {
@@ -106,7 +111,7 @@ class ArrayDumperTest extends TestCase
         $this->assertSame($expectedValue ?: $value, $config[$key]);
     }
 
-    public function getKeys()
+    public function provideKeys()
     {
         return array(
             array(
@@ -239,6 +244,12 @@ class ArrayDumperTest extends TestCase
         );
     }
 
+    /**
+     * @param string $method
+     * @param mixed  $value
+     *
+     * @return self
+     */
     private function packageExpects($method, $value)
     {
         $this->package

@@ -24,6 +24,7 @@ use Composer\Script\ScriptEvents;
 use Composer\Script\Event as ScriptEvent;
 use Composer\Util\ProcessExecutor;
 use Composer\Test\Mock\ProcessExecutorMock;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class EventDispatcherTest extends TestCase
@@ -294,9 +295,9 @@ class EventDispatcherTest extends TestCase
     public function testDispatcherAppendsDirBinOnPathForEveryListener()
     {
         $currentDirectoryBkp = getcwd();
-        $composerBinDirBkp = getenv('COMPOSER_BIN_DIR');
+        $composerBinDirBkp = Platform::getEnv('COMPOSER_BIN_DIR');
         chdir(__DIR__);
-        putenv('COMPOSER_BIN_DIR=' . __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
+        Platform::putEnv('COMPOSER_BIN_DIR', __DIR__ . '/vendor/bin');
 
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->setConstructorArgs(array(
                 $this->createComposerInstance(),
@@ -314,11 +315,15 @@ class EventDispatcherTest extends TestCase
         $dispatcher->expects($this->atLeastOnce())->method('getListeners')->will($this->returnValue($listeners));
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
-        rmdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
-        rmdir(__DIR__ . sprintf('%svendor', DIRECTORY_SEPARATOR));
+        rmdir(__DIR__ . '/vendor/bin');
+        rmdir(__DIR__ . '/vendor');
 
         chdir($currentDirectoryBkp);
-        putenv('COMPOSER_BIN_DIR' . ($composerBinDirBkp === false ? '' : '=' . $composerBinDirBkp));
+        if ($composerBinDirBkp) {
+            Platform::putEnv('COMPOSER_BIN_DIR', $composerBinDirBkp);
+        } else {
+            Platform::clearEnv('COMPOSER_BIN_DIR');
+        }
     }
 
     /**
@@ -326,14 +331,14 @@ class EventDispatcherTest extends TestCase
      */
     public static function createsVendorBinFolderChecksEnvDoesNotContainsBin()
     {
-        mkdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR), 0700, true);
+        mkdir(__DIR__ . '/vendor/bin', 0700, true);
         $val = getenv('PATH');
 
         if (!$val) {
             $val = getenv('Path');
         }
 
-        self::assertFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
+        self::assertStringNotContainsString(__DIR__ . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', $val);
     }
 
     /**
@@ -347,7 +352,7 @@ class EventDispatcherTest extends TestCase
             $val = getenv('Path');
         }
 
-        self::assertNotFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
+        self::assertStringContainsString(__DIR__ . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', $val);
     }
 
     /**
@@ -628,7 +633,7 @@ class EventDispatcherTest extends TestCase
     private function createComposerInstance()
     {
         $composer = new Composer;
-        $config = new Config;
+        $config = new Config();
         $composer->setConfig($config);
         $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
         $composer->setPackage($package);

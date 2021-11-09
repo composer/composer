@@ -70,7 +70,7 @@ class HttpDownloader
     {
         $this->io = $io;
 
-        $this->disabled = (bool) getenv('COMPOSER_DISABLE_NETWORK');
+        $this->disabled = (bool) Platform::getEnv('COMPOSER_DISABLE_NETWORK');
 
         // Setup TLS options
         // The cafile option can be set via config.json
@@ -88,7 +88,7 @@ class HttpDownloader
 
         $this->rfs = new RemoteFilesystem($io, $config, $options, $disableTls);
 
-        if (is_numeric($maxJobs = getenv('COMPOSER_MAX_PARALLEL_HTTP'))) {
+        if (is_numeric($maxJobs = Platform::getEnv('COMPOSER_MAX_PARALLEL_HTTP'))) {
             $this->maxJobs = max(1, min(50, (int) $maxJobs));
         }
     }

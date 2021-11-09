@@ -62,6 +62,9 @@ class InstalledVersionsTest extends TestCase
 
     /**
      * @dataProvider isInstalledProvider
+     * @param bool $expected
+     * @param string $name
+     * @param bool $includeDevRequirements
      */
     public function testIsInstalled($expected, $name, $includeDevRequirements = true)
     {
@@ -84,6 +87,9 @@ class InstalledVersionsTest extends TestCase
 
     /**
      * @dataProvider satisfiesProvider
+     * @param bool $expected
+     * @param string $name
+     * @param string $constraint
      */
     public function testSatisfies($expected, $name, $constraint)
     {
@@ -122,6 +128,8 @@ class InstalledVersionsTest extends TestCase
 
     /**
      * @dataProvider getVersionRangesProvider
+     * @param string $expected
+     * @param string $name
      */
     public function testGetVersionRanges($expected, $name)
     {
@@ -144,6 +152,8 @@ class InstalledVersionsTest extends TestCase
 
     /**
      * @dataProvider getVersionProvider
+     * @param ?string $expected
+     * @param string $name
      */
     public function testGetVersion($expected, $name)
     {
@@ -166,6 +176,8 @@ class InstalledVersionsTest extends TestCase
 
     /**
      * @dataProvider getPrettyVersionProvider
+     * @param ?string $expected
+     * @param string $name
      */
     public function testGetPrettyVersion($expected, $name)
     {
@@ -219,6 +231,8 @@ class InstalledVersionsTest extends TestCase
 
     /**
      * @dataProvider getReferenceProvider
+     * @param ?string $expected
+     * @param string $name
      */
     public function testGetReference($expected, $name)
     {

@@ -166,6 +166,10 @@ class ArrayRepository implements RepositoryInterface
                     'name' => $package->getPrettyName(),
                     'description' => $package instanceof CompletePackageInterface ? $package->getDescription() : null,
                 );
+
+                if ($package instanceof CompletePackageInterface && $package->isAbandoned()) {
+                    $matches[$name]['abandoned'] = $package->getReplacementPackage() ?: true;
+                }
             }
         }
 

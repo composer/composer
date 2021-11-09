@@ -17,10 +17,15 @@ use Composer\Util\Filesystem;
 
 class CacheTest extends TestCase
 {
+    /** @var string[] */
     private $files;
+    /** @var string */
     private $root;
+    /** @var \Symfony\Component\Finder\Finder&\PHPUnit\Framework\MockObject\MockObject */
     private $finder;
+    /** @var Filesystem&\PHPUnit\Framework\MockObject\MockObject */
     private $filesystem;
+    /** @var Cache&\PHPUnit\Framework\MockObject\MockObject */
     private $cache;
 
     public function setUp()
@@ -108,7 +113,7 @@ class CacheTest extends TestCase
     public function testClearCache()
     {
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $this->cache = new Cache($io, $this->root, 'a-z0-9.', $this->filesystem);
-        $this->assertTrue($this->cache->clear());
+        $cache = new Cache($io, $this->root, 'a-z0-9.', $this->filesystem);
+        $this->assertTrue($cache->clear());
     }
 }

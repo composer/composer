@@ -91,6 +91,7 @@ class ArchiveDownloaderTest extends TestCase
 
     /**
      * @dataProvider provideUrls
+     * @param string $url
      */
     public function testProcessUrlRewriteDist($url)
     {
@@ -128,6 +129,8 @@ class ArchiveDownloaderTest extends TestCase
 
     /**
      * @dataProvider provideBitbucketUrls
+     * @param string $url
+     * @param string $extension
      */
     public function testProcessUrlRewriteBitbucketDist($url, $extension)
     {
@@ -160,6 +163,9 @@ class ArchiveDownloaderTest extends TestCase
         );
     }
 
+    /**
+     * @return \Composer\Downloader\ArchiveDownloader&\PHPUnit\Framework\MockObject\MockObject
+     */
     private function getArchiveDownloaderMock()
     {
         return $this->getMockForAbstractClass(

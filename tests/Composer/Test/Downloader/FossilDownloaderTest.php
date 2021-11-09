@@ -40,6 +40,7 @@ class FossilDownloaderTest extends TestCase
      * @param \Composer\Config $config
      * @param \Composer\Test\Mock\ProcessExecutorMock $executor
      * @param \Composer\Util\Filesystem $filesystem
+     * @return FossilDownloader
      */
     protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
     {
