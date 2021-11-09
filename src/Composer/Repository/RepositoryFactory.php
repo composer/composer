@@ -164,7 +164,9 @@ class RepositoryFactory
             if ($repo['type'] === 'filesystem') {
                 $repos[$name] = new FilesystemRepository($repo['json']);
             } else {
-                $repo['url'] = Platform::expandPath($repo['url']);
+                if(isset($repo['url'])) {
+                    $repo['url'] = Platform::expandPath($repo['url']);
+                }
                 $repos[$name] = $rm->createRepository($repo['type'], $repo, $index);
             }
         }
