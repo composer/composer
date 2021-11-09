@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\HttpDownloader;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Json\JsonFile;
 
@@ -163,6 +164,7 @@ class RepositoryFactory
             if ($repo['type'] === 'filesystem') {
                 $repos[$name] = new FilesystemRepository($repo['json']);
             } else {
+                $repo['url'] = Platform::expandPath($repo['url']);
                 $repos[$name] = $rm->createRepository($repo['type'], $repo, $index);
             }
         }
