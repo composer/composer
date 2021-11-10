@@ -431,36 +431,97 @@ class Installer
             $request->setUpdateAllowList($this->updateAllowList, $this->updateAllowTransitiveDependencies);
         }
 
-        $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy));
+        if (Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING') || '2' === Platform::getEnv('COMPOSER_POOL_OPTIMIZER')) {
+            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy));
+        } else {
+            $pool = $repositorySet->createPool($request, $this->io, $this->eventDispatcher/*, $this->createPoolOptimizer($policy)*/);
+        }
 
         $this->io->writeError('<info>Updating dependencies</info>');
 
         // solve dependencies
         $solver = new Solver($policy, $pool, $this->io);
-        try {
-            $lockTransaction = $solver->solve($request, $this->platformRequirementFilter);
-            $ruleSetSize = $solver->getRuleSetSize();
-            $solver = null;
-        } catch (SolverProblemsException $e) {
-            $err = 'Your requirements could not be resolved to an installable set of packages.';
-            $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose());
+        if (!Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING') && '1' === Platform::getEnv('COMPOSER_POOL_OPTIMIZER')) {
+            try {
+                $this->io->writeError("<highlight>Updating dependencies with default package pool</highlight>", true, IOInterface::VERBOSE);
+                $lockTransaction = $solver->solve($request, $this->platformRequirementFilter);
+                $ruleSetSize = $solver->getRuleSetSize();
+                $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
+                $this->io->writeError("Analyzed ".$ruleSetSize." rules to resolve dependencies", true, IOInterface::VERBOSE);
 
-            $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
-            $this->io->writeError($prettyProblem);
-            if (!$this->devMode) {
-                $this->io->writeError('<warning>Running update with --no-dev does not mean require-dev is ignored, it just means the packages will not be installed. If dev requirements are blocking the update you have to resolve those problems.</warning>', true, IOInterface::QUIET);
+                $this->io->writeError("<highlight>Updating dependencies with optimized package pool</highlight>", true, IOInterface::VERBOSE);
+                $pool2 = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy));
+                $solver2 = new Solver($policy, $pool2, $this->io);
+                $lockTransaction2 = $solver2->solve($request, $this->platformRequirementFilter);
+                $ruleSetSize2 = $solver2->getRuleSetSize();
+                $this->io->writeError("Analyzed ".count($pool2)." packages to resolve dependencies", true, IOInterface::VERBOSE);
+                $this->io->writeError("Analyzed ".$ruleSetSize2." rules to resolve dependencies", true, IOInterface::VERBOSE);
+
+                $solver = $solver2 = null;
+                $pool = $pool2 = null;
+            } catch (SolverProblemsException $e) {
+                $err = 'Your requirements could not be resolved to an installable set of packages.';
+                $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose());
+
+                if (isset($pool2)) {
+                    throw new \LogicException('Optimized solver failed but non-optimized one did not fail, please report this with your composer.json');
+                } else {
+                    try {
+                        $pool2 = $repositorySet->createPool($request, $this->io, $this->eventDispatcher, $this->createPoolOptimizer($policy));
+                        $solver2 = new Solver($policy, $pool2, $this->io);
+                        $lockTransaction2 = $solver2->solve($request, $this->platformRequirementFilter);
+                        throw new \LogicException('Optimized solver worked but non-optimized one failed resolving, please report this with your composer.json');
+                    } catch (SolverProblemsException $e2) {
+                    }
+                }
+
+                $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
+                $this->io->writeError($prettyProblem);
+                if (!$this->devMode) {
+                    $this->io->writeError('<warning>Running update with --no-dev does not mean require-dev is ignored, it just means the packages will not be installed. If dev requirements are blocking the update you have to resolve those problems.</warning>', true, IOInterface::QUIET);
+                }
+
+                $ghe = new GithubActionError($this->io);
+                $ghe->emit($err."\n".$prettyProblem);
+
+                return max(self::ERROR_GENERIC_FAILURE, $e->getCode());
             }
 
-            $ghe = new GithubActionError($this->io);
-            $ghe->emit($err."\n".$prettyProblem);
+            $txLogOptimized = array_map(function ($op) {
+                return (string) $op;
+            }, $lockTransaction2->getOperations());
+            $txLogRaw = array_map(function ($op) {
+                return (string) $op;
+            }, $lockTransaction->getOperations());
+            if ($txLogOptimized !== $txLogRaw) {
+                throw new \LogicException('Optimized solver resolved differently from non-optimized one, please report this with your composer.json'.PHP_EOL.implode(PHP_EOL,$txLogOptimized).implode(PHP_EOL,$txLogRaw));
+            }
+            $this->io->writeError("<highlight>Done, test successful</highlight>", true, IOInterface::VERBOSE);
+        } else {
+            try {
+                $lockTransaction = $solver->solve($request, $this->platformRequirementFilter);
+                $ruleSetSize = $solver->getRuleSetSize();
+                $solver = null;
+            } catch (SolverProblemsException $e) {
+                $err = 'Your requirements could not be resolved to an installable set of packages.';
+                $prettyProblem = $e->getPrettyString($repositorySet, $request, $pool, $this->io->isVerbose());
 
-            return max(self::ERROR_GENERIC_FAILURE, $e->getCode());
+                $this->io->writeError('<error>'. $err .'</error>', true, IOInterface::QUIET);
+                $this->io->writeError($prettyProblem);
+                if (!$this->devMode) {
+                    $this->io->writeError('<warning>Running update with --no-dev does not mean require-dev is ignored, it just means the packages will not be installed. If dev requirements are blocking the update you have to resolve those problems.</warning>', true, IOInterface::QUIET);
+                }
+
+                $ghe = new GithubActionError($this->io);
+                $ghe->emit($err."\n".$prettyProblem);
+
+                return max(self::ERROR_GENERIC_FAILURE, $e->getCode());
+            }
+
+            $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
+            $this->io->writeError("Analyzed ".$ruleSetSize." rules to resolve dependencies", true, IOInterface::VERBOSE);
+            $pool = null;
         }
-
-        $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
-        $this->io->writeError("Analyzed ".$ruleSetSize." rules to resolve dependencies", true, IOInterface::VERBOSE);
-
-        $pool = null;
 
         if (!$lockTransaction->getOperations()) {
             $this->io->writeError('Nothing to modify in lock file');
