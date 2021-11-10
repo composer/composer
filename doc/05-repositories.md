@@ -400,8 +400,8 @@ VCS repository provides `dist`s for them that fetch the packages as zips.
 * **BitBucket:** [bitbucket.org](https://bitbucket.org) (Git and Mercurial)
 
 The VCS driver to be used is detected automatically based on the URL. However,
-should you need to specify one for whatever reason, you can use `git-bitbucket`,
-`hg-bitbucket`, `github`, `gitlab`, `perforce`, `fossil`, `git`, `svn` or `hg`
+should you need to specify one for whatever reason, you can use `bitbucket`,
+`github`, `gitlab`, `perforce`, `fossil`, `git`, `svn` or `hg`
 as the repository type instead of `vcs`.
 
 If you set the `no-api` key to `true` on a github repository it will clone the
@@ -412,6 +412,7 @@ attempt to use github's zip files.
 Please note:
 * **To let Composer choose which driver to use** the repository type needs to be defined as "vcs"
 * **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update Composer cache and install the package from dist.
+* VCS driver `git-bitbucket` is deprecated in favor of `bitbucket`
 
 #### BitBucket Driver Configuration
 

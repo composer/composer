@@ -36,6 +36,7 @@ class RepositoryFactoryTest extends TestCase
             'package',
             'pear',
             'git',
+            'bitbucket',
             'git-bitbucket',
             'github',
             'gitlab',
@@ -43,7 +44,6 @@ class RepositoryFactoryTest extends TestCase
             'fossil',
             'perforce',
             'hg',
-            'hg-bitbucket',
             'artifact',
             'path',
         ), array_keys($repositoryClasses));
