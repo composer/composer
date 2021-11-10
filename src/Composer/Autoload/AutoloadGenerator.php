@@ -1095,6 +1095,11 @@ METHOD_FOOTER;
             return $file . <<<FOOTER
 }
 
+/**
+ * @param string \$fileIdentifier
+ * @param string \$file
+ * @return void
+ */
 function composerRequire$suffix(\$fileIdentifier, \$file)
 {
     if (empty(\$GLOBALS['__composer_autoload_files'][\$fileIdentifier])) {
@@ -1400,6 +1405,11 @@ INITIALIZER;
     }
 }
 
+/**
+ * @param string $fileIdentifier
+ * @param string $file
+ * @return void
+ */
 function composerRequire($fileIdentifier, $file)
 {
     if (empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
