@@ -1267,19 +1267,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     throw $e;
                 }
 
-                // try to detect offline state (if dns resolution fails it is pretty likely to keep failing) and avoid retrying in that case
-                if ($e instanceof TransportException && $e->getStatusCode() === null) {
-                    $responseInfo = $e->getResponseInfo();
-                    if (isset($responseInfo['namelookup_time']) && $responseInfo['namelookup_time'] == 0) {
-                        $retries = 0;
-                    }
-                }
-
-                if ($retries) {
-                    usleep(100000);
-                    continue;
-                }
-
                 if ($e instanceof RepositorySecurityException) {
                     throw $e;
                 }
@@ -1314,71 +1301,61 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     private function fetchFileIfLastModified($filename, $cacheKey, $lastModifiedTime)
     {
-        $retries = 3;
-        while ($retries--) {
-            try {
-                $options = $this->options;
-                if ($this->eventDispatcher) {
-                    $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
-                    $preFileDownloadEvent->setTransportOptions($this->options);
-                    $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
-                    $filename = $preFileDownloadEvent->getProcessedUrl();
-                    $options = $preFileDownloadEvent->getTransportOptions();
-                }
+        try {
+            $options = $this->options;
+            if ($this->eventDispatcher) {
+                $preFileDownloadEvent = new PreFileDownloadEvent(PluginEvents::PRE_FILE_DOWNLOAD, $this->httpDownloader, $filename, 'metadata', array('repository' => $this));
+                $preFileDownloadEvent->setTransportOptions($this->options);
+                $this->eventDispatcher->dispatch($preFileDownloadEvent->getName(), $preFileDownloadEvent);
+                $filename = $preFileDownloadEvent->getProcessedUrl();
+                $options = $preFileDownloadEvent->getTransportOptions();
+            }
 
-                if (isset($options['http']['header'])) {
-                    $options['http']['header'] = (array) $options['http']['header'];
-                }
-                $options['http']['header'][] = 'If-Modified-Since: '.$lastModifiedTime;
-                $response = $this->httpDownloader->get($filename, $options);
-                $json = (string) $response->getBody();
-                if ($json === '' && $response->getStatusCode() === 304) {
-                    return true;
-                }
-
-                if ($this->eventDispatcher) {
-                    $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $filename, 'metadata', array('response' => $response, 'repository' => $this));
-                    $this->eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
-                }
-
-                $data = $response->decodeJson();
-                HttpDownloader::outputWarnings($this->io, $this->url, $data);
-
-                $lastModifiedDate = $response->getHeader('last-modified');
-                $response->collect();
-                if ($lastModifiedDate) {
-                    $data['last-modified'] = $lastModifiedDate;
-                    $json = JsonFile::encode($data, 0);
-                }
-                if (!$this->cache->isReadOnly()) {
-                    $this->cache->write($cacheKey, $json);
-                }
-
-                return $data;
-            } catch (\Exception $e) {
-                if ($e instanceof \LogicException) {
-                    throw $e;
-                }
-
-                if ($e instanceof TransportException && $e->getStatusCode() === 404) {
-                    throw $e;
-                }
-
-                if ($retries) {
-                    usleep(100000);
-                    continue;
-                }
-
-                if (!$this->degradedMode) {
-                    $this->io->writeError('<warning>'.$this->url.' could not be fully loaded ('.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
-                }
-                $this->degradedMode = true;
-
+            if (isset($options['http']['header'])) {
+                $options['http']['header'] = (array) $options['http']['header'];
+            }
+            $options['http']['header'][] = 'If-Modified-Since: '.$lastModifiedTime;
+            $response = $this->httpDownloader->get($filename, $options);
+            $json = (string) $response->getBody();
+            if ($json === '' && $response->getStatusCode() === 304) {
                 return true;
             }
-        }
 
-        throw new \LogicException('Should not happen');
+            if ($this->eventDispatcher) {
+                $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $filename, 'metadata', array('response' => $response, 'repository' => $this));
+                $this->eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
+            }
+
+            $data = $response->decodeJson();
+            HttpDownloader::outputWarnings($this->io, $this->url, $data);
+
+            $lastModifiedDate = $response->getHeader('last-modified');
+            $response->collect();
+            if ($lastModifiedDate) {
+                $data['last-modified'] = $lastModifiedDate;
+                $json = JsonFile::encode($data, 0);
+            }
+            if (!$this->cache->isReadOnly()) {
+                $this->cache->write($cacheKey, $json);
+            }
+
+            return $data;
+        } catch (\Exception $e) {
+            if ($e instanceof \LogicException) {
+                throw $e;
+            }
+
+            if ($e instanceof TransportException && $e->getStatusCode() === 404) {
+                throw $e;
+            }
+
+            if (!$this->degradedMode) {
+                $this->io->writeError('<warning>'.$this->url.' could not be fully loaded ('.$e->getMessage().'), package information was loaded from the local cache and may be out of date</warning>');
+            }
+            $this->degradedMode = true;
+
+            return true;
+        }
     }
 
     /**
@@ -1390,8 +1367,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     private function asyncFetchFile($filename, $cacheKey, $lastModifiedTime = null)
     {
-        $retries = 3;
-
         if (isset($this->packagesNotFoundCache[$filename])) {
             return \React\Promise\resolve(array('packages' => array()));
         }
@@ -1462,30 +1437,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $data;
         };
 
-        $reject = function ($e) use (&$retries, $httpDownloader, $filename, $options, &$reject, $accept, $io, $url, &$degradedMode, $repo, $lastModifiedTime) {
+        $reject = function ($e) use ($filename, $accept, $io, $url, &$degradedMode, $repo, $lastModifiedTime) {
             if ($e instanceof TransportException && $e->getStatusCode() === 404) {
                 $repo->packagesNotFoundCache[$filename] = true;
 
                 return false;
-            }
-
-            // special error code returned when network is being artificially disabled
-            if ($e instanceof TransportException && $e->getStatusCode() === 499) {
-                $retries = 0;
-            }
-
-            // try to detect offline state (if dns resolution fails it is pretty likely to keep failing) and avoid retrying in that case
-            if ($e instanceof TransportException && $e->getStatusCode() === null) {
-                $responseInfo = $e->getResponseInfo();
-                if (isset($responseInfo['namelookup_time']) && $responseInfo['namelookup_time'] == 0) {
-                    $retries = 0;
-                }
-            }
-
-            if (--$retries > 0) {
-                usleep(100000);
-
-                return $httpDownloader->add($filename, $options)->then($accept, $reject);
             }
 
             if (!$degradedMode) {
