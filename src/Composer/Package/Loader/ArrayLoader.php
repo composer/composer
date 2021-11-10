@@ -327,6 +327,12 @@ class ArrayLoader implements LoaderInterface
                 $links = array();
                 foreach ($config[$type] as $prettyTarget => $constraint) {
                     $target = strtolower($prettyTarget);
+
+                    // recursive links are not supported
+                    if ($target === $name) {
+                        continue;
+                    }
+
                     if ($constraint === 'self.version') {
                         $links[$target] = $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint);
                     } else {

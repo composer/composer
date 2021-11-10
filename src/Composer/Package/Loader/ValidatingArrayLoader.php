@@ -241,6 +241,11 @@ class ValidatingArrayLoader implements LoaderInterface
         foreach (array_keys(BasePackage::$supportedLinkTypes) as $linkType) {
             if ($this->validateArray($linkType) && isset($this->config[$linkType])) {
                 foreach ($this->config[$linkType] as $package => $constraint) {
+                    if (0 === strcasecmp($package, $this->config['name'])) {
+                        $this->errors[] = $linkType.'.'.$package.' : a package cannot set a '.$linkType.' on itself';
+                        unset($this->config[$linkType][$package]);
+                        continue;
+                    }
                     if ($err = self::hasPackageNamingError($package, true)) {
                         $this->warnings[] = 'Deprecation warning: '.$linkType.'.'.$err.' Make sure you fix this as Composer 2.0 will error.';
                     } elseif (!preg_match('{^[A-Za-z0-9_./-]+$}', $package)) {

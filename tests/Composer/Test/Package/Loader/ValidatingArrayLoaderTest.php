@@ -354,6 +354,15 @@ class ValidatingArrayLoaderTest extends TestCase
                     'source.url : must not start with a "-", "--foo" given',
                 ),
             ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'require' => array('foo/Bar' => '1.*'),
+                ),
+                array(
+                    'require.foo/Bar : a package cannot set a require on itself',
+                ),
+            ),
         ));
     }
 

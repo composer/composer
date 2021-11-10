@@ -17,7 +17,7 @@ Circular dependencies are possible between packages
                     "version": "1.0.0",
                     "source": { "reference": "some.branch", "type": "git", "url": "" },
                     "require": {
-                        "require/itself": "1.0.0"
+                        "root/pkg": "dev-master"
                     }
                 },
                 {
