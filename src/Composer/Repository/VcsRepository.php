@@ -66,7 +66,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     private $versionCache;
     /** @var string[] */
     private $emptyReferences = array();
-    /** @var array<'tags'|'branches', array<string, \Throwable>> */
+    /** @var array<'tags'|'branches', array<string, TransportException>> */
     private $versionTransportExceptions = array();
 
     /**
@@ -180,7 +180,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     }
 
     /**
-     * @return array<'tags'|'branches', array<string, \Throwable>>
+     * @return array<'tags'|'branches', array<string, TransportException>>
      */
     public function getVersionTransportExceptions()
     {
