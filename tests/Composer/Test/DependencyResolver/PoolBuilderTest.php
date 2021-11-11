@@ -12,6 +12,9 @@
 
 namespace Composer\Test\DependencyResolver;
 
+use Composer\DependencyResolver\DefaultPolicy;
+use Composer\DependencyResolver\Pool;
+use Composer\DependencyResolver\PoolOptimizer;
 use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\FilterRepository;
@@ -31,13 +34,14 @@ class PoolBuilderTest extends TestCase
      * @dataProvider getIntegrationTests
      * @param string $file
      * @param string $message
-     * @param mixed[] $expect
+     * @param string[] $expect
+     * @param string[] $expectOptimized
      * @param mixed[] $root
      * @param mixed[] $requestData
      * @param mixed[] $packageRepos
      * @param mixed[] $fixed
      */
-    public function testPoolBuilder($file, $message, $expect, $root, $requestData, $packageRepos, $fixed)
+    public function testPoolBuilder($file, $message, $expect, $expectOptimized, $root, $requestData, $packageRepos, $fixed)
     {
         $rootAliases = !empty($root['aliases']) ? $root['aliases'] : array();
         $minimumStability = !empty($root['minimum-stability']) ? $root['minimum-stability'] : 'stable';
@@ -56,6 +60,8 @@ class PoolBuilderTest extends TestCase
         $loader = new ArrayLoader();
         $packageIds = array();
         $loadPackage = function ($data) use ($loader, &$packageIds) {
+            /** @var ?int $id */
+            $id = null;
             if (!empty($data['id'])) {
                 $id = $data['id'];
                 unset($data['id']);
@@ -115,12 +121,28 @@ class PoolBuilderTest extends TestCase
         }
 
         $pool = $repositorySet->createPool($request, new NullIO());
+
+        $result = $this->getPackageResultSet($pool, $packageIds);
+
+        $this->assertSame($expect, $result, 'Unoptimized pool does not match expected package set');
+
+        $optimizer = new PoolOptimizer(new DefaultPolicy());
+        $result = $this->getPackageResultSet($optimizer->optimize($request, $pool), $packageIds);
+        $this->assertSame($expectOptimized, $result, 'Optimized pool does not match expected package set');
+    }
+
+    /**
+     * @param array<int, BasePackage> $packageIds
+     * @return string[]
+     */
+    private function getPackageResultSet(Pool $pool, $packageIds)
+    {
         $result = array();
         for ($i = 1, $count = count($pool); $i <= $count; $i++) {
             $result[] = $pool->packageById($i);
         }
 
-        $result = array_map(function ($package) use ($packageIds) {
+        return array_map(function (BasePackage $package) use ($packageIds) {
             if ($id = array_search($package, $packageIds, true)) {
                 return $id;
             }
@@ -143,8 +165,6 @@ class PoolBuilderTest extends TestCase
 
             return (string) $package->getName().'-'.$package->getVersion() . $suffix;
         }, $result);
-
-        $this->assertSame($expect, $result);
     }
 
     /**
@@ -173,11 +193,12 @@ class PoolBuilderTest extends TestCase
                     $fixed = JsonFile::parseJson($testData['FIXED']);
                 }
                 $expect = JsonFile::parseJson($testData['EXPECT']);
+                $expectOptimized = !empty($testData['EXPECT-OPTIMIZED']) ? JsonFile::parseJson($testData['EXPECT-OPTIMIZED']) : $expect;
             } catch (\Exception $e) {
                 die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
             }
 
-            $tests[basename($file)] = array(str_replace($fixturesDir.'/', '', $file), $message, $expect, $root, $request, $packageRepos, $fixed);
+            $tests[basename($file)] = array(str_replace($fixturesDir.'/', '', $file), $message, $expect, $expectOptimized, $root, $request, $packageRepos, $fixed);
         }
 
         return $tests;
@@ -199,6 +220,7 @@ class PoolBuilderTest extends TestCase
             'FIXED' => false,
             'PACKAGE-REPOS' => true,
             'EXPECT' => true,
+            'EXPECT-OPTIMIZED' => false,
         );
 
         $section = null;

@@ -36,16 +36,57 @@ class Pool implements \Countable
     protected $providerCache = array();
     /** @var BasePackage[] */
     protected $unacceptableFixedOrLockedPackages;
+    /** @var array<string, array<string, string>> Map of package name => normalized version => pretty version */
+    protected $removedVersions = array();
+    /** @var array<string, array<string, string>> Map of package object hash => removed normalized versions => removed pretty version */
+    protected $removedVersionsByPackage = array();
 
     /**
      * @param BasePackage[] $packages
      * @param BasePackage[] $unacceptableFixedOrLockedPackages
+     * @param array<string, array<string, string>> $removedVersions
+     * @param array<string, array<string, string>> $removedVersionsByPackage
      */
-    public function __construct(array $packages = array(), array $unacceptableFixedOrLockedPackages = array())
+    public function __construct(array $packages = array(), array $unacceptableFixedOrLockedPackages = array(), array $removedVersions = array(), array $removedVersionsByPackage = array())
     {
         $this->versionParser = new VersionParser;
         $this->setPackages($packages);
         $this->unacceptableFixedOrLockedPackages = $unacceptableFixedOrLockedPackages;
+        $this->removedVersions = $removedVersions;
+        $this->removedVersionsByPackage = $removedVersionsByPackage;
+    }
+
+    /**
+     * @param  string $name
+     * @return array<string, string>
+     */
+    public function getRemovedVersions($name, ConstraintInterface $constraint)
+    {
+        if (!isset($this->removedVersions[$name])) {
+            return array();
+        }
+
+        $result = array();
+        foreach ($this->removedVersions[$name] as $version => $prettyVersion) {
+            if ($constraint->matches(new Constraint('==', $version))) {
+                $result[$version] = $prettyVersion;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  string $objectHash
+     * @return array<string, string>
+     */
+    public function getRemovedVersionsByPackage($objectHash)
+    {
+        if (!isset($this->removedVersionsByPackage[$objectHash])) {
+            return array();
+        }
+
+        return $this->removedVersionsByPackage[$objectHash];
     }
 
     /**
@@ -219,6 +260,14 @@ class Pool implements \Countable
     public function isUnacceptableFixedOrLockedPackage(BasePackage $package)
     {
         return \in_array($package, $this->unacceptableFixedOrLockedPackages, true);
+    }
+
+    /**
+     * @return BasePackage[]
+     */
+    public function getUnacceptableFixedOrLockedPackages()
+    {
+        return $this->unacceptableFixedOrLockedPackages;
     }
 
     public function __toString()

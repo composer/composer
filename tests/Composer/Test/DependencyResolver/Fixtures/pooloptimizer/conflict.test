@@ -1,0 +1,107 @@
+--TEST--
+We have to make sure, conflicts are considered in the grouping so we do not remove packages
+from the pool which might end up being part of the solution.
+
+--REQUEST--
+{
+    "require": {
+        "nesty/nest": "^1.0"
+    }
+}
+
+--POOL-BEFORE--
+[
+        {
+            "name": "nesty/nest",
+            "version": "1.0.0",
+            "require": {
+                "conflicter/pkg": "^1.0",
+                "victim/pkg": "^1 <1.2"
+            }
+        },
+        {
+            "name": "conflicter/pkg",
+            "version": "1.0.1",
+            "conflict": {
+                "victim/pkg": "1.1.0 || 1.1.1"
+            }
+        },
+        {
+            "name": "conflicter/pkg",
+            "version": "1.0.2",
+            "conflict": {
+                "victim/pkg": "1.1.1 || 1.1.2"
+            }
+        },
+        {
+            "name": "victim/pkg",
+            "version": "1.0.0"
+        },
+        {
+            "name": "victim/pkg",
+            "version": "1.0.1"
+        },
+        {
+            "name": "victim/pkg",
+            "version": "1.0.2"
+        },
+        {
+            "name": "victim/pkg",
+            "version": "1.1.0"
+        },
+        {
+            "name": "victim/pkg",
+            "version": "1.1.1"
+        },
+        {
+            "name": "victim/pkg",
+            "version": "1.1.2"
+        },
+        {
+            "name": "victim/pkg",
+            "version": "1.2.0"
+        }
+]
+
+
+--POOL-AFTER--
+[
+        {
+            "name": "nesty/nest",
+            "version": "1.0.0",
+            "require": {
+                "conflicter/pkg": "^1.0",
+                "victim/pkg": "^1 <1.2"
+            }
+        },
+        {
+            "name": "conflicter/pkg",
+            "version": "1.0.1",
+            "conflict": {
+                "victim/pkg": "1.1.0 || 1.1.1"
+            }
+        },
+        {
+            "name": "conflicter/pkg",
+            "version": "1.0.2",
+            "conflict": {
+                "victim/pkg": "1.1.2"
+            }
+        },
+        {
+            "name": "victim/pkg",
+            "version": "1.0.2"
+        },
+        {
+            "name": "victim/pkg",
+            "version": "1.1.0"
+        },
+        {
+            "name": "victim/pkg",
+            "version": "1.1.1"
+        },
+        {
+            "name": "victim/pkg",
+            "version": "1.1.2"
+        }
+]

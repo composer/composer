@@ -46,3 +46,10 @@ Stability flags apply
     6,
     "default/pkg-1.2.0.0 (alias of 6)"
 ]
+
+--EXPECT-OPTIMIZED--
+[
+    1,
+    6,
+    "default/pkg-1.2.0.0 (alias of 6)"
+]

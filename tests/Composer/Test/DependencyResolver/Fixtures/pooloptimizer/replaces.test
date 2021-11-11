@@ -1,0 +1,59 @@
+--TEST--
+Test replaced packages are correctly removed.
+
+--REQUEST--
+{
+    "require": {
+        "package/a": "^1.0"
+    }
+}
+
+
+--POOL-BEFORE--
+[
+        {
+            "name": "package/a",
+            "version": "1.0.0",
+            "require": {
+                "package/b": "^1.0"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.0",
+            "replace": {
+                "package/c": "^1.0"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.1",
+            "replace": {
+                "package/c": "^1.0"
+            }
+        },
+        {
+            "name": "package/c",
+            "version": "1.0.0"
+        }
+]
+
+
+--POOL-AFTER--
+[
+        {
+            "name": "package/a",
+            "version": "1.0.0",
+            "require": {
+                "package/b": "^1.0"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.1",
+            "replace": {
+                "package/c": "^1.0"
+            }
+        }
+]
+

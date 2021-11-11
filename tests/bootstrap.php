@@ -10,6 +10,8 @@
  * file that was distributed with this source code.
  */
 
+use Composer\Util\Platform;
+
 error_reporting(E_ALL);
 
 if (function_exists('date_default_timezone_set') && function_exists('date_default_timezone_get')) {
@@ -19,3 +21,5 @@ if (function_exists('date_default_timezone_set') && function_exists('date_defaul
 require __DIR__.'/../src/bootstrap.php';
 require __DIR__.'/../src/Composer/InstalledVersions.php';
 require __DIR__.'/Composer/Test/TestCase.php';
+
+Platform::putEnv('COMPOSER_TESTS_ARE_RUNNING', '1');

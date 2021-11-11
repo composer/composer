@@ -11,15 +11,15 @@ Test the error output of solver problems is deduplicated.
                 { "name": "package/a", "version": "2.0.2", "require": { "missing/dep": "^1.0" } },
                 { "name": "package/a", "version": "2.0.3", "require": { "missing/dep": "^1.0" } },
                 { "name": "package/a", "version": "2.1.0", "require": { "missing/dep": "^1.0" } },
-                { "name": "package/a", "version": "2.2.0", "require": { "missing/dep": "^1.0" } },
-                { "name": "package/a", "version": "2.3.1", "require": { "missing/dep": "^1.0" } },
-                { "name": "package/a", "version": "2.3.2", "require": { "missing/dep": "^1.0" } },
-                { "name": "package/a", "version": "2.3.3", "require": { "missing/dep": "^1.0" } },
-                { "name": "package/a", "version": "2.3.4", "require": { "missing/dep": "^1.0" } },
-                { "name": "package/a", "version": "2.3.5", "require": { "missing/dep": "^1.0" } },
-                { "name": "package/a", "version": "2.4.0", "require": { "missing/dep": "^1.0" } },
-                { "name": "package/a", "version": "2.5.0", "require": { "missing/dep": "^1.0" } },
-                { "name": "package/a", "version": "2.6.0", "require": { "missing/dep": "^1.0" } },
+                { "name": "package/a", "version": "2.2.0", "require": { "missing/dep": "^1.1" } },
+                { "name": "package/a", "version": "2.3.1", "require": { "missing/dep": "^1.1" } },
+                { "name": "package/a", "version": "2.3.2", "require": { "missing/dep": "^1.1" } },
+                { "name": "package/a", "version": "2.3.3", "require": { "missing/dep": "^1.1" } },
+                { "name": "package/a", "version": "2.3.4", "require": { "missing/dep": "^1.1" } },
+                { "name": "package/a", "version": "2.3.5", "require": { "missing/dep": "^1.1" } },
+                { "name": "package/a", "version": "2.4.0", "require": { "missing/dep": "^1.1" } },
+                { "name": "package/a", "version": "2.5.0", "require": { "missing/dep": "^1.1" } },
+                { "name": "package/a", "version": "2.6.0", "require": { "missing/dep": "^1.1" } },
                 { "name": "missing/dep", "version": "2.0.0" }
             ]
         }
@@ -41,7 +41,8 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - package/a[2.0.0, ..., 2.6.0] require missing/dep ^1.0 -> found missing/dep[2.0.0] but it does not match the constraint.
+    - package/a[2.2.0, ..., 2.6.0] require missing/dep ^1.1 -> found missing/dep[2.0.0] but it does not match the constraint.
+    - package/a[2.0.0, ..., 2.1.0] require missing/dep ^1.0 -> found missing/dep[2.0.0] but it does not match the constraint.
     - Root composer.json requires package/a * -> satisfiable by package/a[2.0.0, ..., 2.6.0].
 
 --EXPECT--
