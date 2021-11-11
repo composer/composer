@@ -263,4 +263,23 @@ abstract class BasePackage implements PackageInterface
 
         return sprintf($wrap, $cleanedAllowPattern);
     }
+
+    /**
+     * Build a regexp from package names, expanding * globs as required
+     *
+     * @param string[] $packageNames
+     * @param string $wrap
+     * @return string
+     */
+    public static function packageNamesToRegexp(array $packageNames, $wrap = '{^(?:%s)$}iD')
+    {
+        $packageNames = array_map(
+            function ($packageName) {
+                return BasePackage::packageNameToRegexp($packageName, '%s');
+            },
+            $packageNames
+        );
+
+        return sprintf($wrap, implode('|', $packageNames));
+    }
 }

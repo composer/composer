@@ -1808,6 +1808,20 @@ EOF;
                 array(),
                 array('php', 'ext-pdo'),
             ),
+            'Via wildcard ignored platform requirements are not checked for' => array(
+                array(
+                    new Link('a', 'php', $versionParser->parseConstraints('^7.2.8')),
+                    new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+                    new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
+                    new Link('a', 'ext-fileinfo', $versionParser->parseConstraints('*')),
+                    new Link('a', 'ext-filesystem', $versionParser->parseConstraints('*')),
+                    new Link('a', 'ext-filter', $versionParser->parseConstraints('*')),
+                ),
+                'no_php_required',
+                array(),
+                array(),
+                array('php', 'ext-fil*'),
+            ),
             'No extensions required' => array(
                 array(
                     new Link('a', 'php', $versionParser->parseConstraints('^7.2')),

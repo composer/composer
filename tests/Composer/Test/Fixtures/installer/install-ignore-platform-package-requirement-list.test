@@ -1,0 +1,22 @@
+--TEST--
+Install with ignore-platform-req list
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.0", "require": { "ext-foo-bar": "*", "php": "98" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.0",
+        "php": "99.9",
+        "ext-foo-baz": "*"
+    }
+}
+--RUN--
+install --ignore-platform-req=php --ignore-platform-req=ext-foo-bar --ignore-platform-req=ext-foo-baz
+--EXPECT--
+Installing a/a (1.0.0)

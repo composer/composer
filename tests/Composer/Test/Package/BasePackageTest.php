@@ -92,4 +92,33 @@ class BasePackageTest extends TestCase
 
         return array_map($createPackage, $data);
     }
+
+    /**
+     * @param string[] $packageNames
+     * @param string $wrap
+     * @param string $expectedRegexp
+     *
+     * @dataProvider dataPackageNamesToRegexp
+     */
+    public function testPackageNamesToRegexp(array $packageNames, $wrap, $expectedRegexp)
+    {
+        $regexp = BasePackage::packageNamesToRegexp($packageNames, $wrap);
+
+        $this->assertSame($expectedRegexp, $regexp);
+    }
+
+    /**
+     * @return mixed[][]
+     */
+    public function dataPackageNamesToRegexp()
+    {
+        return array(
+            array(
+                array('ext-*', 'monolog/monolog'), '{^%s$}i', '{^ext\-.*|monolog/monolog$}i',
+                array('php'), '{^%s$}i', '{^php$}i',
+                array('*'), '{^%s$}i', '{^.*$}i',
+                array('foo', 'bar'), '§%s§', '§foo|bar§',
+            )
+        );
+    }
 }

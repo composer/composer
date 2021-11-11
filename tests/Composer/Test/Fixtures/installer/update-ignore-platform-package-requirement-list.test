@@ -1,0 +1,26 @@
+--TEST--
+Update with ignore-platform-req list
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.1", "require": { "ext-foo-bar": "*" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.*",
+        "php": "99.9",
+        "ext-foo-baz": "9"
+    }
+}
+--INSTALLED--
+[
+    { "name": "a/a", "version": "1.0.0" }
+]
+--RUN--
+update --ignore-platform-req=php --ignore-platform-req=ext-foo-bar --ignore-platform-req=ext-foo-baz
+--EXPECT--
+Upgrading a/a (1.0.0 => 1.0.1)
