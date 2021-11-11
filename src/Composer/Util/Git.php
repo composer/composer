@@ -265,7 +265,6 @@ class Git
         }
     }
 
-
     /**
      * @param string     $url
      * @param string     $dir
