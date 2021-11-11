@@ -5,6 +5,7 @@
 
 This is a list of common pitfalls on using Composer, and how to avoid them.
 
+
 ## General
 
 1. When facing any kind of problems using Composer, be sure to **work with the
@@ -22,6 +23,7 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    `rm -rf vendor && composer update -v` when troubleshooting, excluding any
    possible interferences with existing vendor installations or `composer.lock`
    entries.
+
 
 ## Package not found
 
@@ -47,6 +49,12 @@ This is a list of common pitfalls on using Composer, and how to avoid them.
    In this case add the `--with-dependencies` argument **or** add all dependencies which
    need an update to the command.
 
+
+## Package is not updating to the expected version
+
+Try running `php composer.phar why-not [package-name] [expected-version]`.
+
+
 ## Dependencies on the root package
 
 When your root package depends on a package which ends up depending (directly or
@@ -69,6 +77,7 @@ indirectly) back on the root package itself, issues can occur in two cases:
    the variable only for the call to composer, or you can define it globally in the
    CI env vars.
 
+
 ## Package not found in a Jenkins-build
 
 1. Check the ["Package not found"](#package-not-found) item above.
@@ -81,12 +90,14 @@ indirectly) back on the root package itself, issues can occur in two cases:
    branch as you are checking out. Using this, the checkout will not be in detached state any more
    and the dependency on the root package should become satisfied.
 
+
 ## I have a dependency which contains a "repositories" definition in its composer.json, but it seems to be ignored.
 
 The [`repositories`](../04-schema.md#repositories) configuration property is defined as [root-only](../04-schema.md#root-package). It is not inherited. You can read more about the reasons behind this in the "[why can't
 Composer load repositories recursively?](../faqs/why-can't-composer-load-repositories-recursively.md)" article.
 The simplest work-around to this limitation, is moving or duplicating the `repositories` definition into your root
 composer.json.
+
 
 ## I have locked a dependency to a specific commit but get unexpected results.
 
@@ -102,6 +113,7 @@ frequently overlooked:
 > as you can.
 
 There is no simple work-around to this limitation. It is therefore strongly recommended that you do not use it.
+
 
 ## Need to override a package version
 
@@ -123,7 +135,17 @@ composer.json:
 
 See [aliases](aliases.md) for more information.
 
+
+## Figuring out where a config value came from
+
+Use `php composer.phar config --list --source` to see where each config value originated from.
+
+
 ## Memory limit errors
+
+The first thing to do is to make sure you are running Composer 2, and if possible 2.2.0 or above.
+
+Composer 1 used much more memory and upgrading to the latest version will give you much better and faster results.
 
 Composer may sometimes fail on some commands with this message:
 
@@ -161,6 +183,7 @@ php -d memory_limit=-1 composer.phar <...>
 
 This issue can also happen on cPanel instances, when the shell fork bomb protection is activated. For more information, see the [documentation](https://documentation.cpanel.net/display/68Docs/Shell+Fork+Bomb+Protection) of the fork bomb feature on the cPanel site.
 
+
 ## Xdebug impact on Composer
 
 To improve performance when the Xdebug extension is enabled, Composer automatically restarts PHP without it.
@@ -170,6 +193,7 @@ Composer will always show a warning if Xdebug is being used, but you can overrid
 `COMPOSER_DISABLE_XDEBUG_WARN=1`. If you see this warning unexpectedly, then the restart process has failed:
 please report this [issue](https://github.com/composer/composer/issues).
 
+
 ## "The system cannot find the path specified" (Windows)
 
 1. Open regedit.
@@ -177,6 +201,7 @@ please report this [issue](https://github.com/composer/composer/issues).
    `HKEY_CURRENT_USER\Software\Microsoft\Command Processor`
    or `HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Command Processor`.
 3. Check if it contains any path to non-existent file, if it's the case, remove them.
+
 
 ## API rate limit and OAuth tokens
 
@@ -188,7 +213,9 @@ manually create a token using the [procedure documented here](authentication-for
 
 Now Composer should install/update without asking for authentication.
 
+
 ## proc_open(): fork failed errors
+
 If Composer shows proc_open() fork failed on some commands:
 
 `PHP Fatal error: Uncaught exception 'ErrorException' with message 'proc_open(): fork failed - Cannot allocate memory' in phar`
@@ -214,6 +241,7 @@ To enable the swap you can use for example:
 ```
 You can make a permanent swap file following this [tutorial](https://www.digitalocean.com/community/tutorials/how-to-add-swap-on-ubuntu-14-04).
 
+
 ## proc_open(): failed to open stream errors (Windows)
 
 If Composer shows proc_open(NUL) errors on Windows:
@@ -226,6 +254,7 @@ service. The issue was fixed in PHP 7.2.23 and 7.3.10.
 
 Alternatively it could be because the Windows Null Service is not enabled. For
 more information, see this [issue](https://github.com/composer/composer/issues/7186#issuecomment-373134916).
+
 
 ## Degraded Mode
 
@@ -246,8 +275,8 @@ If you have been pointed to this page, you want to check a few things:
   routing rules between you and Packagist (i.e. the internet at large). The best way to get
   these fixed is raise awareness to the network engineers that have the power to fix it.
   Take a look at the next section for IPv6 workarounds.
-
 - If none of the above helped, please report the error.
+
 
 ## Operation timed out (IPv6 issues)
 
@@ -300,6 +329,7 @@ That said, if this fixes your problem, please talk to your ISP about it to
 try and resolve the routing errors. That's the best way to get things resolved
 for everyone.
 
+
 ## Composer hangs with SSH ControlMaster
 
 When you try to install packages from a Git repository and you use the `ControlMaster`
@@ -317,9 +347,9 @@ php composer.phar update
 
 See also https://github.com/composer/composer/issues/4180 for more information.
 
+
 ## Zip archives are not unpacked correctly.
 
-Composer can unpack zipballs using either a system-provided `unzip` utility or PHP's
-native `ZipArchive` class. The `ZipArchive` class is preferred on Windows. On other
-OSes where ZIP files can contain permissions and symlinks, the `unzip` utility is
-preferred. You're advised to install it if you need these features.
+Composer can unpack zipballs using either a system-provided `unzip` or `7z` (7-Zip) utility, or PHP's
+native `ZipArchive` class. On OSes where ZIP files can contain permissions and symlinks, we recommend
+installing `unzip` or `7z` as these features are not supported by `ZipArchive`.
