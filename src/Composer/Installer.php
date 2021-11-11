@@ -805,7 +805,7 @@ class Installer
         $rootRequires = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
-            if ($this->platformRequirementFilter->isReqIgnored($req)) {
+            if ($this->platformRequirementFilter->isIgnored($req)) {
                 continue;
             }
             if ($constraint instanceof Link) {

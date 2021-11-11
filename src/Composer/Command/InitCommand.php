@@ -903,7 +903,7 @@ EOT
         if (!$package) {
             // platform packages can not be found in the pool in versions other than the local platform's has
             // so if platform reqs are ignored we just take the user's word for it
-            if ($platformRequirementFilter->isReqIgnored($name)) {
+            if ($platformRequirementFilter->isIgnored($name)) {
                 return array($name, $requiredVersion ?: '*');
             }
 

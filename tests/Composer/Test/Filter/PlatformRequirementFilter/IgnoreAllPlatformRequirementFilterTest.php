@@ -8,22 +8,22 @@ use Composer\Test\TestCase;
 final class IgnoreAllPlatformRequirementFilterTest extends TestCase
 {
     /**
-     * @dataProvider dataIsReqIgnored
+     * @dataProvider dataIsIgnored
      *
      * @param string $req
      * @param bool $expectIgnored
      */
-    public function testIsReqIgnored($req, $expectIgnored)
+    public function testIsIgnored($req, $expectIgnored)
     {
         $platformRequirementFilter = new IgnoreAllPlatformRequirementFilter();
 
-        $this->assertSame($expectIgnored, $platformRequirementFilter->isReqIgnored($req));
+        $this->assertSame($expectIgnored, $platformRequirementFilter->isIgnored($req));
     }
 
     /**
      * @return array<string, mixed[]>
      */
-    public function dataIsReqIgnored()
+    public function dataIsIgnored()
     {
         return array(
             'php is ignored' => array('php', true),

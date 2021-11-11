@@ -197,7 +197,7 @@ class RuleSetGenerator
             }
 
             foreach ($package->getRequires() as $link) {
-                if ($platformRequirementFilter->isReqIgnored($link->getTarget())) {
+                if ($platformRequirementFilter->isIgnored($link->getTarget())) {
                     continue;
                 }
 
@@ -225,7 +225,7 @@ class RuleSetGenerator
                     continue;
                 }
 
-                if ($platformRequirementFilter->isReqIgnored($link->getTarget())) {
+                if ($platformRequirementFilter->isIgnored($link->getTarget())) {
                     continue;
                 }
 
@@ -275,7 +275,7 @@ class RuleSetGenerator
         }
 
         foreach ($request->getRequires() as $packageName => $constraint) {
-            if ($platformRequirementFilter->isReqIgnored($packageName)) {
+            if ($platformRequirementFilter->isIgnored($packageName)) {
                 continue;
             }
 

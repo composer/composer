@@ -771,7 +771,7 @@ EOF;
             }
 
             foreach ($package->getRequires() as $link) {
-                if ($this->platformRequirementFilter->isReqIgnored($link->getTarget())) {
+                if ($this->platformRequirementFilter->isIgnored($link->getTarget())) {
                     continue;
                 }
 

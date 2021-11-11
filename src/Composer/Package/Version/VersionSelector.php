@@ -90,7 +90,7 @@ class VersionSelector
                 $reqs = $pkg->getRequires();
 
                 foreach ($reqs as $name => $link) {
-                    if (!$platformRequirementFilter->isReqIgnored($name)) {
+                    if (!$platformRequirementFilter->isIgnored($name)) {
                         if (isset($platformConstraints[$name])) {
                             foreach ($platformConstraints[$name] as $constraint) {
                                 if ($link->getConstraint()->matches($constraint)) {

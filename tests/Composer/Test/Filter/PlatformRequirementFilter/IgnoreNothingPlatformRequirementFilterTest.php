@@ -8,21 +8,21 @@ use Composer\Test\TestCase;
 final class IgnoreNothingPlatformRequirementFilterTest extends TestCase
 {
     /**
-     * @dataProvider dataIsReqIgnored
+     * @dataProvider dataIsIgnored
      *
      * @param string $req
      */
-    public function testIsReqIgnored($req)
+    public function testIsIgnored($req)
     {
         $platformRequirementFilter = new IgnoreNothingPlatformRequirementFilter();
 
-        $this->assertFalse($platformRequirementFilter->isReqIgnored($req));
+        $this->assertFalse($platformRequirementFilter->isIgnored($req));
     }
 
     /**
      * @return array<string, mixed[]>
      */
-    public function dataIsReqIgnored()
+    public function dataIsIgnored()
     {
         return array(
             'php is not ignored' => array('php'),

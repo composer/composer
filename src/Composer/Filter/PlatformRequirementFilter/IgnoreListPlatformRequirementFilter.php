@@ -23,7 +23,7 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
      * @param string $req
      * @return bool
      */
-    public function isReqIgnored($req)
+    public function isIgnored($req)
     {
         if (!PlatformRepository::isPlatformPackage($req)) {
             return false;

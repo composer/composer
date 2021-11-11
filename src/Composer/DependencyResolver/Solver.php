@@ -172,7 +172,7 @@ class Solver
     protected function checkForRootRequireProblems(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter)
     {
         foreach ($request->getRequires() as $packageName => $constraint) {
-            if ($platformRequirementFilter->isReqIgnored($packageName)) {
+            if ($platformRequirementFilter->isIgnored($packageName)) {
                 continue;
             }
 
