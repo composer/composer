@@ -303,7 +303,7 @@ class Git
 
         if ($shallowClone) {
             $commandCallable = function ($url) use ($dir) {
-                return sprintf('git clone --depth=1 --mirror -- %s %s && git remote set-branches origin "*"', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
+                return sprintf('git clone --depth=1 --mirror -- %s %s && git remote set-branches origin %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir), ProcessExecutor::escape('*'));
             };
 
             $this->runCommand($commandCallable, $url, $dir, true);
