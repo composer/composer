@@ -26,9 +26,9 @@ use Composer\Util\Http\Response;
 class GitBitbucketDriver extends VcsDriver
 {
     /** @var string */
-    private $owner;
+    protected $owner;
     /** @var string */
-    private $repository;
+    protected $repository;
     /** @var bool */
     private $hasIssues = false;
     /** @var ?string */
@@ -51,7 +51,7 @@ class GitBitbucketDriver extends VcsDriver
     /**
      * @var ?VcsDriver
      */
-    private $fallbackDriver = null;
+    protected $fallbackDriver = null;
     /** @var string|null if set either git or hg */
     private $vcsType;
 
@@ -60,7 +60,7 @@ class GitBitbucketDriver extends VcsDriver
      */
     public function initialize()
     {
-        preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)$#i', $this->url, $match);
+        preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)?$#i', $this->url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'bitbucket.org';
@@ -521,7 +521,7 @@ class GitBitbucketDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match('#^https?://bitbucket\.org/([^/]+)/(.+?)(?:\.git)?$#i', $url)) {
+        if (!preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)?$#i', $url)) {
             return false;
         }
 
