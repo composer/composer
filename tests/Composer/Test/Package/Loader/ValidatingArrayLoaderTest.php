@@ -20,6 +20,8 @@ class ValidatingArrayLoaderTest extends TestCase
 {
     /**
      * @dataProvider successProvider
+     *
+     * @param array<string, mixed> $config
      */
     public function testLoadSuccess($config)
     {
@@ -206,6 +208,9 @@ class ValidatingArrayLoaderTest extends TestCase
 
     /**
      * @dataProvider errorProvider
+     *
+     * @param array<string, mixed> $config
+     * @param string[]             $expectedErrors
      */
     public function testLoadFailureThrowsException($config, $expectedErrors)
     {
@@ -224,6 +229,9 @@ class ValidatingArrayLoaderTest extends TestCase
 
     /**
      * @dataProvider warningProvider
+     *
+     * @param array<string, mixed> $config
+     * @param string[]             $expectedWarnings
      */
     public function testLoadWarnings($config, $expectedWarnings)
     {
@@ -239,6 +247,10 @@ class ValidatingArrayLoaderTest extends TestCase
 
     /**
      * @dataProvider warningProvider
+     *
+     * @param array<string, mixed> $config
+     * @param string[]             $expectedWarnings
+     * @param bool                 $mustCheck
      */
     public function testLoadSkipsWarningDataWhenIgnoringErrors($config, $expectedWarnings, $mustCheck = true)
     {
@@ -340,6 +352,15 @@ class ValidatingArrayLoaderTest extends TestCase
                     'dist.url : must not start with a "-", " --foox" given',
                     'source.reference : must not start with a "-", " --bar" given',
                     'source.url : must not start with a "-", "--foo" given',
+                ),
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'require' => array('foo/Bar' => '1.*'),
+                ),
+                array(
+                    'require.foo/Bar : a package cannot set a require on itself',
                 ),
             ),
         ));

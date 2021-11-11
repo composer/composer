@@ -33,8 +33,9 @@ class ClassMapGenerator
     /**
      * Generate a class map file
      *
-     * @param \Traversable|array<string> $dirs Directories or a single path to search in
+     * @param \Traversable<string>|array<string> $dirs Directories or a single path to search in
      * @param string                     $file The name of the class map file
+     * @return void
      */
     public static function dump($dirs, $file)
     {
@@ -50,14 +51,14 @@ class ClassMapGenerator
     /**
      * Iterate over all files in the given directory searching for classes
      *
-     * @param \Traversable|string|array<string> $path         The path to search in or an iterator
-     * @param string                            $excluded     Regex that matches file paths to be excluded from the classmap
-     * @param ?IOInterface                      $io           IO object
-     * @param ?string                           $namespace    Optional namespace prefix to filter by
-     * @param ?string                           $autoloadType psr-0|psr-4 Optional autoload standard to use mapping rules
-     *
+     * @param \Traversable<\SplFileInfo>|string|array<string> $path The path to search in or an iterator
+     * @param string              $excluded     Regex that matches file paths to be excluded from the classmap
+     * @param ?IOInterface        $io           IO object
+     * @param ?string             $namespace    Optional namespace prefix to filter by
+     * @param ?string             $autoloadType psr-0|psr-4 Optional autoload standard to use mapping rules
+     * @param array<string, true> $scannedFiles
+     * @return array<class-string, string> A class map array
      * @throws \RuntimeException When the path is neither an existing file nor directory
-     * @return array             A class map array
      */
     public static function createMap($path, $excluded = null, IOInterface $io = null, $namespace = null, $autoloadType = null, &$scannedFiles = array())
     {
@@ -147,13 +148,13 @@ class ClassMapGenerator
     /**
      * Remove classes which could not have been loaded by namespace autoloaders
      *
-     * @param  array        $classes       found classes in given file
-     * @param  string       $filePath      current file
-     * @param  string       $baseNamespace prefix of given autoload mapping
-     * @param  string       $namespaceType psr-0|psr-4
-     * @param  string       $basePath      root directory of given autoload mapping
-     * @param  ?IOInterface $io            IO object
-     * @return array        valid classes
+     * @param  array<int, class-string> $classes       found classes in given file
+     * @param  string                   $filePath      current file
+     * @param  string                   $baseNamespace prefix of given autoload mapping
+     * @param  string                   $namespaceType psr-0|psr-4
+     * @param  string                   $basePath      root directory of given autoload mapping
+     * @param  ?IOInterface             $io            IO object
+     * @return array<int, class-string> valid classes
      */
     private static function filterByNamespace($classes, $filePath, $baseNamespace, $namespaceType, $basePath, $io)
     {
@@ -210,7 +211,7 @@ class ClassMapGenerator
      *
      * @param  string            $path The file to check
      * @throws \RuntimeException
-     * @return array             The found classes
+     * @return array<int, class-string> The found classes
      */
     private static function findClasses($path)
     {
@@ -283,6 +284,9 @@ class ClassMapGenerator
         return $classes;
     }
 
+    /**
+     * @return string
+     */
     private static function getExtraTypes()
     {
         static $extraTypes = null;

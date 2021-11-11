@@ -35,7 +35,7 @@ class FossilDriver extends VcsDriver
     protected $checkoutDir;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function initialize()
     {
@@ -50,7 +50,7 @@ class FossilDriver extends VcsDriver
         if (Filesystem::isLocalPath($this->url) && is_dir($this->url)) {
             $this->checkoutDir = $this->url;
         } else {
-            if (!Cache::isUsable($this->config->get('cache-repo-dir')) || !Cache::isUsable($this->config->get('cache-vcs-dir'))) {
+            if (!Cache::isUsable((string) $this->config->get('cache-repo-dir')) || !Cache::isUsable((string) $this->config->get('cache-vcs-dir'))) {
                 throw new \RuntimeException('FossilDriver requires a usable cache directory, and it looks like you set it to be disabled');
             }
 
@@ -67,6 +67,8 @@ class FossilDriver extends VcsDriver
 
     /**
      * Check that fossil can be invoked via command line.
+     *
+     * @return void
      */
     protected function checkFossil()
     {
@@ -77,6 +79,8 @@ class FossilDriver extends VcsDriver
 
     /**
      * Clone or update existing local fossil repository.
+     *
+     * @return void
      */
     protected function updateLocalRepo()
     {
@@ -114,7 +118,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRootIdentifier()
     {
@@ -126,7 +130,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getUrl()
     {
@@ -134,7 +138,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSource($identifier)
     {
@@ -142,7 +146,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDist($identifier)
     {
@@ -150,7 +154,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getFileContent($file, $identifier)
     {
@@ -165,7 +169,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getChangeDate($identifier)
     {
@@ -176,7 +180,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getTags()
     {
@@ -195,7 +199,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getBranches()
     {
@@ -215,7 +219,7 @@ class FossilDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {

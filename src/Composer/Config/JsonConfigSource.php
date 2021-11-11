@@ -49,7 +49,7 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getName()
     {
@@ -57,7 +57,7 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addRepository($name, $config, $append = true)
     {
@@ -86,7 +86,7 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function removeRepository($name)
     {
@@ -96,7 +96,7 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addConfigSetting($name, $value)
     {
@@ -116,7 +116,7 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function removeConfigSetting($name)
     {
@@ -136,7 +136,7 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addProperty($name, $value)
     {
@@ -159,7 +159,7 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function removeProperty($name)
     {
@@ -182,7 +182,7 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addLink($type, $name, $value)
     {
@@ -192,7 +192,7 @@ class JsonConfigSource implements ConfigSourceInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function removeLink($type, $name)
     {
@@ -206,6 +206,13 @@ class JsonConfigSource implements ConfigSourceInterface
         });
     }
 
+    /**
+     * @param string $method
+     * @param mixed ...$args
+     * @param callable $fallback
+     *
+     * @return void
+     */
     protected function manipulateJson($method, $args, $fallback)
     {
         $args = func_get_args();
@@ -290,7 +297,7 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * Prepend a reference to an element to the beginning of an array.
      *
-     * @param  array $array
+     * @param  mixed[] $array
      * @param  mixed $value
      * @return int
      */

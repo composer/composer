@@ -20,6 +20,9 @@ use Symfony\Component\Process\ExecutableFinder;
 
 class HhvmDetectorTest extends TestCase
 {
+    /**
+     * @var HhvmDetector
+     */
     private $hhvmDetector;
 
     protected function setUp()
@@ -68,6 +71,9 @@ class HhvmDetectorTest extends TestCase
         self::assertSame(self::getVersionParser()->normalize($version), self::getVersionParser()->normalize($detectedVersion));
     }
 
+    /**
+     * @return ?string
+     */
     private static function versionIdToVersion()
     {
         if (!defined('HHVM_VERSION_ID')) {

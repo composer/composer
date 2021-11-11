@@ -36,6 +36,7 @@ class RepositoryFactoryTest extends TestCase
             'package',
             'pear',
             'git',
+            'bitbucket',
             'git-bitbucket',
             'github',
             'gitlab',
@@ -43,7 +44,6 @@ class RepositoryFactoryTest extends TestCase
             'fossil',
             'perforce',
             'hg',
-            'hg-bitbucket',
             'artifact',
             'path',
         ), array_keys($repositoryClasses));
@@ -51,6 +51,13 @@ class RepositoryFactoryTest extends TestCase
 
     /**
      * @dataProvider generateRepositoryNameProvider
+     *
+     * @param int|string            $index
+     * @param array<string, string> $config
+     * @param array<string, mixed>  $existingRepos
+     * @param int|string            $expected
+     *
+     * @phpstan-param array{url?: string} $config
      */
     public function testGenerateRepositoryName($index, array $config, array $existingRepos, $expected)
     {

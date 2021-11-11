@@ -22,7 +22,6 @@ use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
-use Composer\Package\CompletePackageInterface;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\StabilityFilter;
 
@@ -113,6 +112,11 @@ class RepositorySet
         }
     }
 
+    /**
+     * @param bool $allow
+     *
+     * @return void
+     */
     public function allowInstalledRepositories($allow = true)
     {
         $this->allowInstalledRepositories = $allow;
@@ -134,6 +138,8 @@ class RepositorySet
      * repository the search for that package ends, and following repos will not be consulted.
      *
      * @param RepositoryInterface $repo A package repository
+     *
+     * @return void
      */
     public function addRepository(RepositoryInterface $repo)
     {
@@ -160,7 +166,7 @@ class RepositorySet
      * @param  string                   $name
      * @param  ConstraintInterface|null $constraint
      * @param  int                      $flags      any of the ALLOW_* constants from this class to tweak what is returned
-     * @return array
+     * @return BasePackage[]
      */
     public function findPackages($name, ConstraintInterface $constraint = null, $flags = 0)
     {
@@ -292,12 +298,22 @@ class RepositorySet
         return new Pool($packages);
     }
 
-    // TODO unify this with above in some simpler version without "request"?
+    /**
+     * @param string $packageName
+     *
+     * @return Pool
+     */
     public function createPoolForPackage($packageName, LockArrayRepository $lockedRepo = null)
     {
+        // TODO unify this with above in some simpler version without "request"?
         return $this->createPoolForPackages(array($packageName), $lockedRepo);
     }
 
+    /**
+     * @param string[] $packageNames
+     *
+     * @return Pool
+     */
     public function createPoolForPackages($packageNames, LockArrayRepository $lockedRepo = null)
     {
         $request = new Request($lockedRepo);
@@ -313,6 +329,12 @@ class RepositorySet
         return $this->createPool($request, new NullIO());
     }
 
+    /**
+     * @param array[] $aliases
+     * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
+     *
+     * @return array<string, array<string, array{alias: string, alias_normalized: string}>>
+     */
     private static function getRootAliasesPerPackage(array $aliases)
     {
         $normalizedAliases = array();

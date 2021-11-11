@@ -53,7 +53,9 @@ class InitCommand extends BaseCommand
     private $repositorySets;
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
+     *
+     * @return void
      */
     protected function configure()
     {
@@ -88,7 +90,10 @@ EOT
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
+     *
+     * @return int
+     * @throws \Seld\JsonLint\ParsingException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -219,7 +224,9 @@ EOT
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
+     *
+     * @return void
      */
     protected function interact(InputInterface $input, OutputInterface $output)
     {
@@ -461,7 +468,7 @@ EOT
     /**
      * @private
      * @param  string $author
-     * @return array
+     * @return array{name: string, email: string}
      */
     public function parseAuthorString($author)
     {
@@ -480,11 +487,18 @@ EOT
         );
     }
 
+    /**
+     * @param string $name
+     * @return list<array{name: string, description: ?string}>
+     */
     protected function findPackages($name)
     {
         return $this->getRepos()->search($name);
     }
 
+    /**
+     * @return CompositeRepository
+     */
     protected function getRepos()
     {
         if (!$this->repos) {
@@ -497,6 +511,16 @@ EOT
         return $this->repos;
     }
 
+    /**
+     * @param array<string> $requires
+     * @param PlatformRepository|null $platformRepo
+     * @param string $preferredStability
+     * @param bool $checkProvidedVersions
+     * @param bool $fixed
+     *
+     * @return array<string>
+     * @throws \Exception
+     */
     final protected function determineRequirements(InputInterface $input, OutputInterface $output, $requires = array(), PlatformRepository $platformRepo = null, $preferredStability = 'stable', $checkProvidedVersions = true, $fixed = false)
     {
         if ($requires) {
@@ -663,6 +687,11 @@ EOT
         return $requires;
     }
 
+    /**
+     * @param string $author
+     *
+     * @return array<int, array{name: string, email: string}>
+     */
     protected function formatAuthors($author)
     {
         return array($this->parseAuthorString($author));
@@ -696,6 +725,9 @@ EOT
         return join('\\', $namespace);
     }
 
+    /**
+     * @return array<string, string>
+     */
     protected function getGitConfig()
     {
         if (null !== $this->gitConfig) {
@@ -761,6 +793,12 @@ EOT
         return false;
     }
 
+    /**
+     * @param string $ignoreFile
+     * @param string $vendor
+     *
+     * @return void
+     */
     protected function addVendorIgnore($ignoreFile, $vendor = '/vendor/')
     {
         $contents = "";
@@ -775,6 +813,11 @@ EOT
         file_put_contents($ignoreFile, $contents . $vendor. "\n");
     }
 
+    /**
+     * @param string $email
+     *
+     * @return bool
+     */
     protected function isValidEmail($email)
     {
         // assume it's valid if we can't validate it
@@ -790,6 +833,11 @@ EOT
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 
+    /**
+     * @param string|null $minimumStability
+     *
+     * @return RepositorySet
+     */
     private function getRepositorySet(InputInterface $input, $minimumStability = null)
     {
         $key = $minimumStability ?: 'default';
@@ -802,6 +850,9 @@ EOT
         return $this->repositorySets[$key];
     }
 
+    /**
+     * @return string
+     */
     private function getMinimumStability(InputInterface $input)
     {
         if ($input->hasOption('stability')) {
@@ -823,7 +874,6 @@ EOT
      *
      * This returns a version with the ~ operator prefixed when possible.
      *
-     * @param  InputInterface            $input
      * @param  string                    $name
      * @param  PlatformRepository|null   $platformRepo
      * @param  string                    $preferredStability
@@ -831,7 +881,7 @@ EOT
      * @param  string                    $minimumStability
      * @param  bool                      $fixed
      * @throws \InvalidArgumentException
-     * @return array                     name version
+     * @return array{string, string}     name version
      */
     private function findBestVersionAndNameForPackage(InputInterface $input, $name, PlatformRepository $platformRepo = null, $preferredStability = 'stable', $requiredVersion = null, $minimumStability = null, $fixed = null)
     {
@@ -854,10 +904,10 @@ EOT
                 return array($name, $requiredVersion ?: '*');
             }
 
-            // Check whether the PHP version was the problem
+            // Check whether the package requirements were the problem
             if (true !== $ignorePlatformReqs && ($candidate = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, true))) {
                 throw new \InvalidArgumentException(sprintf(
-                    'Package %s%s has a PHP requirement incompatible with your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
+                    'Package %s%s has requirements incompatible with your PHP version, PHP extensions and Composer version' . $this->getPlatformExceptionDetails($candidate, $platformRepo),
                     $name,
                     $requiredVersion ? ' at version '.$requiredVersion : ''
                 ));
@@ -936,6 +986,9 @@ EOT
         );
     }
 
+    /**
+     * @return string
+     */
     private function getPlatformExceptionDetails(PackageInterface $candidate, PlatformRepository $platformRepo = null)
     {
         $details = array();
@@ -969,6 +1022,11 @@ EOT
         return ':'.PHP_EOL.'  - ' . implode(PHP_EOL.'  - ', $details);
     }
 
+    /**
+     * @param string $package
+     *
+     * @return array<string>
+     */
     private function findSimilar($package)
     {
         try {
@@ -993,7 +1051,10 @@ EOT
         return array_keys(array_slice($similarPackages, 0, 5));
     }
 
-    private function updateDependencies($output)
+    /**
+     * @return void
+     */
+    private function updateDependencies(OutputInterface $output)
     {
         try {
             $updateCommand = $this->getApplication()->find('update');
@@ -1004,7 +1065,10 @@ EOT
         }
     }
 
-    private function runDumpAutoloadCommand($output)
+    /**
+     * @return void
+     */
+    private function runDumpAutoloadCommand(OutputInterface $output)
     {
         try {
             $command = $this->getApplication()->find('dump-autoload');
@@ -1015,6 +1079,10 @@ EOT
         }
     }
 
+    /**
+     * @param array<string, string|array<string>> $options
+     * @return bool
+     */
     private function hasDependencies($options)
     {
         $requires = (array) $options['require'];

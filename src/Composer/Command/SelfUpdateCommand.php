@@ -38,6 +38,9 @@ class SelfUpdateCommand extends BaseCommand
     const HOMEPAGE = 'getcomposer.org';
     const OLD_INSTALL_EXT = '-old.phar';
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -70,8 +73,17 @@ EOT
         ;
     }
 
+    /**
+     * @return int
+     * @throws FilesystemException
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        // trigger autoloading of a few classes which may be needed when verifying/swapping the phar file
+        // to ensure we do not try to load them from the new phar, see https://github.com/composer/composer/issues/10252
+        class_exists('Composer\Util\Platform');
+        class_exists('Composer\Downloader\FilesystemException');
+
         $config = Factory::createConfig();
 
         if ($config->get('disable-tls') === true) {
@@ -105,7 +117,9 @@ EOT
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
 
         if ($input->getOption('update-keys')) {
-            return $this->fetchKeys($io, $config);
+            $this->fetchKeys($io, $config);
+
+            return 0;
         }
 
         // ensure composer.phar location is accessible
@@ -199,7 +213,7 @@ EOT
             return 0;
         }
 
-        $tempFilename = $tmpDir . '/' . basename($localFilename, '.phar').'-temp.phar';
+        $tempFilename = $tmpDir . '/' . basename($localFilename, '.phar').'-temp'.rand(0, 10000000).'.phar';
         $backupFile = sprintf(
             '%s/%s-%s%s',
             $rollbackDir,
@@ -324,6 +338,10 @@ TAGSPUBKEY
         return 0;
     }
 
+    /**
+     * @return void
+     * @throws \Exception
+     */
     protected function fetchKeys(IOInterface $io, Config $config)
     {
         if (!$io->isInteractive()) {
@@ -369,6 +387,12 @@ TAGSPUBKEY
         $io->write('Public keys stored in '.$config->get('home'));
     }
 
+    /**
+     * @param string $rollbackDir
+     * @param string $localFilename
+     * @return int
+     * @throws FilesystemException
+     */
     protected function rollback(OutputInterface $output, $rollbackDir, $localFilename)
     {
         $rollbackVersion = $this->getLastBackupVersion($rollbackDir);
@@ -448,6 +472,12 @@ TAGSPUBKEY
         }
     }
 
+    /**
+     * @param string $rollbackDir
+     * @param string|null $except
+     *
+     * @return void
+     */
     protected function cleanBackups($rollbackDir, $except = null)
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
@@ -464,6 +494,10 @@ TAGSPUBKEY
         }
     }
 
+    /**
+     * @param string $rollbackDir
+     * @return string|false
+     */
     protected function getLastBackupVersion($rollbackDir)
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
@@ -477,6 +511,10 @@ TAGSPUBKEY
         return false;
     }
 
+    /**
+     * @param string $rollbackDir
+     * @return Finder
+     */
     protected function getOldInstallationFinder($rollbackDir)
     {
         return Finder::create()

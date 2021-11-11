@@ -23,6 +23,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DumpAutoloadCommand extends BaseCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -50,6 +53,9 @@ EOT
         ;
     }
 
+    /**
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->getComposer();

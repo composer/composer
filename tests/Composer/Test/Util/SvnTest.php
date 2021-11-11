@@ -14,7 +14,6 @@ namespace Composer\Test\Util;
 
 use Composer\Config;
 use Composer\IO\NullIO;
-use Composer\Util\Platform;
 use Composer\Util\Svn;
 use Composer\Test\TestCase;
 
@@ -37,17 +36,12 @@ class SvnTest extends TestCase
         $this->assertEquals($expect, $reflMethod->invoke($svn));
     }
 
-    /**
-     * Provide some examples for {@self::testCredentials()}.
-     *
-     * @return array
-     */
     public function urlProvider()
     {
         return array(
             array('http://till:test@svn.example.org/', $this->getCmd(" --username 'till' --password 'test' ")),
             array('http://svn.apache.org/', ''),
-            array('svn://johndoe@example.org', $this->getCmd(" --username 'johndoe' --password \"\" ")),
+            array('svn://johndoe@example.org', $this->getCmd(" --username 'johndoe' --password '' ")),
         );
     }
 
@@ -129,10 +123,5 @@ class SvnTest extends TestCase
         $reflMethod->setAccessible(true);
 
         $this->assertEquals($this->getCmd(" --no-auth-cache --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
-    }
-
-    private function getCmd($cmd)
-    {
-        return Platform::isWindows() ? strtr($cmd, "'", '"') : $cmd;
     }
 }

@@ -21,11 +21,17 @@ class RootPackage extends CompletePackage implements RootPackageInterface
 {
     const DEFAULT_PRETTY_VERSION = '1.0.0+no-version-set';
 
+    /** @var string */
     protected $minimumStability = 'stable';
+    /** @var bool */
     protected $preferStable = false;
+    /** @var array<string, BasePackage::STABILITY_*> Map of package name to stability constant */
     protected $stabilityFlags = array();
+    /** @var mixed[] */
     protected $config = array();
+    /** @var array<string, string> Map of package name to reference/commit hash */
     protected $references = array();
+    /** @var array<array{package: string, version: string, alias: string, alias_normalized: string}> */
     protected $aliases = array();
 
     /**
@@ -37,7 +43,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getMinimumStability()
     {
@@ -45,7 +51,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setStabilityFlags(array $stabilityFlags)
     {
@@ -53,7 +59,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getStabilityFlags()
     {
@@ -69,7 +75,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getPreferStable()
     {
@@ -85,7 +91,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getConfig()
     {
@@ -101,7 +107,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getReferences()
     {
@@ -117,7 +123,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getAliases()
     {

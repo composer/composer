@@ -19,6 +19,8 @@ class JsonValidationExceptionTest extends TestCase
 {
     /**
      * @dataProvider errorProvider
+     * @param string|null $message
+     * @param string[]|null $errors
      */
     public function testGetErrors($message, $errors)
     {

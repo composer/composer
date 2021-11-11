@@ -19,13 +19,17 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Composer\IO\BufferIO;
+use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Util\Filesystem;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\RepositoryManager;
+use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Package\RootPackageInterface;
+use Composer\Package\BasePackage;
+use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Package\Locker;
 use Composer\Test\Mock\FactoryMock;
@@ -38,7 +42,9 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
 
 class InstallerTest extends TestCase
 {
+    /** @var string */
     protected $prevCwd;
+    /** @var ?string */
     protected $tempComposerHome;
 
     public function setUp()
@@ -58,6 +64,9 @@ class InstallerTest extends TestCase
 
     /**
      * @dataProvider provideInstaller
+     * @param RootPackageInterface&BasePackage $rootPackage
+     * @param RepositoryInterface[] $repositories
+     * @param array[] $options
      */
     public function testInstaller(RootPackageInterface $rootPackage, $repositories, array $options)
     {
@@ -73,10 +82,10 @@ class InstallerTest extends TestCase
                 switch ($key) {
                     case 'vendor-dir':
                         return 'foo';
-                    case 'lock';
-                    case 'notify-on-install';
+                    case 'lock':
+                    case 'notify-on-install':
                         return true;
-                    case 'platform';
+                    case 'platform':
                         return array();
                 }
 
@@ -141,6 +150,10 @@ class InstallerTest extends TestCase
         $this->assertSame($expectedUninstalled, $uninstalled);
     }
 
+    /**
+     * @param  PackageInterface[] $packages
+     * @return mixed[]
+     */
     protected function makePackagesComparable($packages)
     {
         $dumper = new ArrayDumper();
@@ -203,7 +216,19 @@ class InstallerTest extends TestCase
 
     /**
      * @group slow
-     * @dataProvider getSlowIntegrationTests
+     * @dataProvider provideSlowIntegrationTests
+     * @param string $file
+     * @param string $message
+     * @param ?string $condition
+     * @param Config $composerConfig
+     * @param ?mixed[] $lock
+     * @param ?mixed[] $installed
+     * @param string $run
+     * @param mixed[]|false $expectLock
+     * @param ?mixed[] $expectInstalled
+     * @param ?string $expectOutput
+     * @param string $expect
+     * @param int|string $expectResult
      */
     public function testSlowIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult)
     {
@@ -211,7 +236,19 @@ class InstallerTest extends TestCase
     }
 
     /**
-     * @dataProvider getIntegrationTests
+     * @dataProvider provideIntegrationTests
+     * @param string $file
+     * @param string $message
+     * @param ?string $condition
+     * @param Config $composerConfig
+     * @param ?mixed[] $lock
+     * @param ?mixed[] $installed
+     * @param string $run
+     * @param mixed[]|false $expectLock
+     * @param ?mixed[] $expectInstalled
+     * @param ?string $expectOutput
+     * @param string $expect
+     * @param int|string $expectResult
      */
     public function testIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult)
     {
@@ -406,16 +443,20 @@ class InstallerTest extends TestCase
         }
     }
 
-    public function getSlowIntegrationTests()
+    public function provideSlowIntegrationTests()
     {
         return $this->loadIntegrationTests('installer-slow/');
     }
 
-    public function getIntegrationTests()
+    public function provideIntegrationTests()
     {
         return $this->loadIntegrationTests('installer/');
     }
 
+    /**
+     * @param  string $path
+     * @return mixed[]
+     */
     public function loadIntegrationTests($path)
     {
         $fixturesDir = realpath(__DIR__.'/Fixtures/'.$path);
@@ -497,6 +538,10 @@ class InstallerTest extends TestCase
         return $tests;
     }
 
+    /**
+     * @param  string $fixturesDir
+     * @return mixed[]
+     */
     protected function readTestFile(\SplFileInfo $file, $fixturesDir)
     {
         $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);

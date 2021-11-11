@@ -23,7 +23,7 @@ use Composer\Repository\PlatformRepository;
 abstract class BasePackage implements PackageInterface
 {
     /**
-     * @phpstan-var array<string, array{description: string, method: Link::TYPE_*}>
+     * @phpstan-var array<non-empty-string, array{description: string, method: Link::TYPE_*}>
      * @internal
      */
     public static $supportedLinkTypes = array(
@@ -40,6 +40,7 @@ abstract class BasePackage implements PackageInterface
     const STABILITY_ALPHA = 15;
     const STABILITY_DEV = 20;
 
+    /** @var array<string, self::STABILITY_*> */
     public static $stabilities = array(
         'stable' => self::STABILITY_STABLE,
         'RC' => self::STABILITY_RC,
@@ -75,7 +76,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getName()
     {
@@ -83,7 +84,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getPrettyName()
     {
@@ -91,7 +92,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getNames($provides = true)
     {
@@ -113,7 +114,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setId($id)
     {
@@ -121,7 +122,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getId()
     {
@@ -129,7 +130,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setRepository(RepositoryInterface $repository)
     {
@@ -140,7 +141,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRepository()
     {
@@ -167,6 +168,9 @@ abstract class BasePackage implements PackageInterface
         return $this->getName().'-'.$this->getVersion();
     }
 
+    /**
+     * @return bool
+     */
     public function equals(PackageInterface $package)
     {
         $self = $this;
@@ -196,7 +200,7 @@ abstract class BasePackage implements PackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getFullPrettyVersion($truncate = true, $displayMode = PackageInterface::DISPLAY_SOURCE_REF_IF_DEV)
     {
@@ -230,6 +234,11 @@ abstract class BasePackage implements PackageInterface
         return $this->getPrettyVersion() . ' ' . $reference;
     }
 
+    /**
+     * @return int
+     *
+     * @phpstan-return self::STABILITY_*
+     */
     public function getStabilityPriority()
     {
         return self::$stabilities[$this->getStability()];

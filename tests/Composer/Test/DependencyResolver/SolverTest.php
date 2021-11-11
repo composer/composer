@@ -16,6 +16,11 @@ use Composer\IO\NullIO;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\LockArrayRepository;
 use Composer\DependencyResolver\DefaultPolicy;
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\MarkAliasInstalledOperation;
+use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
+use Composer\DependencyResolver\Operation\UninstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
@@ -24,15 +29,23 @@ use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Semver\Constraint\MatchAllConstraint;
+use Composer\DependencyResolver\Pool;
 
 class SolverTest extends TestCase
 {
+    /** @var RepositorySet */
     protected $repoSet;
+    /** @var ArrayRepository */
     protected $repo;
+    /** @var LockArrayRepository */
     protected $repoLocked;
+    /** @var Request */
     protected $request;
+    /** @var DefaultPolicy */
     protected $policy;
+    /** @var Solver|null */
     protected $solver;
+    /** @var Pool */
     protected $pool;
 
     public function setUp()
@@ -187,7 +200,7 @@ class SolverTest extends TestCase
      *
      * This is not something that can happen with packages on e.g. Packagist, but custom installers with custom repositories might do something like this;
      * in fact, some PaaSes do the exact thing above, installing binary builds of PHP and extensions as Composer packages with a custom installer in a separate step before the "userland" `composer install`.
-     * 
+     *
      * If version selectors are sufficiently permissive (e.g. "ourcustom/php":"*", "ourcustom/ext-foobar":"*"), then it may happen that the Solver won't pick the highest possible PHP version, as it has already settled on an "ext-foobar" (they're all the same version to the Solver, it doesn't know about the different requirements in each of the otherwise identical packages) if that was listed in "require" before "php".
      * That's "unfixable", and not even broken, behavior (what if the "ext-foobar" has higher versions for the lower "PHP"? who wins then? any combination of the packages is "correct"), but it shouldn't randomly change.
      * This test asserts this behavior to prevent regressions.
@@ -1026,12 +1039,18 @@ class SolverTest extends TestCase
         $this->assertTrue($this->solver->testFlagLearnedPositiveLiteral);
     }
 
+    /**
+     * @return void
+     */
     protected function reposComplete()
     {
         $this->repoSet->addRepository($this->repo);
         $this->repoSet->addRepository($this->repoLocked);
     }
 
+    /**
+     * @return void
+     */
     protected function createSolver()
     {
         $io = new NullIO();
@@ -1039,6 +1058,10 @@ class SolverTest extends TestCase
         $this->solver = new Solver($this->policy, $this->pool, $io);
     }
 
+    /**
+     * @param array<array<string, string>> $expected
+     * @return void
+     */
     protected function checkSolverResult(array $expected)
     {
         $this->createSolver();
@@ -1046,23 +1069,25 @@ class SolverTest extends TestCase
 
         $result = array();
         foreach ($transaction->getOperations() as $operation) {
-            if ('update' === $operation->getOperationType()) {
+            if ($operation instanceof UpdateOperation) {
                 $result[] = array(
                     'job' => 'update',
                     'from' => $operation->getInitialPackage(),
                     'to' => $operation->getTargetPackage(),
                 );
-            } elseif (in_array($operation->getOperationType(), array('markAliasInstalled', 'markAliasUninstalled'))) {
+            } elseif ($operation instanceof MarkAliasInstalledOperation || $operation instanceof MarkAliasUninstalledOperation) {
                 $result[] = array(
                     'job' => $operation->getOperationType(),
                     'package' => $operation->getPackage(),
                 );
-            } else {
+            } elseif ($operation instanceof UninstallOperation || $operation instanceof InstallOperation) {
                 $job = ('uninstall' === $operation->getOperationType() ? 'remove' : 'install');
                 $result[] = array(
                     'job' => $job,
                     'package' => $operation->getPackage(),
                 );
+            } else {
+                throw new \LogicException('Unexpected operation: '.get_class($operation));
             }
         }
 

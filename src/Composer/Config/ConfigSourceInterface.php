@@ -23,8 +23,11 @@ interface ConfigSourceInterface
     /**
      * Add a repository
      *
-     * @param string      $name   Name
-     * @param array|false $config Configuration
+     * @param string        $name   Name
+     * @param mixed[]|false $config Configuration
+     * @param bool          $append Whether the repo should be appended (true) or prepended (false)
+     *
+     * @return void
      */
     public function addRepository($name, $config, $append = true);
 
@@ -32,14 +35,18 @@ interface ConfigSourceInterface
      * Remove a repository
      *
      * @param string $name
+     *
+     * @return void
      */
     public function removeRepository($name);
 
     /**
      * Add a config setting
      *
-     * @param string       $name  Name
-     * @param string|array $value Value
+     * @param string $name  Name
+     * @param mixed  $value Value
+     *
+     * @return void
      */
     public function addConfigSetting($name, $value);
 
@@ -47,6 +54,8 @@ interface ConfigSourceInterface
      * Remove a config setting
      *
      * @param string $name
+     *
+     * @return void
      */
     public function removeConfigSetting($name);
 
@@ -55,6 +64,8 @@ interface ConfigSourceInterface
      *
      * @param string $name  Name
      * @param string $value Value
+     *
+     * @return void
      */
     public function addProperty($name, $value);
 
@@ -62,6 +73,8 @@ interface ConfigSourceInterface
      * Remove a property
      *
      * @param string $name
+     *
+     * @return void
      */
     public function removeProperty($name);
 
@@ -71,6 +84,8 @@ interface ConfigSourceInterface
      * @param string $type  Type (require, require-dev, provide, suggest, replace, conflict)
      * @param string $name  Name
      * @param string $value Value
+     *
+     * @return void
      */
     public function addLink($type, $name, $value);
 
@@ -79,6 +94,8 @@ interface ConfigSourceInterface
      *
      * @param string $type Type (require, require-dev, provide, suggest, replace, conflict)
      * @param string $name Name
+     *
+     * @return void
      */
     public function removeLink($type, $name);
 

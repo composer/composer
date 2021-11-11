@@ -32,7 +32,7 @@ class RepositoryManager
     private $localRepository;
     /** @var list<RepositoryInterface> */
     private $repositories = array();
-    /** @var array<string, string> */
+    /** @var array<string, class-string<RepositoryInterface>> */
     private $repositoryClasses = array();
     /** @var IOInterface */
     private $io;
@@ -97,6 +97,8 @@ class RepositoryManager
      * Adds repository
      *
      * @param RepositoryInterface $repository repository instance
+     *
+     * @return void
      */
     public function addRepository(RepositoryInterface $repository)
     {
@@ -109,6 +111,8 @@ class RepositoryManager
      * This is useful when injecting additional repositories that should trump Packagist, e.g. from a plugin.
      *
      * @param RepositoryInterface $repository repository instance
+     *
+     * @return void
      */
     public function prependRepository(RepositoryInterface $repository)
     {
@@ -119,7 +123,7 @@ class RepositoryManager
      * Returns a new repository for a specific installation type.
      *
      * @param  string                    $type   repository type
-     * @param  array                     $config repository configuration
+     * @param  array<string, mixed>      $config repository configuration
      * @param  string                    $name   repository name
      * @throws \InvalidArgumentException if repository for provided type is not registered
      * @return RepositoryInterface
@@ -154,7 +158,9 @@ class RepositoryManager
      * Stores repository class for a specific installation type.
      *
      * @param string $type  installation type
-     * @param string $class class name of the repo implementation
+     * @param class-string<RepositoryInterface> $class class name of the repo implementation
+     *
+     * @return void
      */
     public function setRepositoryClass($type, $class)
     {
@@ -175,6 +181,8 @@ class RepositoryManager
      * Sets local repository for the project.
      *
      * @param InstalledRepositoryInterface $repository repository instance
+     *
+     * @return void
      */
     public function setLocalRepository(InstalledRepositoryInterface $repository)
     {

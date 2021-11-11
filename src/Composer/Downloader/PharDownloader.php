@@ -22,7 +22,7 @@ use Composer\Package\PackageInterface;
 class PharDownloader extends ArchiveDownloader
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function extract(PackageInterface $package, $file, $path)
     {

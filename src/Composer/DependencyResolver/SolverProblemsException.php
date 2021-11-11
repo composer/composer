@@ -14,20 +14,21 @@ namespace Composer\DependencyResolver;
 
 use Composer\Util\IniHelper;
 use Composer\Repository\RepositorySet;
-use Composer\Package\PackageInterface;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
  */
 class SolverProblemsException extends \RuntimeException
 {
+    const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
+
     /** @var Problem[] */
     protected $problems;
     /** @var array<Rule[]> */
     protected $learnedPool;
 
     /**
-     * @param Problem[]          $problems
+     * @param Problem[] $problems
      * @param array<Rule[]> $learnedPool
      */
     public function __construct(array $problems, array $learnedPool)
@@ -35,9 +36,14 @@ class SolverProblemsException extends \RuntimeException
         $this->problems = $problems;
         $this->learnedPool = $learnedPool;
 
-        parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', 2);
+        parent::__construct('Failed resolving dependencies with '.count($problems).' problems, call getPrettyString to get formatted details', self::ERROR_DEPENDENCY_RESOLUTION_FAILED);
     }
 
+    /**
+     * @param bool $isVerbose
+     * @param bool $isDevExtraction
+     * @return string
+     */
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
     {
         $installedMap = $request->getPresentMap(true);
@@ -52,7 +58,7 @@ class SolverProblemsException extends \RuntimeException
                 $hasExtensionProblems = true;
             }
 
-            $isCausedByLock |= $problem->isCausedByLock($repositorySet, $request, $pool);
+            $isCausedByLock = $isCausedByLock || $problem->isCausedByLock($repositorySet, $request, $pool);
         }
 
         $i = 1;
@@ -91,11 +97,17 @@ class SolverProblemsException extends \RuntimeException
         return $text;
     }
 
+    /**
+     * @return Problem[]
+     */
     public function getProblems()
     {
         return $this->problems;
     }
 
+    /**
+     * @return string
+     */
     private function createExtensionHint()
     {
         $paths = IniHelper::getAll();
@@ -111,6 +123,10 @@ class SolverProblemsException extends \RuntimeException
         return $text;
     }
 
+    /**
+     * @param Rule[][] $reasonSets
+     * @return bool
+     */
     private function hasExtensionProblems(array $reasonSets)
     {
         foreach ($reasonSets as $reasonSet) {

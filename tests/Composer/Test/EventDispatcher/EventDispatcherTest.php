@@ -17,12 +17,14 @@ use Composer\EventDispatcher\EventDispatcher;
 use Composer\Installer\InstallerEvents;
 use Composer\Config;
 use Composer\Composer;
+use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\IO\BufferIO;
 use Composer\Script\ScriptEvents;
 use Composer\Script\Event as ScriptEvent;
 use Composer\Util\ProcessExecutor;
 use Composer\Test\Mock\ProcessExecutorMock;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class EventDispatcherTest extends TestCase
@@ -52,7 +54,8 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
-     * @dataProvider getValidCommands
+     * @dataProvider provideValidCommands
+     *
      * @param string $command
      */
     public function testDispatcherCanExecuteSingleCommandLineScript($command)
@@ -82,7 +85,8 @@ class EventDispatcherTest extends TestCase
     }
 
     /**
-     * @dataProvider getDevModes
+     * @dataProvider provideDevModes
+     *
      * @param bool $devMode
      */
     public function testDispatcherPassDevModeToAutoloadGeneratorForScriptEvents($devMode)
@@ -120,7 +124,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher->hasEventListeners($event);
     }
 
-    public function getDevModes()
+    public function provideDevModes()
     {
         return array(
             array(true),
@@ -128,6 +132,9 @@ class EventDispatcherTest extends TestCase
         );
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Autoload\AutoloadGenerator
+     */
     private function getGeneratorMockForDevModePassingTest()
     {
         $generator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')
@@ -152,6 +159,9 @@ class EventDispatcherTest extends TestCase
         return $generator;
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Repository\RepositoryManager
+     */
     private function getRepositoryManagerMockForDevModePassingTest()
     {
         $rm = $this->getMockBuilder('Composer\Repository\RepositoryManager')
@@ -285,9 +295,9 @@ class EventDispatcherTest extends TestCase
     public function testDispatcherAppendsDirBinOnPathForEveryListener()
     {
         $currentDirectoryBkp = getcwd();
-        $composerBinDirBkp = getenv('COMPOSER_BIN_DIR');
+        $composerBinDirBkp = Platform::getEnv('COMPOSER_BIN_DIR');
         chdir(__DIR__);
-        putenv('COMPOSER_BIN_DIR=' . __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
+        Platform::putEnv('COMPOSER_BIN_DIR', __DIR__ . '/vendor/bin');
 
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->setConstructorArgs(array(
                 $this->createComposerInstance(),
@@ -305,25 +315,35 @@ class EventDispatcherTest extends TestCase
         $dispatcher->expects($this->atLeastOnce())->method('getListeners')->will($this->returnValue($listeners));
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
-        rmdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR));
-        rmdir(__DIR__ . sprintf('%svendor', DIRECTORY_SEPARATOR));
+        rmdir(__DIR__ . '/vendor/bin');
+        rmdir(__DIR__ . '/vendor');
 
         chdir($currentDirectoryBkp);
-        putenv('COMPOSER_BIN_DIR' . ($composerBinDirBkp === false ? '' : '=' . $composerBinDirBkp));
+        if ($composerBinDirBkp) {
+            Platform::putEnv('COMPOSER_BIN_DIR', $composerBinDirBkp);
+        } else {
+            Platform::clearEnv('COMPOSER_BIN_DIR');
+        }
     }
 
+    /**
+     * @return void
+     */
     public static function createsVendorBinFolderChecksEnvDoesNotContainsBin()
     {
-        mkdir(__DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR), 0700, true);
+        mkdir(__DIR__ . '/vendor/bin', 0700, true);
         $val = getenv('PATH');
 
         if (!$val) {
             $val = getenv('Path');
         }
 
-        self::assertFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
+        self::assertStringNotContainsString(__DIR__ . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', $val);
     }
 
+    /**
+     * @return void
+     */
     public static function createsVendorBinFolderChecksEnvContainsBin()
     {
         $val = getenv('PATH');
@@ -332,9 +352,12 @@ class EventDispatcherTest extends TestCase
             $val = getenv('Path');
         }
 
-        self::assertNotFalse(strpos($val, __DIR__ . sprintf('%svendor%sbin', DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR)));
+        self::assertStringContainsString(__DIR__ . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'bin', $val);
     }
 
+    /**
+     * @return void
+     */
     public static function getTestEnv()
     {
         $val = getenv('ABC');
@@ -426,7 +449,7 @@ class EventDispatcherTest extends TestCase
 
         $dispatcher->dispatch('helloWorld', new ScriptEvent('helloWorld', $composer, $io));
         $expected = "> helloWorld: @hello World".PHP_EOL.
-            "> hello: echo Hello " .escapeshellarg('World').PHP_EOL;
+            "> hello: echo Hello " .$this->getCmd("'World'").PHP_EOL;
 
         $this->assertEquals($expected, $io->getOutput());
 
@@ -465,7 +488,12 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatch('root', new ScriptEvent('root', $composer, $io));
     }
 
-    private function getDispatcherStubForListenersTest($listeners, $io)
+    /**
+     * @param array<callable|string> $listeners
+     *
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\EventDispatcher\EventDispatcher
+     */
+    private function getDispatcherStubForListenersTest($listeners, IOInterface $io)
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
@@ -482,7 +510,7 @@ class EventDispatcherTest extends TestCase
         return $dispatcher;
     }
 
-    public function getValidCommands()
+    public function provideValidCommands()
     {
         return array(
             array('phpunit'),
@@ -575,25 +603,37 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatchInstallerEvent(InstallerEvents::PRE_OPERATIONS_EXEC, true, true, $transaction);
     }
 
+    /**
+     * @return void
+     */
     public static function call()
     {
         throw new \RuntimeException();
     }
 
+    /**
+     * @return true
+     */
     public static function someMethod()
     {
         return true;
     }
 
+    /**
+     * @return true
+     */
     public static function someMethod2()
     {
         return true;
     }
 
+    /**
+     * @return Composer
+     */
     private function createComposerInstance()
     {
         $composer = new Composer;
-        $config = new Config;
+        $config = new Config();
         $composer->setConfig($config);
         $package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
         $composer->setPackage($package);

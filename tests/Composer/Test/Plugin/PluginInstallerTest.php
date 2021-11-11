@@ -144,7 +144,7 @@ class PluginInstallerTest extends TestCase
         $installer->install($this->repository, $this->packages[0]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertEquals('installer-v1', $plugins[0]->version);
+        $this->assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore-line
         $this->assertEquals('activate v1'.PHP_EOL, $this->io->getOutput());
     }
 
@@ -160,10 +160,10 @@ class PluginInstallerTest extends TestCase
         $installer->install($this->repository, $this->packages[3]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertEquals('plugin1', $plugins[0]->name);
-        $this->assertEquals('installer-v4', $plugins[0]->version);
-        $this->assertEquals('plugin2', $plugins[1]->name);
-        $this->assertEquals('installer-v4', $plugins[1]->version);
+        $this->assertEquals('plugin1', $plugins[0]->name); // @phpstan-ignore-line
+        $this->assertEquals('installer-v4', $plugins[0]->version); // @phpstan-ignore-line
+        $this->assertEquals('plugin2', $plugins[1]->name); // @phpstan-ignore-line
+        $this->assertEquals('installer-v4', $plugins[1]->version); // @phpstan-ignore-line
         $this->assertEquals('activate v4-plugin1'.PHP_EOL.'activate v4-plugin2'.PHP_EOL, $this->io->getOutput());
     }
 
@@ -184,7 +184,7 @@ class PluginInstallerTest extends TestCase
 
         $plugins = $this->pm->getPlugins();
         $this->assertCount(1, $plugins);
-        $this->assertEquals('installer-v2', $plugins[1]->version);
+        $this->assertEquals('installer-v2', $plugins[1]->version); // @phpstan-ignore-line
         $this->assertEquals('activate v1'.PHP_EOL.'deactivate v1'.PHP_EOL.'activate v2'.PHP_EOL, $this->io->getOutput());
     }
 
@@ -224,7 +224,7 @@ class PluginInstallerTest extends TestCase
         $installer->update($this->repository, $this->packages[1], $this->packages[2]);
 
         $plugins = $this->pm->getPlugins();
-        $this->assertEquals('installer-v3', $plugins[1]->version);
+        $this->assertEquals('installer-v3', $plugins[1]->version); // @phpstan-ignore-line
         $this->assertEquals('activate v2'.PHP_EOL.'deactivate v2'.PHP_EOL.'activate v3'.PHP_EOL, $this->io->getOutput());
     }
 
@@ -242,13 +242,15 @@ class PluginInstallerTest extends TestCase
 
         $plugins = $this->pm->getPlugins();
         $this->assertCount(1, $plugins);
-        $this->assertEquals('installer-v1', $plugins[0]->version);
+        $this->assertEquals('installer-v1', $plugins[0]->version); // @phpstan-ignore-line
         $this->assertEquals('activate v1'.PHP_EOL, $this->io->getOutput());
     }
 
     /**
      * @param string            $newPluginApiVersion
      * @param CompletePackage[] $plugins
+     *
+     * @return void
      */
     private function setPluginApiVersionWithPlugins($newPluginApiVersion, array $plugins = array())
     {
@@ -351,7 +353,6 @@ class PluginInstallerTest extends TestCase
     {
         $plugin = $this->getMockBuilder('Composer\Plugin\PluginInterface')
                        ->getMock();
-
         $this->assertNull($this->pm->getPluginCapability($plugin, 'Fake\Ability'));
     }
 
@@ -377,6 +378,7 @@ class PluginInstallerTest extends TestCase
         $this->assertSame(array('a' => 1, 'b' => 2, 'plugin' => $plugin), $capability->args);
     }
 
+    /** @return mixed[] */
     public function invalidImplementationClassNames()
     {
         return array(
@@ -391,6 +393,7 @@ class PluginInstallerTest extends TestCase
         );
     }
 
+    /** @return mixed[] */
     public function nonExistingOrInvalidImplementationClassTypes()
     {
         return array(
@@ -401,6 +404,10 @@ class PluginInstallerTest extends TestCase
 
     /**
      * @dataProvider invalidImplementationClassNames
+     * @param callable $invalidImplementationClassNames
+     * @param string $expect
+     *
+     * @return void
      */
     public function testQueryingWithInvalidCapabilityClassNameThrows($invalidImplementationClassNames, $expect = 'UnexpectedValueException')
     {
@@ -420,6 +427,7 @@ class PluginInstallerTest extends TestCase
         $this->pm->getPluginCapability($plugin, $capabilityApi);
     }
 
+    /** @return void */
     public function testQueryingNonProvidedCapabilityReturnsNullSafely()
     {
         $capabilityApi = 'Composer\Plugin\Capability\MadeUpCapability';
@@ -438,6 +446,9 @@ class PluginInstallerTest extends TestCase
 
     /**
      * @dataProvider nonExistingOrInvalidImplementationClassTypes
+     * @param callable $wrongImplementationClassTypes
+     *
+     * @return void
      */
     public function testQueryingWithNonExistingOrWrongCapabilityClassTypesThrows($wrongImplementationClassTypes)
     {

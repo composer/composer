@@ -16,6 +16,7 @@ use Composer\Package\PackageInterface;
 use Composer\Util\Svn as SvnUtil;
 use Composer\Repository\VcsRepository;
 use Composer\Util\ProcessExecutor;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Ben Bieker <mail@ben-bieker.de>
@@ -27,7 +28,7 @@ class SvnDownloader extends VcsDownloader
     protected $cacheCredentials = true;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
     {
@@ -41,7 +42,7 @@ class SvnDownloader extends VcsDownloader
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function doInstall(PackageInterface $package, $path, $url)
     {
@@ -63,7 +64,7 @@ class SvnDownloader extends VcsDownloader
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
@@ -87,7 +88,7 @@ class SvnDownloader extends VcsDownloader
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getLocalChanges(PackageInterface $package, $path)
     {
@@ -126,12 +127,12 @@ class SvnDownloader extends VcsDownloader
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)
     {
         if (!$changes = $this->getLocalChanges($package, $path)) {
-            return;
+            return \React\Promise\resolve();
         }
 
         if (!$this->io->isInteractive()) {
@@ -182,10 +183,12 @@ class SvnDownloader extends VcsDownloader
                     break;
             }
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
@@ -227,15 +230,22 @@ class SvnDownloader extends VcsDownloader
         return "Could not retrieve changes between $fromReference and $toReference due to missing revision information";
     }
 
+    /**
+     * @param string $path
+     *
+     * @return PromiseInterface
+     */
     protected function discardChanges($path)
     {
         if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {
             throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function hasMetadataRepository($path)
     {

@@ -132,7 +132,7 @@ it, pass the VCS repository URL as an optional argument:
 
 ## Usage
 
-In your projects all you need to add now is your own composer repository using
+In your projects all you need to add now is your own Composer repository using
 the `packages.example.org` as URL, then you can require your private packages
 and everything should work smoothly. You don't need to copy all your
 repositories in every project anymore. Only that one unique repository that
@@ -323,7 +323,7 @@ is set to true.
 
  * `providers`: optional, `false` by default, when enabled (`true`) each
    package will be dumped into a separate include file which will be only
-   loaded by composer when the package is really required. Speeds up composer
+   loaded by Composer when the package is really required. Speeds up composer
    handling for repositories with huge number of packages like f.i. packagist.
  * `output-dir`: optional, defines where to output the repository files if not
    provided as an argument when calling the `build` command.

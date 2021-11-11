@@ -29,7 +29,7 @@
         "composer/spdx-licenses": "^1.2",
         "composer/xdebug-handler": "^2.0",
         "justinrainbow/json-schema": "^5.2.11",
-        "psr/log": "^1.0",
+        "psr/log": "^1.0 || ^2.0",
         "seld/jsonlint": "^1.4",
         "seld/phar-utils": "^1.0",
         "symfony/console": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
@@ -55,7 +55,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.1-dev"
+            "dev-main": "2.2-dev"
         }
     },
     "autoload": {

@@ -56,6 +56,9 @@ class CreateProjectCommand extends BaseCommand
      */
     protected $suggestedPackagesReporter;
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -115,6 +118,9 @@ EOT
         ;
     }
 
+    /**
+     * @return int
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $config = Factory::createConfig();
@@ -159,7 +165,27 @@ EOT
         );
     }
 
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositories = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true, $addRepository = false)
+    /**
+     * @param string|null $packageName
+     * @param string|null $directory
+     * @param string|null $packageVersion
+     * @param string $stability
+     * @param bool $preferSource
+     * @param bool $preferDist
+     * @param bool $installDevPackages
+     * @param string|array<string>|null $repositories
+     * @param bool $disablePlugins
+     * @param bool $noScripts
+     * @param bool $noProgress
+     * @param bool $noInstall
+     * @param bool $ignorePlatformReqs
+     * @param bool $secureHttp
+     * @param bool $addRepository
+     *
+     * @return int
+     * @throws \Exception
+     */
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName = null, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositories = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $noInstall = false, $ignorePlatformReqs = false, $secureHttp = true, $addRepository = false)
     {
         $oldCwd = getcwd();
 
@@ -304,6 +330,24 @@ EOT
         return 0;
     }
 
+    /**
+     * @param string $packageName
+     * @param string|null $directory
+     * @param string|null $packageVersion
+     * @param string|null $stability
+     * @param bool $preferSource
+     * @param bool $preferDist
+     * @param bool $installDevPackages
+     * @param array<string>|null $repositories
+     * @param bool $disablePlugins
+     * @param bool $noScripts
+     * @param bool $noProgress
+     * @param bool $ignorePlatformReqs
+     * @param bool $secureHttp
+     *
+     * @return bool
+     * @throws \Exception
+     */
     protected function installRootPackage(IOInterface $io, Config $config, $packageName, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, array $repositories = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $ignorePlatformReqs = false, $secureHttp = true)
     {
         if (!$secureHttp) {

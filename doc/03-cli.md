@@ -9,7 +9,7 @@ can give you more information.
 
 As Composer uses [symfony/console](https://github.com/symfony/console) you can call commands by short name if it's not ambiguous.
 ```sh
-composer dump
+php composer.phar dump
 ```
 calls `composer dump-autoload`.
 
@@ -230,7 +230,7 @@ to the command.
 php composer.phar require "vendor/package:2.*" vendor/package2:dev-master
 ```
 
-If you do not specify a package, composer will prompt you to search for a package, and given results, provide a list of  matches to require.
+If you do not specify a package, Composer will prompt you to search for a package, and given results, provide a list of  matches to require.
 
 ### Options
 
@@ -694,7 +694,7 @@ If Composer was not installed as a PHAR, this command is not available.
 
 ## config
 
-The `config` command allows you to edit composer config settings and repositories
+The `config` command allows you to edit Composer config settings and repositories
 in either the local `composer.json` file or the global `config.json` file.
 
 Additionally it lets you edit most properties in the local `composer.json`.
@@ -907,7 +907,7 @@ runs.
 
 ### Options
 
-* **--list (-l):** List the available composer binaries.
+* **--list (-l):** List the available Composer binaries.
 
 ## diagnose
 
@@ -1030,8 +1030,9 @@ it points to `$XDG_CONFIG_HOME/composer`. On other \*nix systems, it points to
 #### COMPOSER_HOME/config.json
 
 You may put a `config.json` file into the location which `COMPOSER_HOME` points
-to. Composer will merge this configuration with your project's `composer.json`
-when you run the `install` and `update` commands.
+to. Composer will partially (only `config` and `repositories` keys) merge this
+configuration with your project's `composer.json` when you run the `install` and
+`update` commands.
 
 This file allows you to set [repositories](05-repositories.md) and
 [configuration](06-config.md) for the user's projects.
@@ -1042,7 +1043,7 @@ configuration in the project's `composer.json` always wins.
 ### COMPOSER_HTACCESS_PROTECT
 
 Defaults to `1`. If set to `0`, Composer will not create `.htaccess` files in the
-composer home, cache, and data directories.
+Composer home, cache, and data directories.
 
 ### COMPOSER_MEMORY_LIMIT
 

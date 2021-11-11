@@ -17,10 +17,18 @@ namespace Composer\Package\Loader;
  */
 class InvalidPackageException extends \Exception
 {
+    /** @var string[] */
     private $errors;
+    /** @var string[] */
     private $warnings;
+    /** @var mixed[] package config */
     private $data;
 
+    /**
+     * @param string[] $errors
+     * @param string[] $warnings
+     * @param mixed[]  $data
+     */
     public function __construct(array $errors, array $warnings, array $data)
     {
         $this->errors = $errors;
@@ -29,16 +37,25 @@ class InvalidPackageException extends \Exception
         parent::__construct("Invalid package information: \n".implode("\n", array_merge($errors, $warnings)));
     }
 
+    /**
+     * @return mixed[]
+     */
     public function getData()
     {
         return $this->data;
     }
 
+    /**
+     * @return string[]
+     */
     public function getErrors()
     {
         return $this->errors;
     }
 
+    /**
+     * @return string[]
+     */
     public function getWarnings()
     {
         return $this->warnings;

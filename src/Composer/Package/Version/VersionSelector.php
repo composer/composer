@@ -21,6 +21,7 @@ use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Semver\Constraint\ConstraintInterface;
 
 /**
  * Selects the best possible version for a package
@@ -30,10 +31,13 @@ use Composer\Semver\Constraint\Constraint;
  */
 class VersionSelector
 {
+    /** @var RepositorySet */
     private $repositorySet;
 
+    /** @var array<string, ConstraintInterface[]> */
     private $platformConstraints = array();
 
+    /** @var VersionParser */
     private $parser;
 
     /**
@@ -53,10 +57,12 @@ class VersionSelector
      * Given a package name and optional version, returns the latest PackageInterface
      * that matches.
      *
-     * @param  string                 $packageName
-     * @param  string                 $targetPackageVersion
-     * @param  string                 $preferredStability
-     * @param  bool|array             $ignorePlatformReqs
+     * @param string        $packageName
+     * @param string        $targetPackageVersion
+     * @param string        $preferredStability
+     * @param bool|string[] $ignorePlatformReqs
+     * @param int           $repoSetFlags
+     *
      * @return PackageInterface|false
      */
     public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $ignorePlatformReqs = false, $repoSetFlags = 0)
@@ -76,14 +82,20 @@ class VersionSelector
                 $reqs = $pkg->getRequires();
 
                 foreach ($reqs as $name => $link) {
-                    if (!in_array($name, $ignorePlatformReqs, true) && isset($platformConstraints[$name])) {
-                        foreach ($platformConstraints[$name] as $constraint) {
-                            if ($link->getConstraint()->matches($constraint)) {
-                                continue 2;
+                    if (!in_array($name, $ignorePlatformReqs, true)) {
+                        if (isset($platformConstraints[$name])) {
+                            foreach ($platformConstraints[$name] as $constraint) {
+                                if ($link->getConstraint()->matches($constraint)) {
+                                    continue 2;
+                                }
                             }
-                        }
 
-                        return false;
+                            return false;
+                        } elseif (PlatformRepository::isPlatformPackage($name)) {
+                            // Package requires a platform package that is unknown on current platform.
+                            // It means that current platform cannot validate this constraint and so package is not installable.
+                            return false;
+                        }
                     }
                 }
 
@@ -183,6 +195,13 @@ class VersionSelector
         return $package->getPrettyVersion();
     }
 
+    /**
+     * @param string $version
+     * @param string $prettyVersion
+     * @param string $stability
+     *
+     * @return string
+     */
     private function transformVersion($version, $prettyVersion, $stability)
     {
         // attempt to transform 2.1.1 to 2.1
@@ -211,6 +230,9 @@ class VersionSelector
         return '^' . $version;
     }
 
+    /**
+     * @return VersionParser
+     */
     private function getParser()
     {
         if ($this->parser === null) {

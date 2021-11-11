@@ -1,5 +1,15 @@
 <?php
 
+/*
+ * This file is part of Composer.
+ *
+ * (c) Nils Adermann <naderman@naderman.de>
+ *     Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Composer\Autoload;
 
 /**
@@ -10,6 +20,7 @@ class PhpFileCleaner
 {
     /** @var array<array{name: string, length: int, pattern: string}> */
     private static $typeConfig;
+
     /** @var string */
     private static $restPattern;
 
@@ -34,6 +45,10 @@ class PhpFileCleaner
     /** @var int */
     private $index = 0;
 
+    /**
+     * @param string[] $types
+     * @return void
+     */
     public static function setTypeConfig($types)
     {
         foreach ($types as $type) {
@@ -47,6 +62,10 @@ class PhpFileCleaner
         self::$restPattern = '{[^?"\'</'.implode('', array_keys(self::$typeConfig)).']+}A';
     }
 
+    /**
+     * @param string $contents
+     * @param int $maxMatches
+     */
     public function __construct($contents, $maxMatches)
     {
         $this->contents = $contents;
@@ -54,6 +73,9 @@ class PhpFileCleaner
         $this->maxMatches = $maxMatches;
     }
 
+    /**
+     * @return string
+     */
     public function clean()
     {
         $clean = '';
@@ -106,6 +128,7 @@ class PhpFileCleaner
                         && \preg_match($type['pattern'], $this->contents, $match, 0, $this->index - 1)
                     ) {
                         $clean .= $match[0];
+
                         return $clean;
                     }
                 }
@@ -123,6 +146,9 @@ class PhpFileCleaner
         return $clean;
     }
 
+    /**
+     * @return void
+     */
     private function skipToPhp()
     {
         while ($this->index < $this->len) {
@@ -135,6 +161,10 @@ class PhpFileCleaner
         }
     }
 
+    /**
+     * @param string $delimiter
+     * @return void
+     */
     private function skipString($delimiter)
     {
         $this->index += 1;
@@ -151,6 +181,9 @@ class PhpFileCleaner
         }
     }
 
+    /**
+     * @return void
+     */
     private function skipComment()
     {
         $this->index += 2;
@@ -164,6 +197,9 @@ class PhpFileCleaner
         }
     }
 
+    /**
+     * @return void
+     */
     private function skipToNewline()
     {
         while ($this->index < $this->len) {
@@ -174,6 +210,10 @@ class PhpFileCleaner
         }
     }
 
+    /**
+     * @param string $delimiter
+     * @return void
+     */
     private function skipHeredoc($delimiter)
     {
         $firstDelimiterChar = $delimiter[0];
@@ -193,6 +233,7 @@ class PhpFileCleaner
                         && $this->match($delimiterPattern)
                     ) {
                         $this->index += $delimiterLength;
+
                         return;
                     }
                     break;
@@ -212,11 +253,20 @@ class PhpFileCleaner
         }
     }
 
+    /**
+     * @param string $char
+     * @return bool
+     */
     private function peek($char)
     {
         return $this->index + 1 < $this->len && $this->contents[$this->index + 1] === $char;
     }
 
+    /**
+     * @param string $regex
+     * @param ?array<int, string> $match
+     * @return bool
+     */
     private function match($regex, array &$match = null)
     {
         if (\preg_match($regex, $this->contents, $match, 0, $this->index)) {

@@ -27,6 +27,7 @@ class RuleWatchChain extends \SplDoublyLinkedList
      * Moves the internal iterator to the specified offset
      *
      * @param int $offset The offset to seek to.
+     * @return void
      */
     public function seek($offset)
     {
@@ -41,6 +42,8 @@ class RuleWatchChain extends \SplDoublyLinkedList
      * incorrectly sets the internal iterator if you delete the current value
      * this method sets the internal iterator back to the following element
      * using the seek method.
+     *
+     * @return void
      */
     public function remove()
     {

@@ -24,15 +24,15 @@ use Composer\Util\Http\Response;
  */
 class GitBitbucketDriverTest extends TestCase
 {
-    /** @type \Composer\IO\IOInterface|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $io;
-    /** @type \Composer\Config */
+    /** @var Config */
     private $config;
-    /** @type \Composer\Util\HttpDownloader|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \Composer\Util\HttpDownloader&\PHPUnit\Framework\MockObject\MockObject */
     private $httpDownloader;
-    /** @type string */
+    /** @var string */
     private $home;
-    /** @type string */
+    /** @var string */
     private $originUrl = 'bitbucket.org';
 
     protected function setUp()
@@ -60,8 +60,10 @@ class GitBitbucketDriverTest extends TestCase
     }
 
     /**
-     * @param  array              $repoConfig
+     * @param  array<string, mixed> $repoConfig
      * @return GitBitbucketDriver
+     *
+     * @phpstan-param array{url: string}&array<string, mixed> $repoConfig
      */
     private function getDriver(array $repoConfig)
     {
@@ -82,7 +84,7 @@ class GitBitbucketDriverTest extends TestCase
     {
         $this->setExpectedException(
             '\RuntimeException',
-            'https://bitbucket.org/user/repo.git does not appear to be a git repository, use https://bitbucket.org/user/repo if this is a mercurial bitbucket repository'
+            'https://bitbucket.org/user/repo.git does not appear to be a git repository, use https://bitbucket.org/user/repo but remember that Bitbucket no longer supports the mercurial repositories. https://bitbucket.org/blog/sunsetting-mercurial-support-in-bitbucket'
         );
 
         $this->httpDownloader->expects($this->once())

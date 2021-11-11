@@ -59,6 +59,9 @@ class ShowCommand extends BaseCommand
     /** @var ?RepositorySet */
     private $repositorySet;
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -430,7 +433,7 @@ EOT
                             $packageViewData['latest-status'] = $this->getUpdateStatus($latestPackage, $package);
                             $latestLength = max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
                         }
-                        if ($writeDescription) {
+                        if ($writeDescription && $package instanceof CompletePackageInterface) {
                             $packageViewData['description'] = $package->getDescription();
                         }
                         if ($writePath) {
@@ -553,6 +556,9 @@ EOT
         return $exitCode;
     }
 
+    /**
+     * @return string[]
+     */
     protected function getRootRequires()
     {
         $rootPackage = $this->getComposer()->getPackage();
@@ -563,6 +569,9 @@ EOT
         );
     }
 
+    /**
+     * @return array|string|string[]
+     */
     protected function getVersionStyle(PackageInterface $latestPackage, PackageInterface $package)
     {
         return $this->updateStatusToVersionStyle($this->getUpdateStatus($latestPackage, $package));
@@ -571,12 +580,10 @@ EOT
     /**
      * finds a package by name and version if provided
      *
-     * @param  InstalledRepository        $installedRepo
-     * @param  RepositoryInterface        $repos
      * @param  string                     $name
      * @param  ConstraintInterface|string $version
      * @throws \InvalidArgumentException
-     * @return array                      array(CompletePackageInterface, array of versions)
+     * @return array{CompletePackageInterface|null, array<string, string>}
      */
     protected function getPackage(InstalledRepository $installedRepo, RepositoryInterface $repos, $name, $version = null)
     {
@@ -597,6 +604,11 @@ EOT
         }
         $matches = $pool->whatProvides($name, $constraint);
         foreach ($matches as $index => $package) {
+            // avoid showing the 9999999-dev alias if the default branch has no branch-alias set
+            if ($package instanceof AliasPackage && $package->getVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
+                $package = $package->getAliasOf();
+            }
+
             // select an exact match if it is in the installed repo and no specific version was required
             if (null === $version && $installedRepo->hasPackage($package)) {
                 $matchedPackage = $package;
@@ -617,10 +629,10 @@ EOT
     /**
      * Prints package info.
      *
-     * @param CompletePackageInterface $package
-     * @param array                    $versions
-     * @param InstalledRepository      $installedRepo
+     * @param array<string, string>    $versions
      * @param PackageInterface|null    $latestPackage
+     *
+     * @return void
      */
     protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null)
     {
@@ -645,10 +657,10 @@ EOT
     /**
      * Prints package metadata.
      *
-     * @param CompletePackageInterface $package
-     * @param array                    $versions
-     * @param InstalledRepository      $installedRepo
+     * @param array<string, string>    $versions
      * @param PackageInterface|null    $latestPackage
+     *
+     * @return void
      */
     protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null)
     {
@@ -713,9 +725,9 @@ EOT
     /**
      * Prints all available versions of this package and highlights the installed one if any.
      *
-     * @param CompletePackageInterface $package
-     * @param array                    $versions
-     * @param InstalledRepository      $installedRepo
+     * @param array<string, string> $versions
+     *
+     * @return void
      */
     protected function printVersions(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo)
     {
@@ -741,9 +753,10 @@ EOT
     /**
      * print link objects
      *
-     * @param CompletePackageInterface $package
      * @param string                   $linkType
      * @param string                   $title
+     *
+     * @return void
      */
     protected function printLinks(CompletePackageInterface $package, $linkType, $title = null)
     {
@@ -761,7 +774,7 @@ EOT
     /**
      * Prints the licenses of a package with metadata
      *
-     * @param CompletePackageInterface $package
+     * @return void
      */
     protected function printLicenses(CompletePackageInterface $package)
     {
@@ -791,10 +804,9 @@ EOT
     /**
      * Prints package info in JSON format.
      *
-     * @param CompletePackageInterface $package
-     * @param array                    $versions
-     * @param InstalledRepository      $installedRepo
-     * @param PackageInterface|null    $latestPackage
+     * @param array<string, string>    $versions
+     *
+     * @return void
      */
     protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null)
     {
@@ -862,6 +874,11 @@ EOT
         $this->getIO()->write(JsonFile::encode($json));
     }
 
+    /**
+     * @param array<string, string|string[]|null> $json
+     * @param array<string, string> $versions
+     * @return array<string, string|string[]|null>
+     */
     private function appendVersions($json, array $versions)
     {
         uasort($versions, 'version_compare');
@@ -871,6 +888,10 @@ EOT
         return $json;
     }
 
+    /**
+     * @param array<string, string|string[]|null> $json
+     * @return array<string, string|string[]|null>
+     */
     private function appendLicenses($json, CompletePackageInterface $package)
     {
         if ($licenses = $package->getLicense()) {
@@ -894,6 +915,10 @@ EOT
         return $json;
     }
 
+    /**
+     * @param array<string, string|string[]|null> $json
+     * @return array<string, string|string[]|null>
+     */
     private function appendAutoload($json, CompletePackageInterface $package)
     {
         if ($package->getAutoload()) {
@@ -923,6 +948,10 @@ EOT
         return $json;
     }
 
+    /**
+     * @param array<string, string|string[]|null> $json
+     * @return array<string, string|string[]|null>
+     */
     private function appendLinks($json, CompletePackageInterface $package)
     {
         foreach (Link::$TYPES as $linkType) {
@@ -932,6 +961,11 @@ EOT
         return $json;
     }
 
+    /**
+     * @param array<string, string|string[]|null> $json
+     * @param string $linkType
+     * @return array<string, string|string[]|null>
+     */
     private function appendLink($json, CompletePackageInterface $package, $linkType)
     {
         $links = $package->{'get' . ucfirst($linkType)}();
@@ -950,7 +984,7 @@ EOT
     /**
      * Init styles for tree
      *
-     * @param OutputInterface $output
+     * @return void
      */
     protected function initStyles(OutputInterface $output)
     {
@@ -971,7 +1005,8 @@ EOT
     /**
      * Display the tree
      *
-     * @param array $arrayTree
+     * @param array<int, array<string, string|array>> $arrayTree
+     * @return void
      */
     protected function displayPackageTree(array $arrayTree)
     {
@@ -1016,10 +1051,7 @@ EOT
     /**
      * Generate the package tree
      *
-     * @param  PackageInterface    $package
-     * @param  InstalledRepository $installedRepo
-     * @param  RepositoryInterface $remoteRepos
-     * @return array
+     * @return array<string, array<int, array<string, array|string>>|string|null>
      */
     protected function generatePackageTree(
         PackageInterface $package,
@@ -1061,10 +1093,12 @@ EOT
     /**
      * Display a package tree
      *
-     * @param array|string $package
-     * @param array        $packagesInTree
-     * @param string       $previousTreeBar
-     * @param int          $level
+     * @param array<string, array<int, array<string, array|string>>|string|null>|string $package
+     * @param array<int, string|array> $packagesInTree
+     * @param string $previousTreeBar
+     * @param int $level
+     *
+     * @return void
      */
     protected function displayTree(
         $package,
@@ -1114,12 +1148,9 @@ EOT
     /**
      * Display a package tree
      *
-     * @param  string              $name
-     * @param  Link                $link
-     * @param  InstalledRepository $installedRepo
-     * @param  RepositoryInterface $remoteRepos
-     * @param  array               $packagesInTree
-     * @return array
+     * @param  string   $name
+     * @param  string[] $packagesInTree
+     * @return array<int, array<string, array<int, array<string, string>>|string>>
      */
     protected function addTree(
         $name,
@@ -1161,6 +1192,10 @@ EOT
         return $children;
     }
 
+    /**
+     * @param string $updateStatus
+     * @return string
+     */
     private function updateStatusToVersionStyle($updateStatus)
     {
         // 'up-to-date' is printed green
@@ -1169,6 +1204,9 @@ EOT
         return str_replace(array('up-to-date', 'semver-safe-update', 'update-possible'), array('info', 'highlight', 'comment'), $updateStatus);
     }
 
+    /**
+     * @return string
+     */
     private function getUpdateStatus(PackageInterface $latestPackage, PackageInterface $package)
     {
         if ($latestPackage->getFullPrettyVersion() === $package->getFullPrettyVersion()) {
@@ -1188,6 +1226,11 @@ EOT
         return 'update-possible';
     }
 
+    /**
+     * @param string $line
+     *
+     * @return void
+     */
     private function writeTreeLine($line)
     {
         $io = $this->getIO();
@@ -1201,10 +1244,7 @@ EOT
     /**
      * Given a package, this finds the latest package matching it
      *
-     * @param PackageInterface   $package
-     * @param Composer           $composer
-     * @param PlatformRepository $platformRepo
-     * @param bool               $minorOnly
+     * @param bool $minorOnly
      *
      * @return PackageInterface|false
      */
@@ -1257,10 +1297,8 @@ EOT
     /**
      * Find package requires and child requires
      *
-     * @param  RepositoryInterface $repo
-     * @param  PackageInterface    $package
-     * @param  array               $bucket
-     * @return array
+     * @param  array<PackageInterface> $bucket
+     * @return array<PackageInterface>
      */
     private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, $bucket = array())
     {

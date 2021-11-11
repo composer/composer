@@ -46,6 +46,9 @@ class BufferIO extends ConsoleIO
         )));
     }
 
+    /**
+     * @return string output
+     */
     public function getOutput()
     {
         fseek($this->output->getStream(), 0);
@@ -66,6 +69,13 @@ class BufferIO extends ConsoleIO
         return $output;
     }
 
+    /**
+     * @param string[] $inputs
+     *
+     * @see createStream
+     *
+     * @return void
+     */
     public function setUserInputs(array $inputs)
     {
         if (!$this->input instanceof StreamableInputInterface) {
@@ -76,6 +86,11 @@ class BufferIO extends ConsoleIO
         $this->input->setInteractive(true);
     }
 
+    /**
+     * @param string[] $inputs
+     *
+     * @return false|resource stream
+     */
     private function createStream(array $inputs)
     {
         $stream = fopen('php://memory', 'r+');

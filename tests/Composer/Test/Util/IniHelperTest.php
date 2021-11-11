@@ -21,6 +21,9 @@ use Composer\Test\TestCase;
  */
 class IniHelperTest extends TestCase
 {
+    /**
+     * @var string|false
+     */
     public static $envOriginal;
 
     public function testWithNoIni()
@@ -88,6 +91,11 @@ class IniHelperTest extends TestCase
         }
     }
 
+    /**
+     * @param string[] $paths
+     *
+     * @return void
+     */
     protected function setEnv(array $paths)
     {
         putenv('COMPOSER_ORIGINAL_INIS='.implode(PATH_SEPARATOR, $paths));

@@ -48,6 +48,9 @@ class DiagnoseCommand extends BaseCommand
     /** @var int */
     protected $exitCode = 0;
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -66,7 +69,7 @@ EOT
     }
 
     /**
-     * {@inheritdoc}
+     * @return int
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
@@ -195,6 +198,9 @@ EOT
         return $this->exitCode;
     }
 
+    /**
+     * @return string|true
+     */
     private function checkComposerSchema()
     {
         $validator = new ConfigValidator($this->getIO());
@@ -219,6 +225,9 @@ EOT
         return true;
     }
 
+    /**
+     * @return string|true
+     */
     private function checkGit()
     {
         if (!function_exists('proc_open')) {
@@ -233,6 +242,11 @@ EOT
         return true;
     }
 
+    /**
+     * @param string $proto
+     *
+     * @return string|string[]|true
+     */
     private function checkHttp($proto, Config $config)
     {
         $result = $this->checkConnectivity();
@@ -268,6 +282,9 @@ EOT
         return true;
     }
 
+    /**
+     * @return string|true|\Exception
+     */
     private function checkHttpProxy()
     {
         $result = $this->checkConnectivity();
@@ -293,6 +310,12 @@ EOT
         return true;
     }
 
+    /**
+     * @param string $domain
+     * @param string $token
+     *
+     * @return string|true|\Exception
+     */
     private function checkGithubOauth($domain, $token)
     {
         $result = $this->checkConnectivity();
@@ -322,7 +345,7 @@ EOT
      * @param  string             $domain
      * @param  string             $token
      * @throws TransportException
-     * @return array|string
+     * @return mixed|string
      */
     private function getGithubRateLimit($domain, $token = null)
     {
@@ -341,7 +364,10 @@ EOT
         return $data['resources']['core'];
     }
 
-    private function checkDiskSpace($config)
+    /**
+     * @return string|true
+     */
+    private function checkDiskSpace(Config $config)
     {
         $minSpaceFree = 1024 * 1024;
         if ((($df = @disk_free_space($dir = $config->get('home'))) !== false && $df < $minSpaceFree)
@@ -353,7 +379,10 @@ EOT
         return true;
     }
 
-    private function checkPubKeys($config)
+    /**
+     * @return string[]|true
+     */
+    private function checkPubKeys(Config $config)
     {
         $home = $config->get('home');
         $errors = array();
@@ -382,7 +411,10 @@ EOT
         return $errors ?: true;
     }
 
-    private function checkVersion($config)
+    /**
+     * @return string|\Exception|true
+     */
+    private function checkVersion(Config $config)
     {
         $result = $this->checkConnectivity();
         if ($result !== true) {
@@ -403,6 +435,9 @@ EOT
         return true;
     }
 
+    /**
+     * @return string
+     */
     private function getCurlVersion()
     {
         if (extension_loaded('curl')) {
@@ -413,7 +448,7 @@ EOT
             $version = curl_version();
 
             return '<comment>'.$version['version'].'</comment> '.
-                'libz <comment>'.(isset($version['libz_version']) ? $version['libz_version'] : 'missing').'</comment> '.
+                'libz <comment>'.(!empty($version['libz_version']) ? $version['libz_version'] : 'missing').'</comment> '.
                 'ssl <comment>'.(isset($version['ssl_version']) ? $version['ssl_version'] : 'missing').'</comment>';
         }
 
@@ -422,6 +457,8 @@ EOT
 
     /**
      * @param bool|string|string[]|\Exception $result
+     *
+     * @return void
      */
     private function outputResult($result)
     {
@@ -469,6 +506,9 @@ EOT
         }
     }
 
+    /**
+     * @return string|true
+     */
     private function checkPlatform()
     {
         $output = '';
@@ -699,7 +739,7 @@ EOT
     /**
      * Check if allow_url_fopen is ON
      *
-     * @return true|string
+     * @return string|true
      */
     private function checkConnectivity()
     {

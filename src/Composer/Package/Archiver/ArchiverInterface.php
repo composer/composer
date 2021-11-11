@@ -22,10 +22,11 @@ interface ArchiverInterface
     /**
      * Create an archive from the sources.
      *
-     * @param string $sources  The sources directory
-     * @param string $target   The target file
-     * @param string $format   The format used for archive
-     * @param array  $excludes A list of patterns for files to exclude
+     * @param string   $sources       The sources directory
+     * @param string   $target        The target file
+     * @param string   $format        The format used for archive
+     * @param string[] $excludes      A list of patterns for files to exclude
+     * @param bool     $ignoreFilters Whether to ignore filters when looking for files
      *
      * @return string The path to the written archive file
      */

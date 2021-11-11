@@ -15,7 +15,6 @@ namespace Composer\Test\Downloader;
 use Composer\Downloader\HgDownloader;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
-use Composer\Util\Platform;
 use Composer\Test\Mock\ProcessExecutorMock;
 
 class HgDownloaderTest extends TestCase
@@ -36,6 +35,13 @@ class HgDownloaderTest extends TestCase
         }
     }
 
+    /**
+     * @param \Composer\IO\IOInterface $io
+     * @param \Composer\Config $config
+     * @param \Composer\Test\Mock\ProcessExecutorMock $executor
+     * @param \Composer\Util\Filesystem $filesystem
+     * @return HgDownloader
+     */
     protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
@@ -156,10 +162,5 @@ class HgDownloaderTest extends TestCase
         $downloader = $this->getDownloaderMock(null);
 
         $this->assertEquals('source', $downloader->getInstallationSource());
-    }
-
-    private function getCmd($cmd)
-    {
-        return Platform::isWindows() ? strtr($cmd, "'", '"') : $cmd;
     }
 }

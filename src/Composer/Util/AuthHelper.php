@@ -37,6 +37,8 @@ class AuthHelper
     /**
      * @param string      $origin
      * @param string|bool $storeAuth
+     *
+     * @return void
      */
     public function storeAuth($origin, $storeAuth)
     {
@@ -120,8 +122,11 @@ class AuthHelper
             $message = "\n".'Could not fetch '.$url.', enter your ' . $origin . ' credentials ' .($statusCode === 401 ? 'to access private repos' : 'to go over the API rate limit');
             $gitLabUtil = new GitLab($this->io, $this->config, null);
 
-            if ($this->io->hasAuthentication($origin) && ($auth = $this->io->getAuthentication($origin)) && in_array($auth['password'], array('gitlab-ci-token', 'private-token', 'oauth2'), true)) {
-                throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
+            if ($this->io->hasAuthentication($origin)) {
+                $auth = $this->io->getAuthentication($origin);
+                if (in_array($auth['password'], array('gitlab-ci-token', 'private-token', 'oauth2'), true)) {
+                    throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
+                }
             }
 
             if (!$gitLabUtil->authorizeOAuth($origin)
@@ -189,10 +194,11 @@ class AuthHelper
     }
 
     /**
-     * @param  array  $headers
-     * @param  string $origin
-     * @param  string $url
-     * @return array  updated headers array
+     * @param string[] $headers
+     * @param string   $origin
+     * @param string   $url
+     *
+     * @return string[] updated headers array
      */
     public function addAuthenticationHeader(array $headers, $origin, $url)
     {

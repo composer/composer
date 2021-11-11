@@ -115,9 +115,10 @@ class JsonFile
     /**
      * Writes json file.
      *
-     * @param  array                                $hash    writes hash into json file
+     * @param  mixed[]                          $hash    writes hash into json file
      * @param  int                                  $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
      * @throws \UnexpectedValueException|\Exception
+     * @return void
      */
     public function write(array $hash, $options = 448)
     {
@@ -158,7 +159,11 @@ class JsonFile
     }
 
     /**
-     * modify file properties only if content modified
+     * Modify file properties only if content modified
+     *
+     * @param string $path
+     * @param string $content
+     * @return int|false
      */
     private function filePutContentsIfModified($path, $content)
     {
@@ -268,6 +273,7 @@ class JsonFile
      *
      * @param  int               $code return code of json_last_error function
      * @throws \RuntimeException
+     * @return void
      */
     private static function throwEncodeError($code)
     {

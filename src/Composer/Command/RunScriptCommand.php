@@ -44,6 +44,9 @@ class RunScriptCommand extends BaseCommand
         ScriptEvents::POST_AUTOLOAD_DUMP,
     );
 
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -109,6 +112,9 @@ EOT
         return $composer->getEventDispatcher()->dispatchScript($script, $devMode, $args);
     }
 
+    /**
+     * @return int
+     */
     protected function listScripts(OutputInterface $output)
     {
         $scripts = $this->getComposer()->getPackage()->getScripts();

@@ -22,13 +22,20 @@ use Composer\Util\Url;
  */
 class ProxyManager
 {
-    private $error;
+    /** @var ?string */
+    private $error = null;
+    /** @var array{http: ?string, https: ?string} */
     private $fullProxy;
+    /** @var array{http: ?string, https: ?string} */
     private $safeProxy;
+    /** @var array{http: array{options: mixed[]|null}, https: array{options: mixed[]|null}} */
     private $streams;
+    /** @var bool */
     private $hasProxy;
-    private $info;
-    private $lastProxy;
+    /** @var ?string */
+    private $info = null;
+    /** @var ?string */
+    private $lastProxy = null;
     /** @var ?NoProxyPattern */
     private $noProxyHandler = null;
 
@@ -64,6 +71,8 @@ class ProxyManager
 
     /**
      * Clears the persistent instance
+     *
+     * @return void
      */
     public static function reset()
     {
@@ -123,6 +132,8 @@ class ProxyManager
 
     /**
      * Initializes proxy values from the environment
+     *
+     * @return void
      */
     private function initProxyData()
     {
@@ -153,8 +164,10 @@ class ProxyManager
     /**
      * Sets initial data
      *
-     * @param string $url    Proxy url
-     * @param string $scheme Environment variable scheme
+     * @param non-empty-string $url    Proxy url
+     * @param 'http'|'https'   $scheme Environment variable scheme
+     *
+     * @return non-empty-string
      */
     private function setData($url, $scheme)
     {

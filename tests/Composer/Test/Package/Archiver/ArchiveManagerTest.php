@@ -16,7 +16,6 @@ use Composer\IO\NullIO;
 use Composer\Factory;
 use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\CompletePackage;
-use Composer\Package\PackageInterface;
 use Composer\Util\Loop;
 use Composer\Test\Mock\FactoryMock;
 use Composer\Util\ProcessExecutor;
@@ -28,6 +27,9 @@ class ArchiveManagerTest extends ArchiverTest
      */
     protected $manager;
 
+    /**
+     * @var string
+     */
     protected $targetDir;
 
     public function setUp()
@@ -96,6 +98,12 @@ class ArchiveManagerTest extends ArchiverTest
         unlink($target);
     }
 
+    /**
+     * @param string      $format
+     * @param string|null $fileName
+     *
+     * @return string
+     */
     protected function getTargetName(CompletePackage $package, $format, $fileName = null)
     {
         if (null === $fileName) {
@@ -109,6 +117,8 @@ class ArchiveManagerTest extends ArchiverTest
 
     /**
      * Create local git repository to run tests against!
+     *
+     * @return void
      */
     protected function setupGitRepo()
     {

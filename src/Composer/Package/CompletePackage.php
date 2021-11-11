@@ -19,21 +19,33 @@ namespace Composer\Package;
  */
 class CompletePackage extends Package implements CompletePackageInterface
 {
+    /** @var mixed[] */
     protected $repositories = array();
+    /** @var string[] */
     protected $license = array();
+    /** @var string[] */
     protected $keywords = array();
+    /** @var array<array{name?: string, homepage?: string, email?: string, role?: string}> */
     protected $authors = array();
-    protected $description;
-    protected $homepage;
+    /** @var ?string */
+    protected $description = null;
+    /** @var ?string */
+    protected $homepage = null;
+    /** @var array<string, string[]> Map of script name to array of handlers */
     protected $scripts = array();
+    /** @var array{issues?: string, forum?: string, wiki?: string, source?: string, email?: string, irc?: string, docs?: string, rss?: string, chat?: string} */
     protected $support = array();
+    /** @var array<array{url?: string, type?: string}> */
     protected $funding = array();
+    /** @var bool|string */
     protected $abandoned = false;
-    protected $archiveName;
+    /** @var ?string */
+    protected $archiveName = null;
+    /** @var string[] */
     protected $archiveExcludes = array();
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setScripts(array $scripts)
     {
@@ -41,7 +53,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getScripts()
     {
@@ -49,7 +61,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setRepositories(array $repositories)
     {
@@ -57,7 +69,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRepositories()
     {
@@ -65,7 +77,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setLicense(array $license)
     {
@@ -73,7 +85,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getLicense()
     {
@@ -81,7 +93,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setKeywords(array $keywords)
     {
@@ -89,7 +101,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getKeywords()
     {
@@ -97,7 +109,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setAuthors(array $authors)
     {
@@ -105,7 +117,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getAuthors()
     {
@@ -113,7 +125,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setDescription($description)
     {
@@ -121,7 +133,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDescription()
     {
@@ -129,7 +141,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setHomepage($homepage)
     {
@@ -137,7 +149,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getHomepage()
     {
@@ -145,7 +157,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setSupport(array $support)
     {
@@ -153,7 +165,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSupport()
     {
@@ -161,7 +173,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setFunding(array $funding)
     {
@@ -169,7 +181,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getFunding()
     {
@@ -177,7 +189,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isAbandoned()
     {
@@ -185,7 +197,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setAbandoned($abandoned)
     {
@@ -193,7 +205,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getReplacementPackage()
     {
@@ -201,7 +213,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setArchiveName($name)
     {
@@ -209,7 +221,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getArchiveName()
     {
@@ -217,7 +229,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setArchiveExcludes(array $excludes)
     {
@@ -225,7 +237,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getArchiveExcludes()
     {

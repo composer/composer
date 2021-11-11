@@ -117,7 +117,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
@@ -129,13 +129,13 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
 
-        if (getenv('COMPOSER_NO_INTERACTION') || !Platform::isTty(defined('STDIN') ? STDIN : fopen('php://stdin', 'r'))) {
+        if (Platform::getEnv('COMPOSER_NO_INTERACTION') || !Platform::isTty(defined('STDIN') ? STDIN : fopen('php://stdin', 'r'))) {
             $input->setInteractive(false);
         }
 
@@ -174,7 +174,7 @@ class Application extends BaseApplication
         // prompt user for dir change if no composer.json is present in current dir
         if ($io->isInteractive() && !$newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'), true) && !file_exists(Factory::getComposerFile())) {
             $dir = dirname(getcwd());
-            $home = realpath(getenv('HOME') ?: getenv('USERPROFILE') ?: '/');
+            $home = realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
 
             // abort when we reach the home dir or top of the filesystem
             while (dirname($dir) !== $dir && $dir !== $home) {
@@ -196,10 +196,10 @@ class Application extends BaseApplication
                 // not a composer command, so try loading plugin ones
                 false === $commandName
                 // list command requires plugin commands to show them
-                || in_array($commandName, array('', 'list'), true)
+                || in_array($commandName, array('', 'list', 'help'), true)
             );
 
-        if ($mayNeedPluginCommand && !$this->disablePluginsByDefault && !$this->hasPluginCommands && 'global' !== $commandName) {
+        if ($mayNeedPluginCommand && !$this->disablePluginsByDefault && !$this->hasPluginCommands) {
             try {
                 foreach ($this->getPluginCommands() as $command) {
                     if ($this->has($command->getName())) {
@@ -253,7 +253,7 @@ class Application extends BaseApplication
                 $io->writeError('<warning>Composer only officially supports PHP 5.3.2 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
             }
 
-            if (XdebugHandler::isXdebugActive() && !getenv('COMPOSER_DISABLE_XDEBUG_WARN')) {
+            if (XdebugHandler::isXdebugActive() && !Platform::getEnv('COMPOSER_DISABLE_XDEBUG_WARN')) {
                 $io->writeError('<warning>Composer is operating slower than normal because you have Xdebug enabled. See https://getcomposer.org/xdebug</warning>');
             }
 
@@ -264,7 +264,7 @@ class Application extends BaseApplication
             if (
                 !Platform::isWindows()
                 && function_exists('exec')
-                && !getenv('COMPOSER_ALLOW_SUPERUSER')
+                && !Platform::getEnv('COMPOSER_ALLOW_SUPERUSER')
                 && (ini_get('open_basedir') || !file_exists('/.dockerenv'))
             ) {
                 if (function_exists('posix_getuid') && posix_getuid() === 0) {
@@ -277,7 +277,7 @@ class Application extends BaseApplication
                             }
                         }
                     }
-                    if ($uid = (int) getenv('SUDO_UID')) {
+                    if ($uid = (int) Platform::getEnv('SUDO_UID')) {
                         // Silently clobber any sudo credentials on the invoking user to avoid privilege escalations later on
                         // ref. https://github.com/composer/composer/issues/5119
                         Silencer::call('exec', "sudo -u \\#{$uid} sudo -K > /dev/null 2>&1");
@@ -368,9 +368,9 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @return void
      */
-    private function hintCommonErrors($exception)
+    private function hintCommonErrors(\Exception $exception)
     {
         $io = $this->getIO();
 
@@ -451,6 +451,8 @@ class Application extends BaseApplication
 
     /**
      * Removes the cached composer instance
+     *
+     * @return void
      */
     public function resetComposer()
     {
@@ -468,6 +470,9 @@ class Application extends BaseApplication
         return $this->io;
     }
 
+    /**
+     * @return string
+     */
     public function getHelp()
     {
         return self::$logo . parent::getHelp();
@@ -517,7 +522,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getLongVersion()
     {
@@ -535,7 +540,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function getDefaultInputDefinition()
     {
@@ -548,6 +553,9 @@ class Application extends BaseApplication
         return $definition;
     }
 
+    /**
+     * @return Command\BaseCommand[]
+     */
     private function getPluginCommands()
     {
         $commands = array();

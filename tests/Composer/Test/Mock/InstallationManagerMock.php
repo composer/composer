@@ -24,9 +24,21 @@ use Composer\DependencyResolver\Operation\MarkAliasUninstalledOperation;
 
 class InstallationManagerMock extends InstallationManager
 {
+    /**
+     * @var PackageInterface[]
+     */
     private $installed = array();
+    /**
+     * @var PackageInterface[][]
+     */
     private $updated = array();
+    /**
+     * @var PackageInterface[]
+     */
     private $uninstalled = array();
+    /**
+     * @var string[]
+     */
     private $trace = array();
 
     public function __construct()
@@ -52,13 +64,21 @@ class InstallationManagerMock extends InstallationManager
         return $repo->hasPackage($package);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function install(InstalledRepositoryInterface $repo, InstallOperation $operation)
     {
         $this->installed[] = $operation->getPackage();
         $this->trace[] = strip_tags((string) $operation);
         $repo->addPackage(clone $operation->getPackage());
+
+        return null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation)
     {
         $this->updated[] = array($operation->getInitialPackage(), $operation->getTargetPackage());
@@ -67,13 +87,20 @@ class InstallationManagerMock extends InstallationManager
         if (!$repo->hasPackage($operation->getTargetPackage())) {
             $repo->addPackage(clone $operation->getTargetPackage());
         }
+
+        return null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation)
     {
         $this->uninstalled[] = $operation->getPackage();
         $this->trace[] = strip_tags((string) $operation);
         $repo->removePackage($operation->getPackage());
+
+        return null;
     }
 
     public function markAliasInstalled(InstalledRepositoryInterface $repo, MarkAliasInstalledOperation $operation)
@@ -94,21 +121,25 @@ class InstallationManagerMock extends InstallationManager
         parent::markAliasUninstalled($repo, $operation);
     }
 
+    /** @return string[] */
     public function getTrace()
     {
         return $this->trace;
     }
 
+    /** @return PackageInterface[] */
     public function getInstalledPackages()
     {
         return $this->installed;
     }
 
+    /** @return PackageInterface[][] */
     public function getUpdatedPackages()
     {
         return $this->updated;
     }
 
+    /** @return PackageInterface[] */
     public function getUninstalledPackages()
     {
         return $this->uninstalled;
@@ -119,6 +150,7 @@ class InstallationManagerMock extends InstallationManager
         // noop
     }
 
+    /** @return PackageInterface[] */
     public function getInstalledPackagesByType()
     {
         return $this->installed;

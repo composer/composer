@@ -20,6 +20,9 @@ use Composer\Package\BasePackage;
 
 class FilterRepositoryTest extends TestCase
 {
+    /**
+     * @var ArrayRepository
+     */
     private $arrayRepo;
 
     public function setUp()
@@ -32,7 +35,10 @@ class FilterRepositoryTest extends TestCase
     }
 
     /**
-     * @dataProvider repoMatchingTests
+     * @dataProvider provideRepoMatchingTestCases
+     *
+     * @param string[]                                                               $expected
+     * @param array{only?: array<string>, exclude?: array<string>, canonical?: bool} $config
      */
     public function testRepoMatching($expected, $config)
     {
@@ -44,7 +50,7 @@ class FilterRepositoryTest extends TestCase
         }, $packages));
     }
 
-    public static function repoMatchingTests()
+    public static function provideRepoMatchingTestCases()
     {
         return array(
             array(array('foo/aaa', 'foo/bbb'), array('only' => array('foo/*'))),

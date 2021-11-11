@@ -36,7 +36,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     const STRATEGY_MIRROR = 20;
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
@@ -72,7 +72,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function install(PackageInterface $package, $path, $output = true)
     {
@@ -158,7 +158,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function remove(PackageInterface $package, $path, $output = true)
     {
@@ -203,7 +203,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getVcsReference(PackageInterface $package, $path)
     {
@@ -221,7 +221,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function getInstallOperationAppendix(PackageInterface $package, $path)
     {
@@ -244,13 +244,18 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         return ': Mirroring from '.$package->getDistUrl();
     }
 
+    /**
+     * @param mixed[] $transportOptions
+     *
+     * @phpstan-return array{self::STRATEGY_*, non-empty-list<self::STRATEGY_*>}
+     */
     private function computeAllowedStrategies(array $transportOptions)
     {
         // When symlink transport option is null, both symlink and mirror are allowed
         $currentStrategy = self::STRATEGY_SYMLINK;
         $allowedStrategies = array(self::STRATEGY_SYMLINK, self::STRATEGY_MIRROR);
 
-        $mirrorPathRepos = getenv('COMPOSER_MIRROR_PATH_REPOS');
+        $mirrorPathRepos = Platform::getEnv('COMPOSER_MIRROR_PATH_REPOS');
         if ($mirrorPathRepos) {
             $currentStrategy = self::STRATEGY_MIRROR;
         }

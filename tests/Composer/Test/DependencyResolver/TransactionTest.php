@@ -98,6 +98,11 @@ class TransactionTest extends TestCase
         $this->checkTransactionOperations($transaction, $expectedOperations);
     }
 
+    /**
+     * @param \Composer\DependencyResolver\Transaction $transaction
+     * @param array<array<string, string>> $expected
+     * @return void
+     */
     protected function checkTransactionOperations(Transaction $transaction, array $expected)
     {
         $result = array();

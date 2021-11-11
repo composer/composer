@@ -50,7 +50,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getInstallationSource()
     {
@@ -58,7 +58,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
@@ -91,7 +91,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
@@ -108,7 +108,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
@@ -121,7 +121,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function install(PackageInterface $package, $path)
     {
@@ -156,7 +156,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
@@ -220,7 +220,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function remove(PackageInterface $package, $path)
     {
@@ -236,7 +236,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getVcsReference(PackageInterface $package, $path)
     {
@@ -259,6 +259,9 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      * @param  string            $path
      * @param  bool              $update  if true (update) the changes can be stashed and reapplied after an update,
      *                                    if false (remove) the changes should be assumed to be lost if the operation is not aborted
+     *
+     * @return PromiseInterface
+     *
      * @throws \RuntimeException in case the operation must be aborted
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)
@@ -274,7 +277,10 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     /**
      * Reapply previously stashes changes if applicable, only called after an update (regardless if successful or not)
      *
-     * @param  string            $path
+     * @param string $path
+     *
+     * @return void
+     *
      * @throws \RuntimeException in case the operation must be aborted or the patch does not apply cleanly
      */
     protected function reapplyChanges($path)
@@ -336,6 +342,8 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
     abstract protected function hasMetadataRepository($path);
 
     /**
+     * @param string[] $urls
+     *
      * @return string[]
      */
     private function prepareUrls(array $urls)

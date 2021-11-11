@@ -24,10 +24,25 @@ use Composer\Util\Http\Response;
  */
 class GitLabDriverTest extends TestCase
 {
+    /**
+     * @var string
+     */
     private $home;
+    /**
+     * @var Config
+     */
     private $config;
+    /**
+     * @var \Prophecy\Prophecy\ObjectProphecy
+     */
     private $io;
+    /**
+     * @var \Prophecy\Prophecy\ObjectProphecy
+     */
     private $process;
+    /**
+     * @var \Prophecy\Prophecy\ObjectProphecy
+     */
     private $httpDownloader;
 
     public function setUp()
@@ -57,7 +72,7 @@ class GitLabDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    public function getInitializeUrls()
+    public function provideInitializeUrls()
     {
         return array(
             array('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject'),
@@ -67,7 +82,10 @@ class GitLabDriverTest extends TestCase
     }
 
     /**
-     * @dataProvider getInitializeUrls
+     * @dataProvider provideInitializeUrls
+     *
+     * @param string $url
+     * @param string $apiUrl
      */
     public function testInitialize($url, $apiUrl)
     {
@@ -104,7 +122,10 @@ JSON;
     }
 
     /**
-     * @dataProvider getInitializeUrls
+     * @dataProvider provideInitializeUrls
+     *
+     * @param string $url
+     * @param string $apiUrl
      */
     public function testInitializePublicProject($url, $apiUrl)
     {
@@ -141,7 +162,10 @@ JSON;
     }
 
     /**
-     * @dataProvider getInitializeUrls
+     * @dataProvider provideInitializeUrls
+     *
+     * @param string $url
+     * @param string $apiUrl
      */
     public function testInitializePublicProjectAsAnonymous($url, $apiUrl)
     {
@@ -402,6 +426,9 @@ JSON;
     /**
      * @group gitlabHttpPort
      * @dataProvider dataForTestSupports
+     *
+     * @param string $url
+     * @param bool   $expected
      */
     public function testSupports($url, $expected)
     {
@@ -593,6 +620,13 @@ JSON;
         $this->assertEquals('https://gitlab.com/mygroup/myproject.git', $driver->getRepositoryUrl(), 'Repository URL matches config request for http not git');
     }
 
+    /**
+     * @param string      $url
+     * @param mixed[]     $options
+     * @param string|null $return
+     *
+     * @return \Prophecy\Prophecy\MethodProphecy
+     */
     private function mockResponse($url, $options, $return)
     {
         return $this->httpDownloader

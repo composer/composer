@@ -28,7 +28,7 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
     protected $devPackageNames = array();
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setDevPackageNames(array $devPackageNames)
     {
@@ -36,7 +36,7 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDevPackageNames()
     {
@@ -44,21 +44,21 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function write($devMode, InstallationManager $installationManager)
     {
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function reload()
     {
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getCanonicalPackages()
     {

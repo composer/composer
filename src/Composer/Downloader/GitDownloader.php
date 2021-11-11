@@ -21,6 +21,7 @@ use Composer\Util\Url;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Cache;
+use React\Promise\PromiseInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -54,7 +55,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
     {
@@ -79,7 +80,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function doInstall(PackageInterface $package, $path, $url)
     {
@@ -98,7 +99,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         } else {
             $msg = "Cloning ".$this->getShortHash($ref);
             $command = 'git clone --no-checkout -- %url% %path% && cd '.$flag.'%path% && git remote add composer -- %url% && git fetch composer && git remote set-url origin -- %sanitizedUrl% && git remote set-url composer -- %sanitizedUrl%';
-            if (getenv('COMPOSER_DISABLE_NETWORK')) {
+            if (Platform::getEnv('COMPOSER_DISABLE_NETWORK')) {
                 throw new \RuntimeException('The required git reference for '.$package->getName().' is not in cache and network is disabled, aborting');
             }
         }
@@ -119,8 +120,9 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path, true);
-        if ($url !== $package->getSourceUrl()) {
-            $this->updateOriginUrl($path, $package->getSourceUrl());
+        $sourceUrl = $package->getSourceUrl();
+        if ($url !== $sourceUrl && $sourceUrl !== null) {
+            $this->updateOriginUrl($path, $sourceUrl);
         } else {
             $this->setPushUrl($path, $url);
         }
@@ -136,7 +138,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
     {
@@ -155,7 +157,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         } else {
             $msg = "Checking out ".$this->getShortHash($ref);
             $command = '(git remote set-url composer -- %url% && git rev-parse --quiet --verify %ref% || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- %sanitizedUrl%';
-            if (getenv('COMPOSER_DISABLE_NETWORK')) {
+            if (Platform::getEnv('COMPOSER_DISABLE_NETWORK')) {
                 throw new \RuntimeException('The required git reference for '.$target->getName().' is not in cache and network is disabled, aborting');
             }
         }
@@ -193,7 +195,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                 $updateOriginUrl = true;
             }
         }
-        if ($updateOriginUrl) {
+        if ($updateOriginUrl && $target->getSourceUrl() !== null) {
             $this->updateOriginUrl($path, $target->getSourceUrl());
         }
 
@@ -201,7 +203,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getLocalChanges(PackageInterface $package, $path)
     {
@@ -218,6 +220,9 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         return trim($output) ?: null;
     }
 
+    /**
+     * @return null|string
+     */
     public function getUnpushedChanges(PackageInterface $package, $path)
     {
         GitUtil::cleanEnv();
@@ -313,7 +318,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function cleanChanges(PackageInterface $package, $path, $update)
     {
@@ -326,7 +331,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         if (!$changes = $this->getLocalChanges($package, $path)) {
-            return;
+            return \React\Promise\resolve();
         }
 
         if (!$this->io->isInteractive()) {
@@ -395,10 +400,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                     break;
             }
         }
+
+        return \React\Promise\resolve();
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function reapplyChanges($path)
     {
@@ -482,12 +489,24 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         throw new \RuntimeException(Url::sanitize('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()));
     }
 
+    /**
+     * @param string $path
+     * @param string $url
+     *
+     * @return void
+     */
     protected function updateOriginUrl($path, $url)
     {
         $this->process->execute(sprintf('git remote set-url origin -- %s', ProcessExecutor::escape($url)), $output, $path);
         $this->setPushUrl($path, $url);
     }
 
+    /**
+     * @param string $path
+     * @param string $url
+     *
+     * @return void
+     */
     protected function setPushUrl($path, $url)
     {
         // set push url for github projects
@@ -503,7 +522,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function getCommitLogs($fromReference, $toReference, $path)
     {
@@ -518,7 +537,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * @param  string            $path
+     * @param string $path
+     *
+     * @return PromiseInterface
+     *
      * @throws \RuntimeException
      */
     protected function discardChanges($path)
@@ -529,10 +551,15 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         $this->hasDiscardedChanges[$path] = true;
+
+        return \React\Promise\resolve();
     }
 
     /**
-     * @param  string            $path
+     * @param string $path
+     *
+     * @return PromiseInterface
+     *
      * @throws \RuntimeException
      */
     protected function stashChanges($path)
@@ -543,10 +570,15 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         $this->hasStashedChanges[$path] = true;
+
+        return \React\Promise\resolve();
     }
 
     /**
-     * @param  string            $path
+     * @param string $path
+     *
+     * @return void
+     *
      * @throws \RuntimeException
      */
     protected function viewDiff($path)
@@ -559,6 +591,11 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         $this->io->writeError($output);
     }
 
+    /**
+     * @param string $path
+     *
+     * @return string
+     */
     protected function normalizePath($path)
     {
         if (Platform::isWindows() && strlen($path) > 0) {
@@ -581,7 +618,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function hasMetadataRepository($path)
     {
@@ -590,6 +627,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         return is_dir($path.'/.git');
     }
 
+    /**
+     * @param  string $reference
+     * @return string
+     */
     protected function getShortHash($reference)
     {
         if (!$this->io->isVerbose() && preg_match('{^[0-9a-f]{40}$}', $reference)) {

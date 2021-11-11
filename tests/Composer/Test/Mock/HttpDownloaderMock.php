@@ -18,10 +18,13 @@ use Composer\Downloader\TransportException;
 
 class HttpDownloaderMock extends HttpDownloader
 {
+    /**
+     * @var array<string, string>
+     */
     protected $contentMap;
 
     /**
-     * @param array $contentMap associative array of locations and content
+     * @param array<string, string> $contentMap associative array of locations and content
      */
     public function __construct(array $contentMap)
     {

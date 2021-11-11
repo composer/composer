@@ -44,14 +44,17 @@ class BasePackageTest extends TestCase
     }
 
     /**
-     * @dataProvider formattedVersions
+     * @dataProvider provideFormattedVersions
+     *
+     * @param bool   $truncate
+     * @param string $expected
      */
     public function testFormatVersionForDevPackage(BasePackage $package, $truncate, $expected)
     {
         $this->assertSame($expected, $package->getFullPrettyVersion($truncate));
     }
 
-    public function formattedVersions()
+    public function provideFormattedVersions()
     {
         $data = array(
             array(

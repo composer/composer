@@ -58,6 +58,13 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /** @var ProcessExecutor */
     protected $process;
     /**
+     * @var array<string, int|string>
+     * @private
+     * @internal
+     */
+    public static $downloadMetadata = array();
+
+    /**
      * @private this is only public for php 5.3 support in closures
      *
      * @var array<string, string> Map of package name to cache key
@@ -88,12 +95,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         if ($this->cache && $this->cache->gcIsNecessary()) {
             $this->io->writeError('Running cache garbage collection', true, IOInterface::VERY_VERBOSE);
-            $this->cache->gc($config->get('cache-files-ttl'), $config->get('cache-files-maxsize'));
+            $this->cache->gc((int) $config->get('cache-files-ttl'), (int) $config->get('cache-files-maxsize'));
         }
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getInstallationSource()
     {
@@ -101,7 +108,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
+     *
+     * @param bool $output
      */
     public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
     {
@@ -216,6 +225,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $accept = function ($response) use ($cache, $package, $fileName, $self, &$urls) {
             $url = reset($urls);
             $cacheKey = $url['cacheKey'];
+            FileDownloader::$downloadMetadata[$package->getName()] = @filesize($fileName) ?: $response->getHeader('Content-Length') ?: '?';
 
             if ($cache && !$cache->isReadOnly()) {
                 $self->lastCacheWrites[$package->getName()] = $cacheKey;
@@ -284,7 +294,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
@@ -292,7 +302,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
     {
@@ -323,7 +333,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
+     *
+     * @param bool $output
      */
     public function install(PackageInterface $package, $path, $output = true)
     {
@@ -351,6 +363,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * TODO mark private in v3
      * @protected This is public due to PHP 5.3
+     *
+     * @return void
      */
     public function clearLastCacheWrite(PackageInterface $package)
     {
@@ -363,6 +377,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * TODO mark private in v3
      * @protected This is public due to PHP 5.3
+     *
+     * @param string $path
+     *
+     * @return void
      */
     public function addCleanupPath(PackageInterface $package, $path)
     {
@@ -372,6 +390,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * TODO mark private in v3
      * @protected This is public due to PHP 5.3
+     *
+     * @param string $path
+     *
+     * @return void
      */
     public function removeCleanupPath(PackageInterface $package, $path)
     {
@@ -384,7 +406,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function update(PackageInterface $initial, PackageInterface $target, $path)
     {
@@ -405,7 +427,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
+     *
+     * @param bool $output
      */
     public function remove(PackageInterface $package, $path, $output = true)
     {
@@ -467,7 +491,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      * @throws \RuntimeException
      */
     public function getLocalChanges(PackageInterface $package, $targetDir)

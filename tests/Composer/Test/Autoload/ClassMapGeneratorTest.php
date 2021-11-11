@@ -27,12 +27,17 @@ class ClassMapGeneratorTest extends TestCase
 {
     /**
      * @dataProvider getTestCreateMapTests
+     * @param string $directory
+     * @param array<string, string> $expected
      */
     public function testCreateMap($directory, $expected)
     {
         $this->assertEqualsNormalized($expected, ClassMapGenerator::createMap($directory));
     }
 
+    /**
+     * @return array<array<string|array<string>>>
+     */
     public function getTestCreateMapTests()
     {
         if (PHP_VERSION_ID == 50303) {
@@ -252,13 +257,13 @@ class ClassMapGeneratorTest extends TestCase
     public function testCreateMapDoesNotHitRegexBacktraceLimit()
     {
         $expected = array(
-            'Foo\\StripNoise'            => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/StripNoise.php',
-            'Foo\\VeryLongHeredoc'       => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongHeredoc.php',
+            'Foo\\StripNoise' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/StripNoise.php',
+            'Foo\\VeryLongHeredoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongHeredoc.php',
             'Foo\\ClassAfterLongHereDoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongHeredoc.php',
-            'Foo\\VeryLongPHP73Heredoc'  => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Heredoc.php',
-            'Foo\\VeryLongPHP73Nowdoc'   => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Nowdoc.php',
-            'Foo\\ClassAfterLongNowDoc'  => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Nowdoc.php',
-            'Foo\\VeryLongNowdoc'        => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongNowdoc.php',
+            'Foo\\VeryLongPHP73Heredoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Heredoc.php',
+            'Foo\\VeryLongPHP73Nowdoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Nowdoc.php',
+            'Foo\\ClassAfterLongNowDoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongPHP73Nowdoc.php',
+            'Foo\\VeryLongNowdoc' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/VeryLongNowdoc.php',
         );
 
         ini_set('pcre.backtrack_limit', '30000');
@@ -268,6 +273,12 @@ class ClassMapGeneratorTest extends TestCase
         $this->assertEqualsNormalized($expected, $result);
     }
 
+    /**
+     * @param array<class-string> $expected
+     * @param array<class-string> $actual
+     * @param string $message
+     * @return  void
+     */
     protected function assertEqualsNormalized($expected, $actual, $message = '')
     {
         foreach ($expected as $ns => $path) {
@@ -279,6 +290,7 @@ class ClassMapGeneratorTest extends TestCase
         $this->assertEquals($expected, $actual, $message);
     }
 
+    /** @return void */
     private function checkIfFinderIsAvailable()
     {
         if (!class_exists('Symfony\\Component\\Finder\\Finder')) {

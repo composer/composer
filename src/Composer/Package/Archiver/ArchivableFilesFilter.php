@@ -17,6 +17,7 @@ use PharData;
 
 class ArchivableFilesFilter extends FilterIterator
 {
+    /** @var string[] */
     private $dirs = array();
 
     /**
@@ -35,6 +36,11 @@ class ArchivableFilesFilter extends FilterIterator
         return true;
     }
 
+    /**
+     * @param string $sources
+     *
+     * @return void
+     */
     public function addEmptyDir(PharData $phar, $sources)
     {
         foreach ($this->dirs as $filepath) {

@@ -34,14 +34,14 @@ class HgDriver extends VcsDriver
     protected $repoDir;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function initialize()
     {
         if (Filesystem::isLocalPath($this->url)) {
             $this->repoDir = $this->url;
         } else {
-            if (!Cache::isUsable($this->config->get('cache-vcs-dir'))) {
+            if (!Cache::isUsable((string) $this->config->get('cache-vcs-dir'))) {
                 throw new \RuntimeException('HgDriver requires a usable cache directory, and it looks like you set it to be disabled');
             }
 
@@ -83,7 +83,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getRootIdentifier()
     {
@@ -97,7 +97,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getUrl()
     {
@@ -105,7 +105,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getSource($identifier)
     {
@@ -113,7 +113,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getDist($identifier)
     {
@@ -121,7 +121,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getFileContent($file, $identifier)
     {
@@ -136,7 +136,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getChangeDate($identifier)
     {
@@ -153,7 +153,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getTags()
     {
@@ -175,7 +175,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getBranches()
     {
@@ -205,7 +205,7 @@ class HgDriver extends VcsDriver
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {

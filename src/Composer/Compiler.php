@@ -27,14 +27,20 @@ use Seld\PharUtils\Linter;
  */
 class Compiler
 {
+    /** @var string */
     private $version;
+    /** @var string */
     private $branchAliasVersion = '';
+    /** @var \DateTime */
     private $versionDate;
 
     /**
      * Compiles composer into a single phar file
      *
-     * @param  string            $pharFile The full path to the file to create
+     * @param string $pharFile The full path to the file to create
+     *
+     * @return void
+     *
      * @throws \RuntimeException
      */
     public function compile($pharFile = 'composer.phar')
@@ -79,12 +85,12 @@ class Compiler
         if ($process->run() == 0) {
             $this->version = trim($process->getOutput());
         } else {
-            // get branch-alias defined in composer.json for dev-master (if any)
+            // get branch-alias defined in composer.json for dev-main (if any)
             $localConfig = __DIR__.'/../../composer.json';
             $file = new JsonFile($localConfig);
             $localConfig = $file->read();
-            if (isset($localConfig['extra']['branch-alias']['dev-master'])) {
-                $this->branchAliasVersion = $localConfig['extra']['branch-alias']['dev-master'];
+            if (isset($localConfig['extra']['branch-alias']['dev-main'])) {
+                $this->branchAliasVersion = $localConfig['extra']['branch-alias']['dev-main'];
             }
         }
 
@@ -211,7 +217,12 @@ class Compiler
         return strtr($relativePath, '\\', '/');
     }
 
-    private function addFile($phar, $file, $strip = true)
+    /**
+     * @param bool $strip
+     *
+     * @return void
+     */
+    private function addFile(\Phar $phar, \SplFileInfo $file, $strip = true)
     {
         $path = $this->getRelativeFilePath($file);
         $content = file_get_contents($file);
@@ -236,7 +247,10 @@ class Compiler
         $phar->addFromString($path, $content);
     }
 
-    private function addComposerBin($phar)
+    /**
+     * @return void
+     */
+    private function addComposerBin(\Phar $phar)
     {
         $content = file_get_contents(__DIR__.'/../../bin/composer');
         $content = preg_replace('{^#!/usr/bin/env php\s*}', '', $content);
@@ -277,6 +291,9 @@ class Compiler
         return $output;
     }
 
+    /**
+     * @return string
+     */
     private function getStub()
     {
         $stub = <<<'EOF'
@@ -313,7 +330,7 @@ EOF;
 
         // add warning once the phar is older than 60 days
         if (preg_match('{^[a-f0-9]+$}', $this->version)) {
-            $warningTime = $this->versionDate->format('U') + 60 * 86400;
+            $warningTime = ((int) $this->versionDate->format('U')) + 60 * 86400;
             $stub .= "define('COMPOSER_DEV_WARNING_TIME', $warningTime);\n";
         }
 

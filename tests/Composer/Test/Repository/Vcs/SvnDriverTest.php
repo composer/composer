@@ -20,7 +20,13 @@ use Composer\Test\Mock\ProcessExecutorMock;
 
 class SvnDriverTest extends TestCase
 {
+    /**
+     * @var string
+     */
     protected $home;
+    /**
+     * @var Config
+     */
     protected $config;
 
     public function setUp()
@@ -79,6 +85,9 @@ class SvnDriverTest extends TestCase
 
     /**
      * @dataProvider supportProvider
+     *
+     * @param string $url
+     * @param bool   $assertion
      */
     public function testSupport($url, $assertion)
     {

@@ -17,7 +17,10 @@ use Composer\Test\TestCase;
 
 class DownloadManagerTest extends TestCase
 {
+    /** @var \Composer\Util\Filesystem&\PHPUnit\Framework\MockObject\MockObject */
     protected $filesystem;
+
+    /** @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     protected $io;
 
     public function setUp()
@@ -629,6 +632,11 @@ class DownloadManagerTest extends TestCase
 
     /**
      * @dataProvider updatesProvider
+     * @param ?string $prevPkgSource
+     * @param ?bool $prevPkgIsDev
+     * @param string[] $targetAvailable
+     * @param bool $targetIsDev
+     * @param string[] $expected
      */
     public function testGetAvailableSourcesUpdateSticksToSameSource($prevPkgSource, $prevPkgIsDev, $targetAvailable, $targetIsDev, $expected)
     {
@@ -1091,12 +1099,18 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
+    /**
+     * @return \Composer\Downloader\DownloaderInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     private function createDownloaderMock()
     {
         return $this->getMockBuilder('Composer\Downloader\DownloaderInterface')
             ->getMock();
     }
 
+    /**
+     * @return \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     private function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\PackageInterface')

@@ -44,7 +44,7 @@ class MarkAliasUninstalledOperation extends SolverOperation implements Operation
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function show($lock)
     {

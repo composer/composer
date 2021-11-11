@@ -65,13 +65,17 @@ class UpdateOperation extends SolverOperation implements OperationInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function show($lock)
     {
         return self::format($this->initialPackage, $this->targetPackage, $lock);
     }
 
+    /**
+     * @param bool $lock
+     * @return string
+     */
     public static function format(PackageInterface $initialPackage, PackageInterface $targetPackage, $lock = false)
     {
         $fromVersion = $initialPackage->getFullPrettyVersion();

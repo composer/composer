@@ -17,8 +17,17 @@ use Composer\Test\TestCase;
 
 class MetapackageInstallerTest extends TestCase
 {
+    /**
+     * @var \Composer\Repository\InstalledRepositoryInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     private $repository;
+    /**
+     * @var MetapackageInstaller
+     */
     private $installer;
+    /**
+     * @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     private $io;
 
     protected function setUp()
@@ -98,6 +107,9 @@ class MetapackageInstallerTest extends TestCase
         $this->installer->uninstall($this->repository, $package);
     }
 
+    /**
+     * @return \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     private function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')

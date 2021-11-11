@@ -324,7 +324,7 @@ class RemoteFilesystem
                 try {
                     $e->setResponse($this->decodeResult($result, $http_response_header));
                 } catch (\Exception $discarded) {
-                    $e->setResponse($result);
+                    $e->setResponse($this->normalizeResult($result));
                 }
 
                 $this->io->writeError('Content-Length mismatch, received '.Platform::strlen($result).' out of '.$contentLength.' bytes: (' . base64_encode($result).')', true, IOInterface::DEBUG);
@@ -555,6 +555,7 @@ class RemoteFilesystem
      * @param string   $originUrl   The origin URL
      * @param string   $fileUrl     The file URL
      * @param resource $context     The stream context
+     * @param string[] $responseHeaders
      * @param int      $maxFileSize The maximum allowed file size
      *
      * @return string|false The response contents or false on failure
@@ -592,12 +593,15 @@ class RemoteFilesystem
     /**
      * Get notification action.
      *
-     * @param  int                $notificationCode The notification code
-     * @param  int                $severity         The severity level
-     * @param  string             $message          The message
-     * @param  int                $messageCode      The message code
-     * @param  int                $bytesTransferred The loaded size
-     * @param  int                $bytesMax         The total size
+     * @param int    $notificationCode The notification code
+     * @param int    $severity         The severity level
+     * @param string $message          The message
+     * @param int    $messageCode      The message code
+     * @param int    $bytesTransferred The loaded size
+     * @param int    $bytesMax         The total size
+     *
+     * @return void
+     *
      * @throws TransportException
      */
     protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
@@ -631,6 +635,13 @@ class RemoteFilesystem
         }
     }
 
+    /**
+     * @param positive-int $httpStatus
+     * @param string|null  $reason
+     * @param string[]     $headers
+     *
+     * @return void
+     */
     protected function promptAuthAndRetry($httpStatus, $reason = null, $headers = array())
     {
         $result = $this->authHelper->promptAuthIfNeeded($this->fileUrl, $this->originUrl, $httpStatus, $reason, $headers);
@@ -643,6 +654,12 @@ class RemoteFilesystem
         }
     }
 
+    /**
+     * @param string  $originUrl
+     * @param mixed[] $additionalOptions
+     *
+     * @return mixed[]
+     */
     protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
         $tlsOptions = array();
@@ -714,6 +731,13 @@ class RemoteFilesystem
         return $options;
     }
 
+    /**
+     * @param string[]     $http_response_header
+     * @param mixed[]      $additionalOptions
+     * @param string|false $result
+     *
+     * @return bool|string
+     */
     private function handleRedirect(array $http_response_header, array $additionalOptions, $result)
     {
         if ($locationHeader = Response::findHeaderValue($http_response_header, 'location')) {
@@ -763,6 +787,9 @@ class RemoteFilesystem
      *
      * @todo Remove when PHP 5.6 is minimum supported version.
      *
+     * @param string  $url
+     * @param mixed[] $options
+     *
      * @return ?array{cn: string, fp: string}
      */
     private function getCertificateCnAndFp($url, $options)
@@ -807,6 +834,11 @@ class RemoteFilesystem
         return null;
     }
 
+    /**
+     * @param string $url
+     *
+     * @return string
+     */
     private function getUrlAuthority($url)
     {
         $defaultPorts = array(
@@ -832,6 +864,12 @@ class RemoteFilesystem
         return parse_url($url, PHP_URL_HOST).':'.$port;
     }
 
+    /**
+     * @param string|false $result
+     * @param string[]     $http_response_header
+     *
+     * @return string|null
+     */
     private function decodeResult($result, $http_response_header)
     {
         // decode gzip
@@ -851,6 +889,20 @@ class RemoteFilesystem
                     throw new TransportException('Failed to decode zlib stream');
                 }
             }
+        }
+
+        return $this->normalizeResult($result);
+    }
+
+    /**
+     * @param string|false $result
+     *
+     * @return string|null
+     */
+    private function normalizeResult($result)
+    {
+        if ($result === false) {
+            return null;
         }
 
         return $result;

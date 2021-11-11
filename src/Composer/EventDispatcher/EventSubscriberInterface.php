@@ -42,7 +42,7 @@ interface EventSubscriberInterface
      * * array('eventName' => array('methodName', $priority))
      * * array('eventName' => array(array('methodName1', $priority), array('methodName2'))
      *
-     * @return array The event names to listen to
+     * @return array<string, string|array{0: string, 1?: int}|array<array{0: string, 1?: int}>> The event names to listen to
      */
     public static function getSubscribedEvents();
 }

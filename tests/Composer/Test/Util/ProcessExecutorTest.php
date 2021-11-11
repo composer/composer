@@ -69,6 +69,9 @@ class ProcessExecutorTest extends TestCase
 
     /**
      * @dataProvider hidePasswordProvider
+     *
+     * @param string $command
+     * @param string $expectedCommandOutput
      */
     public function testHidePasswords($command, $expectedCommandOutput)
     {
@@ -127,5 +130,95 @@ class ProcessExecutorTest extends TestCase
         $this->assertEquals(0, $process->countActiveJobs());
         $end = microtime(true);
         $this->assertTrue($end - $start < 0.5, 'Canceling took longer than it should, lasted '.($end - $start));
+    }
+
+    /**
+     * Test various arguments are escaped as expected
+     *
+     * @dataProvider dataEscapeArguments
+     *
+     * @param string|false|null $argument
+     * @param string            $win
+     * @param string            $unix
+     */
+    public function testEscapeArgument($argument, $win, $unix)
+    {
+        $expected = defined('PHP_WINDOWS_VERSION_BUILD') ? $win : $unix;
+        $this->assertSame($expected, ProcessExecutor::escape($argument));
+    }
+
+    /**
+     * Each named test is an array of:
+     *   argument, win-expected, unix-expected
+     */
+    public function dataEscapeArguments()
+    {
+        return array(
+            // empty argument - must be quoted
+            'empty' => array('', '""', "''"),
+
+            // null argument - must be quoted
+            'empty null' => array(null, '""', "''"),
+
+            // false argument - must be quoted
+            'empty false' => array(false, '""', "''"),
+
+            // unix single-quote must be escaped
+            'unix-sq' => array("a'bc", "a'bc", "'a'\\''bc'"),
+
+            // new lines must be replaced
+            'new lines' => array("a\nb\nc", '"a b c"', "'a\nb\nc'"),
+
+            // whitespace <space> must be quoted
+            'ws space' => array('a b c', '"a b c"', "'a b c'"),
+
+            // whitespace <tab> must be quoted
+            'ws tab' => array("a\tb\tc", "\"a\tb\tc\"", "'a\tb\tc'"),
+
+            // no whitespace must not be quoted
+            'no-ws' => array('abc', 'abc', "'abc'"),
+
+            // double-quotes must be backslash-escaped
+            'dq' => array('a"bc', 'a\^"bc', "'a\"bc'"),
+
+            // double-quotes must be backslash-escaped with preceeding backslashes doubled
+            'dq-bslash' => array('a\\"bc', 'a\\\\\^"bc', "'a\\\"bc'"),
+
+            // backslashes not preceeding a double-quote are treated as literal
+            'bslash' => array('ab\\\\c\\', 'ab\\\\c\\', "'ab\\\\c\\'"),
+
+            // trailing backslashes must be doubled up when the argument is quoted
+            'bslash dq' => array('a b c\\\\', '"a b c\\\\\\\\"', "'a b c\\\\'"),
+
+            // meta: outer double-quotes must be caret-escaped as well
+            'meta dq' => array('a "b" c', '^"a \^"b\^" c^"', "'a \"b\" c'"),
+
+            // meta: percent expansion must be caret-escaped
+            'meta-pc1' => array('%path%', '^%path^%', "'%path%'"),
+
+            // meta: expansion must have two percent characters
+            'meta-pc2' => array('%path', '%path', "'%path'"),
+
+            // meta: expansion must have have two surrounding percent characters
+            'meta-pc3' => array('%%path', '%%path', "'%%path'"),
+
+            // meta: bang expansion must be double caret-escaped
+            'meta-bang1' => array('!path!', '^^!path^^!', "'!path!'"),
+
+            // meta: bang expansion must have two bang characters
+            'meta-bang2' => array('!path', '!path', "'!path'"),
+
+            // meta: bang expansion must have two surrounding ang characters
+            'meta-bang3' => array('!!path', '!!path', "'!!path'"),
+
+            // meta: caret-escaping must escape all other meta chars (triggered by double-quote)
+            'meta-all-dq' => array('<>"&|()^', '^<^>\^"^&^|^(^)^^', "'<>\"&|()^'"),
+
+            // other meta: no caret-escaping when whitespace in argument
+            'other meta' => array('<> &| ()^', '"<> &| ()^"', "'<> &| ()^'"),
+
+            // other meta: quote escape chars when no whitespace in argument
+            'other-meta' => array('<>&|()^', '"<>&|()^"', "'<>&|()^'"),
+        );
     }
 }

@@ -791,7 +791,7 @@ The following repository types are supported:
 * **vcs:** The version control system repository can fetch packages from git,
   svn, fossil and hg repositories.
 * **package:** If you depend on a project that does not have any support for
-  composer whatsoever you can define the package inline using a `package`
+  Composer whatsoever you can define the package inline using a `package`
   repository. You basically inline the `composer.json` object.
 
 For more information on any of these, see [Repositories](05-repositories.md).

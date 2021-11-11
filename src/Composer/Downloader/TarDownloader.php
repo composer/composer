@@ -22,7 +22,7 @@ use Composer\Package\PackageInterface;
 class TarDownloader extends ArchiveDownloader
 {
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     protected function extract(PackageInterface $package, $file, $path)
     {

@@ -67,7 +67,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function supports($packageType)
     {
@@ -75,7 +75,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -93,7 +93,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function download(PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -104,7 +104,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -115,7 +115,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null)
     {
@@ -126,7 +126,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -155,7 +155,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
@@ -184,7 +184,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
@@ -215,7 +215,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getInstallPath(PackageInterface $package)
     {
@@ -258,6 +258,9 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         return $installPath;
     }
 
+    /**
+     * @return PromiseInterface|null
+     */
     protected function installCode(PackageInterface $package)
     {
         $downloadPath = $this->getInstallPath($package);
@@ -265,6 +268,9 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         return $this->downloadManager->install($package, $downloadPath);
     }
 
+    /**
+     * @return PromiseInterface|null
+     */
     protected function updateCode(PackageInterface $initial, PackageInterface $target)
     {
         $initialDownloadPath = $this->getInstallPath($initial);
@@ -298,6 +304,9 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         return $this->downloadManager->update($initial, $target, $targetDownloadPath);
     }
 
+    /**
+     * @return PromiseInterface|null
+     */
     protected function removeCode(PackageInterface $package)
     {
         $downloadPath = $this->getPackageBasePath($package);
@@ -305,6 +314,9 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         return $this->downloadManager->remove($package, $downloadPath);
     }
 
+    /**
+     * @return void
+     */
     protected function initializeVendorDir()
     {
         $this->filesystem->ensureDirectoryExists($this->vendorDir);

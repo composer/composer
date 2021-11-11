@@ -25,6 +25,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class GlobalCommand extends BaseCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -57,6 +60,10 @@ EOT
         ;
     }
 
+    /**
+     * @return int|void
+     * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+     */
     public function run(InputInterface $input, OutputInterface $output)
     {
         if (!method_exists($input, '__toString')) {
@@ -81,7 +88,7 @@ EOT
         }
 
         // The COMPOSER env var should not apply to the global execution scope
-        if (getenv('COMPOSER')) {
+        if (Platform::getEnv('COMPOSER')) {
             Platform::clearEnv('COMPOSER');
         }
 
@@ -112,7 +119,7 @@ EOT
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function isProxyCommand()
     {

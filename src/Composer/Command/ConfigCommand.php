@@ -59,7 +59,7 @@ class ConfigCommand extends BaseCommand
     protected $authConfigSource;
 
     /**
-     * {@inheritDoc}
+     * @return void
      */
     protected function configure()
     {
@@ -149,7 +149,8 @@ EOT
     }
 
     /**
-     * {@inheritDoc}
+     * @return void
+     * @throws \Exception
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
@@ -205,13 +206,14 @@ EOT
     }
 
     /**
-     * {@inheritDoc}
+     * @return int
+     * @throws \Seld\JsonLint\ParsingException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         // Open file in editor
         if ($input->getOption('editor')) {
-            $editor = escapeshellcmd(getenv('EDITOR'));
+            $editor = escapeshellcmd(Platform::getEnv('EDITOR'));
             if (!$editor) {
                 if (Platform::isWindows()) {
                     $editor = 'notepad';
@@ -759,6 +761,14 @@ EOT
         throw new \InvalidArgumentException('Setting '.$settingKey.' does not exist or is not supported by this command');
     }
 
+    /**
+     * @param string $key
+     * @param array{callable, callable} $callbacks Validator and normalizer callbacks
+     * @param array<string> $values
+     * @param string $method
+     *
+     * @return void
+     */
     protected function handleSingleValue($key, array $callbacks, array $values, $method)
     {
         list($validator, $normalizer) = $callbacks;
@@ -783,9 +793,17 @@ EOT
             }
         }
 
-        return call_user_func(array($this->configSource, $method), $key, $normalizedValue);
+        call_user_func(array($this->configSource, $method), $key, $normalizedValue);
     }
 
+    /**
+     * @param string $key
+     * @param array{callable, callable} $callbacks Validator and normalizer callbacks
+     * @param array<string> $values
+     * @param string $method
+     *
+     * @return void
+     */
     protected function handleMultiValue($key, array $callbacks, array $values, $method)
     {
         list($validator, $normalizer) = $callbacks;
@@ -796,16 +814,17 @@ EOT
             ));
         }
 
-        return call_user_func(array($this->configSource, $method), $key, $normalizer($values));
+        call_user_func(array($this->configSource, $method), $key, $normalizer($values));
     }
 
     /**
      * Display the contents of the file in a pretty formatted way
      *
-     * @param array           $contents
-     * @param array           $rawContents
-     * @param OutputInterface $output
-     * @param string|null     $k
+     * @param array<array|bool|string> $contents
+     * @param array<array|string>      $rawContents
+     * @param string|null              $k
+     *
+     * @return void
      */
     protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, $k = null)
     {

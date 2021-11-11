@@ -51,7 +51,7 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * Constructor.
      *
-     * @param array           $repoConfig     The repository configuration
+     * @param array{url: string}&array<string, mixed>           $repoConfig     The repository configuration
      * @param IOInterface     $io             The IO instance
      * @param Config          $config         The composer configuration
      * @param HttpDownloader  $httpDownloader Remote Filesystem, injectable for mocking
@@ -84,7 +84,7 @@ abstract class VcsDriver implements VcsDriverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getComposerInformation($identifier)
     {
@@ -96,7 +96,7 @@ abstract class VcsDriver implements VcsDriverInterface
             $composer = $this->getBaseComposerInformation($identifier);
 
             if ($this->shouldCache($identifier)) {
-                $this->cache->write($identifier, json_encode($composer));
+                $this->cache->write($identifier, JsonFile::encode($composer, 0));
             }
 
             $this->infoCache[$identifier] = $composer;
@@ -105,6 +105,11 @@ abstract class VcsDriver implements VcsDriverInterface
         return $this->infoCache[$identifier];
     }
 
+    /**
+     * @param string $identifier
+     *
+     * @return array<string, mixed>|null
+     */
     protected function getBaseComposerInformation($identifier)
     {
         $composerFileContent = $this->getFileContent('composer.json', $identifier);
@@ -123,7 +128,7 @@ abstract class VcsDriver implements VcsDriverInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function hasComposerFile($identifier)
     {
@@ -167,7 +172,7 @@ abstract class VcsDriver implements VcsDriverInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function cleanup()
     {

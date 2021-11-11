@@ -40,6 +40,14 @@ class Git
         $this->filesystem = $fs;
     }
 
+    /**
+     * @param callable    $commandCallable
+     * @param string      $url
+     * @param string|null $cwd
+     * @param bool        $initialClone
+     *
+     * @return void
+     */
     public function runCommand($commandCallable, $url, $cwd, $initialClone = false)
     {
         // Ensure we are allowed to use this URL by config
@@ -257,9 +265,17 @@ class Git
         }
     }
 
+
+    /**
+     * @param string     $url
+     * @param string     $dir
+     * @param bool|false $shallowClone
+     *
+     * @return bool
+     */
     public function syncMirror($url, $dir, $shallowClone = false)
     {
-        if (getenv('COMPOSER_DISABLE_NETWORK') && getenv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
+        if (Platform::getEnv('COMPOSER_DISABLE_NETWORK') && Platform::getEnv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
             $this->io->writeError('<warning>Aborting git mirror sync of '.$url.' as network is disabled</warning>');
 
             return false;
@@ -309,6 +325,13 @@ class Git
         return true;
     }
 
+    /**
+     * @param string $url
+     * @param string $dir
+     * @param string $ref
+     *
+     * @return bool
+     */
     public function fetchRefOrSyncMirror($url, $dir, $ref)
     {
         if ($this->checkRefIsInMirror($dir, $ref)) {
@@ -322,6 +345,9 @@ class Git
         return false;
     }
 
+    /**
+     * @return string
+     */
     public static function getNoShowSignatureFlag(ProcessExecutor $process)
     {
         $gitVersion = self::getVersion($process);
@@ -332,6 +358,12 @@ class Git
         return '';
     }
 
+    /**
+     * @param string $dir
+     * @param string $ref
+     *
+     * @return bool
+     */
     private function checkRefIsInMirror($dir, $ref)
     {
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
@@ -345,6 +377,12 @@ class Git
         return false;
     }
 
+    /**
+     * @param string   $url
+     * @param string[] $match
+     *
+     * @return bool
+     */
     private function isAuthenticationFailure($url, &$match)
     {
         if (!preg_match('{^(https?://)([^/]+)(.*)$}i', $url, $match)) {
@@ -369,6 +407,9 @@ class Git
         return false;
     }
 
+    /**
+     * @return void
+     */
     public static function cleanEnv()
     {
         if (PHP_VERSION_ID < 50400 && ini_get('safe_mode') && false === strpos(ini_get('safe_mode_allowed_env_vars'), 'GIT_ASKPASS')) {
@@ -376,20 +417,20 @@ class Git
         }
 
         // added in git 1.7.1, prevents prompting the user for username/password
-        if (getenv('GIT_ASKPASS') !== 'echo') {
+        if (Platform::getEnv('GIT_ASKPASS') !== 'echo') {
             Platform::putEnv('GIT_ASKPASS', 'echo');
         }
 
         // clean up rogue git env vars in case this is running in a git hook
-        if (getenv('GIT_DIR')) {
+        if (Platform::getEnv('GIT_DIR')) {
             Platform::clearEnv('GIT_DIR');
         }
-        if (getenv('GIT_WORK_TREE')) {
+        if (Platform::getEnv('GIT_WORK_TREE')) {
             Platform::clearEnv('GIT_WORK_TREE');
         }
 
         // Run processes with predictable LANGUAGE
-        if (getenv('LANGUAGE') !== 'C') {
+        if (Platform::getEnv('LANGUAGE') !== 'C') {
             Platform::putEnv('LANGUAGE', 'C');
         }
 
@@ -397,16 +438,28 @@ class Git
         Platform::clearEnv('DYLD_LIBRARY_PATH');
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getGitHubDomainsRegex(Config $config)
     {
         return '(' . implode('|', array_map('preg_quote', $config->get('github-domains'))) . ')';
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getGitLabDomainsRegex(Config $config)
     {
         return '(' . implode('|', array_map('preg_quote', $config->get('gitlab-domains'))) . ')';
     }
 
+    /**
+     * @param non-empty-string $message
+     * @param string           $url
+     *
+     * @return never
+     */
     private function throwException($message, $url)
     {
         // git might delete a directory when it fails and php will not know
@@ -436,7 +489,13 @@ class Git
         return self::$version;
     }
 
-    private function maskCredentials(string $error, array $credentials)
+    /**
+     * @param string   $error
+     * @param string[] $credentials
+     *
+     * @return string
+     */
+    private function maskCredentials($error, array $credentials)
     {
         $maskedCredentials = array();
 

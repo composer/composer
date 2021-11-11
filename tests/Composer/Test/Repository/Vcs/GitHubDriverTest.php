@@ -20,11 +20,12 @@ use Composer\Util\Http\Response;
 use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Config;
 use Composer\Util\ProcessExecutor;
-use Symfony\Component\Process\Process;
 
 class GitHubDriverTest extends TestCase
 {
+    /** @var string */
     private $home;
+    /** @var Config */
     private $config;
 
     public function setUp()
@@ -340,6 +341,13 @@ class GitHubDriverTest extends TestCase
         $process->assertComplete($this);
     }
 
+    /**
+     * @param string|object $object
+     * @param string        $attribute
+     * @param mixed         $value
+     *
+     * @return void
+     */
     protected function setAttribute($object, $attribute, $value)
     {
         $attr = new \ReflectionProperty($object, $attribute);

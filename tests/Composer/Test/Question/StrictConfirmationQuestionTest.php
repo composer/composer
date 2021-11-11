@@ -26,6 +26,11 @@ use Symfony\Component\Console\Output\StreamOutput;
  */
 class StrictConfirmationQuestionTest extends TestCase
 {
+    /**
+     * @return string[][]
+     *
+     * @phpstan-return list<array{non-empty-string}>
+     */
     public function getAskConfirmationBadData()
     {
         return array(
@@ -37,7 +42,9 @@ class StrictConfirmationQuestionTest extends TestCase
     }
 
     /**
-     * @dataProvider             getAskConfirmationBadData
+     * @dataProvider getAskConfirmationBadData
+     *
+     * @param string $answer
      */
     public function testAskConfirmationBadAnswer($answer)
     {
@@ -52,6 +59,10 @@ class StrictConfirmationQuestionTest extends TestCase
 
     /**
      * @dataProvider getAskConfirmationData
+     *
+     * @param string $question
+     * @param bool   $expected
+     * @param bool   $default
      */
     public function testAskConfirmation($question, $expected, $default = true)
     {
@@ -61,6 +72,11 @@ class StrictConfirmationQuestionTest extends TestCase
         $this->assertEquals($expected, $dialog->ask($input, $this->createOutputInterface(), $question), 'confirmation question should '.($expected ? 'pass' : 'cancel'));
     }
 
+    /**
+     * @return mixed[][]
+     *
+     * @phpstan-return list<array{string, bool}>|list<array{string, bool, bool}>
+     */
     public function getAskConfirmationData()
     {
         return array(
@@ -84,20 +100,37 @@ class StrictConfirmationQuestionTest extends TestCase
         $this->assertFalse($dialog->ask($input, $this->createOutputInterface(), $question));
     }
 
+    /**
+     * @param string $input
+     *
+     * @return resource
+     */
     protected function getInputStream($input)
     {
         $stream = fopen('php://memory', 'r+', false);
+        $this->assertNotFalse($stream);
+
         fwrite($stream, $input);
         rewind($stream);
 
         return $stream;
     }
 
+    /**
+     * @return StreamOutput
+     */
     protected function createOutputInterface()
     {
         return new StreamOutput(fopen('php://memory', 'r+', false));
     }
 
+    /**
+     * @param string $entry
+     *
+     * @return object[]
+     *
+     * @phpstan-return array{ArrayInput, QuestionHelper}
+     */
     protected function createInput($entry)
     {
         $stream = $this->getInputStream($entry);

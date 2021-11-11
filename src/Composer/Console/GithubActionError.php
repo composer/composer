@@ -13,6 +13,7 @@
 namespace Composer\Console;
 
 use Composer\IO\IOInterface;
+use Composer\Util\Platform;
 
 final class GithubActionError
 {
@@ -30,21 +31,51 @@ final class GithubActionError
      * @param string      $message
      * @param null|string $file
      * @param null|int    $line
+     *
+     * @return void
      */
     public function emit($message, $file = null, $line = null)
     {
-        if (getenv('GITHUB_ACTIONS') && !getenv('COMPOSER_TESTS_ARE_RUNNING')) {
-            // newlines need to be encoded
-            // see https://github.com/actions/starter-workflows/issues/68#issuecomment-581479448
-            $message = str_replace("\n", '%0A', $message);
+        if (Platform::getEnv('GITHUB_ACTIONS') && !Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING')) {
+            $message = $this->escapeData($message);
 
             if ($file && $line) {
+                $file = $this->escapeProperty($file);
                 $this->io->write("::error file=". $file .",line=". $line ."::". $message);
             } elseif ($file) {
+                $file = $this->escapeProperty($file);
                 $this->io->write("::error file=". $file ."::". $message);
             } else {
                 $this->io->write("::error ::". $message);
             }
         }
+    }
+    
+    /**
+     * @param string $data
+     * @return string
+     */
+    private function escapeData($data) {
+        // see https://github.com/actions/toolkit/blob/4f7fb6513a355689f69f0849edeb369a4dc81729/packages/core/src/command.ts#L80-L85
+        $data = str_replace("%", '%25', $data);
+        $data = str_replace("\r", '%0D', $data);
+        $data = str_replace("\n", '%0A', $data);
+
+        return $data;
+    }
+    
+    /**
+     * @param string $property
+     * @return string
+     */
+    private function escapeProperty($property) {
+        // see https://github.com/actions/toolkit/blob/4f7fb6513a355689f69f0849edeb369a4dc81729/packages/core/src/command.ts#L87-L94
+        $property = str_replace("%", '%25', $property);
+        $property = str_replace("\r", '%0D', $property);
+        $property = str_replace("\n", '%0A', $property);
+        $property = str_replace(":", '%3A', $property);
+        $property = str_replace(",", '%2C', $property);
+
+        return $property;
     }
 }

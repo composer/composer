@@ -22,7 +22,7 @@ abstract class BaseIO implements IOInterface
     protected $authentications = array();
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getAuthentications()
     {
@@ -30,7 +30,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @return void
      */
     public function resetAuthentications()
     {
@@ -38,7 +38,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function hasAuthentication($repositoryName)
     {
@@ -46,7 +46,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getAuthentication($repositoryName)
     {
@@ -58,7 +58,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function setAuthentication($repositoryName, $username, $password = null)
     {
@@ -66,7 +66,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function writeRaw($messages, $newline = true, $verbosity = self::NORMAL)
     {
@@ -74,7 +74,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function writeErrorRaw($messages, $newline = true, $verbosity = self::NORMAL)
     {
@@ -87,6 +87,8 @@ abstract class BaseIO implements IOInterface
      * @param string $repositoryName The unique name of repository
      * @param string $username       The username
      * @param string $password       The password
+     *
+     * @return void
      */
     protected function checkAndSetAuthentication($repositoryName, $username, $password = null)
     {
@@ -107,7 +109,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function loadConfiguration(Config $config)
     {
@@ -157,7 +159,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function emergency($message, array $context = array())
     {
@@ -165,7 +167,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function alert($message, array $context = array())
     {
@@ -173,7 +175,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function critical($message, array $context = array())
     {
@@ -181,7 +183,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function error($message, array $context = array())
     {
@@ -189,7 +191,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function warning($message, array $context = array())
     {
@@ -197,7 +199,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function notice($message, array $context = array())
     {
@@ -205,7 +207,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function info($message, array $context = array())
     {
@@ -213,7 +215,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function debug($message, array $context = array())
     {
@@ -221,7 +223,7 @@ abstract class BaseIO implements IOInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function log($level, $message, array $context = array())
     {

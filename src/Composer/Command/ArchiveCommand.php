@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Composer;
+use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\RepositoryFactory;
@@ -37,6 +38,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ArchiveCommand extends BaseCommand
 {
+    /**
+     * @return void
+     */
     protected function configure()
     {
         $this
@@ -108,6 +112,17 @@ EOT
         return $returnCode;
     }
 
+    /**
+     * @param string|null $packageName
+     * @param string|null $version
+     * @param string $format
+     * @param string $dest
+     * @param string|null $fileName
+     * @param bool $ignoreFilters
+     *
+     * @return int
+     * @throws \Exception
+     */
     protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.', $fileName = null, $ignoreFilters = false, Composer $composer = null)
     {
         if ($composer) {
@@ -142,7 +157,10 @@ EOT
     }
 
     /**
-     * @return CompletePackageInterface|false
+     * @param string      $packageName
+     * @param string|null $version
+     *
+     * @return (BasePackage&CompletePackageInterface)|false
      */
     protected function selectPackage(IOInterface $io, $packageName, $version = null)
     {

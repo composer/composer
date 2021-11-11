@@ -211,16 +211,17 @@ class Bitbucket
             throw new \LogicException('Failed to initialize token above');
         }
 
-        // side effect above caused this, https://github.com/phpstan/phpstan/issues/5129
-        // @phpstan-ignore-next-line
         return $this->token['access_token'];
     }
 
     /**
      * Store the new/updated credentials to the configuration
+     *
      * @param string $originUrl
      * @param string $consumerKey
      * @param string $consumerSecret
+     *
+     * @return void
      */
     private function storeInAuthConfig($originUrl, $consumerKey, $consumerSecret)
     {

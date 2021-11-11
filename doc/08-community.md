@@ -7,7 +7,7 @@ contributing.
 
 If you would like to contribute to Composer, please read the
 [README](https://github.com/composer/composer) and
-[CONTRIBUTING](https://github.com/composer/composer/blob/master/.github/CONTRIBUTING.md)
+[CONTRIBUTING](https://github.com/composer/composer/blob/main/.github/CONTRIBUTING.md)
 documents.
 
 The most important guidelines are described as follows:

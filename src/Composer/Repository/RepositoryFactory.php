@@ -73,7 +73,7 @@ class RepositoryFactory
     /**
      * @param  IOInterface         $io
      * @param  Config              $config
-     * @param  array               $repoConfig
+     * @param  array<string, mixed> $repoConfig
      * @return RepositoryInterface
      */
     public static function createRepo(IOInterface $io, Config $config, array $repoConfig, RepositoryManager $rm = null)
@@ -125,6 +125,7 @@ class RepositoryFactory
         $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
         $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
         $rm->setRepositoryClass('git', 'Composer\Repository\VcsRepository');
+        $rm->setRepositoryClass('bitbucket', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('git-bitbucket', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('github', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('gitlab', 'Composer\Repository\VcsRepository');
@@ -132,7 +133,6 @@ class RepositoryFactory
         $rm->setRepositoryClass('fossil', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('perforce', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('hg', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('hg-bitbucket', 'Composer\Repository\VcsRepository');
         $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
         $rm->setRepositoryClass('path', 'Composer\Repository\PathRepository');
 
@@ -140,6 +140,8 @@ class RepositoryFactory
     }
 
     /**
+     * @param array<int|string, mixed> $repoConfigs
+     *
      * @return RepositoryInterface[]
      */
     private static function createRepos(RepositoryManager $rm, array $repoConfigs)
@@ -168,6 +170,13 @@ class RepositoryFactory
         return $repos;
     }
 
+    /**
+     * @param int|string $index
+     * @param array{url?: string} $repo
+     * @param array<string, mixed> $existingRepos
+     *
+     * @return string
+     */
     public static function generateRepositoryName($index, array $repo, array $existingRepos)
     {
         $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;

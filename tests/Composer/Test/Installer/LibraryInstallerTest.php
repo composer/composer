@@ -20,14 +20,49 @@ use Composer\Config;
 
 class LibraryInstallerTest extends TestCase
 {
+    /**
+     * @var \Composer\Composer
+     */
     protected $composer;
+
+    /**
+     * @var \Composer\Config
+     */
     protected $config;
+
+    /**
+     * @var string
+     */
     protected $rootDir;
+
+    /**
+     * @var string
+     */
     protected $vendorDir;
+
+    /**
+     * @var string
+     */
     protected $binDir;
+
+    /**
+     * @var \Composer\Downloader\DownloadManager&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected $dm;
+
+    /**
+     * @var \Composer\Repository\InstalledRepositoryInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected $repository;
+
+    /**
+     * @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected $io;
+
+    /**
+     * @var \Composer\Util\Filesystem
+     */
     protected $fs;
 
     protected function setUp()
@@ -285,6 +320,9 @@ class LibraryInstallerTest extends TestCase
         $library->ensureBinariesPresence($package);
     }
 
+    /**
+     * @return \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject
+     */
     protected function createPackageMock()
     {
         return $this->getMockBuilder('Composer\Package\Package')

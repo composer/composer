@@ -44,7 +44,7 @@ class SuggestedPackagesReporter
     }
 
     /**
-     * @return array Suggested packages with source, target and reason keys.
+     * @return array<array{source: string, target: string, reason: string}> Suggested packages with source, target and reason keys.
      */
     public function getPackages()
     {

@@ -257,7 +257,7 @@ If it is `auto` then Composer only installs .bat proxy files when on Windows or 
 set to `full` then both .bat files for Windows and scripts for Unix-based
 operating systems will be installed for each binary. This is mainly useful if you
 run Composer inside a linux VM but still want the `.bat` proxies available for use
-in the Windows host OS. If set to `symlink` Composer will always symlink even on 
+in the Windows host OS. If set to `symlink` Composer will always symlink even on
 Windows/WSL.
 
 ## prepend-autoloader
@@ -344,7 +344,7 @@ Example:
 ## htaccess-protect
 
 Defaults to `true`. If set to `false`, Composer will not create `.htaccess` files
-in the composer home, cache, and data directories.
+in the Composer home, cache, and data directories.
 
 ## lock
 

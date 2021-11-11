@@ -1,0 +1,87 @@
+[
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Finder::getIterator() should either be compatible with IteratorAggregate::getIterator(): Traversable, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Finder::count() should either be compatible with Countable::count(): int, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\FilterIterator::rewind() should either be compatible with FilterIterator::rewind(): void, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\FileTypeFilterIterator::accept() should either be compatible with FilterIterator::accept(): bool, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\RecursiveDirectoryIterator::getChildren() should either be compatible with RecursiveDirectoryIterator::getChildren(): RecursiveDirectoryIterator, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\RecursiveDirectoryIterator::rewind() should either be compatible with FilesystemIterator::rewind(): void, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\RecursiveDirectoryIterator::current() should either be compatible with FilesystemIterator::current(): SplFileInfo|FilesystemIterator|string, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\ExcludeDirectoryFilterIterator::accept() should either be compatible with FilterIterator::accept(): bool, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\ExcludeDirectoryFilterIterator::hasChildren() should either be compatible with RecursiveIterator::hasChildren(): bool, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\ExcludeDirectoryFilterIterator::getChildren() should either be compatible with RecursiveIterator::getChildren(): ?RecursiveIterator, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\FilterIterator::rewind() should either be compatible with Iterator::rewind(): void, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\FilenameFilterIterator::accept() should either be compatible with FilterIterator::accept(): bool, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\AllFunctionalTest::getTestFiles",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\PathFilterIterator::accept() should either be compatible with FilterIterator::accept(): bool, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\ApplicationTest::testDevWarning",
+        "message": "Return type of Symfony\\Component\\Console\\Helper\\HelperSet::getIterator() should either be compatible with IteratorAggregate::getIterator(): Traversable, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\Downloader\\XzDownloaderTest::testErrorMessages",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\DepthRangeFilterIterator::accept() should either be compatible with FilterIterator::accept(): bool, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    },
+    {
+        "location": "Composer\\Test\\InstallerTest::testIntegration",
+        "message": "preg_match(): Passing null to parameter #4 ($flags) of type int is deprecated",
+        "count": 1640
+    },
+    {
+        "location": "Composer\\Test\\Package\\Archiver\\ArchivableFilesFinderTest::testManualExcludes",
+        "message": "Return type of Symfony\\Component\\Finder\\Iterator\\CustomFilterIterator::accept() should either be compatible with FilterIterator::accept(): bool, or the #[\\ReturnTypeWillChange] attribute should be used to temporarily suppress the notice",
+        "count": 1
+    }
+]

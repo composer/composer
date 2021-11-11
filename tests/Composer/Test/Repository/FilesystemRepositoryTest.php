@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Package\RootPackageInterface;
+use Composer\Package\RootAliasPackage;
 use Composer\Repository\FilesystemRepository;
 use Composer\Test\TestCase;
 use Composer\Json\JsonFile;
@@ -20,8 +21,6 @@ use Composer\Util\Filesystem;
 
 class FilesystemRepositoryTest extends TestCase
 {
-    private $root;
-
     public function testRepositoryRead()
     {
         $json = $this->createJsonFileMock();
@@ -129,7 +128,6 @@ class FilesystemRepositoryTest extends TestCase
     public function testRepositoryWritesInstalledPhp()
     {
         $dir = $this->getUniqueTmpDirectory();
-        $this->root = $dir;
         chdir($dir);
 
         $json = new JsonFile($dir.'/installed.json');
@@ -138,6 +136,7 @@ class FilesystemRepositoryTest extends TestCase
         $rootPackage->setSourceReference('sourceref-by-default');
         $rootPackage->setDistReference('distref');
         $this->configureLinks($rootPackage, array('provide' => array('foo/impl' => '2.0')));
+        /** @var RootAliasPackage $rootPackage */
         $rootPackage = $this->getAliasPackage($rootPackage, '1.10.x-dev');
 
         $repository = new FilesystemRepository($json, true, $rootPackage);
@@ -196,6 +195,9 @@ class FilesystemRepositoryTest extends TestCase
         $this->assertSame(require __DIR__.'/Fixtures/installed.php', require $dir.'/installed.php');
     }
 
+    /**
+     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Json\JsonFile
+     */
     private function createJsonFileMock()
     {
         return $this->getMockBuilder('Composer\Json\JsonFile')

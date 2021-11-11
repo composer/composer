@@ -32,9 +32,8 @@ class RuleSet implements \IteratorAggregate, \Countable
      */
     public $ruleById = array();
 
-    /** @var array<255|0|1|4, string> */
+    /** @var array<0|1|4, string> */
     protected static $types = array(
-        255 => 'UNKNOWN',
         self::TYPE_PACKAGE => 'PACKAGE',
         self::TYPE_REQUEST => 'REQUEST',
         self::TYPE_LEARNED => 'LEARNED',
@@ -56,6 +55,10 @@ class RuleSet implements \IteratorAggregate, \Countable
         }
     }
 
+    /**
+     * @param self::TYPE_* $type
+     * @return void
+     */
     public function add(Rule $rule, $type)
     {
         if (!isset(self::$types[$type])) {
@@ -100,12 +103,19 @@ class RuleSet implements \IteratorAggregate, \Countable
         }
     }
 
+    /**
+     * @return int
+     */
     #[\ReturnTypeWillChange]
     public function count()
     {
         return $this->nextRuleId;
     }
 
+    /**
+     * @param int $id
+     * @return Rule
+     */
     public function ruleById($id)
     {
         return $this->ruleById[$id];
@@ -148,6 +158,10 @@ class RuleSet implements \IteratorAggregate, \Countable
         return new RuleSetIterator($rules);
     }
 
+    /**
+     * @param array<self::TYPE_*>|self::TYPE_* $types
+     * @return RuleSetIterator
+     */
     public function getIteratorWithout($types)
     {
         if (!\is_array($types)) {
@@ -167,11 +181,14 @@ class RuleSet implements \IteratorAggregate, \Countable
     public function getTypes()
     {
         $types = self::$types;
-        unset($types[255]);
 
         return array_keys($types);
     }
 
+    /**
+     * @param bool $isVerbose
+     * @return string
+     */
     public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null, $isVerbose = false)
     {
         $string = "\n";

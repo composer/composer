@@ -32,6 +32,11 @@ class StreamContextFactoryTest extends TestCase
 
     /**
      * @dataProvider dataGetContext
+     *
+     * @param mixed[] $expectedOptions
+     * @param mixed[] $defaultOptions
+     * @param mixed[] $expectedParams
+     * @param mixed[] $defaultParams
      */
     public function testGetContext($expectedOptions, $defaultOptions, $expectedParams, $defaultParams)
     {
@@ -157,6 +162,9 @@ class StreamContextFactoryTest extends TestCase
 
     /**
      * @dataProvider dataSSLProxy
+     *
+     * @param string $expected
+     * @param string $proxy
      */
     public function testSSLProxy($expected, $proxy)
     {
