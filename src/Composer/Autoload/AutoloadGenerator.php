@@ -14,13 +14,15 @@ namespace Composer\Autoload;
 
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Installer\InstallationManager;
 use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
-use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Bound;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
@@ -70,14 +72,16 @@ class AutoloadGenerator
     private $runScripts = false;
 
     /**
-     * @var bool|string[]
+     * @var PlatformRequirementFilterInterface
      */
-    private $ignorePlatformReqs = false;
+    private $platformRequirementFilter;
 
     public function __construct(EventDispatcher $eventDispatcher, IOInterface $io = null)
     {
         $this->eventDispatcher = $eventDispatcher;
         $this->io = $io;
+
+        $this->platformRequirementFilter = PlatformRequirementFilterFactory::ignoreNothing();
     }
 
     /**
@@ -133,16 +137,22 @@ class AutoloadGenerator
      *
      * @param bool|string[] $ignorePlatformReqs
      * @return void
+     *
+     * @deprecated use setPlatformRequirementFilter instead
      */
     public function setIgnorePlatformRequirements($ignorePlatformReqs)
     {
-        if (is_array($ignorePlatformReqs)) {
-            $this->ignorePlatformReqs = array_filter($ignorePlatformReqs, function ($req) {
-                return PlatformRepository::isPlatformPackage($req);
-            });
-        } else {
-            $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;
-        }
+        trigger_error('AutoloadGenerator::setIgnorePlatformRequirements is deprecated since Composer 2.2, use setPlatformRequirementFilter instead.', E_USER_DEPRECATED);
+
+        $this->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
+    }
+
+    /**
+     * @return void
+     */
+    public function setPlatformRequirementFilter(PlatformRequirementFilterInterface $platformRequirementFilter)
+    {
+        $this->platformRequirementFilter = $platformRequirementFilter;
     }
 
     /**
@@ -391,10 +401,10 @@ EOF;
             unlink($includeFilesFilePath);
         }
         $filesystem->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath, $staticPhpVersion));
-        $checkPlatform = $config->get('platform-check') && $this->ignorePlatformReqs !== true;
+        $checkPlatform = $config->get('platform-check') && !($this->platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter);
         $platformCheckContent = null;
         if ($checkPlatform) {
-            $platformCheckContent = $this->getPlatformCheck($packageMap, $this->ignorePlatformReqs ?: array(), $config->get('platform-check'), $devPackageNames);
+            $platformCheckContent = $this->getPlatformCheck($packageMap, $config->get('platform-check'), $devPackageNames);
             if (null === $platformCheckContent) {
                 $checkPlatform = false;
             }
@@ -740,12 +750,11 @@ EOF;
 
     /**
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
-     * @param string[] $ignorePlatformReqs
      * @param bool $checkPlatform
      * @param string[] $devPackageNames
      * @return ?string
      */
-    protected function getPlatformCheck(array $packageMap, array $ignorePlatformReqs, $checkPlatform, array $devPackageNames)
+    protected function getPlatformCheck(array $packageMap, $checkPlatform, array $devPackageNames)
     {
         $lowestPhpVersion = Bound::zero();
         $requiredExtensions = array();
@@ -768,7 +777,7 @@ EOF;
             }
 
             foreach ($package->getRequires() as $link) {
-                if (in_array($link->getTarget(), $ignorePlatformReqs, true)) {
+                if ($this->platformRequirementFilter->isIgnored($link->getTarget())) {
                     continue;
                 }
 

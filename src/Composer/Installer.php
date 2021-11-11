@@ -27,6 +27,8 @@ use Composer\DependencyResolver\SolverProblemsException;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Installer\InstallationManager;
 use Composer\Installer\InstallerEvents;
 use Composer\Installer\SuggestedPackagesReporter;
@@ -150,8 +152,6 @@ class Installer
     protected $dumpAutoloader = true;
     /** @var bool */
     protected $runScripts = true;
-    /** @var bool|string[] */
-    protected $ignorePlatformReqs = false;
     /** @var bool */
     protected $preferStable = false;
     /** @var bool */
@@ -176,6 +176,11 @@ class Installer
      * @var SuggestedPackagesReporter
      */
     protected $suggestedPackagesReporter;
+
+    /**
+     * @var PlatformRequirementFilterInterface
+     */
+    protected $platformRequirementFilter;
 
     /**
      * @var ?RepositoryInterface
@@ -207,6 +212,7 @@ class Installer
         $this->eventDispatcher = $eventDispatcher;
         $this->autoloadGenerator = $autoloadGenerator;
         $this->suggestedPackagesReporter = new SuggestedPackagesReporter($this->io);
+        $this->platformRequirementFilter = PlatformRequirementFilterFactory::ignoreNothing();
 
         $this->writeLock = $config->get('lock');
     }
@@ -329,7 +335,7 @@ class Installer
             $this->autoloadGenerator->setClassMapAuthoritative($this->classMapAuthoritative);
             $this->autoloadGenerator->setApcu($this->apcuAutoloader, $this->apcuAutoloaderPrefix);
             $this->autoloadGenerator->setRunScripts($this->runScripts);
-            $this->autoloadGenerator->setIgnorePlatformRequirements($this->ignorePlatformReqs);
+            $this->autoloadGenerator->setPlatformRequirementFilter($this->platformRequirementFilter);
             $this->autoloadGenerator->dump($this->config, $localRepo, $this->package, $this->installationManager, 'composer', $this->optimizeAutoloader);
         }
 
@@ -431,7 +437,7 @@ class Installer
         // solve dependencies
         $solver = new Solver($policy, $pool, $this->io);
         try {
-            $lockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
+            $lockTransaction = $solver->solve($request, $this->platformRequirementFilter);
             $ruleSetSize = $solver->getRuleSetSize();
             $solver = null;
         } catch (SolverProblemsException $e) {
@@ -609,7 +615,7 @@ class Installer
 
         $solver = new Solver($policy, $pool, $this->io);
         try {
-            $nonDevLockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
+            $nonDevLockTransaction = $solver->solve($request, $this->platformRequirementFilter);
             $solver = null;
         } catch (SolverProblemsException $e) {
             $err = 'Unable to find a compatible set of packages based on your non-dev requirements alone.';
@@ -674,7 +680,7 @@ class Installer
             // solve dependencies
             $solver = new Solver($policy, $pool, $this->io);
             try {
-                $lockTransaction = $solver->solve($request, $this->ignorePlatformReqs);
+                $lockTransaction = $solver->solve($request, $this->platformRequirementFilter);
                 $solver = null;
 
                 // installing the locked packages on this platform resulted in lock modifying operations, there wasn't a conflict, but the lock file as-is seems to not work on this system
@@ -799,7 +805,7 @@ class Installer
         $rootRequires = array();
         foreach ($requires as $req => $constraint) {
             // skip platform requirements from the root package to avoid filtering out existing platform packages
-            if ((true === $this->ignorePlatformReqs || (is_array($this->ignorePlatformReqs) && in_array($req, $this->ignorePlatformReqs, true))) && PlatformRepository::isPlatformPackage($req)) {
+            if ($this->platformRequirementFilter->isIgnored($req)) {
                 continue;
             }
             if ($constraint instanceof Link) {
@@ -1242,16 +1248,23 @@ class Installer
      * @param  bool|string[] $ignorePlatformReqs
      *
      * @return Installer
+     *
+     * @deprecated use setPlatformRequirementFilter instead
      */
     public function setIgnorePlatformRequirements($ignorePlatformReqs)
     {
-        if (is_array($ignorePlatformReqs)) {
-            $this->ignorePlatformReqs = array_filter($ignorePlatformReqs, function ($req) {
-                return PlatformRepository::isPlatformPackage($req);
-            });
-        } else {
-            $this->ignorePlatformReqs = (bool) $ignorePlatformReqs;
-        }
+        trigger_error('Installer::setIgnorePlatformRequirements is deprecated since Composer 2.2, use setPlatformRequirementFilter instead.', E_USER_DEPRECATED);
+
+        return $this->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
+    }
+
+    /**
+     * @param PlatformRequirementFilterInterface $platformRequirementFilter
+     * @return Installer
+     */
+    public function setPlatformRequirementFilter(PlatformRequirementFilterInterface $platformRequirementFilter)
+    {
+        $this->platformRequirementFilter = $platformRequirementFilter;
 
         return $this;
     }

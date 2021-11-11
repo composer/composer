@@ -12,6 +12,9 @@
 
 namespace Composer\Package\Version;
 
+use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
@@ -57,32 +60,37 @@ class VersionSelector
      * Given a package name and optional version, returns the latest PackageInterface
      * that matches.
      *
-     * @param string        $packageName
-     * @param string        $targetPackageVersion
-     * @param string        $preferredStability
-     * @param bool|string[] $ignorePlatformReqs
-     * @param int           $repoSetFlags
-     *
+     * @param string                                           $packageName
+     * @param string                                           $targetPackageVersion
+     * @param string                                           $preferredStability
+     * @param PlatformRequirementFilterInterface|bool|string[] $platformRequirementFilter
+     * @param int                                              $repoSetFlags*
      * @return PackageInterface|false
      */
-    public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $ignorePlatformReqs = false, $repoSetFlags = 0)
+    public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $platformRequirementFilter = null, $repoSetFlags = 0)
     {
         if (!isset(BasePackage::$stabilities[$preferredStability])) {
             // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
             throw new \UnexpectedValueException('Expected a valid stability name as 3rd argument, got '.$preferredStability);
         }
 
+        if (null === $platformRequirementFilter) {
+            $platformRequirementFilter = PlatformRequirementFilterFactory::ignoreNothing();
+        } elseif (!($platformRequirementFilter instanceof PlatformRequirementFilterInterface)) {
+            trigger_error('VersionSelector::findBestCandidate with ignored platform reqs as bool|array is deprecated since Composer 2.2, use an instance of PlatformRequirementFilterInterface instead.', E_USER_DEPRECATED);
+            $platformRequirementFilter = PlatformRequirementFilterFactory::fromBoolOrList($platformRequirementFilter);
+        }
+
         $constraint = $targetPackageVersion ? $this->getParser()->parseConstraints($targetPackageVersion) : null;
         $candidates = $this->repositorySet->findPackages(strtolower($packageName), $constraint, $repoSetFlags);
 
-        if ($this->platformConstraints && true !== $ignorePlatformReqs) {
+        if ($this->platformConstraints && !($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter)) {
             $platformConstraints = $this->platformConstraints;
-            $ignorePlatformReqs = $ignorePlatformReqs ?: array();
-            $candidates = array_filter($candidates, function ($pkg) use ($platformConstraints, $ignorePlatformReqs) {
+            $candidates = array_filter($candidates, function ($pkg) use ($platformConstraints, $platformRequirementFilter) {
                 $reqs = $pkg->getRequires();
 
                 foreach ($reqs as $name => $link) {
-                    if (!in_array($name, $ignorePlatformReqs, true)) {
+                    if (!$platformRequirementFilter->isIgnored($name)) {
                         if (isset($platformConstraints[$name])) {
                             foreach ($platformConstraints[$name] as $constraint) {
                                 if ($link->getConstraint()->matches($constraint)) {

@@ -15,6 +15,7 @@ namespace Composer\Command;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Transaction;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Plugin\CommandEvent;
@@ -158,7 +159,7 @@ EOT
             $generator = $composer->getAutoloadGenerator();
             $generator->setClassMapAuthoritative($authoritative);
             $generator->setApcu($apcu, $apcuPrefix);
-            $generator->setIgnorePlatformRequirements($ignorePlatformReqs);
+            $generator->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
             $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
         }
 

@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -130,7 +131,7 @@ EOT
             ->setOptimizeAutoloader($optimize)
             ->setClassMapAuthoritative($authoritative)
             ->setApcuAutoloader($apcu, $apcuPrefix)
-            ->setIgnorePlatformRequirements($ignorePlatformReqs)
+            ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
         ;
 
         if ($input->getOption('no-plugins')) {

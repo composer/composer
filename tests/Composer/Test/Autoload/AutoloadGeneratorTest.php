@@ -13,6 +13,7 @@
 namespace Composer\Test\Autoload;
 
 use Composer\Autoload\AutoloadGenerator;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Package\Link;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\Constraint;
@@ -1731,7 +1732,7 @@ EOF;
             ->method('getCanonicalPackages')
             ->will($this->returnValue(array()));
 
-        $this->generator->setIgnorePlatformRequirements($ignorePlatformReqs);
+        $this->generator->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
         $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_1');
 
         if (null === $expectedFixture) {

@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Config\JsonConfigSource;
 use Composer\DependencyResolver\Request;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
@@ -265,7 +266,7 @@ EOT
             ->setUpdate(true)
             ->setInstall(!$input->getOption('no-install'))
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
-            ->setIgnorePlatformRequirements($ignorePlatformReqs)
+            ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
             ->setDryRun($dryRun)
         ;
 
