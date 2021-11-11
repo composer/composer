@@ -90,7 +90,7 @@ EOT
             $config = Factory::createConfig();
         }
 
-        $config->merge(array('config' => array('secure-http' => false)));
+        $config->merge(array('config' => array('secure-http' => false)), Config::SOURCE_COMMAND);
         $config->prohibitUrlByConfig('http://repo.packagist.org', new NullIO);
 
         $this->httpDownloader = Factory::createHttpDownloader($io, $config);

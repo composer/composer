@@ -186,7 +186,7 @@ class Factory
             'home' => $home,
             'cache-dir' => self::getCacheDir($home),
             'data-dir' => self::getDataDir($home),
-        )));
+        )), Config::SOURCE_DEFAULT);
 
         // load global config
         $file = new JsonFile($config->get('home').'/config.json');
@@ -194,7 +194,7 @@ class Factory
             if ($io && $io->isDebug()) {
                 $io->writeError('Loading config file ' . $file->getPath());
             }
-            $config->merge($file->read());
+            $config->merge($file->read(), $file->getPath());
         }
         $config->setConfigSource(new JsonConfigSource($file));
 
@@ -220,7 +220,7 @@ class Factory
             if ($io && $io->isDebug()) {
                 $io->writeError('Loading config file ' . $file->getPath());
             }
-            $config->merge(array('config' => $file->read()));
+            $config->merge(array('config' => $file->read()), $file->getPath());
         }
         $config->setAuthConfigSource(new JsonConfigSource($file, true));
 
@@ -236,7 +236,7 @@ class Factory
                 if ($io && $io->isDebug()) {
                     $io->writeError('Loading auth config from COMPOSER_AUTH');
                 }
-                $config->merge(array('config' => $authData));
+                $config->merge(array('config' => $authData), 'COMPOSER_AUTH');
             }
         }
 
@@ -309,6 +309,7 @@ class Factory
             $localConfig = static::getComposerFile();
         }
 
+        $localConfigSource = Config::SOURCE_UNKNOWN;
         if (is_string($localConfig)) {
             $composerFile = $localConfig;
 
@@ -340,11 +341,12 @@ class Factory
             }
 
             $localConfig = $file->read();
+            $localConfigSource = $file->getPath();
         }
 
         // Load config and override with local config/auth config
         $config = static::createConfig($io, $cwd);
-        $config->merge($localConfig);
+        $config->merge($localConfig, $localConfigSource);
         if (isset($composerFile)) {
             $io->writeError('Loading config file ' . $composerFile .' ('.realpath($composerFile).')', true, IOInterface::DEBUG);
             $config->setConfigSource(new JsonConfigSource(new JsonFile(realpath($composerFile), null, $io)));
@@ -352,7 +354,7 @@ class Factory
             $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json', null, $io);
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
-                $config->merge(array('config' => $localAuthFile->read()));
+                $config->merge(array('config' => $localAuthFile->read()), $localAuthFile->getPath());
                 $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
         }

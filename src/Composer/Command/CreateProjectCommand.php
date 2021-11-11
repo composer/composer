@@ -354,7 +354,7 @@ EOT
     protected function installRootPackage(IOInterface $io, Config $config, $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, array $repositories = null, $disablePlugins = false, $noScripts = false, $noProgress = false, $secureHttp = true)
     {
         if (!$secureHttp) {
-            $config->merge(array('config' => array('secure-http' => false)));
+            $config->merge(array('config' => array('secure-http' => false)), Config::SOURCE_COMMAND);
         }
 
         $parser = new VersionParser();
