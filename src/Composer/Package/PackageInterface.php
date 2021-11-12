@@ -249,7 +249,7 @@ interface PackageInterface
      * Returns a set of links to packages which need to be installed before
      * this package can be installed
      *
-     * @return array<string, Link> An array of package links defining required packages
+     * @return array<string, Link> A map of package links defining required packages, indexed by the require package's name
      */
     public function getRequires();
 
@@ -281,7 +281,7 @@ interface PackageInterface
      * Returns a set of links to packages which are required to develop
      * this package. These are installed if in dev mode.
      *
-     * @return array<string, Link> An array of package links defining packages required for development
+     * @return array<string, Link> A map of package links defining packages required for development, indexed by the require package's name
      */
     public function getDevRequires();
 

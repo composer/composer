@@ -215,13 +215,13 @@ class SolverTest extends TestCase
         $this->repo->addPackage($extForPhp80 = $this->getPackage('ourcustom/ext-foobar', '1.0'));
 
         $extForPhp74->setRequires(array(
-            'php' => new Link('ourcustom/ext-foobar', 'ourcustom/PHP', new MultiConstraint(array(
+            'ourcustom/php' => new Link('ourcustom/ext-foobar', 'ourcustom/PHP', new MultiConstraint(array(
                 $this->getVersionConstraint('>=', '7.4.0'),
                 $this->getVersionConstraint('<', '7.5.0'),
             )), Link::TYPE_REQUIRE),
         ));
         $extForPhp80->setRequires(array(
-            'php' => new Link('ourcustom/ext-foobar', 'ourcustom/PHP', new MultiConstraint(array(
+            'ourcustom/php' => new Link('ourcustom/ext-foobar', 'ourcustom/PHP', new MultiConstraint(array(
                 $this->getVersionConstraint('>=', '8.0.0'),
                 $this->getVersionConstraint('<', '8.1.0'),
             )), Link::TYPE_REQUIRE),
@@ -264,13 +264,13 @@ class SolverTest extends TestCase
         $this->repo->addPackage($extForPhp74 = $this->getPackage('ourcustom/ext-foobar', '1.0'));
 
         $extForPhp80->setRequires(array(
-            'php' => new Link('ourcustom/ext-foobar', 'ourcustom/PHP', new MultiConstraint(array(
+            'ourcustom/php' => new Link('ourcustom/ext-foobar', 'ourcustom/PHP', new MultiConstraint(array(
                 $this->getVersionConstraint('>=', '8.0.0'),
                 $this->getVersionConstraint('<', '8.1.0'),
             )), Link::TYPE_REQUIRE),
         ));
         $extForPhp74->setRequires(array(
-            'php' => new Link('ourcustom/ext-foobar', 'ourcustom/PHP', new MultiConstraint(array(
+            'ourcustom/php' => new Link('ourcustom/ext-foobar', 'ourcustom/PHP', new MultiConstraint(array(
                 $this->getVersionConstraint('>=', '7.4.0'),
                 $this->getVersionConstraint('<', '7.5.0'),
             )), Link::TYPE_REQUIRE),

@@ -456,6 +456,10 @@ class Package extends BasePackage
      */
     public function setRequires(array $requires)
     {
+        if (isset($requires[0])) {
+            $requires = $this->convertLinksToMap($requires, 'setRequires');
+        }
+
         $this->requires = $requires;
     }
 
@@ -476,6 +480,10 @@ class Package extends BasePackage
      */
     public function setConflicts(array $conflicts)
     {
+        if (isset($conflicts[0])) {
+            $conflicts = $this->convertLinksToMap($conflicts, 'setConflicts');
+        }
+
         $this->conflicts = $conflicts;
     }
 
@@ -497,6 +505,10 @@ class Package extends BasePackage
      */
     public function setProvides(array $provides)
     {
+        if (isset($provides[0])) {
+            $provides = $this->convertLinksToMap($provides, 'setProvides');
+        }
+
         $this->provides = $provides;
     }
 
@@ -518,6 +530,10 @@ class Package extends BasePackage
      */
     public function setReplaces(array $replaces)
     {
+        if (isset($replaces[0])) {
+            $replaces = $this->convertLinksToMap($replaces, 'setReplaces');
+        }
+
         $this->replaces = $replaces;
     }
 
@@ -539,6 +555,10 @@ class Package extends BasePackage
      */
     public function setDevRequires(array $devRequires)
     {
+        if (isset($devRequires[0])) {
+            $devRequires = $this->convertLinksToMap($devRequires, 'setDevRequires');
+        }
+
         $this->devRequires = $devRequires;
     }
 
@@ -751,5 +771,21 @@ class Package extends BasePackage
         }
 
         return $urls;
+    }
+
+    /**
+     * @param  array<int, Link> $links
+     * @param  string $source
+     * @return array<string, Link>
+     */
+    private function convertLinksToMap(array $links, $source)
+    {
+        trigger_error('Package::'.$source.' must be called with a map of lowercased package name => Link object, got a indexed array, this is deprecated and you should fix your usage.');
+        $newLinks = array();
+        foreach ($links as $link) {
+            $newLinks[$link->getTarget()] = $link;
+        }
+
+        return $newLinks;
     }
 }
