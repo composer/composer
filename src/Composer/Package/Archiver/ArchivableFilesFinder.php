@@ -84,7 +84,8 @@ class ArchivableFilesFinder extends \FilterIterator
             ->in($sources)
             ->filter($filter)
             ->ignoreVCS(true)
-            ->ignoreDotFiles(false);
+            ->ignoreDotFiles(false)
+            ->sortByName();
 
         parent::__construct($this->finder->getIterator());
     }
