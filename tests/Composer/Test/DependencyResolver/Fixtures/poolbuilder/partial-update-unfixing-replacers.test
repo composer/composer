@@ -1,0 +1,102 @@
+--TEST--
+Partially updating with deps a root requirement which depends on packages should load all available versions for the path repo packages' dependencies.
+
+--REQUEST--
+{
+    "require": {
+        "root/update": "*",
+        "root-required/replacer": "*",
+        "replacer/pkg": "*",
+        "root/noupdate": "*"
+    },
+    "locked": [
+        {
+            "name": "replacer/pkg",
+            "version": "1.0.0",
+            "require": {
+                "root-required/replacer-replaced": "1.*",
+                "transitive/dep-of-replacer": "1.*",
+                "transitive/replacer-replaced": "1.*"
+            },
+            "replace": {
+                "replaced/pkg": "1.0.0"
+            }
+        },
+        {
+            "name": "pkg/with-replaced-deps",
+            "version": "1.0.0",
+            "require": {
+                "transitive/dep": "1.*",
+                "root-required/replacer-replaced": "1.*",
+                "transitive/replacer-replaced": "1.*"
+            }
+        },
+        {"name": "root/update", "version": "1.0.1", "require": {"pkg/with-replaced-deps": ">=1.0.1", "replaced/pkg": "*"}},
+        {"name": "root/noupdate", "version": "1.0.1", "require": {"transitive/replacer": "^2"}},
+        {"name": "transitive/dep", "version": "1.0.0"},
+        {"name": "root-required/replacer", "version": "1.0.0", "replace": {"root-required/replacer-replaced": "1.0.0"}},
+        {"name": "transitive/dep-of-replacer", "version": "1.0.0"},
+        {"name": "transitive/replacer", "version": "1.0.0", "replace": {"transitive/replacer-replaced": "1.0.0"}}
+    ],
+    "allowList": [
+        "root/update"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {
+            "name": "replacer/pkg",
+            "version": "2.0.0",
+            "require": {
+                "root-required/replacer-replaced": ">=1.0.3",
+                "transitive/dep-of-replacer": "2.*",
+                "transitive/replacer-replaced": "2.*"
+            },
+            "replace": {
+                "replaced/pkg": "2.0.0"
+            }
+        },
+        {
+            "name": "pkg/with-replaced-deps",
+            "version": "2.0.0",
+            "require": {
+                "transitive/dep": "2.*",
+                "root-required/replacer-replaced": "2.*",
+                "transitive/replacer-replaced": ">=1.0.3"
+            }
+        },
+        {"name": "root/update", "version": "1.0.4", "require": {"pkg/with-replaced-deps": ">=1.0.1", "replaced/pkg": "*"}},
+        {"name": "root/noupdate", "version": "1.0.1", "require": {"transitive/replacer": "^2"}},
+        {"name": "transitive/dep", "version": "1.0.0"},
+        {"name": "transitive/dep", "version": "2.0.2"},
+        {"name": "root-required/replacer", "version": "1.0.0", "replace": {"root-required/replacer-replaced": "1.0.0"}},
+        {"name": "root-required/replacer", "version": "1.0.3", "replace": {"root-required/replacer-replaced": "1.0.3"}},
+        {"name": "root-required/replacer", "version": "2.0.4", "replace": {"root-required/replacer-replaced": "2.0.4"}},
+        {"name": "transitive/dep-of-replacer", "version": "1.0.0"},
+        {"name": "transitive/dep-of-replacer", "version": "2.0.2"},
+        {"name": "transitive/replacer", "version": "1.0.0", "replace": {"transitive/replacer-replaced": "1.0.0"}},
+        {"name": "transitive/replacer", "version": "1.0.3", "replace": {"transitive/replacer-replaced": "1.0.3"}},
+        {"name": "transitive/replacer", "version": "2.0.4", "replace": {"transitive/replacer-replaced": "2.0.4"}}
+    ]
+]
+
+--EXPECT--
+[
+   "root/noupdate-1.0.1.0 (locked)",
+   "root/update-1.0.4.0",
+   "replacer/pkg-2.0.0.0",
+   "pkg/with-replaced-deps-2.0.0.0",
+   "transitive/dep-2.0.2.0",
+   "root-required/replacer-1.0.0.0",
+   "root-required/replacer-1.0.3.0",
+   "root-required/replacer-2.0.4.0",
+   "transitive/dep-of-replacer-2.0.2.0",
+   "transitive/replacer-2.0.4.0"
+]

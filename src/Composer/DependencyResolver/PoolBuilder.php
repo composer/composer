@@ -535,7 +535,19 @@ class PoolBuilder
             // as long as it was not unfixed yet
             && isset($this->skippedLoad[$this->skippedLoad[$name]])
         ) {
-            $this->unlockPackage($request, $this->skippedLoad[$name]);
+            $replacerName = $this->skippedLoad[$name];
+            $this->unlockPackage($request, $replacerName);
+
+            if ($this->isRootRequire($request, $replacerName)) {
+                $this->markPackageNameForLoading($request, $replacerName, new MatchAllConstraint);
+            } else {
+                foreach ($this->packages as $loadedPackage) {
+                    $requires = $loadedPackage->getRequires();
+                    if (isset($requires[$replacerName])) {
+                        $this->markPackageNameForLoading($request, $replacerName, $requires[$replacerName]->getConstraint());
+                    }
+                }
+            }
         }
 
         unset($this->skippedLoad[$name], $this->loadedPackages[$name], $this->maxExtendedReqs[$name]);
@@ -551,11 +563,14 @@ class PoolBuilder
                     // also loaded, as they were previously ignored because the locked (now unlocked) package already
                     // satisfied their requirements
                     foreach ($request->getFixedOrLockedPackages() as $fixedOrLockedPackage) {
-                        if ($fixedOrLockedPackage !== $lockedPackage && isset($this->skippedLoad[$fixedOrLockedPackage->getName()])) {
-                            foreach ($fixedOrLockedPackage->getRequires() as $requireLink) {
-                                if ($requireLink->getTarget() === $lockedPackage->getName()) {
-                                    $this->markPackageNameForLoading($request, $lockedPackage->getName(), $requireLink->getConstraint());
-                                }
+                        if ($fixedOrLockedPackage === $lockedPackage) {
+                            continue;
+                        }
+
+                        if (isset($this->skippedLoad[$fixedOrLockedPackage->getName()])) {
+                            $requires = $fixedOrLockedPackage->getRequires();
+                            if (isset($requires[$lockedPackage->getName()])) {
+                                $this->markPackageNameForLoading($request, $lockedPackage->getName(), $requires[$lockedPackage->getName()]->getConstraint());
                             }
                         }
                     }
