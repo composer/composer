@@ -140,6 +140,8 @@ class PoolBuilderTest extends TestCase
         $optimizer = new PoolOptimizer(new DefaultPolicy());
         $result = $this->getPackageResultSet($optimizer->optimize($request, $pool), $packageIds);
         $this->assertSame($expectOptimized, $result, 'Optimized pool does not match expected package set');
+
+        chdir($oldCwd);
     }
 
     /**
@@ -152,8 +154,6 @@ class PoolBuilderTest extends TestCase
         for ($i = 1, $count = count($pool); $i <= $count; $i++) {
             $result[] = $pool->packageById($i);
         }
-
-        chdir($oldCwd);
 
         return array_map(function (BasePackage $package) use ($packageIds) {
             if ($id = array_search($package, $packageIds, true)) {
