@@ -616,11 +616,18 @@ class PlatformRepository extends ArrayRepository
         $lib = new CompletePackage('lib-'.$name, $version, $prettyVersion);
         $lib->setDescription($description);
 
-        $links = function ($alias) use ($name, $version, $lib) {
-            return new Link('lib-'.$name, 'lib-'.$alias, new Constraint('=', $version), Link::TYPE_REPLACE, $lib->getPrettyVersion());
-        };
-        $lib->setReplaces(array_map($links, $replaces));
-        $lib->setProvides(array_map($links, $provides));
+        $replaceLinks = array();
+        foreach ($replaces as $replace) {
+            $replace = strtolower($replace);
+            $replaceLinks[$replace] = new Link('lib-'.$name, 'lib-'.$replace, new Constraint('=', $version), Link::TYPE_REPLACE, $lib->getPrettyVersion());
+        }
+        $provideLinks = array();
+        foreach ($provides as $provide) {
+            $provide = strtolower($provide);
+            $provideLinks[$provide] = new Link('lib-'.$name, 'lib-'.$provide, new Constraint('=', $version), Link::TYPE_PROVIDE, $lib->getPrettyVersion());
+        }
+        $lib->setReplaces($replaceLinks);
+        $lib->setProvides($provideLinks);
 
         $this->addPackage($lib);
     }

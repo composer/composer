@@ -1754,42 +1754,42 @@ EOF;
         return array(
             'Typical project requirements' => array(
                 array(
-                    new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
-                    new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
+                    'php' => new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
+                    'ext-xml' => new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+                    'ext-json' => new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
                 ),
                 'typical',
             ),
             'No PHP lower bound' => array(
                 array(
-                    new Link('a', 'php', $versionParser->parseConstraints('< 8')),
+                    'php' => new Link('a', 'php', $versionParser->parseConstraints('< 8')),
                 ),
                 null,
             ),
             'No PHP upper bound' => array(
                 array(
-                    new Link('a', 'php', $versionParser->parseConstraints('>= 7.2')),
+                    'php' => new Link('a', 'php', $versionParser->parseConstraints('>= 7.2')),
                 ),
                 'no_php_upper_bound',
             ),
             'Specific PHP release version' => array(
                 array(
-                    new Link('a', 'php', $versionParser->parseConstraints('^7.2.8')),
+                    'php' => new Link('a', 'php', $versionParser->parseConstraints('^7.2.8')),
                 ),
                 'specific_php_release',
             ),
             'No PHP required' => array(
                 array(
-                    new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
+                    'ext-xml' => new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+                    'ext-json' => new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
                 ),
                 'no_php_required',
             ),
             'Ignoring all platform requirements skips check completely' => array(
                 array(
-                    new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
-                    new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
+                    'php' => new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
+                    'ext-xml' => new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+                    'ext-json' => new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
                 ),
                 null,
                 array(),
@@ -1798,10 +1798,10 @@ EOF;
             ),
             'Ignored platform requirements are not checked for' => array(
                 array(
-                    new Link('a', 'php', $versionParser->parseConstraints('^7.2.8')),
-                    new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-pdo', $versionParser->parseConstraints('*')),
+                    'php' => new Link('a', 'php', $versionParser->parseConstraints('^7.2.8')),
+                    'ext-xml' => new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+                    'ext-json' => new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
+                    'ext-pdo' => new Link('a', 'ext-pdo', $versionParser->parseConstraints('*')),
                 ),
                 'no_php_required',
                 array(),
@@ -1810,12 +1810,12 @@ EOF;
             ),
             'Via wildcard ignored platform requirements are not checked for' => array(
                 array(
-                    new Link('a', 'php', $versionParser->parseConstraints('^7.2.8')),
-                    new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-fileinfo', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-filesystem', $versionParser->parseConstraints('*')),
-                    new Link('a', 'ext-filter', $versionParser->parseConstraints('*')),
+                    'php' => new Link('a', 'php', $versionParser->parseConstraints('^7.2.8')),
+                    'ext-xml' => new Link('a', 'ext-xml', $versionParser->parseConstraints('*')),
+                    'ext-json' => new Link('a', 'ext-json', $versionParser->parseConstraints('*')),
+                    'ext-fileinfo' => new Link('a', 'ext-fileinfo', $versionParser->parseConstraints('*')),
+                    'ext-filesystem' => new Link('a', 'ext-filesystem', $versionParser->parseConstraints('*')),
+                    'ext-filter' => new Link('a', 'ext-filter', $versionParser->parseConstraints('*')),
                 ),
                 'no_php_required',
                 array(),
@@ -1824,26 +1824,26 @@ EOF;
             ),
             'No extensions required' => array(
                 array(
-                    new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
+                    'php' => new Link('a', 'php', $versionParser->parseConstraints('^7.2')),
                 ),
                 'no_extensions_required',
             ),
             'Replaced/provided extensions are not checked for + checking case insensitivity' => array(
                 array(
-                    new Link('a', 'ext-xml', $versionParser->parseConstraints('^7.2')),
-                    new Link('a', 'ext-Pdo', $versionParser->parseConstraints('^7.2')),
-                    new Link('a', 'ext-bcMath', $versionParser->parseConstraints('^7.2')),
+                    'ext-xml' => new Link('a', 'ext-xml', $versionParser->parseConstraints('^7.2')),
+                    'ext-pdo' => new Link('a', 'ext-Pdo', $versionParser->parseConstraints('^7.2')),
+                    'ext-bcmath' => new Link('a', 'ext-bcMath', $versionParser->parseConstraints('^7.2')),
                 ),
                 'replaced_provided_exts',
                 array(
                     // constraint does not satisfy all the ^7.2 requirement so we do not accept it as being replaced
-                    new Link('a', 'ext-PDO', $versionParser->parseConstraints('7.1.*')),
+                    'ext-pdo' => new Link('a', 'ext-PDO', $versionParser->parseConstraints('7.1.*')),
                     // valid replace of bcmath so no need to check for it
-                    new Link('a', 'ext-BCMath', $versionParser->parseConstraints('^7.1')),
+                    'ext-bcmath' => new Link('a', 'ext-BCMath', $versionParser->parseConstraints('^7.1')),
                 ),
                 array(
                     // valid provide of ext-xml so no need to check for it
-                    new Link('a', 'ext-XML', $versionParser->parseConstraints('*')),
+                    'ext-xml' => new Link('a', 'ext-XML', $versionParser->parseConstraints('*')),
                 ),
             ),
         );
