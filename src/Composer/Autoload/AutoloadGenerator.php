@@ -621,12 +621,6 @@ EOF;
             }
         }
 
-        if (isset($autoloads['files'])) {
-            foreach ($autoloads['files'] as $fileIdentifier => $file) {
-                composerRequire($fileIdentifier, $file);
-            }
-        }
-
         return $loader;
     }
 
