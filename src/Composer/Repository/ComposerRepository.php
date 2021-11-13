@@ -967,12 +967,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $this->hasPartialPackages = !empty($data['packages']) && is_array($data['packages']);
         }
 
-        // Horrible hack to workaround https://github.com/composer/composer/issues/9297 and bad mirrors, should be disabled if possible once they fix things
-        if (!empty($data['metadata-url']) && !empty($data['list']) && $data['metadata-url'] === '/p/%package%.json' && $data['list'] === 'https://packagist.org/packages/list.json') {
-            $this->io->writeError('<warning>Composer 2 repository support for '.$this->url.' has been disabled due to what seems like a misconfiguration. If this is a packagist.org mirror we recommend removing it as Composer 2 handles network operations much faster and should work fine without.</warning>');
-            unset($data['metadata-url']);
-        }
-
         // metadata-url indicates V2 repo protocol so it takes over from all the V1 types
         // V2 only has lazyProviders and possibly partial packages, but no ability to process anything else,
         // V2 also supports async loading
