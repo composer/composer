@@ -299,7 +299,9 @@ EOT
         if ($input->getOption('tree')) {
             $rootRequires = $this->getRootRequires();
             $packages = $installedRepo->getPackages();
-            usort($packages, 'strcmp');
+            usort($packages, function (BasePackage $a, BasePackage $b) {
+                return strcmp((string) $a, (string) $b);
+            });
             $arrayTree = array();
             foreach ($packages as $package) {
                 if (in_array($package->getName(), $rootRequires, true)) {
@@ -704,7 +706,8 @@ EOT
 
         if ($package->getAutoload()) {
             $io->write("\n<info>autoload</info>");
-            foreach ($package->getAutoload() as $type => $autoloads) {
+            $autoloadConfig = $package->getAutoload();
+            foreach ($autoloadConfig as $type => $autoloads) {
                 $io->write('<comment>' . $type . '</comment>');
 
                 if ($type === 'psr-0' || $type === 'psr-4') {
@@ -712,7 +715,7 @@ EOT
                         $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
                     }
                 } elseif ($type === 'classmap') {
-                    $io->write(implode(', ', $autoloads));
+                    $io->write(implode(', ', $autoloadConfig[$type]));
                 }
             }
             if ($package->getIncludePaths()) {

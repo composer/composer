@@ -444,7 +444,7 @@ class PoolBuilder
                     if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$replace])) {
                         $this->unlockPackage($request, $replace);
                         $this->markPackageNameForLoading($request, $replace, $link->getConstraint());
-                    } elseif (!$request->getUpdateAllowTransitiveRootDependencies() && $this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$replace])) {
+                    } elseif ($this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$replace])) {
                         $this->updateAllowWarned[$replace] = true;
                         $this->io->writeError('<warning>Dependency "'.$replace.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>');
                     }

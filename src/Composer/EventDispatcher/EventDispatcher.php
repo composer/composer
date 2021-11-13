@@ -508,10 +508,8 @@ class EventDispatcher
         $this->loader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
         $this->loader->register(false);
 
-        if (isset($map['files'])) {
-            foreach ($map['files'] as $fileIdentifier => $file) {
-                \Composer\Autoload\composerRequire($fileIdentifier, $file);
-            }
+        foreach ($map['files'] as $fileIdentifier => $file) {
+            \Composer\Autoload\composerRequire($fileIdentifier, $file);
         }
 
         return $scripts[$event->getName()];

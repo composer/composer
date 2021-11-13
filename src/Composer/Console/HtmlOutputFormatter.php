@@ -60,7 +60,7 @@ class HtmlOutputFormatter extends OutputFormatter
     }
 
     /**
-     * @param string $message
+     * @param ?string $message
      *
      * @return string
      */

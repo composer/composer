@@ -201,10 +201,8 @@ class PluginManager
         $classLoader = $generator->createLoader($map, $this->composer->getConfig()->get('vendor-dir'));
         $classLoader->register(false);
 
-        if (isset($map['files'])) {
-            foreach ($map['files'] as $fileIdentifier => $file) {
-                \Composer\Autoload\composerRequire($fileIdentifier, $file);
-            }
+        foreach ($map['files'] as $fileIdentifier => $file) {
+            \Composer\Autoload\composerRequire($fileIdentifier, $file);
         }
 
         foreach ($classes as $class) {

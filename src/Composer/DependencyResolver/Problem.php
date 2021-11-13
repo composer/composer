@@ -384,6 +384,8 @@ class Problem
                 $hasDefaultBranch[$package->getName()] = true;
             }
         }
+
+        $preparedStrings = array();
         foreach ($prepared as $name => $package) {
             // remove the implicit default branch alias to avoid cruft in the display
             if (isset($package['versions'][VersionParser::DEFAULT_BRANCH_ALIAS], $hasDefaultBranch[$name])) {
@@ -395,10 +397,10 @@ class Problem
             if (!$isVerbose) {
                 $package['versions'] = self::condenseVersionList($package['versions'], 4);
             }
-            $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
+            $preparedStrings[] = $package['name'].'['.implode(', ', $package['versions']).']';
         }
 
-        return implode(', ', $prepared);
+        return implode(', ', $preparedStrings);
     }
 
     /**
