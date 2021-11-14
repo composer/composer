@@ -151,7 +151,7 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnValue(array()));
         $generator
             ->method('parseAutoloads')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue(array('psr-0' => array(), 'psr-4' => array(), 'classmap' => array(), 'files' => array(), 'exclude-from-classmap' => array(),)));
         $generator
             ->method('createLoader')
             ->will($this->returnValue($this->getMockBuilder('Composer\Autoload\ClassLoader')->getMock()));
