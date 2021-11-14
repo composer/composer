@@ -132,27 +132,6 @@
                 }
             }
         },
-        "repositories": {
-            "type": ["object", "array"],
-            "description": "A set of additional repositories where packages can be found.",
-            "additionalProperties": {
-                "anyOf": [
-                    { "$ref": "#/definitions/repository" },
-                    { "type": "boolean", "enum": [false] }
-                ]
-            },
-            "items": {
-                "anyOf": [
-                    { "$ref": "#/definitions/repository" },
-                    {
-                        "type": "object",
-                        "additionalProperties": { "type": "boolean", "enum": [false] },
-                        "minProperties": 1,
-                        "maxProperties": 1
-                    }
-                ]
-            }
-        },
         "_comment": {
             "type": ["array", "string"],
             "description": "A key to store comments in"
@@ -197,6 +176,27 @@
             "description": "This is a hash of package name (keys) and descriptions (values) that this package suggests work well with it (this will be suggested to the user during installation).",
             "additionalProperties": {
                 "type": "string"
+            }
+        },
+        "repositories": {
+            "type": ["object", "array"],
+            "description": "A set of additional repositories where packages can be found.",
+            "additionalProperties": {
+                "anyOf": [
+                    { "$ref": "#/definitions/repository" },
+                    { "type": "boolean", "enum": [false] }
+                ]
+            },
+            "items": {
+                "anyOf": [
+                    { "$ref": "#/definitions/repository" },
+                    {
+                        "type": "object",
+                        "additionalProperties": { "type": "boolean", "enum": [false] },
+                        "minProperties": 1,
+                        "maxProperties": 1
+                    }
+                ]
             }
         },
         "minimum-stability": {
