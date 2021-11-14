@@ -1,5 +1,11 @@
 parameters:
     ignoreErrors:
+        # reported as https://github.com/phpstan/phpstan/issues/6008
+        -
+            message: "#^Offset 'curl_id' on array{curl_id:#"
+            count: 1
+            path: ../src/Composer/Util/HttpDownloader.php
+
         -
             message: "#^Parameter \\#1 \\$autoload_function of function spl_autoload_register expects callable\\(string\\)\\: void, array\\{\\$this\\(Composer\\\\Autoload\\\\ClassLoader\\), 'loadClass'\\} given\\.$#"
             count: 1
