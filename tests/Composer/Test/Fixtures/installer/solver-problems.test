@@ -163,6 +163,7 @@ Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further commo
 To enable extensions, verify that they are enabled in your .ini files:
 __inilist__
 You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.
+Alternatively, you can run Composer with `--ignore-platform-req=ext-xml` to temporarily ignore these required extensions.
 
 Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
 

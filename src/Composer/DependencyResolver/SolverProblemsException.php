@@ -47,7 +47,7 @@ class SolverProblemsException extends \RuntimeException
     public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
     {
         $installedMap = $request->getPresentMap(true);
-        $missingExtensions = [];
+        $missingExtensions = array();
         $isCausedByLock = false;
 
         $problems = array();
@@ -122,7 +122,7 @@ class SolverProblemsException extends \RuntimeException
         $text = "To enable extensions, verify that they are enabled in your .ini files:\n    - ";
         $text .= implode("\n    - ", $paths);
         $text .= "\nYou can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.";
-        $text .= "\nAlternatively, you can run Composer with `$ignoreExtensionsArguments` to ignore these required extensions.";
+        $text .= "\nAlternatively, you can run Composer with `$ignoreExtensionsArguments` to temporarily ignore these required extensions.";
 
         return $text;
     }
@@ -133,7 +133,7 @@ class SolverProblemsException extends \RuntimeException
      */
     private function getExtensionProblems(array $reasonSets)
     {
-        $missingExtensions = [];
+        $missingExtensions = array();
         foreach ($reasonSets as $reasonSet) {
             foreach ($reasonSet as $rule) {
                 $required = $rule->getRequiredPackage();
