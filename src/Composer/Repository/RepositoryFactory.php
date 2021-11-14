@@ -81,7 +81,7 @@ class RepositoryFactory
         if (!$rm) {
             $rm = static::manager($io, $config, Factory::createHttpDownloader($io, $config));
         }
-        $repos = static::createRepos($rm, array($repoConfig));
+        $repos = self::createRepos($rm, array($repoConfig));
 
         return reset($repos);
     }
@@ -107,7 +107,7 @@ class RepositoryFactory
             $rm = static::manager($io, $config, Factory::createHttpDownloader($io, $config));
         }
 
-        return static::createRepos($rm, $config->getRepositories());
+        return self::createRepos($rm, $config->getRepositories());
     }
 
     /**

@@ -33,7 +33,7 @@ class ZipDownloader extends ArchiveDownloader
     private static $isWindows;
 
     /** @var ZipArchive|null */
-    private $zipArchiveObject;
+    private $zipArchiveObject; // @phpstan-ignore-line helper property that is set via reflection for testing purposes
 
     /**
      * @inheritDoc

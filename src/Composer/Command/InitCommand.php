@@ -490,15 +490,6 @@ EOT
     }
 
     /**
-     * @param string $name
-     * @return list<array{name: string, description: ?string}>
-     */
-    protected function findPackages($name)
-    {
-        return $this->getRepos()->search($name);
-    }
-
-    /**
      * @return CompositeRepository
      */
     protected function getRepos()
@@ -573,7 +564,7 @@ EOT
 
         $io = $this->getIO();
         while (null !== $package = $io->ask('Search for a package: ')) {
-            $matches = $this->findPackages($package);
+            $matches = $this->getRepos()->search($package);
 
             if (count($matches)) {
                 // Remove existing packages from search results.

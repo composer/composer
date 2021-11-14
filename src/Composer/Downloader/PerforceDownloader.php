@@ -21,7 +21,7 @@ use Composer\Util\Perforce;
  */
 class PerforceDownloader extends VcsDownloader
 {
-    /** @var Perforce */
+    /** @var Perforce|null */
     protected $perforce;
 
     /**

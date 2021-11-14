@@ -132,7 +132,7 @@ class BaseDependencyCommand extends BaseCommand
     /**
      * Assembles and prints a bottom-up table of the dependencies.
      *
-     * @param array[]         $results
+     * @param array{PackageInterface, Link, mixed}[] $results
      *
      * @return void
      */
@@ -191,7 +191,7 @@ class BaseDependencyCommand extends BaseCommand
     /**
      * Recursively prints a tree of the selected results.
      *
-     * @param array[] $results Results to be printed at this level.
+     * @param array{PackageInterface, Link, mixed[]|bool}[] $results Results to be printed at this level.
      * @param string  $prefix  Prefix of the current tree level.
      * @param int     $level   Current level of recursion.
      *
@@ -202,11 +202,6 @@ class BaseDependencyCommand extends BaseCommand
         $count = count($results);
         $idx = 0;
         foreach ($results as $result) {
-            /**
-             * @var PackageInterface $package
-             * @var Link             $link
-             * @var mixed[]|bool     $children
-             */
             list($package, $link, $children) = $result;
 
             $color = $this->colors[$level % count($this->colors)];

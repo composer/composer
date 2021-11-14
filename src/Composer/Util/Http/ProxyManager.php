@@ -34,8 +34,6 @@ class ProxyManager
     private $hasProxy;
     /** @var ?string */
     private $info = null;
-    /** @var ?string */
-    private $lastProxy = null;
     /** @var ?NoProxyPattern */
     private $noProxyHandler = null;
 
@@ -188,14 +186,6 @@ class ProxyManager
      */
     private function noProxy($requestUrl)
     {
-        if ($this->noProxyHandler) {
-            if ($this->noProxyHandler->test($requestUrl)) {
-                $this->lastProxy = 'excluded by no_proxy';
-
-                return true;
-            }
-        }
-
-        return false;
+        return $this->noProxyHandler && $this->noProxyHandler->test($requestUrl);
     }
 }

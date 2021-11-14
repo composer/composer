@@ -286,10 +286,10 @@ class CurlDownloader
      */
     public function abortRequest($id)
     {
-        if (isset($this->jobs[$id], $this->jobs[$id]['handle'])) {
+        if (isset($this->jobs[$id], $this->jobs[$id]['curlHandle'])) {
             $job = $this->jobs[$id];
-            curl_multi_remove_handle($this->multiHandle, $job['handle']);
-            curl_close($job['handle']);
+            curl_multi_remove_handle($this->multiHandle, $job['curlHandle']);
+            curl_close($job['curlHandle']);
             if (is_resource($job['headerHandle'])) {
                 fclose($job['headerHandle']);
             }

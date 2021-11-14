@@ -456,7 +456,7 @@ class Package extends BasePackage
      */
     public function setRequires(array $requires)
     {
-        if (isset($requires[0])) {
+        if (isset($requires[0])) { // @phpstan-ignore-line
             $requires = $this->convertLinksToMap($requires, 'setRequires');
         }
 
@@ -480,7 +480,7 @@ class Package extends BasePackage
      */
     public function setConflicts(array $conflicts)
     {
-        if (isset($conflicts[0])) {
+        if (isset($conflicts[0])) { // @phpstan-ignore-line
             $conflicts = $this->convertLinksToMap($conflicts, 'setConflicts');
         }
 
@@ -505,7 +505,7 @@ class Package extends BasePackage
      */
     public function setProvides(array $provides)
     {
-        if (isset($provides[0])) {
+        if (isset($provides[0])) { // @phpstan-ignore-line
             $provides = $this->convertLinksToMap($provides, 'setProvides');
         }
 
@@ -530,7 +530,7 @@ class Package extends BasePackage
      */
     public function setReplaces(array $replaces)
     {
-        if (isset($replaces[0])) {
+        if (isset($replaces[0])) { // @phpstan-ignore-line
             $replaces = $this->convertLinksToMap($replaces, 'setReplaces');
         }
 
@@ -555,7 +555,7 @@ class Package extends BasePackage
      */
     public function setDevRequires(array $devRequires)
     {
-        if (isset($devRequires[0])) {
+        if (isset($devRequires[0])) { // @phpstan-ignore-line
             $devRequires = $this->convertLinksToMap($devRequires, 'setDevRequires');
         }
 

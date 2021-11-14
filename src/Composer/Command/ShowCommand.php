@@ -299,7 +299,9 @@ EOT
         if ($input->getOption('tree')) {
             $rootRequires = $this->getRootRequires();
             $packages = $installedRepo->getPackages();
-            usort($packages, 'strcmp');
+            usort($packages, function (BasePackage $a, BasePackage $b) {
+                return strcmp((string) $a, (string) $b);
+            });
             $arrayTree = array();
             foreach ($packages as $package) {
                 if (in_array($package->getName(), $rootRequires, true)) {
@@ -704,7 +706,8 @@ EOT
 
         if ($package->getAutoload()) {
             $io->write("\n<info>autoload</info>");
-            foreach ($package->getAutoload() as $type => $autoloads) {
+            $autoloadConfig = $package->getAutoload();
+            foreach ($autoloadConfig as $type => $autoloads) {
                 $io->write('<comment>' . $type . '</comment>');
 
                 if ($type === 'psr-0' || $type === 'psr-4') {
@@ -712,7 +715,7 @@ EOT
                         $io->write(($name ?: '*') . ' => ' . (is_array($path) ? implode(', ', $path) : ($path ?: '.')));
                     }
                 } elseif ($type === 'classmap') {
-                    $io->write(implode(', ', $autoloads));
+                    $io->write(implode(', ', $autoloadConfig[$type]));
                 }
             }
             if ($package->getIncludePaths()) {
@@ -1005,7 +1008,7 @@ EOT
     /**
      * Display the tree
      *
-     * @param array<int, array<string, string|array>> $arrayTree
+     * @param array<int, array<string, string|mixed[]>> $arrayTree
      * @return void
      */
     protected function displayPackageTree(array $arrayTree)
@@ -1051,7 +1054,7 @@ EOT
     /**
      * Generate the package tree
      *
-     * @return array<string, array<int, array<string, array|string>>|string|null>
+     * @return array<string, array<int, array<string, mixed[]|string>>|string|null>
      */
     protected function generatePackageTree(
         PackageInterface $package,
@@ -1093,8 +1096,8 @@ EOT
     /**
      * Display a package tree
      *
-     * @param array<string, array<int, array<string, array|string>>|string|null>|string $package
-     * @param array<int, string|array> $packagesInTree
+     * @param array<string, array<int, array<string, mixed[]|string>>|string|null>|string $package
+     * @param array<int, string|mixed[]> $packagesInTree
      * @param string $previousTreeBar
      * @param int $level
      *

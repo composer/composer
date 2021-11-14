@@ -70,7 +70,7 @@ class InstallerTest extends TestCase
      * @dataProvider provideInstaller
      * @param RootPackageInterface&BasePackage $rootPackage
      * @param RepositoryInterface[] $repositories
-     * @param array[] $options
+     * @param mixed[] $options
      */
     public function testInstaller(RootPackageInterface $rootPackage, $repositories, array $options)
     {
