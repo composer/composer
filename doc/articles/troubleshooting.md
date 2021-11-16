@@ -273,7 +273,7 @@ If you have been pointed to this page, you want to check a few things:
 - If you are using IPv6, try disabling it. If that solves your issues, get in touch
   with your ISP or server host, the problem is not at the Packagist level but in the
   routing rules between you and Packagist (i.e. the internet at large). The best way to get
-  these fixed is raise awareness to the network engineers that have the power to fix it.
+  these fixed is to raise awareness to the network engineers that have the power to fix it.
   Take a look at the next section for IPv6 workarounds.
 - If none of the above helped, please report the error.
 
