@@ -299,12 +299,33 @@ described [above](#packages).
 These fields are optional. You probably don't need them for your own custom
 repository.
 
-#### stream options
+#### cURL or stream options
 
-The `packages.json` file is loaded using a PHP stream. You can set extra
-options on that stream using the `options` parameter. You can set any valid
-PHP stream context option. See [Context options and
-parameters](https://php.net/manual/en/context.php) for more information.
+The repository is accessed either using cURL (Composer 2 with ext-curl enabled)
+or PHP streams. You can set extra options using the `options` parameter. For
+PHP streams, you can set any valid PHP stream context option. See [Context
+options and parameters](https://php.net/manual/en/context.php) for more
+information. When cURL is used, only a limited set of `http` and `ssl` options
+can be configured.
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://example.org",
+            "options": {
+                "http": {
+                    "timeout": 60
+                }
+            }
+        }
+    ],
+    "require": {
+        "acme/package": "^1.0"
+    }
+}
+```
 
 ### VCS
 
@@ -397,7 +418,7 @@ fetch the packages without having to install the version control system. The
 VCS repository provides `dist`s for them that fetch the packages as zips.
 
 * **GitHub:** [github.com](https://github.com) (Git)
-* **BitBucket:** [bitbucket.org](https://bitbucket.org) (Git and Mercurial)
+* **BitBucket:** [bitbucket.org](https://bitbucket.org) (Git)
 
 The VCS driver to be used is detected automatically based on the URL. However,
 should you need to specify one for whatever reason, you can use `bitbucket`,
