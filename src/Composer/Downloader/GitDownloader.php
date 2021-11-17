@@ -92,8 +92,15 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         if (!empty($this->cachedPackages[$package->getId()][$ref])) {
             $msg = "Cloning ".$this->getShortHash($ref).' from cache';
+
+            $cloneFlags = '--dissociate --reference %cachePath% ';
+            $transportOptions = $package->getTransportOptions();
+            if (isset($transportOptions['git']['single_use_clone']) && $transportOptions['git']['single_use_clone']) {
+                $cloneFlags = '';
+            }
+
             $command =
-                'git clone --no-checkout %cachePath% %path% --dissociate --reference %cachePath% '
+                'git clone --no-checkout %cachePath% %path% ' . $cloneFlags
                 . '&& cd '.$flag.'%path% '
                 . '&& git remote set-url origin -- %sanitizedUrl% && git remote add composer -- %sanitizedUrl%';
         } else {
