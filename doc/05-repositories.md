@@ -383,7 +383,7 @@ For more information [see the aliases article](articles/aliases.md).
 #### Using private repositories
 
 Exactly the same solution allows you to work with your private repositories at
-GitHub and BitBucket:
+GitHub and Bitbucket:
 
 ```json
 {
@@ -413,12 +413,12 @@ The following are supported:
 
 To get packages from these systems you need to have their respective clients
 installed. That can be inconvenient. And for this reason there is special
-support for GitHub and BitBucket that use the APIs provided by these sites, to
+support for GitHub and Bitbucket that use the APIs provided by these sites, to
 fetch the packages without having to install the version control system. The
 VCS repository provides `dist`s for them that fetch the packages as zips.
 
 * **GitHub:** [github.com](https://github.com) (Git)
-* **BitBucket:** [bitbucket.org](https://bitbucket.org) (Git)
+* **Bitbucket:** [bitbucket.org](https://bitbucket.org) (Git)
 
 The VCS driver to be used is detected automatically based on the URL. However,
 should you need to specify one for whatever reason, you can use `bitbucket`,
@@ -435,9 +435,9 @@ Please note:
 * **If you already used a private repository**, this means Composer should have cloned it in cache. If you want to install the same package with drivers, remember to launch the command `composer clearcache` followed by the command `composer update` to update Composer cache and install the package from dist.
 * VCS driver `git-bitbucket` is deprecated in favor of `bitbucket`
 
-#### BitBucket Driver Configuration
+#### Bitbucket Driver Configuration
 
-> **Note that the repository endpoint for BitBucket needs to be https rather than git.**
+> **Note that the repository endpoint for Bitbucket needs to be https rather than git.**
 
 After setting up your bitbucket repository, you will also need to
 [set up authentication](articles/authentication-for-private-packages.md#bitbucket-oauth).
