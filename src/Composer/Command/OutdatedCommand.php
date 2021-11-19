@@ -42,6 +42,8 @@ class OutdatedCommand extends ShowCommand
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
                 new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it with the --outdated option if you don\'t want to be informed about new versions of some packages.'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
+                new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages). Use with the --outdated option'),
+                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages). Use with the --outdated option'),
             ))
             ->setHelp(
                 <<<EOT
@@ -87,6 +89,12 @@ EOT
         }
         if ($input->getOption('no-dev')) {
             $args['--no-dev'] = true;
+        }
+        if ($input->getOption('ignore-platform-req')) {
+            $args['--ignore-platform-req'] = $input->getOption('ignore-platform-req');
+        }
+        if ($input->getOption('ignore-platform-reqs')) {
+            $args['--ignore-platform-reqs'] = true;
         }
         $args['--format'] = $input->getOption('format');
         $args['--ignore'] = $input->getOption('ignore');
