@@ -1,0 +1,131 @@
+--TEST--
+Ensure that a partial update of a dependency does not conflict if the only way to proceed is using an old locked version.
+
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                {
+                    "name": "update/pkg1", "version": "1.0.0", "require": {
+                        "dep/pkg2": "*",
+                        "root/pkg3": "*",
+                        "root/provided-pkg4": "*",
+                        "root/replaced-pkg8": "*"
+                    }
+                },
+                {
+                    "name": "update/pkg1", "version": "2.0.0", "require": {
+                        "dep/pkg2": "*",
+                        "root/pkg3": "*",
+                        "root/provided-pkg4": "*",
+                        "root/replaced-pkg8": "*"
+                    }
+                },
+                {"name": "dep/pkg2", "version": "1.0.0"},
+                {"name": "dep/pkg2", "version": "2.0.0"},
+                {"name": "root/pkg3", "version": "1.0.0"},
+                {"name": "root/pkg3", "version": "2.0.0"},
+                {"name": "dep/pkg5", "version": "1.0.0", "provide": {"root/provided-pkg4": "1.0.0"}},
+                {"name": "dep/pkg5", "version": "2.0.0", "provide": {"root/provided-pkg4": "2.0.0"}},
+                {"name": "dep/pkg6", "version": "1.0.0", "provide": {"root/provided-pkg4": "1.0.0"}},
+                {"name": "dep/pkg6", "version": "2.0.0", "provide": {"root/provided-pkg4": "2.0.0"}},
+                {"name": "root/pkg7", "version": "1.0.0", "require": {"dep/pkg5": "*", "dep/pkg6": "*"}},
+                {"name": "dep/pkg9", "version": "1.0.0", "replace": {"root/replaced-pkg8": "1.0.0"}},
+                {"name": "dep/pkg9", "version": "2.0.0", "replace": {"root/replaced-pkg8": "2.0.0"}},
+                {"name": "root/replaced-pkg8", "version": "1.0.0"},
+                {"name": "root/replaced-pkg8", "version": "2.0.0"},
+                {"name": "root/pkg10", "version": "1.0.0", "require": {"dep/pkg9": "*"}}
+            ]
+        }
+    ],
+    "require": {
+        "update/pkg1": "*",
+        "root/pkg3": "*",
+        "root/provided-pkg4": "*",
+        "root/pkg7": "*",
+        "root/replaced-pkg8": "*",
+        "root/pkg10": "*"
+    }
+}
+--LOCK--
+{
+    "packages": [
+        {
+            "name": "update/pkg1", "version": "1.0.0", "type": "library", "require": {
+                "dep/pkg2": "*",
+                "root/pkg3": "*",
+                "root/provided-pkg4": "*",
+                "root/replaced-pkg8": "*"
+            }
+        },
+        {"name": "dep/pkg2", "version": "1.0.0", "type": "library"},
+        {"name": "root/pkg3", "version": "1.0.0", "type": "library"},
+        {"name": "dep/pkg5", "version": "1.0.0", "type": "library", "provide": {"root/provided-pkg4": "1.0.0"}},
+        {"name": "dep/pkg6", "version": "1.0.0", "type": "library", "provide": {"root/provided-pkg4": "1.0.0"}},
+        {"name": "root/pkg7", "version": "1.0.0", "type": "library", "require": {"dep/pkg5": "*", "dep/pkg6": "*"}},
+        {"name": "dep/pkg9", "version": "1.0.0", "type": "library", "replace": {"root/replaced-pkg8": "1.0.0"}},
+        {"name": "root/pkg10", "version": "1.0.0", "type": "library", "require": {"dep/pkg9": "*"}}
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--RUN--
+update update/pkg1 --with-dependencies
+--EXPECT-LOCK--
+{
+    "packages": [
+        {"name": "dep/pkg2", "version": "2.0.0", "type": "library"},
+        {"name": "dep/pkg5", "version": "1.0.0", "type": "library", "provide": {"root/provided-pkg4": "1.0.0"}},
+        {"name": "dep/pkg6", "version": "1.0.0", "type": "library", "provide": {"root/provided-pkg4": "1.0.0"}},
+        {"name": "dep/pkg9", "version": "1.0.0", "type": "library", "replace": {"root/replaced-pkg8": "1.0.0"}},
+        {"name": "root/pkg10", "version": "1.0.0", "type": "library", "require": {"dep/pkg9": "*"}},
+        {"name": "root/pkg3", "version": "1.0.0", "type": "library"},
+        {"name": "root/pkg7", "version": "1.0.0", "type": "library", "require": {"dep/pkg5": "*", "dep/pkg6": "*"}},
+        {
+            "name": "update/pkg1", "version": "2.0.0", "type": "library", "require": {
+                "dep/pkg2": "*",
+                "root/pkg3": "*",
+                "root/provided-pkg4": "*",
+                "root/replaced-pkg8": "*"
+            }
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+<warning>Dependency root/pkg3 is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>
+<warning>Dependency dep/pkg9 (via replace of root/replaced-pkg8) is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>
+Updating dependencies
+Lock file operations: 0 installs, 2 updates, 0 removals
+  - Upgrading dep/pkg2 (1.0.0 => 2.0.0)
+  - Upgrading update/pkg1 (1.0.0 => 2.0.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 8 installs, 0 updates, 0 removals
+Generating autoload files
+
+--EXPECT--
+Installing dep/pkg9 (1.0.0)
+Installing root/pkg10 (1.0.0)
+Installing dep/pkg6 (1.0.0)
+Installing dep/pkg5 (1.0.0)
+Installing root/pkg7 (1.0.0)
+Installing root/pkg3 (1.0.0)
+Installing dep/pkg2 (2.0.0)
+Installing update/pkg1 (2.0.0)

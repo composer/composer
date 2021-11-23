@@ -99,7 +99,7 @@ class PoolBuilder
     private $unacceptableFixedOrLockedPackages = array();
     /** @var string[] */
     private $updateAllowList = array();
-    /** @var array<string, string> */
+    /** @var array<string, array<PackageInterface>> */
     private $skippedLoad = array();
 
     /**
@@ -156,11 +156,10 @@ class PoolBuilder
             foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
                 if (!$this->isUpdateAllowed($lockedPackage)) {
                     $request->lockPackage($lockedPackage);
-                    $lockedName = $lockedPackage->getName();
+                    $this->skippedLoad[$lockedPackage->getName()][] = $lockedPackage;
                     // remember which packages we skipped loading remote content for in this partial update
-                    $this->skippedLoad[$lockedName] = $lockedName;
                     foreach ($lockedPackage->getReplaces() as $link) {
-                        $this->skippedLoad[$link->getTarget()] = $lockedName;
+                        $this->skippedLoad[$link->getTarget()][] = $lockedPackage;
                     }
                 }
             }
@@ -422,12 +421,18 @@ class PoolBuilder
                 // looking at a package which needs to be updated we need to unlock the package we now know is a
                 // dependency of another package which we are trying to update, and then attempt to load it again
                 if ($propagateUpdate && $request->getUpdateAllowTransitiveDependencies()) {
-                    if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$require])) {
+                    $skippedRootRequires = $this->getSkippedRootRequires($request, $require);
+
+                    if ($request->getUpdateAllowTransitiveRootDependencies() || !$skippedRootRequires) {
                         $this->unlockPackage($request, $require);
                         $this->markPackageNameForLoading($request, $require, $linkConstraint);
-                    } elseif (!isset($this->updateAllowWarned[$this->skippedLoad[$require]])) {
-                        $this->updateAllowWarned[$this->skippedLoad[$require]] = true;
-                        $this->io->writeError('<warning>Dependency "'.$this->skippedLoad[$require].'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>');
+                    } else {
+                        foreach ($skippedRootRequires as $rootRequire) {
+                            if (!isset($this->updateAllowWarned[$rootRequire])) {
+                                $this->updateAllowWarned[$rootRequire] = true;
+                                $this->io->writeError('<warning>Dependency '.$rootRequire.' is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>');
+                            }
+                        }
                     }
                 }
             } else {
@@ -441,12 +446,18 @@ class PoolBuilder
             foreach ($package->getReplaces() as $link) {
                 $replace = $link->getTarget();
                 if (isset($this->loadedPackages[$replace], $this->skippedLoad[$replace])) {
-                    if ($request->getUpdateAllowTransitiveRootDependencies() || !$this->isRootRequire($request, $this->skippedLoad[$replace])) {
+                    $skippedRootRequires = $this->getSkippedRootRequires($request, $replace);
+
+                    if ($request->getUpdateAllowTransitiveRootDependencies() || !$skippedRootRequires) {
                         $this->unlockPackage($request, $replace);
                         $this->markPackageNameForLoading($request, $replace, $link->getConstraint());
-                    } elseif ($this->isRootRequire($request, $replace) && !isset($this->updateAllowWarned[$replace])) {
-                        $this->updateAllowWarned[$replace] = true;
-                        $this->io->writeError('<warning>Dependency "'.$replace.'" is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>');
+                    } else {
+                        foreach ($skippedRootRequires as $rootRequire) {
+                            if (!isset($this->updateAllowWarned[$rootRequire])) {
+                                $this->updateAllowWarned[$rootRequire] = true;
+                                $this->io->writeError('<warning>Dependency '.$rootRequire.' is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>');
+                            }
+                        }
                     }
                 }
             }
@@ -464,6 +475,48 @@ class PoolBuilder
         $rootRequires = $request->getRequires();
 
         return isset($rootRequires[$name]);
+    }
+
+    /**
+     * @param  string $name
+     * @return string[]
+     */
+    private function getSkippedRootRequires(Request $request, $name)
+    {
+        if (!isset($this->skippedLoad[$name])) {
+            return array();
+        }
+
+        $rootRequires = $request->getRequires();
+        $matches = array();
+
+        if (isset($rootRequires[$name])) {
+            return array_map(function (PackageInterface $package) use ($name) {
+                if ($name !== $package->getName()) {
+                    return $package->getName() .' (via replace of '.$name.')';
+                }
+
+                return $package->getName();
+            }, $this->skippedLoad[$name]);
+        }
+
+        foreach ($this->skippedLoad[$name] as $packageOrReplacer) {
+            if (isset($rootRequires[$packageOrReplacer->getName()])) {
+                $matches[] = $packageOrReplacer->getName();
+            }
+            foreach ($packageOrReplacer->getReplaces() as $link) {
+                if (isset($rootRequires[$link->getTarget()])) {
+                    if ($name !== $packageOrReplacer->getName()) {
+                        $matches[] = $packageOrReplacer->getName() .' (via replace of '.$name.')';
+                    } else {
+                        $matches[] = $packageOrReplacer->getName();
+                    }
+                    break;
+                }
+            }
+        }
+
+        return $matches;
     }
 
     /**
@@ -529,13 +582,26 @@ class PoolBuilder
      */
     private function unlockPackage(Request $request, $name)
     {
-        if (
+        foreach ($this->skippedLoad[$name] as $packageOrReplacer) {
             // if we unfixed a replaced package name, we also need to unfix the replacer itself
-            $this->skippedLoad[$name] !== $name
             // as long as it was not unfixed yet
-            && isset($this->skippedLoad[$this->skippedLoad[$name]])
-        ) {
-            $this->unlockPackage($request, $this->skippedLoad[$name]);
+            if ($packageOrReplacer->getName() !== $name && isset($this->skippedLoad[$packageOrReplacer->getName()])) {
+                $replacerName = $packageOrReplacer->getName();
+                if ($request->getUpdateAllowTransitiveRootDependencies() || (!$this->isRootRequire($request, $name) && !$this->isRootRequire($request, $replacerName))) {
+                    $this->unlockPackage($request, $replacerName);
+
+                    if ($this->isRootRequire($request, $replacerName)) {
+                        $this->markPackageNameForLoading($request, $replacerName, new MatchAllConstraint);
+                    } else {
+                        foreach ($this->packages as $loadedPackage) {
+                            $requires = $loadedPackage->getRequires();
+                            if (isset($requires[$replacerName])) {
+                                $this->markPackageNameForLoading($request, $replacerName, $requires[$replacerName]->getConstraint());
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         unset($this->skippedLoad[$name], $this->loadedPackages[$name], $this->maxExtendedReqs[$name]);
@@ -551,11 +617,14 @@ class PoolBuilder
                     // also loaded, as they were previously ignored because the locked (now unlocked) package already
                     // satisfied their requirements
                     foreach ($request->getFixedOrLockedPackages() as $fixedOrLockedPackage) {
-                        if ($fixedOrLockedPackage !== $lockedPackage && isset($this->skippedLoad[$fixedOrLockedPackage->getName()])) {
-                            foreach ($fixedOrLockedPackage->getRequires() as $requireLink) {
-                                if ($requireLink->getTarget() === $lockedPackage->getName()) {
-                                    $this->markPackageNameForLoading($request, $lockedPackage->getName(), $requireLink->getConstraint());
-                                }
+                        if ($fixedOrLockedPackage === $lockedPackage) {
+                            continue;
+                        }
+
+                        if (isset($this->skippedLoad[$fixedOrLockedPackage->getName()])) {
+                            $requires = $fixedOrLockedPackage->getRequires();
+                            if (isset($requires[$lockedPackage->getName()])) {
+                                $this->markPackageNameForLoading($request, $lockedPackage->getName(), $requires[$lockedPackage->getName()]->getConstraint());
                             }
                         }
                     }
