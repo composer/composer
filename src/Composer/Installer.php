@@ -494,7 +494,7 @@ class Installer
                 return (string) $op;
             }, $lockTransaction->getOperations());
             if ($txLogOptimized !== $txLogRaw) {
-                throw new \LogicException('Optimized solver resolved differently from non-optimized one, please report this with your composer.json'.PHP_EOL.implode(PHP_EOL,$txLogOptimized).implode(PHP_EOL,$txLogRaw));
+                throw new \LogicException('Optimized solver resolved differently from non-optimized one, please report this with your composer.json'.PHP_EOL.implode(PHP_EOL,$txLogOptimized).PHP_EOL.PHP_EOL.implode(PHP_EOL,$txLogRaw));
             }
             $this->io->writeError("<highlight>Done, test successful</highlight>", true, IOInterface::VERBOSE);
         } else {
