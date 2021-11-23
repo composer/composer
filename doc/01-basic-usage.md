@@ -41,8 +41,8 @@ Composer uses this information to search for the right set of files in package
 key, or in [Packagist.org](https://packagist.org), the default package repository.
 In the above example, since no other repository has been registered in the
 `composer.json` file, it is assumed that the `monolog/monolog` package is registered
-on Packagist.org. (See more about Packagist [below](#packagist), or read more
-about repositories [here](05-repositories.md)).
+on Packagist.org. (Read more [about Packagist](#packagist), and
+[about repositories](05-repositories.md)).
 
 ### Package names
 
@@ -51,7 +51,7 @@ will be identical - the vendor name only exists to prevent naming clashes. For
 example, it would allow two different people to create a library named `json`.
 One might be named `igorw/json` while the other might be `seldaek/json`.
 
-Read more about publishing packages and package naming [here](02-libraries.md).
+Read more about [publishing packages and package naming](02-libraries.md).
 (Note that you can also specify "platform packages" as dependencies, allowing
 you to require certain versions of server software. See
 [platform packages](#platform-packages) below.)
