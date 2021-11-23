@@ -1,0 +1,87 @@
+--TEST--
+Check that replacers/providers which replace/provide a root requirement do not get unlocked
+
+--REQUEST--
+{
+    "require": {
+        "base/package": "^1.0",
+        "base/package2": "^1.0",
+        "indirect/replacer": "^1.0"
+    },
+    "locked": [
+        {"name": "shared/dep", "version": "1.2.0", "id": 1},
+        {"name": "shared/dep2", "version": "1.2.0", "id": 2},
+        {"name": "indirect/replacer", "version": "1.2.0", "require": {"replacer/package": "^1.2", "provider/package": "^1.2"}, "id": 3},
+        {"name": "replacer/package", "version": "1.2.0", "require": {"shared/dep": "^1.1"}, "replace": {"base/package": "1.2.0"}, "id": 4},
+        {"name": "provider/package", "version": "1.2.0", "require": {"shared/dep2": "^1.1"}, "provide": {"base/package2": "1.2.0"}, "id": 5}
+    ],
+    "allowList": [
+        "indirect/replacer"
+    ],
+    "allowTransitiveDepsNoRootRequire": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {
+            "name": "base/package",
+            "version": "1.0.0",
+            "require": {
+                "shared/dep": "^1.2"
+            }
+        },
+        {
+            "name": "base/package2",
+            "version": "1.0.0",
+            "require": {
+                "shared/dep2": "^1.2"
+            }
+        },
+        {
+            "name": "shared/dep",
+            "version": "1.0.0"
+        },
+        {
+            "name": "shared/dep",
+            "version": "1.2.0"
+        },
+        {
+            "name": "shared/dep2",
+            "version": "1.0.0"
+        },
+        {
+            "name": "shared/dep2",
+            "version": "1.2.0"
+        },
+        {
+            "name": "indirect/replacer",
+            "version": "1.2.0",
+            "require": {
+                "replacer/package": "^1.2"
+            }
+        },
+        {
+            "name": "indirect/replacer",
+            "version": "1.0.0",
+            "require": {
+                "replacer/package": "^1.0"
+            }
+        }
+    ]
+]
+
+--EXPECT--
+[
+    1,
+    4,
+    5,
+    "base/package2-1.0.0.0",
+    "indirect/replacer-1.2.0.0",
+    "indirect/replacer-1.0.0.0",
+    "shared/dep2-1.2.0.0"
+]

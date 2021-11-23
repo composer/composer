@@ -1,5 +1,5 @@
 --TEST--
-Check that replacers from additional repositories are loaded when doing a partial update
+Check that replacers from additional repositories are loaded when doing a partial update allowing all transitive deps
 
 --REQUEST--
 {
@@ -15,7 +15,7 @@ Check that replacers from additional repositories are loaded when doing a partia
     "allowList": [
         "indirect/replacer"
     ],
-    "allowTransitiveDepsNoRootRequire": true
+    "allowTransitiveDeps": true
 }
 
 --FIXED--
