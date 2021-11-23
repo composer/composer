@@ -485,6 +485,13 @@ php composer.phar show monolog/monolog 1.0.2
 * **--direct (-D):** Restricts the list of packages to your direct dependencies.
 * **--strict:** Return a non-zero exit code when there are outdated packages.
 * **--format (-f):** Lets you pick between text (default) or json output format.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these. Use with the --outdated option.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it. Multiple requirements can be ignored via wildcard. Use with
+  the --outdated option.
 
 ## outdated
 
@@ -508,6 +515,12 @@ The color coding is as such:
 * **--format (-f):** Lets you pick between text (default) or json output format.
 * **--no-dev:** Do not show outdated dev dependencies.
 * **--locked:** Shows updates for packages from the lock file, regardless of what is currently in vendor dir.
+* **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
+  `lib-*` and `ext-*`) and force the installation even if the local machine does
+  not fulfill these.
+* **--ignore-platform-req:** ignore a specific platform requirement(`php`,
+  `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
+  does not fulfill it. Multiple requirements can be ignored via wildcard.
 
 ## browse / home
 

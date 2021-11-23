@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\DependencyResolver\DefaultPolicy;
+use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
@@ -88,6 +89,8 @@ class ShowCommand extends BaseCommand
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
+                new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages). Use with the --outdated option'),
+                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages). Use with the --outdated option'),
             ))
             ->setHelp(
                 <<<EOT
@@ -150,6 +153,8 @@ EOT
 
             return 1;
         }
+
+        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
         // init repos
         $platformOverrides = array();
@@ -267,7 +272,7 @@ EOT
             } else {
                 $latestPackage = null;
                 if ($input->getOption('latest')) {
-                    $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $input->getOption('minor-only'));
+                    $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $input->getOption('minor-only'), $ignorePlatformReqs);
                 }
                 if (
                     $input->getOption('outdated')
@@ -387,7 +392,7 @@ EOT
                 if ($showLatest && $showVersion) {
                     foreach ($packages[$type] as $package) {
                         if (is_object($package)) {
-                            $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMinorOnly);
+                            $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMinorOnly, $ignorePlatformReqs);
                             if ($latestPackage === false) {
                                 continue;
                             }
@@ -1248,10 +1253,11 @@ EOT
      * Given a package, this finds the latest package matching it
      *
      * @param bool $minorOnly
+     * @param bool|string $ignorePlatformReqs
      *
      * @return PackageInterface|false
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, $minorOnly = false)
+    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, $minorOnly = false, $ignorePlatformReqs = false)
     {
         // find the latest version allowed in this repo set
         $name = $package->getName();
@@ -1276,7 +1282,7 @@ EOT
             $targetVersion = '^' . $package->getVersion();
         }
 
-        $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability);
+        $candidate = $versionSelector->findBestCandidate($name, $targetVersion, $bestStability, PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
         while ($candidate instanceof AliasPackage) {
             $candidate = $candidate->getAliasOf();
         }
