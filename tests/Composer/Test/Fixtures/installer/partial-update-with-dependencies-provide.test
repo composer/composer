@@ -1,5 +1,5 @@
 --TEST--
-Ensure a partial update of a dependency updates dependencies which provide its requirements.
+Ensure a partial update of a dependency does NOT update dependencies which provide its requirements.
 
 --COMPOSER--
 {
@@ -44,9 +44,9 @@ update root/req1 --with-dependencies
 --EXPECT-LOCK--
 {
     "packages": [
-        {"name": "dep/pkg1", "version": "1.2.0", "type": "library", "provide": {"virtual/pkg1": "2.0.0"}},
-        {"name": "dep/pkg2", "version": "1.2.0", "type": "library", "provide": {"virtual/pkg1": "2.0.0"}},
-        {"name": "root/req1", "version": "2.0.0", "type": "library", "require": {"virtual/pkg1": "2.*"}},
+        {"name": "dep/pkg1", "version": "1.0.0", "type": "library", "provide": {"virtual/pkg1": "1.0.0"}},
+        {"name": "dep/pkg2", "version": "1.0.0", "type": "library", "provide": {"virtual/pkg1": "1.0.0"}},
+        {"name": "root/req1", "version": "1.0.0", "type": "library", "require": {"virtual/pkg1": "1.*"}},
         {"name": "root/req2", "version": "1.0.0", "type": "library", "require": {"dep/pkg1": "1.*", "dep/pkg2": "1.*"}}
     ],
     "packages-dev": [],
@@ -59,7 +59,7 @@ update root/req1 --with-dependencies
     "platform-dev": []
 }
 --EXPECT--
-Installing dep/pkg1 (1.2.0)
-Installing dep/pkg2 (1.2.0)
-Installing root/req1 (2.0.0)
+Installing dep/pkg1 (1.0.0)
+Installing dep/pkg2 (1.0.0)
+Installing root/req1 (1.0.0)
 Installing root/req2 (1.0.0)

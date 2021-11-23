@@ -110,8 +110,6 @@ update update/pkg1 --with-dependencies
 --EXPECT-OUTPUT--
 Loading composer repositories with package information
 <warning>Dependency root/pkg3 is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>
-<warning>Dependency dep/pkg5 (via provide of root/provided-pkg4) is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>
-<warning>Dependency dep/pkg6 (via provide of root/provided-pkg4) is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>
 <warning>Dependency dep/pkg9 (via replace of root/replaced-pkg8) is also a root requirement. Package has not been listed as an update argument, so keeping locked at old version. Use --with-all-dependencies (-W) to include root dependencies.</warning>
 Updating dependencies
 Lock file operations: 0 installs, 2 updates, 0 removals
