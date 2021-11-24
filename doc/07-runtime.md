@@ -152,4 +152,10 @@ not its exact version.
 
 `lib-*` requirements are never supported/checked by the platform check feature.
 
+## Autoloader path in binaries
+
+composer-runtime-api 2.2 introduced a new `$_composer_autoload_path` global
+variable set when running binaries installed with Composer. Read more
+about this [on the vendor binaries docs](articles/vendor-binaries.md#finding-the-composer-autoloader-from-a-binary).
+
 &larr; [Config](06-config.md)  |  [Community](08-community.md) &rarr;

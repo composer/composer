@@ -98,17 +98,14 @@ class BinaryInstaller
                 }
             }
 
-            if ($this->binCompat === "auto") {
-                if (Platform::isWindows() || Platform::isWindowsSubsystemForLinux()) {
-                    $this->installFullBinaries($binPath, $link, $bin, $package);
-                } else {
-                    $this->installUnixyProxyBinaries($binPath, $link);
-                }
-            } elseif ($this->binCompat === "full") {
+            $binCompat = $this->binCompat;
+            if ($binCompat === "auto" && (Platform::isWindows() || Platform::isWindowsSubsystemForLinux())) {
+                $binCompat = 'full';
+            }
+
+            if ($this->binCompat === "full") {
                 $this->installFullBinaries($binPath, $link, $bin, $package);
-            } elseif ($this->binCompat === "symlink") {
-                $this->installUnixyProxyBinaries($binPath, $link);
-            } elseif ($this->binCompat === "proxy") {
+            } else {
                 $this->installUnixyProxyBinaries($binPath, $link);
             }
             Silencer::call('chmod', $binPath, 0777 & ~umask());
@@ -225,6 +222,16 @@ class BinaryInstaller
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
         $caller = self::determineBinaryCaller($bin);
+
+        // if the target is a php file, we run the unixy proxy file
+        // to ensure that _composer_autoload_path gets defined, instead
+        // of running the binary directly
+        if ($caller === 'php') {
+            return "@ECHO OFF\r\n".
+                "setlocal DISABLEDELAYEDEXPANSION\r\n".
+                "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape(basename($link, '.bat')), '"\'')."\r\n".
+                "{$caller} \"%BIN_TARGET%\" %*\r\n";
+        }
 
         return "@ECHO OFF\r\n".
             "setlocal DISABLEDELAYEDEXPANSION\r\n".
