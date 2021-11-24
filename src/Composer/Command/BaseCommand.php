@@ -153,6 +153,12 @@ abstract class BaseCommand extends Command
             $input->setOption('no-progress', true);
         }
 
+        if (true == $input->hasOption('no-dev')) {
+            if (!$input->getOption('no-dev') && true == Platform::getEnv('COMPOSER_NO_DEV')) {
+                $input->setOption('no-dev', true);
+            }
+        }
+
         parent::initialize($input, $output);
     }
 
