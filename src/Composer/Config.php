@@ -367,10 +367,14 @@ class Config
             case 'bin-compat':
                 $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
 
-                if (!in_array($value, array('auto', 'full', 'symlink'))) {
+                if (!in_array($value, array('auto', 'full', 'proxy', 'symlink'))) {
                     throw new \RuntimeException(
-                        "Invalid value for 'bin-compat': {$value}. Expected auto, full or symlink"
+                        "Invalid value for 'bin-compat': {$value}. Expected auto, full or proxy"
                     );
+                }
+
+                if ($value === 'symlink') {
+                    trigger_error('config.bin-compat "symlink" is deprecated since Composer 2.2, use auto, full (for Windows compatibility) or proxy instead.', E_USER_DEPRECATED);
                 }
 
                 return $value;

@@ -107,7 +107,6 @@ class BinaryInstaller
             } elseif ($this->binCompat === "full") {
                 $this->installFullBinaries($binPath, $link, $bin, $package);
             } elseif ($this->binCompat === "symlink") {
-                // @todo add deprecation message?
                 $this->installUnixyProxyBinaries($binPath, $link);
             } elseif ($this->binCompat === "proxy") {
                 $this->installUnixyProxyBinaries($binPath, $link);
@@ -129,7 +128,7 @@ class BinaryInstaller
         }
         foreach ($binaries as $bin) {
             $link = $this->binDir.'/'.basename($bin);
-            if (is_file($link)) {
+            if (is_link($link) || file_exists($link)) { // still checking for symlinks here for legacy support
                 $this->filesystem->unlink($link);
             }
             if (is_file($link.'.bat')) {
@@ -256,12 +255,11 @@ class BinaryInstaller
             $autoloadPathCode = $streamProxyCode = $streamHint = '';
             // Don't expose autoload path when vendor dir was not set in custom installers
             if ($this->vendorDir) {
-                $autoloadPathCode = '$GLOBALS[\'_composer_autoload_path\']=' . $this->filesystem->findShortestPathCode($link, $this->vendorDir . '/autoload.php', false, true);
+                $autoloadPathCode = '$GLOBALS[\'_composer_autoload_path\'] = ' . $this->filesystem->findShortestPathCode($link, $this->vendorDir . '/autoload.php', false, true).";\n";
             }
             if (trim($match[0]) !== '<?php') {
-                $streamHint = ' using a stream wrapper to prevent the shebang from being output on PHP<8';
+                $streamHint = ' using a stream wrapper to prevent the shebang from being output on PHP<8'."\n *";
                 $streamProxyCode = <<<STREAMPROXY
-
 if (PHP_VERSION_ID < 80000) {
     if (!class_exists('Composer\BinProxyWrapper')) {
         /**
@@ -344,6 +342,7 @@ if (PHP_VERSION_ID < 80000) {
 
 STREAMPROXY;
             }
+
             return $proxyCode . "\n" . <<<PROXY
 <?php
 
@@ -358,7 +357,8 @@ STREAMPROXY;
 namespace Composer;
 
 \$binPath = $binPathExported;
-$autoloadPathCode;$streamProxyCode
+$autoloadPathCode
+$streamProxyCode
 include \$binPath;
 
 PROXY;
