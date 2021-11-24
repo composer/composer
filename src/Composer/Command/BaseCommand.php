@@ -154,7 +154,7 @@ abstract class BaseCommand extends Command
         }
 
         if (true == $input->hasOption('no-dev')) {
-            if (!$input->getOption('no-dev') && true == getenv('COMPOSER_NO_DEV')) {
+            if (!$input->getOption('no-dev') && true == Platform::getEnv('COMPOSER_NO_DEV')) {
                 $input->setOption('no-dev', true);
             }
         }
