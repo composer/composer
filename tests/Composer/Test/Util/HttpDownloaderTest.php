@@ -74,10 +74,12 @@ class HttpDownloaderTest extends TestCase
         ));
 
         // the <info> tag are consumed by the OutputFormatter, but not <warning> as that is not a default output format
-        $this->assertSame('<warning>Warning from $URL: old warning msg</warning>
-Info from $URL: old info msg
-<warning>Warning from $URL: visible warning</warning>
-Info from $URL: visible info
-', $io->getOutput());
+        $this->assertSame(
+            '<warning>Warning from $URL: old warning msg</warning>'.PHP_EOL.
+            'Info from $URL: old info msg'.PHP_EOL.
+            '<warning>Warning from $URL: visible warning</warning>'.PHP_EOL.
+            'Info from $URL: visible info'.PHP_EOL,
+            $io->getOutput()
+        );
     }
 }
