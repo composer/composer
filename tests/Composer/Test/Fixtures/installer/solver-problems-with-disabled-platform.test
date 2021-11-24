@@ -1,0 +1,90 @@
+--TEST--
+Test the error output of solver problems for disabled platform packages. ext/php are well reported if present but disabled, lib packages are currently not handled as it is too complex.
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "dependency/pkg", "version": "1.0.0", "require": {"php": "^8"} },
+                { "name": "dependency/pkg2", "version": "1.0.0", "require": {"php-64bit": "^8"} },
+                { "name": "dependency/pkg3", "version": "1.0.0", "require": {"lib-xml": "1002.*"} },
+                { "name": "dependency/pkg4", "version": "1.0.0", "require": {"lib-icu": "1001.*"} },
+                { "name": "dependency/pkg5", "version": "1.0.0", "require": {"ext-foobar": "1.0.0"} },
+                { "name": "dependency/pkg6", "version": "1.0.0", "require": {"ext-pcre": "^8"} }
+            ]
+        }
+    ],
+    "require": {
+        "dependency/pkg": "1.*",
+        "dependency/pkg2": "1.*",
+        "dependency/pkg3": "1.*",
+        "dependency/pkg4": "1.*",
+        "dependency/pkg5": "1.*",
+        "dependency/pkg6": "1.*",
+        "php": "^8",
+        "php-64bit": "^8",
+        "lib-xml": "1002.*",
+        "lib-icu": "1001.*",
+        "ext-foobar": "1.0.0",
+        "ext-pcre": "^8"
+    },
+    "config": {
+        "platform": {
+            "php": false,
+            "lib-xml": false,
+            "lib-icu": false,
+            "ext-foobar": false,
+            "ext-pcre": false
+        }
+    }
+}
+
+--RUN--
+update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires php ^8 but the php package is disabled by your platform config. Enable it again with "composer config platform.php --unset".
+  Problem 2
+    - Root composer.json requires php-64bit ^8 but the php package is disabled by your platform config. Enable it again with "composer config platform.php --unset".
+  Problem 3
+    - Root composer.json requires linked library lib-xml 1002.* but it has the wrong version installed or is missing from your system, make sure to load the extension providing it.
+  Problem 4
+    - Root composer.json requires linked library lib-icu 1001.* but it has the wrong version installed, try upgrading the intl extension.
+  Problem 5
+    - Root composer.json requires PHP extension ext-foobar 1.0.0 but it is missing from your system. Install or enable PHP's foobar extension.
+  Problem 6
+    - Root composer.json requires PHP extension ext-pcre ^8 but the ext-pcre package is disabled by your platform config. Enable it again with "composer config platform.ext-pcre --unset".
+  Problem 7
+    - Root composer.json requires dependency/pkg 1.* -> satisfiable by dependency/pkg[1.0.0].
+    - dependency/pkg 1.0.0 requires php ^8 -> the php package is disabled by your platform config. Enable it again with "composer config platform.php --unset".
+  Problem 8
+    - Root composer.json requires dependency/pkg2 1.* -> satisfiable by dependency/pkg2[1.0.0].
+    - dependency/pkg2 1.0.0 requires php-64bit ^8 -> the php package is disabled by your platform config. Enable it again with "composer config platform.php --unset".
+  Problem 9
+    - Root composer.json requires dependency/pkg3 1.* -> satisfiable by dependency/pkg3[1.0.0].
+    - dependency/pkg3 1.0.0 requires lib-xml 1002.* -> it has the wrong version installed or is missing from your system, make sure to load the extension providing it.
+  Problem 10
+    - Root composer.json requires dependency/pkg4 1.* -> satisfiable by dependency/pkg4[1.0.0].
+    - dependency/pkg4 1.0.0 requires lib-icu 1001.* -> it has the wrong version installed, try upgrading the intl extension.
+  Problem 11
+    - Root composer.json requires dependency/pkg5 1.* -> satisfiable by dependency/pkg5[1.0.0].
+    - dependency/pkg5 1.0.0 requires ext-foobar 1.0.0 -> it is missing from your system. Install or enable PHP's foobar extension.
+  Problem 12
+    - Root composer.json requires dependency/pkg6 1.* -> satisfiable by dependency/pkg6[1.0.0].
+    - dependency/pkg6 1.0.0 requires ext-pcre ^8 -> the ext-pcre package is disabled by your platform config. Enable it again with "composer config platform.ext-pcre --unset".
+
+To enable extensions, verify that they are enabled in your .ini files:
+__inilist__
+You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.
+
+--EXPECT--
+

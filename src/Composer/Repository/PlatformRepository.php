@@ -48,7 +48,7 @@ class PlatformRepository extends ArrayRepository
      *
      * Keyed by package name (lowercased)
      *
-     * @var array<string, array{name: string, version: string}>
+     * @var array<string, array{name: string, version: string|false}>
      */
     private $overrides = array();
 
@@ -58,13 +58,16 @@ class PlatformRepository extends ArrayRepository
     private $hhvmDetector;
 
     /**
-     * @param array<string, string> $overrides
+     * @param array<string, string|false> $overrides
      */
     public function __construct(array $packages = array(), array $overrides = array(), Runtime $runtime = null, HhvmDetector $hhvmDetector = null)
     {
         $this->runtime = $runtime ?: new Runtime();
         $this->hhvmDetector = $hhvmDetector ?: new HhvmDetector();
         foreach ($overrides as $name => $version) {
+            if (!is_string($version) && false !== $version) { // @phpstan-ignore-line
+                throw new \UnexpectedValueException('config.platform.'.$name.' should be a string or false, but got '.gettype($version).' '.var_export($version, true));
+            }
             $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
         }
         parent::__construct($packages);
@@ -89,7 +92,9 @@ class PlatformRepository extends ArrayRepository
                 throw new \InvalidArgumentException('Invalid platform package name in config.platform: '.$override['name']);
             }
 
-            $this->addOverriddenPackage($override);
+            if ($override['version'] !== false) {
+                $this->addOverriddenPackage($override);
+            }
         }
 
         $prettyVersion = PluginInterface::PLUGIN_API_VERSION;
@@ -496,6 +501,10 @@ class PlatformRepository extends ArrayRepository
     {
         // Skip if overridden
         if (isset($this->overrides[$package->getName()])) {
+            if ($this->overrides[$package->getName()]['version'] === false) {
+                return;
+            }
+
             $overrider = $this->findPackage($package->getName(), '*');
             if ($package->getVersion() === $overrider->getVersion()) {
                 $actualText = 'same as actual';
@@ -511,6 +520,10 @@ class PlatformRepository extends ArrayRepository
 
         // Skip if PHP is overridden and we are adding a php-* package
         if (isset($this->overrides['php']) && 0 === strpos($package->getName(), 'php-')) {
+            if ($this->overrides['php']['version'] === false) {
+                return;
+            }
+
             $overrider = $this->addOverriddenPackage($this->overrides['php'], $package->getPrettyName());
             if ($package->getVersion() === $overrider->getVersion()) {
                 $actualText = 'same as actual';

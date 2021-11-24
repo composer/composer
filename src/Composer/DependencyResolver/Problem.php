@@ -223,6 +223,10 @@ class Problem
                 return array($msg, 'HHVM was not detected on this machine, make sure it is in your PATH.');
             }
 
+            if (null === $version) {
+                return array($msg, 'the php package is disabled by your platform config. Enable it again with "composer config platform.php --unset".');
+            }
+
             return array($msg, 'your '.$packageName.' version ('. $version .') does not satisfy that requirement.');
         }
 
@@ -233,11 +237,21 @@ class Problem
             }
 
             $ext = substr($packageName, 4);
-            $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) ?: '0');
+            $msg = "- Root composer.json requires PHP extension ".$packageName.self::constraintToText($constraint).' but ';
 
-            $error = extension_loaded($ext) ? 'it has the wrong version ('.$version.') installed' : 'it is missing from your system';
+            if (extension_loaded($ext)) {
+                $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) ?: '0');
 
-            return array("- Root composer.json requires PHP extension ".$packageName.self::constraintToText($constraint).' but ', $error.'. Install or enable PHP\'s '.$ext.' extension.');
+                if (null === $version) {
+                    return array($msg, 'the '.$packageName.' package is disabled by your platform config. Enable it again with "composer config platform.'.$packageName.' --unset".');
+                }
+
+                $error = 'it has the wrong version ('.$version.') installed';
+            } else {
+                $error = 'it is missing from your system';
+            }
+
+            return array($msg, $error.'. Install or enable PHP\'s '.$ext.' extension.');
         }
 
         // handle linked libs
@@ -404,9 +418,9 @@ class Problem
     }
 
     /**
-     * @param  string $version
      * @param  string $packageName
-     * @return string
+     * @param  string $version the effective runtime version of the platform package
+     * @return ?string a version string or null if it appears the package was artificially disabled
      */
     private static function getPlatformPackageVersion(Pool $pool, $packageName, $version)
     {
@@ -419,6 +433,8 @@ class Problem
             if ($firstAvailable instanceof CompletePackageInterface && isset($extra['config.platform']) && $extra['config.platform'] === true) {
                 $version .= '; ' . str_replace('Package ', '', $firstAvailable->getDescription());
             }
+        } else {
+            return null;
         }
 
         return $version;

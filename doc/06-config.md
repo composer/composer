@@ -191,6 +191,9 @@ you may ignore it instead by passing `--ignore-platform-req=ext-foo` to `update`
 extensions as if you ignore one now and a new package you add a month later also
 requires it, you may introduce issues in production unknowingly.
 
+If you have an extension installed locally but *not* on production, you may want
+to artificially hide it from Composer using `{"ext-foo": false}`.
+
 ## vendor-dir
 
 Defaults to `vendor`. You can install dependencies into a different directory if
