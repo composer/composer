@@ -594,7 +594,7 @@ class Factory
     protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io, ProcessExecutor $process = null)
     {
         $fs = new Filesystem($process);
-        $binaryInstaller = new Installer\BinaryInstaller($io, rtrim($composer->getConfig()->get('bin-dir'), '/'), $composer->getConfig()->get('bin-compat'), $fs);
+        $binaryInstaller = new Installer\BinaryInstaller($io, rtrim($composer->getConfig()->get('bin-dir'), '/'), $composer->getConfig()->get('bin-compat'), $fs, rtrim($composer->getConfig()->get('vendor-dir'), '/'));
 
         $im->addInstaller(new Installer\LibraryInstaller($io, $composer, null, $fs, $binaryInstaller));
         $im->addInstaller(new Installer\PluginInstaller($io, $composer, $fs, $binaryInstaller));

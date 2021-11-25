@@ -40,7 +40,8 @@ For the binaries that a package defines directly, nothing happens.
 ## What happens when Composer is run on a composer.json that has dependencies with vendor binaries listed?
 
 Composer looks for the binaries defined in all of the dependencies. A
-symlink is created from each dependency's binaries to `vendor/bin`.
+proxy file (or two on Windows/WSL) is created from each dependency's
+binaries to `vendor/bin`.
 
 Say package `my-vendor/project-a` has binaries setup like this:
 
@@ -69,8 +70,28 @@ Running `composer install` for this `composer.json` will look at
 all of project-a's binaries and install them to `vendor/bin`.
 
 In this case, Composer will make `vendor/my-vendor/project-a/bin/project-a-bin`
-available as `vendor/bin/project-a-bin`. On a Unix-like platform
-this is accomplished by creating a symlink.
+available as `vendor/bin/project-a-bin`.
+
+## Finding the Composer autoloader from a binary
+
+As of Composer 2.2, a new `$_composer_autoload_path` global variable
+is defined by the bin proxy file, so that when your binary gets executed
+it can use it to easily locate the project's autoloader.
+
+This global will not be available however when running binaries defined
+by the root package itself, so you need to have a fallback in place.
+
+This can look like this for example:
+
+```php
+<?php
+
+include $_composer_autoload_path ?? __DIR__ . '/../vendor/autoload.php';
+```
+
+If you want to rely on this in your package you should however make sure to
+also require `"composer-runtime-api": "^2.2"` to ensure that the package
+gets installed with a Composer version supporting the feature.
 
 ## What about Windows and .bat files?
 
@@ -79,8 +100,8 @@ Packages managed entirely by Composer do not *need* to contain any
 of binaries in a special way when run in a Windows environment:
 
  * A `.bat` file is generated automatically to reference the binary
- * A Unix-style proxy file with the same name as the binary is generated
-   automatically (useful for Cygwin or Git Bash)
+ * A Unix-style proxy file with the same name as the binary is also
+   generated, which is useful for WSL, Linux VMs, etc.
 
 Packages that need to support workflows that may not include Composer
 are welcome to maintain custom `.bat` files. In this case, the package
