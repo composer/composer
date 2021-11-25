@@ -80,6 +80,13 @@ class ValidatingArrayLoader implements LoaderInterface
 
         if (!empty($this->config['config']['platform'])) {
             foreach ((array) $this->config['config']['platform'] as $key => $platform) {
+                if (false === $platform) {
+                    continue;
+                }
+                if (!is_string($platform)) {
+                    $this->errors[] = 'config.platform.' . $key . ' : invalid value ('.gettype($platform).' '.var_export($platform, true).'): expected string or false';
+                    continue;
+                }
                 try {
                     $this->versionParser->normalize($platform);
                 } catch (\Exception $e) {

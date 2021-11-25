@@ -704,7 +704,7 @@ EOT
                 return 0;
             }
 
-            $this->configSource->addConfigSetting($settingKey, $values[0]);
+            $this->configSource->addConfigSetting($settingKey, $values[0] === 'false' ?  false : $values[0]);
 
             return 0;
         }

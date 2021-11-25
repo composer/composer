@@ -203,7 +203,7 @@
                     "type": "object",
                     "description": "This is a hash of package name (keys) and version (values) that will be used to mock the platform packages on this machine.",
                     "additionalProperties": {
-                        "type": "string"
+                        "type": ["string", "boolean"]
                     }
                 },
                 "vendor-dir": {
