@@ -288,6 +288,13 @@
                         "type": ["string", "boolean"]
                     }
                 },
+                "allow-plugins": {
+                    "type": ["array", "boolean"],
+                    "description": "This is an array of package names which are allowed to be loaded as plugins, or true to allow all, false to allow none, defaults to true.",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "process-timeout": {
                     "type": "integer",
                     "description": "The timeout in seconds for process executions, defaults to 300 (5mins)."

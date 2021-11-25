@@ -514,6 +514,18 @@ EOT
                     return $vals;
                 },
             ),
+            'allow-plugins' => array(
+                function ($vals) {
+                    if (!is_array($vals)) {
+                        return 'array expected';
+                    }
+
+                    return true;
+                },
+                function ($vals) {
+                    return $vals;
+                },
+            ),
         );
 
         if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {
@@ -549,6 +561,40 @@ EOT
             }
 
             $this->configSource->addConfigSetting($settingKey, $values[0]);
+
+            return 0;
+        }
+
+        // handle allow-plugins config setting elements true or false to add/remove
+        if (preg_match('{^allow-plugins\.([a-zA-Z0-9/*-]+)}', $settingKey, $matches)) {
+            $pluginPattern = $matches[1];
+            if ($input->getOption('unset')) {
+                $values[0] = 'false';
+            }
+
+            if (true !== $validation = $booleanValidator($values[0])) {
+                throw new \RuntimeException(sprintf(
+                    '"%s" is an invalid value',
+                    $values[0]
+                ));
+            }
+
+            $normalizedValue = $booleanNormalizer($values[0]);
+
+            $currentConfig = $this->configFile->read();
+            $currentValue = isset($currentConfig['config']['allow-plugins']) ? $currentConfig['config']['allow-plugins'] : array();
+
+            if ($normalizedValue) {
+                $currentValue[] = $pluginPattern;
+            } elseif (false !== ($index = array_search($pluginPattern, $currentValue, true))) {
+                unset($currentValue[$index]);
+            }
+
+            if (count($currentValue) === 0) {
+                $this->configSource->removeConfigSetting('allow-plugins');
+            } else {
+                $this->configSource->addConfigSetting('allow-plugins', array_unique($currentValue));
+            }
 
             return 0;
         }
