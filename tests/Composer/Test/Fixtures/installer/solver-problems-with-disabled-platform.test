@@ -6,7 +6,7 @@ Test the error output of solver problems for disabled platform packages. ext/php
         {
             "type": "package",
             "package": [
-                { "name": "dependency/pkg", "version": "1.0.0", "require": {"php": "^8"} },
+                { "name": "dependency/pkg", "version": "1.0.0", "require": {"php-ipv6": "^8"} },
                 { "name": "dependency/pkg2", "version": "1.0.0", "require": {"php-64bit": "^8"} },
                 { "name": "dependency/pkg3", "version": "1.0.0", "require": {"lib-xml": "1002.*"} },
                 { "name": "dependency/pkg4", "version": "1.0.0", "require": {"lib-icu": "1001.*"} },
@@ -22,8 +22,8 @@ Test the error output of solver problems for disabled platform packages. ext/php
         "dependency/pkg4": "1.*",
         "dependency/pkg5": "1.*",
         "dependency/pkg6": "1.*",
-        "php": "^8",
         "php-64bit": "^8",
+        "php-ipv6": "^8",
         "lib-xml": "1002.*",
         "lib-icu": "1001.*",
         "ext-foobar": "1.0.0",
@@ -31,7 +31,8 @@ Test the error output of solver problems for disabled platform packages. ext/php
     },
     "config": {
         "platform": {
-            "php": false,
+            "php-64bit": false,
+            "php-ipv6": "8.0.3",
             "lib-xml": false,
             "lib-icu": false,
             "ext-foobar": false,
@@ -52,33 +53,28 @@ Updating dependencies
 Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
-    - Root composer.json requires php ^8 but the php package is disabled by your platform config. Enable it again with "composer config platform.php --unset".
+    - Root composer.json requires php-64bit ^8 but the php-64bit package is disabled by your platform config. Enable it again with "composer config platform.php-64bit --unset".
   Problem 2
-    - Root composer.json requires php-64bit ^8 but the php package is disabled by your platform config. Enable it again with "composer config platform.php --unset".
-  Problem 3
     - Root composer.json requires linked library lib-xml 1002.* but it has the wrong version installed or is missing from your system, make sure to load the extension providing it.
-  Problem 4
+  Problem 3
     - Root composer.json requires linked library lib-icu 1001.* but it has the wrong version installed, try upgrading the intl extension.
-  Problem 5
+  Problem 4
     - Root composer.json requires PHP extension ext-foobar 1.0.0 but it is missing from your system. Install or enable PHP's foobar extension.
-  Problem 6
+  Problem 5
     - Root composer.json requires PHP extension ext-pcre ^8 but the ext-pcre package is disabled by your platform config. Enable it again with "composer config platform.ext-pcre --unset".
-  Problem 7
-    - Root composer.json requires dependency/pkg 1.* -> satisfiable by dependency/pkg[1.0.0].
-    - dependency/pkg 1.0.0 requires php ^8 -> the php package is disabled by your platform config. Enable it again with "composer config platform.php --unset".
-  Problem 8
+  Problem 6
     - Root composer.json requires dependency/pkg2 1.* -> satisfiable by dependency/pkg2[1.0.0].
-    - dependency/pkg2 1.0.0 requires php-64bit ^8 -> the php package is disabled by your platform config. Enable it again with "composer config platform.php --unset".
-  Problem 9
+    - dependency/pkg2 1.0.0 requires php-64bit ^8 -> the php-64bit package is disabled by your platform config. Enable it again with "composer config platform.php-64bit --unset".
+  Problem 7
     - Root composer.json requires dependency/pkg3 1.* -> satisfiable by dependency/pkg3[1.0.0].
     - dependency/pkg3 1.0.0 requires lib-xml 1002.* -> it has the wrong version installed or is missing from your system, make sure to load the extension providing it.
-  Problem 10
+  Problem 8
     - Root composer.json requires dependency/pkg4 1.* -> satisfiable by dependency/pkg4[1.0.0].
     - dependency/pkg4 1.0.0 requires lib-icu 1001.* -> it has the wrong version installed, try upgrading the intl extension.
-  Problem 11
+  Problem 9
     - Root composer.json requires dependency/pkg5 1.* -> satisfiable by dependency/pkg5[1.0.0].
     - dependency/pkg5 1.0.0 requires ext-foobar 1.0.0 -> it is missing from your system. Install or enable PHP's foobar extension.
-  Problem 12
+  Problem 10
     - Root composer.json requires dependency/pkg6 1.* -> satisfiable by dependency/pkg6[1.0.0].
     - dependency/pkg6 1.0.0 requires ext-pcre ^8 -> the ext-pcre package is disabled by your platform config. Enable it again with "composer config platform.ext-pcre --unset".
 

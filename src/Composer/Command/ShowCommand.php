@@ -20,6 +20,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\AliasPackage;
+use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
@@ -368,6 +369,11 @@ EOT
                                 $packages[$type][$package->getName()] = $package;
                             }
                         }
+                    }
+                }
+                if ($repo === $platformRepo) {
+                    foreach ($platformRepo->getDisabledPackages() as $name => $package) {
+                        $packages[$type][$name] = $package;
                     }
                 }
             }

@@ -52,6 +52,13 @@ class PlatformRepository extends ArrayRepository
      */
     private $overrides = array();
 
+    /**
+     * Stores which packages have been disabled and their actual version
+     *
+     * @var array<string, CompletePackageInterface>
+     */
+    private $disabledPackages = array();
+
     /** @var Runtime */
     private $runtime;
     /** @var HhvmDetector */
@@ -68,6 +75,9 @@ class PlatformRepository extends ArrayRepository
             if (!is_string($version) && false !== $version) { // @phpstan-ignore-line
                 throw new \UnexpectedValueException('config.platform.'.$name.' should be a string or false, but got '.gettype($version).' '.var_export($version, true));
             }
+            if ($name === 'php' && $version === false) {
+                throw new \UnexpectedValueException('config.platform.'.$name.' cannot be set to false as you cannot disable php entirely.');
+            }
             $this->overrides[strtolower($name)] = array('name' => $name, 'version' => $version);
         }
         parent::__construct($packages);
@@ -76,6 +86,23 @@ class PlatformRepository extends ArrayRepository
     public function getRepoName()
     {
         return 'platform repo';
+    }
+
+    /**
+     * @param  string  $name
+     * @return boolean
+     */
+    public function isPlatformPackageDisabled($name)
+    {
+        return isset($this->disabledPackages[$name]);
+    }
+
+    /**
+     * @return array<string, CompletePackageInterface>
+     */
+    public function getDisabledPackages()
+    {
+        return $this->disabledPackages;
     }
 
     protected function initialize()
@@ -499,9 +526,14 @@ class PlatformRepository extends ArrayRepository
      */
     public function addPackage(PackageInterface $package)
     {
+        if (!$package instanceof CompletePackage) {
+            throw new \UnexpectedValueException('Expected CompletePackage but got '.get_class($package));
+        }
+
         // Skip if overridden
         if (isset($this->overrides[$package->getName()])) {
             if ($this->overrides[$package->getName()]['version'] === false) {
+                $this->addDisabledPackage($package);
                 return;
             }
 
@@ -520,7 +552,8 @@ class PlatformRepository extends ArrayRepository
 
         // Skip if PHP is overridden and we are adding a php-* package
         if (isset($this->overrides['php']) && 0 === strpos($package->getName(), 'php-')) {
-            if ($this->overrides['php']['version'] === false) {
+            if (isset($this->overrides[$package->getName()]) && $this->overrides[$package->getName()]['version'] === false) {
+                $this->addDisabledPackage($package);
                 return;
             }
 
@@ -557,6 +590,17 @@ class PlatformRepository extends ArrayRepository
         }
 
         return $package;
+    }
+
+    /**
+     * @return void
+     */
+    private function addDisabledPackage(CompletePackage $package)
+    {
+        $package->setDescription($package->getDescription().'. <warning>Package disabled via config.platform</warning>');
+        $package->setExtra(array('config.platform' => true));
+
+        $this->disabledPackages[$package->getName()] = $package;
     }
 
     /**

@@ -996,7 +996,11 @@ EOT
             }
             $platformPkg = $platformRepo->findPackage($link->getTarget(), '*');
             if (!$platformPkg) {
-                $details[] = $candidate->getPrettyName().' '.$candidate->getPrettyVersion().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' but it is not present.';
+                if ($platformRepo->isPlatformPackageDisabled($link->getTarget())) {
+                    $details[] = $candidate->getPrettyName().' '.$candidate->getPrettyVersion().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' but it is disabled by your platform config. Enable it again with "composer config platform.'.$link->getTarget().' --unset".';
+                } else {
+                    $details[] = $candidate->getPrettyName().' '.$candidate->getPrettyVersion().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' but it is not present.';
+                }
                 continue;
             }
             if (!$link->getConstraint()->matches(new Constraint('==', $platformPkg->getVersion()))) {
