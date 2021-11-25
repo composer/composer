@@ -281,6 +281,13 @@
             "type": "object",
             "description": "Composer options.",
             "properties": {
+                "platform": {
+                    "type": "object",
+                    "description": "This is a hash of package name (keys) and version (values) that will be used to mock the platform packages on this machine.",
+                    "additionalProperties": {
+                        "type": ["string", "boolean"]
+                    }
+                },
                 "process-timeout": {
                     "type": "integer",
                     "description": "The timeout in seconds for process executions, defaults to 300 (5mins)."
@@ -380,13 +387,6 @@
                 "store-auths": {
                     "type": ["string", "boolean"],
                     "description": "What to do after prompting for authentication, one of: true (store), false (do not store) or \"prompt\" (ask every time), defaults to prompt."
-                },
-                "platform": {
-                    "type": "object",
-                    "description": "This is a hash of package name (keys) and version (values) that will be used to mock the platform packages on this machine.",
-                    "additionalProperties": {
-                        "type": ["string", "boolean"]
-                    }
                 },
                 "vendor-dir": {
                     "type": "string",
