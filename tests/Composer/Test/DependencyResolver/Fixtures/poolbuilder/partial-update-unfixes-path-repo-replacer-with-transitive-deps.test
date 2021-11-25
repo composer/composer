@@ -1,0 +1,84 @@
+--TEST--
+Partially updating with deps a root requirement which depends on packages in a symlinked path repo should load all available versions for the path repo packages' dependencies.
+
+--REQUEST--
+{
+    "require": {
+        "root/update": "*",
+        "symlinked/transitive3": "*",
+        "symlinked/transitive5": "*",
+        "symlinked/path-pkg-replace": "*"
+    },
+    "locked": [
+        {"name": "root/update", "version": "1.0.1", "require": {"symlinked/path-pkg": ">=1.0.1", "symlinked/replaced-pkg": "*"}},
+        {"name": "symlinked/transitive", "version": "1.0.0"},
+        {"name": "symlinked/transitive3", "version": "1.0.0", "replace": {"symlinked/transitive3-replaced": "1.0.0"}},
+        {
+            "name": "symlinked/path-pkg",
+            "version": "1.0.0",
+            "require": {
+                "symlinked/transitive": "1.*",
+                "symlinked/transitive3-replaced": "1.*",
+                "symlinked/transitive5-replaced": "1.*"
+            },
+            "dist": {"type": "path", "url": "./symlinked-path-repo-with-replaced-deps", "reference": "abcd"}, "transport-options": {}
+        },
+        {"name": "symlinked/transitive4", "version": "1.0.0"},
+        {"name": "symlinked/transitive5", "version": "1.0.0", "replace": {"symlinked/transitive5-replaced": "1.0.0"}},
+        {
+            "name": "symlinked/path-pkg-replace",
+            "version": "1.0.0",
+            "require": {
+                "symlinked/transitive3-replaced": "1.*",
+                "symlinked/transitive4": "1.*",
+                "symlinked/transitive5-replaced": "1.*"
+            },
+            "replace": {
+                "symlinked/replaced-pkg": "1.0.0"
+            },
+            "dist": {"type": "path", "url": "./symlinked-path-repo-replacer", "reference": "abcd"}, "transport-options": {}
+        }
+    ],
+    "allowList": [
+        "root/update"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    {"type": "path", "url": "./symlinked-path-repo-with-replaced-deps"},
+    {"type": "path", "url": "./symlinked-path-repo-replacer"},
+    [
+        {"name": "root/update", "version": "1.0.4", "require": {"symlinked/path-pkg": ">=1.0.1", "symlinked/replaced-pkg": "*"}},
+        {"name": "symlinked/transitive", "version": "1.0.0"},
+        {"name": "symlinked/transitive", "version": "2.0.2"},
+        {"name": "symlinked/transitive3", "version": "1.0.0", "replace": {"symlinked/transitive3-replaced": "1.0.0"}},
+        {"name": "symlinked/transitive3", "version": "1.0.3", "replace": {"symlinked/transitive3-replaced": "1.0.3"}},
+        {"name": "symlinked/transitive3", "version": "2.0.4", "replace": {"symlinked/transitive3-replaced": "2.0.4"}},
+        {"name": "symlinked/transitive4", "version": "1.0.0"},
+        {"name": "symlinked/transitive4", "version": "2.0.2"},
+        {"name": "symlinked/transitive5", "version": "1.0.0", "replace": {"symlinked/transitive5-replaced": "1.0.0"}},
+        {"name": "symlinked/transitive5", "version": "1.0.3", "replace": {"symlinked/transitive5-replaced": "1.0.3"}},
+        {"name": "symlinked/transitive5", "version": "2.0.4", "replace": {"symlinked/transitive5-replaced": "2.0.4"}}
+    ]
+]
+
+--EXPECT--
+[
+   "root/update-1.0.4.0",
+   "symlinked/path-pkg-2.0.0.0",
+   "symlinked/path-pkg-replace-2.0.0.0",
+   "symlinked/transitive-2.0.2.0",
+   "symlinked/transitive3-1.0.0.0",
+   "symlinked/transitive3-1.0.3.0",
+   "symlinked/transitive3-2.0.4.0",
+   "symlinked/transitive4-2.0.2.0",
+   "symlinked/transitive5-1.0.0.0",
+   "symlinked/transitive5-1.0.3.0",
+   "symlinked/transitive5-2.0.4.0"
+]

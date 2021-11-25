@@ -1,0 +1,12 @@
+{
+    "name": "symlinked/path-pkg-replace",
+    "version": "2.0.0",
+    "require": {
+        "symlinked/transitive3-replaced": ">=1.0.3",
+        "symlinked/transitive4": "2.*",
+        "symlinked/transitive5-replaced": "2.*"
+    },
+    "replace": {
+        "symlinked/replaced-pkg": "2.0.0"
+    }
+}

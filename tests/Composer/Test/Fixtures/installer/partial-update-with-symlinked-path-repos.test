@@ -1,0 +1,86 @@
+--TEST--
+Partially updating one root requirement with transitive deps fully updates transitive deps, and always updates symlinked path repos, but not the transitive deps of the path repos.
+
+--COMPOSER--
+{
+    "repositories": [
+        {"type": "path", "url": "./DependencyResolver/Fixtures/poolbuilder/symlinked-path-repo"},
+        {"type": "path", "url": "./DependencyResolver/Fixtures/poolbuilder/mirrored-path-repo", "options": {"symlink": false}},
+        {
+            "type": "package",
+            "package": [
+                {"name": "root/update", "version": "1.0.4", "require": {"symlinked/transitive2": ">=1.0.1", "mirrored/transitive2": ">=1.0.1"}},
+                {"name": "symlinked/transitive", "version": "1.0.0"},
+                {"name": "symlinked/transitive", "version": "1.0.1"},
+                {"name": "symlinked/transitive", "version": "2.0.3"},
+                {"name": "symlinked/transitive2", "version": "1.0.0"},
+                {"name": "symlinked/transitive2", "version": "1.0.3"},
+                {"name": "symlinked/transitive2", "version": "2.0.3"},
+                {"name": "mirrored/transitive", "version": "1.0.0"},
+                {"name": "mirrored/transitive", "version": "1.0.5"},
+                {"name": "mirrored/transitive2", "version": "1.0.0"},
+                {"name": "mirrored/transitive2", "version": "1.0.7"}
+            ]
+        }
+    ],
+    "require": {
+        "root/update": "*",
+        "symlinked/path-pkg": "*",
+        "mirrored/path-pkg": "*"
+    }
+}
+
+--LOCK--
+{
+    "packages": [
+        {"name": "root/update", "version": "1.0.1", "require": {"symlinked/transitive2": ">=1.0.1", "mirrored/transitive2": ">=1.0.1"}},
+        {"name": "symlinked/transitive", "version": "1.0.0"},
+        {"name": "symlinked/transitive2", "version": "1.0.0"},
+        {"name": "mirrored/transitive", "version": "1.0.0"},
+        {"name": "mirrored/transitive2", "version": "1.0.0"},
+        {
+            "name": "symlinked/path-pkg",
+            "version": "1.0.0",
+            "require": {
+                "symlinked/transitive": "1.*",
+                "symlinked/transitive2": "1.*"
+            },
+            "dist": {"type": "path", "url": "./symlinked-path-repo", "reference": "abcd"}, "transport-options": {}
+        },
+        {
+            "name": "mirrored/path-pkg",
+            "version": "1.0.0",
+            "require": {
+                "mirrored/transitive": "1.*",
+                "mirrored/transitive2": "1.*"
+            },
+            "dist": {"type": "path", "url": "./mirrored-path-repo", "reference": "abcd"}, "transport-options": {"symlink": false}
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
+
+--RUN--
+update --with-all-dependencies root/update
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires symlinked/path-pkg * -> satisfiable by symlinked/path-pkg[2.0.0].
+    - symlinked/path-pkg 2.0.0 requires symlinked/transitive 2.* -> found symlinked/transitive[2.0.3] but the package is fixed to 1.0.0 (lock file version) by a partial update and that version does not match. Make sure you list it as an argument for the update command.
+
+--EXPECT--
