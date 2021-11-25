@@ -87,26 +87,26 @@ class ValidatingArrayLoaderTest extends TestCase
                     'require' => array(
                         'a/b' => '1.*',
                         'b/c' => '~2',
-                        'example' => '>2.0-dev,<2.4-dev',
+                        'example/pkg' => '>2.0-dev,<2.4-dev',
                         'composer-runtime-api' => '*',
                     ),
                     'require-dev' => array(
                         'a/b' => '1.*',
                         'b/c' => '*',
-                        'example' => '>2.0-dev,<2.4-dev',
+                        'example/pkg' => '>2.0-dev,<2.4-dev',
                     ),
                     'conflict' => array(
-                        'a/b' => '1.*',
-                        'b/c' => '>2.7',
-                        'example' => '>2.0-dev,<2.4-dev',
+                        'a/bx' => '1.*',
+                        'b/cx' => '>2.7',
+                        'example/pkgx' => '>2.0-dev,<2.4-dev',
                     ),
                     'replace' => array(
                         'a/b' => '1.*',
-                        'example' => '>2.0-dev,<2.4-dev',
+                        'example/pkg' => '>2.0-dev,<2.4-dev',
                     ),
                     'provide' => array(
                         'a/b' => '1.*',
-                        'example' => '>2.0-dev,<2.4-dev',
+                        'example/pkg' => '>2.0-dev,<2.4-dev',
                     ),
                     'suggest' => array(
                         'foo/bar' => 'Foo bar is very useful',
@@ -284,8 +284,26 @@ class ValidatingArrayLoaderTest extends TestCase
                     'name' => $invalidName,
                 ),
                 array(
-                    "name : invalid value ($invalidName), must match [A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*",
+                    "name : $invalidName is invalid, it should have a vendor name, a forward slash, and a package name. The vendor and package name can be words separated by -, . or _. The complete name should match \"^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$\".",
                 ),
+            );
+        }
+
+        $invalidNames = array(
+            'fo--oo/bar',
+            'fo-oo/bar__baz',
+            'fo-oo/bar_.baz',
+            'foo/bar---baz',
+        );
+        foreach ($invalidNames as $invalidName) {
+            $invalidNaming[] = array(
+                array(
+                    'name' => $invalidName,
+                ),
+                array(
+                    "name : $invalidName is invalid, it should have a vendor name, a forward slash, and a package name. The vendor and package name can be words separated by -, . or _. The complete name should match \"^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$\".",
+                ),
+                false,
             );
         }
 
@@ -309,6 +327,42 @@ class ValidatingArrayLoaderTest extends TestCase
                 array(
                     'support.source : invalid value, must be a string',
                 ),
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar.json',
+                ),
+                array(
+                    'name : foo/bar.json is invalid, package names can not end in .json, consider renaming it or perhaps using a -json suffix instead.',
+                ),
+            ),
+            array(
+                array(
+                    'name' => 'com1/foo',
+                ),
+                array(
+                    'name : com1/foo is reserved, package and vendor names can not match any of: nul, con, prn, aux, com1, com2, com3, com4, com5, com6, com7, com8, com9, lpt1, lpt2, lpt3, lpt4, lpt5, lpt6, lpt7, lpt8, lpt9.',
+                ),
+            ),
+            array(
+                array(
+                    'name' => 'Foo/Bar',
+                ),
+                array(
+                    'name : Foo/Bar is invalid, it should not contain uppercase characters. We suggest using foo/bar instead.',
+                ),
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'require' => array(
+                        'Foo/Baz' => '^1.0',
+                    ),
+                ),
+                array(
+                    'require.Foo/Baz is invalid, it should not contain uppercase characters. Please use foo/baz instead.',
+                ),
+                false,
             ),
             array(
                 array(
@@ -368,26 +422,7 @@ class ValidatingArrayLoaderTest extends TestCase
 
     public function warningProvider()
     {
-        $invalidNames = array(
-            'fo--oo/bar',
-            'fo-oo/bar__baz',
-            'fo-oo/bar_.baz',
-            'foo/bar---baz',
-        );
-        $invalidNaming = array();
-        foreach ($invalidNames as $invalidName) {
-            $invalidNaming[] = array(
-                array(
-                    'name' => $invalidName,
-                ),
-                array(
-                    "Deprecation warning: Your package name $invalidName is invalid, it should have a vendor name, a forward slash, and a package name. The vendor and package name can be words separated by -, . or _. The complete name should match \"^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$\". Make sure you fix this as Composer 2.0 will error.",
-                ),
-                false,
-            );
-        }
-
-        return array_merge($invalidNaming, array(
+        return array(
             array(
                 array(
                     'name' => 'foo/bar',
@@ -395,30 +430,6 @@ class ValidatingArrayLoaderTest extends TestCase
                 ),
                 array(
                     'homepage : invalid value (foo:bar), must be an http/https URL',
-                ),
-            ),
-            array(
-                array(
-                    'name' => 'foo/bar.json',
-                ),
-                array(
-                    'Deprecation warning: Your package name foo/bar.json is invalid, package names can not end in .json, consider renaming it or perhaps using a -json suffix instead. Make sure you fix this as Composer 2.0 will error.',
-                ),
-            ),
-            array(
-                array(
-                    'name' => 'com1/foo',
-                ),
-                array(
-                    'Deprecation warning: Your package name com1/foo is reserved, package and vendor names can not match any of: nul, con, prn, aux, com1, com2, com3, com4, com5, com6, com7, com8, com9, lpt1, lpt2, lpt3, lpt4, lpt5, lpt6, lpt7, lpt8, lpt9. Make sure you fix this as Composer 2.0 will error.',
-                ),
-            ),
-            array(
-                array(
-                    'name' => 'Foo/Bar',
-                ),
-                array(
-                    'Deprecation warning: Your package name Foo/Bar is invalid, it should not contain uppercase characters. We suggest using foo/bar instead. Make sure you fix this as Composer 2.0 will error.',
                 ),
             ),
             array(
@@ -462,18 +473,6 @@ class ValidatingArrayLoaderTest extends TestCase
                 array(
                     'name' => 'foo/bar',
                     'require' => array(
-                        'Foo/Baz' => '^1.0',
-                    ),
-                ),
-                array(
-                    'Deprecation warning: require.Foo/Baz is invalid, it should not contain uppercase characters. Please use foo/baz instead. Make sure you fix this as Composer 2.0 will error.',
-                ),
-                false,
-            ),
-            array(
-                array(
-                    'name' => 'foo/bar',
-                    'require' => array(
                         'bar/unstable' => '0.3.0',
                     ),
                 ),
@@ -510,6 +509,6 @@ class ValidatingArrayLoaderTest extends TestCase
                 ),
                 false,
             ),
-        ));
+        );
     }
 }

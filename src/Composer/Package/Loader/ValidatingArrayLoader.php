@@ -37,21 +37,22 @@ class ValidatingArrayLoader implements LoaderInterface
     private $warnings;
     /** @var mixed[] */
     private $config;
-    /** @var bool */
-    private $strictName;
     /** @var int One or more of self::CHECK_* constants */
     private $flags;
 
     /**
-     * @param bool $strictName
+     * @param true $strictName
      * @param int  $flags
      */
     public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null, $flags = 0)
     {
         $this->loader = $loader;
         $this->versionParser = $parser ?: new VersionParser();
-        $this->strictName = $strictName;
         $this->flags = $flags;
+
+        if ($strictName !== true) {
+            trigger_error('$strictName must be set to true in ValidatingArrayLoader\'s constructor as of 2.2, and it will be removed in 3.0', E_USER_DEPRECATED);
+        }
     }
 
     /**
@@ -63,14 +64,9 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->warnings = array();
         $this->config = $config;
 
+        $this->validateString('name', true);
         if ($err = self::hasPackageNamingError($config['name'])) {
-            $this->errors[] = 'Your package name '.$err;
-        }
-
-        if ($this->strictName) {
-            $this->validateRegex('name', '[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*', true);
-        } else {
-            $this->validateString('name', true);
+            $this->errors[] = 'name : '.$err;
         }
 
         if (!empty($this->config['version'])) {
