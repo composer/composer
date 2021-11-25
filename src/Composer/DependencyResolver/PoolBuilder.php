@@ -165,8 +165,6 @@ class PoolBuilder
 
             foreach ($request->getLockedRepository()->getPackages() as $lockedPackage) {
                 if (!$this->isUpdateAllowed($lockedPackage)) {
-                    $lockedName = $lockedPackage->getName();
-
                     // remember which packages we skipped loading remote content for in this partial update
                     $this->skippedLoad[$lockedPackage->getName()][] = $lockedPackage;
                     foreach ($lockedPackage->getReplaces() as $link) {
@@ -624,7 +622,7 @@ class PoolBuilder
         if (isset($this->pathRepoUnlocked[$name])) {
             foreach ($this->packages as $index => $package) {
                 if ($package->getName() === $name) {
-                    $this->removeLoadedPackage($request, $repositories, $package, $index, false);
+                    $this->removeLoadedPackage($request, $repositories, $package, $index);
                 }
             }
         }
@@ -636,7 +634,7 @@ class PoolBuilder
             if (!($lockedPackage instanceof AliasPackage) && $lockedPackage->getName() === $name) {
                 if (false !== $index = array_search($lockedPackage, $this->packages, true)) {
                     $request->unlockPackage($lockedPackage);
-                    $this->removeLoadedPackage($request, $repositories, $lockedPackage, $index, true);
+                    $this->removeLoadedPackage($request, $repositories, $lockedPackage, $index);
 
                     // make sure that any requirements for this package by other locked or fixed packages are now
                     // also loaded, as they were previously ignored because the locked (now unlocked) package already
@@ -661,10 +659,9 @@ class PoolBuilder
     /**
      * @param RepositoryInterface[] $repositories
      * @param int $index
-     * @param bool $unlock
      * @return void
      */
-    private function removeLoadedPackage(Request $request, array $repositories, BasePackage $package, $index, $unlock)
+    private function removeLoadedPackage(Request $request, array $repositories, BasePackage $package, $index)
     {
         $repoIndex = array_search($package->getRepository(), $repositories, true);
 
@@ -672,9 +669,6 @@ class PoolBuilder
         unset($this->packages[$index]);
         if (isset($this->aliasMap[spl_object_hash($package)])) {
             foreach ($this->aliasMap[spl_object_hash($package)] as $aliasIndex => $aliasPackage) {
-                if ($unlock) {
-                    $request->unlockPackage($aliasPackage);
-                }
                 unset($this->loadedPerRepo[$repoIndex][$aliasPackage->getName()][$aliasPackage->getVersion()]);
                 unset($this->packages[$aliasIndex]);
             }
