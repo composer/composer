@@ -1236,7 +1236,7 @@ Linked Version => 1.2.11',
         self::assertNotNull($package, 'Composer package exists');
     }
 
-    public static function getPlatformPackages()
+    public static function providePlatformPackages()
     {
         return array(
             array('php', true),
@@ -1263,7 +1263,11 @@ Linked Version => 1.2.11',
         );
     }
 
-    /** @dataProvider getPlatformPackages */
+    /**
+     * @param string $packageName
+     * @param bool $expectation
+     * @dataProvider providePlatformPackages
+     */
     public function testValidPlatformPackages($packageName, $expectation)
     {
         self::assertSame($expectation, PlatformRepository::isPlatformPackage($packageName));
