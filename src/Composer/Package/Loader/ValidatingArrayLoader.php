@@ -281,6 +281,11 @@ class ValidatingArrayLoader implements LoaderInterface
                             $this->warnings[] = $linkType.'.'.$package.' : exact version constraints ('.$constraint.') should be avoided if the package follows semantic versioning';
                         }
                     }
+
+                    if ($linkType === 'conflict' && isset($this->config['replace']) && $keys = array_intersect_key($this->config['replace'], $this->config['conflict'])) {
+                        $this->errors[] = $linkType.'.'.$package.' : you cannot conflict with a package that is also replaced, as replace already creates an implicit conflict rule';
+                        unset($this->config[$linkType][$package]);
+                    }
                 }
             }
         }
