@@ -8,18 +8,38 @@
             "description": "Package name, including 'vendor-name/' prefix.",
             "pattern": "^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$"
         },
+        "description": {
+            "type": "string",
+            "description": "Short package description."
+        },
+        "license": {
+            "type": ["string", "array"],
+            "description": "License name. Or an array of license names."
+        },
         "type": {
             "description": "Package type, either 'library' for common packages, 'composer-plugin' for plugins, 'metapackage' for empty packages, or a custom type ([a-z0-9-]+) defined by whatever project this package applies to.",
             "type": "string",
             "pattern": "^[a-z0-9-]+$"
         },
-        "target-dir": {
-            "description": "DEPRECATED: Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
-            "type": "string"
+        "abandoned": {
+            "type": ["boolean", "string"],
+            "description": "Indicates whether this package has been abandoned, it can be boolean or a package name/URL pointing to a recommended alternative. Defaults to false."
         },
-        "description": {
+        "version": {
             "type": "string",
-            "description": "Short package description."
+            "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes.",
+            "pattern": "^v?\\d+(\\.\\d+){0,3}|^dev-"
+        },
+        "default-branch": {
+            "type": ["boolean"],
+            "description": "Internal use only, do not specify this in composer.json. Indicates whether this version is the default branch of the linked VCS repository. Defaults to false."
+        },
+        "non-feature-branches": {
+            "type": ["array"],
+            "description": "A set of string or regex patterns for non-numeric branch names that will not be handled as feature branches.",
+            "items": {
+                "type": "string"
+            }
         },
         "keywords": {
             "type": "array",
@@ -28,34 +48,104 @@
                 "description": "A tag/keyword that this package relates to."
             }
         },
-        "homepage": {
-            "type": "string",
-            "description": "Homepage URL for the project.",
-            "format": "uri"
-        },
         "readme": {
             "type": "string",
             "description": "Relative path to the readme document."
-        },
-        "version": {
-            "type": "string",
-            "description": "Package version, see https://getcomposer.org/doc/04-schema.md#version for more info on valid schemes.",
-            "pattern": "^v?\\d+(\\.\\d+){0,3}|^dev-"
         },
         "time": {
             "type": "string",
             "description": "Package release date, in 'YYYY-MM-DD', 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DDTHH:MM:SSZ' format."
         },
-        "license": {
-            "type": ["string", "array"],
-            "description": "License name. Or an array of license names."
-        },
         "authors": {
             "$ref": "#/definitions/authors"
+        },
+        "homepage": {
+            "type": "string",
+            "description": "Homepage URL for the project.",
+            "format": "uri"
+        },
+        "support": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "description": "Email address for support.",
+                    "format": "email"
+                },
+                "issues": {
+                    "type": "string",
+                    "description": "URL to the issue tracker.",
+                    "format": "uri"
+                },
+                "forum": {
+                    "type": "string",
+                    "description": "URL to the forum.",
+                    "format": "uri"
+                },
+                "wiki": {
+                    "type": "string",
+                    "description": "URL to the wiki.",
+                    "format": "uri"
+                },
+                "irc": {
+                    "type": "string",
+                    "description": "IRC channel for support, as irc://server/channel.",
+                    "format": "uri"
+                },
+                "chat": {
+                    "type": "string",
+                    "description": "URL to the support chat.",
+                    "format": "uri"
+                },
+                "source": {
+                    "type": "string",
+                    "description": "URL to browse or download the sources.",
+                    "format": "uri"
+                },
+                "docs": {
+                    "type": "string",
+                    "description": "URL to the documentation.",
+                    "format": "uri"
+                },
+                "rss": {
+                    "type": "string",
+                    "description": "URL to the RSS feed.",
+                    "format": "uri"
+                }
+            }
+        },
+        "funding": {
+            "type": "array",
+            "description": "A list of options to fund the development and maintenance of the package.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "Type of funding or platform through which funding is possible."
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "URL to a website with details on funding and a way to fund the package.",
+                        "format": "uri"
+                    }
+                }
+            }
+        },
+        "_comment": {
+            "type": ["array", "string"],
+            "description": "A key to store comments in"
         },
         "require": {
             "type": "object",
             "description": "This is a hash of package name (keys) and version constraints (values) that are required to run this package.",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "require-dev": {
+            "type": "object",
+            "description": "This is a hash of package name (keys) and version constraints (values) that this package requires for developing it (testing tools and such).",
             "additionalProperties": {
                 "type": "string"
             }
@@ -81,18 +171,110 @@
                 "type": "string"
             }
         },
-        "require-dev": {
-            "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that this package requires for developing it (testing tools and such).",
-            "additionalProperties": {
-                "type": "string"
-            }
-        },
         "suggest": {
             "type": "object",
             "description": "This is a hash of package name (keys) and descriptions (values) that this package suggests work well with it (this will be suggested to the user during installation).",
             "additionalProperties": {
                 "type": "string"
+            }
+        },
+        "repositories": {
+            "type": ["object", "array"],
+            "description": "A set of additional repositories where packages can be found.",
+            "additionalProperties": {
+                "anyOf": [
+                    { "$ref": "#/definitions/repository" },
+                    { "type": "boolean", "enum": [false] }
+                ]
+            },
+            "items": {
+                "anyOf": [
+                    { "$ref": "#/definitions/repository" },
+                    {
+                        "type": "object",
+                        "additionalProperties": { "type": "boolean", "enum": [false] },
+                        "minProperties": 1,
+                        "maxProperties": 1
+                    }
+                ]
+            }
+        },
+        "minimum-stability": {
+            "type": ["string"],
+            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable.",
+            "enum": ["dev", "alpha", "beta", "rc", "RC", "stable"]
+        },
+        "prefer-stable": {
+            "type": ["boolean"],
+            "description": "If set to true, stable packages will be preferred to dev packages when possible, even if the minimum-stability allows unstable packages."
+        },
+        "autoload": {
+            "$ref": "#/definitions/autoload"
+        },
+        "autoload-dev": {
+            "type": "object",
+            "description": "Description of additional autoload rules for development purpose (eg. a test suite).",
+            "properties": {
+                "psr-0": {
+                    "type": "object",
+                    "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "psr-4": {
+                    "type": "object",
+                    "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
+                    "additionalProperties": {
+                        "type": ["string", "array"],
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "classmap": {
+                    "type": "array",
+                    "description": "This is an array of paths that contain classes to be included in the class-map generation process."
+                },
+                "files": {
+                    "type": "array",
+                    "description": "This is an array of files that are always required on every request."
+                }
+            }
+        },
+        "target-dir": {
+            "description": "DEPRECATED: Forces the package to be installed into the given subdirectory path. This is used for autoloading PSR-0 packages that do not contain their full path. Use forward slashes for cross-platform compatibility.",
+            "type": "string"
+        },
+        "include-path": {
+            "type": ["array"],
+            "description": "DEPRECATED: A list of directories which should get added to PHP's include path. This is only present to support legacy projects, and all new code should preferably use autoloading.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "bin": {
+            "type": ["string", "array"],
+            "description": "A set of files, or a single file, that should be treated as binaries and symlinked into bin-dir (from config).",
+            "items": {
+                "type": "string"
+            }
+        },
+        "archive": {
+            "type": ["object"],
+            "description": "Options for creating package archives for distribution.",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "A base name for archive."
+                },
+                "exclude": {
+                    "type": "array",
+                    "description": "A list of patterns for paths to exclude or include if prefixed with an exclamation mark."
+                }
             }
         },
         "config": {
@@ -331,101 +513,6 @@
             "description": "Arbitrary extra data that can be used by plugins, for example, package of type composer-plugin may have a 'class' key defining an installer class name.",
             "additionalProperties": true
         },
-        "autoload": {
-            "$ref": "#/definitions/autoload"
-        },
-        "autoload-dev": {
-            "type": "object",
-            "description": "Description of additional autoload rules for development purpose (eg. a test suite).",
-            "properties": {
-                "psr-0": {
-                    "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
-                    "additionalProperties": {
-                        "type": ["string", "array"],
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "psr-4": {
-                    "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
-                    "additionalProperties": {
-                        "type": ["string", "array"],
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                },
-                "classmap": {
-                    "type": "array",
-                    "description": "This is an array of paths that contain classes to be included in the class-map generation process."
-                },
-                "files": {
-                    "type": "array",
-                    "description": "This is an array of files that are always required on every request."
-                }
-            }
-        },
-        "archive": {
-            "type": ["object"],
-            "description": "Options for creating package archives for distribution.",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "A base name for archive."
-                },
-                "exclude": {
-                    "type": "array",
-                    "description": "A list of patterns for paths to exclude or include if prefixed with an exclamation mark."
-                }
-            }
-        },
-        "repositories": {
-            "type": ["object", "array"],
-            "description": "A set of additional repositories where packages can be found.",
-            "additionalProperties": {
-                "anyOf": [
-                    { "$ref": "#/definitions/repository" },
-                    { "type": "boolean", "enum": [false] }
-                ]
-            },
-            "items": {
-                "anyOf": [
-                    { "$ref": "#/definitions/repository" },
-                    {
-                        "type": "object",
-                        "additionalProperties": { "type": "boolean", "enum": [false] },
-                        "minProperties": 1,
-                        "maxProperties": 1
-                    }
-                ]
-            }
-        },
-        "minimum-stability": {
-            "type": ["string"],
-            "description": "The minimum stability the packages must have to be install-able. Possible values are: dev, alpha, beta, RC, stable.",
-            "enum": ["dev", "alpha", "beta", "rc", "RC", "stable"]
-        },
-        "prefer-stable": {
-            "type": ["boolean"],
-            "description": "If set to true, stable packages will be preferred to dev packages when possible, even if the minimum-stability allows unstable packages."
-        },
-        "bin": {
-            "type": ["string", "array"],
-            "description": "A set of files, or a single file, that should be treated as binaries and symlinked into bin-dir (from config).",
-            "items": {
-                "type": "string"
-            }
-        },
-        "include-path": {
-            "type": ["array"],
-            "description": "DEPRECATED: A list of directories which should get added to PHP's include path. This is only present to support legacy projects, and all new code should preferably use autoloading.",
-            "items": {
-                "type": "string"
-            }
-        },
         "scripts": {
             "type": ["object"],
             "description": "Script listeners that will be executed before/after some events.",
@@ -502,93 +589,6 @@
             "additionalProperties": {
                 "type": "string"
             }
-        },
-        "support": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "description": "Email address for support.",
-                    "format": "email"
-                },
-                "issues": {
-                    "type": "string",
-                    "description": "URL to the issue tracker.",
-                    "format": "uri"
-                },
-                "forum": {
-                    "type": "string",
-                    "description": "URL to the forum.",
-                    "format": "uri"
-                },
-                "wiki": {
-                    "type": "string",
-                    "description": "URL to the wiki.",
-                    "format": "uri"
-                },
-                "irc": {
-                    "type": "string",
-                    "description": "IRC channel for support, as irc://server/channel.",
-                    "format": "uri"
-                },
-                "chat": {
-                    "type": "string",
-                    "description": "URL to the support chat.",
-                    "format": "uri"
-                },
-                "source": {
-                    "type": "string",
-                    "description": "URL to browse or download the sources.",
-                    "format": "uri"
-                },
-                "docs": {
-                    "type": "string",
-                    "description": "URL to the documentation.",
-                    "format": "uri"
-                },
-                "rss": {
-                    "type": "string",
-                    "description": "URL to the RSS feed.",
-                    "format": "uri"
-                }
-            }
-        },
-        "funding": {
-            "type": "array",
-            "description": "A list of options to fund the development and maintenance of the package.",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "description": "Type of funding or platform through which funding is possible."
-                    },
-                    "url": {
-                        "type": "string",
-                        "description": "URL to a website with details on funding and a way to fund the package.",
-                        "format": "uri"
-                    }
-                }
-            }
-        },
-        "non-feature-branches": {
-            "type": ["array"],
-            "description": "A set of string or regex patterns for non-numeric branch names that will not be handled as feature branches.",
-            "items": {
-                "type": "string"
-            }
-        },
-        "default-branch": {
-            "type": ["boolean"],
-            "description": "Internal use only, do not specify this in composer.json. Indicates whether this version is the default branch of the linked VCS repository. Defaults to false."
-        },
-        "abandoned": {
-            "type": ["boolean", "string"],
-            "description": "Indicates whether this package has been abandoned, it can be boolean or a package name/URL pointing to a recommended alternative. Defaults to false."
-        },
-        "_comment": {
-            "type": ["array", "string"],
-            "description": "A key to store comments in"
         }
     },
     "definitions": {
