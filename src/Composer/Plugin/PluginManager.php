@@ -91,6 +91,25 @@ class PluginManager
     }
 
     /**
+     * Deactivate all plugins from currently installed plugin packages
+     *
+     * @return void
+     */
+    public function deactivateInstalledPlugins()
+    {
+        if ($this->disablePlugins) {
+            return;
+        }
+
+        $repo = $this->composer->getRepositoryManager()->getLocalRepository();
+        $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
+        $this->deactivateRepository($repo, false);
+        if ($globalRepo) {
+            $this->deactivateRepository($globalRepo, true);
+        }
+    }
+
+    /**
      * Gets all currently active plugin instances
      *
      * @return array<PluginInterface> plugins
@@ -424,6 +443,34 @@ class PluginManager
             // Backward compatibility
             } elseif ('composer-installer' === $package->getType()) {
                 $this->registerPackage($package, false, $isGlobalRepo);
+            }
+        }
+    }
+
+    /**
+     * Deactivate all plugins and installers from a repository
+     *
+     * If a plugin requires another plugin, the required one will be deactivated last
+     *
+     * @param RepositoryInterface $repo Repository to scan for plugins to install
+     * @param bool                $isGlobalRepo
+     *
+     * @return void
+     */
+    private function deactivateRepository(RepositoryInterface $repo, $isGlobalRepo)
+    {
+        $packages = $repo->getPackages();
+        $sortedPackages = array_reverse(PackageSorter::sortPackages($packages));
+
+        foreach ($sortedPackages as $package) {
+            if (!($package instanceof CompletePackage)) {
+                continue;
+            }
+            if ('composer-plugin' === $package->getType()) {
+                $this->deactivatePackage($package);
+            // Backward compatibility
+            } elseif ('composer-installer' === $package->getType()) {
+                $this->deactivatePackage($package);
             }
         }
     }
