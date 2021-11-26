@@ -448,11 +448,12 @@ class HttpDownloader
      * @internal
      *
      * @param  string                                                                                    $url
-     * @param  array{warning?: string, info?: string, warning-versions?: string, info-versions?: string} $data
+     * @param  array{warning?: string, info?: string, warning-versions?: string, info-versions?: string, warnings?: array<array{versions: string, message: string}>, infos?: array<array{versions: string, message: string}>} $data
      * @return void
      */
     public static function outputWarnings(IOInterface $io, $url, $data)
     {
+        // legacy warning/info keys
         foreach (array('warning', 'info') as $type) {
             if (empty($data[$type])) {
                 continue;
@@ -468,6 +469,25 @@ class HttpDownloader
             }
 
             $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$data[$type].'</'.$type.'>');
+        }
+
+        // modern Composer 2.2+ format with support for multiple warning/info messages
+        foreach (array('warnings', 'infos') as $key) {
+            if (empty($data[$key])) {
+                continue;
+            }
+
+            $versionParser = new VersionParser();
+            foreach ($data[$key] as $spec) {
+                $type = substr($key, 0, -1);
+                $constraint = $versionParser->parseConstraints($spec['versions']);
+                $composer = new Constraint('==', $versionParser->normalize(Composer::getVersion()));
+                if (!$constraint->matches($composer)) {
+                    continue;
+                }
+
+                $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$spec['message'].'</'.$type.'>');
+            }
         }
     }
 

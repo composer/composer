@@ -210,6 +210,10 @@ EOT
             return 0;
         }
 
+        if ($composer = $this->getComposer(false)) {
+            $composer->getPluginManager()->deactivateInstalledPlugins();
+        }
+
         // Update packages
         $this->resetComposer();
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));

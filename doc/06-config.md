@@ -191,6 +191,9 @@ you may ignore it instead by passing `--ignore-platform-req=ext-foo` to `update`
 extensions as if you ignore one now and a new package you add a month later also
 requires it, you may introduce issues in production unknowingly.
 
+If you have an extension installed locally but *not* on production, you may want
+to artificially hide it from Composer using `{"ext-foo": false}`.
+
 ## vendor-dir
 
 Defaults to `vendor`. You can install dependencies into a different directory if
@@ -257,8 +260,8 @@ If it is `auto` then Composer only installs .bat proxy files when on Windows or 
 set to `full` then both .bat files for Windows and scripts for Unix-based
 operating systems will be installed for each binary. This is mainly useful if you
 run Composer inside a linux VM but still want the `.bat` proxies available for use
-in the Windows host OS. If set to `symlink` Composer will always symlink even on
-Windows/WSL.
+in the Windows host OS. If set to `proxy` Composer will only create bash/Unix-style
+proxy files and no .bat files even on Windows/WSL.
 
 ## prepend-autoloader
 

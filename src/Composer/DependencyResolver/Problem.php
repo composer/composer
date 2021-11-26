@@ -22,6 +22,7 @@ use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Package\Version\VersionParser;
+use Composer\Repository\PlatformRepository;
 
 /**
  * Represents a problem detected while solving dependencies
@@ -209,46 +210,62 @@ class Problem
      */
     public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, ConstraintInterface $constraint = null)
     {
-        // handle php/hhvm
-        if ($packageName === 'php' || $packageName === 'php-64bit' || $packageName === 'hhvm') {
-            $version = self::getPlatformPackageVersion($pool, $packageName, phpversion());
+        if (PlatformRepository::isPlatformPackage($packageName)) {
+            // handle php/php-*/hhvm
+            if (0 === stripos($packageName, 'php') || $packageName === 'hhvm') {
+                $version = self::getPlatformPackageVersion($pool, $packageName, phpversion());
 
-            $msg = "- Root composer.json requires ".$packageName.self::constraintToText($constraint).' but ';
+                $msg = "- Root composer.json requires ".$packageName.self::constraintToText($constraint).' but ';
 
-            if (defined('HHVM_VERSION') || ($packageName === 'hhvm' && count($pool->whatProvides($packageName)) > 0)) {
-                return array($msg, 'your HHVM version does not satisfy that requirement.');
+                if (defined('HHVM_VERSION') || ($packageName === 'hhvm' && count($pool->whatProvides($packageName)) > 0)) {
+                    return array($msg, 'your HHVM version does not satisfy that requirement.');
+                }
+
+                if ($packageName === 'hhvm') {
+                    return array($msg, 'HHVM was not detected on this machine, make sure it is in your PATH.');
+                }
+
+                if (null === $version) {
+                    return array($msg, 'the '.$packageName.' package is disabled by your platform config. Enable it again with "composer config platform.'.$packageName.' --unset".');
+                }
+
+                return array($msg, 'your '.$packageName.' version ('. $version .') does not satisfy that requirement.');
             }
 
-            if ($packageName === 'hhvm') {
-                return array($msg, 'HHVM was not detected on this machine, make sure it is in your PATH.');
+            // handle php extensions
+            if (0 === stripos($packageName, 'ext-')) {
+                if (false !== strpos($packageName, ' ')) {
+                    return array('- ', "PHP extension ".$packageName.' should be required as '.str_replace(' ', '-', $packageName).'.');
+                }
+
+                $ext = substr($packageName, 4);
+                $msg = "- Root composer.json requires PHP extension ".$packageName.self::constraintToText($constraint).' but ';
+
+                if (extension_loaded($ext)) {
+                    $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) ?: '0');
+
+                    if (null === $version) {
+                        return array($msg, 'the '.$packageName.' package is disabled by your platform config. Enable it again with "composer config platform.'.$packageName.' --unset".');
+                    }
+
+                    $error = 'it has the wrong version ('.$version.') installed';
+                } else {
+                    $error = 'it is missing from your system';
+                }
+
+                return array($msg, $error.'. Install or enable PHP\'s '.$ext.' extension.');
             }
 
-            return array($msg, 'your '.$packageName.' version ('. $version .') does not satisfy that requirement.');
-        }
+            // handle linked libs
+            if (0 === stripos($packageName, 'lib-')) {
+                if (strtolower($packageName) === 'lib-icu') {
+                    $error = extension_loaded('intl') ? 'it has the wrong version installed, try upgrading the intl extension.' : 'it is missing from your system, make sure the intl extension is loaded.';
 
-        // handle php extensions
-        if (0 === stripos($packageName, 'ext-')) {
-            if (false !== strpos($packageName, ' ')) {
-                return array('- ', "PHP extension ".$packageName.' should be required as '.str_replace(' ', '-', $packageName).'.');
+                    return array("- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', $error);
+                }
+
+                return array("- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', 'it has the wrong version installed or is missing from your system, make sure to load the extension providing it.');
             }
-
-            $ext = substr($packageName, 4);
-            $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) ?: '0');
-
-            $error = extension_loaded($ext) ? 'it has the wrong version ('.$version.') installed' : 'it is missing from your system';
-
-            return array("- Root composer.json requires PHP extension ".$packageName.self::constraintToText($constraint).' but ', $error.'. Install or enable PHP\'s '.$ext.' extension.');
-        }
-
-        // handle linked libs
-        if (0 === stripos($packageName, 'lib-')) {
-            if (strtolower($packageName) === 'lib-icu') {
-                $error = extension_loaded('intl') ? 'it has the wrong version installed, try upgrading the intl extension.' : 'it is missing from your system, make sure the intl extension is loaded.';
-
-                return array("- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', $error);
-            }
-
-            return array("- Root composer.json requires linked library ".$packageName.self::constraintToText($constraint).' but ', 'it has the wrong version installed or is missing from your system, make sure to load the extension providing it.');
         }
 
         $lockedPackage = null;
@@ -384,6 +401,8 @@ class Problem
                 $hasDefaultBranch[$package->getName()] = true;
             }
         }
+
+        $preparedStrings = array();
         foreach ($prepared as $name => $package) {
             // remove the implicit default branch alias to avoid cruft in the display
             if (isset($package['versions'][VersionParser::DEFAULT_BRANCH_ALIAS], $hasDefaultBranch[$name])) {
@@ -395,16 +414,16 @@ class Problem
             if (!$isVerbose) {
                 $package['versions'] = self::condenseVersionList($package['versions'], 4);
             }
-            $prepared[$name] = $package['name'].'['.implode(', ', $package['versions']).']';
+            $preparedStrings[] = $package['name'].'['.implode(', ', $package['versions']).']';
         }
 
-        return implode(', ', $prepared);
+        return implode(', ', $preparedStrings);
     }
 
     /**
-     * @param  string $version
      * @param  string $packageName
-     * @return string
+     * @param  string $version the effective runtime version of the platform package
+     * @return ?string a version string or null if it appears the package was artificially disabled
      */
     private static function getPlatformPackageVersion(Pool $pool, $packageName, $version)
     {
@@ -417,6 +436,8 @@ class Problem
             if ($firstAvailable instanceof CompletePackageInterface && isset($extra['config.platform']) && $extra['config.platform'] === true) {
                 $version .= '; ' . str_replace('Package ', '', $firstAvailable->getDescription());
             }
+        } else {
+            return null;
         }
 
         return $version;

@@ -1,0 +1,91 @@
+--TEST--
+Partially updating one root requirement with transitive deps fully updates transitive deps, and always updates symlinked path repos, but not the transitive deps of the path repos.
+
+--REQUEST--
+{
+    "require": {
+        "root/update": "*",
+        "symlinked/path-pkg": "*",
+        "mirrored/path-pkg": "*"
+    },
+    "locked": [
+        {"name": "root/update", "version": "1.0.1", "require": {"symlinked/transitive2": ">=1.0.1", "mirrored/transitive2": ">=1.0.1"}},
+        {"name": "symlinked/transitive", "version": "1.0.0"},
+        {"name": "symlinked/transitive2", "version": "1.0.0"},
+        {"name": "mirrored/transitive", "version": "1.0.0"},
+        {"name": "mirrored/transitive2", "version": "1.0.0"},
+        {
+            "name": "symlinked/path-pkg",
+            "version": "1.0.0",
+            "require": {
+                "symlinked/transitive": "1.*",
+                "symlinked/transitive2": "1.*"
+            },
+            "dist": {"type": "path", "url": "./symlinked-path-repo", "reference": "abcd"}, "transport-options": {}
+        },
+        {
+            "name": "mirrored/path-pkg",
+            "version": "1.0.0",
+            "require": {
+                "mirrored/transitive": "1.*",
+                "mirrored/transitive2": "1.*"
+            },
+            "dist": {"type": "path", "url": "./mirrored-path-repo", "reference": "abcd"}, "transport-options": {"symlink": false}
+        }
+    ],
+    "allowList": [
+        "root/update"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    {"type": "path", "url": "./symlinked-path-repo"},
+    {"type": "path", "url": "./mirrored-path-repo", "options": {"symlink": false}},
+    [
+        {"name": "root/update", "version": "1.0.4", "require": {"symlinked/transitive2": ">=1.0.1", "mirrored/transitive2": ">=1.0.1"}},
+        {"name": "symlinked/transitive", "version": "1.0.0"},
+        {"name": "symlinked/transitive", "version": "1.0.1"},
+        {"name": "symlinked/transitive", "version": "2.0.2"},
+        {"name": "symlinked/transitive2", "version": "1.0.0"},
+        {"name": "symlinked/transitive2", "version": "1.0.3"},
+        {"name": "symlinked/transitive2", "version": "2.0.4"},
+        {"name": "mirrored/transitive", "version": "1.0.0"},
+        {"name": "mirrored/transitive", "version": "1.0.5"},
+        {"name": "mirrored/transitive", "version": "2.0.6"},
+        {"name": "mirrored/transitive2", "version": "1.0.0"},
+        {"name": "mirrored/transitive2", "version": "1.0.7"},
+        {"name": "mirrored/transitive2", "version": "2.0.8"}
+    ]
+]
+
+--EXPECT--
+[
+   "symlinked/transitive-1.0.0.0 (locked)",
+   "mirrored/transitive-1.0.0.0 (locked)",
+   "mirrored/path-pkg-1.0.0.0 (locked)",
+   "symlinked/path-pkg-2.0.0.0",
+   "root/update-1.0.4.0",
+   "symlinked/transitive2-1.0.3.0",
+   "symlinked/transitive2-2.0.4.0",
+   "mirrored/transitive2-1.0.0.0",
+   "mirrored/transitive2-1.0.7.0",
+   "mirrored/transitive2-2.0.8.0"
+]
+
+--EXPECT-OPTIMIZED--
+[
+   "symlinked/transitive-1.0.0.0 (locked)",
+   "mirrored/transitive-1.0.0.0 (locked)",
+   "mirrored/path-pkg-1.0.0.0 (locked)",
+   "symlinked/path-pkg-2.0.0.0",
+   "root/update-1.0.4.0",
+   "symlinked/transitive2-2.0.4.0",
+   "mirrored/transitive2-1.0.7.0",
+   "mirrored/transitive2-2.0.8.0"
+]

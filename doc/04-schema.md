@@ -884,8 +884,8 @@ Optional.
 
 ### bin
 
-A set of files that should be treated as binaries and symlinked into the `bin-dir`
-(from config).
+A set of files that should be treated as binaries and made available
+into the `bin-dir` (from config).
 
 See [Vendor Binaries](articles/vendor-binaries.md) for more details.
 

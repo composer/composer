@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use Composer\IO\BufferIO;
 use Composer\Util\HttpDownloader;
 use PHPUnit\Framework\TestCase;
 
@@ -50,5 +51,35 @@ class HttpDownloaderTest extends TestCase
         } catch (\Composer\Downloader\TransportException $e) {
             $this->assertNotEquals(200, $e->getCode());
         }
+    }
+
+    public function testOutputWarnings()
+    {
+        $io = new BufferIO();
+        HttpDownloader::outputWarnings($io, '$URL', array());
+        $this->assertSame('', $io->getOutput());
+        HttpDownloader::outputWarnings($io, '$URL', array(
+            'warning' => 'old warning msg',
+            'warning-versions' => '>=2.0',
+            'info' => 'old info msg',
+            'info-versions' => '>=2.0',
+            'warnings' => array(
+                array('message' => 'should not appear', 'versions' => '<2.2'),
+                array('message' => 'visible warning', 'versions' => '>=2.2-dev'),
+            ),
+            'infos' => array(
+                array('message' => 'should not appear', 'versions' => '<2.2'),
+                array('message' => 'visible info', 'versions' => '>=2.2-dev'),
+            ),
+        ));
+
+        // the <info> tag are consumed by the OutputFormatter, but not <warning> as that is not a default output format
+        $this->assertSame(
+            '<warning>Warning from $URL: old warning msg</warning>'.PHP_EOL.
+            'Info from $URL: old info msg'.PHP_EOL.
+            '<warning>Warning from $URL: visible warning</warning>'.PHP_EOL.
+            'Info from $URL: visible info'.PHP_EOL,
+            $io->getOutput()
+        );
     }
 }

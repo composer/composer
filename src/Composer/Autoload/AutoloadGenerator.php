@@ -585,7 +585,7 @@ EOF;
     /**
      * Registers an autoloader based on an autoload-map returned by parseAutoloads
      *
-     * @param array<string, array> $autoloads see parseAutoloads return value
+     * @param array<string, mixed[]> $autoloads see parseAutoloads return value
      * @param ?string $vendorDir
      * @return ClassLoader
      */
@@ -1106,9 +1106,9 @@ METHOD_FOOTER;
 function composerRequire$suffix(\$fileIdentifier, \$file)
 {
     if (empty(\$GLOBALS['__composer_autoload_files'][\$fileIdentifier])) {
-        require \$file;
-
         \$GLOBALS['__composer_autoload_files'][\$fileIdentifier] = true;
+
+        require \$file;
     }
 }
 
@@ -1416,8 +1416,8 @@ INITIALIZER;
 function composerRequire($fileIdentifier, $file)
 {
     if (empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
-        require $file;
-
         $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;
+
+        require $file;
     }
 }

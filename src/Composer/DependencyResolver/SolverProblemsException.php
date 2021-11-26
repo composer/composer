@@ -121,7 +121,7 @@ class SolverProblemsException extends \RuntimeException
 
         $text = "To enable extensions, verify that they are enabled in your .ini files:\n    - ";
         $text .= implode("\n    - ", $paths);
-        $text .= "\nYou can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.";
+        $text .= "\nYou can also run `php --ini` in a terminal to see which files are used by PHP in CLI mode.";
         $text .= "\nAlternatively, you can run Composer with `$ignoreExtensionsArguments` to temporarily ignore these required extensions.";
 
         return $text;

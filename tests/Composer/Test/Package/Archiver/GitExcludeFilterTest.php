@@ -27,14 +27,14 @@ class GitExcludeFilterTest extends TestCase
     {
         $filter = new GitExcludeFilter('/');
 
-        $this->assertEquals($expected, $filter->parseGitIgnoreLine($ignore));
+        $this->assertEquals($expected, $filter->parseGitAttributesLine($ignore));
     }
 
     public function providePatterns()
     {
         return array(
-            array('app/config/parameters.yml', array('{(?=[^\.])app/(?=[^\.])config/(?=[^\.])parameters\.yml(?=$|/)}', false, false)),
-            array('!app/config/parameters.yml', array('{(?=[^\.])app/(?=[^\.])config/(?=[^\.])parameters\.yml(?=$|/)}', true, false)),
+            array('app/config/parameters.yml export-ignore', array('{(?=[^\.])app/(?=[^\.])config/(?=[^\.])parameters\.yml(?=$|/)}', false, false)),
+            array('app/config/parameters.yml -export-ignore', array('{(?=[^\.])app/(?=[^\.])config/(?=[^\.])parameters\.yml(?=$|/)}', true, false)),
         );
     }
 }

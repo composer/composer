@@ -490,15 +490,6 @@ EOT
     }
 
     /**
-     * @param string $name
-     * @return list<array{name: string, description: ?string}>
-     */
-    protected function findPackages($name)
-    {
-        return $this->getRepos()->search($name);
-    }
-
-    /**
      * @return CompositeRepository
      */
     protected function getRepos()
@@ -573,7 +564,7 @@ EOT
 
         $io = $this->getIO();
         while (null !== $package = $io->ask('Search for a package: ')) {
-            $matches = $this->findPackages($package);
+            $matches = $this->getRepos()->search($package);
 
             if (count($matches)) {
                 // Remove existing packages from search results.
@@ -1005,7 +996,11 @@ EOT
             }
             $platformPkg = $platformRepo->findPackage($link->getTarget(), '*');
             if (!$platformPkg) {
-                $details[] = $candidate->getPrettyName().' '.$candidate->getPrettyVersion().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' but it is not present.';
+                if ($platformRepo->isPlatformPackageDisabled($link->getTarget())) {
+                    $details[] = $candidate->getPrettyName().' '.$candidate->getPrettyVersion().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' but it is disabled by your platform config. Enable it again with "composer config platform.'.$link->getTarget().' --unset".';
+                } else {
+                    $details[] = $candidate->getPrettyName().' '.$candidate->getPrettyVersion().' requires '.$link->getTarget().' '.$link->getPrettyConstraint().' but it is not present.';
+                }
                 continue;
             }
             if (!$link->getConstraint()->matches(new Constraint('==', $platformPkg->getVersion()))) {

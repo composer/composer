@@ -37,21 +37,22 @@ class ValidatingArrayLoader implements LoaderInterface
     private $warnings;
     /** @var mixed[] */
     private $config;
-    /** @var bool */
-    private $strictName;
     /** @var int One or more of self::CHECK_* constants */
     private $flags;
 
     /**
-     * @param bool $strictName
+     * @param true $strictName
      * @param int  $flags
      */
     public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null, $flags = 0)
     {
         $this->loader = $loader;
         $this->versionParser = $parser ?: new VersionParser();
-        $this->strictName = $strictName;
         $this->flags = $flags;
+
+        if ($strictName !== true) { // @phpstan-ignore-line
+            trigger_error('$strictName must be set to true in ValidatingArrayLoader\'s constructor as of 2.2, and it will be removed in 3.0', E_USER_DEPRECATED);
+        }
     }
 
     /**
@@ -63,14 +64,9 @@ class ValidatingArrayLoader implements LoaderInterface
         $this->warnings = array();
         $this->config = $config;
 
+        $this->validateString('name', true);
         if ($err = self::hasPackageNamingError($config['name'])) {
-            $this->warnings[] = 'Deprecation warning: Your package name '.$err.' Make sure you fix this as Composer 2.0 will error.';
-        }
-
-        if ($this->strictName) {
-            $this->validateRegex('name', '[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]*', true);
-        } else {
-            $this->validateString('name', true);
+            $this->errors[] = 'name : '.$err;
         }
 
         if (!empty($this->config['version'])) {
@@ -84,6 +80,13 @@ class ValidatingArrayLoader implements LoaderInterface
 
         if (!empty($this->config['config']['platform'])) {
             foreach ((array) $this->config['config']['platform'] as $key => $platform) {
+                if (false === $platform) {
+                    continue;
+                }
+                if (!is_string($platform)) {
+                    $this->errors[] = 'config.platform.' . $key . ' : invalid value ('.gettype($platform).' '.var_export($platform, true).'): expected string or false';
+                    continue;
+                }
                 try {
                     $this->versionParser->normalize($platform);
                 } catch (\Exception $e) {
@@ -247,7 +250,7 @@ class ValidatingArrayLoader implements LoaderInterface
                         continue;
                     }
                     if ($err = self::hasPackageNamingError($package, true)) {
-                        $this->warnings[] = 'Deprecation warning: '.$linkType.'.'.$err.' Make sure you fix this as Composer 2.0 will error.';
+                        $this->errors[] = $linkType.'.'.$err;
                     } elseif (!preg_match('{^[A-Za-z0-9_./-]+$}', $package)) {
                         $this->warnings[] = $linkType.'.'.$package.' : invalid key, package names must be strings containing only [A-Za-z0-9_./-]';
                     }
@@ -280,6 +283,11 @@ class ValidatingArrayLoader implements LoaderInterface
                         ) {
                             $this->warnings[] = $linkType.'.'.$package.' : exact version constraints ('.$constraint.') should be avoided if the package follows semantic versioning';
                         }
+                    }
+
+                    if ($linkType === 'conflict' && isset($this->config['replace']) && $keys = array_intersect_key($this->config['replace'], $this->config['conflict'])) {
+                        $this->errors[] = $linkType.'.'.$package.' : you cannot conflict with a package that is also replaced, as replace already creates an implicit conflict rule';
+                        unset($this->config[$linkType][$package]);
                     }
                 }
             }

@@ -13,7 +13,7 @@
 namespace Composer\Package\Archiver;
 
 /**
- * An exclude filter that processes gitignore and gitattributes
+ * An exclude filter that processes gitattributes
  *
  * It respects export-ignore git attributes
  *
@@ -22,7 +22,7 @@ namespace Composer\Package\Archiver;
 class GitExcludeFilter extends BaseExcludeFilter
 {
     /**
-     * Parses .gitignore and .gitattributes files if they exist
+     * Parses .gitattributes if it exists
      *
      * @param string $sourcePath
      */
@@ -30,12 +30,6 @@ class GitExcludeFilter extends BaseExcludeFilter
     {
         parent::__construct($sourcePath);
 
-        if (file_exists($sourcePath.'/.gitignore')) {
-            $this->excludePatterns = $this->parseLines(
-                file($sourcePath.'/.gitignore'),
-                array($this, 'parseGitIgnoreLine')
-            );
-        }
         if (file_exists($sourcePath.'/.gitattributes')) {
             $this->excludePatterns = array_merge(
                 $this->excludePatterns,
@@ -45,18 +39,6 @@ class GitExcludeFilter extends BaseExcludeFilter
                 )
             );
         }
-    }
-
-    /**
-     * Callback line parser which process gitignore lines
-     *
-     * @param string $line A line from .gitignore
-     *
-     * @return array{0: string, 1: bool, 2: bool} An exclude pattern for filter()
-     */
-    public function parseGitIgnoreLine($line)
-    {
-        return $this->generatePattern($line);
     }
 
     /**
@@ -72,6 +54,10 @@ class GitExcludeFilter extends BaseExcludeFilter
 
         if (count($parts) == 2 && $parts[1] === 'export-ignore') {
             return $this->generatePattern($parts[0]);
+        }
+
+        if (count($parts) == 2 && $parts[1] === '-export-ignore') {
+            return $this->generatePattern('!'.$parts[0]);
         }
 
         return null;

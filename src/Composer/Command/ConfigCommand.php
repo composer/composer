@@ -704,7 +704,7 @@ EOT
                 return 0;
             }
 
-            $this->configSource->addConfigSetting($settingKey, $values[0]);
+            $this->configSource->addConfigSetting($settingKey, $values[0] === 'false' ?  false : $values[0]);
 
             return 0;
         }
@@ -826,10 +826,10 @@ EOT
     /**
      * Display the contents of the file in a pretty formatted way
      *
-     * @param array<array|bool|string> $contents
-     * @param array<array|string>      $rawContents
-     * @param string|null              $k
-     * @param bool                     $showSource
+     * @param array<mixed[]|bool|string> $contents
+     * @param array<mixed[]|string>      $rawContents
+     * @param string|null                $k
+     * @param bool                       $showSource
      *
      * @return void
      */

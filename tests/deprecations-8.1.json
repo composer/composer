@@ -77,12 +77,12 @@
     {
         "location": "Composer\\Test\\InstallerTest::testIntegrationWithRawPool",
         "message": "preg_match(): Passing null to parameter #4 ($flags) of type int is deprecated",
-        "count": 1728
+        "count": 1800
     },
     {
         "location": "Composer\\Test\\InstallerTest::testIntegrationWithPoolOptimizer",
         "message": "preg_match(): Passing null to parameter #4 ($flags) of type int is deprecated",
-        "count": 1728
+        "count": 1800
     },
     {
         "location": "Composer\\Test\\Package\\Archiver\\ArchivableFilesFinderTest::testManualExcludes",

@@ -9,9 +9,6 @@ Test the error output of solver problems.
                 { "name": "package/found", "version": "2.0.0", "require": {
                     "unstable/package2": "2.*"
                 } },
-                { "name": "package/found2", "version": "2.0.0", "require": {
-                    "invalid/💩package": "*"
-                } },
                 { "name": "package/found3", "version": "2.0.0", "require": {
                     "unstable/package2": "2.*"
                 } },
@@ -54,7 +51,6 @@ Test the error output of solver problems.
     ],
     "require": {
         "package/found": "2.*",
-        "package/found2": "2.*",
         "package/found3": "2.*",
         "package/found4": "2.*",
         "package/found5": "2.*",
@@ -130,24 +126,21 @@ Your requirements could not be resolved to an installable set of packages.
     - Root composer.json requires package/found 2.* -> satisfiable by package/found[2.0.0].
     - package/found 2.0.0 requires unstable/package2 2.* -> found unstable/package2[2.0.0-alpha] but it does not match your minimum-stability.
   Problem 10
-    - Root composer.json requires package/found2 2.* -> satisfiable by package/found2[2.0.0].
-    - package/found2 2.0.0 requires invalid/💩package * -> could not be found, it looks like its name is invalid, "💩" is not allowed in package names.
-  Problem 11
     - Root composer.json requires package/found3 2.* -> satisfiable by package/found3[2.0.0].
     - package/found3 2.0.0 requires unstable/package2 2.* -> found unstable/package2[2.0.0-alpha] but it does not match your minimum-stability.
-  Problem 12
+  Problem 11
     - Root composer.json requires package/found4 2.* -> satisfiable by package/found4[2.0.0].
     - package/found4 2.0.0 requires non-existent/pkg2 1.* -> could not be found in any version, there may be a typo in the package name.
-  Problem 13
+  Problem 12
     - Root composer.json requires package/found6 2.* -> satisfiable by package/found6[2.0.0].
     - package/found6 2.0.0 requires stable-requiree-excluded/pkg2 1.0.1 -> found stable-requiree-excluded/pkg2[1.0.0] but it does not match the constraint.
-  Problem 14
+  Problem 13
     - Root composer.json requires package/found7 2.* -> satisfiable by package/found7[2.0.0].
     - package/found7 2.0.0 requires php-64bit 1.0.1 -> your php-64bit version (%s) does not satisfy that requirement.
-  Problem 15
+  Problem 14
     - Root composer.json requires requirer/pkg 1.* -> satisfiable by requirer/pkg[1.0.0].
     - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> found dependency/pkg[1.0.0] but it conflicts with your root composer.json require (2.*).
-  Problem 16
+  Problem 15
     - requirer/pkg 1.0.0 requires dependency/pkg 1.0.0 -> found dependency/pkg[1.0.0] but it conflicts with your root composer.json require (2.*).
     - package/found5 2.0.0 requires requirer/pkg 1.* -> satisfiable by requirer/pkg[1.0.0].
     - Root composer.json requires package/found5 2.* -> satisfiable by package/found5[2.0.0].
@@ -162,7 +155,7 @@ Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further commo
 
 To enable extensions, verify that they are enabled in your .ini files:
 __inilist__
-You can also run `php --ini` inside terminal to see which files are used by PHP in CLI mode.
+You can also run `php --ini` in a terminal to see which files are used by PHP in CLI mode.
 Alternatively, you can run Composer with `--ignore-platform-req=ext-xml` to temporarily ignore these required extensions.
 
 Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.

@@ -286,10 +286,10 @@ class CurlDownloader
      */
     public function abortRequest($id)
     {
-        if (isset($this->jobs[$id], $this->jobs[$id]['handle'])) {
+        if (isset($this->jobs[$id], $this->jobs[$id]['curlHandle'])) {
             $job = $this->jobs[$id];
-            curl_multi_remove_handle($this->multiHandle, $job['handle']);
-            curl_close($job['handle']);
+            curl_multi_remove_handle($this->multiHandle, $job['curlHandle']);
+            curl_close($job['curlHandle']);
             if (is_resource($job['headerHandle'])) {
                 fclose($job['headerHandle']);
             }
@@ -351,8 +351,10 @@ class CurlDownloader
 
                     if (
                         (!isset($job['options']['http']['method']) || $job['options']['http']['method'] === 'GET')
-                        && in_array($errno, array(7 /* CURLE_COULDNT_CONNECT */, 16 /* CURLE_HTTP2 */), true)
-                        && $job['attributes']['retries'] < $this->maxRetries
+                        && (
+                            in_array($errno, array(7 /* CURLE_COULDNT_CONNECT */, 16 /* CURLE_HTTP2 */), true)
+                            || ($errno === 35 /* CURLE_SSL_CONNECT_ERROR */ && false !== strpos($error, 'Connection reset by peer'))
+                        ) && $job['attributes']['retries'] < $this->maxRetries
                     ) {
                         $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to curl error '. $errno, true, IOInterface::DEBUG);
                         $this->restartJob($job, $job['url'], array('retries' => $job['attributes']['retries'] + 1));

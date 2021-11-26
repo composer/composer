@@ -278,6 +278,8 @@ EOT
             return 0;
         }
 
+        $composer->getPluginManager()->deactivateInstalledPlugins();
+
         try {
             return $this->doUpdate($input, $output, $io, $requirements, $requireKey, $removeKey);
         } catch (\Exception $e) {

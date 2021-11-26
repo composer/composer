@@ -49,7 +49,6 @@ class ArchivableFilesFinder extends \FilterIterator
             $filters = array();
         } else {
             $filters = array(
-                new HgExcludeFilter($sources),
                 new GitExcludeFilter($sources),
                 new ComposerExcludeFilter($sources, $excludes),
             );

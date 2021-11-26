@@ -28,7 +28,7 @@ class PackageRepository extends ArrayRepository
     /**
      * Initializes filesystem repository.
      *
-     * @param array{package: array} $config package definition
+     * @param array{package: mixed[]} $config package definition
      */
     public function __construct(array $config)
     {
@@ -48,7 +48,7 @@ class PackageRepository extends ArrayRepository
     {
         parent::initialize();
 
-        $loader = new ValidatingArrayLoader(new ArrayLoader(null, true), false);
+        $loader = new ValidatingArrayLoader(new ArrayLoader(null, true), true);
         foreach ($this->config as $package) {
             try {
                 $package = $loader->load($package);
