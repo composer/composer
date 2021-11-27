@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Repository;
 
+use Composer\Composer;
 use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Repository\PlatformRepository;
@@ -1212,6 +1213,64 @@ Linked Version => 1.2.11',
             self::assertContains($link->getTarget(), $expectedLinks, sprintf('%s: package %s not in %s', $context, $link->getTarget(), var_export($expectedLinks, true)));
             self::assertTrue($link->getConstraint()->matches($this->getVersionConstraint('=', $sourcePackage->getVersion())));
         }
+    }
+
+    public function testComposerPlatformVersion()
+    {
+        $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
+        $runtime
+            ->method('getExtensions')
+            ->willReturn(array());
+        $runtime
+            ->method('getConstant')
+            ->willReturnMap(
+                array(
+                    array('PHP_VERSION', null, '7.0.0'),
+                    array('PHP_DEBUG', null, false),
+                )
+            );
+
+        $platformRepository = new PlatformRepository(array(), array(), $runtime);
+
+        $package = $platformRepository->findPackage('composer', '='.Composer::getVersion());
+        self::assertNotNull($package, 'Composer package exists');
+    }
+
+    public static function providePlatformPackages()
+    {
+        return array(
+            array('php', true),
+            array('php-debug', true),
+            array('php-ipv6', true),
+            array('php-64bit', true),
+            array('php-zts', true),
+            array('hhvm', true),
+            array('hhvm-foo', false),
+            array('ext-foo', true),
+            array('ext-123', true),
+            array('extfoo', false),
+            array('ext', false),
+            array('lib-foo', true),
+            array('lib-123', true),
+            array('libfoo', false),
+            array('lib', false),
+            array('composer', true),
+            array('composer-foo', false),
+            array('composer-plugin-api', true),
+            array('composer-plugin', false),
+            array('composer-runtime-api', true),
+            array('composer-runtime', false),
+        );
+    }
+
+    /**
+     * @param string $packageName
+     * @param bool $expectation
+     * @dataProvider providePlatformPackages
+     */
+    public function testValidPlatformPackages($packageName, $expectation)
+    {
+        self::assertSame($expectation, PlatformRepository::isPlatformPackage($packageName));
     }
 }
 

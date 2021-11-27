@@ -31,7 +31,7 @@ use Composer\XdebugHandler\XdebugHandler;
  */
 class PlatformRepository extends ArrayRepository
 {
-    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-(?:plugin|runtime)-api)$}iD';
+    const PLATFORM_PACKAGE_REGEX = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer(?:-(?:plugin|runtime)-api)?)$}iD';
 
     /**
      * @var ?string
@@ -123,6 +123,12 @@ class PlatformRepository extends ArrayRepository
                 $this->addOverriddenPackage($override);
             }
         }
+
+        $prettyVersion = Composer::getVersion();
+        $version = $this->versionParser->normalize($prettyVersion);
+        $composer = new CompletePackage('composer', $version, $prettyVersion);
+        $composer->setDescription('Composer package');
+        $this->addPackage($composer);
 
         $prettyVersion = PluginInterface::PLUGIN_API_VERSION;
         $version = $this->versionParser->normalize($prettyVersion);
