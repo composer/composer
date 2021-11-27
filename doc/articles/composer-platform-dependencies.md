@@ -60,18 +60,18 @@ autoloader are considered the application "runtime".
 
 Starting with version 2.0, Composer makes [additional features](../07-runtime.md) (besides registering the class autoloader) available to the application runtime environment.
 
-Similar to `composer-plugin-api`, not every Composer release, adds new runtime features,
-thus the version of `composer-runtimeapi` s also increased independently from Composer's version. 
+Similar to `composer-plugin-api`, not every Composer release adds new runtime features,
+thus the version of `composer-runtimeapi` is also increased independently from Composer's version. 
 
 ## Composer package `composer`
 
 Starting with Composer 2.2.0, a new platform package called `composer` is available, which represents the exact
-Composer version that is executed. Packages depending on this platform package, can therefore depend on (or conflict
-with) individual Composer versions, to cover edge cases, where neither the `composer-runtime-api` version nor the
+Composer version that is executed. Packages depending on this platform package can therefore depend on (or conflict
+with) individual Composer versions to cover edge cases where neither the `composer-runtime-api` version nor the
 `composer-plugin-api` was changed.
 
 Because this option was introduced with Composer 2.2.0, it is recommended to add a `composer-plugin-api` dependency on
-at least `>=2.2.0`, to provide a more meaningful error message for users running older Composer versions.
+at least `>=2.2.0` to provide a more meaningful error message for users running older Composer versions.
 
-In general, it is always recommended depending on `composer-plugin-api` or `composer-runtime-api`
-over depending on concrete Composer versions using the `composer` platform package.
+In general, depending on `composer-plugin-api` or `composer-runtime-api` is always recommended
+over depending on concrete Composer versions with the `composer` platform package.
