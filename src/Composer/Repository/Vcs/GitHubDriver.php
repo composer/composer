@@ -322,18 +322,20 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getTags();
         }
         if (null === $this->tags) {
-            $this->tags = array();
+            $tags = array();
             $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/tags?per_page=100';
 
             do {
                 $response = $this->getContents($resource);
                 $tagsData = $response->decodeJson();
                 foreach ($tagsData as $tag) {
-                    $this->tags[$tag['name']] = $tag['commit']['sha'];
+                    $tags[$tag['name']] = $tag['commit']['sha'];
                 }
 
                 $resource = $this->getNextPage($response);
             } while ($resource);
+
+            $this->tags = $tags;
         }
 
         return $this->tags;
@@ -348,7 +350,7 @@ class GitHubDriver extends VcsDriver
             return $this->gitDriver->getBranches();
         }
         if (null === $this->branches) {
-            $this->branches = array();
+            $branches = array();
             $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/git/refs/heads?per_page=100';
 
             do {
@@ -357,12 +359,14 @@ class GitHubDriver extends VcsDriver
                 foreach ($branchData as $branch) {
                     $name = substr($branch['ref'], 11);
                     if ($name !== 'gh-pages') {
-                        $this->branches[$name] = $branch['object']['sha'];
+                        $branches[$name] = $branch['object']['sha'];
                     }
                 }
 
                 $resource = $this->getNextPage($response);
             } while ($resource);
+
+            $this->branches = $branches;
         }
 
         return $this->branches;

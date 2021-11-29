@@ -222,7 +222,7 @@ class SvnDriver extends VcsDriver
     public function getTags()
     {
         if (null === $this->tags) {
-            $this->tags = array();
+            $tags = array();
 
             if ($this->tagsPath !== false) {
                 $output = $this->execute('svn ls --verbose', $this->baseUrl . '/' . $this->tagsPath);
@@ -231,7 +231,7 @@ class SvnDriver extends VcsDriver
                         $line = trim($line);
                         if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                             if (isset($match[1], $match[2]) && $match[2] !== './') {
-                                $this->tags[rtrim($match[2], '/')] = $this->buildIdentifier(
+                                $tags[rtrim($match[2], '/')] = $this->buildIdentifier(
                                     '/' . $this->tagsPath . '/' . $match[2],
                                     $match[1]
                                 );
@@ -240,6 +240,8 @@ class SvnDriver extends VcsDriver
                     }
                 }
             }
+
+            $this->tags = $tags;
         }
 
         return $this->tags;
@@ -251,7 +253,7 @@ class SvnDriver extends VcsDriver
     public function getBranches()
     {
         if (null === $this->branches) {
-            $this->branches = array();
+            $branches = array();
 
             if (false === $this->trunkPath) {
                 $trunkParent = $this->baseUrl . '/';
@@ -265,11 +267,11 @@ class SvnDriver extends VcsDriver
                     $line = trim($line);
                     if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                         if (isset($match[1], $match[2]) && $match[2] === './') {
-                            $this->branches['trunk'] = $this->buildIdentifier(
+                            $branches['trunk'] = $this->buildIdentifier(
                                 '/' . $this->trunkPath,
                                 $match[1]
                             );
-                            $this->rootIdentifier = $this->branches['trunk'];
+                            $this->rootIdentifier = $branches['trunk'];
                             break;
                         }
                     }
@@ -284,7 +286,7 @@ class SvnDriver extends VcsDriver
                         $line = trim($line);
                         if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                             if (isset($match[1], $match[2]) && $match[2] !== './') {
-                                $this->branches[rtrim($match[2], '/')] = $this->buildIdentifier(
+                                $branches[rtrim($match[2], '/')] = $this->buildIdentifier(
                                     '/' . $this->branchesPath . '/' . $match[2],
                                     $match[1]
                                 );
@@ -293,6 +295,8 @@ class SvnDriver extends VcsDriver
                     }
                 }
             }
+
+            $this->branches = $branches;
         }
 
         return $this->branches;
