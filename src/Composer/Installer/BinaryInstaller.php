@@ -342,7 +342,7 @@ if (PHP_VERSION_ID < 80000) {
     }
 
     if (function_exists('stream_wrapper_register') && stream_wrapper_register('composer-bin-proxy', 'Composer\BinProxyWrapper')) {
-        include("composer-bin-proxy://" . \$binPath);
+        include("composer-bin-proxy://" . $binPathExported);
         exit(0);
     }
 }
@@ -363,10 +363,9 @@ STREAMPROXY;
 
 namespace Composer;
 
-\$binPath = $binPathExported;
 $autoloadPathCode
 $streamProxyCode
-include \$binPath;
+include $binPathExported;
 
 PROXY;
         }
