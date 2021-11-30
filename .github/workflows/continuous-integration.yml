@@ -90,6 +90,10 @@ jobs:
       - name: "Remove platform config to get latest dependencies for current PHP version when build is not locked"
         run: "composer config platform --unset"
 
+      - name: "Allow alpha releases for latest-deps builds to catch problems earlier"
+        if: "contains(matrix.dependencies, 'highest')"
+        run: "composer config minimum-stability alpha"
+
       - name: "Update dependencies from composer.json using composer binary provided by system"
         if: "contains(matrix.dependencies, 'highest') || contains(matrix.dependencies, 'lowest')"
         run: "composer update ${{ env.COMPOSER_UPDATE_FLAGS }} ${{ env.COMPOSER_FLAGS }}"
