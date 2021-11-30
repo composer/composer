@@ -1,3 +1,7 @@
+### [2.1.14] 2021-11-30
+
+  * Fixed invalid release build
+
 ### [2.1.13] 2021-11-30
 
   * Removed `symfony/console ^6` support as we cannot be compatible until Composer 2.3.0 is released. If you have issues with Composer required as a dependency + Symfony make sure you stay on Symfony 5.4 for now. (#10321)
@@ -1301,6 +1305,7 @@
 
   * Initial release
 
+[2.1.14]: https://github.com/composer/composer/compare/2.1.13...2.1.14
 [2.1.13]: https://github.com/composer/composer/compare/2.1.12...2.1.13
 [2.1.12]: https://github.com/composer/composer/compare/2.1.11...2.1.12
 [2.1.11]: https://github.com/composer/composer/compare/2.1.10...2.1.11
