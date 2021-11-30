@@ -16,6 +16,8 @@ use Composer\Script\Event as ScriptEvent;
 use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Platform;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -43,6 +45,13 @@ class RunScriptCommand extends BaseCommand
         ScriptEvents::PRE_AUTOLOAD_DUMP,
         ScriptEvents::POST_AUTOLOAD_DUMP,
     );
+
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        if ($input->mustSuggestArgumentValuesFor('script')) {
+            $suggestions->suggestValues(array_keys($this->getComposer()->getPackage()->getScripts()));
+        }
+    }
 
     /**
      * @return void

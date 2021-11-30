@@ -44,8 +44,12 @@ class HttpDownloader
     private $config;
     /** @var array<Job> */
     private $jobs = array();
+    /** @var bool */
+    private $disableTls;
     /** @var mixed[] */
     private $options = array();
+    /** @var mixed[]|null */
+    private $tlsDefaultOptions = null;
     /** @var int */
     private $runningJobs = 0;
     /** @var int */
@@ -73,21 +77,18 @@ class HttpDownloader
 
         $this->disabled = (bool) Platform::getEnv('COMPOSER_DISABLE_NETWORK');
 
-        // Setup TLS options
-        // The cafile option can be set via config.json
-        if ($disableTls === false) {
-            $this->options = StreamContextFactory::getTlsDefaults($options, $io);
+        if ($disableTls === true) {
+            // make sure the tlsDefaultOptions are not loaded later
+            $this->tlsDefaultOptions = [];
         }
 
-        // handle the other externally set options normally.
-        $this->options = array_replace_recursive($this->options, $options);
+        $this->disableTls = $disableTls;
+        $this->options = $options;
         $this->config = $config;
 
         if (self::isCurlEnabled()) {
             $this->curl = new CurlDownloader($io, $config, $options, $disableTls);
         }
-
-        $this->rfs = new RemoteFilesystem($io, $config, $options, $disableTls);
 
         if (is_numeric($maxJobs = Platform::getEnv('COMPOSER_MAX_PARALLEL_HTTP'))) {
             $this->maxJobs = max(1, min(50, (int) $maxJobs));
@@ -171,7 +172,13 @@ class HttpDownloader
      */
     public function getOptions()
     {
-        return $this->options;
+        if ($this->tlsDefaultOptions === null) {
+            // Setup TLS options
+            // The cafile option can be set via config.json
+            $this->tlsDefaultOptions = StreamContextFactory::getTlsDefaults($this->options, $this->io);
+        }
+
+        return array_replace_recursive($this->tlsDefaultOptions, $this->options);
     }
 
     /**
@@ -191,7 +198,7 @@ class HttpDownloader
      */
     private function addJob(array $request, bool $sync = false): array
     {
-        $request['options'] = array_replace_recursive($this->options, $request['options']);
+        $request['options'] = array_replace_recursive($this->getOptions(), $request['options']);
 
         /** @var Job */
         $job = array(
@@ -210,8 +217,6 @@ class HttpDownloader
         if (Preg::isMatch('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $request['url'], $match)) {
             $this->io->setAuthentication($job['origin'], rawurldecode($match[1]), rawurldecode($match[2]));
         }
-
-        $rfs = $this->rfs;
 
         if ($this->canUseCurl($job)) {
             $resolver = function ($resolve, $reject) use (&$job): void {
@@ -283,6 +288,15 @@ class HttpDownloader
         }
 
         return array($job, $promise);
+    }
+
+    private function getRFS(): RemoteFilesystem
+    {
+        if (null === $this->rfs) {
+            $this->rfs = new RemoteFilesystem($this->io, $this->config, $this->options, $this->disableTls);
+        }
+
+        return $this->rfs;
     }
 
     /**

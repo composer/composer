@@ -14,6 +14,8 @@ namespace Composer\Command;
 
 use Composer\DependencyResolver\Request;
 use Composer\Util\Filesystem;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -57,6 +59,11 @@ class RequireCommand extends BaseCommand
     private $lockBackup;
     /** @var bool */
     private $dependencyResolutionCompleted = false;
+
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $this->completePlatformPackage($input, $suggestions) || $this->completeAvailablePackage($input, $suggestions) || $this->completePreferInstall($input, $suggestions);
+    }
 
     /**
      * @return void

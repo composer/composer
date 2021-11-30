@@ -33,6 +33,8 @@ use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Silencer;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -55,6 +57,11 @@ use Composer\Package\Version\VersionParser;
  */
 class CreateProjectCommand extends BaseCommand
 {
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $this->completeAvailablePackage($input, $suggestions) || $this->completePreferInstall($input, $suggestions);
+    }
+
     /**
      * @var SuggestedPackagesReporter
      */

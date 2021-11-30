@@ -22,6 +22,8 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Platform;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -32,6 +34,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ReinstallCommand extends BaseCommand
 {
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $this->completeInstalledPackage($input, $suggestions) || $this->completePreferInstall($input, $suggestions);
+    }
+
     /**
      * @return void
      */

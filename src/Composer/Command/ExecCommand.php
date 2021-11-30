@@ -12,6 +12,8 @@
 
 namespace Composer\Command;
 
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -22,6 +24,13 @@ use Symfony\Component\Console\Input\InputArgument;
  */
 class ExecCommand extends BaseCommand
 {
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        if ($input->mustSuggestArgumentValuesFor('binary')) {
+            $suggestions->suggestValues($this->getBinaries(false));
+        }
+    }
+
     /**
      * @return void
      */
@@ -52,14 +61,11 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->requireComposer();
-        $binDir = $composer->getConfig()->get('bin-dir');
-        if ($input->getOption('list') || null === $input->getArgument('binary')) {
-            $bins = glob($binDir . '/*');
-            $bins = array_merge($bins, array_map(function ($e) {
-                return "$e (local)";
-            }, $composer->getPackage()->getBinaries()));
+        if ($input->getOption('list') || !$input->getArgument('binary')) {
+            $bins = $this->getBinaries(true);
+            if (count($bins) > 0) {
+                $binDir = $composer->getConfig()->get('bin-dir');
 
-            if (!$bins) {
                 throw new \RuntimeException("No binaries found in composer.json or in bin-dir ($binDir)");
             }
 
@@ -70,13 +76,6 @@ EOT
             );
 
             foreach ($bins as $bin) {
-                // skip .bat copies
-                if (isset($previousBin) && $bin === $previousBin.'.bat') {
-                    continue;
-                }
-
-                $previousBin = $bin;
-                $bin = basename($bin);
                 $this->getIO()->write(
                     <<<EOT
 <info>- $bin</info>
@@ -104,5 +103,31 @@ EOT
         }
 
         return $dispatcher->dispatchScript('__exec_command', true, $input->getArgument('args'));
+    }
+
+    private function getBinaries(bool $forDisplay): array
+    {
+        $composer = $this->getComposer();
+        $binDir = $composer->getConfig()->get('bin-dir');
+        $bins = glob($binDir . '/*');
+        $localBins = $composer->getPackage()->getBinaries();
+        if ($forDisplay) {
+            $localBins = array_map(function ($e) {
+                return "$e (local)";
+            }, $localBins);
+        }
+
+        $binaries = [];
+        foreach (array_merge($bins, $localBins) as $bin) {
+            // skip .bat copies
+            if (isset($previousBin) && $bin === $previousBin.'.bat') {
+                continue;
+            }
+
+            $previousBin = $bin;
+            $binaries[] = basename($bin);
+        }
+
+        return $binaries;
     }
 }

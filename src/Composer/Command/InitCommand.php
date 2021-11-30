@@ -23,6 +23,8 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -41,6 +43,14 @@ class InitCommand extends BaseCommand
 
     /** @var array<string, string> */
     private $gitConfig;
+
+    /** @var RepositorySet[] */
+    private $repositorySets;
+
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $this->completeAvailablePackage($input, $suggestions);
+    }
 
     /**
      * @inheritDoc

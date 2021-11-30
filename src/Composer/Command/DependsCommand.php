@@ -12,6 +12,8 @@
 
 namespace Composer\Command;
 
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -22,6 +24,11 @@ use Symfony\Component\Console\Input\InputOption;
  */
 class DependsCommand extends BaseDependencyCommand
 {
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $this->completeInstalledPackage($input, $suggestions);
+    }
+
     /**
      * Configure command metadata.
      *

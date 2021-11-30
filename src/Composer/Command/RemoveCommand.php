@@ -20,6 +20,8 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Json\JsonFile;
 use Composer\Factory;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -32,6 +34,11 @@ use Composer\Package\BasePackage;
  */
 class RemoveCommand extends BaseCommand
 {
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $this->completeInstalledPackage($input, $suggestions);
+    }
+
     /**
      * @return void
      */

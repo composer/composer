@@ -16,6 +16,9 @@ use Composer\Factory;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\StringInput;
@@ -26,6 +29,16 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class GlobalCommand extends BaseCommand
 {
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $application = $this->getApplication();
+        if ($input->mustSuggestArgumentValuesFor('command-name')) {
+            $suggestions->suggestValues(array_filter(array_map(function (Command $command) {
+                return $command->isHidden() ? null : $command->getName();
+            }, $application->all())));
+        }
+    }
+
     /**
      * @return void
      */

@@ -74,6 +74,12 @@ class VersionGuesser
             return null;
         }
 
+        // bypass version guessing in bash completions as it takes time to create
+        // new processes and the root version is usually not that important
+        if (isset($_SERVER['argv'][1]) && $_SERVER['argv'][1] === '_complete') {
+            return null;
+        }
+
         $versionData = $this->guessGitVersion($packageConfig, $path);
         if (null !== $versionData && null !== $versionData['version']) {
             return $this->postprocess($versionData);

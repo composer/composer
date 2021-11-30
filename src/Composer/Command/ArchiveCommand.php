@@ -27,6 +27,8 @@ use Composer\Util\Filesystem;
 use Composer\Util\Loop;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -39,6 +41,17 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ArchiveCommand extends BaseCommand
 {
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        if ($this->completeAvailablePackage($input, $suggestions)) {
+            return;
+        }
+
+        if ($input->mustSuggestOptionValuesFor('format')) {
+            $suggestions->suggestValues(['tar', 'tar.gz', 'tar.bz2', 'zip']);
+        }
+    }
+
     /**
      * @return void
      */

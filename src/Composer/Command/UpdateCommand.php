@@ -24,6 +24,8 @@ use Composer\Package\Version\VersionParser;
 use Composer\Util\HttpDownloader;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Package\Link;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -37,6 +39,11 @@ use Symfony\Component\Console\Question\Question;
  */
 class UpdateCommand extends BaseCommand
 {
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $this->completeInstalledPackage($input, $suggestions) || $this->completePreferInstall($input, $suggestions);
+    }
+
     /**
      * @return void
      */

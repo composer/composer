@@ -18,6 +18,8 @@ use Composer\Repository\RootPackageRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,6 +30,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class HomeCommand extends BaseCommand
 {
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $this->completeInstalledPackage($input, $suggestions);
+    }
+
     /**
      * @inheritDoc
      *
