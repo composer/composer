@@ -212,6 +212,10 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $this->packageName = !empty($data['name']) ? $data['name'] : null;
             }
         } catch (\Exception $e) {
+            if ($e instanceof TransportException && $this->shouldRethrowTransportException($e)) {
+                throw $e;
+            }
+
             if ($isVeryVerbose) {
                 $this->io->writeError('<error>Skipped parsing '.$driver->getRootIdentifier().', '.$e->getMessage().'</error>');
             }
@@ -303,7 +307,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                     if ($e->getCode() === 404) {
                         $this->emptyReferences[] = $identifier;
                     }
-                    if (in_array($e->getCode(), array(401, 403, 429), true)) {
+                    if ($this->shouldRethrowTransportException($e)) {
                         throw $e;
                     }
                 }
@@ -392,7 +396,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 if ($e->getCode() === 404) {
                     $this->emptyReferences[] = $identifier;
                 }
-                if (in_array($e->getCode(), array(401, 403, 429), true)) {
+                if ($this->shouldRethrowTransportException($e)) {
                     throw $e;
                 }
                 if ($isVeryVerbose) {
@@ -530,5 +534,13 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         return null;
+    }
+
+    /**
+     * @return bool
+     */
+    private function shouldRethrowTransportException(TransportException $e)
+    {
+        return in_array($e->getCode(), array(401, 403, 429), true) || $e->getCode() >= 500;
     }
 }

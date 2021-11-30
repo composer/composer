@@ -293,7 +293,7 @@ class GitBitbucketDriver extends VcsDriver
         }
 
         if (null === $this->tags) {
-            $this->tags = array();
+            $tags = array();
             $resource = sprintf(
                 '%s?%s',
                 $this->tagsUrl,
@@ -311,7 +311,7 @@ class GitBitbucketDriver extends VcsDriver
             while ($hasNext) {
                 $tagsData = $this->fetchWithOAuthCredentials($resource)->decodeJson();
                 foreach ($tagsData['values'] as $data) {
-                    $this->tags[$data['name']] = $data['target']['hash'];
+                    $tags[$data['name']] = $data['target']['hash'];
                 }
                 if (empty($tagsData['next'])) {
                     $hasNext = false;
@@ -319,6 +319,8 @@ class GitBitbucketDriver extends VcsDriver
                     $resource = $tagsData['next'];
                 }
             }
+
+            $this->tags = $tags;
         }
 
         return $this->tags;
@@ -334,7 +336,7 @@ class GitBitbucketDriver extends VcsDriver
         }
 
         if (null === $this->branches) {
-            $this->branches = array();
+            $branches = array();
             $resource = sprintf(
                 '%s?%s',
                 $this->branchesUrl,
@@ -352,7 +354,7 @@ class GitBitbucketDriver extends VcsDriver
             while ($hasNext) {
                 $branchData = $this->fetchWithOAuthCredentials($resource)->decodeJson();
                 foreach ($branchData['values'] as $data) {
-                    $this->branches[$data['name']] = $data['target']['hash'];
+                    $branches[$data['name']] = $data['target']['hash'];
                 }
                 if (empty($branchData['next'])) {
                     $hasNext = false;
@@ -360,6 +362,8 @@ class GitBitbucketDriver extends VcsDriver
                     $resource = $branchData['next'];
                 }
             }
+
+            $this->branches = $branches;
         }
 
         return $this->branches;
