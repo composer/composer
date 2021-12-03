@@ -103,7 +103,7 @@ class BinaryInstaller
                 $binCompat = 'full';
             }
 
-            if ($this->binCompat === "full") {
+            if ($binCompat === "full") {
                 $this->installFullBinaries($binPath, $link, $bin, $package);
             } else {
                 $this->installUnixyProxyBinaries($binPath, $link);
