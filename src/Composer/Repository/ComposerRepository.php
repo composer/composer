@@ -492,10 +492,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $results = array();
             $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
 
-            foreach ($this->getPackageNames() as $name) {
-                if (preg_match($regex, $name)) {
-                    $results[] = array('name' => $name, 'description' => '');
-                }
+            $packageNames = $this->getPackageNames();
+
+            foreach (preg_grep($regex, $packageNames) as $name) {
+                $results2[] = array('name' => $name, 'description' => '');
             }
 
             return $results;
