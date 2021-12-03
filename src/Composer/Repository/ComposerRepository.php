@@ -931,7 +931,17 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             throw new \RuntimeException('You must enable the openssl extension in your php.ini to load information from '.$this->url);
         }
 
-        $data = $this->fetchFile($this->getPackagesJsonUrl(), 'packages.json');
+        if ($cachedData = $this->cache->read('packages.json')) {
+            $cachedData = json_decode($cachedData, true);
+            if (isset($cachedData['last-modified'])) {
+                $response = $this->fetchFileIfLastModified($this->getPackagesJsonUrl(), 'packages.json', $cachedData['last-modified']);
+                $data = true === $response ? $cachedData : $response;
+            }
+        }
+
+        if (!isset($data)) {
+            $data = $this->fetchFile($this->getPackagesJsonUrl(), 'packages.json', null, true);
+        }
 
         if (!empty($data['notify-batch'])) {
             $this->notifyUrl = $this->canonicalizeUrl($data['notify-batch']);
