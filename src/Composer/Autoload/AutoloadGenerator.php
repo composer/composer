@@ -356,12 +356,12 @@ EOF;
             }
         }
 
-        foreach ($ambiguousClasses as $className => $ambigiousPaths) {
+        foreach ($ambiguousClasses as $className => $ambiguousPaths) {
             $cleanPath = str_replace(array('$vendorDir . \'', '$baseDir . \'', "',\n"), array($vendorPath, $basePath, ''), $classMap[$className]);
 
             $this->io->writeError(
                 '<warning>Warning: Ambiguous class resolution, "'.$className.'"'.
-                ' was found '. (count($ambigiousPaths) + 1) .'x: in "'.$cleanPath.'" and "'. implode('", "', $ambigiousPaths) .'", the first will be used.</warning>'
+                ' was found '. (count($ambiguousPaths) + 1) .'x: in "'.$cleanPath.'" and "'. implode('", "', $ambiguousPaths) .'", the first will be used.</warning>'
             );
         }
 

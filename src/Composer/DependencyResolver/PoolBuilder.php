@@ -414,7 +414,7 @@ class PoolBuilder
             }
         }
 
-        // if propogateUpdate is false we are loading a fixed or locked package, root aliases do not apply as they are
+        // if propagateUpdate is false we are loading a fixed or locked package, root aliases do not apply as they are
         // manually loaded as separate packages in this case
         if ($propagateUpdate && isset($this->rootAliases[$name][$package->getVersion()])) {
             $alias = $this->rootAliases[$name][$package->getVersion()];
