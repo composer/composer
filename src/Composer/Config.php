@@ -33,6 +33,7 @@ class Config
     public static $defaultConfig = array(
         'process-timeout' => 300,
         'use-include-path' => false,
+        'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
         'notify-on-install' => true,
         'github-protocols' => array('https', 'ssh', 'git'),
@@ -73,7 +74,6 @@ class Config
         'use-github-api' => true,
         'lock' => true,
         'platform-check' => 'php-only',
-        'use-parent-dir-composer' => 'prompt',
         // valid keys without defaults (auth config stuff):
         // bitbucket-oauth
         // github-oauth
@@ -409,13 +409,6 @@ class Config
                 }
 
                 return $protos;
-
-            case 'use-parent-dir-composer':
-                if($this->config[$key] === null) {
-                    return false;
-                }
-                // This might seem weird, but we want to retur false if the value is anythung _but_ true
-                return $this->config[$key] === true;
 
             default:
                 if (!isset($this->config[$key])) {

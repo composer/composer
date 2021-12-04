@@ -172,17 +172,22 @@ class Application extends BaseApplication
         }
 
         $composer = Factory::createGlobal($this->io);
-        $alwaysUseParentComposerIfNoneAvailable = $composer->getConfig()->get('use-parent-dir-composer');
+        $useParentDirIfNoJsonAvailable = $composer->getConfig()->get('use-parent-dir');
 
         // prompt user for dir change if no composer.json is present in current dir
-        if ($io->isInteractive() && $alwaysUseParentComposerIfNoneAvailable !== false && !$newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'), true) && !file_exists(Factory::getComposerFile())) {
+        if ($io->isInteractive() && $useParentDirIfNoJsonAvailable !== false && !$newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'), true) && !file_exists(Factory::getComposerFile())) {
             $dir = dirname(getcwd());
             $home = realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
 
             // abort when we reach the home dir or top of the filesystem
             while (dirname($dir) !== $dir && $dir !== $home) {
                 if (file_exists($dir.'/'.Factory::getComposerFile())) {
-                    if ($alwaysUseParentComposerIfNoneAvailable === true || $io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ')) {
+                    if ($useParentDirIfNoJsonAvailable === true || $io->askConfirmation('<info>No composer.json in current directory, do you want to use the one at '.$dir.'?</info> [<comment>Y,n</comment>]? ')) {
+                        if ($useParentDirIfNoJsonAvailable === true) {
+                            $io->writeError('<info>No composer.json in current directory, changing working directory to '.$dir.'</info>');
+                        } else {
+                            $io->writeError('<info>Always want to use the parent dir? Use "composer config --global use-parent-dir true" to change the default.</info>');
+                        }
                         $oldWorkingDir = getcwd();
                         chdir($dir);
                     }

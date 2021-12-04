@@ -63,6 +63,19 @@ optionally be a hash of patterns for more granular install preferences.
 > configuration in global and package configurations the string notation
 > is translated to a `*` package pattern.
 
+## use-parent-dir
+
+When running Composer in a directory where there is no composer.json, if there
+is one present in a directory above Composer will by default ask you whether
+you want to use that directory's composer.json instead.
+
+If you always want to answer yes to this prompt, you can set this config value
+to `true`. To never be prompted set it to `false`. The default is `"prompt"`.
+
+> **Note:** This config must be set in your global user-wide config for it
+> to work. Use for example `php composer.phar config --global use-parent-dir true`
+> to set it.
+
 ## store-auths
 
 What to do after prompting for authentication, one of: `true` (always store),

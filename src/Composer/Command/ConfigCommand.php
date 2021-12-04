@@ -457,7 +457,7 @@ EOT
                     return $val !== 'false' && (bool)$val;
                 },
             ),
-            'use-parent-dir-composer' => array(
+            'use-parent-dir' => array(
                 function ($val) {
                     return in_array($val, array('true', 'false', 'prompt'), true);
                 },
@@ -466,7 +466,7 @@ EOT
                         return 'prompt';
                     }
 
-                    return $val !== 'false' && (bool)$val;
+                    return $val !== 'false' && (bool) $val;
                 },
             ),
         );
