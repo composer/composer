@@ -171,11 +171,8 @@ class Application extends BaseApplication
             }
         }
 
-        $composer = Factory::createGlobal($this->io);
-        $useParentDirIfNoJsonAvailable = $composer->getConfig()->get('use-parent-dir');
-
         // prompt user for dir change if no composer.json is present in current dir
-        if ($io->isInteractive() && $useParentDirIfNoJsonAvailable !== false && !$newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'), true) && !file_exists(Factory::getComposerFile())) {
+        if ($io->isInteractive() && !$newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'), true) && !file_exists(Factory::getComposerFile()) && ($useParentDirIfNoJsonAvailable = $this->getUseParentDirConfigValue()) !== false) {
             $dir = dirname(getcwd());
             $home = realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
 
@@ -600,5 +597,15 @@ class Application extends BaseApplication
     public function getInitialWorkingDirectory()
     {
         return $this->initialWorkingDirectory;
+    }
+
+    /**
+     * @return 'prompt'|bool
+     */
+    private function getUseParentDirConfigValue()
+    {
+        $config = Factory::createConfig($this->io);
+
+        return $config->get('use-parent-dir');
     }
 }
