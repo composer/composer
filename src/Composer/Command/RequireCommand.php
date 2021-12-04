@@ -206,6 +206,8 @@ EOT
             );
         } catch (\Exception $e) {
             if ($this->newlyCreated) {
+                $this->revertComposerFile(false);
+
                 throw new \RuntimeException('No composer.json present in the current directory ('.$this->file.'), this may be the cause of the following exception.', 0, $e);
             }
 
