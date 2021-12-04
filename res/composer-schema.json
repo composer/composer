@@ -296,6 +296,10 @@
                     "type": "boolean",
                     "description": "If true, the Composer autoloader will also look for classes in the PHP include path."
                 },
+                "use-parent-dir": {
+                    "type": ["string", "boolean"],
+                    "description": "When running Composer in a directory where there is no composer.json, if there is one present in a directory above Composer will by default ask you whether you want to use that directory's composer.json instead. One of: true (always use parent if needed), false (never ask or use it) or \"prompt\" (ask every time), defaults to prompt."
+                },
                 "preferred-install": {
                     "type": ["string", "object"],
                     "description": "The install method Composer will prefer to use, defaults to auto and can be any of source, dist, auto, or a hash of {\"pattern\": \"preference\"}."

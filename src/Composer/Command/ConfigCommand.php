@@ -454,6 +454,18 @@ EOT
                         return 'php-only';
                     }
 
+                    return $val !== 'false' && (bool)$val;
+                },
+            ),
+            'use-parent-dir' => array(
+                function ($val) {
+                    return in_array($val, array('true', 'false', 'prompt'), true);
+                },
+                function ($val) {
+                    if ('prompt' === $val) {
+                        return 'prompt';
+                    }
+
                     return $val !== 'false' && (bool) $val;
                 },
             ),
@@ -595,7 +607,7 @@ EOT
         );
 
         if ($input->getOption('global') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]) || strpos($settingKey, 'extra.') === 0)) {
-            throw new \InvalidArgumentException('The '.$settingKey.' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global composer.json');
+            throw new \InvalidArgumentException('The ' . $settingKey . ' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global composer.json');
         }
         if ($input->getOption('unset') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]))) {
             $this->configSource->removeProperty($settingKey);
