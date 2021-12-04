@@ -176,7 +176,7 @@ class Filesystem
      * @param string $directory
      * @param bool   $fallbackToPhp
      *
-     * @return bool|null Returns null, when no edge case was hit. Otherwise a bool whether removal was successfull
+     * @return bool|null Returns null, when no edge case was hit. Otherwise a bool whether removal was successful
      */
     private function removeEdgeCases($directory, $fallbackToPhp = true)
     {
