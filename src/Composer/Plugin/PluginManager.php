@@ -376,6 +376,10 @@ class PluginManager
      */
     public function addPlugin(PluginInterface $plugin, $isGlobalPlugin = false, PackageInterface $sourcePackage = null)
     {
+        if (!$sourcePackage) {
+            trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);
+        }
+
         if ($sourcePackage && !$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin)) {
             $this->io->writeError('Skipped loading "'.get_class($plugin).' from '.$sourcePackage->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
             return;
