@@ -562,12 +562,7 @@ EOT
                 return 0;
             }
 
-            $pluginPattern = $matches[1];
-            if ($input->getOption('unset')) {
-                $values[0] = 'false';
-            }
-
-            if (true !== $validation = $booleanValidator($values[0])) {
+            if (true !== $booleanValidator($values[0])) {
                 throw new \RuntimeException(sprintf(
                     '"%s" is an invalid value',
                     $values[0]

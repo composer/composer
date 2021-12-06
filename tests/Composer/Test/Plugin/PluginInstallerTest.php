@@ -145,7 +145,11 @@ class PluginInstallerTest extends TestCase
 
         $plugins = $this->pm->getPlugins();
         $this->assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore-line
-        $this->assertEquals('activate v1'.PHP_EOL, $this->io->getOutput());
+        $this->assertEquals(
+            '<warning>For additional security you should declare the allow-plugins config with a list of packages names that are allowed to run code. See https://getcomposer.org/allow-plugins</warning>'.PHP_EOL.
+            'activate v1'.PHP_EOL,
+            $this->io->getOutput()
+        );
     }
 
     public function testInstallMultiplePlugins()

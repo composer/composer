@@ -628,7 +628,7 @@ class PluginManager
 
     /**
      * @param  array<string, bool>|bool|null $allowPluginsConfig
-     * @return ?string
+     * @return array<string, bool>|null
      */
     private function parseAllowedPlugins($allowPluginsConfig)
     {
