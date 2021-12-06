@@ -289,10 +289,10 @@
                     }
                 },
                 "allow-plugins": {
-                    "type": ["array", "boolean"],
+                    "type": ["object", "boolean"],
                     "description": "This is an array of package names which are allowed to be loaded as plugins, or true to allow all, false to allow none, defaults to true.",
-                    "items": {
-                        "type": "string"
+                    "additionalProperties": {
+                        "type": ["boolean"]
                     }
                 },
                 "process-timeout": {
@@ -309,7 +309,10 @@
                 },
                 "preferred-install": {
                     "type": ["string", "object"],
-                    "description": "The install method Composer will prefer to use, defaults to auto and can be any of source, dist, auto, or a hash of {\"pattern\": \"preference\"}."
+                    "description": "The install method Composer will prefer to use, defaults to auto and can be any of source, dist, auto, or a hash of {\"pattern\": \"preference\"}.",
+                    "additionalProperties": {
+                        "type": ["boolean"]
+                    }
                 },
                 "notify-on-install": {
                     "type": "boolean",

@@ -446,6 +446,7 @@ EOT
             'github-expose-hostname' => array($booleanValidator, $booleanNormalizer),
             'htaccess-protect' => array($booleanValidator, $booleanNormalizer),
             'lock' => array($booleanValidator, $booleanNormalizer),
+            'allow-plugins' => array($booleanValidator, $booleanNormalizer),
             'platform-check' => array(
                 function ($val) {
                     return in_array($val, array('php-only', 'true', 'false', '1', '0'), true);
@@ -514,18 +515,6 @@ EOT
                     return $vals;
                 },
             ),
-            'allow-plugins' => array(
-                function ($vals) {
-                    if (!is_array($vals)) {
-                        return 'array expected';
-                    }
-
-                    return true;
-                },
-                function ($vals) {
-                    return $vals;
-                },
-            ),
         );
 
         if ($input->getOption('unset') && (isset($uniqueConfigValues[$settingKey]) || isset($multiConfigValues[$settingKey]))) {
@@ -567,6 +556,12 @@ EOT
 
         // handle allow-plugins config setting elements true or false to add/remove
         if (preg_match('{^allow-plugins\.([a-zA-Z0-9/*-]+)}', $settingKey, $matches)) {
+            if ($input->getOption('unset')) {
+                $this->configSource->removeConfigSetting($settingKey);
+
+                return 0;
+            }
+
             $pluginPattern = $matches[1];
             if ($input->getOption('unset')) {
                 $values[0] = 'false';
@@ -581,20 +576,7 @@ EOT
 
             $normalizedValue = $booleanNormalizer($values[0]);
 
-            $currentConfig = $this->configFile->read();
-            $currentValue = isset($currentConfig['config']['allow-plugins']) ? $currentConfig['config']['allow-plugins'] : array();
-
-            if ($normalizedValue) {
-                $currentValue[] = $pluginPattern;
-            } elseif (false !== ($index = array_search($pluginPattern, $currentValue, true))) {
-                unset($currentValue[$index]);
-            }
-
-            if (count($currentValue) === 0) {
-                $this->configSource->removeConfigSetting('allow-plugins');
-            } else {
-                $this->configSource->addConfigSetting('allow-plugins', array_unique($currentValue));
-            }
+            $this->configSource->addConfigSetting($settingKey, $normalizedValue);
 
             return 0;
         }

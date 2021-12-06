@@ -54,14 +54,14 @@ class PluginManager
     protected $registeredPlugins = array();
 
     /**
-     * @var ?string
+     * @var array<string, bool>|null
      */
-    private $allowedPlugins;
+    private $allowPluginRules;
 
     /**
-     * @var ?string
+     * @var array<string, bool>|null
      */
-    private $allowedGlobalPlugins;
+    private $allowGlobalPluginRules;
 
     /** @var int */
     private static $classCounter = 0;
@@ -82,8 +82,8 @@ class PluginManager
         $this->versionParser = new VersionParser();
         $this->disablePlugins = $disablePlugins;
 
-        $this->allowedPlugins = $this->parseAllowedPlugins($composer->getConfig()->get('allow-plugins'));
-        $this->allowedGlobalPlugins = $globalComposer ? $this->parseAllowedPlugins($globalComposer->getConfig()->get('allow-plugins')) : '{^$}D';
+        $this->allowPluginRules = $this->parseAllowedPlugins($composer->getConfig()->get('allow-plugins'));
+        $this->allowGlobalPluginRules = $this->parseAllowedPlugins($globalComposer ? $globalComposer->getConfig()->get('allow-plugins') : false);
     }
 
     /**
@@ -627,7 +627,7 @@ class PluginManager
     }
 
     /**
-     * @param  string[]|bool|null $allowPluginsConfig
+     * @param  array<string, bool>|bool|null $allowPluginsConfig
      * @return ?string
      */
     private function parseAllowedPlugins($allowPluginsConfig)
@@ -637,14 +637,19 @@ class PluginManager
         }
 
         if (true === $allowPluginsConfig) {
-            return '{}';
+            return array('{}' => true);
         }
 
         if (false === $allowPluginsConfig) {
-            return '{^$}D';
+            return array('{^$}D' => false);
         }
 
-        return BasePackage::packageNamesToRegexp($allowPluginsConfig);
+        $rules = array();
+        foreach ($allowPluginsConfig as $pattern => $allow) {
+            $rules[BasePackage::packageNameToRegexp($pattern)] = $allow;
+        }
+
+        return $rules;
     }
 
     /**
@@ -655,22 +660,70 @@ class PluginManager
     private function isPluginAllowed($package, $isGlobalPlugin)
     {
         static $warned = array();
-        $regex = $isGlobalPlugin ? $this->allowedGlobalPlugins : $this->allowedPlugins;
+        $rules = $isGlobalPlugin ? $this->allowGlobalPluginRules : $this->allowPluginRules;
 
-        if ($regex === null) {
-            if (!isset($warned['all'])) {
-                $this->io->writeError('<warning>For additional security you should declare the allow-plugins config with a list of packages names that are allowed to run code. See https://getcomposer.org/allow-plugins</warning>');
-                $warned['all'] = true;
+        if ($rules === null) {
+            if (!$this->io->isInteractive()) {
+                if (!isset($warned['all'])) {
+                    $this->io->writeError('<warning>For additional security you should declare the allow-plugins config with a list of packages names that are allowed to run code. See https://getcomposer.org/allow-plugins</warning>');
+                    $warned['all'] = true;
+                }
+
+                // if no config is defined we allow all plugins for BC
+                return true;
             }
-            return true;
+
+            // keep going and prompt the user
+            $rules = array();
         }
 
-        if (preg_match($regex, $package)) {
-            return true;
+        foreach ($rules as $pattern => $allow) {
+            if (preg_match($pattern, $package)) {
+                return $allow === true;
+            }
         }
 
         if (!isset($warned[$package])) {
-            $this->io->writeError('<warning>'.$package.' attempted to load a plugin but was blocked by your allow-plugins config. You may add it to the list if you consider it safe. See https://getcomposer.org/allow-plugins</warning>');
+            if ($this->io->isInteractive()) {
+                $composer = $isGlobalPlugin ? $this->globalComposer : $this->composer;
+
+                $this->io->writeError('<warning>'.$package.' contains a Composer plugin which is currently not in your allow-plugins config. See https://getcomposer.org/allow-plugins</warning>');
+                while (true) {
+                    switch ($answer = $this->io->ask('<warning>Do you trust "'.$package.'" to execute code and wish to enable the plugin now? [y,n,d,?]</warning> ', '?')) {
+                        case 'y':
+                        case 'n':
+                        case 'd':
+                            $allow = $answer === 'y';
+
+                            // persist answer in current rules to avoid prompting again if the package gets reloaded
+                            if ($isGlobalPlugin) {
+                                $this->allowGlobalPluginRules[BasePackage::packageNameToRegexp($package)] = $allow;
+                            } else {
+                                $this->allowPluginRules[BasePackage::packageNameToRegexp($package)] = $allow;
+                            }
+
+                            // persist answer in composer.json if it wasn't simply discarded
+                            if ($answer === 'y' || $answer === 'n') {
+                                $composer->getConfig()->getConfigSource()->addConfigSetting('allow-plugins.'.$package, $allow);
+                            }
+
+                            return $allow;
+
+                        case '?':
+                        default:
+                            $this->io->writeError(array(
+                                'y - add package to allow-plugins in composer.json and let it run immediately',
+                                'n - add package (as disallowed) to allow-plugins in composer.json to suppress further prompts',
+                                'd - discard this, do not change composer.json and do not allow the plugin to run',
+                                '? - print help'
+                            ));
+                            break;
+                    }
+                }
+            } else {
+                $this->io->writeError('<warning>'.$package.' contains a Composer plugin which is blocked by your allow-plugins config. You may add it to the list if you consider it safe. See https://getcomposer.org/allow-plugins</warning>');
+                $this->io->writeError('<warning>You can run "composer config allow-plugins.'.$package.' [true|false]" to enable it (true) or keep it disabled and suppress this warning (false)</warning>');
+            }
             $warned[$package] = true;
         }
 
