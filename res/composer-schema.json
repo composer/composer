@@ -138,42 +138,42 @@
         },
         "require": {
             "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that are required to run this package.",
+            "description": "This is an object of package name (keys) and version constraints (values) that are required to run this package.",
             "additionalProperties": {
                 "type": "string"
             }
         },
         "require-dev": {
             "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that this package requires for developing it (testing tools and such).",
+            "description": "This is an object of package name (keys) and version constraints (values) that this package requires for developing it (testing tools and such).",
             "additionalProperties": {
                 "type": "string"
             }
         },
         "replace": {
             "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that can be replaced by this package.",
+            "description": "This is an object of package name (keys) and version constraints (values) that can be replaced by this package.",
             "additionalProperties": {
                 "type": "string"
             }
         },
         "conflict": {
             "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that conflict with this package.",
+            "description": "This is an object of package name (keys) and version constraints (values) that conflict with this package.",
             "additionalProperties": {
                 "type": "string"
             }
         },
         "provide": {
             "type": "object",
-            "description": "This is a hash of package name (keys) and version constraints (values) that this package provides in addition to this package's name.",
+            "description": "This is an object of package name (keys) and version constraints (values) that this package provides in addition to this package's name.",
             "additionalProperties": {
                 "type": "string"
             }
         },
         "suggest": {
             "type": "object",
-            "description": "This is a hash of package name (keys) and descriptions (values) that this package suggests work well with it (this will be suggested to the user during installation).",
+            "description": "This is an object of package name (keys) and descriptions (values) that this package suggests work well with it (this will be suggested to the user during installation).",
             "additionalProperties": {
                 "type": "string"
             }
@@ -217,7 +217,7 @@
             "properties": {
                 "psr-0": {
                     "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
+                    "description": "This is an object of namespaces (keys) and the directories they can be found into (values, can be arrays of paths) by the autoloader.",
                     "additionalProperties": {
                         "type": ["string", "array"],
                         "items": {
@@ -227,7 +227,7 @@
                 },
                 "psr-4": {
                     "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
+                    "description": "This is an object of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
                     "additionalProperties": {
                         "type": ["string", "array"],
                         "items": {
@@ -283,7 +283,7 @@
             "properties": {
                 "platform": {
                     "type": "object",
-                    "description": "This is a hash of package name (keys) and version (values) that will be used to mock the platform packages on this machine.",
+                    "description": "This is an object of package name (keys) and version (values) that will be used to mock the platform packages on this machine.",
                     "additionalProperties": {
                         "type": ["string", "boolean"]
                     }
@@ -327,21 +327,21 @@
                 },
                 "github-oauth": {
                     "type": "object",
-                    "description": "A hash of domain name => github API oauth tokens, typically {\"github.com\":\"<token>\"}.",
+                    "description": "An object of domain name => github API oauth tokens, typically {\"github.com\":\"<token>\"}.",
                     "additionalProperties": {
                         "type": "string"
                     }
                 },
                 "gitlab-oauth": {
                     "type": "object",
-                    "description": "A hash of domain name => gitlab API oauth tokens, typically {\"gitlab.com\":\"<token>\"}.",
+                    "description": "An object of domain name => gitlab API oauth tokens, typically {\"gitlab.com\":\"<token>\"}.",
                     "additionalProperties": {
                         "type": "string"
                     }
                 },
                 "gitlab-token": {
                     "type": "object",
-                    "description": "A hash of domain name => gitlab private tokens, typically {\"gitlab.com\":\"<token>\"}.",
+                    "description": "An object of domain name => gitlab private tokens, typically {\"gitlab.com\":\"<token>\"}.",
                     "additionalProperties": {
                         "type": "string"
                     }
@@ -352,7 +352,7 @@
                 },
                 "bearer": {
                     "type": "object",
-                    "description": "A hash of domain name => bearer authentication token, for example {\"example.com\":\"<token>\"}.",
+                    "description": "An object of domain name => bearer authentication token, for example {\"example.com\":\"<token>\"}.",
                     "additionalProperties": {
                         "type": "string"
                     }
@@ -382,7 +382,7 @@
                 },
                 "http-basic": {
                     "type": "object",
-                    "description": "A hash of domain name => {\"username\": \"...\", \"password\": \"...\"}.",
+                    "description": "An object of domain name => {\"username\": \"...\", \"password\": \"...\"}.",
                     "additionalProperties": {
                         "type": "object",
                         "required": ["username", "password"],
@@ -641,7 +641,7 @@
             "properties": {
                 "psr-0": {
                     "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the directories they can be found in (values, can be arrays of paths) by the autoloader.",
+                    "description": "This is an object of namespaces (keys) and the directories they can be found in (values, can be arrays of paths) by the autoloader.",
                     "additionalProperties": {
                         "type": ["string", "array"],
                         "items": {
@@ -651,7 +651,7 @@
                 },
                 "psr-4": {
                     "type": "object",
-                    "description": "This is a hash of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
+                    "description": "This is an object of namespaces (keys) and the PSR-4 directories they can map to (values, can be arrays of paths) by the autoloader.",
                     "additionalProperties": {
                         "type": ["string", "array"],
                         "items": {
