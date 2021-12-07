@@ -687,7 +687,7 @@ class PluginManager
             if ($this->io->isInteractive()) {
                 $composer = $isGlobalPlugin ? $this->globalComposer : $this->composer;
 
-                $this->io->writeError('<warning>'.$package.' contains a Composer plugin which is currently not in your allow-plugins config. See https://getcomposer.org/allow-plugins</warning>');
+                $this->io->writeError('<warning>'.$package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is currently not in your allow-plugins config. See https://getcomposer.org/allow-plugins</warning>');
                 while (true) {
                     switch ($answer = $this->io->ask('<warning>Do you trust "'.$package.'" to execute code and wish to enable the plugin now? [y,n,d,?]</warning> ', '?')) {
                         case 'y':
@@ -721,8 +721,8 @@ class PluginManager
                     }
                 }
             } else {
-                $this->io->writeError('<warning>'.$package.' contains a Composer plugin which is blocked by your allow-plugins config. You may add it to the list if you consider it safe. See https://getcomposer.org/allow-plugins</warning>');
-                $this->io->writeError('<warning>You can run "composer config allow-plugins.'.$package.' [true|false]" to enable it (true) or keep it disabled and suppress this warning (false)</warning>');
+                $this->io->writeError('<warning>'.$package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is blocked by your allow-plugins config. You may add it to the list if you consider it safe. See https://getcomposer.org/allow-plugins</warning>');
+                $this->io->writeError('<warning>You can run "composer '.($isGlobalPlugin ? 'global ' : '').'config --no-plugins allow-plugins.'.$package.' [true|false]" to enable it (true) or keep it disabled and suppress this warning (false)</warning>');
             }
             $warned[$package] = true;
         }
