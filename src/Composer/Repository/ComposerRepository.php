@@ -337,7 +337,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * @param string|null $packageFilter
+     * @param string|null $packageFilter Package pattern filter which can include "*" as a wildcard
      *
      * @return string[]
      */
@@ -345,51 +345,120 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     {
         $hasProviders = $this->hasProviders();
 
-        $packageFilterCb = function ($name) {
-            return true;
-        };
-        if (null !== $packageFilter) {
-            $packageFilterRegex = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
-            $packageFilterCb = function ($name) use ($packageFilterRegex) {
-                return Preg::isMatch($packageFilterRegex, $name);
-            };
+        $filterResults =
+            /**
+             * @param list<string> $results
+             * @return list<string>
+             */
+            function (array $results) {
+                return $results;
+            }
+        ;
+        if (null !== $packageFilter && '' !== $packageFilter) {
+            $packageFilterRegex = BasePackage::packageNameToRegexp($packageFilter);
+            $filterResults =
+                /**
+                 * @param list<string> $results
+                 * @return list<string>
+                 */
+                function (array $results) use ($packageFilterRegex) {
+                    /** @var list<string> $results */
+                    return Preg::grep($packageFilterRegex, $results);
+                }
+            ;
         }
 
         if ($this->lazyProvidersUrl) {
             if (is_array($this->availablePackages)) {
-                return array_filter(array_keys($this->availablePackages), $packageFilterCb);
+                return $filterResults(array_keys($this->availablePackages));
             }
 
             if ($this->listUrl) {
-                $url = $this->listUrl;
-                if ($packageFilter) {
-                    $url .= '?filter='.urlencode($packageFilter);
-                }
-
-                $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
-
-                return $result['packageNames'];
+                // no need to call $filterResults here as the $packageFilter is applied in the function itself
+                return $this->loadPackageList($packageFilter);
             }
 
-            if ($this->hasPartialPackages()) {
-                return array_filter(array_keys($this->partialPackagesByName), $packageFilterCb);
+            if ($this->hasPartialPackages() && $this->partialPackagesByName !== null) {
+                return $filterResults(array_keys($this->partialPackagesByName));
             }
 
             return array();
         }
 
         if ($hasProviders) {
-            return array_filter($this->getProviderNames(), $packageFilterCb);
+            return $filterResults($this->getProviderNames());
         }
 
         $names = array();
         foreach ($this->getPackages() as $package) {
-            if ($packageFilterCb($package->getName())) {
-                $names[] = $package->getPrettyName();
-            }
+            $names[] = $package->getPrettyName();
         }
 
-        return $names;
+        return $filterResults($names);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getVendorNames()
+    {
+        $cacheKey = 'vendor-list.txt';
+        $cacheAge = $this->cache->getAge($cacheKey);
+        if (false !== $cacheAge && $cacheAge < 600 && ($cachedData = $this->cache->read($cacheKey)) !== false) {
+            $cachedData = explode("\n", $cachedData);
+
+            return $cachedData;
+        }
+
+        $names = $this->getPackageNames();
+
+        $uniques = array();
+        foreach ($names as $name) {
+            // @phpstan-ignore-next-line
+            $uniques[substr($name, 0, strpos($name, '/'))] = true;
+        }
+
+        $vendors = array_keys($uniques);
+
+        if (!$this->cache->isReadOnly()) {
+            $this->cache->write($cacheKey, implode("\n", $vendors));
+        }
+
+        return $vendors;
+    }
+
+    /**
+     * @param string|null $packageFilter
+     * @return list<string>
+     */
+    private function loadPackageList($packageFilter = null)
+    {
+        if (null === $this->listUrl) {
+            throw new \LogicException('Make sure to call loadRootServerFile before loadPackageList');
+        }
+
+        $url = $this->listUrl;
+        if (is_string($packageFilter) && $packageFilter !== '') {
+            $url .= '?filter='.urlencode($packageFilter);
+            $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
+
+            return $result['packageNames'];
+        }
+
+        $cacheKey = 'package-list.txt';
+        $cacheAge = $this->cache->getAge($cacheKey);
+        if (false !== $cacheAge && $cacheAge < 600 && ($cachedData = $this->cache->read($cacheKey)) !== false) {
+            $cachedData = explode("\n", $cachedData);
+
+            return $cachedData;
+        }
+
+        $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
+        if (!$this->cache->isReadOnly()) {
+            $this->cache->write($cacheKey, implode("\n", $result['packageNames']));
+        }
+
+        return $result['packageNames'];
     }
 
     public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array())
@@ -465,7 +534,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     public function search($query, $mode = 0, $type = null)
     {
-        $this->loadRootServerFile();
+        $this->loadRootServerFile(600);
 
         if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
             $url = str_replace(array('%query%', '%type%'), array($query, $type), $this->searchUrl);
@@ -489,12 +558,23 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return $results;
         }
 
+        if ($mode === self::SEARCH_VENDOR) {
+            $results = array();
+            $regex = '{(?:'.implode('|', Preg::split('{\s+}', $query)).')}i';
+
+            $vendorNames = $this->getVendorNames();
+            foreach (Preg::grep($regex, $vendorNames) as $name) {
+                $results[] = array('name' => $name, 'description' => '');
+            }
+
+            return $results;
+        }
+
         if ($this->hasProviders() || $this->lazyProvidersUrl) {
             $results = array();
             $regex = '{(?:'.implode('|', Preg::split('{\s+}', $query)).')}i';
 
             $packageNames = $this->getPackageNames();
-
             foreach (Preg::grep($regex, $packageNames) as $name) {
                 $results[] = array('name' => $name, 'description' => '');
             }
@@ -920,9 +1000,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
+     * @param int|null $rootMaxAge
      * @return array<string, mixed>
      */
-    protected function loadRootServerFile()
+    protected function loadRootServerFile($rootMaxAge = null)
     {
         if (null !== $this->rootData) {
             return $this->rootData;
@@ -934,7 +1015,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if ($cachedData = $this->cache->read('packages.json')) {
             $cachedData = json_decode($cachedData, true);
-            if (isset($cachedData['last-modified'])) {
+            if ($rootMaxAge !== null && ($age = $this->cache->getAge('packages.json')) !== false && $age <= $rootMaxAge) {
+                $data = $cachedData;
+            } elseif (isset($cachedData['last-modified'])) {
                 $response = $this->fetchFileIfLastModified($this->getPackagesJsonUrl(), 'packages.json', $cachedData['last-modified']);
                 $data = true === $response ? $cachedData : $response;
             }

@@ -148,28 +148,43 @@ class ArrayRepository implements RepositoryInterface
      */
     public function search($query, $mode = 0, $type = null)
     {
-        $regex = '{(?:'.implode('|', Preg::split('{\s+}', $query)).')}i';
+        if ($mode === self::SEARCH_FULLTEXT) {
+            $regex = '{(?:'.implode('|', Preg::split('{\s+}', preg_quote($query))).')}i';
+        } else {
+            // vendor/name searches expect the caller to have preg_quoted the query
+            $regex = '{(?:'.implode('|', Preg::split('{\s+}', $query)).')}i';
+        }
 
         $matches = array();
         foreach ($this->getPackages() as $package) {
             $name = $package->getName();
+            if ($mode === self::SEARCH_VENDOR) {
+                list($name) = explode('/', $name);
+            }
             if (isset($matches[$name])) {
                 continue;
             }
+            if (null !== $type && $package->getType() !== $type) {
+                continue;
+            }
+
             if (Preg::isMatch($regex, $name)
                 || ($mode === self::SEARCH_FULLTEXT && $package instanceof CompletePackageInterface && Preg::isMatch($regex, implode(' ', (array) $package->getKeywords()) . ' ' . $package->getDescription()))
             ) {
-                if (null !== $type && $package->getType() !== $type) {
-                    continue;
-                }
+                if ($mode === self::SEARCH_VENDOR) {
+                    $matches[$name] = array(
+                        'name' => $name,
+                        'description' => null,
+                    );
+                } else {
+                    $matches[$name] = array(
+                        'name' => $package->getPrettyName(),
+                        'description' => $package instanceof CompletePackageInterface ? $package->getDescription() : null,
+                    );
 
-                $matches[$name] = array(
-                    'name' => $package->getPrettyName(),
-                    'description' => $package instanceof CompletePackageInterface ? $package->getDescription() : null,
-                );
-
-                if ($package instanceof CompletePackageInterface && $package->isAbandoned()) {
-                    $matches[$name]['abandoned'] = $package->getReplacementPackage() ?: true;
+                    if ($package instanceof CompletePackageInterface && $package->isAbandoned()) {
+                        $matches[$name]['abandoned'] = $package->getReplacementPackage() ?: true;
+                    }
                 }
             }
         }

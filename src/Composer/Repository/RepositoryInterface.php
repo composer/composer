@@ -27,6 +27,7 @@ interface RepositoryInterface extends \Countable
 {
     const SEARCH_FULLTEXT = 0;
     const SEARCH_NAME = 1;
+    const SEARCH_VENDOR = 2;
 
     /**
      * Checks if specified package registered (installed).
@@ -85,11 +86,11 @@ interface RepositoryInterface extends \Countable
     /**
      * Searches the repository for packages containing the query
      *
-     * @param string $query search query
-     * @param int    $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only
+     * @param string $query search query, for SEARCH_NAME and SEARCH_VENDOR regular expressions metacharacters are supported by implementations, and user input should be escaped through preg_quote by callers
+     * @param int    $mode  a set of SEARCH_* constants to search on, implementations should do a best effort only, default is SEARCH_FULLTEXT
      * @param string $type  The type of package to search for. Defaults to all types of packages
      *
-     * @return array[] an array of array('name' => '...', 'description' => '...'|null)
+     * @return array[] an array of array('name' => '...', 'description' => '...'|null, 'abandoned' => 'string'|true|unset) For SEARCH_VENDOR the name will be in "vendor" form
      * @phpstan-return list<array{name: string, description: ?string, abandoned?: string|true}>
      */
     public function search($query, $mode = 0, $type = null);
