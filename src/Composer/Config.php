@@ -172,7 +172,7 @@ class Config
     /**
      * Merges new config values with the existing ones (overriding)
      *
-     * @param array<string, array{config?: array<string, mixed>, repositories?: array<string, mixed>}> $config
+     * @param array{config?: array<string, mixed>, repositories?: array<mixed>} $config
      * @param string $source
      *
      * @return void
