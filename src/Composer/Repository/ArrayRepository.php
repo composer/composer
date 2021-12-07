@@ -20,6 +20,7 @@ use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\StabilityFilter;
+use Composer\Pcre\Preg;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Constraint\Constraint;
 
@@ -147,7 +148,7 @@ class ArrayRepository implements RepositoryInterface
      */
     public function search($query, $mode = 0, $type = null)
     {
-        $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
+        $regex = '{(?:'.implode('|', Preg::split('{\s+}', $query)).')}i';
 
         $matches = array();
         foreach ($this->getPackages() as $package) {
@@ -155,8 +156,8 @@ class ArrayRepository implements RepositoryInterface
             if (isset($matches[$name])) {
                 continue;
             }
-            if (preg_match($regex, $name)
-                || ($mode === self::SEARCH_FULLTEXT && $package instanceof CompletePackageInterface && preg_match($regex, implode(' ', (array) $package->getKeywords()) . ' ' . $package->getDescription()))
+            if (Preg::isMatch($regex, $name)
+                || ($mode === self::SEARCH_FULLTEXT && $package instanceof CompletePackageInterface && Preg::isMatch($regex, implode(' ', (array) $package->getKeywords()) . ' ' . $package->getDescription()))
             ) {
                 if (null !== $type && $package->getType() !== $type) {
                     continue;

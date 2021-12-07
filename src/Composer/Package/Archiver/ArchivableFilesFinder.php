@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Archiver;
 
+use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use FilesystemIterator;
 use Symfony\Component\Finder\Finder;
@@ -61,7 +62,7 @@ class ArchivableFilesFinder extends \FilterIterator
                 return false;
             }
 
-            $relativePath = preg_replace(
+            $relativePath = Preg::replace(
                 '#^'.preg_quote($sources, '#').'#',
                 '',
                 $fs->normalizePath($file->getRealPath())

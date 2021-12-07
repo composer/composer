@@ -36,7 +36,8 @@
         "symfony/filesystem": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
         "symfony/finder": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
         "symfony/process": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
-        "react/promise": "^1.2 || ^2.7"
+        "react/promise": "^1.2 || ^2.7",
+        "composer/pcre": "^1.0"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^4.2 || ^5.0 || ^6.0",
@@ -82,7 +83,7 @@
         "phpstan-setup": [
             "@composer config platform --unset",
             "@composer update",
-            "@composer require --dev phpstan/phpstan:^1.0 phpstan/phpstan-phpunit:^1.0 phpunit/phpunit:^7.5.20 --with-all-dependencies",
+            "@composer require --dev phpstan/phpstan:^1.0 phpstan/phpstan-phpunit:^1.0 phpstan/phpstan-deprecation-rules:^1 phpstan/phpstan-strict-rules:^1 phpunit/phpunit:^7.5.20 --with-all-dependencies",
             "git checkout composer.json composer.lock"
         ],
         "phpstan": "@php vendor/bin/phpstan analyse --configuration=phpstan/config.neon"

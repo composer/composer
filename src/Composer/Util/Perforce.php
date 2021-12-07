@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\IO\IOInterface;
+use Composer\Pcre\Preg;
 use Symfony\Component\Process\Process;
 
 /**
@@ -634,7 +635,7 @@ class Perforce
             foreach ($resArray as $line) {
                 $resBits = explode(' ', $line);
                 if (count($resBits) > 4) {
-                    $branch = preg_replace('/[^A-Za-z0-9 ]/', '', $resBits[4]);
+                    $branch = Preg::replace('/[^A-Za-z0-9 ]/', '', $resBits[4]);
                     $possibleBranches[$branch] = $resBits[1];
                 }
             }

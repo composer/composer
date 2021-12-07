@@ -14,6 +14,7 @@ namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
 use Composer\IO\IOInterface;
+use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Exception\IrrecoverableDownloadException;
 use React\Promise\PromiseInterface;
@@ -392,7 +393,7 @@ class DownloadManager
     {
         foreach ($this->packagePreferences as $pattern => $preference) {
             $pattern = '{^'.str_replace('\\*', '.*', preg_quote($pattern)).'$}i';
-            if (preg_match($pattern, $package->getName())) {
+            if (Preg::isMatch($pattern, $package->getName())) {
                 if ('dist' === $preference || (!$package->isDev() && 'auto' === $preference)) {
                     return 'dist';
                 }

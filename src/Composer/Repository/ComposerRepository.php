@@ -24,6 +24,7 @@ use Composer\Json\JsonFile;
 use Composer\Cache;
 use Composer\Config;
 use Composer\IO\IOInterface;
+use Composer\Pcre\Preg;
 use Composer\Plugin\PostFileDownloadEvent;
 use Composer\Semver\CompilingMatcher;
 use Composer\Util\HttpDownloader;
@@ -135,7 +136,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null)
     {
         parent::__construct();
-        if (!preg_match('{^[\w.]+\??://}', $repoConfig['url'])) {
+        if (!Preg::isMatch('{^[\w.]+\??://}', $repoConfig['url'])) {
             // assume http as the default protocol
             $repoConfig['url'] = 'http://'.$repoConfig['url'];
         }
@@ -161,13 +162,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->url = $repoConfig['url'];
 
         // force url for packagist.org to repo.packagist.org
-        if (preg_match('{^(?P<proto>https?)://packagist\.org/?$}i', $this->url, $match)) {
+        if (Preg::isMatch('{^(?P<proto>https?)://packagist\.org/?$}i', $this->url, $match)) {
             $this->url = $match['proto'].'://repo.packagist.org';
         }
 
-        $this->baseUrl = rtrim(preg_replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
+        $this->baseUrl = rtrim(Preg::replace('{(?:/[^/\\\\]+\.json)?(?:[?#].*)?$}', '', $this->url), '/');
         $this->io = $io;
-        $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', Url::sanitize($this->url)), 'a-z0-9.$~');
+        $this->cache = new Cache($io, $config->get('cache-repo-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($this->url)), 'a-z0-9.$~');
         $this->cache->setReadOnly($config->get('cache-read-only'));
         $this->versionParser = new VersionParser();
         $this->loader = new ArrayLoader($this->versionParser);
@@ -350,7 +351,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         if (null !== $packageFilter) {
             $packageFilterRegex = '{^'.str_replace('\\*', '.*?', preg_quote($packageFilter)).'$}i';
             $packageFilterCb = function ($name) use ($packageFilterRegex) {
-                return (bool) preg_match($packageFilterRegex, $name);
+                return Preg::isMatch($packageFilterRegex, $name);
             };
         }
 
@@ -490,11 +491,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if ($this->hasProviders() || $this->lazyProvidersUrl) {
             $results = array();
-            $regex = '{(?:'.implode('|', preg_split('{\s+}', $query)).')}i';
+            $regex = '{(?:'.implode('|', Preg::split('{\s+}', $query)).')}i';
 
             $packageNames = $this->getPackageNames();
 
-            foreach (preg_grep($regex, $packageNames) as $name) {
+            foreach (Preg::grep($regex, $packageNames) as $name) {
                 $results[] = array('name' => $name, 'description' => '');
             }
 
@@ -793,7 +794,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         foreach ($packageNames as $name => $constraint) {
             $name = strtolower($name);
 
-            $realName = preg_replace('{~dev$}', '', $name);
+            $realName = Preg::replace('{~dev$}', '', $name);
             // skip platform packages, root package and composer-plugin-api
             if (PlatformRepository::isPlatformPackage($realName) || '__root__' === $realName) {
                 continue;
@@ -1044,7 +1045,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private function canonicalizeUrl($url)
     {
         if ('/' === $url[0]) {
-            if (preg_match('{^[^:]++://[^/]*+}', $this->url, $matches)) {
+            if (Preg::isMatch('{^[^:]++://[^/]*+}', $this->url, $matches)) {
                 return $matches[0] . $url;
             }
 
@@ -1204,7 +1205,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         // url-encode $ signs in URLs as bad proxies choke on them
-        if (($pos = strpos($filename, '$')) && preg_match('{^https?://}i', $filename)) {
+        if (($pos = strpos($filename, '$')) && Preg::isMatch('{^https?://}i', $filename)) {
             $filename = substr($filename, 0, $pos) . '%24' . substr($filename, $pos + 1);
         }
 
@@ -1509,7 +1510,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (is_array($this->availablePackagePatterns)) {
             foreach ($this->availablePackagePatterns as $providerRegex) {
-                if (preg_match($providerRegex, $name)) {
+                if (Preg::isMatch($providerRegex, $name)) {
                     return true;
                 }
             }

@@ -17,6 +17,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Pcre\Preg;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\LockArrayRepository;
 use Composer\Semver\Constraint\Constraint;
@@ -123,8 +124,8 @@ class Problem
         $deduplicatableRuleTypes = array(Rule::RULE_PACKAGE_REQUIRES, Rule::RULE_PACKAGE_CONFLICT);
         foreach ($rules as $rule) {
             $message = $rule->getPrettyString($repositorySet, $request, $pool, $isVerbose, $installedMap, $learnedPool);
-            if (in_array($rule->getReason(), $deduplicatableRuleTypes, true) && preg_match('{^(?P<package>\S+) (?P<version>\S+) (?P<type>requires|conflicts)}', $message, $m)) {
-                $template = preg_replace('{^\S+ \S+ }', '%s%s ', $message);
+            if (in_array($rule->getReason(), $deduplicatableRuleTypes, true) && Preg::isMatch('{^(?P<package>\S+) (?P<version>\S+) (?P<type>requires|conflicts)}', $message, $m)) {
+                $template = Preg::replace('{^\S+ \S+ }', '%s%s ', $message);
                 $messages[] = $template;
                 $templates[$template][$m[1]][$parser->normalize($m[2])] = $m[2];
                 $sourcePackage = $rule->getSourcePackage($pool);
@@ -146,7 +147,7 @@ class Problem
                     }
                     if (count($versions) > 1) {
                         // remove the s from requires/conflicts to correct grammar
-                        $message = preg_replace('{^(%s%s (?:require|conflict))s}', '$1', $message);
+                        $message = Preg::replace('{^(%s%s (?:require|conflict))s}', '$1', $message);
                         $result[] = sprintf($message, $package, '['.implode(', ', $versions).']');
                     } else {
                         $result[] = sprintf($message, $package, ' '.reset($versions));
@@ -350,8 +351,8 @@ class Problem
             return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these do' : 'it does').' not match the constraint.' . $suffix);
         }
 
-        if (!preg_match('{^[A-Za-z0-9_./-]+$}', $packageName)) {
-            $illegalChars = preg_replace('{[A-Za-z0-9_./-]+}', '', $packageName);
+        if (!Preg::isMatch('{^[A-Za-z0-9_./-]+$}', $packageName)) {
+            $illegalChars = Preg::replace('{[A-Za-z0-9_./-]+}', '', $packageName);
 
             return array("- Root composer.json requires $packageName, it ", 'could not be found, it looks like its name is invalid, "'.$illegalChars.'" is not allowed in package names.');
         }
@@ -461,7 +462,7 @@ class Problem
             if (0 === stripos($version, 'dev-')) {
                 $byMajor['dev'][] = $pretty;
             } else {
-                $byMajor[preg_replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
+                $byMajor[Preg::replace('{^(\d+)\..*}', '$1', $version)][] = $pretty;
             }
         }
         foreach ($byMajor as $majorVersion => $versionsForMajor) {

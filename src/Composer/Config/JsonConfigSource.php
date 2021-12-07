@@ -15,6 +15,7 @@ namespace Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Json\JsonValidationException;
+use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Silencer;
 
@@ -102,7 +103,7 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) use ($authConfig) {
-            if (preg_match('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
+            if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
                 list($key, $host) = explode('.', $key, 2);
                 if ($authConfig) {
                     $config[$key][$host] = $val;
@@ -122,7 +123,7 @@ class JsonConfigSource implements ConfigSourceInterface
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) use ($authConfig) {
-            if (preg_match('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
+            if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
                 list($key, $host) = explode('.', $key, 2);
                 if ($authConfig) {
                     unset($config[$key][$host]);

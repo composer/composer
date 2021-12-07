@@ -12,6 +12,7 @@
 
 namespace Composer\Console;
 
+use Composer\Pcre\Preg;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
@@ -70,6 +71,7 @@ class HtmlOutputFormatter extends OutputFormatter
 
         $clearEscapeCodes = '(?:39|49|0|22|24|25|27|28)';
 
+        // TODO in 2.3 replace with Closure::fromCallable and then use Preg::replaceCallback
         return preg_replace_callback("{\033\[([0-9;]+)m(.*?)\033\[(?:".$clearEscapeCodes.";)*?".$clearEscapeCodes."m}s", array($this, 'formatHtml'), $formatted);
     }
 

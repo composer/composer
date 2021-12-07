@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Composer\Pcre\Preg;
 use Composer\Util\ProcessExecutor;
 
 /**
@@ -108,7 +109,7 @@ class FossilDownloader extends VcsDownloader
         $match = '/\d\d:\d\d:\d\d\s+\[' . $toReference . '\]/';
 
         foreach ($this->process->splitLines($output) as $line) {
-            if (preg_match($match, $line)) {
+            if (Preg::isMatch($match, $line)) {
                 break;
             }
             $log .= $line;

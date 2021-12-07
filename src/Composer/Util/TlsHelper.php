@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\CaBundle\CaBundle;
+use Composer\Pcre\Preg;
 
 /**
  * @author Chris Smith <chris@cs278.org>
@@ -75,7 +76,7 @@ final class TlsHelper
         $subjectAltNames = array();
 
         if (isset($info['extensions']['subjectAltName'])) {
-            $subjectAltNames = preg_split('{\s*,\s*}', $info['extensions']['subjectAltName']);
+            $subjectAltNames = Preg::split('{\s*,\s*}', $info['extensions']['subjectAltName']);
             $subjectAltNames = array_filter(array_map(function ($name) {
                 if (0 === strpos($name, 'DNS:')) {
                     return strtolower(ltrim(substr($name, 4)));
@@ -198,7 +199,7 @@ final class TlsHelper
             $wildcardRegex = "{^{$wildcardRegex}$}";
 
             return function ($hostname) use ($wildcardRegex) {
-                return 1 === preg_match($wildcardRegex, $hostname);
+                return Preg::isMatch($wildcardRegex, $hostname);
             };
         }
 

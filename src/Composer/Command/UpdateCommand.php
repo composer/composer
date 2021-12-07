@@ -18,6 +18,7 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Package\Loader\RootPackageLoader;
+use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\Version\VersionParser;
@@ -136,7 +137,7 @@ EOT
         // extract --with shorthands from the allowlist
         if ($packages) {
             $allowlistPackagesWithRequirements = array_filter($packages, function ($pkg) {
-                return preg_match('{\S+[ =:]\S+}', $pkg) > 0;
+                return Preg::isMatch('{\S+[ =:]\S+}', $pkg);
             });
             foreach ($this->formatRequirements($allowlistPackagesWithRequirements) as $package => $constraint) {
                 $reqs[$package] = $constraint;
@@ -144,7 +145,7 @@ EOT
 
             // replace the foo/bar:req by foo/bar in the allowlist
             foreach ($allowlistPackagesWithRequirements as $package) {
-                $packageName = preg_replace('{^([^ =:]+)[ =:].*$}', '$1', $package);
+                $packageName = Preg::replace('{^([^ =:]+)[ =:].*$}', '$1', $package);
                 $index = array_search($package, $packages);
                 $packages[$index] = $packageName;
             }

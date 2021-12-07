@@ -15,6 +15,7 @@ namespace Composer\Util;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use Composer\Pcre\Preg;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -209,7 +210,7 @@ class AuthHelper
                 $headers[] = 'Authorization: Bearer '.$auth['username'];
             } elseif ('github.com' === $origin && 'x-oauth-basic' === $auth['password']) {
                 // only add the access_token if it is actually a github API URL
-                if (preg_match('{^https?://api\.github\.com/}', $url)) {
+                if (Preg::isMatch('{^https?://api\.github\.com/}', $url)) {
                     $headers[] = 'Authorization: token '.$auth['username'];
                     $authenticationDisplayMessage = 'Using GitHub token authentication';
                 }

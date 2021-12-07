@@ -13,6 +13,7 @@
 namespace Composer\Command;
 
 use Composer\Factory;
+use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Input\InputInterface;
@@ -71,7 +72,7 @@ EOT
         }
 
         // extract real command name
-        $tokens = preg_split('{\s+}', $input->__toString());
+        $tokens = Preg::split('{\s+}', $input->__toString());
         $args = array();
         foreach ($tokens as $token) {
             if ($token && $token[0] !== '-') {
@@ -112,7 +113,7 @@ EOT
         $this->getIO()->writeError('<info>Changed current directory to '.$home.'</info>');
 
         // create new input without "global" command prefix
-        $input = new StringInput(preg_replace('{\bg(?:l(?:o(?:b(?:a(?:l)?)?)?)?)?\b}', '', $input->__toString(), 1));
+        $input = new StringInput(Preg::replace('{\bg(?:l(?:o(?:b(?:a(?:l)?)?)?)?)?\b}', '', $input->__toString(), 1));
         $this->getApplication()->resetComposer();
 
         return $this->getApplication()->run($input, $output);

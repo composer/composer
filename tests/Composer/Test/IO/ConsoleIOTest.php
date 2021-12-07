@@ -13,6 +13,7 @@
 namespace Composer\Test\IO;
 
 use Composer\IO\ConsoleIO;
+use Composer\Pcre\Preg;
 use Composer\Test\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -83,8 +84,8 @@ class ConsoleIOTest extends TestCase
             ->method('write')
             ->with(
                 $this->callback(function ($messages) {
-                    $result = preg_match("[(.*)/(.*) First line]", $messages[0]) > 0;
-                    $result = $result && preg_match("[(.*)/(.*) Second line]", $messages[1]) > 0;
+                    $result = Preg::isMatch("[(.*)/(.*) First line]", $messages[0]);
+                    $result = $result && Preg::isMatch("[(.*)/(.*) Second line]", $messages[1]);
 
                     return $result;
                 }),

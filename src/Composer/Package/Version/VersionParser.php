@@ -12,6 +12,7 @@
 
 namespace Composer\Package\Version;
 
+use Composer\Pcre\Preg;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\VersionParser as SemverVersionParser;
 use Composer\Semver\Semver;
@@ -52,8 +53,8 @@ class VersionParser extends SemverVersionParser
         $result = array();
 
         for ($i = 0, $count = count($pairs); $i < $count; $i++) {
-            $pair = preg_replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
-            if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/') && !preg_match('{(?<=[a-z0-9_/-])\*|\*(?=[a-z0-9_/-])}i', $pairs[$i + 1]) && !PlatformRepository::isPlatformPackage($pairs[$i + 1])) {
+            $pair = Preg::replace('{^([^=: ]+)[=: ](.*)$}', '$1 $2', trim($pairs[$i]));
+            if (false === strpos($pair, ' ') && isset($pairs[$i + 1]) && false === strpos($pairs[$i + 1], '/') && !Preg::isMatch('{(?<=[a-z0-9_/-])\*|\*(?=[a-z0-9_/-])}i', $pairs[$i + 1]) && !PlatformRepository::isPlatformPackage($pairs[$i + 1])) {
                 $pair .= ' '.$pairs[$i + 1];
                 $i++;
             }

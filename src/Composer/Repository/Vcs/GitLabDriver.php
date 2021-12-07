@@ -17,6 +17,7 @@ use Composer\Cache;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Downloader\TransportException;
+use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
 use Composer\Util\GitLab;
 use Composer\Util\Http\Response;
@@ -92,7 +93,7 @@ class GitLabDriver extends VcsDriver
      */
     public function initialize()
     {
-        if (!preg_match(self::URL_REGEX, $this->url, $match)) {
+        if (!Preg::isMatch(self::URL_REGEX, $this->url, $match)) {
             throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
         }
 
@@ -119,7 +120,7 @@ class GitLabDriver extends VcsDriver
         }
 
         $this->namespace = implode('/', $urlParts);
-        $this->repository = preg_replace('#(\.git)$#', '', $match['repo']);
+        $this->repository = Preg::replace('#(\.git)$#', '', $match['repo']);
 
         $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.$this->originUrl.'/'.$this->namespace.'/'.$this->repository);
         $this->cache->setReadOnly($this->config->get('cache-read-only'));
@@ -186,7 +187,7 @@ class GitLabDriver extends VcsDriver
         }
 
         // Convert the root identifier to a cacheable commit id
-        if (!preg_match('{[a-f0-9]{40}}i', $identifier)) {
+        if (!Preg::isMatch('{[a-f0-9]{40}}i', $identifier)) {
             $branches = $this->getBranches();
             if (isset($branches[$identifier])) {
                 $identifier = $branches[$identifier];
@@ -560,7 +561,7 @@ class GitLabDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match(self::URL_REGEX, $url, $match)) {
+        if (!Preg::isMatch(self::URL_REGEX, $url, $match)) {
             return false;
         }
 
@@ -590,7 +591,7 @@ class GitLabDriver extends VcsDriver
 
         $links = explode(',', $header);
         foreach ($links as $link) {
-            if (preg_match('{<(.+?)>; *rel="next"}', $link, $match)) {
+            if (Preg::isMatch('{<(.+?)>; *rel="next"}', $link, $match)) {
                 return $match[1];
             }
         }
@@ -625,7 +626,7 @@ class GitLabDriver extends VcsDriver
         while (null !== ($part = array_shift($urlParts))) {
             $guessedDomain .= '/' . $part;
 
-            if (in_array($guessedDomain, $configuredDomains) || ($portNumber && in_array(preg_replace('{:\d+}', '', $guessedDomain), $configuredDomains))) {
+            if (in_array($guessedDomain, $configuredDomains) || ($portNumber && in_array(Preg::replace('{:\d+}', '', $guessedDomain), $configuredDomains))) {
                 return $guessedDomain;
             }
         }

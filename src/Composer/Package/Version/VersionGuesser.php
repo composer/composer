@@ -13,6 +13,7 @@
 namespace Composer\Package\Version;
 
 use Composer\Config;
+use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\HgDriver;
 use Composer\IO\NullIO;
 use Composer\Semver\VersionParser as SemverVersionParser;
@@ -108,12 +109,12 @@ class VersionGuesser
             unset($versionData['feature_version'], $versionData['feature_pretty_version']);
         }
 
-        if ('-dev' === substr($versionData['version'], -4) && preg_match('{\.9{7}}', $versionData['version'])) {
-            $versionData['pretty_version'] = preg_replace('{(\.9{7})+}', '.x', $versionData['version']);
+        if ('-dev' === substr($versionData['version'], -4) && Preg::isMatch('{\.9{7}}', $versionData['version'])) {
+            $versionData['pretty_version'] = Preg::replace('{(\.9{7})+}', '.x', $versionData['version']);
         }
 
-        if (!empty($versionData['feature_version']) && '-dev' === substr($versionData['feature_version'], -4) && preg_match('{\.9{7}}', $versionData['feature_version'])) {
-            $versionData['feature_pretty_version'] = preg_replace('{(\.9{7})+}', '.x', $versionData['feature_version']);
+        if (!empty($versionData['feature_version']) && '-dev' === substr($versionData['feature_version'], -4) && Preg::isMatch('{\.9{7}}', $versionData['feature_version'])) {
+            $versionData['feature_pretty_version'] = Preg::replace('{(\.9{7})+}', '.x', $versionData['feature_version']);
         }
 
         return $versionData;
@@ -142,7 +143,7 @@ class VersionGuesser
 
             // find current branch and collect all branch names
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\(HEAD detached at \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                if ($branch && Preg::isMatch('{^(?:\* ) *(\(no branch\)|\(detached from \S+\)|\(HEAD detached at \S+\)|\S+) *([a-f0-9]+) .*$}', $branch, $match)) {
                     if (
                         $match[1] === '(no branch)'
                         || strpos($match[1], '(detached ') === 0
@@ -163,8 +164,8 @@ class VersionGuesser
                     }
                 }
 
-                if ($branch && !preg_match('{^ *.+/HEAD }', $branch)) {
-                    if (preg_match('{^(?:\* )? *((?:remotes/(?:origin|upstream)/)?[^\s/]+) *([a-f0-9]+) .*$}', $branch, $match)) {
+                if ($branch && !Preg::isMatch('{^ *.+/HEAD }', $branch)) {
+                    if (Preg::isMatch('{^(?:\* )? *((?:remotes/(?:origin|upstream)/)?[^\s/]+) *([a-f0-9]+) .*$}', $branch, $match)) {
                         $branches[] = $match[1];
                     }
                 }
@@ -284,7 +285,7 @@ class VersionGuesser
         if (!isset($packageConfig['extra']['branch-alias'][$version])
             || strpos(json_encode($packageConfig), '"self.version"')
         ) {
-            $branch = preg_replace('{^dev-}', '', $version);
+            $branch = Preg::replace('{^dev-}', '', $version);
             $length = PHP_INT_MAX;
 
             // return directly, if branch is configured to be non-feature branch
@@ -307,7 +308,7 @@ class VersionGuesser
             });
 
             foreach ($branches as $candidate) {
-                $candidateVersion = preg_replace('{^remotes/\S+/}', '', $candidate);
+                $candidateVersion = Preg::replace('{^remotes/\S+/}', '', $candidate);
 
                 // do not compare against itself or other feature branches
                 if ($candidate === $branch || $this->isFeatureBranch($packageConfig, $candidateVersion)) {
@@ -346,7 +347,7 @@ class VersionGuesser
             $nonFeatureBranches = implode('|', $packageConfig['non-feature-branches']);
         }
 
-        return !preg_match('{^(' . $nonFeatureBranches . '|master|main|latest|next|current|support|tip|trunk|default|develop|\d+\..+)$}', $branchName, $match);
+        return !Preg::isMatch('{^(' . $nonFeatureBranches . '|master|main|latest|next|current|support|tip|trunk|default|develop|\d+\..+)$}', $branchName, $match);
     }
 
     /**
@@ -396,7 +397,7 @@ class VersionGuesser
 
             $urlPattern = '#<url>.*/(' . $trunkPath . '|(' . $branchesPath . '|' . $tagsPath . ')/(.*))</url>#';
 
-            if (preg_match($urlPattern, $output, $matches)) {
+            if (Preg::isMatch($urlPattern, $output, $matches)) {
                 if (isset($matches[2]) && ($branchesPath === $matches[2] || $tagsPath === $matches[2])) {
                     // we are in a branches path
                     $version = $this->versionParser->normalizeBranch($matches[3]);

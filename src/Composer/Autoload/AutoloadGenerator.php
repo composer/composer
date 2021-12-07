@@ -22,6 +22,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
+use Composer\Pcre\Preg;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Semver\Constraint\Bound;
 use Composer\Util\Filesystem;
@@ -375,7 +376,7 @@ EOF;
         if (!$suffix) {
             if (!$config->get('autoloader-suffix') && Filesystem::isReadable($vendorPath.'/autoload.php')) {
                 $content = file_get_contents($vendorPath.'/autoload.php');
-                if (preg_match('{ComposerAutoloaderInit([^:\s]+)::}', $content, $match)) {
+                if (Preg::isMatch('{ComposerAutoloaderInit([^:\s]+)::}', $content, $match)) {
                     $suffix = $match[1];
                 }
             }
@@ -447,7 +448,7 @@ EOF;
             $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
             if (!isset($classMap[$class])) {
                 $classMap[$class] = $pathCode;
-            } elseif ($this->io && $classMap[$class] !== $pathCode && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
+            } elseif ($this->io && $classMap[$class] !== $pathCode && !Preg::isMatch('{/(test|fixture|example|stub)s?/}i', strtr($classMap[$class].' '.$path, '\\', '/'))) {
                 $ambiguousClasses[$class][] = $path;
             }
         }
@@ -475,7 +476,7 @@ EOF;
                 $dirMatch = preg_quote(strtr(realpath($dir), '\\', '/'));
                 foreach ($excluded as $index => $pattern) {
                     // extract the constant string prefix of the pattern here, until we reach a non-escaped regex special character
-                    $pattern = preg_replace('{^(([^.+*?\[^\]$(){}=!<>|:\\\\#-]+|\\\\[.+*?\[^\]$(){}=!<>|:#-])*).*}', '$1', $pattern);
+                    $pattern = Preg::replace('{^(([^.+*?\[^\]$(){}=!<>|:\\\\#-]+|\\\\[.+*?\[^\]$(){}=!<>|:#-])*).*}', '$1', $pattern);
                     // if the pattern is not a subset or superset of $dir, it is unrelated and we skip it
                     if (0 !== strpos($pattern, $dirMatch) && 0 !== strpos($dirMatch, $pattern)) {
                         unset($excluded[$index]);
@@ -757,7 +758,7 @@ EOF;
         foreach ($packageMap as $item) {
             $package = $item[0];
             foreach (array_merge($package->getReplaces(), $package->getProvides()) as $link) {
-                if (preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
+                if (Preg::isMatch('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
                     $extensionProviders[$match[1]][] = $link->getConstraint();
                 }
             }
@@ -782,7 +783,7 @@ EOF;
                     }
                 }
 
-                if ($checkPlatform === true && preg_match('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
+                if ($checkPlatform === true && Preg::isMatch('{^ext-(.+)$}iD', $link->getTarget(), $match)) {
                     // skip extension checks if they have a valid provider/replacer
                     if (isset($extensionProviders[$match[1]])) {
                         foreach ($extensionProviders[$match[1]] as $provided) {
@@ -1204,7 +1205,7 @@ HEADER;
                     $absoluteAppBaseDirPharCode => $appBaseDirPharCode,
                 )
             );
-            $value = ltrim(preg_replace('/^ */m', '    $0$0', $value));
+            $value = ltrim(Preg::replace('/^ */m', '    $0$0', $value));
 
             $file .= sprintf("    public static $%s = %s;\n\n", $prop, $value);
             if ('files' !== $prop) {
@@ -1255,7 +1256,7 @@ INITIALIZER;
                         // remove target-dir from file paths of the root package
                         if ($package === $rootPackage) {
                             $targetDir = str_replace('\\<dirsep\\>', '[\\\\/]', preg_quote(str_replace(array('/', '\\'), '<dirsep>', $package->getTargetDir())));
-                            $path = ltrim(preg_replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
+                            $path = ltrim(Preg::replace('{^'.$targetDir.'}', '', ltrim($path, '\\/')), '\\/');
                         } else {
                             // add target-dir from file paths that don't have it
                             $path = $package->getTargetDir() . '/' . $path;
@@ -1264,14 +1265,14 @@ INITIALIZER;
 
                     if ($type === 'exclude-from-classmap') {
                         // first escape user input
-                        $path = preg_replace('{/+}', '/', preg_quote(trim(strtr($path, '\\', '/'), '/')));
+                        $path = Preg::replace('{/+}', '/', preg_quote(trim(strtr($path, '\\', '/'), '/')));
 
                         // add support for wildcards * and **
                         $path = strtr($path, array('\\*\\*' => '.+?', '\\*' => '[^/]+?'));
 
                         // add support for up-level relative paths
                         $updir = null;
-                        $path = preg_replace_callback(
+                        $path = Preg::replaceCallback(
                             '{^((?:(?:\\\\\\.){1,2}+/)+)}',
                             function ($matches) use (&$updir) {
                                 if (isset($matches[1])) {

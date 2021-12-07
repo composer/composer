@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
 use Composer\Util\ProcessExecutor;
 use Composer\Json\JsonFile;
@@ -179,7 +180,7 @@ class RepositoryFactory
      */
     public static function generateRepositoryName($index, array $repo, array $existingRepos)
     {
-        $name = is_int($index) && isset($repo['url']) ? preg_replace('{^https?://}i', '', $repo['url']) : $index;
+        $name = is_int($index) && isset($repo['url']) ? Preg::replace('{^https?://}i', '', $repo['url']) : $index;
         while (isset($existingRepos[$name])) {
             $name .= '2';
         }

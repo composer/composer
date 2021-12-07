@@ -14,6 +14,7 @@ namespace Composer\Test\Downloader;
 
 use Composer\Downloader\GitDownloader;
 use Composer\Config;
+use Composer\Pcre\Preg;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
@@ -159,7 +160,7 @@ class GitDownloaderTest extends TestCase
 
         $config = new Config;
         $this->setupConfig($config);
-        $cachePath = $config->get('cache-vcs-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', 'https://example.com/composer/composer').'/';
+        $cachePath = $config->get('cache-vcs-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', 'https://example.com/composer/composer').'/';
 
         $filesystem = new \Composer\Util\Filesystem;
         $filesystem->removeDirectory($cachePath);

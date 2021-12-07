@@ -12,6 +12,8 @@
 
 namespace Composer\Package\Archiver;
 
+use Composer\Pcre\Preg;
+
 /**
  * An exclude filter that processes gitattributes
  *
@@ -50,7 +52,7 @@ class GitExcludeFilter extends BaseExcludeFilter
      */
     public function parseGitAttributesLine($line)
     {
-        $parts = preg_split('#\s+#', $line);
+        $parts = Preg::split('#\s+#', $line);
 
         if (count($parts) == 2 && $parts[1] === 'export-ignore') {
             return $this->generatePattern($parts[0]);

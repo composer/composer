@@ -12,6 +12,7 @@
 
 namespace Composer\Repository\Vcs;
 
+use Composer\Pcre\Preg;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\Util\Url;
@@ -40,7 +41,7 @@ class GitDriver extends VcsDriver
     public function initialize()
     {
         if (Filesystem::isLocalPath($this->url)) {
-            $this->url = preg_replace('{[\\/]\.git/?$}', '', $this->url);
+            $this->url = Preg::replace('{[\\/]\.git/?$}', '', $this->url);
             if (!is_dir($this->url)) {
                 throw new \RuntimeException('Failed to read package information from '.$this->url.' as the path does not exist');
             }
@@ -51,7 +52,7 @@ class GitDriver extends VcsDriver
                 throw new \RuntimeException('GitDriver requires a usable cache directory, and it looks like you set it to be disabled');
             }
 
-            $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . preg_replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
+            $this->repoDir = $this->config->get('cache-vcs-dir') . '/' . Preg::replace('{[^a-z0-9.]}i', '-', $this->url) . '/';
 
             GitUtil::cleanEnv();
 
@@ -62,7 +63,7 @@ class GitDriver extends VcsDriver
                 throw new \RuntimeException('Can not clone '.$this->url.' to access package information. The "'.dirname($this->repoDir).'" directory is not writable by the current user.');
             }
 
-            if (preg_match('{^ssh://[^@]+@[^:]+:[^0-9]+}', $this->url)) {
+            if (Preg::isMatch('{^ssh://[^@]+@[^:]+:[^0-9]+}', $this->url)) {
                 throw new \InvalidArgumentException('The source URL '.$this->url.' is invalid, ssh URLs should have a port number after ":".'."\n".'Use ssh://git@example.com:22/path or just git@example.com:path if you do not want to provide a password or custom port.');
             }
 
@@ -80,7 +81,7 @@ class GitDriver extends VcsDriver
         $this->getTags();
         $this->getBranches();
 
-        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', Url::sanitize($cacheUrl)));
+        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($cacheUrl)));
         $this->cache->setReadOnly($this->config->get('cache-read-only'));
     }
 
@@ -97,7 +98,7 @@ class GitDriver extends VcsDriver
             $branches = $this->process->splitLines($output);
             if (!in_array('* master', $branches)) {
                 foreach ($branches as $branch) {
-                    if ($branch && preg_match('{^\* +(\S+)}', $branch, $match)) {
+                    if ($branch && Preg::isMatch('{^\* +(\S+)}', $branch, $match)) {
                         $this->rootIdentifier = $match[1];
                         break;
                     }
@@ -170,7 +171,7 @@ class GitDriver extends VcsDriver
 
             $this->process->execute('git show-ref --tags --dereference', $output, $this->repoDir);
             foreach ($output = $this->process->splitLines($output) as $tag) {
-                if ($tag && preg_match('{^([a-f0-9]{40}) refs/tags/(\S+?)(\^\{\})?$}', $tag, $match)) {
+                if ($tag && Preg::isMatch('{^([a-f0-9]{40}) refs/tags/(\S+?)(\^\{\})?$}', $tag, $match)) {
                     $this->tags[$match[2]] = $match[1];
                 }
             }
@@ -189,8 +190,8 @@ class GitDriver extends VcsDriver
 
             $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
-                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match)) {
+                if ($branch && !Preg::isMatch('{^ *[^/]+/HEAD }', $branch)) {
+                    if (Preg::isMatch('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match)) {
                         $branches[$match[1]] = $match[2];
                     }
                 }
@@ -207,7 +208,7 @@ class GitDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (preg_match('#(^git://|\.git/?$|git(?:olite)?@|//git\.|//github.com/)#i', $url)) {
+        if (Preg::isMatch('#(^git://|\.git/?$|git(?:olite)?@|//git\.|//github.com/)#i', $url)) {
             return true;
         }
 

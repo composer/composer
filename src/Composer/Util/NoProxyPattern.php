@@ -12,6 +12,7 @@
 
 namespace Composer\Util;
 
+use Composer\Pcre\Preg;
 use stdClass;
 
 /**
@@ -39,7 +40,7 @@ class NoProxyPattern
      */
     public function __construct($pattern)
     {
-        $this->hostNames = preg_split('{[\s,]+}', $pattern, -1, PREG_SPLIT_NO_EMPTY);
+        $this->hostNames = Preg::split('{[\s,]+}', $pattern, -1, PREG_SPLIT_NO_EMPTY);
         $this->noproxy = empty($this->hostNames) || '*' === $this->hostNames[0];
     }
 

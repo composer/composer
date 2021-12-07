@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 use Composer\Cache;
 use Composer\Downloader\TransportException;
 use Composer\Json\JsonFile;
+use Composer\Pcre\Preg;
 use Composer\Util\Bitbucket;
 use Composer\Util\Http\Response;
 
@@ -60,7 +61,7 @@ class GitBitbucketDriver extends VcsDriver
      */
     public function initialize()
     {
-        preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)?$#i', $this->url, $match);
+        Preg::match('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)?$#i', $this->url, $match);
         $this->owner = $match[1];
         $this->repository = $match[2];
         $this->originUrl = 'bitbucket.org';
@@ -463,7 +464,7 @@ class GitBitbucketDriver extends VcsDriver
             if ($cloneLink['name'] === 'https') {
                 // Format: https://(user@)bitbucket.org/{user}/{repo}
                 // Strip username from URL (only present in clone URL's for private repositories)
-                $this->cloneHttpsUrl = preg_replace('/https:\/\/([^@]+@)?/', 'https://', $cloneLink['href']);
+                $this->cloneHttpsUrl = Preg::replace('/https:\/\/([^@]+@)?/', 'https://', $cloneLink['href']);
             }
         }
     }
@@ -525,7 +526,7 @@ class GitBitbucketDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (!preg_match('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)?$#i', $url)) {
+        if (!Preg::isMatch('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)?$#i', $url)) {
             return false;
         }
 

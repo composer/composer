@@ -17,6 +17,7 @@ use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\CaBundle\CaBundle;
+use Composer\Pcre\Preg;
 use Composer\Util\Http\Response;
 use Composer\Util\Http\ProxyManager;
 
@@ -177,7 +178,7 @@ class RemoteFilesystem
     {
         $value = null;
         foreach ($headers as $header) {
-            if (preg_match('{^HTTP/\S+ (\d+)}i', $header, $match)) {
+            if (Preg::isMatch('{^HTTP/\S+ (\d+)}i', $header, $match)) {
                 // In case of redirects, http_response_headers contains the headers of all responses
                 // so we can not return directly and need to keep iterating
                 $value = (int) $match[1];
@@ -195,7 +196,7 @@ class RemoteFilesystem
     {
         $value = null;
         foreach ($headers as $header) {
-            if (preg_match('{^HTTP/\S+ \d+}i', $header)) {
+            if (Preg::isMatch('{^HTTP/\S+ \d+}i', $header)) {
                 // In case of redirects, http_response_headers contains the headers of all responses
                 // so we can not return directly and need to keep iterating
                 $value = $header;
@@ -281,7 +282,7 @@ class RemoteFilesystem
         unset($origFileUrl, $proxy, $usingProxy);
 
         // Check for secure HTTP, but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
-        if ((!preg_match('{^http://(repo\.)?packagist\.org/p/}', $fileUrl) || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && empty($degradedPackagist)) {
+        if ((!Preg::isMatch('{^http://(repo\.)?packagist\.org/p/}', $fileUrl) || (false === strpos($fileUrl, '$') && false === strpos($fileUrl, '%24'))) && empty($degradedPackagist)) {
             $this->config->prohibitUrlByConfig($fileUrl, $this->io);
         }
 
@@ -296,7 +297,7 @@ class RemoteFilesystem
             if ($errorMessage) {
                 $errorMessage .= "\n";
             }
-            $errorMessage .= preg_replace('{^file_get_contents\(.*?\): }', '', $msg);
+            $errorMessage .= Preg::replace('{^file_get_contents\(.*?\): }', '', $msg);
 
             return true;
         });
@@ -386,7 +387,7 @@ class RemoteFilesystem
             && !$this->authHelper->isPublicBitBucketDownload($fileUrl)
             && substr($fileUrl, -4) === '.zip'
             && (!$locationHeader || substr(parse_url($locationHeader, PHP_URL_PATH), -4) !== '.zip')
-            && $contentType && preg_match('{^text/html\b}i', $contentType)
+            && $contentType && Preg::isMatch('{^text/html\b}i', $contentType)
         ) {
             $result = false;
             if ($retryAuthFailure) {
@@ -463,7 +464,7 @@ class RemoteFilesystem
                 if ($errorMessage) {
                     $errorMessage .= "\n";
                 }
-                $errorMessage .= preg_replace('{^file_put_contents\(.*?\): }', '', $msg);
+                $errorMessage .= Preg::replace('{^file_put_contents\(.*?\): }', '', $msg);
 
                 return true;
             });
@@ -752,11 +753,11 @@ class RemoteFilesystem
                 $urlHost = parse_url($this->fileUrl, PHP_URL_HOST);
 
                 // Replace path using hostname as an anchor.
-                $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $this->fileUrl);
+                $targetUrl = Preg::replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $this->fileUrl);
             } else {
                 // Relative path; e.g. foo
                 // This actually differs from PHP which seems to add duplicate slashes.
-                $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$locationHeader, $this->fileUrl);
+                $targetUrl = Preg::replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$locationHeader, $this->fileUrl);
             }
         }
 

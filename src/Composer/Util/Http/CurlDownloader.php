@@ -16,6 +16,7 @@ use Composer\Config;
 use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use Composer\Pcre\Preg;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
@@ -167,7 +168,7 @@ class CurlDownloader
         $originalOptions = $options;
 
         // check URL can be accessed (i.e. is not insecure), but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
-        if (!preg_match('{^http://(repo\.)?packagist\.org/p/}', $url) || (false === strpos($url, '$') && false === strpos($url, '%24'))) {
+        if (!Preg::isMatch('{^http://(repo\.)?packagist\.org/p/}', $url) || (false === strpos($url, '$') && false === strpos($url, '%24'))) {
             $this->config->prohibitUrlByConfig($url, $this->io);
         }
 
@@ -181,7 +182,7 @@ class CurlDownloader
                 if ($errorMessage) {
                     $errorMessage .= "\n";
                 }
-                $errorMessage .= preg_replace('{^fopen\(.*?\): }', '', $msg);
+                $errorMessage .= Preg::replace('{^fopen\(.*?\): }', '', $msg);
             });
             $bodyHandle = fopen($copyTo.'~', 'w+b');
             restore_error_handler();
@@ -500,11 +501,11 @@ class CurlDownloader
                 $urlHost = parse_url($job['url'], PHP_URL_HOST);
 
                 // Replace path using hostname as an anchor.
-                $targetUrl = preg_replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $job['url']);
+                $targetUrl = Preg::replace('{^(.+(?://|@)'.preg_quote($urlHost).'(?::\d+)?)(?:[/\?].*)?$}', '\1'.$locationHeader, $job['url']);
             } else {
                 // Relative path; e.g. foo
                 // This actually differs from PHP which seems to add duplicate slashes.
-                $targetUrl = preg_replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$locationHeader, $job['url']);
+                $targetUrl = Preg::replace('{^(.+/)[^/?]*(?:\?.*)?$}', '\1'.$locationHeader, $job['url']);
             }
         }
 
@@ -540,7 +541,7 @@ class CurlDownloader
             && !$this->authHelper->isPublicBitBucketDownload($job['url'])
             && substr($job['url'], -4) === '.zip'
             && (!$locationHeader || substr($locationHeader, -4) !== '.zip')
-            && preg_match('{^text/html\b}i', $response->getHeader('content-type'))
+            && Preg::isMatch('{^text/html\b}i', $response->getHeader('content-type'))
         ) {
             $needsAuthRetry = 'Bitbucket requires authentication and it was not provided';
         }

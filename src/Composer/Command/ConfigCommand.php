@@ -12,6 +12,7 @@
 
 namespace Composer\Command;
 
+use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
@@ -261,7 +262,7 @@ EOT
             $properties = array('name', 'type', 'description', 'homepage', 'version', 'minimum-stability', 'prefer-stable', 'keywords', 'license', 'extra');
             $rawData = $this->configFile->read();
             $data = $this->config->all();
-            if (preg_match('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
+            if (Preg::isMatch('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
                 if (!isset($matches[1]) || $matches[1] === '') {
                     $value = isset($data['repositories']) ? $data['repositories'] : array();
                 } else {
@@ -390,7 +391,7 @@ EOT
             'cache-files-ttl' => array('is_numeric', 'intval'),
             'cache-files-maxsize' => array(
                 function ($val) {
-                    return preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val) > 0;
+                    return Preg::isMatch('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val);
                 },
                 function ($val) {
                     return $val;
@@ -535,7 +536,7 @@ EOT
             return 0;
         }
         // handle preferred-install per-package config
-        if (preg_match('/^preferred-install\.(.+)/', $settingKey, $matches)) {
+        if (Preg::isMatch('/^preferred-install\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->configSource->removeConfigSetting($settingKey);
 
@@ -626,7 +627,7 @@ EOT
         }
 
         // handle repositories
-        if (preg_match('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
+        if (Preg::isMatch('/^repos?(?:itories)?\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->configSource->removeRepository($matches[1]);
 
@@ -662,7 +663,7 @@ EOT
         }
 
         // handle extra
-        if (preg_match('/^extra\.(.+)/', $settingKey, $matches)) {
+        if (Preg::isMatch('/^extra\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->configSource->removeProperty($settingKey);
 
@@ -689,7 +690,7 @@ EOT
         }
 
         // handle suggest
-        if (preg_match('/^suggest\.(.+)/', $settingKey, $matches)) {
+        if (Preg::isMatch('/^suggest\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->configSource->removeProperty($settingKey);
 
@@ -709,7 +710,7 @@ EOT
         }
 
         // handle platform
-        if (preg_match('/^platform\.(.+)/', $settingKey, $matches)) {
+        if (Preg::isMatch('/^platform\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->configSource->removeConfigSetting($settingKey);
 
@@ -729,7 +730,7 @@ EOT
         }
 
         // handle auth
-        if (preg_match('/^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic|bearer)\.(.+)/', $settingKey, $matches)) {
+        if (Preg::isMatch('/^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|http-basic|bearer)\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->authConfigSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
@@ -764,7 +765,7 @@ EOT
         }
 
         // handle script
-        if (preg_match('/^scripts\.(.+)/', $settingKey, $matches)) {
+        if (Preg::isMatch('/^scripts\.(.+)/', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->configSource->removeProperty($settingKey);
 
@@ -857,7 +858,7 @@ EOT
             $rawVal = isset($rawContents[$key]) ? $rawContents[$key] : null;
 
             if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
-                $k .= preg_replace('{^config\.}', '', $key . '.');
+                $k .= Preg::replace('{^config\.}', '', $key . '.');
                 $this->listConfiguration($value, $rawVal, $output, $k, $showSource);
                 $k = $origK;
 

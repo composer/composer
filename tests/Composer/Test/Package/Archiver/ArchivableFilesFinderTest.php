@@ -13,6 +13,7 @@
 namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\ArchivableFilesFinder;
+use Composer\Pcre\Preg;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Symfony\Component\Process\Process;
@@ -263,7 +264,7 @@ class ArchivableFilesFinderTest extends TestCase
         $files = array();
         foreach ($this->finder as $file) {
             if (!$file->isDir()) {
-                $files[] = preg_replace('#^'.preg_quote($this->sources, '#').'#', '', $this->fs->normalizePath($file->getRealPath()));
+                $files[] = Preg::replace('#^'.preg_quote($this->sources, '#').'#', '', $this->fs->normalizePath($file->getRealPath()));
             }
         }
 
@@ -292,7 +293,7 @@ class ArchivableFilesFinderTest extends TestCase
 
         $files = array();
         foreach ($iterator as $file) {
-            $files[] = preg_replace('#^phar://'.preg_quote($this->sources, '#').'/archive\.zip/archive#', '', $this->fs->normalizePath($file));
+            $files[] = Preg::replace('#^phar://'.preg_quote($this->sources, '#').'/archive\.zip/archive#', '', $this->fs->normalizePath($file));
         }
 
         unset($archive, $iterator, $file);

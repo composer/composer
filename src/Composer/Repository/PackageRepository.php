@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
+use Composer\Pcre\Preg;
 
 /**
  * Package repository.
@@ -62,6 +63,6 @@ class PackageRepository extends ArrayRepository
 
     public function getRepoName()
     {
-        return preg_replace('{^array }', 'package ', parent::getRepoName());
+        return Preg::replace('{^array }', 'package ', parent::getRepoName());
     }
 }

@@ -14,6 +14,7 @@ namespace Composer\Installer;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
+use Composer\Pcre\Preg;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Filesystem;
@@ -252,7 +253,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $targetDir = $package->getTargetDir();
 
         if ($targetDir) {
-            return preg_replace('{/*'.str_replace('/', '/+', preg_quote($targetDir)).'/?$}', '', $installPath);
+            return Preg::replace('{/*'.str_replace('/', '/+', preg_quote($targetDir)).'/?$}', '', $installPath);
         }
 
         return $installPath;

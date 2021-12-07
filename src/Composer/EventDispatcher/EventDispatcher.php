@@ -16,6 +16,7 @@ use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Composer;
+use Composer\Pcre\Preg;
 use Composer\Util\Platform;
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Repository\RepositoryInterface;
@@ -253,9 +254,9 @@ class EventDispatcher
                     $possibleLocalBinaries = $this->composer->getPackage()->getBinaries();
                     if ($possibleLocalBinaries) {
                         foreach ($possibleLocalBinaries as $localExec) {
-                            if (preg_match('{\b'.preg_quote($callable).'$}', $localExec)) {
+                            if (Preg::isMatch('{\b'.preg_quote($callable).'$}', $localExec)) {
                                 $caller = BinaryInstaller::determineBinaryCaller($localExec);
-                                $exec = preg_replace('{^'.preg_quote($callable).'}', $caller . ' ' . $localExec, $exec);
+                                $exec = Preg::replace('{^'.preg_quote($callable).'}', $caller . ' ' . $localExec, $exec);
                                 break;
                             }
                         }
@@ -274,13 +275,13 @@ class EventDispatcher
                     if (strpos($exec, '@php ') === 0) {
                         $pathAndArgs = substr($exec, 5);
                         if (Platform::isWindows()) {
-                            $pathAndArgs = preg_replace_callback('{^\S+}', function ($path) {
+                            $pathAndArgs = Preg::replaceCallback('{^\S+}', function ($path) {
                                 return str_replace('/', '\\', $path[0]);
                             }, $pathAndArgs);
                         }
                         // match somename (not in quote, and not a qualified path) and if it is not a valid path from CWD then try to find it
                         // in $PATH. This allows support for `@php foo` where foo is a binary name found in PATH but not an actual relative path
-                        $matched = preg_match('{^[^\'"\s/\\\\]+}', $pathAndArgs, $match);
+                        $matched = Preg::isMatch('{^[^\'"\s/\\\\]+}', $pathAndArgs, $match);
                         if ($matched && !file_exists($match[0])) {
                             $finder = new ExecutableFinder;
                             if ($pathToExec = $finder->find($match[0])) {
@@ -296,7 +297,7 @@ class EventDispatcher
                         }
 
                         if (Platform::isWindows()) {
-                            $exec = preg_replace_callback('{^\S+}', function ($path) {
+                            $exec = Preg::replaceCallback('{^\S+}', function ($path) {
                                 return str_replace('/', '\\', $path[0]);
                             }, $exec);
                         }
@@ -579,7 +580,7 @@ class EventDispatcher
         if (is_dir($binDir)) {
             $binDir = realpath($binDir);
             $pathValue = Platform::getEnv($pathEnv);
-            if (!preg_match('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $pathValue)) {
+            if (!Preg::isMatch('{(^|'.PATH_SEPARATOR.')'.preg_quote($binDir).'($|'.PATH_SEPARATOR.')}', $pathValue)) {
                 Platform::putEnv($pathEnv, $binDir.PATH_SEPARATOR.$pathValue);
             }
         }

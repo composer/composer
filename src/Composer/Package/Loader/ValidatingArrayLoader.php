@@ -13,6 +13,7 @@
 namespace Composer\Package\Loader;
 
 use Composer\Package\BasePackage;
+use Composer\Pcre\Preg;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Package\Version\VersionParser;
 use Composer\Repository\PlatformRepository;
@@ -251,7 +252,7 @@ class ValidatingArrayLoader implements LoaderInterface
                     }
                     if ($err = self::hasPackageNamingError($package, true)) {
                         $this->errors[] = $linkType.'.'.$err;
-                    } elseif (!preg_match('{^[A-Za-z0-9_./-]+$}', $package)) {
+                    } elseif (!Preg::isMatch('{^[A-Za-z0-9_./-]+$}', $package)) {
                         $this->warnings[] = $linkType.'.'.$package.' : invalid key, package names must be strings containing only [A-Za-z0-9_./-]';
                     }
                     if (!is_string($constraint)) {
@@ -353,10 +354,10 @@ class ValidatingArrayLoader implements LoaderInterface
                 if (isset($this->config[$srcType]['reference']) && !is_string($this->config[$srcType]['reference']) && !is_int($this->config[$srcType]['reference'])) {
                     $this->errors[] = $srcType . '.reference : should be a string or int, '.gettype($this->config[$srcType]['reference']).' given';
                 }
-                if (isset($this->config[$srcType]['reference']) && preg_match('{^\s*-}', (string) $this->config[$srcType]['reference'])) {
+                if (isset($this->config[$srcType]['reference']) && Preg::isMatch('{^\s*-}', (string) $this->config[$srcType]['reference'])) {
                     $this->errors[] = $srcType . '.reference : must not start with a "-", "'.$this->config[$srcType]['reference'].'" given';
                 }
-                if (preg_match('{^\s*-}', $this->config[$srcType]['url'])) {
+                if (Preg::isMatch('{^\s*-}', $this->config[$srcType]['url'])) {
                     $this->errors[] = $srcType . '.url : must not start with a "-", "'.$this->config[$srcType]['url'].'" given';
                 }
             }
@@ -448,7 +449,7 @@ class ValidatingArrayLoader implements LoaderInterface
             return null;
         }
 
-        if (!preg_match('{^[a-z0-9](?:[_.-]?[a-z0-9]+)*/[a-z0-9](?:(?:[_.]?|-{0,2})[a-z0-9]+)*$}iD', $name)) {
+        if (!Preg::isMatch('{^[a-z0-9](?:[_.-]?[a-z0-9]+)*/[a-z0-9](?:(?:[_.]?|-{0,2})[a-z0-9]+)*$}iD', $name)) {
             return $name.' is invalid, it should have a vendor name, a forward slash, and a package name. The vendor and package name can be words separated by -, . or _. The complete name should match "^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$".';
         }
 
@@ -458,16 +459,16 @@ class ValidatingArrayLoader implements LoaderInterface
             return $name.' is reserved, package and vendor names can not match any of: '.implode(', ', $reservedNames).'.';
         }
 
-        if (preg_match('{\.json$}', $name)) {
+        if (Preg::isMatch('{\.json$}', $name)) {
             return $name.' is invalid, package names can not end in .json, consider renaming it or perhaps using a -json suffix instead.';
         }
 
-        if (preg_match('{[A-Z]}', $name)) {
+        if (Preg::isMatch('{[A-Z]}', $name)) {
             if ($isLink) {
                 return $name.' is invalid, it should not contain uppercase characters. Please use '.strtolower($name).' instead.';
             }
 
-            $suggestName = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
+            $suggestName = Preg::replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
             $suggestName = strtolower($suggestName);
 
             return $name.' is invalid, it should not contain uppercase characters. We suggest using '.$suggestName.' instead.';
@@ -492,7 +493,7 @@ class ValidatingArrayLoader implements LoaderInterface
             return false;
         }
 
-        if (!preg_match('{^'.$regex.'$}u', $this->config[$property])) {
+        if (!Preg::isMatch('{^'.$regex.'$}u', $this->config[$property])) {
             $message = $property.' : invalid value ('.$this->config[$property].'), must match '.$regex;
             if ($mandatory) {
                 $this->errors[] = $message;
@@ -591,7 +592,7 @@ class ValidatingArrayLoader implements LoaderInterface
                 continue;
             }
 
-            if ($regex && !preg_match('{^'.$regex.'$}u', $value)) {
+            if ($regex && !Preg::isMatch('{^'.$regex.'$}u', $value)) {
                 $this->warnings[] = $property.'.'.$key.' : invalid value ('.$value.'), must match '.$regex;
                 unset($this->config[$property][$key]);
                 $pass = false;

@@ -14,6 +14,7 @@ namespace Composer\Repository;
 
 use Composer\Package\PackageInterface;
 use Composer\Package\BasePackage;
+use Composer\Pcre\Preg;
 
 /**
  * Filters which packages are seen as canonical on this repo by loadPackages
@@ -202,9 +203,9 @@ class FilterRepository implements RepositoryInterface
         }
 
         if ($this->only) {
-            return (bool) preg_match($this->only, $name);
+            return Preg::isMatch($this->only, $name);
         }
 
-        return !preg_match($this->exclude, $name);
+        return !Preg::isMatch($this->exclude, $name);
     }
 }

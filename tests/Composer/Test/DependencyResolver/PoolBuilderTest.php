@@ -17,6 +17,7 @@ use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\PoolOptimizer;
 use Composer\Config;
 use Composer\IO\NullIO;
+use Composer\Pcre\Preg;
 use Composer\Repository\ArrayRepository;
 use Composer\Repository\FilterRepository;
 use Composer\Repository\LockArrayRepository;
@@ -188,7 +189,7 @@ class PoolBuilderTest extends TestCase
         $fixturesDir = realpath(__DIR__.'/Fixtures/poolbuilder/');
         $tests = array();
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($fixturesDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
-            if (!preg_match('/\.test$/', $file)) {
+            if (!Preg::isMatch('/\.test$/', $file)) {
                 continue;
             }
 
@@ -224,7 +225,7 @@ class PoolBuilderTest extends TestCase
      */
     protected function readTestFile(\SplFileInfo $file, $fixturesDir)
     {
-        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
 
         $sectionInfo = array(
             'TEST' => true,

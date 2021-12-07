@@ -14,6 +14,7 @@ namespace Composer\Installer;
 
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
+use Composer\Pcre\Preg;
 use Composer\Repository\InstalledRepository;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 
@@ -232,7 +233,7 @@ class SuggestedPackagesReporter
      */
     private function removeControlCharacters($string)
     {
-        return preg_replace(
+        return Preg::replace(
             '/[[:cntrl:]]/',
             '',
             str_replace("\n", ' ', $string)

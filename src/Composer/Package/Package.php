@@ -13,6 +13,7 @@
 namespace Composer\Package;
 
 use Composer\Package\Version\VersionParser;
+use Composer\Pcre\Preg;
 use Composer\Util\ComposerMirror;
 
 /**
@@ -160,7 +161,7 @@ class Package extends BasePackage
             return null;
         }
 
-        return ltrim(preg_replace('{ (?:^|[\\\\/]+) \.\.? (?:[\\\\/]+|$) (?:\.\.? (?:[\\\\/]+|$) )*}x', '/', $this->targetDir), '/');
+        return ltrim(Preg::replace('{ (?:^|[\\\\/]+) \.\.? (?:[\\\\/]+|$) (?:\.\.? (?:[\\\\/]+|$) )*}x', '/', $this->targetDir), '/');
     }
 
     /**
@@ -703,10 +704,10 @@ class Package extends BasePackage
         // TODO generalize this a bit for self-managed/on-prem versions? Some kind of replace token in dist urls which allow this?
         if (
             $this->getDistUrl() !== null
-            && preg_match('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $this->getDistUrl())
+            && Preg::isMatch('{^https?://(?:(?:www\.)?bitbucket\.org|(api\.)?github\.com|(?:www\.)?gitlab\.com)/}i', $this->getDistUrl())
         ) {
             $this->setDistReference($reference);
-            $this->setDistUrl(preg_replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|$)}i', $reference, $this->getDistUrl()));
+            $this->setDistUrl(Preg::replace('{(?<=/|sha=)[a-f0-9]{40}(?=/|$)}i', $reference, $this->getDistUrl()));
         } elseif ($this->getDistReference()) { // update the dist reference if there was one, but if none was provided ignore it
             $this->setDistReference($reference);
         }
