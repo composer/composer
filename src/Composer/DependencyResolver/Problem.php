@@ -15,6 +15,7 @@ namespace Composer\DependencyResolver;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
+use Composer\Package\Link;
 use Composer\Package\PackageInterface;
 use Composer\Package\RootPackageInterface;
 use Composer\Pcre\Preg;
@@ -242,19 +243,19 @@ class Problem
                 $ext = substr($packageName, 4);
                 $msg = "- Root composer.json requires PHP extension ".$packageName.self::constraintToText($constraint).' but ';
 
-                if (extension_loaded($ext)) {
-                    $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) ?: '0');
-
-                    if (null === $version) {
-                        return array($msg, 'the '.$packageName.' package is disabled by your platform config. Enable it again with "composer config platform.'.$packageName.' --unset".');
+                $version = self::getPlatformPackageVersion($pool, $packageName, phpversion($ext) ?: '0');
+                if (null === $version) {
+                    if (extension_loaded($ext)) {
+                        return array(
+                            $msg,
+                            'the '.$packageName.' package is disabled by your platform config. Enable it again with "composer config platform.'.$packageName.' --unset".',
+                        );
                     }
 
-                    $error = 'it has the wrong version ('.$version.') installed';
-                } else {
-                    $error = 'it is missing from your system';
+                    return array($msg, 'it is missing from your system. Install or enable PHP\'s '.$ext.' extension.');
                 }
 
-                return array($msg, $error.'. Install or enable PHP\'s '.$ext.' extension.');
+                return array($msg, 'it has the wrong version installed ('.$version.').');
             }
 
             // handle linked libs
@@ -431,11 +432,31 @@ class Problem
         $available = $pool->whatProvides($packageName);
 
         if (count($available)) {
-            $firstAvailable = reset($available);
-            $version = $firstAvailable->getPrettyVersion();
-            $extra = $firstAvailable->getExtra();
-            if ($firstAvailable instanceof CompletePackageInterface && isset($extra['config.platform']) && $extra['config.platform'] === true) {
-                $version .= '; ' . str_replace('Package ', '', $firstAvailable->getDescription());
+            $selected = null;
+            foreach ($available as $pkg) {
+                if ($pkg->getRepository() instanceof PlatformRepository) {
+                    $selected = $pkg;
+                    break;
+                }
+            }
+            if ($selected === null) {
+                $selected = reset($available);
+            }
+
+            // must be a package providing/replacing and not a real platform package
+            if ($selected->getName() !== $packageName) {
+                /** @var Link $link */
+                foreach (array_merge(array_values($selected->getProvides()), array_values($selected->getReplaces())) as $link) {
+                    if ($link->getTarget() === $packageName) {
+                        return $link->getPrettyConstraint().' '.substr($link->getDescription(), 0, -1).'d by '.$selected->getPrettyString();
+                    }
+                }
+            }
+
+            $version = $selected->getPrettyVersion();
+            $extra = $selected->getExtra();
+            if ($selected instanceof CompletePackageInterface && isset($extra['config.platform']) && $extra['config.platform'] === true) {
+                $version .= '; ' . str_replace('Package ', '', $selected->getDescription());
             }
         } else {
             return null;

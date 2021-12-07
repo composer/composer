@@ -28,6 +28,7 @@ use Composer\DependencyResolver\SolverProblemsException;
 use Composer\DependencyResolver\PolicyInterface;
 use Composer\Downloader\DownloadManager;
 use Composer\EventDispatcher\EventDispatcher;
+use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Installer\InstallationManager;
@@ -807,15 +808,16 @@ class Installer
 
         $rootRequires = array();
         foreach ($requires as $req => $constraint) {
+            if ($constraint instanceof Link) {
+                $constraint = $constraint->getConstraint();
+            }
             // skip platform requirements from the root package to avoid filtering out existing platform packages
             if ($this->platformRequirementFilter->isIgnored($req)) {
                 continue;
+            } elseif ($this->platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+                $constraint = $this->platformRequirementFilter->filterConstraint($req, $constraint);
             }
-            if ($constraint instanceof Link) {
-                $rootRequires[$req] = $constraint->getConstraint();
-            } else {
-                $rootRequires[$req] = $constraint;
-            }
+            $rootRequires[$req] = $constraint;
         }
 
         $this->fixedRootPackage = clone $this->package;

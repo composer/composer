@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Package\BasePackage;
@@ -197,11 +198,14 @@ class RuleSetGenerator
             }
 
             foreach ($package->getRequires() as $link) {
+                $constraint = $link->getConstraint();
                 if ($platformRequirementFilter->isIgnored($link->getTarget())) {
                     continue;
+                } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+                    $constraint = $platformRequirementFilter->filterConstraint($link->getTarget(), $constraint);
                 }
 
-                $possibleRequires = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
+                $possibleRequires = $this->pool->whatProvides($link->getTarget(), $constraint);
 
                 $this->addRule(RuleSet::TYPE_PACKAGE, $this->createRequireRule($package, $possibleRequires, Rule::RULE_PACKAGE_REQUIRES, $link));
 
@@ -225,11 +229,14 @@ class RuleSetGenerator
                     continue;
                 }
 
+                $constraint = $link->getConstraint();
                 if ($platformRequirementFilter->isIgnored($link->getTarget())) {
                     continue;
+                } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+                    $constraint = $platformRequirementFilter->filterConstraint($link->getTarget(), $constraint);
                 }
 
-                $conflicts = $this->pool->whatProvides($link->getTarget(), $link->getConstraint());
+                $conflicts = $this->pool->whatProvides($link->getTarget(), $constraint);
 
                 foreach ($conflicts as $conflict) {
                     // define the conflict rule for regular packages, for alias packages it's only needed if the name
@@ -277,6 +284,8 @@ class RuleSetGenerator
         foreach ($request->getRequires() as $packageName => $constraint) {
             if ($platformRequirementFilter->isIgnored($packageName)) {
                 continue;
+            } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+                $constraint = $platformRequirementFilter->filterConstraint($packageName, $constraint);
             }
 
             $packages = $this->pool->whatProvides($packageName, $constraint);

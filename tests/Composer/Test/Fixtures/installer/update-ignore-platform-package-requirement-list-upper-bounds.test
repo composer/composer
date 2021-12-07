@@ -1,0 +1,50 @@
+--TEST--
+Update with ignore-platform-req list ignoring upper bound of a dependency
+--COMPOSER--
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": [
+                { "name": "a/a", "version": "1.0.1", "require": { "ext-foo-bar": "3.*" } },
+                { "name": "b/b", "version": "1.0.1", "require": { "ext-foo-bar": "10.*" } }
+            ]
+        }
+    ],
+    "require": {
+        "a/a": "1.0.*",
+        "b/b": "1.0.*",
+        "php": "^4.3",
+        "ext-foo-baz": "9.0.0"
+    },
+    "provide": {
+        "ext-foo-bar": "5.0.3"
+    }
+}
+--INSTALLED--
+[
+    { "name": "a/a", "version": "1.0.0" }
+]
+--RUN--
+update --ignore-platform-req=php+ --ignore-platform-req=ext-foo-bar+ --ignore-platform-req=ext-foo-baz+
+
+--EXPECT-EXIT-CODE--
+2
+
+--EXPECT-OUTPUT--
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - Root composer.json requires PHP extension ext-foo-baz [== 9.0.0.0 || >= 9.0.0.0] but it is missing from your system. Install or enable PHP's foo-baz extension.
+  Problem 2
+    - Root composer.json requires b/b 1.0.* -> satisfiable by b/b[1.0.1].
+    - b/b 1.0.1 requires ext-foo-bar 10.* -> it has the wrong version installed (5.0.3 provided by __root__ 1.0.0+no-version-set).
+
+To enable extensions, verify that they are enabled in your .ini files:
+__inilist__
+You can also run `php --ini` in a terminal to see which files are used by PHP in CLI mode.
+Alternatively, you can run Composer with `--ignore-platform-req=ext-foo-baz --ignore-platform-req=ext-foo-bar` to temporarily ignore these required extensions.
+
+--EXPECT--

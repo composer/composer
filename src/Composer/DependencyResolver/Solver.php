@@ -12,6 +12,7 @@
 
 namespace Composer\DependencyResolver;
 
+use Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
@@ -174,6 +175,8 @@ class Solver
         foreach ($request->getRequires() as $packageName => $constraint) {
             if ($platformRequirementFilter->isIgnored($packageName)) {
                 continue;
+            } elseif ($platformRequirementFilter instanceof IgnoreListPlatformRequirementFilter) {
+                $constraint = $platformRequirementFilter->filterConstraint($packageName, $constraint);
             }
 
             if (!$this->pool->whatProvides($packageName, $constraint)) {

@@ -47,7 +47,7 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - Root composer.json requires a/a * -> satisfiable by a/a[1.0.0].
-    - a/a 1.0.0 requires ext-filter 2.0.0 -> it has the wrong version (7.4.0; overridden via config.platform, actual: %s) installed. Install or enable PHP's filter extension.
+    - a/a 1.0.0 requires ext-filter 2.0.0 -> it has the wrong version installed (7.4.0; overridden via config.platform, actual: %s).
 
 To enable extensions, verify that they are enabled in your .ini files:
 __inilist__

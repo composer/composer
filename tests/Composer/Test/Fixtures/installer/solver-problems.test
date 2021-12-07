@@ -119,7 +119,7 @@ Your requirements could not be resolved to an installable set of packages.
   Problem 6
     - Root composer.json requires linked library lib-icu 1001.* but it has the wrong version installed, try upgrading the intl extension.
   Problem 7
-    - Root composer.json requires PHP extension ext-xml 1002.* but it has the wrong version (%s) installed. Install or enable PHP's xml extension.
+    - Root composer.json requires PHP extension ext-xml 1002.* but it has the wrong version installed (%s).
   Problem 8
     - Root composer.json requires php 1 but your php version (%s) does not satisfy that requirement.
   Problem 9
@@ -161,4 +161,3 @@ Alternatively, you can run Composer with `--ignore-platform-req=ext-xml` to temp
 Use the option --with-all-dependencies (-W) to allow upgrades, downgrades and removals for packages currently locked to specific versions.
 
 --EXPECT--
-
