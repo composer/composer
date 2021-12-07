@@ -183,9 +183,6 @@ class PoolOptimizer
 
         $optimizedPool = new Pool($packages, $pool->getUnacceptableFixedOrLockedPackages(), $removedVersions, $this->removedVersionsByPackage);
 
-        // Reset package removals
-        $this->packagesToRemove = array();
-
         return $optimizedPool;
     }
 
@@ -387,23 +384,25 @@ class PoolOptimizer
     }
 
     /**
-     * Use the list of fixed and locked packages to constrain the loaded packages
+     * Use the list of locked packages to constrain the loaded packages
      * This will reduce packages with significant numbers of historical versions to a smaller number
      * and reduce the resulting rule set that is generated
-     *
-     * @param Request $request
      *
      * @return void
      */
     private function filterImpossiblePackages(Request $request, Pool $pool)
     {
+        if (count($request->getLockedPackages()) === 0) {
+            return;
+        }
+
         $packageIndex = array();
 
         foreach ($pool->getPackages() as $package) {
             $packageIndex[$package->getName()][$package->id] = $package;
         }
 
-        foreach ($request->getFixedOrLockedPackages() as $package) {
+        foreach ($request->getLockedPackages() as $package) {
             foreach ($package->getRequires() as $link) {
                 $require = $link->getTarget();
                 if (!isset($packageIndex[$require])) {
@@ -412,7 +411,7 @@ class PoolOptimizer
 
                 $linkConstraint = $link->getConstraint();
                 foreach ($packageIndex[$require] as $id => $requiredPkg) {
-                    if (!CompilingMatcher::match($linkConstraint, Constraint::OP_EQ, $requiredPkg->getVersion())) {
+                    if (false === CompilingMatcher::match($linkConstraint, Constraint::OP_EQ, $requiredPkg->getVersion())) {
                         // Do not filter a package aliased by another package, nor aliases
                         if (isset($this->aliasesPerPackage[$id]) || $requiredPkg instanceof AliasPackage) {
                             continue;
