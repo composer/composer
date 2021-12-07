@@ -15,6 +15,7 @@ namespace Composer\Plugin;
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
+use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
@@ -52,6 +53,16 @@ class PluginManager
     /** @var array<string, PluginInterface> */
     protected $registeredPlugins = array();
 
+    /**
+     * @var array<string, bool>|null
+     */
+    private $allowPluginRules;
+
+    /**
+     * @var array<string, bool>|null
+     */
+    private $allowGlobalPluginRules;
+
     /** @var int */
     private static $classCounter = 0;
 
@@ -70,6 +81,9 @@ class PluginManager
         $this->globalComposer = $globalComposer;
         $this->versionParser = new VersionParser();
         $this->disablePlugins = $disablePlugins;
+
+        $this->allowPluginRules = $this->parseAllowedPlugins($composer->getConfig()->get('allow-plugins'));
+        $this->allowGlobalPluginRules = $this->parseAllowedPlugins($globalComposer !== null ? $globalComposer->getConfig()->get('allow-plugins') : false);
     }
 
     /**
@@ -84,7 +98,7 @@ class PluginManager
         }
 
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
-        $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
+        $globalRepo = $this->globalComposer !== null ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
         $this->loadRepository($repo, false);
         if ($globalRepo) {
             $this->loadRepository($globalRepo, true);
@@ -150,6 +164,11 @@ class PluginManager
             return;
         }
 
+        if (!$this->isPluginAllowed($package->getName(), $isGlobalPlugin)) {
+            $this->io->writeError('Skipped loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').'as it is not in config.allow-plugins', true, IOInterface::DEBUG);
+            return;
+        }
+
         if ($package->getType() === 'composer-plugin') {
             $requiresComposer = null;
             foreach ($package->getRequires() as $link) { /** @var Link $link */
@@ -194,7 +213,7 @@ class PluginManager
         $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
 
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
-        $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
+        $globalRepo = $this->globalComposer !== null ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
 
         $rootPackage = clone $this->composer->getPackage();
         $rootPackageRepo = new RootPackageRepository($rootPackage);
@@ -357,6 +376,13 @@ class PluginManager
      */
     public function addPlugin(PluginInterface $plugin, $isGlobalPlugin = false, PackageInterface $sourcePackage = null)
     {
+        if ($sourcePackage === null) {
+            trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);
+        } elseif (!$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin)) {
+            $this->io->writeError('Skipped loading "'.get_class($plugin).' from '.$sourcePackage->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
+            return;
+        }
+
         $details = array();
         if ($sourcePackage) {
             $details[] = 'from '.$sourcePackage->getName();
@@ -596,5 +622,110 @@ class PluginManager
         }
 
         return $capabilities;
+    }
+
+    /**
+     * @param  array<string, bool>|bool|null $allowPluginsConfig
+     * @return array<string, bool>|null
+     */
+    private function parseAllowedPlugins($allowPluginsConfig)
+    {
+        if (null === $allowPluginsConfig) {
+            return null;
+        }
+
+        if (true === $allowPluginsConfig) {
+            return array('{}' => true);
+        }
+
+        if (false === $allowPluginsConfig) {
+            return array('{^$}D' => false);
+        }
+
+        $rules = array();
+        foreach ($allowPluginsConfig as $pattern => $allow) {
+            $rules[BasePackage::packageNameToRegexp($pattern)] = $allow;
+        }
+
+        return $rules;
+    }
+
+    /**
+     * @param string $package
+     * @param bool $isGlobalPlugin
+     * @return bool
+     */
+    private function isPluginAllowed($package, $isGlobalPlugin)
+    {
+        static $warned = array();
+        $rules = $isGlobalPlugin ? $this->allowGlobalPluginRules : $this->allowPluginRules;
+
+        if ($rules === null) {
+            if (!$this->io->isInteractive()) {
+                if (!isset($warned['all'])) {
+                    $this->io->writeError('<warning>For additional security you should declare the allow-plugins config with a list of packages names that are allowed to run code. See https://getcomposer.org/allow-plugins</warning>');
+                    $this->io->writeError('<warning>You have until July 2022 to add the setting. Composer will then switch the default behavior to disallow all plugins.</warning>');
+                    $warned['all'] = true;
+                }
+
+                // if no config is defined we allow all plugins for BC
+                return true;
+            }
+
+            // keep going and prompt the user
+            $rules = array();
+        }
+
+        foreach ($rules as $pattern => $allow) {
+            if (Preg::isMatch($pattern, $package)) {
+                return $allow === true;
+            }
+        }
+
+        if (!isset($warned[$package])) {
+            if ($this->io->isInteractive()) {
+                $composer = $isGlobalPlugin && $this->globalComposer !== null ? $this->globalComposer : $this->composer;
+
+                $this->io->writeError('<warning>'.$package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is currently not in your allow-plugins config. See https://getcomposer.org/allow-plugins</warning>');
+                while (true) {
+                    switch ($answer = $this->io->ask('<warning>Do you trust "'.$package.'" to execute code and wish to enable it now? (writes "allow-plugins" to composer.json) [y,n,d,?]</warning> ', '?')) {
+                        case 'y':
+                        case 'n':
+                        case 'd':
+                            $allow = $answer === 'y';
+
+                            // persist answer in current rules to avoid prompting again if the package gets reloaded
+                            if ($isGlobalPlugin) {
+                                $this->allowGlobalPluginRules[BasePackage::packageNameToRegexp($package)] = $allow;
+                            } else {
+                                $this->allowPluginRules[BasePackage::packageNameToRegexp($package)] = $allow;
+                            }
+
+                            // persist answer in composer.json if it wasn't simply discarded
+                            if ($answer === 'y' || $answer === 'n') {
+                                $composer->getConfig()->getConfigSource()->addConfigSetting('allow-plugins.'.$package, $allow);
+                            }
+
+                            return $allow;
+
+                        case '?':
+                        default:
+                            $this->io->writeError(array(
+                                'y - add package to allow-plugins in composer.json and let it run immediately',
+                                'n - add package (as disallowed) to allow-plugins in composer.json to suppress further prompts',
+                                'd - discard this, do not change composer.json and do not allow the plugin to run',
+                                '? - print help'
+                            ));
+                            break;
+                    }
+                }
+            } else {
+                $this->io->writeError('<warning>'.$package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is blocked by your allow-plugins config. You may add it to the list if you consider it safe. See https://getcomposer.org/allow-plugins</warning>');
+                $this->io->writeError('<warning>You can run "composer '.($isGlobalPlugin ? 'global ' : '').'config --no-plugins allow-plugins.'.$package.' [true|false]" to enable it (true) or keep it disabled and suppress this warning (false)</warning>');
+            }
+            $warned[$package] = true;
+        }
+
+        return false;
     }
 }

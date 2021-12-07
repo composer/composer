@@ -24,6 +24,37 @@ helper is available:
 }
 ```
 
+## allow-plugins
+
+Defaults to `null` (allow all plugins implicitly) for backwards compatibility until July 2022.
+At that point the default will become `{}` and plugins will not load anymore unless allowed.
+
+As of Composer 2.2.0, the `allow-plugins` option adds a layer of security
+allowing you to restrict which Composer plugins are able to execute code during
+a Composer run.
+
+When a new plugin is first activated, which is not yet listed in the config option,
+Composer will print a warning. If you run Composer interactively it will
+prompt you to decide if you want to execute the plugin or not.
+
+Use this setting to allow only packages you trust to execute code. Set it to
+an object with package name patterns as keys. The values are **true** to allow
+and **false** to disallow while suppressing further warnings and prompts.
+
+```json
+{
+    "config": {
+        "allow-plugins": {
+            "third-party/required-plugin": true,
+            "my-organization/*": true,
+            "unnecessary/plugin": false
+        }
+    }
+}
+```
+
+You can also set the config option itself to `false` to disallow all plugins, or `true` to allow all plugins to run (NOT recommended).
+
 ## use-include-path
 
 Defaults to `false`. If `true`, the Composer autoloader will also look for classes
@@ -33,7 +64,7 @@ in the PHP include path.
 
 Defaults to `dist` and can be any of `source`, `dist` or `auto`. This option
 allows you to set the install method Composer will prefer to use. Can
-optionally be a hash of patterns for more granular install preferences.
+optionally be an object with package name patterns for keys for more granular install preferences.
 
 ```json
 {

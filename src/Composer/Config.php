@@ -34,6 +34,7 @@ class Config
     public static $defaultConfig = array(
         'process-timeout' => 300,
         'use-include-path' => false,
+        'allow-plugins' => null, // null for BC for now, will become array() after July 2022
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
         'notify-on-install' => true,
@@ -117,6 +118,12 @@ class Config
     {
         // load defaults
         $this->config = static::$defaultConfig;
+
+        // TODO after July 2022 remove this and update the default value above in self::$defaultConfig + remove note from 06-config.md
+        if (strtotime('2022-07-01') < time()) {
+            $this->config['allow-plugins'] = array();
+        }
+
         $this->repositories = static::$defaultRepositories;
         $this->useEnvironment = (bool) $useEnvironment;
         $this->baseDir = $baseDir;
@@ -165,7 +172,7 @@ class Config
     /**
      * Merges new config values with the existing ones (overriding)
      *
-     * @param array<string, mixed> $config
+     * @param array{config?: array<string, mixed>, repositories?: array<mixed>} $config
      * @param string $source
      *
      * @return void
@@ -175,10 +182,15 @@ class Config
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
             foreach ($config['config'] as $key => $val) {
-                if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer')) && isset($this->config[$key])) {
+                if (in_array($key, array('bitbucket-oauth', 'github-oauth', 'gitlab-oauth', 'gitlab-token', 'http-basic', 'bearer'), true) && isset($this->config[$key])) {
                     $this->config[$key] = array_merge($this->config[$key], $val);
                     $this->setSourceOfConfigValue($val, $key, $source);
-                } elseif (in_array($key, array('gitlab-domains', 'github-domains')) && isset($this->config[$key])) {
+                } elseif (in_array($key, array('allow-plugins'), true) && isset($this->config[$key]) && is_array($this->config[$key])) {
+                    // merging $val first to get the local config on top of the global one, then appending the global config,
+                    // then merging local one again to make sure the values from local win over global ones for keys present in both
+                    $this->config[$key] = array_merge($val, $this->config[$key], $val);
+                    $this->setSourceOfConfigValue($val, $key, $source);
+                } elseif (in_array($key, array('gitlab-domains', 'github-domains'), true) && isset($this->config[$key])) {
                     $this->config[$key] = array_unique(array_merge($this->config[$key], $val));
                     $this->setSourceOfConfigValue($val, $key, $source);
                 } elseif ('preferred-install' === $key && isset($this->config[$key])) {

@@ -114,16 +114,17 @@ class PluginInstallerTest extends TestCase
         $this->composer->setEventDispatcher(new EventDispatcher($this->composer, $this->io));
         $this->composer->setPackage(new RootPackage('dummy/root', '1.0.0.0', '1.0.0'));
 
-        $this->pm = new PluginManager($this->io, $this->composer);
-        $this->composer->setPluginManager($this->pm);
-
         $config->merge(array(
             'config' => array(
                 'vendor-dir' => $this->directory.'/Fixtures/',
                 'home' => $this->directory.'/Fixtures',
                 'bin-dir' => $this->directory.'/Fixtures/bin',
+                'allow-plugins' => true,
             ),
         ));
+
+        $this->pm = new PluginManager($this->io, $this->composer);
+        $this->composer->setPluginManager($this->pm);
     }
 
     protected function tearDown()
@@ -145,7 +146,10 @@ class PluginInstallerTest extends TestCase
 
         $plugins = $this->pm->getPlugins();
         $this->assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore-line
-        $this->assertEquals('activate v1'.PHP_EOL, $this->io->getOutput());
+        $this->assertEquals(
+            'activate v1'.PHP_EOL,
+            $this->io->getOutput()
+        );
     }
 
     public function testInstallMultiplePlugins()

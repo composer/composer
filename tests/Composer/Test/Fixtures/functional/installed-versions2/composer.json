@@ -17,5 +17,8 @@
     },
     "autoload": {
         "classmap": ["Hooks.php"]
+    },
+    "config": {
+        "allow-plugins": true
     }
 }
