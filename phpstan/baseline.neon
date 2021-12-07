@@ -1,22 +1,31 @@
 parameters:
-    ignoreErrors:
+	ignoreErrors:
+		-
+			message: "#^Parameter \\#1 \\$autoload_function of function spl_autoload_register expects callable\\(string\\)\\: void, array\\{\\$this\\(Composer\\\\Autoload\\\\ClassLoader\\), 'loadClass'\\} given\\.$#"
+			count: 1
+			path: ../src/Composer/Autoload/ClassLoader.php
+
         # reported as https://github.com/phpstan/phpstan/issues/6008
-        -
-            message: "#^Offset 'curl_id' on array{curl_id:#"
-            count: 1
-            path: ../src/Composer/Util/HttpDownloader.php
+		-
+			message: "#^Offset 'curl_id' on array\\{curl_id\\: int, exception\\: Composer\\\\Downloader\\\\TransportException, id\\: int, origin\\: string, reject\\: mixed, request\\: array\\{url\\: string, options\\?\\: array, copyTo\\?\\: string\\|null\\}, resolve\\: mixed, response\\: Composer\\\\Util\\\\Http\\\\Response, \\.\\.\\.\\} in isset\\(\\) always exists and is not nullable\\.$#"
+			count: 1
+			path: ../src/Composer/Util/HttpDownloader.php
 
-        -
-            message: "#^Parameter \\#1 \\$autoload_function of function spl_autoload_register expects callable\\(string\\)\\: void, array\\{\\$this\\(Composer\\\\Autoload\\\\ClassLoader\\), 'loadClass'\\} given\\.$#"
-            count: 1
-            path: ../src/Composer/Autoload/ClassLoader.php
+		-
+			message:
+				"""
+					#^Call to deprecated method getRawData\\(\\) of class Composer\\\\InstalledVersions\\:
+					Use getAllRawData\\(\\) instead which returns all datasets for all autoloaders present in the process\\. getRawData only returns the first dataset loaded, which may not be what you expect\\.$#
+				"""
+			count: 1
+			path: ../tests/Composer/Test/InstalledVersionsTest.php
 
-        -
-            message: "#^Parameter \\#2 \\$capabilityClassName of method Composer\\\\Plugin\\\\PluginManager\\:\\:getPluginCapability\\(\\) expects class\\-string\\<Composer\\\\Plugin\\\\Capability\\\\Capability\\>, string given\\.$#"
-            count: 2
-            path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
+		-
+			message: "#^Parameter \\#2 \\$capabilityClassName of method Composer\\\\Plugin\\\\PluginManager\\:\\:getPluginCapability\\(\\) expects class\\-string\\<Composer\\\\Plugin\\\\Capability\\\\Capability\\>, string given\\.$#"
+			count: 2
+			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
 
-        -
-            message: "#^Unable to resolve the template type CapabilityClass in call to method Composer\\\\Plugin\\\\PluginManager::getPluginCapability\\(\\)$#"
-            count: 2
-            path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
+		-
+			message: "#^Unable to resolve the template type CapabilityClass in call to method Composer\\\\Plugin\\\\PluginManager\\:\\:getPluginCapability\\(\\)$#"
+			count: 2
+			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
