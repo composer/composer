@@ -311,7 +311,7 @@
                     "type": ["string", "object"],
                     "description": "The install method Composer will prefer to use, defaults to auto and can be any of source, dist, auto, or an object of {\"pattern\": \"preference\"}.",
                     "additionalProperties": {
-                        "type": ["boolean"]
+                        "type": ["string"]
                     }
                 },
                 "notify-on-install": {
