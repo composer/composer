@@ -18,6 +18,7 @@ use Composer\DependencyResolver\Transaction;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
+use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Symfony\Component\Console\Input\InputInterface;
@@ -82,7 +83,7 @@ EOT
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
             $matched = false;
             foreach ($localRepo->getCanonicalPackages() as $package) {
-                if (preg_match($patternRegexp, $package->getName())) {
+                if (Preg::isMatch($patternRegexp, $package->getName())) {
                     $matched = true;
                     $packagesToReinstall[] = $package;
                     $packageNamesToReinstall[] = $package->getName();

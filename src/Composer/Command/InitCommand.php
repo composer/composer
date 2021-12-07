@@ -23,6 +23,7 @@ use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
+use Composer\Pcre\Preg;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
@@ -104,7 +105,7 @@ EOT
         $allowlist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license', 'autoload');
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)));
 
-        if (isset($options['name']) && !preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $options['name'])) {
+        if (isset($options['name']) && !Preg::isMatch('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $options['name'])) {
             throw new \InvalidArgumentException(
                 'The package name '.$options['name'].' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
             );
@@ -283,7 +284,7 @@ EOT
 
         if (!$name = $input->getOption('name')) {
             $name = basename($cwd);
-            $name = preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
+            $name = Preg::replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $name);
             $name = strtolower($name);
             if (!empty($_SERVER['COMPOSER_DEFAULT_VENDOR'])) {
                 $name = $_SERVER['COMPOSER_DEFAULT_VENDOR'] . '/' . $name;
@@ -309,7 +310,7 @@ EOT
                     return $name;
                 }
 
-                if (!preg_match('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $value)) {
+                if (!Preg::isMatch('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $value)) {
                     throw new \InvalidArgumentException(
                         'The package name '.$value.' is invalid, it should be lowercase and have a vendor name, a forward slash, and a package name, matching: [a-z0-9_.-]+/[a-z0-9_.-]+'
                     );
@@ -452,7 +453,7 @@ EOT
 
                 $value = $value ?: $autoload;
 
-                if (!preg_match('{^[^/][A-Za-z0-9\-_/]+/$}', $value)) {
+                if (!Preg::isMatch('{^[^/][A-Za-z0-9\-_/]+/$}', $value)) {
                     throw new \InvalidArgumentException(sprintf(
                         'The src folder name "%s" is invalid. Please add a relative path with tailing forward slash. [A-Za-z0-9_-/]+/',
                         $value
@@ -474,7 +475,7 @@ EOT
      */
     public function parseAuthorString($author)
     {
-        if (preg_match('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+) <(?P<email>.+?)>$/u', $author, $match)) {
+        if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+) <(?P<email>.+?)>$/u', $author, $match)) {
             if ($this->isValidEmail($match['email'])) {
                 return array(
                     'name' => trim($match['name']),
@@ -617,7 +618,7 @@ EOT
                             return $package['name'];
                         }
 
-                        if (preg_match('{^\s*(?P<name>[\S/]+)(?:\s+(?P<version>\S+))?\s*$}', $selection, $packageMatches)) {
+                        if (Preg::isMatch('{^\s*(?P<name>[\S/]+)(?:\s+(?P<version>\S+))?\s*$}', $selection, $packageMatches)) {
                             if (isset($packageMatches['version'])) {
                                 // parsing `acme/example ~2.3`
 
@@ -707,7 +708,7 @@ EOT
 
         $namespace = array_map(
             function ($part) {
-                $part = preg_replace('/[^a-z0-9]/i', ' ', $part);
+                $part = Preg::replace('/[^a-z0-9]/i', ' ', $part);
                 $part = ucwords($part);
 
                 return str_replace(' ', '', $part);
@@ -741,9 +742,9 @@ EOT
 
         if ($cmd->isSuccessful()) {
             $this->gitConfig = array();
-            preg_match_all('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches, PREG_SET_ORDER);
-            foreach ($matches as $match) {
-                $this->gitConfig[$match[1]] = $match[2];
+            Preg::matchAll('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches);
+            foreach ($matches[1] as $key => $match) {
+                $this->gitConfig[$match] = $matches[2][$key];
             }
 
             return $this->gitConfig;
@@ -778,7 +779,7 @@ EOT
 
         $lines = file($ignoreFile, FILE_IGNORE_NEW_LINES);
         foreach ($lines as $line) {
-            if (preg_match($pattern, $line)) {
+            if (Preg::isMatch($pattern, $line)) {
                 return true;
             }
         }

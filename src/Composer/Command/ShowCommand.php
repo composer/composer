@@ -24,6 +24,7 @@ use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
+use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Repository\InstalledArrayRepository;
@@ -364,7 +365,7 @@ EOT
                         while ($package instanceof AliasPackage) {
                             $package = $package->getAliasOf();
                         }
-                        if (!$packageFilterRegex || preg_match($packageFilterRegex, $package->getName())) {
+                        if (!$packageFilterRegex || Preg::isMatch($packageFilterRegex, $package->getName())) {
                             if (!$packageListFilter || in_array($package->getName(), $packageListFilter, true)) {
                                 $packages[$type][$package->getName()] = $package;
                             }

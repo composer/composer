@@ -18,6 +18,7 @@
 
 namespace Composer\Autoload;
 
+use Composer\Pcre\Preg;
 use Symfony\Component\Finder\Finder;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -92,7 +93,7 @@ class ClassMapGenerator
                 $filePath = $cwd . '/' . $filePath;
                 $filePath = $filesystem->normalizePath($filePath);
             } else {
-                $filePath = preg_replace('{[\\\\/]{2,}}', '/', $filePath);
+                $filePath = Preg::replace('{[\\\\/]{2,}}', '/', $filePath);
             }
 
             $realPath = realpath($filePath);
@@ -104,11 +105,11 @@ class ClassMapGenerator
             }
 
             // check the realpath of the file against the excluded paths as the path might be a symlink and the excluded path is realpath'd so symlink are resolved
-            if ($excluded && preg_match($excluded, strtr($realPath, '\\', '/'))) {
+            if ($excluded && Preg::isMatch($excluded, strtr($realPath, '\\', '/'))) {
                 continue;
             }
             // check non-realpath of file for directories symlink in project dir
-            if ($excluded && preg_match($excluded, strtr($filePath, '\\', '/'))) {
+            if ($excluded && Preg::isMatch($excluded, strtr($filePath, '\\', '/'))) {
                 continue;
             }
 
@@ -133,7 +134,7 @@ class ClassMapGenerator
 
                 if (!isset($map[$class])) {
                     $map[$class] = $filePath;
-                } elseif ($io && $map[$class] !== $filePath && !preg_match('{/(test|fixture|example|stub)s?/}i', strtr($map[$class].' '.$filePath, '\\', '/'))) {
+                } elseif ($io && $map[$class] !== $filePath && !Preg::isMatch('{/(test|fixture|example|stub)s?/}i', strtr($map[$class].' '.$filePath, '\\', '/'))) {
                     $io->writeError(
                         '<warning>Warning: Ambiguous class resolution, "'.$class.'"'.
                         ' was found in both "'.$map[$class].'" and "'.$filePath.'", the first will be used.</warning>'
@@ -196,7 +197,7 @@ class ClassMapGenerator
         if (empty($validClasses)) {
             foreach ($rejectedClasses as $class) {
                 if ($io) {
-                    $io->writeError("<warning>Class $class located in ".preg_replace('{^'.preg_quote(getcwd()).'}', '.', $filePath, 1)." does not comply with $namespaceType autoloading standard. Skipping.</warning>");
+                    $io->writeError("<warning>Class $class located in ".Preg::replace('{^'.preg_quote(getcwd()).'}', '.', $filePath, 1)." does not comply with $namespaceType autoloading standard. Skipping.</warning>");
                 }
             }
 
@@ -239,7 +240,7 @@ class ClassMapGenerator
         }
 
         // return early if there is no chance of matching anything in this file
-        preg_match_all('{\b(?:class|interface'.$extraTypes.')\s}i', $contents, $matches);
+        Preg::matchAll('{\b(?:class|interface'.$extraTypes.')\s}i', $contents, $matches);
         if (!$matches) {
             return array();
         }
@@ -248,7 +249,7 @@ class ClassMapGenerator
         $contents = $p->clean();
         unset($p);
 
-        preg_match_all('{
+        Preg::matchAll('{
             (?:
                  \b(?<![\$:>])(?P<type>class|interface'.$extraTypes.') \s++ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+)
                | \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;]

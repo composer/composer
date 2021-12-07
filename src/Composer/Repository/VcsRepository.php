@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Downloader\TransportException;
+use Composer\Pcre\Preg;
 use Composer\Repository\Vcs\VcsDriverInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Loader\ArrayLoader;
@@ -270,8 +271,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 }
 
                 // make sure tag packages have no -dev flag
-                $data['version'] = preg_replace('{[.-]?dev$}i', '', $data['version']);
-                $data['version_normalized'] = preg_replace('{(^dev-|[.-]?dev$)}i', '', $data['version_normalized']);
+                $data['version'] = Preg::replace('{[.-]?dev$}i', '', $data['version']);
+                $data['version_normalized'] = Preg::replace('{(^dev-|[.-]?dev$)}i', '', $data['version_normalized']);
 
                 // make sure tag do not contain the default-branch marker
                 unset($data['default-branch']);
@@ -279,7 +280,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 // broken package, version doesn't match tag
                 if ($data['version_normalized'] !== $parsedTag) {
                     if ($isVeryVerbose) {
-                        if (preg_match('{(^dev-|[.-]?dev$)}i', $parsedTag)) {
+                        if (Preg::isMatch('{(^dev-|[.-]?dev$)}i', $parsedTag)) {
                             $this->io->writeError('<warning>Skipped tag '.$tag.', invalid tag name, tags can not use dev prefixes or suffixes</warning>');
                         } else {
                             $this->io->writeError('<warning>Skipped tag '.$tag.', tag ('.$parsedTag.') does not match version ('.$data['version_normalized'].') in composer.json</warning>');
@@ -348,7 +349,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                 $version = 'dev-' . $branch;
             } else {
                 $prefix = strpos($branch, 'v') === 0 ? 'v' : '';
-                $version = $prefix . preg_replace('{(\.9{7})+}', '.x', $parsedBranch);
+                $version = $prefix . Preg::replace('{(\.9{7})+}', '.x', $parsedBranch);
             }
 
             $cachedPackage = $this->getCachedPackageVersion($version, $identifier, $isVerbose, $isVeryVerbose, $driver->getRootIdentifier() === $branch);

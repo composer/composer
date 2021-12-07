@@ -14,6 +14,7 @@ namespace Composer\Installer;
 
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
+use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
@@ -153,7 +154,7 @@ class BinaryInstaller
         $handle = fopen($bin, 'r');
         $line = fgets($handle);
         fclose($handle);
-        if (preg_match('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
+        if (Preg::isMatch('{^#!/(?:usr/bin/env )?(?:[^/]+/)*(.+)$}m', $line, $match)) {
             return trim($match[1]);
         }
 
@@ -255,7 +256,7 @@ class BinaryInstaller
         $binContents = file_get_contents($bin);
         // For php files, we generate a PHP proxy instead of a shell one,
         // which allows calling the proxy with a custom php process
-        if (preg_match('{^(#!.*\r?\n)?<\?php}', $binContents, $match)) {
+        if (Preg::isMatch('{^(#!.*\r?\n)?<\?php}', $binContents, $match)) {
             // carry over the existing shebang if present, otherwise add our own
             $proxyCode = empty($match[1]) ? '#!/usr/bin/env php' : trim($match[1]);
             $binPathExported = $this->filesystem->findShortestPathCode($link, $bin, false, true);

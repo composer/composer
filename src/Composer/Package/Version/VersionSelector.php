@@ -21,6 +21,7 @@ use Composer\Package\PackageInterface;
 use Composer\Composer;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Dumper\ArrayDumper;
+use Composer\Pcre\Preg;
 use Composer\Repository\RepositorySet;
 use Composer\Repository\PlatformRepository;
 use Composer\Semver\Constraint\Constraint;
@@ -192,7 +193,7 @@ class VersionSelector
         $dumper = new ArrayDumper();
         $extra = $loader->getBranchAlias($dumper->dump($package));
         if ($extra && $extra !== VersionParser::DEFAULT_BRANCH_ALIAS) {
-            $extra = preg_replace('{^(\d+\.\d+\.\d+)(\.9999999)-dev$}', '$1.0', $extra, -1, $count);
+            $extra = Preg::replace('{^(\d+\.\d+\.\d+)(\.9999999)-dev$}', '$1.0', $extra, -1, $count);
             if ($count) {
                 $extra = str_replace('.9999999', '.0', $extra);
 
@@ -217,7 +218,7 @@ class VersionSelector
         $semanticVersionParts = explode('.', $version);
 
         // check to see if we have a semver-looking version
-        if (count($semanticVersionParts) == 4 && preg_match('{^0\D?}', $semanticVersionParts[3])) {
+        if (count($semanticVersionParts) == 4 && Preg::isMatch('{^0\D?}', $semanticVersionParts[3])) {
             // remove the last parts (i.e. the patch version number and any extra)
             if ($semanticVersionParts[0] === '0') {
                 unset($semanticVersionParts[3]);

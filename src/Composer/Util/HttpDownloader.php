@@ -15,6 +15,7 @@ namespace Composer\Util;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
+use Composer\Pcre\Preg;
 use Composer\Util\Http\Response;
 use Composer\Util\Http\CurlDownloader;
 use Composer\Composer;
@@ -226,7 +227,7 @@ class HttpDownloader
         }
 
         // capture username/password from URL if there is one
-        if (preg_match('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $request['url'], $match)) {
+        if (Preg::isMatch('{^https?://([^:/]+):([^@/]+)@([^/]+)}i', $request['url'], $match)) {
             $this->io->setAuthentication($job['origin'], rawurldecode($match[1]), rawurldecode($match[2]));
         }
 
@@ -536,7 +537,7 @@ class HttpDownloader
             return false;
         }
 
-        if (!preg_match('{^https?://}i', $job['request']['url'])) {
+        if (!Preg::isMatch('{^https?://}i', $job['request']['url'])) {
             return false;
         }
 

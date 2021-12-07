@@ -16,6 +16,7 @@ use Composer\Factory;
 use Composer\IO\IOInterface;
 use Composer\Config;
 use Composer\Downloader\TransportException;
+use Composer\Pcre\Preg;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -180,7 +181,7 @@ class GitHub
     public function isRateLimited(array $headers)
     {
         foreach ($headers as $header) {
-            if (preg_match('{^X-RateLimit-Remaining: *0$}i', trim($header))) {
+            if (Preg::isMatch('{^X-RateLimit-Remaining: *0$}i', trim($header))) {
                 return true;
             }
         }

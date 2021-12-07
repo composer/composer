@@ -13,6 +13,7 @@
 namespace Composer\Util\Http;
 
 use Composer\Json\JsonFile;
+use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
 
 /**
@@ -61,7 +62,7 @@ class Response
     {
         $value = null;
         foreach ($this->headers as $header) {
-            if (preg_match('{^HTTP/\S+ \d+}i', $header)) {
+            if (Preg::isMatch('{^HTTP/\S+ \d+}i', $header)) {
                 // In case of redirects, headers contain the headers of all responses
                 // so we can not return directly and need to keep iterating
                 $value = $header;
@@ -123,7 +124,7 @@ class Response
     {
         $value = null;
         foreach ($headers as $header) {
-            if (preg_match('{^'.preg_quote($name).':\s*(.+?)\s*$}i', $header, $match)) {
+            if (Preg::isMatch('{^'.preg_quote($name).':\s*(.+?)\s*$}i', $header, $match)) {
                 $value = $match[1];
             }
         }

@@ -12,6 +12,7 @@
 
 namespace Composer\Test;
 
+use Composer\Pcre\Preg;
 use Composer\Semver\VersionParser;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\PackageInterface;
@@ -215,7 +216,7 @@ abstract class TestCase extends PolyfillTestCase
     protected function getCmd($cmd)
     {
         if (Platform::isWindows()) {
-            $cmd = preg_replace_callback("/('[^']*')/", function ($m) {
+            $cmd = Preg::replaceCallback("/('[^']*')/", function ($m) {
                 // Double-quotes are used only when needed
                 $char = (strpbrk($m[1], " \t^&|<>()") !== false || $m[1] === "''") ? '"' : '';
 

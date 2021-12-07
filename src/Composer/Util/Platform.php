@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use Composer\Pcre\Preg;
+
 /**
  * Platform helper for uniform platform-specific tests.
  *
@@ -76,11 +78,11 @@ class Platform
      */
     public static function expandPath($path)
     {
-        if (preg_match('#^~[\\/]#', $path)) {
+        if (Preg::isMatch('#^~[\\/]#', $path)) {
             return self::getUserDirectory() . substr($path, 1);
         }
 
-        return preg_replace_callback('#^(\$|(?P<percent>%))(?P<var>\w++)(?(percent)%)(?P<path>.*)#', function ($matches) {
+        return Preg::replaceCallback('#^(\$|(?P<percent>%))(?P<var>\w++)(?(percent)%)(?P<path>.*)#', function ($matches) {
             // Treat HOME as an alias for USERPROFILE on Windows for legacy reasons
             if (Platform::isWindows() && $matches['var'] == 'HOME') {
                 return (Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE')) . $matches['path'];

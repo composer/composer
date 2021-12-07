@@ -14,6 +14,7 @@ namespace Composer\Repository\Vcs;
 
 use Composer\Cache;
 use Composer\Config;
+use Composer\Pcre\Preg;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\IO\IOInterface;
@@ -54,7 +55,7 @@ class FossilDriver extends VcsDriver
                 throw new \RuntimeException('FossilDriver requires a usable cache directory, and it looks like you set it to be disabled');
             }
 
-            $localName = preg_replace('{[^a-z0-9]}i', '-', $this->url);
+            $localName = Preg::replace('{[^a-z0-9]}i', '-', $this->url);
             $this->repoFile = $this->config->get('cache-repo-dir') . '/' . $localName . '.fossil';
             $this->checkoutDir = $this->config->get('cache-vcs-dir') . '/' . $localName . '/';
 
@@ -208,7 +209,7 @@ class FossilDriver extends VcsDriver
 
             $this->process->execute('fossil branch list', $output, $this->checkoutDir);
             foreach ($this->process->splitLines($output) as $branch) {
-                $branch = trim(preg_replace('/^\*/', '', trim($branch)));
+                $branch = trim(Preg::replace('/^\*/', '', trim($branch)));
                 $branches[$branch] = $branch;
             }
 
@@ -223,11 +224,11 @@ class FossilDriver extends VcsDriver
      */
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
-        if (preg_match('#(^(?:https?|ssh)://(?:[^@]@)?(?:chiselapp\.com|fossil\.))#i', $url)) {
+        if (Preg::isMatch('#(^(?:https?|ssh)://(?:[^@]@)?(?:chiselapp\.com|fossil\.))#i', $url)) {
             return true;
         }
 
-        if (preg_match('!/fossil/|\.fossil!', $url)) {
+        if (Preg::isMatch('!/fossil/|\.fossil!', $url)) {
             return true;
         }
 

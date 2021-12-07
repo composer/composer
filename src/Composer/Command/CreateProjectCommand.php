@@ -25,6 +25,7 @@ use Composer\Package\BasePackage;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\Package\Version\VersionSelector;
 use Composer\Package\AliasPackage;
+use Composer\Pcre\Preg;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
@@ -390,7 +391,7 @@ EOT
         if (null === $stability) {
             if (null === $packageVersion) {
                 $stability = 'stable';
-            } elseif (preg_match('{^[^,\s]*?@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $packageVersion, $match)) {
+            } elseif (Preg::isMatch('{^[^,\s]*?@('.implode('|', array_keys(BasePackage::$stabilities)).')$}i', $packageVersion, $match)) {
                 $stability = $match[1];
             } else {
                 $stability = VersionParser::parseStability($packageVersion);

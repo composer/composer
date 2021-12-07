@@ -14,6 +14,7 @@ namespace Composer;
 
 use Composer\Package\RootPackageInterface;
 use Composer\Package\Locker;
+use Composer\Pcre\Preg;
 use Composer\Util\Loop;
 use Composer\Repository\RepositoryManager;
 use Composer\Installer\InstallationManager;
@@ -78,7 +79,7 @@ class Composer
         }
 
         // we have a branch alias and version is a commit id, this must be a snapshot build
-        if (self::BRANCH_ALIAS_VERSION !== '' && preg_match('{^[a-f0-9]{40}$}', self::VERSION)) {
+        if (self::BRANCH_ALIAS_VERSION !== '' && Preg::isMatch('{^[a-f0-9]{40}$}', self::VERSION)) {
             return self::BRANCH_ALIAS_VERSION.'+'.self::VERSION;
         }
 

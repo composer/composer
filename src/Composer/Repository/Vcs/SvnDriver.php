@@ -15,6 +15,7 @@ namespace Composer\Repository\Vcs;
 use Composer\Cache;
 use Composer\Config;
 use Composer\Json\JsonFile;
+use Composer\Pcre\Preg;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\Util\Url;
@@ -82,7 +83,7 @@ class SvnDriver extends VcsDriver
             $this->baseUrl = substr($this->url, 0, $pos);
         }
 
-        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.preg_replace('{[^a-z0-9.]}i', '-', Url::sanitize($this->baseUrl)));
+        $this->cache = new Cache($this->io, $this->config->get('cache-repo-dir').'/'.Preg::replace('{[^a-z0-9.]}i', '-', Url::sanitize($this->baseUrl)));
         $this->cache->setReadOnly($this->config->get('cache-read-only'));
 
         $this->getBranches();
@@ -126,7 +127,7 @@ class SvnDriver extends VcsDriver
      */
     protected function shouldCache($identifier)
     {
-        return $this->cache && preg_match('{@\d+$}', $identifier);
+        return $this->cache && Preg::isMatch('{@\d+$}', $identifier);
     }
 
     /**
@@ -168,7 +169,7 @@ class SvnDriver extends VcsDriver
     {
         $identifier = '/' . trim($identifier, '/') . '/';
 
-        preg_match('{^(.+?)(@\d+)?/$}', $identifier, $match);
+        Preg::match('{^(.+?)(@\d+)?/$}', $identifier, $match);
         if (!empty($match[2])) {
             $path = $match[1];
             $rev = $match[2];
@@ -197,7 +198,7 @@ class SvnDriver extends VcsDriver
     {
         $identifier = '/' . trim($identifier, '/') . '/';
 
-        preg_match('{^(.+?)(@\d+)?/$}', $identifier, $match);
+        Preg::match('{^(.+?)(@\d+)?/$}', $identifier, $match);
         if (!empty($match[2])) {
             $path = $match[1];
             $rev = $match[2];
@@ -208,7 +209,7 @@ class SvnDriver extends VcsDriver
 
         $output = $this->execute('svn info', $this->baseUrl . $path . $rev);
         foreach ($this->process->splitLines($output) as $line) {
-            if ($line && preg_match('{^Last Changed Date: ([^(]+)}', $line, $match)) {
+            if ($line && Preg::isMatch('{^Last Changed Date: ([^(]+)}', $line, $match)) {
                 return new \DateTime($match[1], new \DateTimeZone('UTC'));
             }
         }
@@ -229,7 +230,7 @@ class SvnDriver extends VcsDriver
                 if ($output) {
                     foreach ($this->process->splitLines($output) as $line) {
                         $line = trim($line);
-                        if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                        if ($line && Preg::isMatch('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                             if (isset($match[1], $match[2]) && $match[2] !== './') {
                                 $tags[rtrim($match[2], '/')] = $this->buildIdentifier(
                                     '/' . $this->tagsPath . '/' . $match[2],
@@ -265,7 +266,7 @@ class SvnDriver extends VcsDriver
             if ($output) {
                 foreach ($this->process->splitLines($output) as $line) {
                     $line = trim($line);
-                    if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                    if ($line && Preg::isMatch('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                         if (isset($match[1], $match[2]) && $match[2] === './') {
                             $branches['trunk'] = $this->buildIdentifier(
                                 '/' . $this->trunkPath,
@@ -284,7 +285,7 @@ class SvnDriver extends VcsDriver
                 if ($output) {
                     foreach ($this->process->splitLines(trim($output)) as $line) {
                         $line = trim($line);
-                        if ($line && preg_match('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
+                        if ($line && Preg::isMatch('{^\s*(\S+).*?(\S+)\s*$}', $line, $match)) {
                             if (isset($match[1], $match[2]) && $match[2] !== './') {
                                 $branches[rtrim($match[2], '/')] = $this->buildIdentifier(
                                     '/' . $this->branchesPath . '/' . $match[2],
@@ -308,7 +309,7 @@ class SvnDriver extends VcsDriver
     public static function supports(IOInterface $io, Config $config, $url, $deep = false)
     {
         $url = self::normalizeUrl($url);
-        if (preg_match('#(^svn://|^svn\+ssh://|svn\.)#i', $url)) {
+        if (Preg::isMatch('#(^svn://|^svn\+ssh://|svn\.)#i', $url)) {
             return true;
         }
 

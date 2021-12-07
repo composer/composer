@@ -18,6 +18,7 @@ use Composer\Json\JsonFile;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
+use Composer\Pcre\Preg;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
@@ -141,9 +142,9 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         $urlMatches = $this->getUrlMatches();
 
         if (empty($urlMatches)) {
-            if (preg_match('{[*{}]}', $this->url)) {
+            if (Preg::isMatch('{[*{}]}', $this->url)) {
                 $url = $this->url;
-                while (preg_match('{[*{}]}', $url)) {
+                while (Preg::isMatch('{[*{}]}', $url)) {
                     $url = dirname($url);
                 }
                 // the parent directory before any wildcard exists, so we assume it is correctly configured but simply empty

@@ -15,6 +15,7 @@ namespace Composer\Test;
 use Composer\DependencyResolver\Request;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Installer;
+use Composer\Pcre\Preg;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -444,7 +445,7 @@ class InstallerTest extends TestCase
         });
         $application->add($update);
 
-        if (!preg_match('{^(install|update)\b}', $run)) {
+        if (!Preg::isMatch('{^(install|update)\b}', $run)) {
             throw new \UnexpectedValueException('The run command only supports install and update');
         }
 
@@ -489,8 +490,8 @@ class InstallerTest extends TestCase
         $this->assertSame(rtrim($expect), implode("\n", $installationManager->getTrace()));
 
         if ($expectOutput) {
-            $output = preg_replace('{^    - .*?\.ini$}m', '__inilist__', $output);
-            $output = preg_replace('{(__inilist__\r?\n)+}', "__inilist__\n", $output);
+            $output = Preg::replace('{^    - .*?\.ini$}m', '__inilist__', $output);
+            $output = Preg::replace('{(__inilist__\r?\n)+}', "__inilist__\n", $output);
 
             $this->assertStringMatchesFormat(rtrim($expectOutput), rtrim($output));
         }
@@ -516,7 +517,7 @@ class InstallerTest extends TestCase
         $tests = array();
 
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($fixturesDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
-            if (!preg_match('/\.test$/', $file)) {
+            if (!Preg::isMatch('/\.test$/', $file)) {
                 continue;
             }
 
@@ -541,7 +542,7 @@ class InstallerTest extends TestCase
                         }
 
                         // Change paths like file://foobar to file:///path/to/fixtures
-                        if (preg_match('{^file://[^/]}', $repo['url'])) {
+                        if (Preg::isMatch('{^file://[^/]}', $repo['url'])) {
                             $repo['url'] = 'file://' . strtr($fixturesDir, '\\', '/') . '/' . substr($repo['url'], 7);
                         }
 
@@ -598,7 +599,7 @@ class InstallerTest extends TestCase
      */
     protected function readTestFile(\SplFileInfo $file, $fixturesDir)
     {
-        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
 
         $sectionInfo = array(
             'TEST' => true,

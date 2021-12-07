@@ -18,6 +18,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
+use Composer\Pcre\Preg;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\RootPackageRepository;
@@ -173,7 +174,7 @@ class PluginManager
                 return;
             }
 
-            if ($package->getName() === 'symfony/flex' && preg_match('{^[0-9.]+$}', $package->getVersion()) && version_compare($package->getVersion(), '1.9.8', '<')) {
+            if ($package->getName() === 'symfony/flex' && Preg::isMatch('{^[0-9.]+$}', $package->getVersion()) && version_compare($package->getVersion(), '1.9.8', '<')) {
                 $this->io->writeError('<warning>The "' . $package->getName() . '" plugin '.($isGlobalPlugin ? '(installed globally) ' : '').'was skipped because it is not compatible with Composer 2+. Make sure to update it to version 1.9.8 or greater.</warning>');
 
                 return;
@@ -234,13 +235,13 @@ class PluginManager
                 if ($separatorPos) {
                     $className = substr($class, $separatorPos + 1);
                 }
-                $code = preg_replace('{^((?:final\s+)?(?:\s*))class\s+('.preg_quote($className).')}mi', '$1class $2_composer_tmp'.self::$classCounter, $code, 1);
+                $code = Preg::replace('{^((?:final\s+)?(?:\s*))class\s+('.preg_quote($className).')}mi', '$1class $2_composer_tmp'.self::$classCounter, $code, 1);
                 $code = strtr($code, array(
                     '__FILE__' => var_export($path, true),
                     '__DIR__' => var_export(dirname($path), true),
                     '__CLASS__' => var_export($class, true),
                 ));
-                $code = preg_replace('/^\s*<\?(php)?/i', '', $code, 1);
+                $code = Preg::replace('/^\s*<\?(php)?/i', '', $code, 1);
                 eval($code);
                 $class .= '_composer_tmp'.self::$classCounter;
                 self::$classCounter++;

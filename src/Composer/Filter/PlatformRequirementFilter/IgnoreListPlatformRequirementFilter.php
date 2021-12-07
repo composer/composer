@@ -3,6 +3,7 @@
 namespace Composer\Filter\PlatformRequirementFilter;
 
 use Composer\Package\BasePackage;
+use Composer\Pcre\Preg;
 use Composer\Repository\PlatformRepository;
 
 final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFilterInterface
@@ -30,6 +31,6 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
             return false;
         }
 
-        return 1 === preg_match($this->regexp, $req);
+        return Preg::isMatch($this->regexp, $req);
     }
 }

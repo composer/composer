@@ -21,6 +21,7 @@ use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\Version\VersionParser;
+use Composer\Pcre\Preg;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
@@ -227,7 +228,7 @@ class ArrayLoader implements LoaderInterface
         }
 
         if (!empty($config['time'])) {
-            $time = preg_match('/^\d++$/D', $config['time']) ? '@'.$config['time'] : $config['time'];
+            $time = Preg::isMatch('/^\d++$/D', $config['time']) ? '@'.$config['time'] : $config['time'];
 
             try {
                 $date = new \DateTime($time, new \DateTimeZone('UTC'));
@@ -298,7 +299,7 @@ class ArrayLoader implements LoaderInterface
         }
 
         if ($aliasNormalized = $this->getBranchAlias($config)) {
-            $prettyAlias = preg_replace('{(\.9{7})+}', '.x', $aliasNormalized);
+            $prettyAlias = Preg::replace('{(\.9{7})+}', '.x', $aliasNormalized);
 
             if ($package instanceof RootPackage) {
                 return new RootAliasPackage($package, $aliasNormalized, $prettyAlias);

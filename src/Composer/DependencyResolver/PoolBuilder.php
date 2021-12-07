@@ -20,6 +20,7 @@ use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\StabilityFilter;
+use Composer\Pcre\Preg;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PrePoolCreateEvent;
 use Composer\Repository\PlatformRepository;
@@ -552,7 +553,7 @@ class PoolBuilder
     {
         foreach ($this->updateAllowList as $pattern => $void) {
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
-            if (preg_match($patternRegexp, $package->getName())) {
+            if (Preg::isMatch($patternRegexp, $package->getName())) {
                 return true;
             }
         }
@@ -569,13 +570,13 @@ class PoolBuilder
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
             // update pattern matches a locked package? => all good
             foreach ($request->getLockedRepository()->getPackages() as $package) {
-                if (preg_match($patternRegexp, $package->getName())) {
+                if (Preg::isMatch($patternRegexp, $package->getName())) {
                     continue 2;
                 }
             }
             // update pattern matches a root require? => all good, probably a new package
             foreach ($request->getRequires() as $packageName => $constraint) {
-                if (preg_match($patternRegexp, $packageName)) {
+                if (Preg::isMatch($patternRegexp, $packageName)) {
                     continue 2;
                 }
             }

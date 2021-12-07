@@ -15,6 +15,7 @@ namespace Composer;
 use Composer\Config\ConfigSourceInterface;
 use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
+use Composer\Pcre\Preg;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 
@@ -225,7 +226,7 @@ class Config
                 }
 
                 // auto-deactivate the default packagist.org repo if it gets redefined
-                if (isset($repository['type'], $repository['url']) && $repository['type'] === 'composer' && preg_match('{^https?://(?:[a-z0-9-.]+\.)?packagist.org(/|$)}', $repository['url'])) {
+                if (isset($repository['type'], $repository['url']) && $repository['type'] === 'composer' && Preg::isMatch('{^https?://(?:[a-z0-9-.]+\.)?packagist.org(/|$)}', $repository['url'])) {
                     $this->disableRepoByName('packagist.org');
                 }
 
@@ -328,7 +329,7 @@ class Config
 
             // numbers with kb/mb/gb support, without env var support
             case 'cache-files-maxsize':
-                if (!preg_match('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
+                if (!Preg::isMatch('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
                     throw new \RuntimeException(
                         "Could not parse the value of '$key': {$this->config[$key]}"
                     );
@@ -361,7 +362,7 @@ class Config
                 return (int) $this->config['cache-ttl'];
 
             case 'home':
-                $val = preg_replace('#^(\$HOME|~)(/|$)#', rtrim(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE'), '/\\') . '/', $this->config[$key]);
+                $val = Preg::replace('#^(\$HOME|~)(/|$)#', rtrim(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE'), '/\\') . '/', $this->config[$key]);
 
                 return rtrim($this->process($val, $flags), '/\\');
 
@@ -507,7 +508,7 @@ class Config
             return $value;
         }
 
-        return preg_replace_callback('#\{\$(.+)\}#', function ($match) use ($config, $flags) {
+        return Preg::replaceCallback('#\{\$(.+)\}#', function ($match) use ($config, $flags) {
             return $config->get($match[1], $flags);
         }, $value);
     }
@@ -522,7 +523,7 @@ class Config
      */
     private function realpath($path)
     {
-        if (preg_match('{^(?:/|[a-z]:|[a-z0-9.]+://)}i', $path)) {
+        if (Preg::isMatch('{^(?:/|[a-z]:|[a-z0-9.]+://)}i', $path)) {
             return $path;
         }
 

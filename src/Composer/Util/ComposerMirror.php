@@ -12,6 +12,8 @@
 
 namespace Composer\Util;
 
+use Composer\Pcre\Preg;
+
 /**
  * Composer mirror utilities
  *
@@ -32,7 +34,7 @@ class ComposerMirror
     public static function processUrl($mirrorUrl, $packageName, $version, $reference, $type, $prettyVersion = null)
     {
         if ($reference) {
-            $reference = preg_match('{^([a-f0-9]*|%reference%)$}', $reference) ? $reference : md5($reference);
+            $reference = Preg::isMatch('{^([a-f0-9]*|%reference%)$}', $reference) ? $reference : md5($reference);
         }
         $version = strpos($version, '/') === false ? $version : md5($version);
 
@@ -56,12 +58,12 @@ class ComposerMirror
      */
     public static function processGitUrl($mirrorUrl, $packageName, $url, $type)
     {
-        if (preg_match('#^(?:(?:https?|git)://github\.com/|git@github\.com:)([^/]+)/(.+?)(?:\.git)?$#', $url, $match)) {
+        if (Preg::isMatch('#^(?:(?:https?|git)://github\.com/|git@github\.com:)([^/]+)/(.+?)(?:\.git)?$#', $url, $match)) {
             $url = 'gh-'.$match[1].'/'.$match[2];
-        } elseif (preg_match('#^https://bitbucket\.org/([^/]+)/(.+?)(?:\.git)?/?$#', $url, $match)) {
+        } elseif (Preg::isMatch('#^https://bitbucket\.org/([^/]+)/(.+?)(?:\.git)?/?$#', $url, $match)) {
             $url = 'bb-'.$match[1].'/'.$match[2];
         } else {
-            $url = preg_replace('{[^a-z0-9_.-]}i', '-', trim($url, '/'));
+            $url = Preg::replace('{[^a-z0-9_.-]}i', '-', trim($url, '/'));
         }
 
         return str_replace(

@@ -12,6 +12,7 @@
 
 namespace Composer\Test;
 
+use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
@@ -147,10 +148,10 @@ class AllFunctionalTest extends TestCase
                     $line++;
                 }
                 if ($expected[$i] === '%') {
-                    preg_match('{%(.+?)%}', substr($expected, $i), $match);
+                    Preg::isMatch('{%(.+?)%}', substr($expected, $i), $match);
                     $regex = $match[1];
 
-                    if (preg_match('{'.$regex.'}', substr($output, $j), $match)) {
+                    if (Preg::isMatch('{'.$regex.'}', substr($output, $j), $match)) {
                         $i += strlen($regex) + 2;
                         $j += strlen($match[0]);
                         continue;
@@ -207,7 +208,7 @@ class AllFunctionalTest extends TestCase
      */
     private function parseTestFile($file)
     {
-        $tokens = preg_split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
         $data = array();
         $section = null;
 

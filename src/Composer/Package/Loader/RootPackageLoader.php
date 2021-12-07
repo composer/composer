@@ -16,6 +16,7 @@ use Composer\Package\BasePackage;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Package\RootAliasPackage;
+use Composer\Pcre\Preg;
 use Composer\Repository\RepositoryFactory;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
@@ -196,7 +197,7 @@ class RootPackageLoader extends ArrayLoader
     private function extractAliases(array $requires, array $aliases)
     {
         foreach ($requires as $reqName => $reqVersion) {
-            if (preg_match('{^([^,\s#]+)(?:#[^ ]+)? +as +([^,\s]+)$}', $reqVersion, $match)) {
+            if (Preg::isMatch('{^([^,\s#]+)(?:#[^ ]+)? +as +([^,\s]+)$}', $reqVersion, $match)) {
                 $aliases[] = array(
                     'package' => strtolower($reqName),
                     'version' => $this->versionParser->normalize($match[1], $reqVersion),
@@ -232,9 +233,9 @@ class RootPackageLoader extends ArrayLoader
             $constraints = array();
 
             // extract all sub-constraints in case it is an OR/AND multi-constraint
-            $orSplit = preg_split('{\s*\|\|?\s*}', trim($reqVersion));
+            $orSplit = Preg::split('{\s*\|\|?\s*}', trim($reqVersion));
             foreach ($orSplit as $orConstraint) {
-                $andSplit = preg_split('{(?<!^|as|[=>< ,]) *(?<!-)[, ](?!-) *(?!,|as|$)}', $orConstraint);
+                $andSplit = Preg::split('{(?<!^|as|[=>< ,]) *(?<!-)[, ](?!-) *(?!,|as|$)}', $orConstraint);
                 foreach ($andSplit as $andConstraint) {
                     $constraints[] = $andConstraint;
                 }
@@ -243,7 +244,7 @@ class RootPackageLoader extends ArrayLoader
             // parse explicit stability flags to the most unstable
             $match = false;
             foreach ($constraints as $constraint) {
-                if (preg_match('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $constraint, $match)) {
+                if (Preg::isMatch('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $constraint, $match)) {
                     $name = strtolower($reqName);
                     $stability = $stabilities[VersionParser::normalizeStability($match[1])];
 
@@ -262,8 +263,8 @@ class RootPackageLoader extends ArrayLoader
             foreach ($constraints as $constraint) {
                 // infer flags for requirements that have an explicit -dev or -beta version specified but only
                 // for those that are more unstable than the minimumStability or existing flags
-                $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $constraint);
-                if (preg_match('{^[^,\s@]+$}', $reqVersion) && 'stable' !== ($stabilityName = VersionParser::parseStability($reqVersion))) {
+                $reqVersion = Preg::replace('{^([^,\s@]+) as .+$}', '$1', $constraint);
+                if (Preg::isMatch('{^[^,\s@]+$}', $reqVersion) && 'stable' !== ($stabilityName = VersionParser::parseStability($reqVersion))) {
                     $name = strtolower($reqName);
                     $stability = $stabilities[$stabilityName];
                     if ((isset($stabilityFlags[$name]) && $stabilityFlags[$name] > $stability) || ($minimumStability > $stability)) {
@@ -288,8 +289,8 @@ class RootPackageLoader extends ArrayLoader
     public static function extractReferences(array $requires, array $references)
     {
         foreach ($requires as $reqName => $reqVersion) {
-            $reqVersion = preg_replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
-            if (preg_match('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === VersionParser::parseStability($reqVersion)) {
+            $reqVersion = Preg::replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);
+            if (Preg::isMatch('{^[^,\s@]+?#([a-f0-9]+)$}', $reqVersion, $match) && 'dev' === VersionParser::parseStability($reqVersion)) {
                 $name = strtolower($reqName);
                 $references[$name] = $match[1];
             }

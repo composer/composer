@@ -14,6 +14,7 @@ namespace Composer\Util;
 
 use Composer\Config;
 use Composer\IO\IOInterface;
+use Composer\Pcre\Preg;
 
 /**
  * @author Till Klampaeckel <till@php.net>
@@ -380,7 +381,7 @@ class Svn
     {
         if (!self::$version) {
             if (0 === $this->process->execute('svn --version', $output)) {
-                if (preg_match('{(\d+(?:\.\d+)+)}', $output, $match)) {
+                if (Preg::isMatch('{(\d+(?:\.\d+)+)}', $output, $match)) {
                     self::$version = $match[1];
                 }
             }

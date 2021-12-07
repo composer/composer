@@ -12,6 +12,8 @@
 
 namespace Composer\SelfUpdate;
 
+use Composer\Pcre\Preg;
+
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -24,7 +26,7 @@ class Keys
      */
     public static function fingerprint($path)
     {
-        $hash = strtoupper(hash('sha256', preg_replace('{\s}', '', file_get_contents($path))));
+        $hash = strtoupper(hash('sha256', Preg::replace('{\s}', '', file_get_contents($path))));
 
         return implode(' ', array(
             substr($hash, 0, 8),
