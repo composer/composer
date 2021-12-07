@@ -114,16 +114,17 @@ class PluginInstallerTest extends TestCase
         $this->composer->setEventDispatcher(new EventDispatcher($this->composer, $this->io));
         $this->composer->setPackage(new RootPackage('dummy/root', '1.0.0.0', '1.0.0'));
 
-        $this->pm = new PluginManager($this->io, $this->composer);
-        $this->composer->setPluginManager($this->pm);
-
         $config->merge(array(
             'config' => array(
                 'vendor-dir' => $this->directory.'/Fixtures/',
                 'home' => $this->directory.'/Fixtures',
                 'bin-dir' => $this->directory.'/Fixtures/bin',
+                'allow-plugins' => true,
             ),
         ));
+
+        $this->pm = new PluginManager($this->io, $this->composer);
+        $this->composer->setPluginManager($this->pm);
     }
 
     protected function tearDown()
@@ -146,7 +147,6 @@ class PluginInstallerTest extends TestCase
         $plugins = $this->pm->getPlugins();
         $this->assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore-line
         $this->assertEquals(
-            '<warning>For additional security you should declare the allow-plugins config with a list of packages names that are allowed to run code. See https://getcomposer.org/allow-plugins</warning>'.PHP_EOL.
             'activate v1'.PHP_EOL,
             $this->io->getOutput()
         );

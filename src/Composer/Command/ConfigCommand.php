@@ -214,7 +214,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         // Open file in editor
-        if ($input->getOption('editor')) {
+        if (true === $input->getOption('editor')) {
             $editor = escapeshellcmd(Platform::getEnv('EDITOR'));
             if (!$editor) {
                 if (Platform::isWindows()) {
@@ -235,20 +235,20 @@ EOT
             return 0;
         }
 
-        if (!$input->getOption('global')) {
+        if (false === $input->getOption('global')) {
             $this->config->merge($this->configFile->read(), $this->configFile->getPath());
             $this->config->merge(array('config' => $this->authConfigFile->exists() ? $this->authConfigFile->read() : array()), $this->authConfigFile->getPath());
         }
 
         // List the configuration of the file settings
-        if ($input->getOption('list')) {
+        if (true === $input->getOption('list')) {
             $this->listConfiguration($this->config->all(), $this->config->raw(), $output, null, (bool) $input->getOption('source'));
 
             return 0;
         }
 
         $settingKey = $input->getArgument('setting-key');
-        if (!$settingKey || !is_string($settingKey)) {
+        if (!is_string($settingKey)) {
             return 0;
         }
 
@@ -555,7 +555,7 @@ EOT
         }
 
         // handle allow-plugins config setting elements true or false to add/remove
-        if (preg_match('{^allow-plugins\.([a-zA-Z0-9/*-]+)}', $settingKey, $matches)) {
+        if (Preg::isMatch('{^allow-plugins\.([a-zA-Z0-9/*-]+)}', $settingKey, $matches)) {
             if ($input->getOption('unset')) {
                 $this->configSource->removeConfigSetting($settingKey);
 

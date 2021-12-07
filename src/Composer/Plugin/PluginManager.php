@@ -83,7 +83,7 @@ class PluginManager
         $this->disablePlugins = $disablePlugins;
 
         $this->allowPluginRules = $this->parseAllowedPlugins($composer->getConfig()->get('allow-plugins'));
-        $this->allowGlobalPluginRules = $this->parseAllowedPlugins($globalComposer ? $globalComposer->getConfig()->get('allow-plugins') : false);
+        $this->allowGlobalPluginRules = $this->parseAllowedPlugins($globalComposer !== null ? $globalComposer->getConfig()->get('allow-plugins') : false);
     }
 
     /**
@@ -98,7 +98,7 @@ class PluginManager
         }
 
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
-        $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
+        $globalRepo = $this->globalComposer !== null ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
         $this->loadRepository($repo, false);
         if ($globalRepo) {
             $this->loadRepository($globalRepo, true);
@@ -213,7 +213,7 @@ class PluginManager
         $classes = is_array($extra['class']) ? $extra['class'] : array($extra['class']);
 
         $localRepo = $this->composer->getRepositoryManager()->getLocalRepository();
-        $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
+        $globalRepo = $this->globalComposer !== null ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
 
         $rootPackage = clone $this->composer->getPackage();
         $rootPackageRepo = new RootPackageRepository($rootPackage);
@@ -376,11 +376,9 @@ class PluginManager
      */
     public function addPlugin(PluginInterface $plugin, $isGlobalPlugin = false, PackageInterface $sourcePackage = null)
     {
-        if (!$sourcePackage) {
+        if ($sourcePackage === null) {
             trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);
-        }
-
-        if ($sourcePackage && !$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin)) {
+        } elseif (!$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin)) {
             $this->io->writeError('Skipped loading "'.get_class($plugin).' from '.$sourcePackage->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
             return;
         }
@@ -679,14 +677,14 @@ class PluginManager
         }
 
         foreach ($rules as $pattern => $allow) {
-            if (preg_match($pattern, $package)) {
+            if (Preg::isMatch($pattern, $package)) {
                 return $allow === true;
             }
         }
 
         if (!isset($warned[$package])) {
             if ($this->io->isInteractive()) {
-                $composer = $isGlobalPlugin ? $this->globalComposer : $this->composer;
+                $composer = $isGlobalPlugin && $this->globalComposer !== null ? $this->globalComposer : $this->composer;
 
                 $this->io->writeError('<warning>'.$package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is currently not in your allow-plugins config. See https://getcomposer.org/allow-plugins</warning>');
                 while (true) {
