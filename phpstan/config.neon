@@ -1,11 +1,11 @@
 includes:
     - ../vendor/phpstan/phpstan-phpunit/extension.neon
     - ../vendor/phpstan/phpstan-deprecation-rules/rules.neon
-#    - ../vendor/phpstan/phpstan-strict-rules/rules.neon
+    - ../vendor/phpstan/phpstan-strict-rules/rules.neon
     - ./baseline.neon
 
 parameters:
-    level: 6
+    level: 8
 
     excludePaths:
        - '../tests/Composer/Test/Fixtures/*'
@@ -46,6 +46,10 @@ parameters:
         # Ignore some irrelevant errors in test files
         - '~Method Composer\\Test\\[^:]+::(setUp(BeforeClass)?|tearDown(AfterClass)?|test[^(]+)\(\) has no return type specified.~'
         - '~Method Composer\\Test\\[^:]+::(data\w+|provide\w+|\w+?Provider)\(\) has no return type specified.~'
+
+        # PHPUnit assertions as instance methods
+        - '~Dynamic call to static method PHPUnit\\Framework\\Assert::\w+\(\)~'
+        - '~Dynamic call to static method PHPUnit\\Framework\\TestCase::(once|at|exactly|will|exactly|returnValue|returnCallback|any|atLeastOnce|throwException|onConsecutiveCalls|never|returnValueMap)\(\)~'
 
     bootstrapFiles:
         - ../tests/bootstrap.php
