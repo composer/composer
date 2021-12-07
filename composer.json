@@ -79,7 +79,7 @@
     ],
     "scripts": {
         "compile": "@php -dphar.readonly=0 bin/compile",
-        "test": "simple-phpunit",
+        "test": "@php simple-phpunit",
         "phpstan-setup": [
             "@composer config platform --unset",
             "@composer update",

@@ -40,7 +40,7 @@ Your requirements could not be resolved to an installable set of packages.
     - Root composer.json requires PHP extension ext-foo-baz [== 9.0.0.0 || >= 9.0.0.0] but it is missing from your system. Install or enable PHP's foo-baz extension.
   Problem 2
     - Root composer.json requires b/b 1.0.* -> satisfiable by b/b[1.0.1].
-    - b/b 1.0.1 requires ext-foo-bar 10.* -> it has the wrong version (5.0.3 provided by __root__ 1.0.0+no-version-set) installed. Install or enable PHP's foo-bar extension.
+    - b/b 1.0.1 requires ext-foo-bar 10.* -> it has the wrong version installed (5.0.3 provided by __root__ 1.0.0+no-version-set).
 
 To enable extensions, verify that they are enabled in your .ini files:
 __inilist__
