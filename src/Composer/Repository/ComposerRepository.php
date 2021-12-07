@@ -571,6 +571,19 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if ($this->hasProviders() || $this->lazyProvidersUrl) {
+            // optimize search for "^foo/bar" where at least "^foo/" is present by loading this directly from the listUrl if present
+            if (Preg::isMatch('{^\^(?P<query>(?P<vendor>[a-z0-9_.-]+)/[a-z0-9_.-]*)\*?$}i', $query, $match) && $this->listUrl !== null) {
+                $url = $this->listUrl . '?vendor='.urlencode($match['vendor']).'&filter='.urlencode($match['query'].'*');
+                $result = $this->httpDownloader->get($url, $this->options)->decodeJson();
+
+                $results = array();
+                foreach ($result['packageNames'] as $name) {
+                    $results[] = array('name' => $name, 'description' => '');
+                }
+
+                return $results;
+            }
+
             $results = array();
             $regex = '{(?:'.implode('|', Preg::split('{\s+}', $query)).')}i';
 
