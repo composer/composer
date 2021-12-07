@@ -28,17 +28,17 @@ helper is available:
 
 Defaults to `null` (allow all plugins implicitly) for backwards compatibility.
 
-As of Composer 2.2.0, the `allow-plugins` option adds a layer of security by
+As of Composer 2.2.0, the `allow-plugins` option adds a layer of security
 allowing you to restrict which Composer plugins are able to execute code during
 a Composer run.
 
-When a new plugin which is not listed in the config option is first activated,
-Composer will warn you and prompt you (if run interactively) to know if you
-want to execute it or not.
+When a new plugin is first activated, which is not yet listed in the config option,
+Composer will print a warning. If you run Composer interactively it will 
+prompt you to decide if you want to execute the plugin or not.
 
-The best way to use this is to allow packages you trust to execute. Set it to
-a hash of package name patterns where the values are true to allow and false to
-disallow and suppress warnings/prompts.
+Use this setting to allow only packages you trust to execute code. Set it to
+an object with package name patterns as keys. The values are **true** to allow
+and **false** to disallow while suppressing further warnings and prompts.
 
 ```json
 {
@@ -52,7 +52,7 @@ disallow and suppress warnings/prompts.
 }
 ```
 
-You can also set this to `false` to disallow all plugins, or `true` to allow all plugins to run (NOT recommended).
+You can also set the config option itself to `false` to disallow all plugins, or `true` to allow all plugins to run (NOT recommended).
 
 ## use-include-path
 
@@ -63,7 +63,7 @@ in the PHP include path.
 
 Defaults to `dist` and can be any of `source`, `dist` or `auto`. This option
 allows you to set the install method Composer will prefer to use. Can
-optionally be a hash of package name patterns for more granular install preferences.
+optionally be an object with package name patterns for keys for more granular install preferences.
 
 ```json
 {
