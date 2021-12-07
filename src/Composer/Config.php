@@ -34,6 +34,7 @@ class Config
     public static $defaultConfig = array(
         'process-timeout' => 300,
         'use-include-path' => false,
+        'allow-plugins' => null, // null for BC for now, will become array() after July 2022
         'use-parent-dir' => 'prompt',
         'preferred-install' => 'dist',
         'notify-on-install' => true,
@@ -117,6 +118,12 @@ class Config
     {
         // load defaults
         $this->config = static::$defaultConfig;
+
+        // TODO after July 2022 remove this and update the default value above in self::$defaultConfig + remove note from 06-config.md
+        if (strtotime('2022-07-01') < time()) {
+            $this->config['allow-plugins'] = array();
+        }
+
         $this->repositories = static::$defaultRepositories;
         $this->useEnvironment = (bool) $useEnvironment;
         $this->baseDir = $baseDir;

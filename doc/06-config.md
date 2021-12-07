@@ -26,14 +26,15 @@ helper is available:
 
 ## allow-plugins
 
-Defaults to `null` (allow all plugins implicitly) for backwards compatibility.
+Defaults to `null` (allow all plugins implicitly) for backwards compatibility until July 2022.
+At that point the default will become `{}` and plugins will not load anymore unless allowed.
 
 As of Composer 2.2.0, the `allow-plugins` option adds a layer of security
 allowing you to restrict which Composer plugins are able to execute code during
 a Composer run.
 
 When a new plugin is first activated, which is not yet listed in the config option,
-Composer will print a warning. If you run Composer interactively it will 
+Composer will print a warning. If you run Composer interactively it will
 prompt you to decide if you want to execute the plugin or not.
 
 Use this setting to allow only packages you trust to execute code. Set it to

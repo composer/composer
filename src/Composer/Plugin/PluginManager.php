@@ -165,7 +165,7 @@ class PluginManager
         }
 
         if (!$this->isPluginAllowed($package->getName(), $isGlobalPlugin)) {
-            $this->io->writeError('Skipped loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
+            $this->io->writeError('Skipped loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').'as it is not in config.allow-plugins', true, IOInterface::DEBUG);
             return;
         }
 
@@ -666,6 +666,7 @@ class PluginManager
             if (!$this->io->isInteractive()) {
                 if (!isset($warned['all'])) {
                     $this->io->writeError('<warning>For additional security you should declare the allow-plugins config with a list of packages names that are allowed to run code. See https://getcomposer.org/allow-plugins</warning>');
+                    $this->io->writeError('<warning>You have until July 2022 to add the setting. Composer will then switch the default behavior to disallow all plugins.</warning>');
                     $warned['all'] = true;
                 }
 
