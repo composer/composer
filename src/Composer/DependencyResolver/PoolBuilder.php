@@ -275,8 +275,6 @@ class PoolBuilder
             $this->unacceptableFixedOrLockedPackages = $prePoolCreateEvent->getUnacceptableFixedPackages();
         }
 
-        $this->filterImpossiblePackages($request);
-
         $pool = new Pool($this->packages, $this->unacceptableFixedOrLockedPackages);
 
         $this->aliasMap = array();
@@ -588,53 +586,6 @@ class PoolBuilder
                 $this->io->writeError('<warning>Package "' . $pattern . '" listed for update is not locked.</warning>');
             }
         }
-    }
-
-    /**
-     * Use the list of fixed and locked packages to constrain the loaded packages
-     * This will reduce packages with significant numbers of historical versions to a smaller number
-     * and reduce the resulting rule set that is generated
-     *
-     * @param Request $request
-     *
-     * @return void
-     */
-    private function filterImpossiblePackages(Request $request)
-    {
-        $packageIndex = [];
-        $packagesToFilter = [];
-        foreach ($this->packages as $id => $package) {
-            /** @var PackageInterface $package */
-            $packageIndex[$package->getName()][$id] = $package;
-        }
-        foreach ($request->getFixedOrLockedPackages() as $package) {
-            /** @var PackageInterface $package */
-            foreach ($package->getRequires() as $link) {
-                $require = $link->getTarget();
-                if (empty($packageIndex[$require])) {
-                    continue;
-                }
-                $linkConstraint = $link->getConstraint();
-                $versionsToFilter = [];
-                foreach ($packageIndex[$require] as $id => $linkedPackage) {
-                    /** @var PackageInterface $linkedPackage */
-                    if (!$linkConstraint->matches(new Constraint('==', $linkedPackage->getVersion()))) {
-                        // Do not filter a package aliased by another package
-                        if (!empty($this->aliasMap[spl_object_hash($linkedPackage)])) {
-                            continue;
-                        }
-                        // Do not filter locked packages
-                        if ($request->isFixedPackage($linkedPackage) || $request->isLockedPackage($linkedPackage)) {
-                            continue;
-                        }
-                        $versionsToFilter[$id] = $id;
-                        $packagesToFilter[$id] = $id;
-                    }
-                }
-                $packageIndex[$require] = array_diff_key($packageIndex[$require], $versionsToFilter);
-            }
-        }
-        $this->packages = array_diff_key($this->packages, $packagesToFilter);
     }
 
     /**

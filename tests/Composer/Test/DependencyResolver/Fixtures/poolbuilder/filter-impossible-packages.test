@@ -27,9 +27,9 @@ Do not load packages into the pool that cannot meet the fixed/locked requirement
     [
         {"name": "some/pkg", "version": "1.0.4", "require": {"dep/dep": "*"}},
         {"name": "root/req", "version": "1.0.0", "require": {"dep/dep": "2.*"}},
-        {"name": "dep/dep", "version": "1.0.0"},
-        {"name": "dep/dep", "version": "1.0.1"},
-        {"name": "dep/dep", "version": "1.0.2"},
+        {"name": "dep/dep", "version": "1.0.0", "provide": {"other/pkg": "*"}},
+        {"name": "dep/dep", "version": "1.0.1", "provide": {"other/pkg": "*"}},
+        {"name": "dep/dep", "version": "1.0.2", "provide": {"other/pkg": "*"}},
         {"name": "dep/dep", "version": "2.0.0"},
         {"name": "dep/dep", "version": "2.0.1"}
     ]
@@ -39,6 +39,16 @@ Do not load packages into the pool that cannot meet the fixed/locked requirement
 [
     2,
     "some/pkg-1.0.4.0",
+    "dep/dep-1.0.0.0",
+    "dep/dep-1.0.1.0",
+    "dep/dep-1.0.2.0",
     "dep/dep-2.0.0.0",
+    "dep/dep-2.0.1.0"
+]
+
+--EXPECT-OPTIMIZED--
+[
+    2,
+    "some/pkg-1.0.4.0",
     "dep/dep-2.0.1.0"
 ]

@@ -75,7 +75,7 @@ class PoolOptimizer
     {
         $this->prepare($request, $pool);
 
-        $optimizedPool = $this->optimizeByIdenticalDependencies($pool);
+        $optimizedPool = $this->optimizeByIdenticalDependencies($request, $pool);
 
         // No need to run this recursively at the moment
         // because the current optimizations cannot provide
@@ -192,7 +192,7 @@ class PoolOptimizer
     /**
      * @return Pool
      */
-    private function optimizeByIdenticalDependencies(Pool $pool)
+    private function optimizeByIdenticalDependencies(Request $request, Pool $pool)
     {
         $identicalDefinitionsPerPackage = array();
         $packageIdenticalDefinitionLookup = array();
@@ -273,6 +273,8 @@ class PoolOptimizer
                 }
             }
         }
+
+        $this->filterImpossiblePackages($request, $pool);
 
         return $this->applyRemovalsToPool($pool);
     }
@@ -378,6 +380,54 @@ class PoolOptimizer
                             }
                             $this->removedVersionsByPackage[spl_object_hash($aliasPackage)][$pkg->getVersion()] = $pkg->getPrettyVersion();
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Use the list of fixed and locked packages to constrain the loaded packages
+     * This will reduce packages with significant numbers of historical versions to a smaller number
+     * and reduce the resulting rule set that is generated
+     *
+     * @param Request $request
+     *
+     * @return void
+     */
+    private function filterImpossiblePackages(Request $request, Pool $pool)
+    {
+        $packageIndex = array();
+
+        foreach ($pool->getPackages() as $package) {
+            $packageIndex[$package->getName()][$package->id] = $package;
+        }
+
+        foreach ($request->getFixedOrLockedPackages() as $package) {
+            foreach ($package->getRequires() as $link) {
+                $require = $link->getTarget();
+                if (!isset($packageIndex[$require])) {
+                    continue;
+                }
+
+                $linkConstraint = $link->getConstraint();
+                foreach ($packageIndex[$require] as $id => $requiredPkg) {
+                    if (!CompilingMatcher::match($linkConstraint, Constraint::OP_EQ, $requiredPkg->getVersion())) {
+                        // Do not filter a package aliased by another package, nor aliases
+                        if (isset($this->aliasesPerPackage[$id]) || $requiredPkg instanceof AliasPackage) {
+                            continue;
+                        }
+                        // Do not filter locked packages
+                        if ($request->isFixedPackage($requiredPkg) || $request->isLockedPackage($requiredPkg)) {
+                            continue;
+                        }
+                        // Do not remove irremovable packages
+                        if (isset($this->irremovablePackages[$id])) {
+                            continue;
+                        }
+
+                        $this->markPackageForRemoval($id);
+                        unset($packageIndex[$require][$id]);
                     }
                 }
             }
