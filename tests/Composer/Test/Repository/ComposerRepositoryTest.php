@@ -16,6 +16,7 @@ use Composer\IO\NullIO;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Test\Mock\FactoryMock;
+use Composer\Test\Mock\HttpDownloaderMock;
 use Composer\Test\TestCase;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionParser;
@@ -179,30 +180,14 @@ class ComposerRepositoryTest extends TestCase
             ),
         );
 
-        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $httpDownloader = new HttpDownloaderMock(array(
+            'http://example.org/packages.json' => json_encode(array('search' => '/search.json?q=%query%&type=%type%')),
+            'http://example.org/search.json?q=foo&type=composer-plugin' => json_encode($result),
+            'http://example.org/search.json?q=foo&type=library' => json_encode(array()),
+        ));
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->disableOriginalConstructor()
             ->getMock();
-
-        $httpDownloader->expects($this->at(0))
-            ->method('enableAsync');
-
-        $httpDownloader->expects($this->at(1))
-            ->method('get')
-            ->with($url = 'http://example.org/packages.json')
-            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode(array('search' => '/search.json?q=%query%&type=%type%'))));
-
-        $httpDownloader->expects($this->at(2))
-            ->method('get')
-            ->with($url = 'http://example.org/search.json?q=foo&type=composer-plugin')
-            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode($result)));
-
-        $httpDownloader->expects($this->at(3))
-            ->method('get')
-            ->with($url = 'http://example.org/search.json?q=foo&type=library')
-            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode(array())));
 
         $repository = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), $httpDownloader, $eventDispatcher);
 
@@ -219,7 +204,7 @@ class ComposerRepositoryTest extends TestCase
     public function testSearchWithAbandonedPackages()
     {
         $repoConfig = array(
-            'url' => 'http://example.org',
+            'url' => 'http://2.example.org',
         );
 
         $result = array(
@@ -237,22 +222,13 @@ class ComposerRepositoryTest extends TestCase
             ),
         );
 
-        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
-            ->disableOriginalConstructor()
-            ->getMock();
+        $httpDownloader = new HttpDownloaderMock(array(
+            'http://2.example.org/packages.json' => json_encode(array('search' => '/search.json?q=%query%')),
+            'http://2.example.org/search.json?q=foo' => json_encode($result),
+        ));
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->disableOriginalConstructor()
             ->getMock();
-
-        $httpDownloader->expects($this->at(1))
-            ->method('get')
-            ->with($url = 'http://example.org/packages.json')
-            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode(array('search' => '/search.json?q=%query%'))));
-
-        $httpDownloader->expects($this->at(2))
-            ->method('get')
-            ->with($url = 'http://example.org/search.json?q=foo')
-            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode($result)));
 
         $repository = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), $httpDownloader, $eventDispatcher);
 
@@ -336,23 +312,15 @@ class ComposerRepositoryTest extends TestCase
 
     public function testGetProviderNamesWillReturnPartialPackageNames()
     {
-        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $httpDownloader->expects($this->at(0))
-            ->method('enableAsync');
-
-        $httpDownloader->expects($this->at(1))
-            ->method('get')
-            ->with($url = 'http://example.org/packages.json')
-            ->willReturn(new \Composer\Util\Http\Response(array('url' => $url), 200, array(), json_encode(array(
+        $httpDownloader = new HttpDownloaderMock(array(
+            'http://example.org/packages.json' => json_encode(array(
                 'providers-lazy-url' => '/foo/p/%package%.json',
                 'packages' => array('foo/bar' => array(
                     'dev-branch' => array('name' => 'foo/bar'),
                     'v1.0.0' => array('name' => 'foo/bar'),
                 )),
-            ))));
+            )),
+        ));
 
         $repository = new ComposerRepository(
             array('url' => 'http://example.org/packages.json'),
