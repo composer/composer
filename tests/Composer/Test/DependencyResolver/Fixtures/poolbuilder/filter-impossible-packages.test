@@ -1,0 +1,54 @@
+--TEST--
+Do not load packages into the pool that cannot meet the fixed/locked requirements, when a loose requirement is encountered during update
+
+--REQUEST--
+{
+    "require": {
+        "some/pkg": "*",
+        "root/req": "*"
+    },
+    "locked": [
+        {"name": "some/pkg", "version": "1.0.3", "require": {"dep/dep": "*"}, "id": 1},
+        {"name": "root/req", "version": "1.0.0", "require": {"dep/dep": "2.*"}, "id": 2},
+        {"name": "dep/dep", "version": "2.0.0", "id": 3}
+    ],
+    "allowList": [
+        "some/pkg"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "some/pkg", "version": "1.0.4", "require": {"dep/dep": "*"}},
+        {"name": "root/req", "version": "1.0.0", "require": {"dep/dep": "2.*"}},
+        {"name": "dep/dep", "version": "1.0.0", "provide": {"other/pkg": "*"}},
+        {"name": "dep/dep", "version": "1.0.1", "provide": {"other/pkg": "*"}},
+        {"name": "dep/dep", "version": "1.0.2", "provide": {"other/pkg": "*"}},
+        {"name": "dep/dep", "version": "2.0.0"},
+        {"name": "dep/dep", "version": "2.0.1"}
+    ]
+]
+
+--EXPECT--
+[
+    2,
+    "some/pkg-1.0.4.0",
+    "dep/dep-1.0.0.0",
+    "dep/dep-1.0.1.0",
+    "dep/dep-1.0.2.0",
+    "dep/dep-2.0.0.0",
+    "dep/dep-2.0.1.0"
+]
+
+--EXPECT-OPTIMIZED--
+[
+    2,
+    "some/pkg-1.0.4.0",
+    "dep/dep-2.0.1.0"
+]
