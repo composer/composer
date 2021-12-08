@@ -22,12 +22,6 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "5.3"
-          - "5.4"
-          - "5.5"
-          - "5.6"
-          - "7.0"
-          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -37,28 +31,32 @@ jobs:
         os: [ubuntu-latest]
         experimental: [false]
         include:
-          - php-version: "5.3"
+          - php-version: "7.2"
             dependencies: highest
             os: ubuntu-latest
             experimental: false
-          - php-version: "5.3"
+          - php-version: "7.2"
             dependencies: lowest
             os: ubuntu-latest
             experimental: false
-          - php-version: "8.0"
+          - php-version: "8.1"
+            dependencies: highest
+            os: ubuntu-latest
+            experimental: false
+          - php-version: "8.1"
             os: windows-latest
             dependencies: locked
             experimental: false
-          - php-version: "8.0"
+          - php-version: "8.1"
             os: macos-latest
             dependencies: locked
             experimental: false
-          - php-version: "8.1"
-            dependencies: lowest
+          - php-version: "8.2"
+            dependencies: lowest-ignore
             os: ubuntu-latest
-            experimental: false
-          - php-version: "8.1"
-            dependencies: highest
+            experimental: true
+          - php-version: "8.2"
+            dependencies: highest-ignore
             os: ubuntu-latest
             experimental: false
 
