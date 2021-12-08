@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\IO\NullIO;
+use Composer\Json\JsonFile;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Test\Mock\FactoryMock;
@@ -181,9 +182,9 @@ class ComposerRepositoryTest extends TestCase
         );
 
         $httpDownloader = new HttpDownloaderMock(array(
-            'http://example.org/packages.json' => json_encode(array('search' => '/search.json?q=%query%&type=%type%')),
-            'http://example.org/search.json?q=foo&type=composer-plugin' => json_encode($result),
-            'http://example.org/search.json?q=foo&type=library' => json_encode(array()),
+            'http://example.org/packages.json' => JsonFile::encode(array('search' => '/search.json?q=%query%&type=%type%')),
+            'http://example.org/search.json?q=foo&type=composer-plugin' => JsonFile::encode($result),
+            'http://example.org/search.json?q=foo&type=library' => JsonFile::encode(array()),
         ));
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->disableOriginalConstructor()
@@ -223,8 +224,8 @@ class ComposerRepositoryTest extends TestCase
         );
 
         $httpDownloader = new HttpDownloaderMock(array(
-            'http://2.example.org/packages.json' => json_encode(array('search' => '/search.json?q=%query%')),
-            'http://2.example.org/search.json?q=foo' => json_encode($result),
+            'http://2.example.org/packages.json' => JsonFile::encode(array('search' => '/search.json?q=%query%')),
+            'http://2.example.org/search.json?q=foo' => JsonFile::encode($result),
         ));
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->disableOriginalConstructor()
@@ -313,7 +314,7 @@ class ComposerRepositoryTest extends TestCase
     public function testGetProviderNamesWillReturnPartialPackageNames()
     {
         $httpDownloader = new HttpDownloaderMock(array(
-            'http://example.org/packages.json' => json_encode(array(
+            'http://example.org/packages.json' => JsonFile::encode(array(
                 'providers-lazy-url' => '/foo/p/%package%.json',
                 'packages' => array('foo/bar' => array(
                     'dev-branch' => array('name' => 'foo/bar'),
