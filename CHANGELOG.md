@@ -1,3 +1,30 @@
+### [2.2.0-RC1] 2021-12-08
+
+  * Bumped `composer-runtime-api` and `composer-plugin-api` to `2.2.0`
+  * UX Change: Added [`allow-plugins`](https://getcomposer.org/doc/06-config.md#allow-plugins) config value to enhance security against runtime execution, this will prompt you the first time you use a plugin and may hang pipelines if they aren't using --no-interaction (-n) as they should (#10314)
+  * Added an optimization pass to reduce the amount of redundant inspected during resolution, drastically improving memory and CPU usage (#9261, #9620)
+  * Added a [global $_composer_autoload_path variable](https://getcomposer.org/doc/articles/vendor-binaries.md#finding-the-composer-autoloader-from-a-binary) containing the path to autoload.php for binaries (#10137)
+  * Added wildcard support to --ignore-platform-req (e.g. `ext-*`) (#10083)
+  * Added support for ignoring the upper bound of platform requirements using "name+" notation e.g. using `--ignore-platform-req=php+` would allow installing a package requiring `php: 8.0.*` on PHP 8.1, but not on PHP 7.4. Useful for CI builds of upcoming PHP versions (#10318)
+  * Added support for setting platform packages to false in config.platform to disable/hide them (#10308)
+  * Added [`use-parent-dir`](https://getcomposer.org/doc/06-config.md#use-parent-dir) option to configure the prompt for using composer.json in upper directory when none is present in current dir (#10307)
+  * Added [`composer` platform package](https://getcomposer.org/doc/articles/composer-platform-dependencies.md) which is always the exact version of Composer running unlike `composer-*-api` packages (#10313)
+  * Added a --source flag to `config` command to show where config values are loaded from (#10129)
+  * Added support for `files` autoloaders in the runtime scripts/plugins contexts (#10065)
+  * Added retry behavior on certain http status and curl error codes (#10162)
+  * Added abandoned flag display in search command output
+  * Added support for --ignore-platform-reqs in `outdated` command (#10293)
+  * Added --only-vendor (-O) flag to `search` command to search (and return) vendor names (#10336)
+  * Added COMPOSER_NO_DEV environment variable to set the --no-dev flag (#10262)
+  * Fixed `archive` command to behave more like git archive, gitignore/hgignore are not taken into account anymore, and gitattributes support was improved (#10309)
+  * Fixed unlocking of replacers when a replaced package is unlocked (#10280)
+  * Fixed auto-unlocked path repo packages also unlocking their transitive deps when -w/-W is used (#10157)
+  * Fixed handling of recursive package links (e.g. requiring or replacing oneself)
+  * Fixed env var reads to check $_SERVER and $_ENV before getenv for broader ecosystem compatibility (#10218)
+  * Fixed `archive` command to produce archives with files sorted by name (#10274)
+  * Fixed VcsRepository issues where server failure could cause missing tags/branches (#10319)
+  * Fixed some error reporting issues (#10283, #10339)
+
 ### [2.1.14] 2021-11-30
 
   * Fixed invalid release build
@@ -1305,6 +1332,7 @@
 
   * Initial release
 
+[2.2.0-RC1]: https://github.com/composer/composer/compare/2.1.14...2.2.0-RC1
 [2.1.14]: https://github.com/composer/composer/compare/2.1.13...2.1.14
 [2.1.13]: https://github.com/composer/composer/compare/2.1.12...2.1.13
 [2.1.12]: https://github.com/composer/composer/compare/2.1.11...2.1.12
