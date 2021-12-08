@@ -75,7 +75,11 @@ class PoolOptimizer
     {
         $this->prepare($request, $pool);
 
-        $optimizedPool = $this->optimizeByIdenticalDependencies($request, $pool);
+        $this->optimizeByIdenticalDependencies($request, $pool);
+
+        $this->optimizeImpossiblePackagesAway($request, $pool);
+
+        $optimizedPool = $this->applyRemovalsToPool($pool);
 
         // No need to run this recursively at the moment
         // because the current optimizations cannot provide
@@ -187,7 +191,7 @@ class PoolOptimizer
     }
 
     /**
-     * @return Pool
+     * @return void
      */
     private function optimizeByIdenticalDependencies(Request $request, Pool $pool)
     {
@@ -270,10 +274,6 @@ class PoolOptimizer
                 }
             }
         }
-
-        $this->filterImpossiblePackages($request, $pool);
-
-        return $this->applyRemovalsToPool($pool);
     }
 
     /**
@@ -390,7 +390,7 @@ class PoolOptimizer
      *
      * @return void
      */
-    private function filterImpossiblePackages(Request $request, Pool $pool)
+    private function optimizeImpossiblePackagesAway(Request $request, Pool $pool)
     {
         if (count($request->getLockedPackages()) === 0) {
             return;
@@ -399,6 +399,21 @@ class PoolOptimizer
         $packageIndex = array();
 
         foreach ($pool->getPackages() as $package) {
+            $id = $package->id;
+
+            // Do not remove irremovable packages
+            if (isset($this->irremovablePackages[$id])) {
+                continue;
+            }
+            // Do not remove a package aliased by another package, nor aliases
+            if (isset($this->aliasesPerPackage[$id]) || $package instanceof AliasPackage) {
+                continue;
+            }
+            // Do not remove locked packages
+            if ($request->isFixedPackage($package) || $request->isLockedPackage($package)) {
+                continue;
+            }
+
             $packageIndex[$package->getName()][$package->id] = $package;
         }
 
@@ -412,19 +427,6 @@ class PoolOptimizer
                 $linkConstraint = $link->getConstraint();
                 foreach ($packageIndex[$require] as $id => $requiredPkg) {
                     if (false === CompilingMatcher::match($linkConstraint, Constraint::OP_EQ, $requiredPkg->getVersion())) {
-                        // Do not filter a package aliased by another package, nor aliases
-                        if (isset($this->aliasesPerPackage[$id]) || $requiredPkg instanceof AliasPackage) {
-                            continue;
-                        }
-                        // Do not filter locked packages
-                        if ($request->isFixedPackage($requiredPkg) || $request->isLockedPackage($requiredPkg)) {
-                            continue;
-                        }
-                        // Do not remove irremovable packages
-                        if (isset($this->irremovablePackages[$id])) {
-                            continue;
-                        }
-
                         $this->markPackageForRemoval($id);
                         unset($packageIndex[$require][$id]);
                     }
