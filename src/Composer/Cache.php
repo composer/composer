@@ -287,6 +287,23 @@ class Cache
     }
 
     /**
+     * @param string $file
+     * @return int|false
+     * @phpstan-return int<0, max>|false
+     */
+    public function getAge($file)
+    {
+        if ($this->isEnabled()) {
+            $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
+            if (file_exists($this->root . $file) && ($mtime = filemtime($this->root . $file)) !== false) {
+                return abs(time() - $mtime);
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @param int $ttl
      * @param int $maxSize
      *

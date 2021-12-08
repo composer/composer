@@ -420,7 +420,9 @@ You can also search for more than one term by passing multiple arguments.
 
 ### Options
 
-* **--only-name (-N):** Search only in name.
+* **--only-name (-N):** Search only in package names.
+* **--only-vendor (-O):** Search only for vendor / organization names, returns only "vendor"
+  as result.
 * **--type (-t):** Search for a specific package type.
 * **--format (-f):** Lets you pick between text (default) or json output format.
   Note that in the json, only the name and description keys are guaranteed to be

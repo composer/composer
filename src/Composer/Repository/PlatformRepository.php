@@ -727,4 +727,14 @@ class PlatformRepository extends ArrayRepository
     {
         return self::$lastSeenPlatformPhp;
     }
+
+    public function search($query, $mode = 0, $type = null)
+    {
+        // suppress vendor search as there are no vendors to match in platform packages
+        if ($mode === self::SEARCH_VENDOR) {
+            return array();
+        }
+
+        return parent::search($query, $mode, $type);
+    }
 }
