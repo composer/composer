@@ -50,13 +50,13 @@ class InstallerTest extends TestCase
     /** @var ?string */
     protected $tempComposerHome;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->prevCwd = getcwd();
         chdir(__DIR__);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Platform::clearEnv('COMPOSER_POOL_OPTIMIZER');
 

@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ApplicationTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
 

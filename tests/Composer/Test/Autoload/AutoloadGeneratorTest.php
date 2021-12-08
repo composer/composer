@@ -29,7 +29,7 @@ use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Platform;
-use PHPUnit_Framework_MockObject_MockObject as MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class AutoloadGeneratorTest extends TestCase
 {
@@ -54,12 +54,12 @@ class AutoloadGeneratorTest extends TestCase
     private $origDir;
 
     /**
-     * @var InstallationManager|MockObject
+     * @var InstallationManager&MockObject
      */
     private $im;
 
     /**
-     * @var InstalledRepositoryInterface|MockObject
+     * @var InstalledRepositoryInterface&MockObject
      */
     private $repository;
 
@@ -74,7 +74,7 @@ class AutoloadGeneratorTest extends TestCase
     private $fs;
 
     /**
-     * @var EventDispatcher|MockObject
+     * @var EventDispatcher&MockObject
      */
     private $eventDispatcher;
 
@@ -89,7 +89,7 @@ class AutoloadGeneratorTest extends TestCase
      */
     public $configValueMap;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->fs = new Filesystem;
         $that = $this;
@@ -148,7 +148,7 @@ class AutoloadGeneratorTest extends TestCase
         $this->generator = new AutoloadGenerator($this->eventDispatcher);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         chdir($this->origDir);
 

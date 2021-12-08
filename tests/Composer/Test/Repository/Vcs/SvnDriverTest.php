@@ -29,7 +29,7 @@ class SvnDriverTest extends TestCase
      */
     protected $config;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->home = $this->getUniqueTmpDirectory();
         $this->config = new Config();
@@ -40,7 +40,7 @@ class SvnDriverTest extends TestCase
         ));
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $fs = new Filesystem();
         $fs->removeDirectory($this->home);

@@ -18,13 +18,13 @@ use Composer\Test\TestCase;
 
 class StreamContextFactoryTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         unset($_SERVER['HTTP_PROXY'], $_SERVER['http_proxy'], $_SERVER['HTTPS_PROXY'], $_SERVER['https_proxy'], $_SERVER['NO_PROXY'], $_SERVER['no_proxy']);
         ProxyManager::reset();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         unset($_SERVER['HTTP_PROXY'], $_SERVER['http_proxy'], $_SERVER['HTTPS_PROXY'], $_SERVER['https_proxy'], $_SERVER['NO_PROXY'], $_SERVER['no_proxy']);
         ProxyManager::reset();

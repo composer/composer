@@ -31,14 +31,14 @@ class AllFunctionalTest extends TestCase
      */
     private static $pharPath;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->oldcwd = getcwd();
 
         chdir(__DIR__.'/Fixtures/functional');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         if ($this->oldcwd) {
             chdir($this->oldcwd);
@@ -51,12 +51,12 @@ class AllFunctionalTest extends TestCase
         }
     }
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         self::$pharPath = self::getUniqueTmpDirectory() . '/composer.phar';
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         $fs = new Filesystem;
         $fs->removeDirectory(dirname(self::$pharPath));

@@ -33,7 +33,7 @@ class GitBitbucketDriverTest extends TestCase
     /** @var string */
     private $home;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
@@ -51,7 +51,7 @@ class GitBitbucketDriverTest extends TestCase
             ->getMock();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $fs = new Filesystem;
         $fs->removeDirectory($this->home);

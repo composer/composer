@@ -43,7 +43,7 @@ class PerforceDownloaderTest extends TestCase
     /** @var string */
     protected $testPath;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->testPath = $this->getUniqueTmpDirectory();
         $this->repoConfig = $this->getRepoConfig();

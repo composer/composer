@@ -30,7 +30,7 @@ class FileDownloaderTest extends TestCase
     /** @var \Composer\Config&\PHPUnit\Framework\MockObject\MockObject */
     private $config;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
         $this->config = $this->getMockBuilder('Composer\Config')->getMock();

@@ -31,7 +31,7 @@ class AuthHelperTest extends TestCase
     /** @var AuthHelper */
     private $authHelper;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->io = $this
             ->getMockBuilder('Composer\IO\IOInterface')

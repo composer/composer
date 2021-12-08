@@ -23,7 +23,7 @@ class DownloadManagerTest extends TestCase
     /** @var \Composer\IO\IOInterface&\PHPUnit\Framework\MockObject\MockObject */
     protected $io;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();

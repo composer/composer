@@ -45,7 +45,7 @@ class GitLabDriverTest extends TestCase
      */
     private $httpDownloader;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->home = $this->getUniqueTmpDirectory();
         $this->config = new Config();
@@ -66,7 +66,7 @@ class GitLabDriverTest extends TestCase
         $this->httpDownloader = $this->prophesize('Composer\Util\HttpDownloader');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $fs = new Filesystem();
         $fs->removeDirectory($this->home);

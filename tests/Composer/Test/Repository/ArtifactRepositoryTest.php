@@ -19,7 +19,7 @@ use Composer\Package\BasePackage;
 
 class ArtifactRepositoryTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         if (!extension_loaded('zip')) {

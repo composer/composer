@@ -20,12 +20,12 @@ use Composer\Test\TestCase;
  */
 class ErrorHandlerTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         ErrorHandler::register();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         restore_error_handler();
     }

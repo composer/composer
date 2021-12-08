@@ -23,7 +23,7 @@ use Composer\Test\TestCase;
 
 class TransactionTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
     }
 

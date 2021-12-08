@@ -65,7 +65,7 @@ class LibraryInstallerTest extends TestCase
      */
     protected $fs;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->fs = new Filesystem;
 
@@ -96,7 +96,7 @@ class LibraryInstallerTest extends TestCase
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->fs->removeDirectory($this->rootDir);
     }

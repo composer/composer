@@ -32,14 +32,14 @@ class FilesystemTest extends TestCase
      */
     private $testFile;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->fs = new Filesystem;
         $this->workingDir = $this->getUniqueTmpDirectory();
         $this->testFile = $this->getUniqueTmpDirectory() . '/composer_test_file';
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         if (is_dir($this->workingDir)) {
             $this->fs->removeDirectory($this->workingDir);

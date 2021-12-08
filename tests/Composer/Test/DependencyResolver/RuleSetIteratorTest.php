@@ -27,7 +27,7 @@ class RuleSetIteratorTest extends TestCase
     /** @var Pool */
     protected $pool;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->pool = new Pool();
 

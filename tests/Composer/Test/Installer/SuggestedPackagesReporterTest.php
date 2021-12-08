@@ -30,7 +30,7 @@ class SuggestedPackagesReporterTest extends TestCase
      */
     private $suggestedPackagesReporter;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 

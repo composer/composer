@@ -32,7 +32,7 @@ class GitTest extends TestCase
     /** @var Filesystem&\PHPUnit\Framework\MockObject\MockObject */
     private $fs;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->config = $this->getMockBuilder('Composer\Config')->disableOriginalConstructor()->getMock();

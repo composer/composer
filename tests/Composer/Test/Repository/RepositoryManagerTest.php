@@ -21,12 +21,12 @@ class RepositoryManagerTest extends TestCase
     /** @var string */
     protected $tmpdir;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->tmpdir = $this->getUniqueTmpDirectory();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         if (is_dir($this->tmpdir)) {
             $fs = new Filesystem();

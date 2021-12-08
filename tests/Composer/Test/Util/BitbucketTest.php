@@ -48,7 +48,7 @@ class BitbucketTest extends TestCase
     /** @var int */
     private $time;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->io = $this
             ->getMockBuilder('Composer\IO\ConsoleIO')

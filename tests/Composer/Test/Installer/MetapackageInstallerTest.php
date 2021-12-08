@@ -30,7 +30,7 @@ class MetapackageInstallerTest extends TestCase
      */
     private $io;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
 

@@ -61,7 +61,7 @@ class PerforceDriverTest extends TestCase
     const TEST_DEPOT = 'TEST_DEPOT_CONFIG';
     const TEST_BRANCH = 'TEST_BRANCH_CONFIG';
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->testPath = $this->getUniqueTmpDirectory();
         $this->config = $this->getTestConfig($this->testPath);
@@ -78,7 +78,7 @@ class PerforceDriverTest extends TestCase
         $this->overrideDriverInternalPerforce($this->perforce);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         //cleanup directory under test path
         $fs = new Filesystem;

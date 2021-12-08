@@ -68,7 +68,7 @@ class PluginInstallerTest extends TestCase
      */
     protected $io;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $loader = new JsonLoader(new ArrayLoader());
         $this->packages = array();
@@ -127,7 +127,7 @@ class PluginInstallerTest extends TestCase
         $this->composer->setPluginManager($this->pm);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $filesystem = new Filesystem();
         $filesystem->removeDirectory($this->directory);

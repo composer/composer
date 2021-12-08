@@ -25,7 +25,7 @@ class FilterRepositoryTest extends TestCase
      */
     private $arrayRepo;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->arrayRepo = new ArrayRepository();
         $this->arrayRepo->addPackage($this->getPackage('foo/aaa', '1.0.0'));

@@ -22,7 +22,7 @@ use Composer\Test\Mock\ProcessExecutorMock;
 
 class VersionGuesserTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         if (!function_exists('proc_open')) {
             $this->markTestSkipped('proc_open() is not available');

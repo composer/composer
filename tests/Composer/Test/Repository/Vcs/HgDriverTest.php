@@ -26,7 +26,7 @@ class HgDriverTest extends TestCase
     /** @var string */
     private $home;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->home = $this->getUniqueTmpDirectory();
@@ -38,7 +38,7 @@ class HgDriverTest extends TestCase
         ));
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $fs = new Filesystem;
         $fs->removeDirectory($this->home);

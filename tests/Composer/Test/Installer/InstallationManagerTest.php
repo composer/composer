@@ -36,7 +36,7 @@ class InstallationManagerTest extends TestCase
      */
     protected $io;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->loop = $this->getMockBuilder('Composer\Util\Loop')->disableOriginalConstructor()->getMock();
         $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();

@@ -32,7 +32,7 @@ class ArchiveManagerTest extends ArchiverTest
      */
     protected $targetDir;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

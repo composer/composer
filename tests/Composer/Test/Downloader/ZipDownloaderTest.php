@@ -32,7 +32,7 @@ class ZipDownloaderTest extends TestCase
     /** @var \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $package;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->testDir = $this->getUniqueTmpDirectory();
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
@@ -42,7 +42,7 @@ class ZipDownloaderTest extends TestCase
         $this->package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $fs = new Filesystem;
         $fs->removeDirectory($this->testDir);

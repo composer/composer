@@ -37,7 +37,7 @@ class PerforceTest extends TestCase
     const TEST_PORT = 'port';
     const TEST_PATH = 'path';
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
         $this->repoConfig = $this->getTestRepoConfig();

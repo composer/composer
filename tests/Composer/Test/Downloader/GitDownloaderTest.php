@@ -27,7 +27,7 @@ class GitDownloaderTest extends TestCase
     /** @var string */
     private $workingDir;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->skipIfNotExecutable('git');
 
@@ -37,7 +37,7 @@ class GitDownloaderTest extends TestCase
         $this->workingDir = $this->getUniqueTmpDirectory();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         if (is_dir($this->workingDir)) {
             $this->fs->removeDirectory($this->workingDir);

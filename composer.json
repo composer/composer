@@ -41,7 +41,12 @@
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^5.4 || ^6.0",
-        "phpspec/prophecy": "^1.10"
+        "phpspec/prophecy": "^1.10",
+        "phpstan/phpstan": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.0",
+        "phpstan/phpstan-deprecation-rules": "^1",
+        "phpstan/phpstan-strict-rules": "^1",
+        "phpunit/phpunit": "^8.5"
     },
     "suggest": {
         "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages",
@@ -79,19 +84,15 @@
     ],
     "scripts": {
         "compile": "@php -dphar.readonly=0 bin/compile",
-        "test": "@php simple-phpunit",
-        "phpstan-setup": [
-            "@composer config platform --unset",
-            "@composer update",
-            "@composer require --dev phpstan/phpstan:^1.0 phpstan/phpstan-phpunit:^1.0 phpstan/phpstan-deprecation-rules:^1 phpstan/phpstan-strict-rules:^1 phpunit/phpunit:^7.5.20 --with-all-dependencies",
-            "git checkout composer.json composer.lock"
+        "test": [
+            "@putenv SYMFONY_PHPUNIT_VERSION=8.5",
+            "@php simple-phpunit"
         ],
         "phpstan": "@php vendor/bin/phpstan analyse --configuration=phpstan/config.neon"
     },
     "scripts-descriptions": {
         "compile": "Compile composer.phar",
         "test": "Run all tests",
-        "phpstan-setup": "Prepare environment to run PHPStan locally (must be run with PHP7.4)",
         "phpstan": "Runs PHPStan (after phpstan-setup was executed, must be run with PHP7.4)"
     },
     "support": {

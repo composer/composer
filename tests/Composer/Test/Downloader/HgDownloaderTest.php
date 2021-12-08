@@ -22,12 +22,12 @@ class HgDownloaderTest extends TestCase
     /** @var string */
     private $workingDir;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->workingDir = $this->getUniqueTmpDirectory();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         if (is_dir($this->workingDir)) {
             $fs = new Filesystem;

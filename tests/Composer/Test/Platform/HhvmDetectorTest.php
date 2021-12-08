@@ -25,7 +25,7 @@ class HhvmDetectorTest extends TestCase
      */
     private $hhvmDetector;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->hhvmDetector = new HhvmDetector();
         $this->hhvmDetector->reset();

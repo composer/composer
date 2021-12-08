@@ -24,11 +24,11 @@ class ArrayDumperTest extends TestCase
      */
     private $dumper;
     /**
-     * @var \Composer\Package\CompletePackageInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var \Composer\Package\CompletePackageInterface|\PHPUnit\Framework\MockObject\MockObject
      */
     private $package;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->dumper = new ArrayDumper();
         $this->package = $this->getMockBuilder('Composer\Package\CompletePackageInterface')->getMock();
