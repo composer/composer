@@ -40,7 +40,7 @@
         "composer/pcre": "^1.0"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "^5.4 || ^6.0",
+        "symfony/phpunit-bridge": "^6.0",
         "phpspec/prophecy": "^1.10",
         "phpstan/phpstan": "^1.0",
         "phpstan/phpstan-phpunit": "^1.0",
@@ -84,10 +84,7 @@
     ],
     "scripts": {
         "compile": "@php -dphar.readonly=0 bin/compile",
-        "test": [
-            "@putenv SYMFONY_PHPUNIT_VERSION=8.5",
-            "@php simple-phpunit"
-        ],
+        "test": "@php simple-phpunit",
         "phpstan": "@php vendor/bin/phpstan analyse --configuration=phpstan/config.neon"
     },
     "scripts-descriptions": {

@@ -114,11 +114,11 @@ class ZipDownloaderTest extends TestCase
 
         $this->setPrivateProperty('hasZipArchive', true);
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader);
-        $zipArchive = $this->getMockBuilder('ZipArchive')->getMock();
-        $zipArchive->expects($this->at(0))
+        $zipArchive = $this->getMockBuilder('ZipArchive')->onlyMethods(['open', 'extractTo'])->getMock();
+        $zipArchive->expects($this->once())
             ->method('open')
             ->will($this->returnValue(true));
-        $zipArchive->expects($this->at(1))
+        $zipArchive->expects($this->once())
             ->method('extractTo')
             ->will($this->returnValue(false));
 
