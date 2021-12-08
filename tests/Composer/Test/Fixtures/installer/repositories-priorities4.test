@@ -52,7 +52,7 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - Root composer.json requires friendsofsymfony/elastica-bundle dev-foobar-master -> satisfiable by friendsofsymfony/elastica-bundle[dev-foobar-master].
-    - friendsofsymfony/elastica-bundle dev-foobar-master requires ruflin/elastica 2.* -> satisfiable by ruflin/elastica[2.0.0, 2.0.1] from package repo (defining 2 packages) but ruflin/elastica[dev-outdated-branch] from package repo (defining 1 package) has higher repository priority. The packages with higher priority do not match your constraint and are therefore not installable. See https://getcomposer.org/repoprio for details and assistance.
+    - friendsofsymfony/elastica-bundle dev-foobar-master requires ruflin/elastica 2.* -> satisfiable by ruflin/elastica[2.0.0, 2.0.1] from package repo (defining 2 packages) but ruflin/elastica[dev-outdated-branch] from package repo (defining 1 package) has higher repository priority. The packages from the higher priority repository do not match your constraint and are therefore not installable. That repository is canonical so the lower priority repo's packages are not installable. See https://getcomposer.org/repoprio for details and assistance.
 
 --EXPECT--
 --EXPECT-EXIT-CODE--
