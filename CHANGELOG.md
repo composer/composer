@@ -948,6 +948,7 @@
 
   * Initial release
 
+[1.10.24]: https://github.com/composer/composer/compare/1.10.23...1.10.24
 [1.10.23]: https://github.com/composer/composer/compare/1.10.22...1.10.23
 [1.10.22]: https://github.com/composer/composer/compare/1.10.21...1.10.22
 [1.10.21]: https://github.com/composer/composer/compare/1.10.20...1.10.21
