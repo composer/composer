@@ -58,7 +58,7 @@ jobs:
           - php-version: "8.2"
             dependencies: highest-ignore
             os: ubuntu-latest
-            experimental: false
+            experimental: true
 
     steps:
       - name: "Checkout"

@@ -23,6 +23,7 @@ jobs:
         php-version:
           - "7.2"
           - "8.1"
+      fail-fast: false
 
     steps:
       - name: "Checkout"
