@@ -52,6 +52,12 @@ class ErrorHandler
         }
 
         if (self::$io) {
+            // ignore symfony/* deprecation warnings about return types
+            // also ignore them from the Composer namespace, as 1.x won't get all that fixed anymore
+            if (preg_match('{^Return type of (Symfony|Composer)\\\\.*ReturnTypeWillChange}is', $message)) {
+                return true;
+            }
+
             self::$io->writeError('<warning>Deprecation Notice: '.$message.' in '.$file.':'.$line.'</warning>');
             if (self::$io->isVerbose()) {
                 self::$io->writeError('<warning>Stack trace:</warning>');
