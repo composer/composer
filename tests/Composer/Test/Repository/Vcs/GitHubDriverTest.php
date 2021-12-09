@@ -217,6 +217,7 @@ class GitHubDriverTest extends TestCase
 
         $data = $gitHubDriver->getComposerInformation($identifier);
 
+        $this->assertNotNull($data);
         $this->assertArrayNotHasKey('abandoned', $data);
     }
 
@@ -267,6 +268,7 @@ class GitHubDriverTest extends TestCase
 
         $data = $gitHubDriver->getComposerInformation($sha);
 
+        $this->assertNotNull($data);
         $this->assertTrue($data['abandoned']);
     }
 
