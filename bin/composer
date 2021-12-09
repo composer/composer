@@ -10,6 +10,7 @@ require __DIR__.'/../src/bootstrap.php';
 
 use Composer\Console\Application;
 use Composer\XdebugHandler\XdebugHandler;
+use Composer\Util\ErrorHandler;
 
 error_reporting(-1);
 
@@ -56,6 +57,8 @@ if (function_exists('ini_set')) {
 }
 
 putenv('COMPOSER_BINARY='.realpath($_SERVER['argv'][0]));
+
+ErrorHandler::register();
 
 // run the command application
 $application = new Application();
