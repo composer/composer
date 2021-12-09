@@ -105,11 +105,11 @@ jobs:
 
       - name: "Run tests"
         if: "matrix.php-version != '7.3'"
-        run: "SYMFONY_PHPUNIT_VERSION=8.5 vendor/bin/simple-phpunit --verbose"
+        run: "vendor/bin/simple-phpunit --verbose"
 
       - name: "Run complete test suite on 7.3"
         if: "matrix.php-version == '7.3'"
-        run: "SYMFONY_PHPUNIT_VERSION=8.5 vendor/bin/simple-phpunit --configuration tests/complete.phpunit.xml"
+        run: "vendor/bin/simple-phpunit --configuration tests/complete.phpunit.xml"
 
   validation:
     name: "Composer validation"

@@ -21,7 +21,8 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "7.4"
+          - "7.2"
+          - "8.1"
 
     steps:
       - name: "Checkout"
@@ -46,8 +47,16 @@ jobs:
           key: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}-${{ hashFiles('**/composer.lock') }}"
           restore-keys: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}"
 
-      - name: "Install highest dependencies from composer.json using composer binary provided by system"
+      - name: "Install highest dependencies"
+        if: "matrix.php-version != '7.2'"
         run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
+
+      - name: "Install locked dependencies"
+        if: "matrix.php-version == '7.2'"
+        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
+
+      - name: "Initialize PHPUnit sources"
+        run: "vendor/bin/simple-phpunit --filter NO_TEST_JUST_AUTOLOAD_THANKS"
 
       - name: "Run PHPStan"
         run: "composer phpstan"

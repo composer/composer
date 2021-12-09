@@ -21,6 +21,9 @@
             "homepage": "https://seld.be"
         }
     ],
+    "_comment": [
+        "symfony/polyfill-php73 sould be removed once https://github.com/symfony/symfony/pull/44523 is released and the symfony/console requirement bumped to match that release"
+    ],
     "require": {
         "php": "^7.2.5 || ^8.0",
         "composer/ca-bundle": "^1.0",
@@ -36,8 +39,9 @@
         "symfony/filesystem": "^5.4 || ^6.0",
         "symfony/finder": "^5.4 || ^6.0",
         "symfony/process": "^5.4 || ^6.0",
-        "react/promise": "^2.7",
-        "composer/pcre": "^1.0"
+        "react/promise": "^2.8",
+        "composer/pcre": "^1.0",
+        "symfony/polyfill-php73": "^1.9"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^6.0",
@@ -45,8 +49,7 @@
         "phpstan/phpstan": "^1.0",
         "phpstan/phpstan-phpunit": "^1.0",
         "phpstan/phpstan-deprecation-rules": "^1",
-        "phpstan/phpstan-strict-rules": "^1",
-        "phpunit/phpunit": "^8.5"
+        "phpstan/phpstan-strict-rules": "^1"
     },
     "suggest": {
         "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages",
