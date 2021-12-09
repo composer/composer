@@ -150,13 +150,18 @@ class Compiler
             ->sort($finderSort)
         ;
 
-        $extraFiles = array(
-            realpath(__DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-exceptions.json'),
-            realpath(__DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-licenses.json'),
-            realpath(CaBundle::getBundledCaBundlePath()),
-            realpath(__DIR__ . '/../../vendor/symfony/console/Resources/bin/hiddeninput.exe'),
-            realpath(__DIR__ . '/../../vendor/symfony/polyfill-mbstring/Resources/mb_convert_variables.php8'),
-        );
+        $extraFiles = [];
+        foreach (array(
+            __DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-exceptions.json',
+            __DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-licenses.json',
+            CaBundle::getBundledCaBundlePath(),
+            __DIR__ . '/../../vendor/symfony/console/Resources/bin/hiddeninput.exe',
+        ) as $file) {
+            $extraFiles[$file] = realpath($file);
+            if (!file_exists($file)) {
+                throw new \RuntimeException('Extra file listed is missing from the filesystem: '.$file);
+            }
+        }
         $unexpectedFiles = array();
 
         foreach ($finder as $file) {
