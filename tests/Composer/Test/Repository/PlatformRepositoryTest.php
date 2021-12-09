@@ -118,7 +118,7 @@ class PlatformRepositoryTest extends TestCase
      *
      * @param array<string, mixed>  $constants
      * @param array<string, string> $packages
-     * @param array<string, mixed>  $functions
+     * @param list<array{string, list<string>, string|bool}>  $functions
      */
     public function testPhpVersion(array $constants, array $packages, array $functions = array())
     {
@@ -1086,10 +1086,11 @@ Linked Version => 1.2.11',
      * @param string|string[]            $extensions
      * @param string|null                $info
      * @param array<string,string|false> $expectations
-     * @param array<string,mixed>        $functions
-     * @param array<string,mixed>        $constants
-     * @param array<string,class-string> $classDefinitions
+     * @param list<mixed>                $functions
+     * @param list<mixed>                $constants
+     * @param list<mixed>                $classDefinitions
      */
+
     public function testLibraryInformation(
         $extensions,
         $info,

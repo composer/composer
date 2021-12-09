@@ -447,7 +447,7 @@ class RemoteFilesystemTest extends TestCase
                 false,
                 $authHelper,
             ))
-            ->setMethods($mockedMethods)
+            ->onlyMethods($mockedMethods)
             ->getMock();
     }
 
@@ -463,7 +463,7 @@ class RemoteFilesystemTest extends TestCase
                 $this->getIOInterfaceMock(),
                 $this->getConfigMock(),
             ))
-            ->setMethods($mockedMethods)
+            ->onlyMethods($mockedMethods)
             ->getMock();
     }
 }

@@ -37,7 +37,7 @@ class ComposerRepositoryTest extends TestCase
         );
 
         $repository = $this->getMockBuilder('Composer\Repository\ComposerRepository')
-            ->setMethods(array('loadRootServerFile', 'createPackages'))
+            ->onlyMethods(array('loadRootServerFile', 'createPackages'))
             ->setConstructorArgs(array(
                 $repoConfig,
                 new NullIO,
@@ -111,7 +111,7 @@ class ComposerRepositoryTest extends TestCase
                 $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
                 $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock(),
             ))
-            ->setMethods(array('fetchFile'))
+            ->onlyMethods(array('fetchFile'))
             ->getMock();
 
         $cache = $this->getMockBuilder('Composer\Cache')->disableOriginalConstructor()->getMock();

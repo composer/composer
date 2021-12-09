@@ -49,7 +49,7 @@ parameters:
 
         # PHPUnit assertions as instance methods
         - '~Dynamic call to static method PHPUnit\\Framework\\Assert::\w+\(\)~'
-        - '~Dynamic call to static method PHPUnit\\Framework\\TestCase::(once|at|exactly|will|exactly|returnValue|returnCallback|any|atLeastOnce|throwException|onConsecutiveCalls|never|returnValueMap)\(\)~'
+        - '~Dynamic call to static method PHPUnit\\Framework\\TestCase::(once|atLeast|exactly|will|exactly|returnValue|returnCallback|any|atLeastOnce|throwException|onConsecutiveCalls|never|returnValueMap)\(\)~'
 
     bootstrapFiles:
         - ./locate-phpunit-autoloader.php

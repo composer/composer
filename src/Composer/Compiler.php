@@ -178,10 +178,10 @@ class Compiler
             }
         }
 
-        if ($extraFiles) {
+        if (count($extraFiles) > 0) {
             throw new \RuntimeException('These files were expected but not added to the phar, they might be excluded or gone from the source package:'.PHP_EOL.var_export($extraFiles, true));
         }
-        if ($unexpectedFiles) {
+        if (count($unexpectedFiles) > 0) {
             throw new \RuntimeException('These files were unexpectedly added to the phar, make sure they are excluded or listed in $extraFiles:'.PHP_EOL.var_export($unexpectedFiles, true));
         }
 

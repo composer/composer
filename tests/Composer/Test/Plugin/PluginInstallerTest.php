@@ -283,7 +283,7 @@ class PluginInstallerTest extends TestCase
     {
         // reset the plugin manager's installed plugins
         $this->pm = $this->getMockBuilder('Composer\Plugin\PluginManager')
-                         ->setMethods(array('getPluginApiVersion'))
+                         ->onlyMethods(array('getPluginApiVersion'))
                          ->setConstructorArgs(array($this->io, $this->composer))
                          ->getMock();
 

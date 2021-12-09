@@ -951,11 +951,6 @@ parameters:
 			path: ../src/Composer/Command/GlobalCommand.php
 
 		-
-			message: "#^Return type \\(int\\|void\\) of method Composer\\\\Command\\\\GlobalCommand\\:\\:run\\(\\) should be covariant with return type \\(int\\) of method Symfony\\\\Component\\\\Console\\\\Command\\\\Command\\:\\:run\\(\\)$#"
-			count: 1
-			path: ../src/Composer/Command/GlobalCommand.php
-
-		-
 			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Command/HomeCommand.php
@@ -2438,16 +2433,6 @@ parameters:
 		-
 			message: "#^Call to function method_exists\\(\\) with 'Symfony\\\\\\\\Component…' and 'fromShellCommandline' will always evaluate to true\\.$#"
 			count: 3
-			path: ../src/Composer/Compiler.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, array\\<int, bool\\|string\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Compiler.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, array\\<int, string\\> given\\.$#"
-			count: 1
 			path: ../src/Composer/Compiler.php
 
 		-
@@ -4236,6 +4221,11 @@ parameters:
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
+			message: "#^Constant PHP_WINDOWS_EVENT_CTRL_C not found\\.$#"
+			count: 1
+			path: ../src/Composer/Installer/InstallationManager.php
+
+		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/InstallationManager.php
@@ -4243,6 +4233,11 @@ parameters:
 		-
 			message: "#^Foreach overwrites \\$batch with its value variable\\.$#"
 			count: 2
+			path: ../src/Composer/Installer/InstallationManager.php
+
+		-
+			message: "#^Function sapi_windows_set_ctrl_handler not found\\.$#"
+			count: 3
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
@@ -6746,6 +6741,16 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Constant CURLOPT_PROXY_CAINFO not found\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Constant CURLOPT_PROXY_CAPATH not found\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 3
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -8450,12 +8455,12 @@ parameters:
 			path: ../tests/Composer/Test/Json/JsonValidationExceptionTest.php
 
 		-
-			message: "#^Composer\\\\Test\\\\Mock\\\\HttpDownloaderMock\\:\\:__construct\\(\\) does not call parent constructor from Composer\\\\Util\\\\HttpDownloader\\.$#"
+			message: "#^Property Composer\\\\Test\\\\Mock\\\\HttpDownloaderMock\\:\\:\\$defaultHandler \\(array\\{status\\: int, body\\: string, headers\\: array\\<string\\>\\}\\) does not accept non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, array\\<string\\>\\|int\\|string\\>\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Mock/HttpDownloaderMock.php
 
 		-
-			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
+			message: "#^Property Composer\\\\Test\\\\Mock\\\\HttpDownloaderMock\\:\\:\\$expectations \\(array\\<array\\{url\\: string, options\\: array\\|null, status\\: int, body\\: string, headers\\: array\\<int, string\\>\\}\\>\\|null\\) does not accept array\\<non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, array\\|int\\|string\\|null\\>\\>\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Mock/HttpDownloaderMock.php
 
@@ -8470,27 +8475,7 @@ parameters:
 			path: ../tests/Composer/Test/Mock/InstallationManagerMock.php
 
 		-
-			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertTrue\\(\\) with true will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
-
-		-
-			message: "#^Only booleans are allowed in &&, array\\<array\\<string, \\(callable\\)\\|int\\|string\\|null\\>\\> given on the left side\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, array\\<array\\<string, \\(callable\\)\\|int\\|string\\|null\\>\\> given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
-
-		-
 			message: "#^Only booleans are allowed in an elseif condition, array\\<string, \\(callable\\)\\|int\\|string\\|null\\> given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, array\\<array\\<string, \\(callable\\)\\|int\\|string\\|null\\>\\> given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
 
@@ -8510,7 +8495,7 @@ parameters:
 			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
 
 		-
-			message: "#^Property Composer\\\\Test\\\\Mock\\\\ProcessExecutorMock\\:\\:\\$expectations \\(array\\<array\\{cmd\\: string, return\\: int, stdout\\: string, stderr\\: string, callback\\: \\(callable\\(\\)\\: mixed\\)\\|null\\}\\>\\) does not accept array\\<non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, \\(callable\\(\\)\\: mixed\\)\\|int\\|string\\|null\\>\\>\\.$#"
+			message: "#^Property Composer\\\\Test\\\\Mock\\\\ProcessExecutorMock\\:\\:\\$expectations \\(array\\<array\\{cmd\\: string, return\\: int, stdout\\: string, stderr\\: string, callback\\: \\(callable\\(\\)\\: mixed\\)\\|null\\}\\>\\|null\\) does not accept array\\<non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, \\(callable\\(\\)\\: mixed\\)\\|int\\|string\\|null\\>\\>\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
 
@@ -8825,11 +8810,6 @@ parameters:
 			path: ../tests/Composer/Test/Repository/RepositoryManagerTest.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/RepositoryManagerTest.php
-
-		-
 			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/Vcs/FossilDriverTest.php
@@ -8867,31 +8847,6 @@ parameters:
 		-
 			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
 			count: 1
-			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$io of static method Composer\\\\Repository\\\\Vcs\\\\GitLabDriver\\:\\:supports\\(\\) expects Composer\\\\IO\\\\IOInterface, object given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$io of class Composer\\\\Repository\\\\Vcs\\\\GitLabDriver constructor expects Composer\\\\IO\\\\IOInterface, object given\\.$#"
-			count: 9
-			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
-
-		-
-			message: "#^Parameter \\#4 \\$body of class Composer\\\\Util\\\\Http\\\\Response constructor expects string\\|null, string\\|false given\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
-
-		-
-			message: "#^Parameter \\#4 \\$httpDownloader of class Composer\\\\Repository\\\\Vcs\\\\GitLabDriver constructor expects Composer\\\\Util\\\\HttpDownloader, object given\\.$#"
-			count: 9
-			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
-
-		-
-			message: "#^Parameter \\#5 \\$process of class Composer\\\\Repository\\\\Vcs\\\\GitLabDriver constructor expects Composer\\\\Util\\\\ProcessExecutor, object given\\.$#"
-			count: 9
 			path: ../tests/Composer/Test/Repository/Vcs/GitLabDriverTest.php
 
 		-
@@ -8943,11 +8898,6 @@ parameters:
 			message: "#^Parameter \\#3 \\$cwd of method Composer\\\\Util\\\\ProcessExecutor\\:\\:execute\\(\\) expects string\\|null, string\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/VcsRepositoryTest.php
-
-		-
-			message: "#^Call to function method_exists\\(\\) with \\$this\\(Composer\\\\Test\\\\TestCase\\) and 'expectException' will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/TestCase.php
 
 		-
 			message: "#^Method Composer\\\\Test\\\\TestCase\\:\\:getPackage\\(\\) should return Composer\\\\Package\\\\CompleteAliasPackage\\|Composer\\\\Package\\\\CompletePackage but returns PackageClass of Composer\\\\Package\\\\PackageInterface\\.$#"

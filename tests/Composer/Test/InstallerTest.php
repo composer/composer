@@ -235,7 +235,7 @@ class InstallerTest extends TestCase
      * @param ?string $expectOutput
      * @param ?string $expectOutputOptimized
      * @param string $expect
-     * @param int|string $expectResult
+     * @param int|class-string<\Throwable> $expectResult
      */
     public function testSlowIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult)
     {
@@ -258,7 +258,7 @@ class InstallerTest extends TestCase
      * @param ?string $expectOutput
      * @param ?string $expectOutputOptimized
      * @param string $expect
-     * @param int|string $expectResult
+     * @param int|class-string<\Throwable> $expectResult
      */
     public function testIntegrationWithPoolOptimizer($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult)
     {
@@ -281,7 +281,7 @@ class InstallerTest extends TestCase
      * @param ?string $expectOutput
      * @param ?string $expectOutputOptimized
      * @param string $expect
-     * @param int|string $expectResult
+     * @param int|class-string<\Throwable> $expectResult
      */
     public function testIntegrationWithRawPool($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult)
     {

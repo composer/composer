@@ -44,7 +44,7 @@ class CacheTest extends TestCase
 
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->cache = $this->getMockBuilder('Composer\Cache')
-            ->setMethods(array('getFinder'))
+            ->onlyMethods(array('getFinder'))
             ->setConstructorArgs(array($io, $this->root))
             ->getMock();
         $this->cache

@@ -97,7 +97,7 @@ class InstallationManagerTest extends TestCase
     {
         $manager = $this->getMockBuilder('Composer\Installer\InstallationManager')
             ->setConstructorArgs(array($this->loop, $this->io))
-            ->setMethods(array('install', 'update', 'uninstall'))
+            ->onlyMethods(array('install', 'update', 'uninstall'))
             ->getMock();
 
         $installOperation = new InstallOperation($package = $this->createPackageMock());

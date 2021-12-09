@@ -103,7 +103,7 @@ class PerforceDownloaderTest extends TestCase
     protected function getMockRepository(array $repoConfig, IOInterface $io, Config $config)
     {
         $repository = $this->getMockBuilder('Composer\Repository\VcsRepository')
-            ->setMethods(array('getRepoConfig'))
+            ->onlyMethods(array('getRepoConfig'))
             ->setConstructorArgs(array($repoConfig, $io, $config, Factory::createHttpDownloader($io, $config)))
             ->getMock();
         $repository->expects($this->any())->method('getRepoConfig')->will($this->returnValue($repoConfig));

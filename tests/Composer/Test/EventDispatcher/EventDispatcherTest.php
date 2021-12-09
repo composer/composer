@@ -70,7 +70,7 @@ class EventDispatcherTest extends TestCase
                 $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
                 $process,
             ))
-            ->setMethods(array('getListeners'))
+            ->onlyMethods(array('getListeners'))
             ->getMock();
 
         $listener = array($command);
@@ -136,7 +136,7 @@ class EventDispatcherTest extends TestCase
     {
         $generator = $this->getMockBuilder('Composer\Autoload\AutoloadGenerator')
             ->disableOriginalConstructor()
-            ->setMethods(array(
+            ->onlyMethods(array(
                 'buildPackageMap',
                 'parseAutoloads',
                 'createLoader',
@@ -163,7 +163,7 @@ class EventDispatcherTest extends TestCase
     {
         $rm = $this->getMockBuilder('Composer\Repository\RepositoryManager')
             ->disableOriginalConstructor()
-            ->setMethods(array('getLocalRepository'))
+            ->onlyMethods(array('getLocalRepository'))
             ->getMock();
 
         $repo = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
@@ -235,7 +235,7 @@ class EventDispatcherTest extends TestCase
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
                 $process,
             ))
-            ->setMethods(array(
+            ->onlyMethods(array(
                 'getListeners',
             ))
             ->getMock();
@@ -266,7 +266,7 @@ class EventDispatcherTest extends TestCase
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
                 $this->getProcessExecutorMock(),
             ))
-            ->setMethods(array(
+            ->onlyMethods(array(
                 'getListeners',
             ))
             ->getMock();
@@ -298,7 +298,7 @@ class EventDispatcherTest extends TestCase
                 $this->createComposerInstance(),
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
                 $this->getProcessExecutorMock(),
-            ))->setMethods(array(
+            ))->onlyMethods(array(
                 'getListeners',
             ))->getMock();
 
@@ -376,7 +376,7 @@ class EventDispatcherTest extends TestCase
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
                 $process,
             ))
-            ->setMethods(array(
+            ->onlyMethods(array(
                 'getListeners',
             ))
             ->getMock();
@@ -421,7 +421,7 @@ class EventDispatcherTest extends TestCase
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
                 $process,
             ))
-            ->setMethods(array(
+            ->onlyMethods(array(
                 'getListeners',
             ))
             ->getMock();
@@ -457,7 +457,7 @@ class EventDispatcherTest extends TestCase
             $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
             $this->getProcessExecutorMock(),
         ))
-        ->setMethods(array(
+        ->onlyMethods(array(
             'getListeners',
         ))
         ->getMock();
@@ -491,7 +491,7 @@ class EventDispatcherTest extends TestCase
                 $this->createComposerInstance(),
                 $io,
             ))
-            ->setMethods(array('getListeners'))
+            ->onlyMethods(array('getListeners'))
             ->getMock();
 
         $dispatcher->expects($this->atLeastOnce())
@@ -518,7 +518,7 @@ class EventDispatcherTest extends TestCase
                 $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
                 new ProcessExecutor($io),
             ))
-            ->setMethods(array('getListeners'))
+            ->onlyMethods(array('getListeners'))
             ->getMock();
 
         $listener = array('echo foo');
@@ -545,7 +545,7 @@ class EventDispatcherTest extends TestCase
                 $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
                 new ProcessExecutor,
             ))
-            ->setMethods(array('getListeners'))
+            ->onlyMethods(array('getListeners'))
             ->getMock();
 
         $code = 'exit 1';
@@ -581,7 +581,7 @@ class EventDispatcherTest extends TestCase
                     $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
                     $this->getProcessExecutorMock(),
                 ))
-            ->setMethods(array('getListeners'))
+            ->onlyMethods(array('getListeners'))
             ->getMock();
 
         $dispatcher->expects($this->atLeastOnce())

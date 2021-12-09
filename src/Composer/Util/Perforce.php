@@ -98,9 +98,7 @@ class Perforce
      */
     public static function checkServerExists($url, ProcessExecutor $processExecutor)
     {
-        $output = null;
-
-        return  0 === $processExecutor->execute('p4 -p ' . ProcessExecutor::escape($url) . ' info -s', $output);
+        return 0 === $processExecutor->execute('p4 -p ' . ProcessExecutor::escape($url) . ' info -s', $ignoredOutput);
     }
 
     /**

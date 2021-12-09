@@ -26,7 +26,7 @@ use React\Promise\Promise;
 class ProcessExecutorMock extends ProcessExecutor
 {
     /**
-     * @var array<array{cmd: string, return: int, stdout: string, stderr: string, callback: ?callable}>|null
+     * @var array<array{cmd: string, return: int, stdout: string, stderr: string, callback: callable|null}>|null
      */
     private $expectations = null;
     /**
@@ -84,7 +84,7 @@ class ProcessExecutorMock extends ProcessExecutor
         }
 
         // dummy assertion to ensure the test is not marked as having no assertions
-        Assert::assertTrue(true);
+        Assert::assertTrue(true); // @phpstan-ignore-line
     }
 
     public function execute($command, &$output = null, $cwd = null)

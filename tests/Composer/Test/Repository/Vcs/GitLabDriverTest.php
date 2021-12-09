@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository\Vcs;
 
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Repository\Vcs\GitLabDriver;
 use Composer\Config;
 use Composer\Test\Mock\HttpDownloaderMock;
@@ -365,7 +366,7 @@ JSON;
             );
         }
 
-        $branchData = json_encode($branchData);
+        $branchData = JsonFile::encode($branchData);
 
         $this->httpDownloader->expects(
             [

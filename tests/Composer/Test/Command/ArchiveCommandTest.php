@@ -49,17 +49,14 @@ class ArchiveCommandTest extends TestCase
         $composer->setPackage($package);
 
         $command = $this->getMockBuilder('Composer\Command\ArchiveCommand')
-            ->setMethods(array(
+            ->onlyMethods(array(
                 'mergeApplicationDefinition',
-                'bind',
                 'getSynopsis',
                 'initialize',
-                'isInteractive',
                 'getComposer',
             ))->getMock();
         $command->expects($this->atLeastOnce())->method('getComposer')
             ->willReturn($composer);
-        $command->method('isInteractive')->willReturn(false);
 
         $command->run($input, $output);
     }
@@ -73,12 +70,10 @@ class ArchiveCommandTest extends TestCase
         $config = Factory::createConfig();
 
         $command = $this->getMockBuilder('Composer\Command\ArchiveCommand')
-            ->setMethods(array(
+            ->onlyMethods(array(
                 'mergeApplicationDefinition',
-                'bind',
                 'getSynopsis',
                 'initialize',
-                'isInteractive',
                 'getComposer',
                 'archive',
             ))->getMock();
@@ -96,7 +91,6 @@ class ArchiveCommandTest extends TestCase
                 false,
                 null
             )->willReturn(0);
-        $command->method('isInteractive')->willReturn(false);
 
         $this->assertEquals(0, $command->run($input, $output));
     }
