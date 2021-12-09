@@ -1,3 +1,9 @@
+### [1.10.24] 2021-12-09
+
+  * Added v1 deprecation warning when running install. Please make sure you upgrade to Composer 2, see https://blog.packagist.com/deprecating-composer-1-support/
+  * Fixed PHP 8.1 compatibility
+  * Fixed some more Windows CLI parameter escaping edge cases
+
 ### [1.10.23] 2021-10-05
 
   * Security: Fixed command injection vulnerability on Windows (GHSA-frqg-7g38-6gcf / CVE-2021-41116)
