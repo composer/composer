@@ -50,25 +50,13 @@ class Compiler
             unlink($pharFile);
         }
 
-        // TODO in v2.3 always call with an array
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = new Process(array('git', 'log', '--pretty="%H"', '-n1', 'HEAD'), __DIR__);
-        } else {
-            // @phpstan-ignore-next-line
-            $process = new Process('git log --pretty="%H" -n1 HEAD', __DIR__);
-        }
+        $process = new Process(array('git', 'log', '--pretty=%H', '-n1', 'HEAD'), __DIR__);
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($process->getOutput());
 
-        // TODO in v2.3 always call with an array
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = new Process(array('git', 'log', '-n1', '--pretty=%ci', 'HEAD'), __DIR__);
-        } else {
-            // @phpstan-ignore-next-line
-            $process = new Process('git log -n1 --pretty=%ci HEAD', __DIR__);
-        }
+        $process = new Process(array('git', 'log', '-n1', '--pretty=%ci', 'HEAD'), __DIR__);
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
@@ -137,8 +125,8 @@ class Compiler
         $finder->files()
             ->ignoreVCS(true)
             ->notPath('/\/(composer\.(json|lock)|[A-Z]+\.md|\.gitignore|appveyor.yml|phpunit\.xml\.dist|phpstan\.neon\.dist|phpstan-config\.neon)$/')
-            ->notPath('/bin\/(jsonlint|validate-json|simple-phpunit)(\.bat)?$/')
-            ->notPath('symfony/debug/Resources/ext/')
+            ->notPath('/bin\/(jsonlint|validate-json|simple-phpunit|phpstan|phpstan\.phar)(\.bat)?$/')
+            ->notPath('symfony/console/Resources/completion.bash')
             ->notPath('justinrainbow/json-schema/demo/')
             ->notPath('justinrainbow/json-schema/dist/')
             ->notPath('composer/installed.json')
@@ -205,7 +193,13 @@ class Compiler
         $util->updateTimestamps($this->versionDate);
         $util->save($pharFile, \Phar::SHA512);
 
-        Linter::lint($pharFile);
+        Linter::lint($pharFile, [
+            'vendor/symfony/console/Attribute/AsCommand.php',
+            'vendor/symfony/polyfill-intl-grapheme/bootstrap80.php',
+            'vendor/symfony/polyfill-intl-normalizer/bootstrap80.php',
+            'vendor/symfony/polyfill-mbstring/bootstrap80.php',
+            'vendor/symfony/service-contracts/Attribute/SubscribedService.php',
+        ]);
     }
 
     /**
