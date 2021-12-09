@@ -67,7 +67,7 @@ class FileDownloaderTest extends TestCase
             ->will($this->returnValue(null))
         ;
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $downloader = $this->getDownloader();
         $downloader->download($packageMock, '/path');

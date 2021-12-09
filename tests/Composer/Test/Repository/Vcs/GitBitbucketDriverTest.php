@@ -81,10 +81,8 @@ class GitBitbucketDriverTest extends TestCase
 
     public function testGetRootIdentifierWrongScmType()
     {
-        $this->setExpectedException(
-            '\RuntimeException',
-            'https://bitbucket.org/user/repo.git does not appear to be a git repository, use https://bitbucket.org/user/repo but remember that Bitbucket no longer supports the mercurial repositories. https://bitbucket.org/blog/sunsetting-mercurial-support-in-bitbucket'
-        );
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('https://bitbucket.org/user/repo.git does not appear to be a git repository, use https://bitbucket.org/user/repo but remember that Bitbucket no longer supports the mercurial repositories. https://bitbucket.org/blog/sunsetting-mercurial-support-in-bitbucket');
 
         $this->httpDownloader->expects($this->once())
             ->method('get')

@@ -146,7 +146,8 @@ class ClassMapGeneratorTest extends TestCase
         $find = $r->getMethod('findClasses');
         $find->setAccessible(true);
 
-        $this->setExpectedException('RuntimeException', 'does not exist');
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('does not exist');
         $find->invoke(null, __DIR__ . '/no-file');
     }
 
@@ -232,7 +233,8 @@ class ClassMapGeneratorTest extends TestCase
 
     public function testCreateMapThrowsWhenDirectoryDoesNotExist()
     {
-        $this->setExpectedException('RuntimeException', 'Could not scan for classes inside');
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('Could not scan for classes inside');
         ClassMapGenerator::createMap(__DIR__ . '/no-file.no-foler');
     }
 

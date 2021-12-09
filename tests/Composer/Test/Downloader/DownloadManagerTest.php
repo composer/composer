@@ -37,7 +37,7 @@ class DownloadManagerTest extends TestCase
         $manager->setDownloader('test', $downloader);
         $this->assertSame($downloader, $manager->getDownloader('test'));
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
         $manager->getDownloader('unregistered');
     }
 
@@ -51,7 +51,7 @@ class DownloadManagerTest extends TestCase
 
         $manager = new DownloadManager($this->io, false, $this->filesystem);
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $manager->getDownloaderForPackage($package);
     }
@@ -117,7 +117,7 @@ class DownloadManagerTest extends TestCase
             ->with('git')
             ->will($this->returnValue($downloader));
 
-        $this->setExpectedException('LogicException');
+        self::expectException('LogicException');
 
         $manager->getDownloaderForPackage($package);
     }
@@ -183,7 +183,7 @@ class DownloadManagerTest extends TestCase
             ->with('pear')
             ->will($this->returnValue($downloader));
 
-        $this->setExpectedException('LogicException');
+        self::expectException('LogicException');
 
         $manager->getDownloaderForPackage($package);
     }
@@ -304,7 +304,7 @@ class DownloadManagerTest extends TestCase
 
         $manager = new DownloadManager($this->io, false, $this->filesystem);
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
         $manager->download($package, 'target_dir');
     }
 
@@ -536,7 +536,7 @@ class DownloadManagerTest extends TestCase
         $manager = new DownloadManager($this->io, false, $this->filesystem);
         $manager->setPreferSource(true);
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
         $manager->download($package, 'target_dir');
     }
 

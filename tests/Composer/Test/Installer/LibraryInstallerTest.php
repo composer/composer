@@ -223,7 +223,7 @@ class LibraryInstallerTest extends TestCase
         $this->assertFileExists($this->vendorDir, 'Vendor dir should be created');
         $this->assertFileExists($this->binDir, 'Bin dir should be created');
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $library->update($this->repository, $initial, $target);
     }
@@ -260,7 +260,7 @@ class LibraryInstallerTest extends TestCase
 
         $library->uninstall($this->repository, $package);
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $library->uninstall($this->repository, $package);
     }

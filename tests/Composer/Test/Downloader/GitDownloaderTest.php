@@ -100,7 +100,7 @@ class GitDownloaderTest extends TestCase
             ->method('getSourceReference')
             ->will($this->returnValue(null));
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $downloader = $this->getDownloaderMock();
         $downloader->download($packageMock, '/path');
@@ -322,7 +322,7 @@ class GitDownloaderTest extends TestCase
             ->method('getSourceReference')
             ->will($this->returnValue(null));
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $downloader = $this->getDownloaderMock();
         $downloader->download($sourcePackageMock, '/path', $initialPackageMock);

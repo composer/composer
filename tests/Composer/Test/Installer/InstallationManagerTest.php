@@ -59,7 +59,7 @@ class InstallationManagerTest extends TestCase
         $manager->addInstaller($installer);
         $this->assertSame($installer, $manager->getInstaller('vendor'));
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
         $manager->getInstaller('unregistered');
     }
 

@@ -60,7 +60,7 @@ class HgDownloaderTest extends TestCase
             ->method('getSourceReference')
             ->will($this->returnValue(null));
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $downloader = $this->getDownloaderMock();
         $downloader->install($packageMock, '/path');
@@ -94,7 +94,7 @@ class HgDownloaderTest extends TestCase
             ->method('getSourceReference')
             ->will($this->returnValue(null));
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $downloader = $this->getDownloaderMock();
         $downloader->prepare('update', $sourcePackageMock, '/path', $initialPackageMock);

@@ -53,7 +53,7 @@ class ProxyHelperTest extends TestCase
     {
         $_SERVER['http_proxy'] = $url;
 
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
         ProxyHelper::getProxyData();
     }
 

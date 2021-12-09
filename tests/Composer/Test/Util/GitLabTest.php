@@ -75,7 +75,8 @@ class GitLabTest extends TestCase
 
     public function testUsernamePasswordFailure()
     {
-        $this->setExpectedException('RuntimeException', 'Invalid GitLab credentials 5 times in a row, aborting.');
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('Invalid GitLab credentials 5 times in a row, aborting.');
         $io = $this->getIOMock();
         $io
             ->expects($this->exactly(5))

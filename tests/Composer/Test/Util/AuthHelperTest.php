@@ -475,7 +475,7 @@ class AuthHelperTest extends TestCase
 
     public function testStoreAuthWithPromptInvalidAnswer()
     {
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
 
         $origin = 'github.com';
         $storeAuth = 'prompt';

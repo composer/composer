@@ -57,12 +57,12 @@ class RepositoryManagerTest extends TestCase
      *
      * @param string               $type
      * @param array<string, mixed> $options
-     * @param string|null          $exception
+     * @param class-string<\Throwable>|null $exception
      */
     public function testRepoCreation($type, $options, $exception = null)
     {
         if ($exception) {
-            $this->setExpectedException($exception);
+            self::expectException($exception);
         }
 
         $rm = new RepositoryManager(

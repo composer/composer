@@ -80,7 +80,7 @@ class MetapackageInstallerTest extends TestCase
 
         $this->installer->update($this->repository, $initial, $target);
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $this->installer->update($this->repository, $initial, $target);
     }
@@ -102,7 +102,7 @@ class MetapackageInstallerTest extends TestCase
 
         $this->installer->uninstall($this->repository, $package);
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $this->installer->uninstall($this->repository, $package);
     }

@@ -31,7 +31,7 @@ class EventDispatcherTest extends TestCase
 {
     public function testListenerExceptionsAreCaught()
     {
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
 
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $dispatcher = $this->getDispatcherStubForListenersTest(array(
@@ -449,7 +449,7 @@ class EventDispatcherTest extends TestCase
 
     public function testDispatcherDetectInfiniteRecursion()
     {
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
 
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
         ->setConstructorArgs(array(
@@ -569,7 +569,7 @@ class EventDispatcherTest extends TestCase
             ->method('isInteractive')
             ->willReturn(1);
 
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }
 

@@ -210,27 +210,6 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @param string      $exception
-     * @param string|null $message
-     * @param int|null    $code
-     * @return void
-     */
-    public function setExpectedException($exception, $message = null, $code = null)
-    {
-        if (!class_exists('PHPUnit\Framework\Error\Notice')) {
-            $exception = str_replace('PHPUnit\\Framework\\Error\\', 'PHPUnit_Framework_Error_', $exception);
-        }
-        if (method_exists($this, 'expectException')) {
-            $this->expectException($exception);
-            if (null !== $message) {
-                $this->expectExceptionMessage($message);
-            }
-        } else {
-            parent::setExpectedException($exception, $message, $code);
-        }
-    }
-
-    /**
      * Transforms an escaped non-Windows command to match Windows escaping.
      *
      * @param string $cmd

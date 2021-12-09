@@ -172,7 +172,7 @@ class RemoteFilesystemTest extends TestCase
 
     public function testCopyWithNoRetryOnFailure()
     {
-        $this->setExpectedException('Composer\Downloader\TransportException');
+        self::expectException('Composer\Downloader\TransportException');
         $fs = $this->getRemoteFilesystemWithMockedMethods(array('getRemoteContents'));
 
         $fs->expects($this->once())->method('getRemoteContents')

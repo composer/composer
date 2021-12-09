@@ -32,7 +32,8 @@ final class PlatformRequirementFilterFactoryTest extends TestCase
 
     public function testFromBoolThrowsExceptionIfTypeIsUnknown()
     {
-        $this->setExpectedException('InvalidArgumentException', 'PlatformRequirementFilter: Unknown $boolOrList parameter NULL. Please report at https://github.com/composer/composer/issues/new.');
+        self::expectException('InvalidArgumentException');
+        self::expectExceptionMessage('PlatformRequirementFilter: Unknown $boolOrList parameter NULL. Please report at https://github.com/composer/composer/issues/new.');
 
         PlatformRequirementFilterFactory::fromBoolOrList(null);
     }

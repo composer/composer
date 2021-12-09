@@ -302,7 +302,7 @@ class InstallerTest extends TestCase
      * @param ?mixed[] $expectInstalled
      * @param ?string $expectOutput
      * @param string $expect
-     * @param int|string $expectResult
+     * @param int|class-string<\Throwable> $expectResult
      * @return void
      */
     private function doTestIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult)
@@ -319,7 +319,8 @@ class InstallerTest extends TestCase
         // Prepare for exceptions
         if (!is_int($expectResult)) {
             $normalizedOutput = rtrim(str_replace("\n", PHP_EOL, $expect));
-            $this->setExpectedException($expectResult, $normalizedOutput);
+            self::expectException($expectResult);
+            self::expectExceptionMessage($normalizedOutput);
         }
 
         // Create Composer mock object according to configuration

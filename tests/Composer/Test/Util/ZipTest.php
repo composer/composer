@@ -26,7 +26,8 @@ class ZipTest extends TestCase
             $this->markTestSkipped('The PHP zip extension is loaded.');
         }
 
-        $this->setExpectedException('\RuntimeException', 'The Zip Util requires PHP\'s zip extension');
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('The Zip Util requires PHP\'s zip extension');
 
         Zip::getComposerJson('');
     }
@@ -59,7 +60,8 @@ class ZipTest extends TestCase
             $this->markTestSkipped('The PHP zip extension is not loaded.');
         }
 
-        $this->setExpectedException('\RuntimeException', 'No composer.json found either at the top level or within the topmost directory');
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('No composer.json found either at the top level or within the topmost directory');
 
         Zip::getComposerJson(__DIR__.'/Fixtures/Zip/nojson.zip');
     }
@@ -70,7 +72,8 @@ class ZipTest extends TestCase
             $this->markTestSkipped('The PHP zip extension is not loaded.');
         }
 
-        $this->setExpectedException('\RuntimeException', 'No composer.json found either at the top level or within the topmost directory');
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('No composer.json found either at the top level or within the topmost directory');
 
         Zip::getComposerJson(__DIR__.'/Fixtures/Zip/subfolders.zip');
     }
@@ -102,7 +105,8 @@ class ZipTest extends TestCase
             $this->markTestSkipped('The PHP zip extension is not loaded.');
         }
 
-        $this->setExpectedException('\RuntimeException', 'Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: folder1/,folder2/');
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('Archive has more than one top level directories, and no composer.json was found on the top level, so it\'s an invalid archive. Top level paths found were: folder1/,folder2/');
 
         Zip::getComposerJson(__DIR__.'/Fixtures/Zip/multiple.zip');
     }

@@ -49,7 +49,8 @@ class SvnDriverTest extends TestCase
 
     public function testWrongCredentialsInUrl()
     {
-        $this->setExpectedException('RuntimeException', "Repository https://till:secret@corp.svn.local/repo could not be processed, wrong credentials provided (svn: OPTIONS of 'https://corp.svn.local/repo': authorization failed: Could not authenticate to server: rejected Basic challenge (https://corp.svn.local/))");
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage("Repository https://till:secret@corp.svn.local/repo could not be processed, wrong credentials provided (svn: OPTIONS of 'https://corp.svn.local/repo': authorization failed: Could not authenticate to server: rejected Basic challenge (https://corp.svn.local/))");
 
         $console = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();

@@ -50,7 +50,8 @@ class StrictConfirmationQuestionTest extends TestCase
     {
         list($input, $dialog) = $this->createInput($answer."\n");
 
-        $this->setExpectedException('InvalidArgumentException', 'Please answer yes, y, no, or n.');
+        self::expectException('InvalidArgumentException');
+        self::expectExceptionMessage('Please answer yes, y, no, or n.');
 
         $question = new StrictConfirmationQuestion('Do you like French fries?');
         $question->setMaxAttempts(1);

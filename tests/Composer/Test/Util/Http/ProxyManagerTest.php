@@ -63,7 +63,7 @@ class ProxyManagerTest extends TestCase
     {
         $_SERVER['http_proxy'] = 'localhost';
         $proxyManager = ProxyManager::getInstance();
-        $this->setExpectedException('Composer\Downloader\TransportException');
+        self::expectException('Composer\Downloader\TransportException');
         $proxyManager->getProxyForRequest('http://example.com');
     }
 

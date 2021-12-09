@@ -50,7 +50,7 @@ class ArchiveManagerTest extends ArchiverTest
 
     public function testUnknownFormat()
     {
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
 
         $package = $this->setupPackage();
 

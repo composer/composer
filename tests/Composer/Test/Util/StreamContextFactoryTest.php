@@ -157,7 +157,7 @@ class StreamContextFactoryTest extends TestCase
         $_SERVER['https_proxy'] = 'https://woopproxy.net';
 
         // Pointless test replaced by ProxyHelperTest.php
-        $this->setExpectedException('Composer\Downloader\TransportException');
+        self::expectException('Composer\Downloader\TransportException');
         $context = StreamContextFactory::getContext('https://example.org', array('http' => array('method' => 'GET', 'header' => 'User-Agent: foo')));
     }
 

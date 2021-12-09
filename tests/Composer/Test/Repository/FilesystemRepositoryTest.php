@@ -48,7 +48,7 @@ class FilesystemRepositoryTest extends TestCase
 
     public function testCorruptedRepositoryFile()
     {
-        $this->setExpectedException('Composer\Repository\InvalidRepositoryException');
+        self::expectException('Composer\Repository\InvalidRepositoryException');
         $json = $this->createJsonFileMock();
 
         $repository = new FilesystemRepository($json);

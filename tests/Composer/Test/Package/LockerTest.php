@@ -53,7 +53,7 @@ class LockerTest extends TestCase
             ->method('exists')
             ->will($this->returnValue(false));
 
-        $this->setExpectedException('LogicException');
+        self::expectException('LogicException');
 
         $locker->getLockedRepository();
     }
@@ -170,7 +170,7 @@ class LockerTest extends TestCase
             ->method('getPrettyName')
             ->will($this->returnValue('pkg1'));
 
-        $this->setExpectedException('LogicException');
+        self::expectException('LogicException');
 
         $locker->setLockData(array($package1), array(), array(), array(), array(), 'dev', array(), false, false, array());
     }

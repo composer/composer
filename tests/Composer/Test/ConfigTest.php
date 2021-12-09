@@ -259,10 +259,8 @@ class ConfigTest extends TestCase
      */
     public function testProhibitedUrlsThrowException($url)
     {
-        $this->setExpectedException(
-            'Composer\Downloader\TransportException',
-            'Your configuration does not allow connections to ' . $url
-        );
+        self::expectException('Composer\Downloader\TransportException');
+        self::expectExceptionMessage('Your configuration does not allow connections to ' . $url);
         $config = new Config(false);
         $config->prohibitUrlByConfig($url);
     }

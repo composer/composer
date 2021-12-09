@@ -108,7 +108,8 @@ class ZipDownloaderTest extends TestCase
 
     public function testZipArchiveOnlyFailed()
     {
-        $this->setExpectedException('RuntimeException', 'There was an error extracting the ZIP file');
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('There was an error extracting the ZIP file');
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('zip extension missing');
         }
@@ -130,7 +131,8 @@ class ZipDownloaderTest extends TestCase
 
     public function testZipArchiveExtractOnlyFailed()
     {
-        $this->setExpectedException('RuntimeException', 'The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): Not a directory');
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage('The archive may contain identical file names with different capitalization (which fails on case insensitive filesystems): Not a directory');
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('zip extension missing');
         }
@@ -173,7 +175,8 @@ class ZipDownloaderTest extends TestCase
 
     public function testSystemUnzipOnlyFailed()
     {
-        $this->setExpectedException('Exception', 'Failed to extract : (1) unzip');
+        self::expectException('Exception');
+        self::expectExceptionMessage('Failed to extract : (1) unzip');
         $this->setPrivateProperty('isWindows', false);
         $this->setPrivateProperty('hasZipArchive', false);
         $this->setPrivateProperty('unzipCommands', array(array('unzip', 'unzip -qq %s -d %s')));
@@ -267,7 +270,8 @@ class ZipDownloaderTest extends TestCase
 
     public function testNonWindowsFallbackFailed()
     {
-        $this->setExpectedException('Exception', 'There was an error extracting the ZIP file');
+        self::expectException('Exception');
+        self::expectExceptionMessage('There was an error extracting the ZIP file');
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('zip extension missing');
         }

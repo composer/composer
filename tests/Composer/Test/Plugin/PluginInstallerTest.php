@@ -432,13 +432,13 @@ class PluginInstallerTest extends TestCase
     /**
      * @dataProvider invalidImplementationClassNames
      * @param callable $invalidImplementationClassNames
-     * @param string $expect
+     * @param class-string<\Throwable> $expect
      *
      * @return void
      */
     public function testQueryingWithInvalidCapabilityClassNameThrows($invalidImplementationClassNames, $expect = 'UnexpectedValueException')
     {
-        $this->setExpectedException($expect);
+        self::expectException($expect);
 
         $capabilityApi = 'Composer\Plugin\Capability\Capability';
 
