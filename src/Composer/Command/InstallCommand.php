@@ -86,9 +86,7 @@ EOT
             $io->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
         }
 
-        if (version_compare(Composer::RUNTIME_API_VERSION, '2.0.0', '<')) {
-            $io->writeError('<warning>You are using Composer v1. Consider upgrading to Composer v2 (http://getcomposer.org/2).</warning>');
-        }
+        $io->writeError('<warning>You are using Composer 1 which is deprecated. You should upgrade to Composer 2, see https://blog.packagist.com/deprecating-composer-1-support/</warning>');
 
         $composer = $this->getComposer(true, $input->getOption('no-plugins'));
         $composer->getDownloadManager()->setOutputProgress(!$input->getOption('no-progress'));
