@@ -1,7 +1,7 @@
 <?php
 
 $bestDirFound = null;
-$dirs = glob(__DIR__.'/../vendor/bin/.phpunit/phpunit-*');
+$dirs = glob(__DIR__.'/../vendor/bin/.phpunit/phpunit-*', GLOB_ONLYDIR);
 natsort($dirs);
 
 foreach (array_reverse($dirs) as $dir) {

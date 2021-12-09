@@ -42,8 +42,9 @@ class ZipDownloaderTest extends TestCase
         $this->package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $fs = new Filesystem;
         $fs->removeDirectory($this->testDir);
         $this->setPrivateProperty('hasZipArchive', null);

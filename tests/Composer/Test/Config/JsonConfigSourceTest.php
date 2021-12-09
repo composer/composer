@@ -42,6 +42,7 @@ class JsonConfigSourceTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         if (is_dir($this->workingDir)) {
             $this->fs->removeDirectory($this->workingDir);
         }

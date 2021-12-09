@@ -16,7 +16,6 @@
 >
     <php>
         <env name="SYMFONY_DEPRECATIONS_HELPER" value="max[direct]=0"/>
-        <env name="SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT" value="1"/>
         <env name="COMPOSER_TEST_SUITE" value="1"/>
     </php>
     <testsuites>

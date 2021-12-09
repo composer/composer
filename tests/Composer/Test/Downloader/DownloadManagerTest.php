@@ -254,13 +254,12 @@ class DownloadManagerTest extends TestCase
             ->will($this->returnValue('prettyPackage'));
 
         $package
-            ->expects($this->at(3))
+            ->expects($this->exactly(2))
             ->method('setInstallationSource')
-            ->with('dist');
-        $package
-            ->expects($this->at(5))
-            ->method('setInstallationSource')
-            ->with('source');
+            ->withConsecutive(
+                ['dist'],
+                ['source']
+            );
 
         $downloaderFail = $this->createDownloaderMock();
         $downloaderFail
@@ -280,15 +279,13 @@ class DownloadManagerTest extends TestCase
             ->setMethods(array('getDownloaderForPackage'))
             ->getMock();
         $manager
-            ->expects($this->at(0))
+            ->expects($this->exactly(2))
             ->method('getDownloaderForPackage')
             ->with($package)
-            ->will($this->returnValue($downloaderFail));
-        $manager
-            ->expects($this->at(1))
-            ->method('getDownloaderForPackage')
-            ->with($package)
-            ->will($this->returnValue($downloaderSuccess));
+            ->willReturnOnConsecutiveCalls(
+                $downloaderFail,
+                $downloaderSuccess
+            );
 
         $manager->download($package, 'target_dir');
     }

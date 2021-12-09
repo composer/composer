@@ -32,6 +32,7 @@ class ProxyHelperTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset(
             $_SERVER['HTTP_PROXY'],
             $_SERVER['http_proxy'],

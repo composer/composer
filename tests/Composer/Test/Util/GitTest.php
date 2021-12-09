@@ -36,7 +36,7 @@ class GitTest extends TestCase
     {
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->config = $this->getMockBuilder('Composer\Config')->disableOriginalConstructor()->getMock();
-        $this->process = new ProcessExecutorMock;
+        $this->process = $this->getProcessExecutorMock();
         $this->fs = $this->getMockBuilder('Composer\Util\Filesystem')->disableOriginalConstructor()->getMock();
         $this->git = new Git($this->io, $this->config, $this->process, $this->fs);
     }
@@ -61,8 +61,6 @@ class GitTest extends TestCase
         $this->process->expects(array('git command'), true);
 
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
-
-        $this->process->assertComplete($this);
     }
 
     public function publicGithubNoCredentialsProvider()
@@ -92,8 +90,6 @@ class GitTest extends TestCase
         ), true);
 
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
-
-        $this->process->assertComplete($this);
     }
 
     /**
@@ -139,8 +135,6 @@ class GitTest extends TestCase
             ->willReturn(array('username' => 'token', 'password' => $gitHubToken));
 
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
-
-        $this->process->assertComplete($this);
     }
 
     public function privateGithubWithCredentialsProvider()

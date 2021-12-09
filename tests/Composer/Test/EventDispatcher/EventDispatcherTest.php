@@ -38,17 +38,16 @@ class EventDispatcherTest extends TestCase
             'Composer\Test\EventDispatcher\EventDispatcherTest::call',
         ), $io);
 
-        $io->expects($this->at(0))
+        $io->expects($this->once())
             ->method('isVerbose')
             ->willReturn(0);
 
-        $io->expects($this->at(1))
+        $io->expects($this->atLeast(2))
             ->method('writeError')
-            ->with('> Composer\Test\EventDispatcher\EventDispatcherTest::call');
-
-        $io->expects($this->at(2))
-            ->method('writeError')
-            ->with('<error>Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>');
+            ->withConsecutive(
+                ['> Composer\Test\EventDispatcher\EventDispatcherTest::call'],
+                ['<error>Script Composer\Test\EventDispatcher\EventDispatcherTest::call handling the post-install-cmd event terminated with an exception</error>']
+            );
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }
@@ -60,7 +59,7 @@ class EventDispatcherTest extends TestCase
      */
     public function testDispatcherCanExecuteSingleCommandLineScript($command)
     {
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $command,
         ), true);
@@ -80,8 +79,6 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnValue($listener));
 
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
-
-        $process->assertComplete($this);
     }
 
     /**
@@ -110,7 +107,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher = new EventDispatcher(
             $composer,
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            new ProcessExecutorMock
+            $this->getProcessExecutorMock()
         );
 
         $event = $this->getMockBuilder('Composer\Script\Event')
@@ -191,7 +188,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher = new EventDispatcher(
             $composer,
             $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
-            new ProcessExecutorMock
+            $this->getProcessExecutorMock()
         );
 
         $listener = array($this, 'someMethod');
@@ -226,7 +223,7 @@ class EventDispatcherTest extends TestCase
 
     public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack()
     {
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             'echo -n foo',
             'echo -n bar',
@@ -259,8 +256,6 @@ class EventDispatcherTest extends TestCase
             '> post-install-cmd: Composer\Test\EventDispatcher\EventDispatcherTest::someMethod'.PHP_EOL.
             '> post-install-cmd: echo -n bar'.PHP_EOL;
         $this->assertEquals($expected, $io->getOutput());
-
-        $process->assertComplete($this);
     }
 
     public function testDispatcherCanPutEnv()
@@ -269,7 +264,7 @@ class EventDispatcherTest extends TestCase
             ->setConstructorArgs(array(
                 $this->createComposerInstance(),
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
-                new ProcessExecutorMock,
+                $this->getProcessExecutorMock(),
             ))
             ->setMethods(array(
                 'getListeners',
@@ -302,7 +297,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->setConstructorArgs(array(
                 $this->createComposerInstance(),
                 $io = new BufferIO('', OutputInterface::VERBOSITY_VERBOSE),
-                new ProcessExecutorMock,
+                $this->getProcessExecutorMock(),
             ))->setMethods(array(
                 'getListeners',
             ))->getMock();
@@ -368,7 +363,7 @@ class EventDispatcherTest extends TestCase
 
     public function testDispatcherCanExecuteComposerScriptGroups()
     {
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             'echo -n foo',
             'echo -n baz',
@@ -411,13 +406,11 @@ class EventDispatcherTest extends TestCase
             '> subgroup: echo -n baz'.PHP_EOL.
             '> group: echo -n bar'.PHP_EOL;
         $this->assertEquals($expected, $io->getOutput());
-
-        $process->assertComplete($this);
     }
 
     public function testRecursionInScriptsNames()
     {
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             'echo Hello '.ProcessExecutor::escape('World'),
         ), true);
@@ -452,8 +445,6 @@ class EventDispatcherTest extends TestCase
             "> hello: echo Hello " .$this->getCmd("'World'").PHP_EOL;
 
         $this->assertEquals($expected, $io->getOutput());
-
-        $process->assertComplete($this);
     }
 
     public function testDispatcherDetectInfiniteRecursion()
@@ -464,7 +455,7 @@ class EventDispatcherTest extends TestCase
         ->setConstructorArgs(array(
             $composer = $this->createComposerInstance(),
             $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            new ProcessExecutorMock,
+            $this->getProcessExecutorMock(),
         ))
         ->setMethods(array(
             'getListeners',
@@ -563,21 +554,20 @@ class EventDispatcherTest extends TestCase
             ->method('getListeners')
             ->will($this->returnValue($listener));
 
-        $io->expects($this->at(0))
+        $io->expects($this->once())
             ->method('isVerbose')
             ->willReturn(0);
 
-        $io->expects($this->at(1))
+        $io->expects($this->atLeast(2))
             ->method('writeError')
-            ->willReturn('> exit 1');
+            ->withConsecutive(
+                ['> exit 1'],
+                ['<error>Script '.$code.' handling the post-install-cmd event returned with error code 1</error>']
+            );
 
-        $io->expects($this->at(2))
+        $io->expects($this->once())
             ->method('isInteractive')
             ->willReturn(1);
-
-        $io->expects($this->at(3))
-            ->method('writeError')
-            ->with($this->equalTo('<error>Script '.$code.' handling the post-install-cmd event returned with error code 1</error>'));
 
         $this->setExpectedException('RuntimeException');
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
@@ -589,7 +579,7 @@ class EventDispatcherTest extends TestCase
             ->setConstructorArgs(array(
                     $this->createComposerInstance(),
                     $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-                    new ProcessExecutorMock,
+                    $this->getProcessExecutorMock(),
                 ))
             ->setMethods(array('getListeners'))
             ->getMock();

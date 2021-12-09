@@ -33,7 +33,7 @@ class VersionGuesserTest extends TestCase
     {
         $branch = 'default';
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array('cmd' => 'git branch -a --no-color --no-abbrev -v', 'return' => 128),
             array('cmd' => 'git describe --exact-match --tags', 'return' => 128),
@@ -53,8 +53,6 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals("dev-".$branch, $versionArray['version']);
         $this->assertEquals("dev-".$branch, $versionArray['pretty_version']);
         $this->assertEmpty($versionArray['commit']);
-
-        $process->assertComplete($this);
     }
 
     public function testGuessVersionReturnsData()
@@ -62,7 +60,7 @@ class VersionGuesserTest extends TestCase
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
         $anotherCommitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -80,8 +78,6 @@ class VersionGuesserTest extends TestCase
         $this->assertArrayNotHasKey('feature_version', $versionArray);
         $this->assertArrayNotHasKey('feature_pretty_version', $versionArray);
         $this->assertEquals($commitHash, $versionArray['commit']);
-
-        $process->assertComplete($this);
     }
 
     public function testGuessVersionDoesNotSeeCustomDefaultBranchAsNonFeatureBranch()
@@ -89,7 +85,7 @@ class VersionGuesserTest extends TestCase
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
         $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -105,8 +101,6 @@ class VersionGuesserTest extends TestCase
 
         $this->assertEquals("dev-current", $versionArray['version']);
         $this->assertEquals($anotherCommitHash, $versionArray['commit']);
-
-        $process->assertComplete($this);
     }
 
     public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNaming()
@@ -114,7 +108,7 @@ class VersionGuesserTest extends TestCase
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
         $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -135,8 +129,6 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals($anotherCommitHash, $versionArray['commit']);
         $this->assertEquals("dev-feature", $versionArray['feature_version']);
         $this->assertEquals("dev-feature", $versionArray['feature_pretty_version']);
-
-        $process->assertComplete($this);
     }
 
     public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNamingRegex()
@@ -144,7 +136,7 @@ class VersionGuesserTest extends TestCase
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
         $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -165,8 +157,6 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals($anotherCommitHash, $versionArray['commit']);
         $this->assertEquals("dev-feature", $versionArray['feature_version']);
         $this->assertEquals("dev-feature", $versionArray['feature_pretty_version']);
-
-        $process->assertComplete($this);
     }
 
     public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNamingWhenOnNonFeatureBranch()
@@ -174,7 +164,7 @@ class VersionGuesserTest extends TestCase
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
         $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -191,15 +181,13 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals($commitHash, $versionArray['commit']);
         $this->assertArrayNotHasKey('feature_version', $versionArray);
         $this->assertArrayNotHasKey('feature_pretty_version', $versionArray);
-
-        $process->assertComplete($this);
     }
 
     public function testDetachedHeadBecomesDevHash()
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -214,15 +202,13 @@ class VersionGuesserTest extends TestCase
         $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
         $this->assertEquals("dev-$commitHash", $versionData['version']);
-
-        $process->assertComplete($this);
     }
 
     public function testDetachedFetchHeadBecomesDevHashGit2()
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -237,15 +223,13 @@ class VersionGuesserTest extends TestCase
         $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
         $this->assertEquals("dev-$commitHash", $versionData['version']);
-
-        $process->assertComplete($this);
     }
 
     public function testDetachedCommitHeadBecomesDevHashGit2()
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -260,13 +244,11 @@ class VersionGuesserTest extends TestCase
         $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
         $this->assertEquals("dev-$commitHash", $versionData['version']);
-
-        $process->assertComplete($this);
     }
 
     public function testTagBecomesVersion()
     {
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -284,13 +266,11 @@ class VersionGuesserTest extends TestCase
         $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
         $this->assertEquals("2.0.5.0-alpha2", $versionData['version']);
-
-        $process->assertComplete($this);
     }
 
     public function testTagBecomesPrettyVersion()
     {
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -309,13 +289,11 @@ class VersionGuesserTest extends TestCase
 
         $this->assertEquals('1.0.0.0', $versionData['version']);
         $this->assertEquals('1.0.0', $versionData['pretty_version']);
-
-        $process->assertComplete($this);
     }
 
     public function testInvalidTagBecomesVersion()
     {
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -329,13 +307,11 @@ class VersionGuesserTest extends TestCase
         $versionData = $guesser->guessVersion(array(), 'dummy/path');
 
         $this->assertEquals("dev-foo", $versionData['version']);
-
-        $process->assertComplete($this);
     }
 
     public function testNumericBranchesShowNicely()
     {
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -350,13 +326,11 @@ class VersionGuesserTest extends TestCase
 
         $this->assertEquals("1.5.x-dev", $versionData['pretty_version']);
         $this->assertEquals("1.5.9999999.9999999-dev", $versionData['version']);
-
-        $process->assertComplete($this);
     }
 
     public function testRemoteBranchesAreSelected()
     {
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -375,7 +349,5 @@ class VersionGuesserTest extends TestCase
         $versionData = $guesser->guessVersion(array('version' => 'self.version'), 'dummy/path');
         $this->assertEquals("1.5.x-dev", $versionData['pretty_version']);
         $this->assertEquals("1.5.9999999.9999999-dev", $versionData['version']);
-
-        $process->assertComplete($this);
     }
 }

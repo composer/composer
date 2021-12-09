@@ -14,6 +14,7 @@ namespace Composer\Test\Mock;
 
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Platform;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\AssertionFailedError;
 use Symfony\Component\Process\Process;
@@ -25,9 +26,9 @@ use React\Promise\Promise;
 class ProcessExecutorMock extends ProcessExecutor
 {
     /**
-     * @var array<array{cmd: string, return: int, stdout: string, stderr: string, callback: ?callable}>
+     * @var array<array{cmd: string, return: int, stdout: string, stderr: string, callback: ?callable}>|null
      */
-    private $expectations = array();
+    private $expectations = null;
     /**
      * @var bool
      */
@@ -64,10 +65,14 @@ class ProcessExecutorMock extends ProcessExecutor
         $this->defaultHandler = array_merge($this->defaultHandler, $defaultHandler);
     }
 
-    /** @return void */
-    public function assertComplete(TestCase $testCase)
+    public function assertComplete(): void
     {
-        if ($this->expectations) {
+        // this was not configured to expect anything, so no need to react here
+        if (!is_array($this->expectations)) {
+            return;
+        }
+
+        if (count($this->expectations) > 0) {
             $expectations = array_map(function ($expect) {
                 return $expect['cmd'];
             }, $this->expectations);
@@ -78,7 +83,8 @@ class ProcessExecutorMock extends ProcessExecutor
             );
         }
 
-        $testCase->assertTrue(true);
+        // dummy assertion to ensure the test is not marked as having no assertions
+        Assert::assertTrue(true);
     }
 
     public function execute($command, &$output = null, $cwd = null)
@@ -115,7 +121,7 @@ class ProcessExecutorMock extends ProcessExecutor
 
         $this->log[] = $command;
 
-        if ($this->expectations && $command === $this->expectations[0]['cmd']) {
+        if (is_array($this->expectations) && count($this->expectations) > 0 && $command === $this->expectations[0]['cmd']) {
             $expect = array_shift($this->expectations);
             $stdout = $expect['stdout'];
             $stderr = $expect['stderr'];
@@ -130,7 +136,7 @@ class ProcessExecutorMock extends ProcessExecutor
         } else {
             throw new AssertionFailedError(
                 'Received unexpected command "'.$command.'" in "'.$cwd.'"'.PHP_EOL.
-                ($this->expectations ? 'Expected "'.$this->expectations[0]['cmd'].'" at this point.' : 'Expected no more calls at this point.').PHP_EOL.
+                (is_array($this->expectations) && count($this->expectations) > 0 ? 'Expected "'.$this->expectations[0]['cmd'].'" at this point.' : 'Expected no more calls at this point.').PHP_EOL.
                 'Received calls:'.PHP_EOL.implode(PHP_EOL, array_slice($this->log, 0, -1))
             );
         }

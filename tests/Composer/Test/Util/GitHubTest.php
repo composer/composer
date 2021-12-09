@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use _PHPStan_c862bb974\Symfony\Component\Console\Output\BufferedOutput;
 use Composer\Downloader\TransportException;
 use Composer\Util\GitHub;
 use Composer\Util\Http\Response;
@@ -33,9 +34,9 @@ class GitHubTest extends TestCase
     {
         $io = $this->getIOMock();
         $io
-            ->expects($this->at(0))
+            ->expects($this->atLeastOnce())
             ->method('writeError')
-            ->with($this->message)
+            ->withConsecutive([$this->message])
         ;
         $io
             ->expects($this->once())
@@ -45,15 +46,10 @@ class GitHubTest extends TestCase
         ;
 
         $httpDownloader = $this->getHttpDownloaderMock();
-        $httpDownloader
-            ->expects($this->once())
-            ->method('get')
-            ->with(
-                $this->equalTo($url = sprintf('https://api.%s/', $this->origin)),
-                $this->anything()
-            )
-            ->willReturn(new Response(array('url' => $url), 200, array(), '{}'))
-        ;
+        $httpDownloader->expects(
+            [['url' => sprintf('https://api.%s/', $this->origin), 'body' => '{}']],
+            true
+        );
 
         $config = $this->getConfigMock();
         $config
@@ -83,11 +79,10 @@ class GitHubTest extends TestCase
         ;
 
         $httpDownloader = $this->getHttpDownloaderMock();
-        $httpDownloader
-            ->expects($this->exactly(1))
-            ->method('get')
-            ->will($this->throwException(new TransportException('', 401)))
-        ;
+        $httpDownloader->expects(
+            [['url' => sprintf('https://api.%s/', $this->origin), 'status' => 401]],
+            true
+        );
 
         $config = $this->getConfigMock();
         $config
@@ -121,20 +116,6 @@ class GitHubTest extends TestCase
     private function getConfigMock()
     {
         return $this->getMockBuilder('Composer\Config')->getMock();
-    }
-
-    /**
-     * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\Util\HttpDownloader
-     */
-    private function getHttpDownloaderMock()
-    {
-        $httpDownloader = $this
-            ->getMockBuilder('Composer\Util\HttpDownloader')
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-
-        return $httpDownloader;
     }
 
     /**

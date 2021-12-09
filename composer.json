@@ -21,9 +21,6 @@
             "homepage": "https://seld.be"
         }
     ],
-    "_comment": [
-        "symfony/polyfill-php73 sould be removed once https://github.com/symfony/symfony/pull/44523 is released and the symfony/console requirement bumped to match that release"
-    ],
     "require": {
         "php": "^7.2.5 || ^8.0",
         "composer/ca-bundle": "^1.0",
@@ -35,13 +32,12 @@
         "psr/log": "^1.0 || ^2.0",
         "seld/jsonlint": "^1.4",
         "seld/phar-utils": "^1.0",
-        "symfony/console": "^5.4 || ^6.0",
+        "symfony/console": "^5.4.1 || ^6.0",
         "symfony/filesystem": "^5.4 || ^6.0",
         "symfony/finder": "^5.4 || ^6.0",
         "symfony/process": "^5.4 || ^6.0",
         "react/promise": "^2.8",
-        "composer/pcre": "^1.0",
-        "symfony/polyfill-php73": "^1.9"
+        "composer/pcre": "^1.0"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^6.0",

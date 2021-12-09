@@ -29,6 +29,7 @@ class FossilDownloaderTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         if (is_dir($this->workingDir)) {
             $fs = new Filesystem;
             $fs->removeDirectory($this->workingDir);
@@ -46,7 +47,7 @@ class FossilDownloaderTest extends TestCase
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $config = $config ?: $this->getMockBuilder('Composer\Config')->getMock();
-        $executor = $executor ?: new ProcessExecutorMock;
+        $executor = $executor ?: $this->getProcessExecutorMock();
         $filesystem = $filesystem ?: $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
 
         return new FossilDownloader($io, $config, $executor, $filesystem);
@@ -75,7 +76,7 @@ class FossilDownloaderTest extends TestCase
             ->method('getSourceUrls')
             ->will($this->returnValue(array('http://fossil.kd2.org/kd2fw/')));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->getCmd('fossil clone -- \'http://fossil.kd2.org/kd2fw/\' \'repo.fossil\''),
             $this->getCmd('fossil open --nested -- \'repo.fossil\''),
@@ -84,8 +85,6 @@ class FossilDownloaderTest extends TestCase
 
         $downloader = $this->getDownloaderMock(null, null, $process);
         $downloader->install($packageMock, 'repo');
-
-        $process->assertComplete($this);
     }
 
     public function testUpdateforPackageWithoutSourceReference()
@@ -124,7 +123,7 @@ class FossilDownloaderTest extends TestCase
             ->method('getVersion')
             ->will($this->returnValue('1.0.0.0'));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->getCmd("fossil changes"),
             $this->getCmd("fossil pull && fossil up 'trunk'"),
@@ -134,8 +133,6 @@ class FossilDownloaderTest extends TestCase
         $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
         $downloader->update($packageMock, $packageMock, $this->workingDir);
         $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
-
-        $process->assertComplete($this);
     }
 
     public function testRemove()
@@ -146,7 +143,7 @@ class FossilDownloaderTest extends TestCase
 
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->getCmd('fossil changes'),
         ), true);
@@ -161,8 +158,6 @@ class FossilDownloaderTest extends TestCase
         $downloader->prepare('uninstall', $packageMock, $this->workingDir);
         $downloader->remove($packageMock, $this->workingDir);
         $downloader->cleanup('uninstall', $packageMock, $this->workingDir);
-
-        $process->assertComplete($this);
     }
 
     public function testGetInstallationSource()

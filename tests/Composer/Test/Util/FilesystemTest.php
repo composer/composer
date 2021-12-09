@@ -39,8 +39,9 @@ class FilesystemTest extends TestCase
         $this->testFile = $this->getUniqueTmpDirectory() . '/composer_test_file';
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
+        parent::tearDown();
         if (is_dir($this->workingDir)) {
             $this->fs->removeDirectory($this->workingDir);
         }

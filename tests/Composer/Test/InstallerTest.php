@@ -56,8 +56,9 @@ class InstallerTest extends TestCase
         chdir(__DIR__);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
+        parent::tearDown();
         Platform::clearEnv('COMPOSER_POOL_OPTIMIZER');
 
         chdir($this->prevCwd);

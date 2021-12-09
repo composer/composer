@@ -25,8 +25,9 @@ class ErrorHandlerTest extends TestCase
         ErrorHandler::register();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
+        parent::tearDown();
         restore_error_handler();
     }
 

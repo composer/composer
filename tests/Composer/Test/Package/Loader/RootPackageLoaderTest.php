@@ -81,7 +81,7 @@ class RootPackageLoaderTest extends TestCase
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
-        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $process = new ProcessExecutorMock, new VersionParser()));
+        $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $process = $this->getProcessExecutorMock(), new VersionParser()));
         $process->expects(array(), false, array('return' => 1));
 
         $package = $loader->load(array());
@@ -121,7 +121,7 @@ class RootPackageLoaderTest extends TestCase
             ->getMock()
         ;
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -136,8 +136,6 @@ class RootPackageLoaderTest extends TestCase
         $package = $loader->load(array('require' => array('foo/bar' => 'self.version')));
 
         $this->assertEquals("dev-master", $package->getPrettyVersion());
-
-        $process->assertComplete($this);
     }
 
     public function testNonFeatureBranchPrettyVersion()
@@ -151,7 +149,7 @@ class RootPackageLoaderTest extends TestCase
             ->getMock()
         ;
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => 'git branch -a --no-color --no-abbrev -v',
@@ -165,7 +163,5 @@ class RootPackageLoaderTest extends TestCase
         $package = $loader->load(array('require' => array('foo/bar' => 'self.version'), "non-feature-branches" => array("latest-.*")));
 
         $this->assertEquals("dev-latest-production", $package->getPrettyVersion());
-
-        $process->assertComplete($this);
     }
 }

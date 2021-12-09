@@ -22,12 +22,12 @@ class ConsoleIOTest extends TestCase
     public function testIsInteractive()
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
-        $inputMock->expects($this->at(0))
+        $inputMock->expects($this->exactly(2))
             ->method('isInteractive')
-            ->will($this->returnValue(true));
-        $inputMock->expects($this->at(1))
-            ->method('isInteractive')
-            ->will($this->returnValue(false));
+            ->willReturnOnConsecutiveCalls(
+                true,
+                false
+            );
 
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
         $helperMock = $this->getMockBuilder('Symfony\Component\Console\Helper\HelperSet')->getMock();
@@ -109,27 +109,17 @@ class ConsoleIOTest extends TestCase
         $outputMock->expects($this->any())
             ->method('getVerbosity')
             ->willReturn(OutputInterface::VERBOSITY_NORMAL);
-        $outputMock->expects($this->at(1))
+        $outputMock->expects($this->atLeast(7))
             ->method('write')
-            ->with($this->equalTo('something (<question>strlen = 23</question>)'));
-        $outputMock->expects($this->at(3))
-            ->method('write')
-            ->with($this->equalTo(str_repeat("\x08", 23)), $this->equalTo(false));
-        $outputMock->expects($this->at(5))
-            ->method('write')
-            ->with($this->equalTo('shorter (<comment>12</comment>)'), $this->equalTo(false));
-        $outputMock->expects($this->at(7))
-            ->method('write')
-            ->with($this->equalTo(str_repeat(' ', 11)), $this->equalTo(false));
-        $outputMock->expects($this->at(9))
-            ->method('write')
-            ->with($this->equalTo(str_repeat("\x08", 11)), $this->equalTo(false));
-        $outputMock->expects($this->at(11))
-            ->method('write')
-            ->with($this->equalTo(str_repeat("\x08", 12)), $this->equalTo(false));
-        $outputMock->expects($this->at(13))
-            ->method('write')
-            ->with($this->equalTo('something longer than initial (<info>34</info>)'));
+            ->withConsecutive(
+                [$this->equalTo('something (<question>strlen = 23</question>)')],
+                [$this->equalTo(str_repeat("\x08", 23)), $this->equalTo(false)],
+                [$this->equalTo('shorter (<comment>12</comment>)'), $this->equalTo(false)],
+                [$this->equalTo(str_repeat(' ', 11)), $this->equalTo(false)],
+                [$this->equalTo(str_repeat("\x08", 11)), $this->equalTo(false)],
+                [$this->equalTo(str_repeat("\x08", 12)), $this->equalTo(false)],
+                [$this->equalTo('something longer than initial (<info>34</info>)')]
+            );
 
         $helperMock = $this->getMockBuilder('Symfony\Component\Console\Helper\HelperSet')->getMock();
 

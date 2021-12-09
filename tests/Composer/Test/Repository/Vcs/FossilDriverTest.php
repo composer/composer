@@ -39,8 +39,9 @@ class FossilDriverTest extends TestCase
         ));
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $fs = new Filesystem();
         $fs->removeDirectory($this->home);
     }

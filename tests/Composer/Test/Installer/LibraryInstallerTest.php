@@ -98,6 +98,7 @@ class LibraryInstallerTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         $this->fs->removeDirectory($this->rootDir);
     }
 

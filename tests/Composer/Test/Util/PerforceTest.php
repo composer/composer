@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Json\JsonFile;
 use Composer\Util\Perforce;
 use Composer\Test\TestCase;
 use Composer\Util\ProcessExecutor;
@@ -153,10 +154,9 @@ class PerforceTest extends TestCase
 
             return true;
         };
-        $this->processExecutor->expects($this->at(0))
-                            ->method('execute')
+        $this->processExecutor->method('execute')
                             ->with($this->equalTo($expectedCommand))
-                            ->will($this->returnCallback($callback));
+                            ->willReturnCallback($callback);
         $this->perforce->queryP4user();
         $this->assertEquals('TEST_P4VARIABLE_USER', $this->perforce->getUser());
     }
@@ -171,10 +171,9 @@ class PerforceTest extends TestCase
 
             return true;
         };
-        $this->processExecutor->expects($this->at(0))
-                              ->method('execute')
+        $this->processExecutor->method('execute')
                               ->with($this->equalTo($expectedCommand))
-                              ->will($this->returnCallback($callback));
+                              ->willReturnCallback($callback);
         $this->perforce->queryP4user();
         $this->assertEquals('TEST_P4VARIABLE_USER', $this->perforce->getUser());
     }
@@ -183,10 +182,9 @@ class PerforceTest extends TestCase
     {
         $this->perforce->setUser(null);
         $expectedQuestion = 'Enter P4 User:';
-        $this->io->expects($this->at(0))
-                 ->method('ask')
+        $this->io->method('ask')
                  ->with($this->equalTo($expectedQuestion))
-                 ->will($this->returnValue('TEST_QUERY_USER'));
+                 ->willReturn('TEST_QUERY_USER');
         $this->perforce->queryP4user();
         $this->assertEquals('TEST_QUERY_USER', $this->perforce->getUser());
     }
@@ -197,14 +195,16 @@ class PerforceTest extends TestCase
         $this->perforce->setUser(null);
         $expectedQuestion = 'Enter P4 User:';
         $expectedCommand = 'p4 set P4USER=TEST_QUERY_USER';
-        $this->io->expects($this->at(0))
+        $this->io->expects($this->once())
                  ->method('ask')
                  ->with($this->equalTo($expectedQuestion))
-                 ->will($this->returnValue('TEST_QUERY_USER'));
-        $this->processExecutor->expects($this->at(1))
+                 ->willReturn('TEST_QUERY_USER');
+        $this->processExecutor->expects($this->exactly(2))
                               ->method('execute')
-                              ->with($this->equalTo($expectedCommand))
-                              ->will($this->returnValue(0));
+                              ->willReturnMap([
+                                  ['p4 set', 0],
+                                  [$expectedCommand, 0],
+                              ]);
         $this->perforce->queryP4user();
     }
 
@@ -214,14 +214,16 @@ class PerforceTest extends TestCase
         $this->perforce->setUser(null);
         $expectedQuestion = 'Enter P4 User:';
         $expectedCommand = 'export P4USER=TEST_QUERY_USER';
-        $this->io->expects($this->at(0))
+        $this->io->expects($this->once())
                  ->method('ask')
                  ->with($this->equalTo($expectedQuestion))
-                 ->will($this->returnValue('TEST_QUERY_USER'));
-        $this->processExecutor->expects($this->at(1))
+                 ->willReturn('TEST_QUERY_USER');
+        $this->processExecutor->expects($this->exactly(2))
                               ->method('execute')
-                              ->with($this->equalTo($expectedCommand))
-                              ->will($this->returnValue(0));
+                              ->willReturnMap([
+                                  ['echo $P4USER', 0],
+                                  $expectedCommand => 0,
+                              ]);
         $this->perforce->queryP4user();
     }
 
@@ -247,10 +249,9 @@ class PerforceTest extends TestCase
 
             return true;
         };
-        $this->processExecutor->expects($this->at(0))
-                              ->method('execute')
+        $this->processExecutor->method('execute')
                               ->with($this->equalTo($expectedCommand))
-                              ->will($this->returnCallback($callback));
+                              ->willReturnCallback($callback);
         $password = $this->perforce->queryP4Password();
         $this->assertEquals('TEST_P4VARIABLE_PASSWORD', $password);
     }
@@ -264,10 +265,9 @@ class PerforceTest extends TestCase
 
             return true;
         };
-        $this->processExecutor->expects($this->at(0))
-                              ->method('execute')
+        $this->processExecutor->method('execute')
                               ->with($this->equalTo($expectedCommand))
-                              ->will($this->returnCallback($callback));
+                              ->willReturnCallback($callback);
 
         $password = $this->perforce->queryP4Password();
         $this->assertEquals('TEST_P4VARIABLE_PASSWORD', $password);
@@ -276,10 +276,10 @@ class PerforceTest extends TestCase
     public function testQueryP4PasswordQueriesForPassword()
     {
         $expectedQuestion = 'Enter password for Perforce user user: ';
-        $this->io->expects($this->at(0))
+        $this->io->expects($this->once())
             ->method('askAndHideAnswer')
             ->with($this->equalTo($expectedQuestion))
-            ->will($this->returnValue('TEST_QUERY_PASSWORD'));
+            ->willReturn('TEST_QUERY_PASSWORD');
 
         $password = $this->perforce->queryP4Password();
         $this->assertEquals('TEST_QUERY_PASSWORD', $password);
@@ -329,10 +329,10 @@ class PerforceTest extends TestCase
     public function testIsLoggedIn()
     {
         $expectedCommand = 'p4 -u user -p port login -s';
-        $this->processExecutor->expects($this->at(0))
+        $this->processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))
-            ->will($this->returnValue(0));
+            ->willReturn(0);
 
         $this->perforce->isLoggedIn();
     }
@@ -340,10 +340,10 @@ class PerforceTest extends TestCase
     public function testConnectClient()
     {
         $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port client -i < path/composer_perforce_TEST_depot.p4.spec';
-        $this->processExecutor->expects($this->at(0))
+        $this->processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))
-            ->will($this->returnValue(0));
+            ->willReturn(0);
 
         $this->perforce->connectClient();
     }
@@ -352,29 +352,26 @@ class PerforceTest extends TestCase
     {
         $this->setPerforceToStream();
 
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port streams '.ProcessExecutor::escape('//depot/...');
-        $this->processExecutor->expects($this->at(0))
+        $expectations = [
+            ['p4 -u user -c composer_perforce_TEST_depot_branch -p port streams '.ProcessExecutor::escape('//depot/...'), 'Stream //depot/branch mainline none \'branch\'' . PHP_EOL],
+            ['p4 -u user -p port changes '.ProcessExecutor::escape('//depot/branch/...'), 'Change 1234 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\''],
+        ];
+        $count = 0;
+        $this->processExecutor->expects($this->exactly(2))
             ->method('execute')
-            ->with($this->equalTo($expectedCommand))
             ->will(
                 $this->returnCallback(
-                    function ($command, &$output) {
-                        $output = 'Stream //depot/branch mainline none \'branch\'' . PHP_EOL;
+                    function ($command, &$output) use ($expectations, &$count) {
+                        $index = $count++;
+                        if ($command !== $expectations[$index][0]) {
+                            throw new \InvalidArgumentException('Expected '.$expectations[$index][0].' and got '.$command);
+                        }
+                        $output = $expectations[$index][1];
 
-                        return true;
+                        return 0;
                     }
                 )
             );
-        $expectedCommand2 = 'p4 -u user -p port changes '.ProcessExecutor::escape('//depot/branch/...');
-        $expectedCallback = function ($command, &$output) {
-            $output = 'Change 1234 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\'';
-
-            return true;
-        };
-        $this->processExecutor->expects($this->at(1))
-                              ->method('execute')
-                              ->with($this->equalTo($expectedCommand2))
-                              ->will($this->returnCallback($expectedCallback));
 
         $branches = $this->perforce->getBranches();
         $this->assertEquals('//depot/branch@1234', $branches['master']);
@@ -391,7 +388,7 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
-            ->will($this->returnCallback($expectedCallback));
+            ->willReturnCallback($expectedCallback);
         $branches = $this->perforce->getBranches();
         $this->assertEquals('//depot@5678', $branches['master']);
     }
@@ -399,7 +396,7 @@ class PerforceTest extends TestCase
     public function testGetTagsWithoutStream()
     {
         $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port labels';
-        $this->processExecutor->expects($this->at(0))
+        $this->processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
             ->will(
@@ -422,7 +419,7 @@ class PerforceTest extends TestCase
         $this->setPerforceToStream();
 
         $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port labels';
-        $this->processExecutor->expects($this->at(0))
+        $this->processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
             ->will(
@@ -467,7 +464,7 @@ class PerforceTest extends TestCase
     public function testGetComposerInformationWithoutLabelWithoutStream()
     {
         $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port  print '.ProcessExecutor::escape('//depot/composer.json');
-        $this->processExecutor->expects($this->at(0))
+        $this->processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
             ->will(
@@ -492,30 +489,23 @@ class PerforceTest extends TestCase
 
     public function testGetComposerInformationWithLabelWithoutStream()
     {
-        $expectedCommand = 'p4 -u user -p port  files '.ProcessExecutor::escape('//depot/composer.json@0.0.1');
-        $this->processExecutor->expects($this->at(0))
+        $expectations = [
+            ['p4 -u user -p port  files '.ProcessExecutor::escape('//depot/composer.json@0.0.1'), '//depot/composer.json#1 - branch change 10001 (text)'],
+            ['p4 -u user -c composer_perforce_TEST_depot -p port  print '.ProcessExecutor::escape('//depot/composer.json@10001'), PerforceTest::getComposerJson()],
+        ];
+        $count = 0;
+        $this->processExecutor->expects($this->exactly(2))
             ->method('execute')
-            ->with($this->equalTo($expectedCommand))
             ->will(
                 $this->returnCallback(
-                    function ($command, &$output) {
-                        $output = '//depot/composer.json#1 - branch change 10001 (text)';
+                    function ($command, &$output) use ($expectations, &$count) {
+                        $index = $count++;
+                        if ($command !== $expectations[$index][0]) {
+                            throw new \InvalidArgumentException('Expected '.$expectations[$index][0].' and got '.$command);
+                        }
+                        $output = $expectations[$index][1];
 
-                        return true;
-                    }
-                )
-            );
-
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port  print '.ProcessExecutor::escape('//depot/composer.json@10001');
-        $this->processExecutor->expects($this->at(1))
-            ->method('execute')
-            ->with($this->equalTo($expectedCommand))
-            ->will(
-                $this->returnCallback(
-                    function ($command, &$output) {
-                        $output = PerforceTest::getComposerJson();
-
-                        return true;
+                        return 0;
                     }
                 )
             );
@@ -536,7 +526,7 @@ class PerforceTest extends TestCase
         $this->setPerforceToStream();
 
         $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port  print '.ProcessExecutor::escape('//depot/branch/composer.json');
-        $this->processExecutor->expects($this->at(0))
+        $this->processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
             ->will(
@@ -562,34 +552,28 @@ class PerforceTest extends TestCase
 
     public function testGetComposerInformationWithLabelWithStream()
     {
+        $expectations = [
+            [ 'p4 -u user -p port  files '.ProcessExecutor::escape('//depot/branch/composer.json@0.0.1'), '//depot/composer.json#1 - branch change 10001 (text)'],
+            ['p4 -u user -c composer_perforce_TEST_depot_branch -p port  print '.ProcessExecutor::escape('//depot/branch/composer.json@10001'), PerforceTest::getComposerJson()],
+        ];
+        $count = 0;
+        $this->processExecutor->expects($this->exactly(2))
+            ->method('execute')
+            ->will(
+                $this->returnCallback(
+                    function ($command, &$output) use ($expectations, &$count) {
+                        $index = $count++;
+                        if ($command !== $expectations[$index][0]) {
+                            throw new \InvalidArgumentException('Expected '.$expectations[$index][0].' and got '.$command);
+                        }
+                        $output = $expectations[$index][1];
+
+                        return 0;
+                    }
+                )
+            );
+
         $this->setPerforceToStream();
-        $expectedCommand = 'p4 -u user -p port  files '.ProcessExecutor::escape('//depot/branch/composer.json@0.0.1');
-        $this->processExecutor->expects($this->at(0))
-            ->method('execute')
-            ->with($this->equalTo($expectedCommand))
-            ->will(
-                $this->returnCallback(
-                    function ($command, &$output) {
-                        $output = '//depot/composer.json#1 - branch change 10001 (text)';
-
-                        return true;
-                    }
-                )
-            );
-
-        $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port  print '.ProcessExecutor::escape('//depot/branch/composer.json@10001');
-        $this->processExecutor->expects($this->at(1))
-            ->method('execute')
-            ->with($this->equalTo($expectedCommand))
-            ->will(
-                $this->returnCallback(
-                    function ($command, &$output) {
-                        $output = PerforceTest::getComposerJson();
-
-                        return true;
-                    }
-                )
-            );
 
         $result = $this->perforce->getComposerInformation('//depot/branch@0.0.1');
 
@@ -605,10 +589,10 @@ class PerforceTest extends TestCase
     public function testSyncCodeBaseWithoutStream()
     {
         $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot -p port sync -f @label';
-        $this->processExecutor->expects($this->at(0))
+        $this->processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))
-            ->will($this->returnValue(0));
+            ->willReturn(0);
 
         $this->perforce->syncCodeBase('label');
     }
@@ -617,10 +601,10 @@ class PerforceTest extends TestCase
     {
         $this->setPerforceToStream();
         $expectedCommand = 'p4 -u user -c composer_perforce_TEST_depot_branch -p port sync -f @label';
-        $this->processExecutor->expects($this->at(0))
+        $this->processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand))
-            ->will($this->returnValue(0));
+            ->willReturn(0);
 
         $this->perforce->syncCodeBase('label');
     }
@@ -630,10 +614,10 @@ class PerforceTest extends TestCase
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
         $expectedCommand = 'p4 -p '.ProcessExecutor::escape('perforce.does.exist:port').' info -s';
-        $processExecutor->expects($this->at(0))
+        $processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))
-            ->will($this->returnValue(0));
+            ->willReturn(0);
 
         $result = $this->perforce->checkServerExists('perforce.does.exist:port', $processExecutor);
         $this->assertTrue($result);
@@ -651,10 +635,10 @@ class PerforceTest extends TestCase
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
         $expectedCommand = 'p4 -p '.ProcessExecutor::escape('perforce.does.exist:port').' info -s';
-        $processExecutor->expects($this->at(0))
+        $processExecutor->expects($this->once())
             ->method('execute')
             ->with($this->equalTo($expectedCommand), $this->equalTo(null))
-            ->will($this->returnValue(127));
+            ->willReturn(127);
 
         $result = $this->perforce->checkServerExists('perforce.does.exist:port', $processExecutor);
         $this->assertFalse($result);
@@ -665,19 +649,14 @@ class PerforceTest extends TestCase
      */
     public static function getComposerJson()
     {
-        $composer_json = array(
-            '{',
-            '"name": "test/perforce",',
-            '"description": "Basic project for testing",',
-            '"minimum-stability": "dev",',
-            '"autoload": {',
-            '"psr-0" : {',
-            '}',
-            '}',
-            '}',
-        );
-
-        return implode($composer_json);
+        return JsonFile::encode([
+            'name' => 'test/perforce',
+            'description' => 'Basic project for testing',
+            'minimum-stability' => 'dev',
+            'autoload' => [
+                'psr-0' => []
+            ]
+        ], JSON_FORCE_OBJECT);
     }
 
     /**

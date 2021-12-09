@@ -12,11 +12,15 @@
 
 namespace Composer\Test;
 
+use Composer\Config;
+use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Composer\Semver\VersionParser;
 use Composer\Package\RootPackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
+use Composer\Test\Mock\HttpDownloaderMock;
+use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
@@ -31,7 +35,7 @@ use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Package;
 
-abstract class TestCase extends PolyfillTestCase
+abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var ?VersionParser
@@ -41,6 +45,26 @@ abstract class TestCase extends PolyfillTestCase
      * @var array<string, bool>
      */
     private static $executableCache = array();
+
+    /**
+     * @var list<HttpDownloaderMock>
+     */
+    private $httpDownloaderMocks = [];
+    /**
+     * @var list<ProcessExecutorMock>
+     */
+    private $processExecutorMocks = [];
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        foreach ($this->httpDownloaderMocks as $mock) {
+            $mock->assertComplete();
+        }
+        foreach ($this->processExecutorMocks as $mock) {
+            $mock->assertComplete();
+        }
+    }
 
     /**
      * @return string
@@ -225,5 +249,19 @@ abstract class TestCase extends PolyfillTestCase
         }
 
         return $cmd;
+    }
+
+    protected function getHttpDownloaderMock(IOInterface $io = null, Config $config = null): HttpDownloaderMock
+    {
+        $this->httpDownloaderMocks[] = $mock = new HttpDownloaderMock($io, $config);
+
+        return $mock;
+    }
+
+    protected function getProcessExecutorMock(): ProcessExecutorMock
+    {
+        $this->processExecutorMocks[] = $mock = new ProcessExecutorMock();
+
+        return $mock;
     }
 }

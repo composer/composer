@@ -49,7 +49,7 @@ class PerforceDownloaderTest extends TestCase
         $this->repoConfig = $this->getRepoConfig();
         $this->config = $this->getConfig();
         $this->io = $this->getMockIoInterface();
-        $this->processExecutor = new ProcessExecutorMock;
+        $this->processExecutor = $this->getProcessExecutorMock();
         $this->repository = $this->getMockRepository($this->repoConfig, $this->io, $this->config);
         $this->package = $this->getMockPackageInterface($this->repository);
         $this->downloader = new PerforceDownloader($this->io, $this->config, $this->processExecutor);
@@ -140,13 +140,13 @@ class PerforceDownloaderTest extends TestCase
         $this->io->expects($this->once())->method('writeError')->with($this->stringContains('Cloning '.$ref));
         $perforceMethods = array('setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec');
         $perforce = $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
-        $perforce->expects($this->at(0))->method('initializePath')->with($this->equalTo($this->testPath));
-        $perforce->expects($this->at(1))->method('setStream')->with($this->equalTo($ref));
-        $perforce->expects($this->at(2))->method('p4Login');
-        $perforce->expects($this->at(3))->method('writeP4ClientSpec');
-        $perforce->expects($this->at(4))->method('connectClient');
-        $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);
-        $perforce->expects($this->at(6))->method('cleanupClientSpec');
+        $perforce->expects($this->once())->method('initializePath')->with($this->equalTo($this->testPath));
+        $perforce->expects($this->once())->method('setStream')->with($this->equalTo($ref));
+        $perforce->expects($this->once())->method('p4Login');
+        $perforce->expects($this->once())->method('writeP4ClientSpec');
+        $perforce->expects($this->once())->method('connectClient');
+        $perforce->expects($this->once())->method('syncCodeBase')->with($label);
+        $perforce->expects($this->once())->method('cleanupClientSpec');
         $this->downloader->setPerforce($perforce);
         $this->downloader->doInstall($this->package, $this->testPath, 'url');
     }
@@ -163,13 +163,13 @@ class PerforceDownloaderTest extends TestCase
         $this->io->expects($this->once())->method('writeError')->with($this->stringContains('Cloning '.$ref));
         $perforceMethods = array('setStream', 'p4Login', 'writeP4ClientSpec', 'connectClient', 'syncCodeBase', 'cleanupClientSpec');
         $perforce = $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
-        $perforce->expects($this->at(0))->method('initializePath')->with($this->equalTo($this->testPath));
-        $perforce->expects($this->at(1))->method('setStream')->with($this->equalTo($ref));
-        $perforce->expects($this->at(2))->method('p4Login');
-        $perforce->expects($this->at(3))->method('writeP4ClientSpec');
-        $perforce->expects($this->at(4))->method('connectClient');
-        $perforce->expects($this->at(5))->method('syncCodeBase')->with($label);
-        $perforce->expects($this->at(6))->method('cleanupClientSpec');
+        $perforce->expects($this->once())->method('initializePath')->with($this->equalTo($this->testPath));
+        $perforce->expects($this->once())->method('setStream')->with($this->equalTo($ref));
+        $perforce->expects($this->once())->method('p4Login');
+        $perforce->expects($this->once())->method('writeP4ClientSpec');
+        $perforce->expects($this->once())->method('connectClient');
+        $perforce->expects($this->once())->method('syncCodeBase')->with($label);
+        $perforce->expects($this->once())->method('cleanupClientSpec');
         $this->downloader->setPerforce($perforce);
         $this->downloader->doInstall($this->package, $this->testPath, 'url');
     }

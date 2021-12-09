@@ -26,8 +26,9 @@ class RepositoryManagerTest extends TestCase
         $this->tmpdir = $this->getUniqueTmpDirectory();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
+        parent::tearDown();
         if (is_dir($this->tmpdir)) {
             $fs = new Filesystem();
             $fs->removeDirectory($this->tmpdir);

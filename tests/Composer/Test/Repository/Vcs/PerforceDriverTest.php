@@ -71,7 +71,7 @@ class PerforceDriverTest extends TestCase
             'branch' => self::TEST_BRANCH,
         );
         $this->io = $this->getMockIOInterface();
-        $this->process = new ProcessExecutorMock;
+        $this->process = $this->getProcessExecutorMock();
         $this->httpDownloader = $this->getMockHttpDownloader();
         $this->perforce = $this->getMockPerforce();
         $this->driver = new PerforceDriver($this->repoConfig, $this->io, $this->config, $this->httpDownloader, $this->process);
@@ -80,6 +80,7 @@ class PerforceDriverTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         //cleanup directory under test path
         $fs = new Filesystem;
         $fs->removeDirectory($this->testPath);
@@ -146,10 +147,10 @@ class PerforceDriverTest extends TestCase
 
     public function testInitializeLogsInAndConnectsClient()
     {
-        $this->perforce->expects($this->at(0))->method('p4Login');
-        $this->perforce->expects($this->at(1))->method('checkStream');
-        $this->perforce->expects($this->at(2))->method('writeP4ClientSpec');
-        $this->perforce->expects($this->at(3))->method('connectClient');
+        $this->perforce->expects($this->once())->method('p4Login');
+        $this->perforce->expects($this->once())->method('checkStream');
+        $this->perforce->expects($this->once())->method('writeP4ClientSpec');
+        $this->perforce->expects($this->once())->method('connectClient');
         $this->driver->initialize();
     }
 

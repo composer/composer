@@ -40,15 +40,16 @@ class SvnDriverTest extends TestCase
         ));
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $fs = new Filesystem();
         $fs->removeDirectory($this->home);
     }
 
     public function testWrongCredentialsInUrl()
     {
-        $this->setExpectedException('RuntimeException');
+        $this->setExpectedException('RuntimeException', "Repository https://till:secret@corp.svn.local/repo could not be processed, wrong credentials provided (svn: OPTIONS of 'https://corp.svn.local/repo': authorization failed: Could not authenticate to server: rejected Basic challenge (https://corp.svn.local/))");
 
         $console = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
@@ -57,10 +58,15 @@ class SvnDriverTest extends TestCase
         $output .= " authorization failed: Could not authenticate to server:";
         $output .= " rejected Basic challenge (https://corp.svn.local/)";
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
-            'svn --version',
-            array('cmd' => '', 'return' => 1, 'stderr' => $output),
+            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
+            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
+            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
+            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
+            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
+            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
+            array('cmd' => 'svn --version', 'return' => 0, 'stdout' => '1.2.3'),
         ), true);
 
         $repoConfig = array(
@@ -69,8 +75,6 @@ class SvnDriverTest extends TestCase
 
         $svn = new SvnDriver($repoConfig, $console, $this->config, $httpDownloader, $process);
         $svn->initialize();
-
-        $process->assertComplete($this);
     }
 
     public static function supportProvider()

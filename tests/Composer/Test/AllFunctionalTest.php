@@ -38,8 +38,9 @@ class AllFunctionalTest extends TestCase
         chdir(__DIR__.'/Fixtures/functional');
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
+        parent::tearDown();
         if ($this->oldcwd) {
             chdir($this->oldcwd);
         }

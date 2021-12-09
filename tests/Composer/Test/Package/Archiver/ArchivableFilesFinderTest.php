@@ -97,6 +97,7 @@ class ArchivableFilesFinderTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         $fs = new Filesystem;
         $fs->removeDirectory($this->sources);
     }

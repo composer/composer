@@ -206,20 +206,19 @@ class RemoteFilesystemTest extends TestCase
                 'retry' => true,
             ));
 
-        $fs->expects($this->at(0))
+        $counter = 0;
+        $fs->expects($this->exactly(2))
             ->method('getRemoteContents')
-            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
-                $http_response_header = array('http/1.1 401 unauthorized');
+            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) use (&$counter) {
+                if ($counter++ === 0) {
+                    $http_response_header = array('http/1.1 401 unauthorized');
 
-                return '';
-            });
+                    return '';
+                } else {
+                    $http_response_header = array('http/1.1 200 OK');
 
-        $fs->expects($this->at(1))
-            ->method('getRemoteContents')
-            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
-                $http_response_header = array('http/1.1 200 OK');
-
-                return '<?php $copied = "Copied"; ';
+                    return '<?php $copied = "Copied"; ';
+                }
             });
 
         $file = tempnam(sys_get_temp_dir(), 'z');
@@ -324,8 +323,7 @@ class RemoteFilesystemTest extends TestCase
                 return $arg === 'bitbucket.org';
             });
         $io
-            ->expects($this->at(1))
-            ->method('getAuthentication')
+        ->method('getAuthentication')
             ->with('bitbucket.org')
             ->willReturn(array(
                 'username' => 'x-token-auth',

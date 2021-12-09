@@ -39,8 +39,9 @@ class XzDownloaderTest extends TestCase
         $this->testDir = $this->getUniqueTmpDirectory();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $this->fs = new Filesystem;
         $this->fs->removeDirectory($this->testDir);
     }

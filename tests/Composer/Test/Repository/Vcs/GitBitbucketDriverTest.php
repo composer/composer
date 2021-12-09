@@ -51,8 +51,9 @@ class GitBitbucketDriverTest extends TestCase
             ->getMock();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $fs = new Filesystem;
         $fs->removeDirectory($this->home);
     }

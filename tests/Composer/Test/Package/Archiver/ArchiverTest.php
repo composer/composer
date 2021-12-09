@@ -41,8 +41,9 @@ abstract class ArchiverTest extends TestCase
         $this->testDir = $this->getUniqueTmpDirectory();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $this->filesystem->removeDirectory($this->testDir);
     }
 

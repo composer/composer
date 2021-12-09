@@ -55,6 +55,7 @@ class CacheTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         if (is_dir($this->root)) {
             $fs = new Filesystem;
             $fs->removeDirectory($this->root);

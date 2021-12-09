@@ -150,6 +150,7 @@ class AutoloadGeneratorTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         chdir($this->origDir);
 
         if (is_dir($this->workingDir)) {
@@ -957,17 +958,13 @@ EOF;
         $notAutoloadPackages[] = $b = new Package('b/b', '1.0', '1.0');
         $notAutoloadPackages[] = $c = new Package('c/c', '1.0', '1.0');
 
-        $this->repository->expects($this->at(1))
+        $this->repository->expects($this->exactly(3))
             ->method('getCanonicalPackages')
-            ->will($this->returnValue($autoloadPackages));
-
-        $this->repository->expects($this->at(3))
-            ->method('getCanonicalPackages')
-            ->will($this->returnValue($notAutoloadPackages));
-
-        $this->repository->expects($this->at(5))
-            ->method('getCanonicalPackages')
-            ->will($this->returnValue($notAutoloadPackages));
+            ->willReturnOnConsecutiveCalls(
+                $autoloadPackages,
+                $notAutoloadPackages,
+                $notAutoloadPackages
+            );
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b');
@@ -1283,14 +1280,12 @@ EOF;
     public function testPreAndPostEventsAreDispatchedDuringAutoloadDump()
     {
         $this->eventDispatcher
-            ->expects($this->at(0))
+            ->expects($this->exactly(2))
             ->method('dispatchScript')
-            ->with(ScriptEvents::PRE_AUTOLOAD_DUMP, false);
-
-        $this->eventDispatcher
-            ->expects($this->at(1))
-            ->method('dispatchScript')
-            ->with(ScriptEvents::POST_AUTOLOAD_DUMP, false);
+            ->withConsecutive(
+                [ScriptEvents::PRE_AUTOLOAD_DUMP, false],
+                [ScriptEvents::POST_AUTOLOAD_DUMP, false]
+            );
 
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setAutoload(array('psr-0' => array('Prefix' => 'foo/bar/non/existing/')));

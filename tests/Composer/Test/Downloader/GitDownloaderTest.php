@@ -39,6 +39,7 @@ class GitDownloaderTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         if (is_dir($this->workingDir)) {
             $this->fs->removeDirectory($this->workingDir);
         }
@@ -85,7 +86,7 @@ class GitDownloaderTest extends TestCase
     protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $executor = $executor ?: new ProcessExecutorMock;
+        $executor = $executor ?: $this->getProcessExecutorMock();
         $filesystem = $filesystem ?: $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $config = $this->setupConfig($config);
 
@@ -124,7 +125,7 @@ class GitDownloaderTest extends TestCase
             ->method('getPrettyVersion')
             ->will($this->returnValue('dev-master'));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->winCompat("git clone --no-checkout -- 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer -- 'https://example.com/composer/composer' && git fetch composer && git remote set-url origin -- 'https://example.com/composer/composer' && git remote set-url composer -- 'https://example.com/composer/composer'"),
             $this->winCompat("git branch -r"),
@@ -136,8 +137,6 @@ class GitDownloaderTest extends TestCase
         $downloader->prepare('install', $packageMock, 'composerPath');
         $downloader->install($packageMock, 'composerPath');
         $downloader->cleanup('install', $packageMock, 'composerPath');
-
-        $process->assertComplete($this);
     }
 
     public function testDownloadWithCache()
@@ -165,7 +164,7 @@ class GitDownloaderTest extends TestCase
         $filesystem = new \Composer\Util\Filesystem;
         $filesystem->removeDirectory($cachePath);
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array('cmd' => $this->winCompat(sprintf("git clone --mirror -- 'https://example.com/composer/composer' '%s'", $cachePath)), 'callback' => function () use ($cachePath) {
                 @mkdir($cachePath, 0777, true);
@@ -183,8 +182,6 @@ class GitDownloaderTest extends TestCase
         $downloader->install($packageMock, 'composerPath');
         $downloader->cleanup('install', $packageMock, 'composerPath');
         @rmdir($cachePath);
-
-        $process->assertComplete($this);
     }
 
     public function testDownloadUsesVariousProtocolsAndSetsPushUrlForGithub()
@@ -203,7 +200,7 @@ class GitDownloaderTest extends TestCase
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => $this->winCompat("git clone --no-checkout -- 'https://github.com/mirrors/composer' 'composerPath' && cd 'composerPath' && git remote add composer -- 'https://github.com/mirrors/composer' && git fetch composer && git remote set-url origin -- 'https://github.com/mirrors/composer' && git remote set-url composer -- 'https://github.com/mirrors/composer'"),
@@ -222,8 +219,6 @@ class GitDownloaderTest extends TestCase
         $downloader->prepare('install', $packageMock, 'composerPath');
         $downloader->install($packageMock, 'composerPath');
         $downloader->cleanup('install', $packageMock, 'composerPath');
-
-        $process->assertComplete($this);
     }
 
     public function pushUrlProvider()
@@ -260,7 +255,7 @@ class GitDownloaderTest extends TestCase
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->winCompat("git clone --no-checkout -- '{$url}' 'composerPath' && cd 'composerPath' && git remote add composer -- '{$url}' && git fetch composer && git remote set-url origin -- '{$url}' && git remote set-url composer -- '{$url}'"),
             $this->winCompat("git remote set-url --push origin -- '{$pushUrl}'"),
@@ -276,8 +271,6 @@ class GitDownloaderTest extends TestCase
         $downloader->prepare('install', $packageMock, 'composerPath');
         $downloader->install($packageMock, 'composerPath');
         $downloader->cleanup('install', $packageMock, 'composerPath');
-
-        $process->assertComplete($this);
     }
 
     public function testDownloadThrowsRuntimeExceptionIfGitCommandFails()
@@ -296,7 +289,7 @@ class GitDownloaderTest extends TestCase
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
                 'cmd' => $this->winCompat("git clone --no-checkout -- 'https://example.com/composer/composer' 'composerPath' && cd 'composerPath' && git remote add composer -- 'https://example.com/composer/composer' && git fetch composer && git remote set-url origin -- 'https://example.com/composer/composer' && git remote set-url composer -- 'https://example.com/composer/composer'"),
@@ -311,8 +304,6 @@ class GitDownloaderTest extends TestCase
             $downloader->prepare('install', $packageMock, 'composerPath');
             $downloader->install($packageMock, 'composerPath');
             $downloader->cleanup('install', $packageMock, 'composerPath');
-
-            $process->assertComplete($this);
 
             $this->fail('This test should throw');
         } catch (\RuntimeException $e) {
@@ -358,7 +349,7 @@ class GitDownloaderTest extends TestCase
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->winCompat('git show-ref --head -d'),
             $this->winCompat('git status --porcelain --untracked-files=no'),
@@ -375,8 +366,6 @@ class GitDownloaderTest extends TestCase
         $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
         $downloader->update($packageMock, $packageMock, $this->workingDir);
         $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
-
-        $process->assertComplete($this);
     }
 
     public function testUpdateWithNewRepoUrl()
@@ -400,7 +389,7 @@ class GitDownloaderTest extends TestCase
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->winCompat("git show-ref --head -d"),
             $this->winCompat("git status --porcelain --untracked-files=no"),
@@ -426,8 +415,6 @@ composer https://github.com/old/url (push)
         $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
         $downloader->update($packageMock, $packageMock, $this->workingDir);
         $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
-
-        $process->assertComplete($this);
     }
 
     /**
@@ -449,7 +436,7 @@ composer https://github.com/old/url (push)
             ->method('getVersion')
             ->will($this->returnValue('1.0.0.0'));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->winCompat('git show-ref --head -d'),
             $this->winCompat('git status --porcelain --untracked-files=no'),
@@ -463,7 +450,6 @@ composer https://github.com/old/url (push)
                 'return' => 1,
             ),
             $this->winCompat('git --version'),
-            $this->winCompat('git branch -r'),
         ), true);
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
@@ -475,8 +461,6 @@ composer https://github.com/old/url (push)
             $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
             $downloader->update($packageMock, $packageMock, $this->workingDir);
             $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
-
-            $process->assertComplete($this);
 
             $this->fail('This test should throw');
         } catch (\RuntimeException $e) {
@@ -506,7 +490,7 @@ composer https://github.com/old/url (push)
             ->method('getPrettyVersion')
             ->will($this->returnValue('1.0.0'));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->winCompat('git show-ref --head -d'),
             $this->winCompat('git status --porcelain --untracked-files=no'),
@@ -532,8 +516,6 @@ composer https://github.com/old/url (push)
         $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
         $downloader->update($packageMock, $packageMock, $this->workingDir);
         $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
-
-        $process->assertComplete($this);
     }
 
     public function testDowngradeShowsAppropriateMessage()
@@ -569,12 +551,14 @@ composer https://github.com/old/url (push)
             ->method('getFullPrettyVersion')
             ->will($this->returnValue('1.0.0'));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
 
         $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $ioMock->expects($this->at(0))
+        $ioMock->expects($this->atLeastOnce())
             ->method('writeError')
-            ->with($this->stringContains('Downgrading'));
+            ->withConsecutive(
+                [$this->stringContains('Downgrading')]
+            );
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
         $downloader = $this->getDownloaderMock($ioMock, null, $process);
@@ -611,12 +595,14 @@ composer https://github.com/old/url (push)
             ->method('getPrettyVersion')
             ->will($this->returnValue('dev-ref2'));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
 
         $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $ioMock->expects($this->at(0))
+        $ioMock->expects($this->atLeastOnce())
             ->method('writeError')
-            ->with($this->stringContains('Upgrading'));
+            ->withConsecutive(
+                [$this->stringContains('Upgrading')]
+            );
 
         $this->fs->ensureDirectoryExists($this->workingDir.'/.git');
         $downloader = $this->getDownloaderMock($ioMock, null, $process);
@@ -631,7 +617,7 @@ composer https://github.com/old/url (push)
         $expectedGitResetCommand = $this->winCompat("git status --porcelain --untracked-files=no");
 
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             'git show-ref --head -d',
             $expectedGitResetCommand,
@@ -649,8 +635,6 @@ composer https://github.com/old/url (push)
         $downloader->prepare('uninstall', $packageMock, $this->workingDir);
         $downloader->remove($packageMock, $this->workingDir);
         $downloader->cleanup('uninstall', $packageMock, $this->workingDir);
-
-        $process->assertComplete($this);
     }
 
     public function testGetInstallationSource()

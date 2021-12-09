@@ -181,15 +181,13 @@ class VersionSelectorTest extends TestCase
         $packages = array($package1, $package2);
 
         $repositorySet = $this->createMockRepositorySet();
-        $repositorySet->expects($this->at(0))
+        $repositorySet->expects($this->exactly(2))
             ->method('findPackages')
             ->with($packageName, null)
-            ->will($this->returnValue($packages));
-
-        $repositorySet->expects($this->at(1))
-            ->method('findPackages')
-            ->with($packageName, null)
-            ->will($this->returnValue(array_reverse($packages)));
+            ->willReturnOnConsecutiveCalls(
+                $packages,
+                array_reverse($packages)
+            );
 
         $versionSelector = new VersionSelector($repositorySet);
         $best = $versionSelector->findBestCandidate($packageName);

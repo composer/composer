@@ -26,6 +26,7 @@ class StreamContextFactoryTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         unset($_SERVER['HTTP_PROXY'], $_SERVER['http_proxy'], $_SERVER['HTTPS_PROXY'], $_SERVER['https_proxy'], $_SERVER['NO_PROXY'], $_SERVER['no_proxy']);
         ProxyManager::reset();
     }

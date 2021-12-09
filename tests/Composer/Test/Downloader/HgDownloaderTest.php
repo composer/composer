@@ -29,6 +29,7 @@ class HgDownloaderTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         if (is_dir($this->workingDir)) {
             $fs = new Filesystem;
             $fs->removeDirectory($this->workingDir);
@@ -46,7 +47,7 @@ class HgDownloaderTest extends TestCase
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $config = $config ?: $this->getMockBuilder('Composer\Config')->getMock();
-        $executor = $executor ?: new ProcessExecutorMock;
+        $executor = $executor ?: $this->getProcessExecutorMock();
         $filesystem = $filesystem ?: $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
 
         return new HgDownloader($io, $config, $executor, $filesystem);
@@ -75,7 +76,7 @@ class HgDownloaderTest extends TestCase
             ->method('getSourceUrls')
             ->will($this->returnValue(array('https://mercurial.dev/l3l0/composer')));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->getCmd('hg clone -- \'https://mercurial.dev/l3l0/composer\' \'composerPath\''),
             $this->getCmd('hg up -- \'ref\''),
@@ -83,8 +84,6 @@ class HgDownloaderTest extends TestCase
 
         $downloader = $this->getDownloaderMock(null, null, $process);
         $downloader->install($packageMock, 'composerPath');
-
-        $process->assertComplete($this);
     }
 
     public function testUpdateforPackageWithoutSourceReference()
@@ -118,7 +117,7 @@ class HgDownloaderTest extends TestCase
             ->method('getSourceUrls')
             ->will($this->returnValue(array('https://github.com/l3l0/composer')));
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->getCmd('hg st'),
             $this->getCmd("hg pull -- 'https://github.com/l3l0/composer' && hg up -- 'ref'"),
@@ -128,8 +127,6 @@ class HgDownloaderTest extends TestCase
         $downloader->prepare('update', $packageMock, $this->workingDir, $packageMock);
         $downloader->update($packageMock, $packageMock, $this->workingDir);
         $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
-
-        $process->assertComplete($this);
     }
 
     public function testRemove()
@@ -138,7 +135,7 @@ class HgDownloaderTest extends TestCase
         $fs->ensureDirectoryExists($this->workingDir.'/.hg');
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(
             $this->getCmd('hg st'),
         ), true);
@@ -153,8 +150,6 @@ class HgDownloaderTest extends TestCase
         $downloader->prepare('uninstall', $packageMock, $this->workingDir);
         $downloader->remove($packageMock, $this->workingDir);
         $downloader->cleanup('uninstall', $packageMock, $this->workingDir);
-
-        $process->assertComplete($this);
     }
 
     public function testGetInstallationSource()

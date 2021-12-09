@@ -25,7 +25,7 @@ class Response
     private $request;
     /** @var int */
     private $code;
-    /** @var string[] */
+    /** @var list<string> */
     private $headers;
     /** @var ?string */
     private $body;
@@ -33,7 +33,7 @@ class Response
     /**
      * @param Request  $request
      * @param int      $code
-     * @param string[] $headers
+     * @param list<string> $headers
      * @param ?string  $body
      */
     public function __construct(array $request, $code, array $headers, $body)

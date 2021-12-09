@@ -129,6 +129,7 @@ class PluginInstallerTest extends TestCase
 
     protected function tearDown(): void
     {
+        parent::tearDown();
         $filesystem = new Filesystem();
         $filesystem->removeDirectory($this->directory);
     }
