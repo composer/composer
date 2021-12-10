@@ -1861,38 +1861,16 @@ EOF;
     /**
      * @param string $expected
      * @param string $actual
-     * @param string $message
-     * @param bool   $canonicalize
-     * @param bool   $ignoreCase
+     * @param string|null $message
      *
      * @return void
      */
-    public static function assertFileContentEquals($expected, $actual, $message = '', $canonicalize = false, $ignoreCase = false)
+    public static function assertFileContentEquals(string $expected, string $actual, ?string $message = null)
     {
-        self::assertEqualsNormalized(
-            file_get_contents($expected),
-            file_get_contents($actual),
-            $message ?: $expected.' equals '.$actual,
-            0,
-            10,
-            $canonicalize,
-            $ignoreCase
+        self::assertSame(
+            str_replace("\r", '', (string) file_get_contents($expected)),
+            str_replace("\r", '', (string) file_get_contents($actual)),
+            $message ?? $expected.' equals '.$actual
         );
-    }
-
-    /**
-     * @param string $expected
-     * @param string $actual
-     * @param string $message
-     * @param int    $delta
-     * @param int    $maxDepth
-     * @param bool   $canonicalize
-     * @param bool   $ignoreCase
-     *
-     * @return void
-     */
-    public static function assertEqualsNormalized($expected, $actual, $message = '', $delta = 0, $maxDepth = 10, $canonicalize = false, $ignoreCase = false)
-    {
-        parent::assertEquals(str_replace("\r", '', $expected), str_replace("\r", '', $actual), $message, $delta, $maxDepth, $canonicalize, $ignoreCase);
     }
 }

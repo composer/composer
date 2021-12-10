@@ -243,4 +243,15 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
         return $mock;
     }
+
+    protected function createTempFile(?string $dir = null): string
+    {
+        $dir = $dir ?? sys_get_temp_dir();
+        $name = tempnam($dir, 'c');
+        if ($name === false) {
+            throw new \UnexpectedValueException('tempnam failed to create a temporary file in '.$dir);
+        }
+
+        return $name;
+    }
 }

@@ -85,7 +85,7 @@ class FileDownloaderTest extends TestCase
             ->will($this->returnValue(array('url')))
         ;
 
-        $path = tempnam($this->getUniqueTmpDirectory(), 'c');
+        $path = $this->createTempFile($this->getUniqueTmpDirectory());
         $downloader = $this->getDownloader();
 
         try {

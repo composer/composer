@@ -163,7 +163,7 @@ class RemoteFilesystemTest extends TestCase
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
-        $file = tempnam(sys_get_temp_dir(), 'c');
+        $file = $this->createTempFile();
         $this->assertTrue($fs->copy('http://example.org', 'file://'.__FILE__, $file));
         $this->assertFileExists($file);
         $this->assertStringContainsString('testCopy', file_get_contents($file));
@@ -182,7 +182,7 @@ class RemoteFilesystemTest extends TestCase
                 return '';
             });
 
-        $file = tempnam(sys_get_temp_dir(), 'z');
+        $file = $this->createTempFile();
         unlink($file);
 
         $fs->copy(
@@ -221,7 +221,7 @@ class RemoteFilesystemTest extends TestCase
                 }
             });
 
-        $file = tempnam(sys_get_temp_dir(), 'z');
+        $file = $this->createTempFile();
 
         $copyResult = $fs->copy(
             'http://example.org',

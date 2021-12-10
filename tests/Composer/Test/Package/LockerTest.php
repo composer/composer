@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Package;
 
+use Composer\Json\JsonFile;
 use Composer\Package\Locker;
 use Composer\Plugin\PluginInterface;
 use Composer\IO\NullIO;
@@ -282,16 +283,13 @@ class LockerTest extends TestCase
      */
     private function createPackageMock()
     {
-        return $this->getMockBuilder('Composer\Package\PackageInterface')
-            ->getMock();
+        return $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
     }
 
     /**
      * @param array<string, string> $customData
-     *
-     * @return false|string
      */
-    private function getJsonContent(array $customData = array())
+    private function getJsonContent(array $customData = array()): string
     {
         $data = array_merge(array(
             'minimum-stability' => 'beta',
@@ -300,6 +298,6 @@ class LockerTest extends TestCase
 
         ksort($data);
 
-        return json_encode($data);
+        return JsonFile::encode($data, 0);
     }
 }
