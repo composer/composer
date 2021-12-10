@@ -146,17 +146,26 @@ Further info can also be found [here](articles/authentication-for-private-packag
 
 ## gitlab-token
 
-A list of domain names and private tokens. Private token can be either simple
-string, or array with username and token. For example using `{"gitlab.com":
-"privatetoken"}` as the value of this option will use `privatetoken` to access
-private repositories on gitlab. Using `{"gitlab.com": {"username": "gitlabuser",
- "token": "privatetoken"}}` will use both username and token for gitlab deploy
-token functionality (https://docs.gitlab.com/ee/user/project/deploy_tokens/)
-Please note: If the package is not hosted at
-gitlab.com the domain names must be also specified with the
-[`gitlab-domains`](06-config.md#gitlab-domains) option. The token must have
-`api` or `read_api` scope.
-Further info can also be found [here](articles/authentication-for-private-packages.md#gitlab-token)
+A list of domain names and their private tokens. A private token can be either
+a simple string, or an array with username and token. For example doing
+`composer config gitlab-token.gitlab.com privatetoken`, which is the equivalent
+of `{"gitlab.com":"privatetoken"}` as a value for this option, will use
+`privatetoken` to access any private repository on gitlab.com. Doing 
+`composer config gitlab-token.gitlab.com gitlabuser privatetoken`, which is
+the same as `{"gitlab.com": {"username": "gitlabuser", "token": "privatetoken"}}`,
+will use both username and token. If you're using the token alone, the token must have
+the `read_api` (or the wider `api`) scope; keep in mind that that scope allows
+to read any information the owner of the token can see on Gitlab 
+(like for example secret CI variables) so it's security-sensitive and
+must not be leaked. For a safer approach, it's better to use an ephemeral
+[GitLab CI_JOB_TOKEN](https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#predefined-variables-reference),
+which expires as soon as the GitLab CI job ends or, if you're outside of GitLab CI,
+a [GitLab deploy token](https://docs.gitlab.com/ee/user/project/deploy_tokens/);
+in both of these cases you'll also need to force [`gitlab-protocol`](06-config.md#gitlab-protocol)
+to `https`, because those tokens don't work on Git over SSH.
+Please note: If the package is not hosted at gitlab.com the domain names
+must be also specified with the [`gitlab-domains`](06-config.md#gitlab-domains) 
+option. 
 
 ## gitlab-protocol
 
