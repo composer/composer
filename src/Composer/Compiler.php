@@ -198,6 +198,7 @@ class Compiler
             'vendor/symfony/polyfill-intl-grapheme/bootstrap80.php',
             'vendor/symfony/polyfill-intl-normalizer/bootstrap80.php',
             'vendor/symfony/polyfill-mbstring/bootstrap80.php',
+            'vendor/symfony/polyfill-php73/Resources/stubs/JsonException.php',
             'vendor/symfony/service-contracts/Attribute/SubscribedService.php',
         ]);
     }
