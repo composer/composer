@@ -17,12 +17,15 @@ jobs:
     name: "PHPStan"
 
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
 
     strategy:
       matrix:
-        php-version:
-          - "7.2"
-          - "8.1"
+        include:
+          - php-version: "7.2"
+            experimental: false
+          - php-version: "8.1"
+            experimental: true
       fail-fast: false
 
     steps:
@@ -49,11 +52,11 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}-symfony-php-unit-version-${{ env.SYMFONY_PHPUNIT_VERSION }}"
 
       - name: "Install highest dependencies"
-        if: "matrix.php-version != '7.2'"
+        if: "matrix.experimental == true"
         run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
 
       - name: "Install locked dependencies"
-        if: "matrix.php-version == '7.2'"
+        if: "matrix.experimental == false"
         run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
 
       - name: "Initialize PHPUnit sources"
