@@ -41,7 +41,6 @@
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^6.0",
-        "phpspec/prophecy": "^1.10",
         "phpstan/phpstan": "^1.0",
         "phpstan/phpstan-phpunit": "^1.0",
         "phpstan/phpstan-deprecation-rules": "^1",

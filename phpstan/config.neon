@@ -36,13 +36,6 @@ parameters:
         # we don't have different constructors for parent/child
         - '~^Unsafe usage of new static\(\)\.$~'
 
-        # BC with older PHPUnit
-        - '~^Call to an undefined static method Composer\\Test\\PolyfillTestCase::setExpectedException\(\)\.$~'
-        - '~^Call to an undefined method Composer\\Test\\[a-zA-Z0-9\\]+::(assertFileDoesNotExist|assertMatchesRegularExpression)\(\)\.$~'
-
-        # Mock errors
-        - '~^Call to an undefined method (PHPUnit\\Framework\\MockObject\\MockObject|Prophecy\\Prophecy\\ObjectProphecy)::.*$~'
-
         # Ignore some irrelevant errors in test files
         - '~Method Composer\\Test\\[^:]+::(setUp(BeforeClass)?|tearDown(AfterClass)?|test[^(]+)\(\) has no return type specified.~'
         - '~Method Composer\\Test\\[^:]+::(data\w+|provide\w+|\w+?Provider)\(\) has no return type specified.~'

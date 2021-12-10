@@ -13,6 +13,7 @@
 namespace Composer\Test\Downloader;
 
 use Composer\Downloader\DownloadManager;
+use Composer\Package\PackageInterface;
 use Composer\Test\TestCase;
 
 class DownloadManagerTest extends TestCase
@@ -639,20 +640,30 @@ class DownloadManagerTest extends TestCase
     {
         $initial = null;
         if ($prevPkgSource) {
-            $initial = $this->prophesize('Composer\Package\PackageInterface');
-            $initial->getInstallationSource()->willReturn($prevPkgSource);
-            $initial->isDev()->willReturn($prevPkgIsDev);
+            $initial = $this->getMockBuilder(PackageInterface::class)->getMock();
+            $initial->expects($this->atLeastOnce())
+                ->method('getInstallationSource')
+                ->willReturn($prevPkgSource);
+            $initial->expects($this->any())
+                ->method('isDev')
+                ->willReturn($prevPkgIsDev);
         }
 
-        $target = $this->prophesize('Composer\Package\PackageInterface');
-        $target->getSourceType()->willReturn(in_array('source', $targetAvailable, true) ? 'git' : null);
-        $target->getDistType()->willReturn(in_array('dist', $targetAvailable, true) ? 'zip' : null);
-        $target->isDev()->willReturn($targetIsDev);
+        $target = $this->getMockBuilder(PackageInterface::class)->getMock();
+        $target->expects($this->atLeastOnce())
+            ->method('getSourceType')
+            ->willReturn(in_array('source', $targetAvailable, true) ? 'git' : null);
+        $target->expects($this->atLeastOnce())
+            ->method('getDistType')
+            ->willReturn(in_array('dist', $targetAvailable, true) ? 'zip' : null);
+        $target->expects($this->any())
+            ->method('isDev')
+            ->willReturn($targetIsDev);
 
         $manager = new DownloadManager($this->io, false, $this->filesystem);
         $method = new \ReflectionMethod($manager, 'getAvailableSources');
         $method->setAccessible(true);
-        $this->assertEquals($expected, $method->invoke($manager, $target->reveal(), $initial ? $initial->reveal() : null));
+        $this->assertEquals($expected, $method->invoke($manager, $target, $initial ?? null));
     }
 
     public static function updatesProvider()
