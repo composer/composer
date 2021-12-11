@@ -657,6 +657,10 @@ class PluginManager
      */
     private function isPluginAllowed($package, $isGlobalPlugin)
     {
+        if ($package === 'composer/package-versions-deprecated') {
+            return true;
+        }
+
         static $warned = array();
         $rules = $isGlobalPlugin ? $this->allowGlobalPluginRules : $this->allowPluginRules;
 
