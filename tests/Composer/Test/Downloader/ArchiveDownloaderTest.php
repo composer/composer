@@ -31,13 +31,8 @@ class ArchiveDownloaderTest extends TestCase
         $method = new \ReflectionMethod($downloader, 'getFileName');
         $method->setAccessible(true);
 
-        $this->config->expects($this->any())
-            ->method('get')
-            ->with('vendor-dir')
-            ->will($this->returnValue('/vendor'));
-
         $first = $method->invoke($downloader, $packageMock, '/path');
-        $this->assertMatchesRegularExpression('#/vendor/composer/tmp-[a-z0-9]+\.js#', $first);
+        $this->assertMatchesRegularExpression('#/composer/tmp-[a-z0-9]+\.js#', $first);
         $this->assertSame($first, $method->invoke($downloader, $packageMock, '/path'));
     }
 

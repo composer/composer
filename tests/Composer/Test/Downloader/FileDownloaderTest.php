@@ -115,12 +115,7 @@ class FileDownloaderTest extends TestCase
         $method = new \ReflectionMethod($downloader, 'getFileName');
         $method->setAccessible(true);
 
-        $this->config->expects($this->once())
-            ->method('get')
-            ->with('vendor-dir')
-            ->will($this->returnValue('/vendor'));
-
-        $this->assertMatchesRegularExpression('#/vendor/composer/tmp-[a-z0-9]+\.js#', $method->invoke($downloader, $packageMock, '/path'));
+        $this->assertMatchesRegularExpression('#/composer/tmp-[a-z0-9]+\.js#', $method->invoke($downloader, $packageMock, '/path'));
     }
 
     public function testDownloadButFileIsUnsaved()
@@ -153,11 +148,6 @@ class FileDownloaderTest extends TestCase
         ;
 
         $downloader = $this->getDownloader($ioMock);
-
-        $this->config->expects($this->once())
-            ->method('get')
-            ->with('vendor-dir')
-            ->will($this->returnValue($path.'/vendor'));
 
         try {
             $loop = new Loop($this->httpDownloader);
