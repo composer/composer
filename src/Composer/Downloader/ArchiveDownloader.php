@@ -78,7 +78,7 @@ abstract class ArchiveDownloader extends FileDownloader
         }
 
         do {
-            $temporaryDir = $vendorDir.'/composer/'.substr(md5(uniqid('', true)), 0, 8);
+            $temporaryDir = sys_get_temp_dir().'/composer/'.substr(md5(uniqid('', true)), 0, 8);
         } while (is_dir($temporaryDir));
 
         $this->addCleanupPath($package, $temporaryDir);
