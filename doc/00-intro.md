@@ -91,7 +91,7 @@ After running the installer following [the Download page instructions](https://g
 you can run this to move composer.phar to a directory that is in your path:
 
 ```sh
-mv composer.phar /usr/local/bin/composer
+sudo mv composer.phar /usr/local/bin/composer
 ```
 
 If you like to install it only for your user and avoid requiring root permissions,
