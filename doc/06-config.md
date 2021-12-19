@@ -253,8 +253,8 @@ into this directory.
 
 Defaults to `C:\Users\<user>\AppData\Roaming\Composer` on Windows,
 `$XDG_DATA_HOME/composer` on unix systems that follow the XDG Base Directory
-Specifications, and `$home` on other unix systems. Right now it is only
-used for storing past composer.phar files to be able to rollback to older
+Specifications, and `$COMPOSER_HOME` on other unix systems. Right now it is only
+used for storing past composer.phar files to be able to roll back to older
 versions. See also [COMPOSER_HOME](03-cli.md#composer-home).
 
 ## cache-dir
@@ -262,8 +262,8 @@ versions. See also [COMPOSER_HOME](03-cli.md#composer-home).
 Defaults to `C:\Users\<user>\AppData\Local\Composer` on Windows,
 `/Users/<user>/Library/Caches/composer` on macOS, `$XDG_CACHE_HOME/composer`
 on unix systems that follow the XDG Base Directory Specifications, and
-`$home/cache` on other unix systems. Stores all the caches used by Composer.
-See also [COMPOSER_HOME](03-cli.md#composer-home).
+`$COMPOSER_HOME/cache` on other unix systems. Stores all the caches used by
+Composer. See also [COMPOSER_HOME](03-cli.md#composer-home).
 
 ## cache-files-dir
 
