@@ -48,7 +48,6 @@ class RemoveCommand extends BaseCommand
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
                 new InputOption('no-update', null, InputOption::VALUE_NONE, 'Disables the automatic update of the dependencies (implies --no-install).'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Skip the install step after updating the composer.lock file.'),
-                new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'),
                 new InputOption('update-no-dev', null, InputOption::VALUE_NONE, 'Run the dependency update with the --no-dev option.'),
                 new InputOption('update-with-dependencies', 'w', InputOption::VALUE_NONE, 'Allows inherited dependencies to be updated with explicit dependencies. (Deprecrated, is now default behavior)'),
                 new InputOption('update-with-all-dependencies', 'W', InputOption::VALUE_NONE, 'Allows all inherited dependencies to be updated, including those that are root requirements.'),
@@ -217,8 +216,7 @@ EOT
 
         // Update packages
         $this->resetComposer();
-        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
-        $composer->getEventDispatcher()->setRunScripts(!$input->getOption('no-scripts'));
+        $composer = $this->getComposer(true, $input->getOption('no-plugins'), $input->getOption('no-scripts'));
 
         if ($dryRun) {
             $rootPackage = $composer->getPackage();

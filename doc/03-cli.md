@@ -22,6 +22,7 @@ The following options are available with every command:
 * **--quiet (-q):** Do not output any message.
 * **--no-interaction (-n):** Do not ask any interactive question.
 * **--no-plugins:** Disables plugins.
+* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-cache:** Disables the use of the cache directory. Same as setting the COMPOSER_CACHE_DIR
   env var to /dev/null (or NUL on Windows).
 * **--working-dir (-d):** If specified, use the given directory as working directory.
@@ -100,7 +101,6 @@ resolution.
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader
   generation skips the `autoload-dev` rules.
 * **--no-autoloader:** Skips autoloader generation.
-* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
@@ -186,7 +186,6 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
   lock file being out of date.
 * **--with:** Temporary version constraint to add, e.g. foo/bar:1.0.0 or foo/bar=1.0.0
 * **--no-autoloader:** Skips autoloader generation.
-* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--with-dependencies (-w):** Update also dependencies of packages in the argument list, except those which are root requirements.
@@ -254,7 +253,6 @@ If you do not specify a package, Composer will prompt you to search for a packag
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
-* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
 * **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements.
 * **--update-with-all-dependencies (-W):** Also update dependencies of the newly required packages, including those that are root requirements.
@@ -297,7 +295,6 @@ uninstalled.
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
-* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--update-no-dev:** Run the dependency update with the --no-dev option.
 * **--update-with-dependencies (-w):** Also update dependencies of the removed packages.
   (Deprecated, is now default behavior)
@@ -348,7 +345,6 @@ php composer.phar reinstall "acme/*"
   versions of packages, use `--prefer-install=auto`. See also [config.preferred-install](06-config.md#preferred-install).
   Passing this flag will override the config value.
 * **--no-autoloader:** Skips autoloader generation.
-* **--no-scripts:** Skips execution of scripts defined in `composer.json`.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
@@ -877,7 +873,6 @@ using this option you can still use PSR-0/4 for convenience and classmaps for
 performance.
 
 ### Options
-* **--no-scripts:** Skips the execution of all scripts defined in the `composer.json` file.
 * **--optimize (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run, so it is currently not done by default.

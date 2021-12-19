@@ -69,6 +69,8 @@ class Application extends BaseApplication
     private $hasPluginCommands = false;
     /** @var bool */
     private $disablePluginsByDefault = false;
+    /** @var bool */
+    private $disableScriptsByDefault = false;
 
     /**
      * @var string Store the initial working directory at startup time
@@ -134,6 +136,7 @@ class Application extends BaseApplication
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
+        $this->disableScriptsByDefault = $input->hasParameterOption('--no-scripts');
 
         if (Platform::getEnv('COMPOSER_NO_INTERACTION') || !Platform::isTty(defined('STDIN') ? STDIN : fopen('php://stdin', 'r'))) {
             $input->setInteractive(false);
@@ -422,19 +425,23 @@ class Application extends BaseApplication
     /**
      * @param  bool                    $required
      * @param  bool|null               $disablePlugins
+     * @param  bool|null               $disableScripts
      * @throws JsonValidationException
      * @throws \InvalidArgumentException
      * @return ?\Composer\Composer If $required is true then the return value is guaranteed
      */
-    public function getComposer($required = true, $disablePlugins = null)
+    public function getComposer($required = true, $disablePlugins = null, $disableScripts = null)
     {
         if (null === $disablePlugins) {
             $disablePlugins = $this->disablePluginsByDefault;
         }
+        if (null === $disableScripts) {
+            $disableScripts = $this->disableScriptsByDefault;
+        }
 
         if (null === $this->composer) {
             try {
-                $this->composer = Factory::create($this->io, null, $disablePlugins);
+                $this->composer = Factory::create($this->io, null, $disablePlugins, $disableScripts);
             } catch (\InvalidArgumentException $e) {
                 if ($required) {
                     $this->io->writeError($e->getMessage());
@@ -552,6 +559,7 @@ class Application extends BaseApplication
         $definition = parent::getDefaultInputDefinition();
         $definition->addOption(new InputOption('--profile', null, InputOption::VALUE_NONE, 'Display timing and memory usage information'));
         $definition->addOption(new InputOption('--no-plugins', null, InputOption::VALUE_NONE, 'Whether to disable plugins.'));
+        $definition->addOption(new InputOption('--no-scripts', null, InputOption::VALUE_NONE, 'Skips the execution of all scripts defined in composer.json file.'));
         $definition->addOption(new InputOption('--working-dir', '-d', InputOption::VALUE_REQUIRED, 'If specified, use the given directory as working directory.'));
         $definition->addOption(new InputOption('--no-cache', null, InputOption::VALUE_NONE, 'Prevent use of the cache'));
 

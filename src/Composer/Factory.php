@@ -294,13 +294,14 @@ class Factory
      * @param  array<string, mixed>|string|null  $localConfig    either a configuration array or a filename to read from, if null it will
      *                                                           read from the default filename
      * @param  bool                              $disablePlugins Whether plugins should not be loaded
+     * @param  bool                              $disableScripts Whether scripts should not be run
      * @param  string|null                       $cwd
      * @param  bool                              $fullLoad       Whether to initialize everything or only main project stuff (used when loading the global composer)
      * @throws \InvalidArgumentException
      * @throws \UnexpectedValueException
      * @return Composer
      */
-    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true)
+    public function createComposer(IOInterface $io, $localConfig = null, $disablePlugins = false, $cwd = null, $fullLoad = true, $disableScripts = false)
     {
         $cwd = $cwd ?: (string) getcwd();
 
@@ -382,6 +383,7 @@ class Factory
 
         // initialize event dispatcher
         $dispatcher = new EventDispatcher($composer, $io, $process);
+        $dispatcher->setRunScripts(!$disableScripts);
         $composer->setEventDispatcher($dispatcher);
 
         // initialize repository manager
@@ -428,7 +430,7 @@ class Factory
         if ($fullLoad) {
             $globalComposer = null;
             if (realpath($config->get('home')) !== $cwd) {
-                $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins);
+                $globalComposer = $this->createGlobalComposer($io, $config, $disablePlugins, $disableScripts);
             }
 
             $pm = $this->createPluginManager($io, $composer, $globalComposer, $disablePlugins);
@@ -460,13 +462,14 @@ class Factory
     /**
      * @param  IOInterface   $io             IO instance
      * @param  bool          $disablePlugins Whether plugins should not be loaded
+     * @param  bool          $disableScripts Whether scripts should not be executed
      * @return Composer|null
      */
-    public static function createGlobal(IOInterface $io, $disablePlugins = false)
+    public static function createGlobal(IOInterface $io, $disablePlugins = false, $disableScripts = false)
     {
         $factory = new static();
 
-        return $factory->createGlobalComposer($io, static::createConfig($io), $disablePlugins, true);
+        return $factory->createGlobalComposer($io, static::createConfig($io), $disablePlugins, $disableScripts, true);
     }
 
     /**
@@ -487,15 +490,16 @@ class Factory
 
     /**
      * @param bool $disablePlugins
+     * @param bool $disableScripts
      * @param bool $fullLoad
      *
      * @return Composer|null
      */
-    protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins, $fullLoad = false)
+    protected function createGlobalComposer(IOInterface $io, Config $config, $disablePlugins, $disableScripts, $fullLoad = false)
     {
         $composer = null;
         try {
-            $composer = $this->createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), $fullLoad);
+            $composer = $this->createComposer($io, $config->get('home') . '/composer.json', $disablePlugins, $config->get('home'), $fullLoad, $disableScripts);
         } catch (\Exception $e) {
             $io->writeError('Failed to initialize global composer: '.$e->getMessage(), true, IOInterface::DEBUG);
         }
@@ -629,13 +633,14 @@ class Factory
      * @param  mixed       $config         either a configuration array or a filename to read from, if null it will read from
      *                                     the default filename
      * @param  bool        $disablePlugins Whether plugins should not be loaded
+     * @param  bool        $disableScripts Whether scripts should not be run
      * @return Composer
      */
-    public static function create(IOInterface $io, $config = null, $disablePlugins = false)
+    public static function create(IOInterface $io, $config = null, $disablePlugins = false, $disableScripts = false)
     {
         $factory = new static();
 
-        return $factory->createComposer($io, $config, $disablePlugins);
+        return $factory->createComposer($io, $config, $disablePlugins, null, true, $disableScripts);
     }
 
     /**
