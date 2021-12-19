@@ -197,7 +197,7 @@ Avoid redirects to alternative 404 pages.
 If your repository only has a small number of packages, and you want to avoid
 the 404-requests, you can also specify an `"available-packages"` key in
 `packages.json` which should be an array with all the package names that your
-repository contain. Alternatively you can specify an
+repository contains. Alternatively you can specify an
 `"available-package-patterns"` key which is an array of package name patterns
 (with `*` matching any string, e.g. `vendor/*` would make Composer look up
 every matching package name in this repository).
@@ -468,7 +468,7 @@ repository like this:
 If you have no branches or tags directory you can disable them entirely by
 setting the `branches-path` or `tags-path` to `false`.
 
-If the package is in a sub-directory, e.g. `/trunk/foo/bar/composer.json` and
+If the package is in a subdirectory, e.g. `/trunk/foo/bar/composer.json` and
 `/tags/1.0/foo/bar/composer.json`, then you can make Composer access it by
 setting the `"package-path"` option to the sub-directory, in this example it
 would be `"package-path": "foo/bar/"`.

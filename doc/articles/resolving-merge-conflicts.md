@@ -49,8 +49,8 @@ php composer.phar install [--dry-run]
 
 ## Important considerations
 
-Keep in mind that whenever merge conflicts occur on the lock file, the information about the exact version
-new packages were locked on for one of the branches gets lost. When package A in branch 1 is constrained
+Keep in mind that whenever merge conflicts occur on the lock file, the information, about the exact version
+new packages were locked on for one of the branches, is lost. When package A in branch 1 is constrained
 as `^1.2.0` and locked as `1.2.0`, it might get updated when branch 2 is used as baseline and a new
 `composer require package/A:^1.2.0` is executed, as that will use the most recent version that the
 constraint allows when possible. There might be a version 1.3.0 for that package available by now, which

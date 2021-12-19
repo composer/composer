@@ -422,7 +422,7 @@ You can also search for more than one term by passing multiple arguments.
 
 * **--only-name (-N):** Search only in package names.
 * **--only-vendor (-O):** Search only for vendor / organization names, returns only "vendor"
-  as result.
+  as a result.
 * **--type (-t):** Search for a specific package type.
 * **--format (-f):** Lets you pick between text (default) or json output format.
   Note that in the json, only the name and description keys are guaranteed to be
@@ -542,7 +542,7 @@ in your browser.
 
 ## suggests
 
-Lists all packages suggested by currently installed set of packages. You can
+Lists all packages suggested by the currently installed set of packages. You can
 optionally pass one or multiple package names in the format of `vendor/package`
 to limit output to suggestions made by those packages only.
 
@@ -730,7 +730,7 @@ php composer.phar config --list
 
 `setting-key` is a configuration option name and `setting-value1` is a
 configuration value.  For settings that can take an array of values (like
-`github-protocols`), more than one setting-value arguments are allowed.
+`github-protocols`), multiple setting-value arguments are allowed.
 
 You can also edit the values of the following properties:
 
@@ -809,7 +809,7 @@ There are several applications for this:
 
 To create a new project using Composer you can use the `create-project` command.
 Pass it a package name, and the directory to create the project in. You can also
-provide a version as third argument, otherwise the latest version is used.
+provide a version as a third argument, otherwise the latest version is used.
 
 If the directory does not currently exist, it will be created during installation.
 
@@ -839,7 +839,7 @@ By default the command checks for the packages on packagist.org.
   JSON string which similar to what the [repositories](04-schema.md#repositories)
   key accepts. You can use this multiple times to configure multiple repositories.
 * **--add-repository:** Add the custom repository in the composer.json. If a lock
-  file is present it will be deleted and an update will be run instead of install.
+  file is present, it will be deleted and an update will be run instead of an install.
 * **--dev:** Install packages listed in `require-dev`.
 * **--no-dev:** Disables installation of require-dev packages.
 * **--no-scripts:** Disables the execution of the scripts defined in the root
@@ -861,7 +861,7 @@ By default the command checks for the packages on packagist.org.
 * **--ignore-platform-req:** ignore a specific platform requirement(`php`,
   `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
   does not fulfill it. Multiple requirements can be ignored via wildcard.
-* **--ask:** Ask user to provide target directory for new project.
+* **--ask:** Ask the user to provide a target directory for the new project.
 
 ## dump-autoload (dumpautoload)
 
@@ -877,7 +877,7 @@ using this option you can still use PSR-0/4 for convenience and classmaps for
 performance.
 
 ### Options
-* **--no-scripts:** Skips the execution of all scripts defined in `composer.json` file.
+* **--no-scripts:** Skips the execution of all scripts defined in the `composer.json` file.
 * **--optimize (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run, so it is currently not done by default.
@@ -997,7 +997,7 @@ The generated lock file will use the same name: `composer-other.lock` in this ex
 
 If set to 1, this env disables the warning about running commands as root/super user.
 It also disables automatic clearing of sudo sessions, so you should really only set this
-if you use Composer as super user at all times like in docker containers.
+if you use Composer as a super user at all times like in docker containers.
 
 ### COMPOSER_ALLOW_XDEBUG
 
@@ -1148,7 +1148,7 @@ from setting the request_fulluri option.
 
 ### COMPOSER_SELF_UPDATE_TARGET
 
-If set, makes the self-update command write the new Composer phar file into that path instead of overwriting itself. Useful for updating Composer on read-only filesystem.
+If set, makes the self-update command write the new Composer phar file into that path instead of overwriting itself. Useful for updating Composer on a read-only filesystem.
 
 ### no_proxy or NO_PROXY
 
@@ -1177,5 +1177,5 @@ useful for plugin authors to identify what is firing when exactly.
 
 ### COMPOSER_NO_DEV
 
-If set to `1`, it is the equivalent of passing the `--no-dev` arguement to `install` or
+If set to `1`, it is the equivalent of passing the `--no-dev` argument to `install` or
 `update`. You can override this for a single command by setting `COMPOSER_NO_DEV=0`.

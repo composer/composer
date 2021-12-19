@@ -101,7 +101,7 @@ is one present in a directory above Composer will by default ask you whether
 you want to use that directory's composer.json instead.
 
 If you always want to answer yes to this prompt, you can set this config value
-to `true`. To never be prompted set it to `false`. The default is `"prompt"`.
+to `true`. To never be prompted, set it to `false`. The default is `"prompt"`.
 
 > **Note:** This config must be set in your global user-wide config for it
 > to work. Use for example `php composer.phar config --global use-parent-dir true`

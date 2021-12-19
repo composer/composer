@@ -30,7 +30,7 @@ for your package.
 As a **package consumer** you can set or override the install path for a package
 that requires composer/installers by configuring the `installer-paths` extra. A
 useful example would be for a Drupal multisite setup where the package should be
-installed into your sites subdirectory. Here we are overriding the install path
+installed into your site's subdirectory. Here we are overriding the install path
 for a module that uses composer/installers, as well as putting all packages of type
 `drupal-theme` into a themes folder:
 

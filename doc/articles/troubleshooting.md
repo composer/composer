@@ -200,7 +200,7 @@ please report this [issue](https://github.com/composer/composer/issues).
 2. Search for an `AutoRun` key inside `HKEY_LOCAL_MACHINE\Software\Microsoft\Command Processor`,
    `HKEY_CURRENT_USER\Software\Microsoft\Command Processor`
    or `HKEY_LOCAL_MACHINE\Software\Wow6432Node\Microsoft\Command Processor`.
-3. Check if it contains any path to non-existent file, if it's the case, remove them.
+3. Check if it contains any path to a non-existent file, if it's the case, remove them.
 
 
 ## API rate limit and OAuth tokens
@@ -293,7 +293,7 @@ following workarounds:
 **Workaround Linux:**
 
 On linux, it seems that running this command helps to make ipv4 traffic have a
-higher prio than ipv6, which is a better alternative than disabling ipv6 entirely:
+higher priority than ipv6, which is a better alternative than disabling ipv6 entirely:
 
 ```bash
 sudo sh -c "echo 'precedence ::ffff:0:0/96 100' >> /etc/gai.conf"
@@ -326,7 +326,7 @@ networksetup -setv6automatic Wi-Fi
 ```
 
 That said, if this fixes your problem, please talk to your ISP about it to
-try and resolve the routing errors. That's the best way to get things resolved
+try to resolve the routing errors. That's the best way to get things resolved
 for everyone.
 
 
