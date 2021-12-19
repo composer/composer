@@ -119,7 +119,7 @@ resolution.
   `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
   does not fulfill it. Multiple requirements can be ignored via wildcard. Appending
   a `+` makes it only ignore the upper-bound of the requirements. For example, if a package
-  requires `php: ^7`, then the option `--ignore-platform-req=php+` would allow installing on PHP8,
+  requires `php: ^7`, then the option `--ignore-platform-req=php+` would allow installing on PHP 8,
   but installation on PHP 5.6 would still fail.
 
 ## update / u
@@ -207,7 +207,7 @@ php composer.phar update vendor/package:2.0.1 vendor/package2:3.0.*
   `hhvm`, `lib-*` and `ext-*`) and force the installation even if the local machine
   does not fulfill it. Multiple requirements can be ignored via wildcard. Appending
   a `+` makes it only ignore the upper-bound of the requirements. For example, if a package
-  requires `php: ^7`, then the option `--ignore-platform-req=php+` would allow installing on PHP8,
+  requires `php: ^7`, then the option `--ignore-platform-req=php+` would allow installing on PHP 8,
   but installation on PHP 5.6 would still fail.
 * **--prefer-stable:** Prefer stable versions of dependencies.
 * **--prefer-lowest:** Prefer lowest versions of dependencies. Useful for testing minimal

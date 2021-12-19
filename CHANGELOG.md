@@ -293,7 +293,7 @@
 
 ### [2.0.1] 2020-10-24
 
-  * Fixed crash on PHP8
+  * Fixed crash on PHP 8
 
 ### [2.0.0] 2020-10-24
 
