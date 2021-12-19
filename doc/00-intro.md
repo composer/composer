@@ -99,7 +99,7 @@ you can use `~/.local/bin` instead which is available by default on some
 Linux distributions.
 
 > **Note:** If the above fails due to permissions, you may need to run it again
-> with sudo.
+> with `sudo`.
 
 > **Note:** On some versions of macOS the `/usr` directory does not exist by
 > default. If you receive the error "/usr/local/bin/composer: No such file or
