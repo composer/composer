@@ -78,7 +78,7 @@ requirements:
 1. the [type][1] attribute must be `composer-plugin`.
 2. the [extra][2] attribute must contain an element `class` defining the
    class name of the plugin (including namespace). If a package contains
-   multiple plugins this can be array of class names.
+   multiple plugins, this can be an array of class names.
 
 Example:
 

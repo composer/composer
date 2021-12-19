@@ -27,17 +27,17 @@ requirements:
 1. The [type][1] attribute must be `composer-plugin`.
 2. The [extra][2] attribute must contain an element `class` defining the
    class name of the plugin (including namespace). If a package contains
-   multiple plugins, this can be array of class names.
+   multiple plugins, this can be an array of class names.
 3. You must require the special package called `composer-plugin-api`
    to define which Plugin API versions your plugin is compatible with.
    Requiring this package doesn't actually include any extra dependencies,
    it only specifies which version of the plugin API to use.
 
 > **Note:** When developing a plugin, although not required, it's useful to add
-> a require-dev dependency on `composer/composer` to have IDE auto completion on Composer classes.
+> a require-dev dependency on `composer/composer` to have IDE autocompletion on Composer classes.
 
 The required version of the `composer-plugin-api` follows the same [rules][7]
-as a normal package's.
+as a normal package's rules.
 
 The current Composer plugin API version is `2.1.0`.
 

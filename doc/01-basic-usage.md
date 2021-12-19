@@ -243,7 +243,7 @@ Composer will register a [PSR-4](https://www.php-fig.org/psr/psr-4/) autoloader
 for the `Acme` namespace.
 
 You define a mapping from namespaces to directories. The `src` directory would
-be in your project root, on the same level as `vendor` directory is. An example
+be in your project root, on the same level as the `vendor` directory. An example
 filename would be `src/Foo.php` containing an `Acme\Foo` class.
 
 After adding the [`autoload`](04-schema.md#autoload) field, you have to re-run
