@@ -241,7 +241,6 @@ abstract class Rule
                 $package1 = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[0]));
                 $package2 = $this->deduplicateDefaultBranchAlias($pool->literalToPackage($literals[1]));
 
-                $conflictTarget = $package1->getPrettyString();
                 if ($reasonData = $this->getReasonData()) {
                     // swap literals if they are not in the right order with package2 being the conflicter
                     if ($reasonData->getSource() === $package1->getName()) {
@@ -313,6 +312,7 @@ abstract class Rule
                     // swap literals if they are not in the right order with package2 being the conflicter
                     if ($reasonData->getSource() === $package1->getName()) {
                         list($package2, $package1) = array($package1, $package2);
+                        $conflictTarget = $package1->getPrettyName().' '.$reasonData->getPrettyConstraint();
                     }
 
                     // if the conflict is not directly against the package but something it provides/replaces,
