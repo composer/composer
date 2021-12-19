@@ -309,6 +309,8 @@ abstract class Rule
 
                 $conflictTarget = $package1->getPrettyString();
                 if ($reasonData = $this->getReasonData()) {
+                    assert($reasonData instanceof Link);
+
                     // swap literals if they are not in the right order with package2 being the conflicter
                     if ($reasonData->getSource() === $package1->getName()) {
                         list($package2, $package1) = array($package1, $package2);
