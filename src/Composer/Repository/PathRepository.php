@@ -15,6 +15,8 @@ namespace Composer\Repository;
 use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
+use Composer\Package\CompleteAliasPackage;
+use Composer\Package\CompletePackage;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
@@ -195,6 +197,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 $package['dist']['reference'] = trim($output);
             }
 
+            $needsAlias = false;
             if (!isset($package['version'])) {
                 $versionData = $this->versionGuesser->guessVersion($package, $path);
                 if (is_array($versionData) && $versionData['pretty_version']) {
@@ -206,11 +209,16 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
                     $package['version'] = $versionData['pretty_version'];
                 } else {
-                    $package['version'] = 'dev-master';
+                    $package['version'] = 'dev-main';
+                    $needsAlias = true;
                 }
             }
 
             $package = $this->loader->load($package);
+            if ($needsAlias && $package instanceof CompletePackage) {
+                // keep a dev-master alias to dev-main for BC
+                $package = new CompleteAliasPackage($package, 'dev-master', 'dev-master');
+            }
             $this->addPackage($package);
         }
     }
