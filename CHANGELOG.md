@@ -1,3 +1,10 @@
+### [2.2.0] 2021-12-22
+
+  * Added support for using `dev-main` as the default path repo package version if no VCS info is available (#10372)
+  * Added --no-scripts as a globally supported flag to all Composer commands to disable scripts execution (#10371)
+  * Fixed self-update failing in some edge cases due to loading plugins (#10371)
+  * Fixed display of conflicts showing the wrong package name in some conditions (#10355)
+
 ### [2.2.0-RC1] 2021-12-08
 
   * Bumped `composer-runtime-api` and `composer-plugin-api` to `2.2.0`
@@ -1332,6 +1339,7 @@
 
   * Initial release
 
+[2.2.0]: https://github.com/composer/composer/compare/2.2.0-RC1...2.2.0
 [2.2.0-RC1]: https://github.com/composer/composer/compare/2.1.14...2.2.0-RC1
 [2.1.14]: https://github.com/composer/composer/compare/2.1.13...2.1.14
 [2.1.13]: https://github.com/composer/composer/compare/2.1.12...2.1.13
