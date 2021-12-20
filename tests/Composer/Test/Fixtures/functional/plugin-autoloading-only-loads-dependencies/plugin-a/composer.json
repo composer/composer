@@ -1,0 +1,15 @@
+{
+    "name": "plugin/a",
+    "version": "1.0.0",
+    "require": {
+        "regular/dep": "*",
+        "composer-plugin-api": "^2"
+    },
+    "autoload": {
+        "classmap": ["PluginA.php"]
+    },
+    "type": "composer-plugin",
+    "extra": {
+        "class": "PluginA"
+    }
+}
