@@ -1,0 +1,24 @@
+--TEST--
+Checks that only plugin dependencies get their autoloading (and specifically files autoloading) rules included.
+--RUN--
+update
+--EXPECT--
+Loading composer repositories with package information
+Updating dependencies
+Lock file operations: 3 installs, 0 updates, 0 removals
+  - Locking plugin/a (1.0.0)
+  - Locking plugin/b (1.0.0)
+  - Locking regular/dep (1.0.0)
+Writing lock file
+Installing dependencies from lock file (including require-dev)
+Package operations: 3 installs, 0 updates, 0 removals
+  - Installing regular/dep (1.0.0): Mirroring from deps-pkg
+  - Installing plugin/a (1.0.0): Mirroring from plugin-a
+regular/dep files autoload initialized
+!!PluginAInit
+  - Installing plugin/b (1.0.0): Mirroring from plugin-b
+!!PluginBInit
+Generating autoload files
+
+--EXPECT-EXIT-CODE--
+0

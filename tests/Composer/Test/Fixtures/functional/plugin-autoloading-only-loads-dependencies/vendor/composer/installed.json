@@ -1,0 +1,28 @@
+{
+    "packages": [
+        {
+            "name": "evil/pkg",
+            "version": "1.0.0",
+            "version_normalized": "1.0.0.0",
+            "dist": {
+                "type": "path",
+                "url": "evil-pkg",
+                "reference": "a95061d7a7e3cf4466381fd1abc504279c95b231"
+            },
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "files": [
+                    "exec.php"
+                ]
+            },
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            },
+            "install-path": "../evil/pkg"
+        }
+    ],
+    "dev": true,
+    "dev-package-names": []
+}

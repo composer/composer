@@ -1,0 +1,16 @@
+{
+    "name": "root/pkg",
+    "version": "1.2.3",
+    "require": {
+        "plugin/b": "*",
+        "evil/pkg": "*"
+    },
+    "repositories": [
+        {"type": "path", "url": "plugin-*", "options": {"symlink": false}},
+        {"type": "path", "url": "deps-*", "options": {"symlink": false}},
+        {"type": "path", "url": "evil-*", "options": {"symlink": false}}
+    ],
+    "config": {
+        "allow-plugins": true
+    }
+}

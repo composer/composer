@@ -1,0 +1,38 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "4c3b9426f087ef6dc15cc81ef697f162",
+    "packages": [
+        {
+            "name": "evil/pkg",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "evil-pkg",
+                "reference": "a95061d7a7e3cf4466381fd1abc504279c95b231"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "exec.php"
+                ]
+            },
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.2.0"
+}
