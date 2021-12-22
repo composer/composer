@@ -582,7 +582,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 4
+			count: 2
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
@@ -602,7 +602,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 12
+			count: 11
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
@@ -842,7 +842,7 @@ parameters:
 
 		-
 			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Command/DumpAutoloadCommand.php
 
 		-
@@ -857,11 +857,6 @@ parameters:
 
 		-
 			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/DumpAutoloadCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/DumpAutoloadCommand.php
 
@@ -1192,7 +1187,7 @@ parameters:
 
 		-
 			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Command/InstallCommand.php
 
 		-
@@ -1212,7 +1207,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 4
+			count: 3
 			path: ../src/Composer/Command/InstallCommand.php
 
 		-
@@ -1307,7 +1302,7 @@ parameters:
 
 		-
 			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Command/ReinstallCommand.php
 
 		-
@@ -1332,7 +1327,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 3
+			count: 2
 			path: ../src/Composer/Command/ReinstallCommand.php
 
 		-
@@ -1362,7 +1357,7 @@ parameters:
 
 		-
 			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Command/RemoveCommand.php
 
 		-
@@ -1407,7 +1402,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 7
+			count: 6
 			path: ../src/Composer/Command/RemoveCommand.php
 
 		-
@@ -1467,7 +1462,7 @@ parameters:
 
 		-
 			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 3
+			count: 2
 			path: ../src/Composer/Command/RequireCommand.php
 
 		-
@@ -1517,7 +1512,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 7
+			count: 6
 			path: ../src/Composer/Command/RequireCommand.php
 
 		-
@@ -1652,16 +1647,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Composer\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/SearchCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/SearchCommand.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/Command/SearchCommand.php
 
@@ -2317,7 +2302,7 @@ parameters:
 
 		-
 			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Command/UpdateCommand.php
 
 		-
@@ -2342,7 +2327,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 6
+			count: 5
 			path: ../src/Composer/Command/UpdateCommand.php
 
 		-
@@ -2501,11 +2486,6 @@ parameters:
 			path: ../src/Composer/Config.php
 
 		-
-			message: "#^Array \\(array\\<string, mixed\\>\\) does not accept key \\(int\\|string\\)\\.$#"
-			count: 3
-			path: ../src/Composer/Config.php
-
-		-
 			message: "#^Array \\(array\\<string, true\\>\\) does not accept key 0\\|string\\.$#"
 			count: 1
 			path: ../src/Composer/Config.php
@@ -2517,7 +2497,7 @@ parameters:
 
 		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
-			count: 4
+			count: 2
 			path: ../src/Composer/Config.php
 
 		-
@@ -2961,18 +2941,8 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Rule.php
 
 		-
-			message: "#^Cannot call method getPrettyConstraint\\(\\) on array\\<string, Composer\\\\Package\\\\BasePackage\\|Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|string\\>\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Rule.php
-
-		-
 			message: "#^Cannot call method getSource\\(\\) on array\\<string, Composer\\\\Package\\\\BasePackage\\|Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|string\\>\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string\\.$#"
-			count: 2
-			path: ../src/Composer/DependencyResolver/Rule.php
-
-		-
-			message: "#^Cannot call method getTarget\\(\\) on array\\<string, Composer\\\\Package\\\\BasePackage\\|Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|string\\>\\|Composer\\\\Package\\\\BasePackage\\|Composer\\\\Package\\\\Link\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string\\.$#"
-			count: 5
+			count: 1
 			path: ../src/Composer/DependencyResolver/Rule.php
 
 		-
@@ -5187,7 +5157,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a ternary operator condition, Composer\\\\Composer\\|null given\\.$#"
-			count: 3
+			count: 1
 			path: ../src/Composer/Plugin/PluginManager.php
 
 		-
@@ -5341,11 +5311,6 @@ parameters:
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
-			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:getPackageNames\\(\\) should return array\\<string\\> but returns array\\<int, int\\|string\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
 			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:getProviderNames\\(\\) should return array\\<string\\> but returns array\\<int, int\\|string\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
@@ -5467,16 +5432,11 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 14
+			count: 13
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
 			message: "#^Only booleans are allowed in \\|\\|, string\\|null given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
-			message: "#^Parameter \\#1 \\$input of function array_keys expects array, array\\<string, Composer\\\\Package\\\\PackageInterface\\>\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
@@ -6097,7 +6057,7 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 6
+			count: 7
 			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
 
 		-
@@ -6148,6 +6108,11 @@ parameters:
 		-
 			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\VcsDriver\\:\\:\\$originUrl \\(string\\) does not accept string\\|false\\.$#"
 			count: 1
+			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
+
+		-
+			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
+			count: 2
 			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
 
 		-
@@ -8788,11 +8753,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, string\\|null given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/Repository/ArtifactRepositoryTest.php
-
-		-
-			message: "#^Parameter \\#4 \\$body of class Composer\\\\Util\\\\Http\\\\Response constructor expects string\\|null, string\\|false given\\.$#"
-			count: 6
-			path: ../tests/Composer/Test/Repository/ComposerRepositoryTest.php
 
 		-
 			message: "#^Cannot call method getName\\(\\) on Composer\\\\Package\\\\BasePackage\\|null\\.$#"
