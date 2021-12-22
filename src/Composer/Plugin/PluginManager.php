@@ -216,6 +216,17 @@ class PluginManager
         $globalRepo = $this->globalComposer !== null ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
 
         $rootPackage = clone $this->composer->getPackage();
+
+        // clear files autoload rules from the root package as the root dependencies are not
+        // necessarily all present yet when booting this runtime autoloader
+        $rootPackageAutoloads = $rootPackage->getAutoload();
+        $rootPackageAutoloads['files'] = array();
+        $rootPackage->setAutoload($rootPackageAutoloads);
+        $rootPackageAutoloads = $rootPackage->getDevAutoload();
+        $rootPackageAutoloads['files'] = array();
+        $rootPackage->setDevAutoload($rootPackageAutoloads);
+        unset($rootPackageAutoloads);
+
         $rootPackageRepo = new RootPackageRepository($rootPackage);
         $installedRepo = new InstalledRepository(array($localRepo, $rootPackageRepo));
         if ($globalRepo) {
