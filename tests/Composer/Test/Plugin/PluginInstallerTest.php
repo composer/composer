@@ -152,6 +152,28 @@ class PluginInstallerTest extends TestCase
         );
     }
 
+    public function testInstallPluginWithRootPackageHavingFilesAutoload()
+    {
+        $this->repository
+            ->expects($this->any())
+            ->method('getPackages')
+            ->will($this->returnValue(array()));
+        $installer = new PluginInstaller($this->io, $this->composer);
+        $this->pm->loadInstalledPlugins();
+
+        $this->autoloadGenerator->setDevMode(true);
+        $this->composer->getPackage()->setAutoload(array('files' => array(__DIR__ . '/Fixtures/files_autoload_which_should_not_run.php')));
+        $this->composer->getPackage()->setDevAutoload(array('files' => array(__DIR__ . '/Fixtures/files_autoload_which_should_not_run.php')));
+        $installer->install($this->repository, $this->packages[0]);
+
+        $plugins = $this->pm->getPlugins();
+        $this->assertEquals(
+            'activate v1'.PHP_EOL,
+            $this->io->getOutput()
+        );
+        $this->assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore-line
+    }
+
     public function testInstallMultiplePlugins()
     {
         $this->repository
