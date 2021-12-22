@@ -95,6 +95,8 @@ class GitLabDriverTest extends TestCase
     "id": 17,
     "default_branch": "mymaster",
     "visibility": "private",
+    "issues_enabled": true,
+    "archived": false,
     "http_url_to_repo": "https://gitlab.com/mygroup/myproject.git",
     "ssh_url_to_repo": "git@gitlab.com:mygroup/myproject.git",
     "last_activity_at": "2014-12-01T09:17:51.000+01:00",

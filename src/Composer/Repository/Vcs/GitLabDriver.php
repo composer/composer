@@ -163,8 +163,12 @@ class GitLabDriver extends VcsDriver
 
             if ($composer) {
                 // specials for gitlab (this data is only available if authentication is provided)
-                if (!isset($composer['support']['issues']) && isset($this->project['_links']['issues'])) {
-                    $composer['support']['issues'] = $this->project['_links']['issues'];
+                if (!isset($composer['support']['source']) && isset($this->project['web_url'])) {
+                    $label = array_search($identifier, $this->getTags(), true) ?: array_search($identifier, $this->getBranches(), true) ?: $identifier;
+                    $composer['support']['source'] = sprintf('%s/-/tree/%s', $this->project['web_url'], $label);
+                }
+                if (!isset($composer['support']['issues']) && !empty($this->project['issues_enabled']) && isset($this->project['web_url'])) {
+                    $composer['support']['issues'] = sprintf('%s/-/issues', $this->project['web_url']);
                 }
                 if (!isset($composer['abandoned']) && !empty($this->project['archived'])) {
                     $composer['abandoned'] = true;
