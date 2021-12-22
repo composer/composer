@@ -1,3 +1,8 @@
+### [2.2.1] 2021-12-22
+
+  * Fixed plugin autoloading including files autoload rules from the root package (#10382)
+  * Fixed issue parsing php files with unterminated comments found inside backticks (#10385)
+
 ### [2.2.0] 2021-12-22
 
   * Added support for using `dev-main` as the default path repo package version if no VCS info is available (#10372)
@@ -1339,6 +1344,7 @@
 
   * Initial release
 
+[2.2.1]: https://github.com/composer/composer/compare/2.2.0...2.2.1
 [2.2.0]: https://github.com/composer/composer/compare/2.2.0-RC1...2.2.0
 [2.2.0-RC1]: https://github.com/composer/composer/compare/2.1.14...2.2.0-RC1
 [2.1.14]: https://github.com/composer/composer/compare/2.1.13...2.1.14
