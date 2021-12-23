@@ -265,6 +265,11 @@ class BinaryInstaller
             if ($this->vendorDir) {
                 $autoloadPathCode = '$GLOBALS[\'_composer_autoload_path\'] = ' . $this->filesystem->findShortestPathCode($link, $this->vendorDir . '/autoload.php', false, true).";\n";
             }
+            // Add workaround for PHPUnit process isolation on PHPUnit 6+
+            if ($this->filesystem->normalizePath($bin) === $this->filesystem->normalizePath($this->vendorDir.'/phpunit/phpunit/phpunit')) {
+                $autoloadPathCode .= '$GLOBALS[\'__PHPUNIT_ISOLATION_EXCLUDE_LIST\'] = [realpath('.$binPathExported.')];'."\n"
+                    .'$GLOBALS[\'__PHPUNIT_ISOLATION_BLACKLIST\'] = [realpath('.$binPathExported.')];'."\n";
+            }
             if (trim($match[0]) !== '<?php') {
                 $streamHint = ' using a stream wrapper to prevent the shebang from being output on PHP<8'."\n *";
                 $streamProxyCode = <<<STREAMPROXY
