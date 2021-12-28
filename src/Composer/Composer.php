@@ -66,7 +66,7 @@ class Composer
      *
      * @var string
      */
-    const RUNTIME_API_VERSION = '2.2.0';
+    const RUNTIME_API_VERSION = '2.2.2';
 
     /**
      * @return string
