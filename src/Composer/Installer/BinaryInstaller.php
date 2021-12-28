@@ -231,12 +231,14 @@ class BinaryInstaller
             return "@ECHO OFF\r\n".
                 "setlocal DISABLEDELAYEDEXPANSION\r\n".
                 "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape(basename($link, '.bat')), '"\'')."\r\n".
+                "SET COMPOSER_BIN_DIR=%~dp0\r\n".
                 "{$caller} \"%BIN_TARGET%\" %*\r\n";
         }
 
         return "@ECHO OFF\r\n".
             "setlocal DISABLEDELAYEDEXPANSION\r\n".
             "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape($binPath), '"\'')."\r\n".
+            "SET COMPOSER_BIN_DIR=%~dp0\r\n".
             "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 
@@ -260,14 +262,15 @@ class BinaryInstaller
             // carry over the existing shebang if present, otherwise add our own
             $proxyCode = empty($match[1]) ? '#!/usr/bin/env php' : trim($match[1]);
             $binPathExported = $this->filesystem->findShortestPathCode($link, $bin, false, true);
-            $autoloadPathCode = $streamProxyCode = $streamHint = '';
+            $streamProxyCode = $streamHint = '';
+            $globalsCode = '$GLOBALS[\'_composer_bin_dir\'] = __DIR__;'."\n";
             // Don't expose autoload path when vendor dir was not set in custom installers
             if ($this->vendorDir) {
-                $autoloadPathCode = '$GLOBALS[\'_composer_autoload_path\'] = ' . $this->filesystem->findShortestPathCode($link, $this->vendorDir . '/autoload.php', false, true).";\n";
+                $globalsCode .= '$GLOBALS[\'_composer_autoload_path\'] = ' . $this->filesystem->findShortestPathCode($link, $this->vendorDir . '/autoload.php', false, true).";\n";
             }
             // Add workaround for PHPUnit process isolation on PHPUnit 6+
             if ($this->filesystem->normalizePath($bin) === $this->filesystem->normalizePath($this->vendorDir.'/phpunit/phpunit/phpunit')) {
-                $autoloadPathCode .= '$GLOBALS[\'__PHPUNIT_ISOLATION_EXCLUDE_LIST\'] = $GLOBALS[\'__PHPUNIT_ISOLATION_BLACKLIST\'] = array(realpath('.$binPathExported.'));'."\n";
+                $globalsCode .= '$GLOBALS[\'__PHPUNIT_ISOLATION_EXCLUDE_LIST\'] = $GLOBALS[\'__PHPUNIT_ISOLATION_BLACKLIST\'] = array(realpath('.$binPathExported.'));'."\n";
             }
             if (trim($match[0]) !== '<?php') {
                 $streamHint = ' using a stream wrapper to prevent the shebang from being output on PHP<8'."\n *";
@@ -368,7 +371,7 @@ STREAMPROXY;
 
 namespace Composer;
 
-$autoloadPathCode
+$globalsCode
 $streamProxyCode
 include $binPathExported;
 
@@ -388,6 +391,8 @@ if [ -d /proc/cygdrive ]; then
             ;;
     esac
 fi
+
+export COMPOSER_BIN_DIR=\$(cd "\${0%[/\\\\]*}" > /dev/null; pwd)
 
 "\${dir}/$binFile" "\$@"
 
