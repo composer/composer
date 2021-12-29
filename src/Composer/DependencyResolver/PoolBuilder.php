@@ -639,6 +639,8 @@ class PoolBuilder
                     // make sure that any requirements for this package by other locked or fixed packages are now
                     // also loaded, as they were previously ignored because the locked (now unlocked) package already
                     // satisfied their requirements
+                    // and if this package is replacing another that is required by a locked or fixed package, ensure
+                    // that we load that replaced package in case an update to this package removes the replacement
                     foreach ($request->getFixedOrLockedPackages() as $fixedOrLockedPackage) {
                         if ($fixedOrLockedPackage === $lockedPackage) {
                             continue;
@@ -648,6 +650,12 @@ class PoolBuilder
                             $requires = $fixedOrLockedPackage->getRequires();
                             if (isset($requires[$lockedPackage->getName()])) {
                                 $this->markPackageNameForLoading($request, $lockedPackage->getName(), $requires[$lockedPackage->getName()]->getConstraint());
+                            }
+                            foreach ($lockedPackage->getReplaces() as $replace) {
+                                if (isset($requires[$replace->getTarget()], $this->skippedLoad[$replace->getTarget()])) {
+                                    $this->unlockPackage($request, $repositories, $replace->getTarget());
+                                    $this->markPackageNameForLoading($request, $replace->getTarget(), $requires[$replace->getTarget()]->getConstraint());
+                                }
                             }
                         }
                     }
