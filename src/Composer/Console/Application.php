@@ -20,6 +20,7 @@ use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
+use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -119,7 +120,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * @inheritDoc
+     * @return int
      */
     public function run(InputInterface $input = null, OutputInterface $output = null)
     {
@@ -131,7 +132,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * @inheritDoc
+     * @return int
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
@@ -492,6 +493,7 @@ class Application extends BaseApplication
 
     /**
      * Initializes all the composer commands.
+     * @return \Symfony\Component\Console\Command\Command[]
      */
     protected function getDefaultCommands()
     {
@@ -534,7 +536,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * @inheritDoc
+     * @return string
      */
     public function getLongVersion()
     {
@@ -552,7 +554,7 @@ class Application extends BaseApplication
     }
 
     /**
-     * @inheritDoc
+     * @return InputDefinition
      */
     protected function getDefaultInputDefinition()
     {
