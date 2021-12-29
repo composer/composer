@@ -1,3 +1,10 @@
+### [2.2.2] 2021-12-29
+
+  * Added [`COMPOSER_BIN_DIR` env var and `_composer_bin_dir` global](https://getcomposer.org/doc/articles/vendor-binaries.md#finding-the-composer-bin-dir-from-a-binary) containing the path to the bin-dir for binaries. Packages relying on finding the bin dir with `$BASH_SOURCES[0]` will need to update their binaries (#10402)
+  * Fixed issue when new binary proxies are combined with PHPUnit and process isolation (#10387)
+  * Fixed deprecation warnings when using Symfony 5.4+ and requiring composer/composer itself (#10404)
+  * Fixed UX of plugin warnings (#10381)
+
 ### [2.2.1] 2021-12-22
 
   * Fixed plugin autoloading including files autoload rules from the root package (#10382)
@@ -1344,6 +1351,7 @@
 
   * Initial release
 
+[2.2.2]: https://github.com/composer/composer/compare/2.2.1...2.2.2
 [2.2.1]: https://github.com/composer/composer/compare/2.2.0...2.2.1
 [2.2.0]: https://github.com/composer/composer/compare/2.2.0-RC1...2.2.0
 [2.2.0-RC1]: https://github.com/composer/composer/compare/2.1.14...2.2.0-RC1
