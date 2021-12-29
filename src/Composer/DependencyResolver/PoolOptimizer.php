@@ -418,6 +418,19 @@ class PoolOptimizer
         }
 
         foreach ($request->getLockedPackages() as $package) {
+            // If this locked package is no longer required by root or anything in the pool, it may get uninstalled so do not apply its requirements
+            // In a case where a requirement WERE to appear in the pool by a package that would not be used, it would've been unlocked and so not filtered still
+            $ignoreUnusedPackage = false;
+            foreach ($package->getNames(false) as $packageName) {
+                if (!isset($this->requireConstraintsPerPackage[$packageName])) {
+                    $ignoreUnusedPackage = true;
+                }
+            }
+
+            if ($ignoreUnusedPackage) {
+                continue;
+            }
+
             foreach ($package->getRequires() as $link) {
                 $require = $link->getTarget();
                 if (!isset($packageIndex[$require])) {
