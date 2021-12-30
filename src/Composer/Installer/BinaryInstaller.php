@@ -348,7 +348,7 @@ if (PHP_VERSION_ID < 80000) {
 
             public function stream_stat()
             {
-                return fstat(\$this->handle);
+                return array();
             }
 
             public function stream_set_option(\$option, \$arg1, \$arg2)
