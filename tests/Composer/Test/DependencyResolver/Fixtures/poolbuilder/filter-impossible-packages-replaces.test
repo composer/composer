@@ -1,0 +1,58 @@
+--TEST--
+Do not load packages into the pool that cannot meet the fixed/locked requirements, when a loose requirement is encountered during update
+(Variant where requirement is on a replaced package, the locked second package should restrict the replacer to those that replace < 3.0.0)
+(NOTE: We are not optimising this scenario currently)
+
+--REQUEST--
+{
+    "require": {
+        "first/pkg": "*",
+        "second/pkg": "*",
+        "replacer/pkg": "*"
+    },
+    "locked": [
+        {"name": "first/pkg", "version": "1.0.0", "require": {"replaced/pkg": "1.0.0"}},
+        {"name": "second/pkg", "version": "1.0.0", "require": {"replaced/pkg": "< 3.0.0"}},
+        {"name": "replacer/pkg", "version": "1.0.0", "replace": {"replaced/pkg": "1.0.0"}}
+    ],
+    "allowList": [
+        "first/pkg"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "first/pkg", "version": "1.0.0", "require": {"replaced/pkg": "1.0.0"}},
+        {"name": "first/pkg", "version": "1.1.0", "require": {"replaced/pkg": "2.0.0"}},
+        {"name": "second/pkg", "version": "1.0.0", "require": {"replaced/pkg": "*"}},
+        {"name": "replacer/pkg", "version": "1.0.0", "replace": {"replaced/pkg": "1.0.0"}},
+        {"name": "replacer/pkg", "version": "1.1.0", "replace": {"replaced/pkg": "2.0.0"}},
+        {"name": "replacer/pkg", "version": "1.2.0", "replace": {"replaced/pkg": "3.0.0"}}
+    ]
+]
+
+--EXPECT--
+[
+    "second/pkg-1.0.0.0 (locked)",
+    "first/pkg-1.0.0.0",
+    "first/pkg-1.1.0.0",
+    "replacer/pkg-1.0.0.0",
+    "replacer/pkg-1.1.0.0",
+    "replacer/pkg-1.2.0.0"
+]
+
+--EXPECT-OPTIMIZED--
+[
+    "second/pkg-1.0.0.0 (locked)",
+    "first/pkg-1.0.0.0",
+    "first/pkg-1.1.0.0",
+    "replacer/pkg-1.0.0.0",
+    "replacer/pkg-1.1.0.0",
+    "replacer/pkg-1.2.0.0"
+]

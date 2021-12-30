@@ -1,5 +1,6 @@
 --TEST--
 Do not load packages into the pool that cannot meet the fixed/locked requirements, when a loose requirement is encountered during update
+(The locked root/req package should restrict dep/dep to only 2.* versions)
 
 --REQUEST--
 {

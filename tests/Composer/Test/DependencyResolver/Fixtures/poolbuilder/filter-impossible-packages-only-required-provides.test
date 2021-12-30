@@ -1,0 +1,58 @@
+--TEST--
+When filtering packages from the pool that cannot meet the fixed/locked requirements, ensure that the requirements for a package that is not required anywhere is not used to filter, as it will be ultimately be removed.
+(Variant where the requirement is on a provided package, the locked third/pkg must not restrict the provider)
+(NOTE: We are not optimising this scenario currently)
+
+--REQUEST--
+{
+    "require": {
+        "first/pkg": "*",
+        "second/pkg": "1.1.0",
+        "provider/pkg": "*"
+    },
+    "locked": [
+        {"name": "first/pkg", "version": "1.0.0", "require": {"second/pkg": "^1.0"}},
+        {"name": "second/pkg", "version": "1.0.0", "require": {"third/pkg": "1.0.0"}},
+        {"name": "third/pkg", "version": "1.0.0", "require": {"provided/pkg": "1.0.0"}},
+        {"name": "provider/pkg", "version": "1.0.0", "provide": {"provided/pkg": "1.0.0"}}
+    ],
+    "allowList": [
+        "first/pkg",
+        "provider/pkg"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "first/pkg", "version": "1.0.0", "require": {"second/pkg": "*"}},
+        {"name": "second/pkg", "version": "1.0.0", "require": {"third/pkg": "1.0.0"}},
+        {"name": "second/pkg", "version": "1.1.0", "require": {"provided/pkg": "2.0.0"}},
+        {"name": "third/pkg", "version": "1.0.0", "require": {"provided/pkg": "1.0.0"}},
+        {"name": "provider/pkg", "version": "1.0.0", "provide": {"provided/pkg": "1.0.0"}},
+        {"name": "provider/pkg", "version": "2.0.0", "provide": {"provided/pkg": "2.0.0"}}
+    ]
+]
+
+--EXPECT--
+[
+    "third/pkg-1.0.0.0 (locked)",
+    "first/pkg-1.0.0.0",
+    "provider/pkg-1.0.0.0",
+    "provider/pkg-2.0.0.0",
+    "second/pkg-1.1.0.0"
+]
+
+--EXPECT-OPTIMIZED--
+[
+    "third/pkg-1.0.0.0 (locked)",
+    "first/pkg-1.0.0.0",
+    "provider/pkg-1.0.0.0",
+    "provider/pkg-2.0.0.0",
+    "second/pkg-1.1.0.0"
+]
