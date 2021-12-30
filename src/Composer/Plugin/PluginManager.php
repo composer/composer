@@ -252,9 +252,10 @@ class PluginManager
         $classLoader->register(false);
 
         foreach ($map['files'] as $fileIdentifier => $file) {
-            // exclude laminas/laminas-zendframework-bridge:src/autoload.php in versions <1.4.1 as it was broken on fresh installs
-            // see https://github.com/composer/composer/issues/10349 - this hack can be removed once <1.4.1 releases stop being installed
-            if ($fileIdentifier === '7e9bd612cc444b3eed788ebbe46263a0' && null !== $localRepo->findPackage('laminas/laminas-zendframework-bridge', '<1.4.1')) {
+            // exclude laminas/laminas-zendframework-bridge:src/autoload.php as it breaks Composer in some conditions
+            // see https://github.com/composer/composer/issues/10349 and https://github.com/composer/composer/issues/10401
+            // this hack can be removed once this deprecated package stop being installed
+            if ($fileIdentifier === '7e9bd612cc444b3eed788ebbe46263a0') {
                 continue;
             }
             \Composer\Autoload\composerRequire($fileIdentifier, $file);
