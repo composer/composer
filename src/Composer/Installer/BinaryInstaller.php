@@ -274,7 +274,7 @@ class BinaryInstaller
                 // workaround issue on PHPUnit 6.5+ running on PHP 8+
                 $globalsCode .= '$GLOBALS[\'__PHPUNIT_ISOLATION_EXCLUDE_LIST\'] = $GLOBALS[\'__PHPUNIT_ISOLATION_BLACKLIST\'] = array(realpath('.$binPathExported.'));'."\n";
                 // workaround issue on all PHPUnit versions running on PHP <8
-                $phpunitHack1 = "'phpvfs1://'.";
+                $phpunitHack1 = "'phpvfscomposer://'.";
                 $phpunitHack2 = '
                 $data = str_replace(\'__DIR__\', var_export(dirname($this->realpath), true), $data);
                 $data = str_replace(\'__FILE__\', var_export($this->realpath, true), $data);';
@@ -295,15 +295,12 @@ if (PHP_VERSION_ID < 80000) {
 
             public function stream_open(\$path, \$mode, \$options, &\$opened_path)
             {
-                // get rid of composer-bin-proxy:// prefix for __FILE__ & __DIR__ resolution
-                \$opened_path = substr(\$path, 21);
+                // get rid of phpvfscomposer:// prefix for __FILE__ & __DIR__ resolution
+                \$opened_path = substr(\$path, 17);
                 \$this->realpath = realpath(\$opened_path) ?: \$opened_path;
                 \$opened_path = $phpunitHack1\$this->realpath;
                 \$this->handle = fopen(\$this->realpath, \$mode);
                 \$this->position = 0;
-
-                // remove all traces of this stream wrapper once it has been used
-                stream_wrapper_unregister('composer-bin-proxy');
 
                 return (bool) \$this->handle;
             }
@@ -355,11 +352,16 @@ if (PHP_VERSION_ID < 80000) {
             {
                 return true;
             }
+
+            public function url_stat(\$path, \$flags)
+            {
+                return stat(substr(\$path, 17));
+            }
         }
     }
 
-    if (function_exists('stream_wrapper_register') && stream_wrapper_register('composer-bin-proxy', 'Composer\BinProxyWrapper')) {
-        include("composer-bin-proxy://" . $binPathExported);
+    if (function_exists('stream_wrapper_register') && stream_wrapper_register('phpvfscomposer', 'Composer\BinProxyWrapper')) {
+        include("phpvfscomposer://" . $binPathExported);
         exit(0);
     }
 }
