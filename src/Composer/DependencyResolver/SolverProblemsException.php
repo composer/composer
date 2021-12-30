@@ -40,6 +40,14 @@ class SolverProblemsException extends \RuntimeException
     }
 
     /**
+     * @return self::ERROR_DEPENDENCY_RESOLUTION_FAILED
+     */
+    public function getExitCode()
+    {
+        return self::ERROR_DEPENDENCY_RESOLUTION_FAILED;
+    }
+
+    /**
      * @param bool $isVerbose
      * @param bool $isDevExtraction
      * @return string

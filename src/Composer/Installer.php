@@ -455,7 +455,7 @@ class Installer
             $ghe = new GithubActionError($this->io);
             $ghe->emit($err."\n".$prettyProblem);
 
-            return max(self::ERROR_GENERIC_FAILURE, $e->getCode());
+            return max(self::ERROR_GENERIC_FAILURE, $e->getExitCode());
         }
 
         $this->io->writeError("Analyzed ".count($pool)." packages to resolve dependencies", true, IOInterface::VERBOSE);
@@ -633,7 +633,7 @@ class Installer
             $ghe = new GithubActionError($this->io);
             $ghe->emit($err."\n".$prettyProblem);
 
-            return max(self::ERROR_GENERIC_FAILURE, $e->getCode());
+            return max(self::ERROR_GENERIC_FAILURE, $e->getExitCode());
         }
 
         $lockTransaction->setNonDevPackages($nonDevLockTransaction);
@@ -703,7 +703,7 @@ class Installer
                 $ghe = new GithubActionError($this->io);
                 $ghe->emit($err."\n".$prettyProblem);
 
-                return max(self::ERROR_GENERIC_FAILURE, $e->getCode());
+                return max(self::ERROR_GENERIC_FAILURE, $e->getExitCode());
             }
         }
 
