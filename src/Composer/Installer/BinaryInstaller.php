@@ -392,7 +392,13 @@ PROXY;
         return <<<PROXY
 #!/usr/bin/env sh
 
-dir=\$(cd "\${0%[/\\\\]*}" > /dev/null; cd $binDir && pwd)
+self=\$(realpath \$0)
+if [ -z "\$self" ]
+then
+    self="\$0"
+fi
+
+dir=\$(cd "\${self%[/\\\\]*}" > /dev/null; cd $binDir && pwd)
 
 if [ -d /proc/cygdrive ]; then
     case \$(which php) in
@@ -403,7 +409,7 @@ if [ -d /proc/cygdrive ]; then
     esac
 fi
 
-export COMPOSER_BIN_DIR=\$(cd "\${0%[/\\\\]*}" > /dev/null; pwd)
+export COMPOSER_BIN_DIR=\$(cd "\${self%[/\\\\]*}" > /dev/null; pwd)
 
 "\${dir}/$binFile" "\$@"
 
