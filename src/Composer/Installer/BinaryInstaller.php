@@ -264,13 +264,20 @@ class BinaryInstaller
             $binPathExported = $this->filesystem->findShortestPathCode($link, $bin, false, true);
             $streamProxyCode = $streamHint = '';
             $globalsCode = '$GLOBALS[\'_composer_bin_dir\'] = __DIR__;'."\n";
+            $phpunitHack1 = $phpunitHack2 = '';
             // Don't expose autoload path when vendor dir was not set in custom installers
             if ($this->vendorDir) {
                 $globalsCode .= '$GLOBALS[\'_composer_autoload_path\'] = ' . $this->filesystem->findShortestPathCode($link, $this->vendorDir . '/autoload.php', false, true).";\n";
             }
-            // Add workaround for PHPUnit process isolation on PHPUnit 6+
+            // Add workaround for PHPUnit process isolation
             if ($this->filesystem->normalizePath($bin) === $this->filesystem->normalizePath($this->vendorDir.'/phpunit/phpunit/phpunit')) {
+                // workaround issue on PHPUnit 6.5+ running on PHP 8+
                 $globalsCode .= '$GLOBALS[\'__PHPUNIT_ISOLATION_EXCLUDE_LIST\'] = $GLOBALS[\'__PHPUNIT_ISOLATION_BLACKLIST\'] = array(realpath('.$binPathExported.'));'."\n";
+                // workaround issue on all PHPUnit versions running on PHP <8
+                $phpunitHack1 = "'phpvfs1://'.";
+                $phpunitHack2 = '
+                $data = str_replace(\'__DIR__\', var_export(dirname($this->realpath), true), $data);
+                $data = str_replace(\'__FILE__\', var_export($this->realpath, true), $data);';
             }
             if (trim($match[0]) !== '<?php') {
                 $streamHint = ' using a stream wrapper to prevent the shebang from being output on PHP<8'."\n *";
@@ -284,13 +291,15 @@ if (PHP_VERSION_ID < 80000) {
         {
             private \$handle;
             private \$position;
+            private \$realpath;
 
             public function stream_open(\$path, \$mode, \$options, &\$opened_path)
             {
                 // get rid of composer-bin-proxy:// prefix for __FILE__ & __DIR__ resolution
                 \$opened_path = substr(\$path, 21);
-                \$opened_path = realpath(\$opened_path) ?: \$opened_path;
-                \$this->handle = fopen(\$opened_path, \$mode);
+                \$this->realpath = realpath(\$opened_path) ?: \$opened_path;
+                \$opened_path = $phpunitHack1\$this->realpath;
+                \$this->handle = fopen(\$this->realpath, \$mode);
                 \$this->position = 0;
 
                 // remove all traces of this stream wrapper once it has been used
@@ -305,7 +314,7 @@ if (PHP_VERSION_ID < 80000) {
 
                 if (\$this->position === 0) {
                     \$data = preg_replace('{^#!.*\\r?\\n}', '', \$data);
-                }
+                }$phpunitHack2
 
                 \$this->position += strlen(\$data);
 
