@@ -1,0 +1,60 @@
+--TEST--
+Do not load packages into the pool that cannot meet the fixed/locked requirements, when a loose requirement is encountered during update
+(The locked replacer/pkg should restrict dependencies even though it is only referenced by its replaced name)
+
+--REQUEST--
+{
+    "require": {
+        "first/pkg": "*",
+        "second/pkg": "*",
+        "replacer/dep": "*"
+    },
+    "locked": [
+        {"name": "first/pkg", "version": "1.0.0", "require": {"replaced/pkg": "1.0.0"}},
+        {"name": "second/pkg", "version": "1.0.0"},
+        {"name": "replacer/pkg", "version": "1.0.0", "replace": {"replaced/pkg": "1.0.0"}, "require": {"replacer/dep": "1.*"}},
+        {"name": "replacer/dep", "version": "1.0.0"}
+    ],
+    "allowList": [
+        "second/pkg",
+        "replacer/dep"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "first/pkg", "version": "1.0.0", "require": {"replaced/pkg": "1.0.0"}},
+        {"name": "first/pkg", "version": "1.1.0", "require": {"replaced/pkg": "2.0.0"}},
+        {"name": "second/pkg", "version": "1.0.0"},
+        {"name": "replacer/pkg", "version": "1.0.0", "replace": {"replaced/pkg": "1.0.0"}, "require": {"replacer/dep": "1.*"}},
+        {"name": "replacer/pkg", "version": "1.1.0", "replace": {"replaced/pkg": "2.0.0"}, "require": {"replacer/dep": "1.*"}},
+        {"name": "replacer/pkg", "version": "1.2.0", "replace": {"replaced/pkg": "3.0.0"}, "require": {"replacer/dep": "1.*"}},
+        {"name": "replacer/dep", "version": "1.0.0"},
+        {"name": "replacer/dep", "version": "1.0.1"},
+        {"name": "replacer/dep", "version": "2.0.0"}
+    ]
+]
+
+--EXPECT--
+[
+    "first/pkg-1.0.0.0 (locked)",
+    "replacer/pkg-1.0.0.0 (locked)",
+    "second/pkg-1.0.0.0",
+    "replacer/dep-1.0.0.0",
+    "replacer/dep-1.0.1.0",
+    "replacer/dep-2.0.0.0"
+]
+
+--EXPECT-OPTIMIZED--
+[
+    "first/pkg-1.0.0.0 (locked)",
+    "replacer/pkg-1.0.0.0 (locked)",
+    "second/pkg-1.0.0.0",
+    "replacer/dep-1.0.1.0"
+]

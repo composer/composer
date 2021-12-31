@@ -1,0 +1,59 @@
+--TEST--
+Do not load packages into the pool that cannot meet the fixed/locked requirements, when a loose requirement is encountered during update
+(Variant where requirement is on a provided package, the locked second package should restrict the provider to those that provide < 3.0.0)
+(NOTE: We are not optimising this scenario currently)
+
+--REQUEST--
+{
+    "require": {
+        "first/pkg": "*",
+        "second/pkg": "*",
+        "provider/pkg": "*"
+    },
+    "locked": [
+        {"name": "first/pkg", "version": "1.0.0", "require": {"provided/pkg": "1.0.0"}},
+        {"name": "second/pkg", "version": "1.0.0", "require": {"provided/pkg": "< 3.0.0"}},
+        {"name": "provider/pkg", "version": "1.0.0", "provide": {"provided/pkg": "1.0.0"}}
+    ],
+    "allowList": [
+        "first/pkg",
+        "provider/pkg"
+    ],
+    "allowTransitiveDeps": true
+}
+
+--FIXED--
+[
+]
+
+--PACKAGE-REPOS--
+[
+    [
+        {"name": "first/pkg", "version": "1.0.0", "require": {"provided/pkg": "1.0.0"}},
+        {"name": "first/pkg", "version": "1.1.0", "require": {"provided/pkg": "2.0.0"}},
+        {"name": "second/pkg", "version": "1.0.0", "require": {"provided/pkg": "*"}},
+        {"name": "provider/pkg", "version": "1.0.0", "provide": {"provided/pkg": "1.0.0"}},
+        {"name": "provider/pkg", "version": "1.1.0", "provide": {"provided/pkg": "2.0.0"}},
+        {"name": "provider/pkg", "version": "1.2.0", "provide": {"provided/pkg": "3.0.0"}}
+    ]
+]
+
+--EXPECT--
+[
+    "second/pkg-1.0.0.0 (locked)",
+    "first/pkg-1.0.0.0",
+    "first/pkg-1.1.0.0",
+    "provider/pkg-1.0.0.0",
+    "provider/pkg-1.1.0.0",
+    "provider/pkg-1.2.0.0"
+]
+
+--EXPECT-OPTIMIZED--
+[
+    "second/pkg-1.0.0.0 (locked)",
+    "first/pkg-1.0.0.0",
+    "first/pkg-1.1.0.0",
+    "provider/pkg-1.0.0.0",
+    "provider/pkg-1.1.0.0",
+    "provider/pkg-1.2.0.0"
+]
