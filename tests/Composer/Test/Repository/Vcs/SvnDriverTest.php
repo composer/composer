@@ -17,6 +17,7 @@ use Composer\Config;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Test\Mock\ProcessExecutorMock;
+use Composer\Util\ProcessExecutor;
 
 class SvnDriverTest extends TestCase
 {
@@ -60,13 +61,19 @@ class SvnDriverTest extends TestCase
         $output .= " rejected Basic challenge (https://corp.svn.local/)";
 
         $process = $this->getProcessExecutorMock();
+        $authedCommand = sprintf(
+            'svn ls --verbose --non-interactive  --username %s --password %s  -- %s',
+            ProcessExecutor::escape('till'),
+            ProcessExecutor::escape('secret'),
+            ProcessExecutor::escape('https://till:secret@corp.svn.local/repo/trunk')
+        );
         $process->expects(array(
-            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
-            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
-            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
-            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
-            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
-            array('cmd' => "svn ls --verbose --non-interactive  --username 'till' --password 'secret'  -- 'https://till:secret@corp.svn.local/repo/trunk'", 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
             array('cmd' => 'svn --version', 'return' => 0, 'stdout' => '1.2.3'),
         ), true);
 

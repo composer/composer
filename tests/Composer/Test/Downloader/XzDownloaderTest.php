@@ -41,6 +41,9 @@ class XzDownloaderTest extends TestCase
 
     protected function tearDown(): void
     {
+        if (Platform::isWindows()) {
+            return;
+        }
         parent::tearDown();
         $this->fs = new Filesystem;
         $this->fs->removeDirectory($this->testDir);
