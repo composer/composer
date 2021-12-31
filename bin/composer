@@ -9,7 +9,6 @@ setlocale(LC_ALL, 'C');
 require __DIR__.'/../src/bootstrap.php';
 
 use Composer\Console\Application;
-use Composer\Factory;
 use Composer\XdebugHandler\XdebugHandler;
 use Composer\Util\Platform;
 use Composer\Util\ErrorHandler;
@@ -72,4 +71,4 @@ ErrorHandler::register();
 
 // run the command application
 $application = new Application();
-$application->run(null, Factory::createOutput());
+$application->run();
