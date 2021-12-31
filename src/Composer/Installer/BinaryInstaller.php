@@ -355,7 +355,12 @@ if (PHP_VERSION_ID < 80000) {
 
             public function url_stat(\$path, \$flags)
             {
-                return stat(substr(\$path, 17));
+                \$path = substr(\$path, 17);
+                if (file_exists(\$path)) {
+                    return stat(\$path);
+                }
+
+                return false;
             }
         }
     }
