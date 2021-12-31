@@ -122,18 +122,6 @@ class Application extends BaseApplication
     /**
      * @return int
      */
-    public function run(InputInterface $input = null, OutputInterface $output = null)
-    {
-        if (null === $output) {
-            $output = Factory::createOutput();
-        }
-
-        return parent::run($input, $output);
-    }
-
-    /**
-     * @return int
-     */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
