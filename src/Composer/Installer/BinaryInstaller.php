@@ -397,9 +397,8 @@ PROXY;
         return <<<PROXY
 #!/usr/bin/env sh
 
-self=\$(realpath \$0 >/dev/null 2>&1)
-if [ -z "\$self" ]
-then
+self=\$(realpath \$0 2> /dev/null)
+if [ -z "\$self" ]; then
     self="\$0"
 fi
 
