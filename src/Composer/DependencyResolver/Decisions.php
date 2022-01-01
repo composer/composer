@@ -205,20 +205,12 @@ class Decisions implements \Iterator, \Countable
         array_pop($this->decisionQueue);
     }
 
-    /**
-     * @return int
-     */
-    #[\ReturnTypeWillChange]
-    public function count()
+    public function count(): int
     {
         return \count($this->decisionQueue);
     }
 
-    /**
-     * @return void
-     */
-    #[\ReturnTypeWillChange]
-    public function rewind()
+    public function rewind(): void
     {
         end($this->decisionQueue);
     }
@@ -232,29 +224,17 @@ class Decisions implements \Iterator, \Countable
         return current($this->decisionQueue);
     }
 
-    /**
-     * @return ?int
-     */
-    #[\ReturnTypeWillChange]
-    public function key()
+    public function key(): ?int
     {
         return key($this->decisionQueue);
     }
 
-    /**
-     * @return void
-     */
-    #[\ReturnTypeWillChange]
-    public function next()
+    public function next(): void
     {
         prev($this->decisionQueue);
     }
 
-    /**
-     * @return bool
-     */
-    #[\ReturnTypeWillChange]
-    public function valid()
+    public function valid(): bool
     {
         return false !== current($this->decisionQueue);
     }

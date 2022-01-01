@@ -181,8 +181,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    #[\ReturnTypeWillChange]
-    public function count()
+    public function count(): int
     {
         if ($this->repo->count() > 0) {
             return count($this->getPackages());

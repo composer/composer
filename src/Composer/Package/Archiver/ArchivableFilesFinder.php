@@ -90,8 +90,7 @@ class ArchivableFilesFinder extends \FilterIterator
         parent::__construct($this->finder->getIterator());
     }
 
-    #[\ReturnTypeWillChange]
-    public function accept()
+    public function accept(): bool
     {
         /** @var SplFileInfo $current */
         $current = $this->getInnerIterator()->current();
