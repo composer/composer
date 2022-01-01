@@ -453,6 +453,9 @@ class InstallerTest extends TestCase
 
         $application->setAutoExit(false);
         $appOutput = fopen('php://memory', 'w+');
+        if (false === $appOutput) {
+            self::fail('Failed to open memory stream');
+        }
         $input = new StringInput($run.' -vvv');
         $input->setInteractive(false);
         $result = $application->run($input, new StreamOutput($appOutput));
@@ -555,7 +558,7 @@ class InstallerTest extends TestCase
                 if (!empty($testData['LOCK'])) {
                     $lock = JsonFile::parseJson($testData['LOCK']);
                     if (!isset($lock['hash'])) {
-                        $lock['hash'] = md5(json_encode($composer));
+                        $lock['hash'] = md5(JsonFile::encode($composer, 0));
                     }
                 }
                 if (!empty($testData['INSTALLED'])) {

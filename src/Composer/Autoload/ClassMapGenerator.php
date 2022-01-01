@@ -163,7 +163,8 @@ class ClassMapGenerator
         $rejectedClasses = array();
 
         $realSubPath = substr($filePath, strlen($basePath) + 1);
-        $realSubPath = substr($realSubPath, 0, strrpos($realSubPath, '.'));
+        $dotPosition = strrpos($realSubPath, '.');
+        $realSubPath = substr($realSubPath, 0, $dotPosition === false ? PHP_INT_MAX : $dotPosition);
 
         foreach ($classes as $class) {
             // silently skip if ns doesn't have common root
@@ -226,7 +227,7 @@ class ClassMapGenerator
                 $message = 'File at "%s" does not exist, check your classmap definitions';
             } elseif (!Filesystem::isReadable($path)) {
                 $message = 'File at "%s" is not readable, check its permissions';
-            } elseif ('' === trim(file_get_contents($path))) {
+            } elseif ('' === trim((string) file_get_contents($path))) {
                 // The input file was really empty and thus contains no classes
                 return array();
             } else {

@@ -218,7 +218,7 @@ class Cache
             $file = Preg::replace('{[^'.$this->allowlist.']}i', '-', $file);
             if (file_exists($this->root . $file)) {
                 try {
-                    touch($this->root . $file, filemtime($this->root . $file), time());
+                    touch($this->root . $file, (int) filemtime($this->root . $file), time());
                 } catch (\ErrorException $e) {
                     // fallback in case the above failed due to incorrect ownership
                     // see https://github.com/composer/composer/issues/4070

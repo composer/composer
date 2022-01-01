@@ -137,7 +137,11 @@ final class TlsHelper
      */
     public static function getCertificateFingerprint($certificate)
     {
-        $pubkeydetails = openssl_pkey_get_details(openssl_get_publickey($certificate));
+        $pubkey = openssl_get_publickey($certificate);
+        if ($pubkey === false) {
+            throw new \RuntimeException('Failed to retrieve the public key from certificate');
+        }
+        $pubkeydetails = openssl_pkey_get_details($pubkey);
         $pubkeypem = $pubkeydetails['key'];
         //Convert PEM to DER before SHA1'ing
         $start = '-----BEGIN PUBLIC KEY-----';

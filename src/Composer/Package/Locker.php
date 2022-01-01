@@ -80,7 +80,7 @@ class Locker
      */
     public static function getContentHash($composerFileContents)
     {
-        $content = json_decode($composerFileContents, true);
+        $content = JsonFile::parseJson($composerFileContents, 'composer.json');
 
         $relevantKeys = array(
             'name',
@@ -107,7 +107,7 @@ class Locker
 
         ksort($relevantContent);
 
-        return md5(json_encode($relevantContent));
+        return md5(JsonFile::encode($relevantContent, 0));
     }
 
     /**

@@ -156,7 +156,6 @@ class ComposerRepositoryTest extends TestCase
                 ),
             )));
 
-        $versionParser = new VersionParser();
         $reflMethod = new \ReflectionMethod($repo, 'whatProvides');
         $reflMethod->setAccessible(true);
         $packages = $reflMethod->invoke($repo, 'a');

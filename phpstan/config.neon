@@ -3,6 +3,7 @@ includes:
     - ../vendor/phpstan/phpstan-deprecation-rules/rules.neon
     - ../vendor/phpstan/phpstan-strict-rules/rules.neon
     - ./baseline.neon
+    - ./ignore-by-php-version.neon.php
 
 parameters:
     level: 8

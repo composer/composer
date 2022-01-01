@@ -277,6 +277,9 @@ class PerforceTest extends TestCase
     public function testWriteP4ClientSpecWithoutStream()
     {
         $stream = fopen('php://memory', 'w+');
+        if (false === $stream) {
+            self::fail('Could not open memory stream');
+        }
         $this->perforce->writeClientSpecToFile($stream);
 
         rewind($stream);
@@ -298,6 +301,9 @@ class PerforceTest extends TestCase
     {
         $this->setPerforceToStream();
         $stream = fopen('php://memory', 'w+');
+        if (false === $stream) {
+            self::fail('Could not open memory stream');
+        }
 
         $this->perforce->writeClientSpecToFile($stream);
         rewind($stream);
