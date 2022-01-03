@@ -50,25 +50,13 @@ class Compiler
             unlink($pharFile);
         }
 
-        // TODO in v2.3 always call with an array
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = new Process(array('git', 'log', '--pretty="%H"', '-n1', 'HEAD'), __DIR__);
-        } else {
-            // @phpstan-ignore-next-line
-            $process = new Process('git log --pretty="%H" -n1 HEAD', __DIR__);
-        }
+        $process = new Process(array('git', 'log', '--pretty=%H', '-n1', 'HEAD'), __DIR__);
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
         $this->version = trim($process->getOutput());
 
-        // TODO in v2.3 always call with an array
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = new Process(array('git', 'log', '-n1', '--pretty=%ci', 'HEAD'), __DIR__);
-        } else {
-            // @phpstan-ignore-next-line
-            $process = new Process('git log -n1 --pretty=%ci HEAD', __DIR__);
-        }
+        $process = new Process(array('git', 'log', '-n1', '--pretty=%ci', 'HEAD'), __DIR__);
         if ($process->run() != 0) {
             throw new \RuntimeException('Can\'t run git log. You must ensure to run compile from composer git repository clone and that git binary is available.');
         }
@@ -137,8 +125,8 @@ class Compiler
         $finder->files()
             ->ignoreVCS(true)
             ->notPath('/\/(composer\.(json|lock)|[A-Z]+\.md|\.gitignore|appveyor.yml|phpunit\.xml\.dist|phpstan\.neon\.dist|phpstan-config\.neon)$/')
-            ->notPath('/bin\/(jsonlint|validate-json|simple-phpunit)(\.bat)?$/')
-            ->notPath('symfony/debug/Resources/ext/')
+            ->notPath('/bin\/(jsonlint|validate-json|simple-phpunit|phpstan|phpstan\.phar)(\.bat)?$/')
+            ->notPath('symfony/console/Resources/completion.bash')
             ->notPath('justinrainbow/json-schema/demo/')
             ->notPath('justinrainbow/json-schema/dist/')
             ->notPath('composer/installed.json')
@@ -150,13 +138,18 @@ class Compiler
             ->sort($finderSort)
         ;
 
-        $extraFiles = array(
-            realpath(__DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-exceptions.json'),
-            realpath(__DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-licenses.json'),
-            realpath(CaBundle::getBundledCaBundlePath()),
-            realpath(__DIR__ . '/../../vendor/symfony/console/Resources/bin/hiddeninput.exe'),
-            realpath(__DIR__ . '/../../vendor/symfony/polyfill-mbstring/Resources/mb_convert_variables.php8'),
-        );
+        $extraFiles = [];
+        foreach (array(
+            __DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-exceptions.json',
+            __DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-licenses.json',
+            CaBundle::getBundledCaBundlePath(),
+            __DIR__ . '/../../vendor/symfony/console/Resources/bin/hiddeninput.exe',
+        ) as $file) {
+            $extraFiles[$file] = realpath($file);
+            if (!file_exists($file)) {
+                throw new \RuntimeException('Extra file listed is missing from the filesystem: '.$file);
+            }
+        }
         $unexpectedFiles = array();
 
         foreach ($finder as $file) {
@@ -173,11 +166,11 @@ class Compiler
             }
         }
 
-        if ($extraFiles) {
-            throw new \RuntimeException('These files were expected but not added to the phar, they might be excluded or gone from the source package:'.PHP_EOL.implode(PHP_EOL, $extraFiles));
+        if (count($extraFiles) > 0) {
+            throw new \RuntimeException('These files were expected but not added to the phar, they might be excluded or gone from the source package:'.PHP_EOL.var_export($extraFiles, true));
         }
-        if ($unexpectedFiles) {
-            throw new \RuntimeException('These files were unexpectedly added to the phar, make sure they are excluded or listed in $extraFiles:'.PHP_EOL.implode(PHP_EOL, $unexpectedFiles));
+        if (count($unexpectedFiles) > 0) {
+            throw new \RuntimeException('These files were unexpectedly added to the phar, make sure they are excluded or listed in $extraFiles:'.PHP_EOL.var_export($unexpectedFiles, true));
         }
 
         // Add bin/composer
@@ -200,7 +193,14 @@ class Compiler
         $util->updateTimestamps($this->versionDate);
         $util->save($pharFile, \Phar::SHA512);
 
-        Linter::lint($pharFile);
+        Linter::lint($pharFile, [
+            'vendor/symfony/console/Attribute/AsCommand.php',
+            'vendor/symfony/polyfill-intl-grapheme/bootstrap80.php',
+            'vendor/symfony/polyfill-intl-normalizer/bootstrap80.php',
+            'vendor/symfony/polyfill-mbstring/bootstrap80.php',
+            'vendor/symfony/polyfill-php73/Resources/stubs/JsonException.php',
+            'vendor/symfony/service-contracts/Attribute/SubscribedService.php',
+        ]);
     }
 
     /**

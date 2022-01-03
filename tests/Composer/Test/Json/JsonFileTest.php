@@ -99,7 +99,7 @@ class JsonFileTest extends TestCase
 
     public function testSchemaValidationError()
     {
-        $file = tempnam(sys_get_temp_dir(), 'c');
+        $file = $this->createTempFile();
         file_put_contents($file, '{ "name": null }');
         $json = new JsonFile($file);
         $expectedMessage = sprintf('"%s" does not match the expected JSON schema', $file);
@@ -123,7 +123,7 @@ class JsonFileTest extends TestCase
 
     public function testSchemaValidationLaxAdditionalProperties()
     {
-        $file = tempnam(sys_get_temp_dir(), 'c');
+        $file = $this->createTempFile();
         file_put_contents($file, '{ "name": "vendor/package", "description": "generic description", "foo": "bar" }');
         $json = new JsonFile($file);
         try {
@@ -139,7 +139,7 @@ class JsonFileTest extends TestCase
 
     public function testSchemaValidationLaxRequired()
     {
-        $file = tempnam(sys_get_temp_dir(), 'c');
+        $file = $this->createTempFile();
         $json = new JsonFile($file);
 
         $expectedMessage = sprintf('"%s" does not match the expected JSON schema', $file);
@@ -209,10 +209,10 @@ class JsonFileTest extends TestCase
 
     public function testCustomSchemaValidationLax()
     {
-        $file = tempnam(sys_get_temp_dir(), 'c');
+        $file = $this->createTempFile();
         file_put_contents($file, '{ "custom": "property", "another custom": "property" }');
 
-        $schema = tempnam(sys_get_temp_dir(), 'c');
+        $schema = $this->createTempFile();
         file_put_contents($schema, '{ "properties": { "custom": { "type": "string" }}}');
 
         $json = new JsonFile($file);
@@ -225,10 +225,10 @@ class JsonFileTest extends TestCase
 
     public function testCustomSchemaValidationStrict()
     {
-        $file = tempnam(sys_get_temp_dir(), 'c');
+        $file = $this->createTempFile();
         file_put_contents($file, '{ "custom": "property" }');
 
-        $schema = tempnam(sys_get_temp_dir(), 'c');
+        $schema = $this->createTempFile();
         file_put_contents($schema, '{ "properties": { "custom": { "type": "string" }}}');
 
         $json = new JsonFile($file);

@@ -36,7 +36,7 @@ class InstallationManagerTest extends TestCase
      */
     protected $io;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->loop = $this->getMockBuilder('Composer\Util\Loop')->disableOriginalConstructor()->getMock();
         $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
@@ -59,7 +59,7 @@ class InstallationManagerTest extends TestCase
         $manager->addInstaller($installer);
         $this->assertSame($installer, $manager->getInstaller('vendor'));
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
         $manager->getInstaller('unregistered');
     }
 
@@ -97,7 +97,7 @@ class InstallationManagerTest extends TestCase
     {
         $manager = $this->getMockBuilder('Composer\Installer\InstallationManager')
             ->setConstructorArgs(array($this->loop, $this->io))
-            ->setMethods(array('install', 'update', 'uninstall'))
+            ->onlyMethods(array('install', 'update', 'uninstall'))
             ->getMock();
 
         $installOperation = new InstallOperation($package = $this->createPackageMock());

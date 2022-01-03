@@ -22,12 +22,6 @@ jobs:
     strategy:
       matrix:
         php-version:
-          - "5.3"
-          - "5.4"
-          - "5.5"
-          - "5.6"
-          - "7.0"
-          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -37,30 +31,34 @@ jobs:
         os: [ubuntu-latest]
         experimental: [false]
         include:
-          - php-version: "5.3"
+          - php-version: "7.2"
             dependencies: highest
             os: ubuntu-latest
             experimental: false
-          - php-version: "5.3"
+          - php-version: "7.2"
             dependencies: lowest
             os: ubuntu-latest
             experimental: false
-          - php-version: "8.0"
+          - php-version: "8.1"
+            dependencies: highest
+            os: ubuntu-latest
+            experimental: false
+          - php-version: "8.1"
             os: windows-latest
             dependencies: locked
             experimental: false
-          - php-version: "8.0"
+          - php-version: "8.1"
             os: macos-latest
             dependencies: locked
             experimental: false
-          - php-version: "8.1"
-            dependencies: lowest
+          - php-version: "8.2"
+            dependencies: lowest-ignore
             os: ubuntu-latest
-            experimental: false
-          - php-version: "8.1"
-            dependencies: highest
+            experimental: true
+          - php-version: "8.2"
+            dependencies: highest-ignore
             os: ubuntu-latest
-            experimental: false
+            experimental: true
 
     steps:
       - name: "Checkout"
@@ -98,24 +96,6 @@ jobs:
       - name: "Install dependencies from composer.lock using composer binary provided by system"
         if: "matrix.dependencies == 'locked'"
         run: "composer install ${{ env.COMPOSER_FLAGS }}"
-
-      - name: "Require latest PHPUnitBridge for PHP 8.x"
-        if: "startsWith(matrix.php-version, '8.')"
-        # using ~ here to avoid issues with windows CLI removing the ^
-        run: 'composer require --no-update --dev "symfony/phpunit-bridge:~5.2"'
-
-      # temporary fix until phpunit-bridge has a release supporting 8.1
-      - name: "Require latest dev PHPUnitBridge for PHP 8.1"
-        if: "matrix.experimental"
-        # using ~ here to avoid issues with windows CLI removing the ^
-        run: 'composer require --no-update --dev "symfony/phpunit-bridge:~5.4@dev"'
-
-      - name: "Set ignored deprecations for php 8.1+ on lowest or locked deps"
-        if: "matrix.php-version >= '8.1' && !contains(matrix.dependencies, 'highest')"
-        run: "echo \"SYMFONY_DEPRECATIONS_HELPER=baselineFile=./tests/deprecations-8.1.json&max[direct]=0\" >> $GITHUB_ENV"
-
-      - name: "Update dev requirements to latest available for the current PHP even on locked builds as they are not bundled dependencies"
-        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }} symfony/phpunit-bridge phpspec/prophecy phpdocumentor/* sebastian/* doctrine/instantiator"
 
       - name: "Run install again using composer binary from source"
         run: "bin/composer install ${{ env.COMPOSER_FLAGS }}"

@@ -130,7 +130,7 @@ class VcsRepositoryTest extends TestCase
         chdir($oldCwd);
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         if (!self::$gitRepo) {
             $this->initialize();
@@ -140,7 +140,7 @@ class VcsRepositoryTest extends TestCase
         }
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         $fs = new Filesystem;
         $fs->removeDirectory(self::$composerHome);

@@ -62,10 +62,9 @@ EOT
     }
 
     /**
-     * @return int|void
      * @throws \Symfony\Component\Console\Exception\ExceptionInterface
      */
-    public function run(InputInterface $input, OutputInterface $output)
+    public function run(InputInterface $input, OutputInterface $output): int
     {
         if (!method_exists($input, '__toString')) {
             throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));

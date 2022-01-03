@@ -17,7 +17,7 @@ use Composer\Test\TestCase;
 
 class ProxyManagerTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         unset(
             $_SERVER['HTTP_PROXY'],
@@ -31,8 +31,9 @@ class ProxyManagerTest extends TestCase
         ProxyManager::reset();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         unset(
             $_SERVER['HTTP_PROXY'],
             $_SERVER['http_proxy'],
@@ -62,7 +63,7 @@ class ProxyManagerTest extends TestCase
     {
         $_SERVER['http_proxy'] = 'localhost';
         $proxyManager = ProxyManager::getInstance();
-        $this->setExpectedException('Composer\Downloader\TransportException');
+        self::expectException('Composer\Downloader\TransportException');
         $proxyManager->getProxyForRequest('http://example.com');
     }
 

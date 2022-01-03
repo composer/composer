@@ -159,74 +159,47 @@ abstract class BaseIO implements IOInterface
         ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
     }
 
-    /**
-     * @return void
-     */
-    public function emergency($message, array $context = array())
+    public function emergency($message, array $context = array()): void
     {
         $this->log(LogLevel::EMERGENCY, $message, $context);
     }
 
-    /**
-     * @return void
-     */
-    public function alert($message, array $context = array())
+    public function alert($message, array $context = array()): void
     {
         $this->log(LogLevel::ALERT, $message, $context);
     }
 
-    /**
-     * @return void
-     */
-    public function critical($message, array $context = array())
+    public function critical($message, array $context = array()): void
     {
         $this->log(LogLevel::CRITICAL, $message, $context);
     }
 
-    /**
-     * @return void
-     */
-    public function error($message, array $context = array())
+    public function error($message, array $context = array()): void
     {
         $this->log(LogLevel::ERROR, $message, $context);
     }
 
-    /**
-     * @return void
-     */
-    public function warning($message, array $context = array())
+    public function warning($message, array $context = array()): void
     {
         $this->log(LogLevel::WARNING, $message, $context);
     }
 
-    /**
-     * @return void
-     */
-    public function notice($message, array $context = array())
+    public function notice($message, array $context = array()): void
     {
         $this->log(LogLevel::NOTICE, $message, $context);
     }
 
-    /**
-     * @return void
-     */
-    public function info($message, array $context = array())
+    public function info($message, array $context = array()): void
     {
         $this->log(LogLevel::INFO, $message, $context);
     }
 
-    /**
-     * @return void
-     */
-    public function debug($message, array $context = array())
+    public function debug($message, array $context = array()): void
     {
         $this->log(LogLevel::DEBUG, $message, $context);
     }
 
-    /**
-     * @return void
-     */
-    public function log($level, $message, array $context = array())
+    public function log($level, $message, array $context = array()): void
     {
         if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
             $this->writeError('<error>'.$message.'</error>');

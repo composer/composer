@@ -48,7 +48,7 @@ class BitbucketTest extends TestCase
     /** @var int */
     private $time;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->io = $this
             ->getMockBuilder('Composer\IO\ConsoleIO')
@@ -270,7 +270,7 @@ class BitbucketTest extends TestCase
 
     public function testRequestAccessTokenWithUsernameAndPasswordWithNotFoundResponse()
     {
-        $this->setExpectedException('Composer\Downloader\TransportException');
+        self::expectException('Composer\Downloader\TransportException');
         $this->config->expects($this->once())
             ->method('get')
             ->with('bitbucket-oauth')
@@ -301,9 +301,9 @@ class BitbucketTest extends TestCase
     public function testUsernamePasswordAuthenticationFlow()
     {
         $this->io
-            ->expects($this->at(0))
+            ->expects($this->atLeastOnce())
             ->method('writeError')
-            ->with($this->message)
+            ->withConsecutive([$this->message])
         ;
 
         $this->io->expects($this->exactly(2))
@@ -469,7 +469,7 @@ class BitbucketTest extends TestCase
 
     public function testAuthorizeOAuthWithoutAvailableGitConfigToken()
     {
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
         $process->expects(array(), false, array('return' => -1));
 
         $bitbucket = new Bitbucket($this->io, $this->config, $process, $this->httpDownloader, $this->time);
@@ -479,7 +479,7 @@ class BitbucketTest extends TestCase
 
     public function testAuthorizeOAuthWithAvailableGitConfigToken()
     {
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
 
         $bitbucket = new Bitbucket($this->io, $this->config, $process, $this->httpDownloader, $this->time);
 

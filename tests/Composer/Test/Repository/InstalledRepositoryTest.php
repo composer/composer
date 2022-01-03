@@ -45,7 +45,7 @@ class InstalledRepositoryTest extends TestCase
     {
         $arrayRepoOne = new ArrayRepository;
 
-        $this->setExpectedException('LogicException');
+        self::expectException('LogicException');
 
         new InstalledRepository(array($arrayRepoOne));
     }

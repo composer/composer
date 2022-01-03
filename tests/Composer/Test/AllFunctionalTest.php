@@ -31,15 +31,16 @@ class AllFunctionalTest extends TestCase
      */
     private static $pharPath;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->oldcwd = getcwd();
 
         chdir(__DIR__.'/Fixtures/functional');
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         if ($this->oldcwd) {
             chdir($this->oldcwd);
         }
@@ -51,12 +52,12 @@ class AllFunctionalTest extends TestCase
         }
     }
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         self::$pharPath = self::getUniqueTmpDirectory() . '/composer.phar';
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         $fs = new Filesystem;
         $fs->removeDirectory(dirname(self::$pharPath));
@@ -123,18 +124,10 @@ class AllFunctionalTest extends TestCase
             'COMPOSER_CACHE_DIR' => $this->testDir.'cache',
         );
 
-        // TODO in v2.3 always call with an array
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $cmd = array((defined('PHP_BINARY') ? PHP_BINARY : 'php'), self::$pharPath, '--no-ansi', $testData['RUN']);
-            $proc = new Process($cmd, $this->testDir, $env, null, 300);
-        } else {
-            $cmd = (defined('PHP_BINARY') ? escapeshellcmd(PHP_BINARY) : 'php') .' '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'];
-            // @phpstan-ignore-next-line
-            $proc = new Process($cmd, $this->testDir, $env, null, 300);
-        }
+        $proc = Process::fromShellCommandline(escapeshellcmd(PHP_BINARY).' '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'], $this->testDir, $env, null, 300);
         $output = '';
 
-        $exitcode = $proc->run(function ($type, $buffer) use (&$output) {
+        $exitCode = $proc->run(function ($type, $buffer) use (&$output) {
             $output .= $buffer;
         });
 
@@ -176,16 +169,16 @@ class AllFunctionalTest extends TestCase
             }
         }
         if (isset($testData['EXPECT-REGEX'])) {
-            $this->assertRegExp($testData['EXPECT-REGEX'], $this->cleanOutput($output));
+            $this->assertMatchesRegularExpression($testData['EXPECT-REGEX'], $this->cleanOutput($output));
         }
         if (isset($testData['EXPECT-REGEXES'])) {
             $cleanOutput = $this->cleanOutput($output);
             foreach (explode("\n", $testData['EXPECT-REGEXES']) as $regex) {
-                $this->assertRegExp($regex, $cleanOutput, 'Output: '.$output);
+                $this->assertMatchesRegularExpression($regex, $cleanOutput, 'Output: '.$output);
             }
         }
         if (isset($testData['EXPECT-EXIT-CODE'])) {
-            $this->assertSame($testData['EXPECT-EXIT-CODE'], $exitcode);
+            $this->assertSame($testData['EXPECT-EXIT-CODE'], $exitCode);
         }
     }
 
@@ -204,7 +197,7 @@ class AllFunctionalTest extends TestCase
 
     /**
      * @param string $file
-     * @return array<string, int|string>
+     * @return array{RUN: string, EXPECT?: string, EXPECT-EXIT-CODE?: int, EXPECT-REGEX?: string, EXPECT-REGEXES?: string, TEST?: string}
      */
     private function parseTestFile($file)
     {
@@ -261,7 +254,7 @@ class AllFunctionalTest extends TestCase
             throw new \RuntimeException('The test file must have a section named "EXPECT", "EXPECT-REGEX", or "EXPECT-REGEXES".');
         }
 
-        return $data;
+        return $data; // @phpstan-ignore-line
     }
 
     /**

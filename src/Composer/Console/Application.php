@@ -119,10 +119,7 @@ class Application extends BaseApplication
         parent::__construct('Composer', Composer::getVersion());
     }
 
-    /**
-     * @return int
-     */
-    public function run(InputInterface $input = null, OutputInterface $output = null)
+    public function run(InputInterface $input = null, OutputInterface $output = null): int
     {
         if (null === $output) {
             $output = Factory::createOutput();
@@ -131,10 +128,7 @@ class Application extends BaseApplication
         return parent::run($input, $output);
     }
 
-    /**
-     * @return int
-     */
-    public function doRun(InputInterface $input, OutputInterface $output)
+    public function doRun(InputInterface $input, OutputInterface $output): int
     {
         $this->disablePluginsByDefault = $input->hasParameterOption('--no-plugins');
         $this->disableScriptsByDefault = $input->hasParameterOption('--no-scripts');
@@ -483,10 +477,7 @@ class Application extends BaseApplication
         return $this->io;
     }
 
-    /**
-     * @return string
-     */
-    public function getHelp()
+    public function getHelp(): string
     {
         return self::$logo . parent::getHelp();
     }
@@ -495,7 +486,7 @@ class Application extends BaseApplication
      * Initializes all the composer commands.
      * @return \Symfony\Component\Console\Command\Command[]
      */
-    protected function getDefaultCommands()
+    protected function getDefaultCommands(): array
     {
         $commands = array_merge(parent::getDefaultCommands(), array(
             new Command\AboutCommand(),
@@ -535,10 +526,7 @@ class Application extends BaseApplication
         return $commands;
     }
 
-    /**
-     * @return string
-     */
-    public function getLongVersion()
+    public function getLongVersion(): string
     {
         if (Composer::BRANCH_ALIAS_VERSION && Composer::BRANCH_ALIAS_VERSION !== '@package_branch_alias_version'.'@') {
             return sprintf(
@@ -553,10 +541,7 @@ class Application extends BaseApplication
         return parent::getLongVersion() . ' ' . Composer::RELEASE_DATE;
     }
 
-    /**
-     * @return InputDefinition
-     */
-    protected function getDefaultInputDefinition()
+    protected function getDefaultInputDefinition(): InputDefinition
     {
         $definition = parent::getDefaultInputDefinition();
         $definition->addOption(new InputOption('--profile', null, InputOption::VALUE_NONE, 'Display timing and memory usage information'));

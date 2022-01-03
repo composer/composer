@@ -65,7 +65,7 @@ class LibraryInstallerTest extends TestCase
      */
     protected $fs;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->fs = new Filesystem;
 
@@ -96,8 +96,9 @@ class LibraryInstallerTest extends TestCase
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $this->fs->removeDirectory($this->rootDir);
     }
 
@@ -222,7 +223,7 @@ class LibraryInstallerTest extends TestCase
         $this->assertFileExists($this->vendorDir, 'Vendor dir should be created');
         $this->assertFileExists($this->binDir, 'Bin dir should be created');
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $library->update($this->repository, $initial, $target);
     }
@@ -259,7 +260,7 @@ class LibraryInstallerTest extends TestCase
 
         $library->uninstall($this->repository, $package);
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $library->uninstall($this->repository, $package);
     }

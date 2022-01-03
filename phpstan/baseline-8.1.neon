@@ -206,7 +206,7 @@ parameters:
 			path: ../src/Composer/Autoload/ClassLoader.php
 
 		-
-			message: "#^Parameter \\#1 \\$autoload_function of function spl_autoload_register expects callable\\(string\\)\\: void, array\\{\\$this\\(Composer\\\\Autoload\\\\ClassLoader\\), 'loadClass'\\} given\\.$#"
+			message: "#^Parameter \\#1 \\$callback of function spl_autoload_register expects \\(callable\\(string\\)\\: void\\)\\|null, array\\{\\$this\\(Composer\\\\Autoload\\\\ClassLoader\\), 'loadClass'\\} given\\.$#"
 			count: 1
 			path: ../src/Composer/Autoload/ClassLoader.php
 
@@ -271,17 +271,7 @@ parameters:
 			path: ../src/Composer/Autoload/ClassMapGenerator.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function trim expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Autoload/ClassMapGenerator.php
-
-		-
 			message: "#^Parameter \\#3 \\$baseNamespace of static method Composer\\\\Autoload\\\\ClassMapGenerator\\:\\:filterByNamespace\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Autoload/ClassMapGenerator.php
-
-		-
-			message: "#^Parameter \\#3 \\$length of function substr expects int, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Autoload/ClassMapGenerator.php
 
@@ -317,11 +307,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Cache.php
-
-		-
-			message: "#^Parameter \\#2 \\$time of function touch expects int, int\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Cache.php
 
@@ -486,7 +471,7 @@ parameters:
 			path: ../src/Composer/Command/BaseDependencyCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$var of function count expects array\\|Countable, array\\<string\\>\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\<string\\>\\|null given\\.$#"
 			count: 2
 			path: ../src/Composer/Command/BaseDependencyCommand.php
 
@@ -606,18 +591,18 @@ parameters:
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, string given\\.$#"
+			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
 			count: 1
+			path: ../src/Composer/Command/ConfigCommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$callback of function call_user_func expects callable\\(\\)\\: mixed, array\\{Composer\\\\Config\\\\JsonConfigSource, string\\} given\\.$#"
+			count: 2
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
 			message: "#^Parameter \\#1 \\$command of function escapeshellcmd expects string, string\\|false given\\.$#"
 			count: 1
-			path: ../src/Composer/Command/ConfigCommand.php
-
-		-
-			message: "#^Parameter \\#1 \\$function of function call_user_func expects callable\\(\\)\\: mixed, array\\{Composer\\\\Config\\\\JsonConfigSource, string\\} given\\.$#"
-			count: 2
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
@@ -811,7 +796,7 @@ parameters:
 			path: ../src/Composer/Command/DiagnoseCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function trim expects string, string\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/DiagnoseCommand.php
 
@@ -911,7 +896,7 @@ parameters:
 			path: ../src/Composer/Command/ExecCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$arr1 of function array_merge expects array, array\\<int, string\\>\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\.\\.\\.\\$arrays of function array_merge expects array, array\\<int, string\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ExecCommand.php
 
@@ -1166,7 +1151,7 @@ parameters:
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
-			message: "#^Parameter \\#3 \\$length of function substr expects int, int\\<0, max\\>\\|false given\\.$#"
+			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
 
@@ -1716,17 +1701,12 @@ parameters:
 			path: ../src/Composer/Command/SelfUpdateCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$key_identifier of function openssl_free_key expects resource, resource\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$from of function rename expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/SelfUpdateCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$old_name of function rename expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/SelfUpdateCommand.php
-
-		-
-			message: "#^Parameter \\#1 \\$uid of function posix_getpwuid expects int, int\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$user_id of function posix_getpwuid expects int, int\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/SelfUpdateCommand.php
 
@@ -1736,12 +1716,7 @@ parameters:
 			path: ../src/Composer/Command/SelfUpdateCommand.php
 
 		-
-			message: "#^Parameter \\#2 \\$mode of function chmod expects int, int\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/SelfUpdateCommand.php
-
-		-
-			message: "#^Parameter \\#3 \\$pub_key_id of function openssl_verify expects resource\\|string, resource\\|false given\\.$#"
+			message: "#^Parameter \\#2 \\$permissions of function chmod expects int, int\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/SelfUpdateCommand.php
 
@@ -2081,12 +2056,17 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$var of function count expects array\\|Countable, array\\<int, array\\<string, array\\|string\\>\\>\\|string given\\.$#"
+			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\<int, array\\<string, array\\|string\\>\\>\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$var of function count expects array\\|Countable, array\\|string given\\.$#"
+			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\|string given\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ShowCommand.php
+
+		-
+			message: "#^Parameter \\#2 \\$callback of function uasort expects callable\\(string, string\\)\\: int, 'version_compare' given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
@@ -2416,7 +2396,7 @@ parameters:
 			path: ../src/Composer/Command/ValidateCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$function of function call_user_func expects callable\\(\\)\\: mixed, array\\{Composer\\\\Package\\\\RootPackageInterface, 'getDevRequires'\\|'getRequires'\\} given\\.$#"
+			message: "#^Parameter \\#1 \\$callback of function call_user_func expects callable\\(\\)\\: mixed, array\\{Composer\\\\Package\\\\RootPackageInterface, 'getDevRequires'\\|'getRequires'\\} given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ValidateCommand.php
 
@@ -2432,7 +2412,7 @@ parameters:
 
 		-
 			message: "#^Call to function method_exists\\(\\) with 'Symfony\\\\\\\\Component…' and 'fromShellCommandline' will always evaluate to true\\.$#"
-			count: 3
+			count: 1
 			path: ../src/Composer/Compiler.php
 
 		-
@@ -2451,7 +2431,7 @@ parameters:
 			path: ../src/Composer/Compiler.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function substr_replace expects array\\|string, string\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function substr_replace expects array\\|string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Compiler.php
 
@@ -2521,12 +2501,12 @@ parameters:
 			path: ../src/Composer/Config.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function rtrim expects string, int\\|string\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function rtrim expects string, int\\|string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Config.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function rtrim expects string, string\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function rtrim expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Config.php
 
@@ -2541,12 +2521,12 @@ parameters:
 			path: ../src/Composer/Config/JsonConfigSource.php
 
 		-
-			message: "#^Parameter \\#1 \\$contents of class Composer\\\\Json\\\\JsonManipulator constructor expects string, string\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$callback of function call_user_func_array expects callable\\(\\)\\: mixed, array\\{Composer\\\\Json\\\\JsonManipulator, string\\} given\\.$#"
 			count: 1
 			path: ../src/Composer/Config/JsonConfigSource.php
 
 		-
-			message: "#^Parameter \\#1 \\$function of function call_user_func_array expects callable\\(\\)\\: mixed, array\\{Composer\\\\Json\\\\JsonManipulator, string\\} given\\.$#"
+			message: "#^Parameter \\#1 \\$contents of class Composer\\\\Json\\\\JsonManipulator constructor expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Config/JsonConfigSource.php
 
@@ -2878,6 +2858,11 @@ parameters:
 		-
 			message: "#^Only booleans are allowed in an if condition, int\\<0, max\\> given\\.$#"
 			count: 1
+			path: ../src/Composer/DependencyResolver/Problem.php
+
+		-
+			message: "#^Parameter \\#2 \\$callback of function uksort expects callable\\(string, string\\)\\: int, 'version_compare' given\\.$#"
+			count: 2
 			path: ../src/Composer/DependencyResolver/Problem.php
 
 		-
@@ -3396,7 +3381,7 @@ parameters:
 			path: ../src/Composer/Downloader/FileDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function trim expects string, array\\<string, array\\<string\\>\\>\\|string\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function trim expects string, array\\<string, array\\<string\\>\\>\\|string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/FileDownloader.php
 
@@ -3496,17 +3481,27 @@ parameters:
 			path: ../src/Composer/Downloader/GitDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$fp of function fclose expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/GzipDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$fp of function fwrite expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/GzipDownloader.php
-
-		-
 			message: "#^Parameter \\#1 \\$path of function pathinfo expects string, string\\|false\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/GzipDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of function fclose expects resource, resource\\|false given\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/GzipDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of function fwrite expects resource, resource\\|false given\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/GzipDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of function gzclose expects resource, resource\\|false given\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/GzipDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of function gzread expects resource, resource\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/GzipDownloader.php
 
@@ -3516,17 +3511,7 @@ parameters:
 			path: ../src/Composer/Downloader/GzipDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$zp of function gzclose expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/GzipDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$zp of function gzread expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/GzipDownloader.php
-
-		-
-			message: "#^Parameter \\#3 \\$length of function fwrite expects int\\<0, max\\>, int given\\.$#"
+			message: "#^Parameter \\#3 \\$length of function fwrite expects int\\<0, max\\>\\|null, int given\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/GzipDownloader.php
 
@@ -3731,7 +3716,7 @@ parameters:
 			path: ../src/Composer/Downloader/VcsDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function rawurldecode expects string, string\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function rawurldecode expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/VcsDownloader.php
 
@@ -3871,7 +3856,7 @@ parameters:
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
-			message: "#^Parameter \\#3 \\$length of function substr expects int, int\\<0, max\\>\\|false given\\.$#"
+			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
@@ -3951,7 +3936,7 @@ parameters:
 			path: ../src/Composer/Factory.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function trim expects string, string\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Factory.php
 
@@ -4001,17 +3986,17 @@ parameters:
 			path: ../src/Composer/IO/BufferIO.php
 
 		-
-			message: "#^Parameter \\#1 \\$fp of function fwrite expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
-			message: "#^Parameter \\#1 \\$fp of function rewind expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BufferIO.php
-
-		-
 			message: "#^Parameter \\#1 \\$stream of class Symfony\\\\Component\\\\Console\\\\Output\\\\StreamOutput constructor expects resource, resource\\|false given\\.$#"
+			count: 1
+			path: ../src/Composer/IO/BufferIO.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of function fwrite expects resource, resource\\|false given\\.$#"
+			count: 1
+			path: ../src/Composer/IO/BufferIO.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of function rewind expects resource, resource\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/IO/BufferIO.php
 
@@ -4181,17 +4166,17 @@ parameters:
 			path: ../src/Composer/Installer/BinaryInstaller.php
 
 		-
-			message: "#^Parameter \\#1 \\$fp of function fclose expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/BinaryInstaller.php
-
-		-
-			message: "#^Parameter \\#1 \\$fp of function fgets expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/BinaryInstaller.php
-
-		-
 			message: "#^Parameter \\#1 \\$path of function realpath expects string, string\\|false given\\.$#"
+			count: 1
+			path: ../src/Composer/Installer/BinaryInstaller.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of function fclose expects resource, resource\\|false given\\.$#"
+			count: 1
+			path: ../src/Composer/Installer/BinaryInstaller.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of function fgets expects resource, resource\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/BinaryInstaller.php
 
@@ -4221,11 +4206,6 @@ parameters:
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
-			message: "#^Constant PHP_WINDOWS_EVENT_CTRL_C not found\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/InstallationManager.php
@@ -4233,11 +4213,6 @@ parameters:
 		-
 			message: "#^Foreach overwrites \\$batch with its value variable\\.$#"
 			count: 2
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Function sapi_windows_set_ctrl_handler not found\\.$#"
-			count: 3
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
@@ -4291,7 +4266,7 @@ parameters:
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
-			message: "#^Parameter \\#1 \\$function of function call_user_func expects callable\\(\\)\\: mixed, int\\<min, \\-1\\>\\|int\\<2, max\\>\\|string given\\.$#"
+			message: "#^Parameter \\#1 \\$callback of function call_user_func expects callable\\(\\)\\: mixed, int\\<min, \\-1\\>\\|int\\<2, max\\>\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/InstallationManager.php
 
@@ -4301,7 +4276,7 @@ parameters:
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
-			message: "#^Parameter \\#2 \\$handle of function pcntl_signal expects \\(callable\\(\\)\\: mixed\\)\\|int, int\\|string given\\.$#"
+			message: "#^Parameter \\#2 \\$handler of function pcntl_signal expects \\(callable\\(\\)\\: mixed\\)\\|int, int\\|string given\\.$#"
 			count: 2
 			path: ../src/Composer/Installer/InstallationManager.php
 
@@ -4586,7 +4561,7 @@ parameters:
 			path: ../src/Composer/Package/Archiver/PharArchiver.php
 
 		-
-			message: "#^Only numeric types are allowed in \\-, int\\<0, max\\>\\|false given on the left side\\.$#"
+			message: "#^Only numeric types are allowed in \\-, int\\|false given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Archiver/PharArchiver.php
 
@@ -4596,7 +4571,7 @@ parameters:
 			path: ../src/Composer/Package/Archiver/PharArchiver.php
 
 		-
-			message: "#^Parameter \\#2 \\$baseDirectory of method Phar\\:\\:buildFromIterator\\(\\) expects string, string\\|false given\\.$#"
+			message: "#^Parameter \\#2 \\$baseDirectory of method Phar\\:\\:buildFromIterator\\(\\) expects string\\|null, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Archiver/PharArchiver.php
 
@@ -4691,7 +4666,7 @@ parameters:
 			path: ../src/Composer/Package/Dumper/ArrayDumper.php
 
 		-
-			message: "#^Parameter \\#1 \\$array_arg of function ksort expects array, array\\<int\\|string, mixed\\>\\|string given\\.$#"
+			message: "#^Parameter \\#1 \\$array of function ksort expects array, array\\<int\\|string, mixed\\>\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Dumper/ArrayDumper.php
 
@@ -4946,11 +4921,6 @@ parameters:
 			path: ../src/Composer/Package/Locker.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function md5 expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Locker.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 3
 			path: ../src/Composer/Package/Locker.php
@@ -5176,7 +5146,7 @@ parameters:
 			path: ../src/Composer/Plugin/PluginManager.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, int\\<0, max\\>\\|false given\\.$#"
+			message: "#^Only booleans are allowed in an if condition, int\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Plugin/PluginManager.php
 
@@ -5241,12 +5211,12 @@ parameters:
 			path: ../src/Composer/Repository/ArrayRepository.php
 
 		-
-			message: "#^Parameter \\#1 \\$input of function array_splice expects array, array\\<Composer\\\\Package\\\\BasePackage\\>\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$array of function array_splice expects array, array\\<Composer\\\\Package\\\\BasePackage\\>\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ArrayRepository.php
 
 		-
-			message: "#^Parameter \\#1 \\$var of function count expects array\\|Countable, array\\<Composer\\\\Package\\\\BasePackage\\>\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\<Composer\\\\Package\\\\BasePackage\\>\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ArrayRepository.php
 
@@ -5436,12 +5406,12 @@ parameters:
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
-			message: "#^Parameter \\#1 \\$input of function array_keys expects array, array\\<string, array\\<string, string\\>\\>\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$array of function array_keys expects array, array\\<string, array\\<string, string\\>\\>\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
-			message: "#^Parameter \\#1 \\$input of function array_values expects array, array\\<string, Composer\\\\Package\\\\PackageInterface\\>\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$array of function array_values expects array, array\\<string, Composer\\\\Package\\\\PackageInterface\\>\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
@@ -5451,7 +5421,7 @@ parameters:
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
-			message: "#^Parameter \\#1 \\$var of function count expects array\\|Countable, array\\<string, int\\>\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\<string, int\\>\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
@@ -6096,7 +6066,7 @@ parameters:
 			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
 
 		-
-			message: "#^Parameter \\#2 \\$str of function explode expects string, string\\|null given\\.$#"
+			message: "#^Parameter \\#2 \\$string of function explode expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
 
@@ -6381,7 +6351,7 @@ parameters:
 			path: ../src/Composer/SelfUpdate/Versions.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function trim expects string, string\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/SelfUpdate/Versions.php
 
@@ -6426,7 +6396,7 @@ parameters:
 			path: ../src/Composer/Util/AuthHelper.php
 
 		-
-			message: "#^Parameter \\#2 \\$str of function explode expects string, string\\|false\\|null given\\.$#"
+			message: "#^Parameter \\#2 \\$string of function explode expects string, string\\|false\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/AuthHelper.php
 
@@ -6566,27 +6536,27 @@ parameters:
 			path: ../src/Composer/Util/Filesystem.php
 
 		-
-			message: "#^Parameter \\#1 \\$fp of function fclose expects resource, resource\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$from of function stream_copy_to_stream expects resource, resource\\|false given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Filesystem.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of function fclose expects resource, resource\\|false given\\.$#"
 			count: 4
 			path: ../src/Composer/Util/Filesystem.php
 
 		-
-			message: "#^Parameter \\#1 \\$fp of function feof expects resource, resource\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$stream of function feof expects resource, resource\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Filesystem.php
 
 		-
-			message: "#^Parameter \\#1 \\$fp of function fread expects resource, resource\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$stream of function fread expects resource, resource\\|false given\\.$#"
 			count: 2
 			path: ../src/Composer/Util/Filesystem.php
 
 		-
-			message: "#^Parameter \\#1 \\$source of function stream_copy_to_stream expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Parameter \\#2 \\$dest of function stream_copy_to_stream expects resource, resource\\|false given\\.$#"
+			message: "#^Parameter \\#2 \\$to of function stream_copy_to_stream expects resource, resource\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Filesystem.php
 
@@ -6646,7 +6616,7 @@ parameters:
 			path: ../src/Composer/Util/Git.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function rawurlencode expects string, string\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
 			count: 17
 			path: ../src/Composer/Util/Git.php
 
@@ -6681,7 +6651,7 @@ parameters:
 			path: ../src/Composer/Util/GitHub.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function trim expects string, string\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/GitHub.php
 
@@ -6716,12 +6686,12 @@ parameters:
 			path: ../src/Composer/Util/Hg.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function rawurlencode expects string, string\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
 			count: 2
 			path: ../src/Composer/Util/Hg.php
 
 		-
-			message: "#^Array \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|false, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept array\\{url\\: string, origin\\: string, attributes\\: non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, bool\\|int\\>, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource\\|false, \\.\\.\\.\\}\\.$#"
+			message: "#^Array \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|false, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept array\\{url\\: string, origin\\: string, attributes\\: non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, bool\\|int\\>, options\\: array, progress\\: array, curlHandle\\: CurlHandle, filename\\: string\\|null, headerHandle\\: resource\\|false, \\.\\.\\.\\}\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -6738,16 +6708,6 @@ parameters:
 		-
 			message: "#^Cannot access offset 'features' on array\\|false\\.$#"
 			count: 2
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Constant CURLOPT_PROXY_CAINFO not found\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Constant CURLOPT_PROXY_CAPATH not found\\.$#"
-			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
@@ -6836,38 +6796,48 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Parameter \\#1 \\$handle of function curl_close expects CurlHandle, resource given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$handle of function curl_getinfo expects CurlHandle, resource given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_add_handle expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_add_handle expects CurlMultiHandle, resource\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_exec expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_exec expects CurlMultiHandle, resource\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_info_read expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_info_read expects CurlMultiHandle, resource\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_remove_handle expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_remove_handle expects CurlMultiHandle, resource\\|null given\\.$#"
 			count: 2
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_select expects resource, resource\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$multi_handle of function curl_multi_select expects CurlMultiHandle, resource\\|null given\\.$#"
 			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$mh of function curl_multi_setopt expects resource, resource\\|false given\\.$#"
-			count: 2
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
@@ -6876,12 +6846,7 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function rtrim expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$str of function strtolower expects string, string\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function rtrim expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -6891,7 +6856,17 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
+			message: "#^Parameter \\#1 \\$string of function strtolower expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
 			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Parameter \\#2 \\$handle of function curl_multi_remove_handle expects CurlHandle, resource given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -6926,7 +6901,12 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$multiHandle \\(resource\\|null\\) does not accept resource\\|false\\.$#"
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$multiHandle \\(resource\\|null\\) does not accept CurlMultiHandle\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$shareHandle \\(resource\\|null\\) does not accept CurlShareHandle\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -7231,7 +7211,7 @@ parameters:
 			path: ../src/Composer/Util/NoProxyPattern.php
 
 		-
-			message: "#^Parameter \\#3 \\$length of function substr expects int, int\\<0, max\\>\\|false given\\.$#"
+			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/NoProxyPattern.php
 
@@ -7271,18 +7251,13 @@ parameters:
 			path: ../src/Composer/Util/Perforce.php
 
 		-
-			message: "#^Parameter \\#1 \\$fp of function fclose expects resource, resource\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$stream of function fclose expects resource, resource\\|false given\\.$#"
 			count: 2
 			path: ../src/Composer/Util/Perforce.php
 
 		-
-			message: "#^Parameter \\#1 \\$fp of function fwrite expects resource, resource\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$stream of function fwrite expects resource, resource\\|false given\\.$#"
 			count: 13
-			path: ../src/Composer/Util/Perforce.php
-
-		-
-			message: "#^Parameter \\#1 \\$str1 of function strcmp expects string, string\\|null given\\.$#"
-			count: 1
 			path: ../src/Composer/Util/Perforce.php
 
 		-
@@ -7291,12 +7266,17 @@ parameters:
 			path: ../src/Composer/Util/Perforce.php
 
 		-
-			message: "#^Parameter \\#2 \\$needle of function strpos expects int\\|string, string\\|null given\\.$#"
+			message: "#^Parameter \\#1 \\$string1 of function strcmp expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Perforce.php
 
 		-
-			message: "#^Parameter \\#3 \\$length of function substr expects int, int\\<0, max\\>\\|false given\\.$#"
+			message: "#^Parameter \\#2 \\$needle of function strpos expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Perforce.php
+
+		-
+			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Perforce.php
 
@@ -7496,11 +7476,6 @@ parameters:
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function base64_encode expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/RemoteFilesystem.php
-
-		-
 			message: "#^Parameter \\#1 \\$str of function preg_quote expects string, string\\|false\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/RemoteFilesystem.php
@@ -7508,6 +7483,11 @@ parameters:
 		-
 			message: "#^Parameter \\#1 \\$str of static method Composer\\\\Util\\\\Platform\\:\\:strlen\\(\\) expects string, string\\|false given\\.$#"
 			count: 5
+			path: ../src/Composer/Util/RemoteFilesystem.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function base64_encode expects string, string\\|false given\\.$#"
+			count: 1
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
 		-
@@ -7521,7 +7501,7 @@ parameters:
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
 		-
-			message: "#^Parameter \\#5 \\$maxlen of function file_get_contents expects int\\<0, max\\>, int given\\.$#"
+			message: "#^Parameter \\#5 \\$length of function file_get_contents expects int\\<0, max\\>\\|null, int given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/RemoteFilesystem.php
 
@@ -7676,11 +7656,6 @@ parameters:
 			path: ../src/Composer/Util/TlsHelper.php
 
 		-
-			message: "#^Parameter \\#1 \\$key of function openssl_pkey_get_details expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/TlsHelper.php
-
-		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Url.php
@@ -7722,17 +7697,12 @@ parameters:
 
 		-
 			message: "#^Call to function method_exists\\(\\) with 'Symfony\\\\\\\\Component…' and 'fromShellCommandline' will always evaluate to true\\.$#"
-			count: 2
+			count: 1
 			path: ../tests/Composer/Test/AllFunctionalTest.php
 
 		-
 			message: "#^Call to method RecursiveDirectoryIterator\\:\\:getSubPathname\\(\\) with incorrect case\\: getSubPathName$#"
 			count: 1
-			path: ../tests/Composer/Test/AllFunctionalTest.php
-
-		-
-			message: "#^Cannot access offset int\\<0, max\\> on int\\|string\\.$#"
-			count: 3
 			path: ../tests/Composer/Test/AllFunctionalTest.php
 
 		-
@@ -7758,31 +7728,6 @@ parameters:
 		-
 			message: "#^Only numeric types are allowed in \\-, int\\<0, max\\>\\|false given on the left side\\.$#"
 			count: 3
-			path: ../tests/Composer/Test/AllFunctionalTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, int\\|string given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/AllFunctionalTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$pattern of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertRegExp\\(\\) expects string, int\\|string given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/AllFunctionalTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function strlen expects string, int\\|string given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/AllFunctionalTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function substr expects string, int\\|string given\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/AllFunctionalTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$str of function explode expects string, int\\|string given\\.$#"
-			count: 1
 			path: ../tests/Composer/Test/AllFunctionalTest.php
 
 		-
@@ -7816,18 +7761,8 @@ parameters:
 			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$expected of static method Composer\\\\Test\\\\Autoload\\\\AutoloadGeneratorTest\\:\\:assertEqualsNormalized\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$new_include_path of function set_include_path expects string, string\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$include_path of function set_include_path expects string, string\\|false given\\.$#"
 			count: 2
-			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$actual of static method Composer\\\\Test\\\\Autoload\\\\AutoloadGeneratorTest\\:\\:assertEqualsNormalized\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
 			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
 
 		-
@@ -7842,11 +7777,6 @@ parameters:
 
 		-
 			message: "#^Property Composer\\\\Test\\\\Autoload\\\\AutoloadGeneratorTest\\:\\:\\$origDir \\(string\\) does not accept string\\|false\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
 
@@ -7891,7 +7821,7 @@ parameters:
 			path: ../tests/Composer/Test/ConfigTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function rtrim expects string, string\\|false given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function rtrim expects string, string\\|false given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/ConfigTest.php
 
@@ -8091,11 +8021,6 @@ parameters:
 			path: ../tests/Composer/Test/Downloader/ArchiveDownloaderTest.php
 
 		-
-			message: "#^Only booleans are allowed in a ternary operator condition, Prophecy\\\\Prophecy\\\\ObjectProphecy\\|null given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Downloader/DownloadManagerTest.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Downloader/DownloadManagerTest.php
@@ -8111,33 +8036,8 @@ parameters:
 			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$directory of method Composer\\\\Util\\\\Filesystem\\:\\:removeDirectory\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$filename of function is_dir expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$filename of function is_file expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$filename of function unlink expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$promises of method Composer\\\\Util\\\\Loop\\:\\:wait\\(\\) expects array\\<React\\\\Promise\\\\PromiseInterface\\>, array\\<int, React\\\\Promise\\\\PromiseInterface\\|null\\> given\\.$#"
 			count: 5
-			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$path of method Composer\\\\Downloader\\\\FileDownloader\\:\\:download\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
 			path: ../tests/Composer/Test/Downloader/FileDownloaderTest.php
 
 		-
@@ -8236,11 +8136,10 @@ parameters:
 			path: ../tests/Composer/Test/IO/NullIOTest.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method getRawData\\(\\) of class Composer\\\\InstalledVersions\\:
-					Use getAllRawData\\(\\) instead which returns all datasets for all autoloaders present in the process\\. getRawData only returns the first dataset loaded, which may not be what you expect\\.$#
-				"""
+			message: """
+				#^Call to deprecated method getRawData\\(\\) of class Composer\\\\InstalledVersions\\:
+				Use getAllRawData\\(\\) instead which returns all datasets for all autoloaders present in the process\\. getRawData only returns the first dataset loaded, which may not be what you expect\\.$#
+			"""
 			count: 1
 			path: ../tests/Composer/Test/InstalledVersionsTest.php
 
@@ -8340,11 +8239,6 @@ parameters:
 			path: ../tests/Composer/Test/InstallerTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$fp of function fseek expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/InstallerTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false\\|null given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/InstallerTest.php
@@ -8355,22 +8249,7 @@ parameters:
 			path: ../tests/Composer/Test/InstallerTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$source of function stream_get_contents expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/InstallerTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$str of function md5 expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/InstallerTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$str of function strtr expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/InstallerTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of class Symfony\\\\Component\\\\Console\\\\Output\\\\StreamOutput constructor expects resource, resource\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/InstallerTest.php
 
@@ -8410,28 +8289,8 @@ parameters:
 			path: ../tests/Composer/Test/Json/JsonFileTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$file of function file_put_contents expects string, string\\|false given\\.$#"
-			count: 12
-			path: ../tests/Composer/Test/Json/JsonFileTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$filename of function unlink expects string, string\\|false given\\.$#"
-			count: 7
-			path: ../tests/Composer/Test/Json/JsonFileTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$path of class Composer\\\\Json\\\\JsonFile constructor expects string, string\\|false given\\.$#"
-			count: 5
-			path: ../tests/Composer/Test/Json/JsonFileTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$version1 of function version_compare expects string, string\\|false given\\.$#"
 			count: 1
-			path: ../tests/Composer/Test/Json/JsonFileTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$schemaFile of method Composer\\\\Json\\\\JsonFile\\:\\:validateSchema\\(\\) expects string\\|null, string\\|false given\\.$#"
-			count: 2
 			path: ../tests/Composer/Test/Json/JsonFileTest.php
 
 		-
@@ -8595,34 +8454,9 @@ parameters:
 			path: ../tests/Composer/Test/Package/Dumper/ArrayDumperTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$manager of class Composer\\\\Package\\\\Loader\\\\RootPackageLoader constructor expects Composer\\\\Repository\\\\RepositoryManager, object given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Package/Loader/RootPackageLoaderTest.php
-
-		-
-			message: "#^Parameter \\#4 \\$versionGuesser of class Composer\\\\Package\\\\Loader\\\\RootPackageLoader constructor expects Composer\\\\Package\\\\Version\\\\VersionGuesser\\|null, object given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Package/Loader/RootPackageLoaderTest.php
-
-		-
 			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertTrue\\(\\) with true will always evaluate to true\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Package/Loader/ValidatingArrayLoaderTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$str of function md5 expects string, string\\|false given\\.$#"
-			count: 4
-			path: ../tests/Composer/Test/Package/LockerTest.php
-
-		-
-			message: "#^Parameter \\#4 \\$composerFileContents of class Composer\\\\Package\\\\Locker constructor expects string, string\\|false given\\.$#"
-			count: 9
-			path: ../tests/Composer/Test/Package/LockerTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$aliasOf of class Composer\\\\Package\\\\RootAliasPackage constructor expects Composer\\\\Package\\\\RootPackage, object given\\.$#"
-			count: 5
-			path: ../tests/Composer/Test/Package/RootAliasPackageTest.php
 
 		-
 			message: "#^Offset 'commit' does not exist on array\\{version\\: string, commit\\: string\\|null, pretty_version\\: string\\|null, feature_version\\?\\: string\\|null, feature_pretty_version\\?\\: string\\|null\\}\\|null\\.$#"
@@ -8750,7 +8584,7 @@ parameters:
 			path: ../tests/Composer/Test/Repository/CompositeRepositoryTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$function of function call_user_func_array expects callable\\(\\)\\: mixed, array\\{Composer\\\\Repository\\\\CompositeRepository, string\\} given\\.$#"
+			message: "#^Parameter \\#1 \\$callback of function call_user_func_array expects callable\\(\\)\\: mixed, array\\{Composer\\\\Repository\\\\CompositeRepository, string\\} given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/CompositeRepositoryTest.php
 
@@ -8788,11 +8622,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$string of function strlen expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Repository/PathRepositoryTest.php
-
-		-
-			message: "#^Parameter \\#2 \\.\\.\\.\\$args of function array_merge expects array, array\\<string, array\\<int, array\\|string\\>\\>\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Repository/PlatformRepositoryTest.php
 
 		-
 			message: "#^Call to method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) with 'Composer\\\\\\\\Repository…' and Composer\\\\Repository\\\\FilterRepository will always evaluate to true\\.$#"
@@ -8975,21 +8804,6 @@ parameters:
 			path: ../tests/Composer/Test/Util/PerforceTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$fp of function fclose expects resource, resource\\|false given\\.$#"
-			count: 4
-			path: ../tests/Composer/Test/Util/PerforceTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$fp of function fgets expects resource, resource\\|false given\\.$#"
-			count: 4
-			path: ../tests/Composer/Test/Util/PerforceTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$fp of function rewind expects resource, resource\\|false given\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Util/PerforceTest.php
-
-		-
 			message: "#^Parameter \\#2 \\$string of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertStringStartsWith\\(\\) expects string, string\\|false given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/Util/PerforceTest.php
@@ -9015,22 +8829,7 @@ parameters:
 			path: ../tests/Composer/Test/Util/RemoteFilesystemTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$filename of function file_get_contents expects string, string\\|false given\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Util/RemoteFilesystemTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$filename of function unlink expects string, string\\|false given\\.$#"
-			count: 3
-			path: ../tests/Composer/Test/Util/RemoteFilesystemTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$filename of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertFileExists\\(\\) expects string, string\\|false given\\.$#"
-			count: 2
-			path: ../tests/Composer/Test/Util/RemoteFilesystemTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$object of method ReflectionProperty\\:\\:getValue\\(\\) expects object, object\\|string given\\.$#"
+			message: "#^Parameter \\#1 \\$object of method ReflectionProperty\\:\\:getValue\\(\\) expects object\\|null, object\\|string given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Util/RemoteFilesystemTest.php
 
@@ -9052,11 +8851,6 @@ parameters:
 		-
 			message: "#^Parameter \\#2 \\$haystack of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertStringContainsString\\(\\) expects string, string\\|false given\\.$#"
 			count: 2
-			path: ../tests/Composer/Test/Util/RemoteFilesystemTest.php
-
-		-
-			message: "#^Parameter \\#3 \\$fileName of method Composer\\\\Util\\\\RemoteFilesystem\\:\\:copy\\(\\) expects string, string\\|false given\\.$#"
-			count: 3
 			path: ../tests/Composer/Test/Util/RemoteFilesystemTest.php
 
 		-

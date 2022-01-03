@@ -60,12 +60,7 @@ class HtmlOutputFormatter extends OutputFormatter
         parent::__construct(true, $styles);
     }
 
-    /**
-     * @param ?string $message
-     *
-     * @return string
-     */
-    public function format($message)
+    public function format(?string $message): ?string
     {
         $formatted = parent::format($message);
 

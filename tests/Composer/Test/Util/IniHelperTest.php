@@ -73,7 +73,7 @@ class IniHelperTest extends TestCase
         $this->assertEquals($paths, IniHelper::getAll());
     }
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         // Register our name with XdebugHandler
         $xdebug = new XdebugHandler('composer');
@@ -81,7 +81,7 @@ class IniHelperTest extends TestCase
         self::$envOriginal = getenv('COMPOSER_ORIGINAL_INIS');
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         // Restore original state
         if (false !== self::$envOriginal) {

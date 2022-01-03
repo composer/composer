@@ -19,7 +19,7 @@ class PathRepositoryTest extends TestCase
 {
     public function testLoadPackageFromFileSystemWithIncorrectPath()
     {
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();
 

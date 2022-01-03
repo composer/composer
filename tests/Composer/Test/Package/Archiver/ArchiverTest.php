@@ -34,15 +34,16 @@ abstract class ArchiverTest extends TestCase
      */
     protected $testDir;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->filesystem = new Filesystem();
         $this->process = new ProcessExecutor();
         $this->testDir = $this->getUniqueTmpDirectory();
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $this->filesystem->removeDirectory($this->testDir);
     }
 

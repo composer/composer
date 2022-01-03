@@ -163,7 +163,7 @@ class RemoteFilesystemTest extends TestCase
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
-        $file = tempnam(sys_get_temp_dir(), 'c');
+        $file = $this->createTempFile();
         $this->assertTrue($fs->copy('http://example.org', 'file://'.__FILE__, $file));
         $this->assertFileExists($file);
         $this->assertStringContainsString('testCopy', file_get_contents($file));
@@ -172,7 +172,7 @@ class RemoteFilesystemTest extends TestCase
 
     public function testCopyWithNoRetryOnFailure()
     {
-        $this->setExpectedException('Composer\Downloader\TransportException');
+        self::expectException('Composer\Downloader\TransportException');
         $fs = $this->getRemoteFilesystemWithMockedMethods(array('getRemoteContents'));
 
         $fs->expects($this->once())->method('getRemoteContents')
@@ -182,7 +182,7 @@ class RemoteFilesystemTest extends TestCase
                 return '';
             });
 
-        $file = tempnam(sys_get_temp_dir(), 'z');
+        $file = $this->createTempFile();
         unlink($file);
 
         $fs->copy(
@@ -206,23 +206,22 @@ class RemoteFilesystemTest extends TestCase
                 'retry' => true,
             ));
 
-        $fs->expects($this->at(0))
+        $counter = 0;
+        $fs->expects($this->exactly(2))
             ->method('getRemoteContents')
-            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
-                $http_response_header = array('http/1.1 401 unauthorized');
+            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) use (&$counter) {
+                if ($counter++ === 0) {
+                    $http_response_header = array('http/1.1 401 unauthorized');
 
-                return '';
+                    return '';
+                } else {
+                    $http_response_header = array('http/1.1 200 OK');
+
+                    return '<?php $copied = "Copied"; ';
+                }
             });
 
-        $fs->expects($this->at(1))
-            ->method('getRemoteContents')
-            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
-                $http_response_header = array('http/1.1 200 OK');
-
-                return '<?php $copied = "Copied"; ';
-            });
-
-        $file = tempnam(sys_get_temp_dir(), 'z');
+        $file = $this->createTempFile();
 
         $copyResult = $fs->copy(
             'http://example.org',
@@ -324,8 +323,7 @@ class RemoteFilesystemTest extends TestCase
                 return $arg === 'bitbucket.org';
             });
         $io
-            ->expects($this->at(1))
-            ->method('getAuthentication')
+        ->method('getAuthentication')
             ->with('bitbucket.org')
             ->willReturn(array(
                 'username' => 'x-token-auth',
@@ -449,7 +447,7 @@ class RemoteFilesystemTest extends TestCase
                 false,
                 $authHelper,
             ))
-            ->setMethods($mockedMethods)
+            ->onlyMethods($mockedMethods)
             ->getMock();
     }
 
@@ -465,7 +463,7 @@ class RemoteFilesystemTest extends TestCase
                 $this->getIOInterfaceMock(),
                 $this->getConfigMock(),
             ))
-            ->setMethods($mockedMethods)
+            ->onlyMethods($mockedMethods)
             ->getMock();
     }
 }

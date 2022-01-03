@@ -46,7 +46,7 @@ class BinaryInstallerTest extends TestCase
      */
     protected $fs;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->fs = new Filesystem;
 
@@ -60,8 +60,9 @@ class BinaryInstallerTest extends TestCase
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $this->fs->removeDirectory($this->rootDir);
     }
 

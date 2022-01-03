@@ -17,6 +17,7 @@ use Composer\Config;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Test\Mock\ProcessExecutorMock;
+use Composer\Util\ProcessExecutor;
 
 class SvnDriverTest extends TestCase
 {
@@ -29,7 +30,7 @@ class SvnDriverTest extends TestCase
      */
     protected $config;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->home = $this->getUniqueTmpDirectory();
         $this->config = new Config();
@@ -40,15 +41,17 @@ class SvnDriverTest extends TestCase
         ));
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $fs = new Filesystem();
         $fs->removeDirectory($this->home);
     }
 
     public function testWrongCredentialsInUrl()
     {
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage("Repository https://till:secret@corp.svn.local/repo could not be processed, wrong credentials provided (svn: OPTIONS of 'https://corp.svn.local/repo': authorization failed: Could not authenticate to server: rejected Basic challenge (https://corp.svn.local/))");
 
         $console = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
@@ -57,10 +60,21 @@ class SvnDriverTest extends TestCase
         $output .= " authorization failed: Could not authenticate to server:";
         $output .= " rejected Basic challenge (https://corp.svn.local/)";
 
-        $process = new ProcessExecutorMock;
+        $process = $this->getProcessExecutorMock();
+        $authedCommand = sprintf(
+            'svn ls --verbose --non-interactive  --username %s --password %s  -- %s',
+            ProcessExecutor::escape('till'),
+            ProcessExecutor::escape('secret'),
+            ProcessExecutor::escape('https://till:secret@corp.svn.local/repo/trunk')
+        );
         $process->expects(array(
-            'svn --version',
-            array('cmd' => '', 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
+            array('cmd' => $authedCommand, 'return' => 1, 'stderr' => $output),
+            array('cmd' => 'svn --version', 'return' => 0, 'stdout' => '1.2.3'),
         ), true);
 
         $repoConfig = array(
@@ -69,8 +83,6 @@ class SvnDriverTest extends TestCase
 
         $svn = new SvnDriver($repoConfig, $console, $this->config, $httpDownloader, $process);
         $svn->initialize();
-
-        $process->assertComplete($this);
     }
 
     public static function supportProvider()

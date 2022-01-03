@@ -32,7 +32,7 @@ class ArchiveManagerTest extends ArchiverTest
      */
     protected $targetDir;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -50,7 +50,7 @@ class ArchiveManagerTest extends ArchiverTest
 
     public function testUnknownFormat()
     {
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
 
         $package = $this->setupPackage();
 

@@ -50,14 +50,15 @@ class InstallerTest extends TestCase
     /** @var ?string */
     protected $tempComposerHome;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->prevCwd = getcwd();
         chdir(__DIR__);
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         Platform::clearEnv('COMPOSER_POOL_OPTIMIZER');
 
         chdir($this->prevCwd);
@@ -234,7 +235,7 @@ class InstallerTest extends TestCase
      * @param ?string $expectOutput
      * @param ?string $expectOutputOptimized
      * @param string $expect
-     * @param int|string $expectResult
+     * @param int|class-string<\Throwable> $expectResult
      */
     public function testSlowIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult)
     {
@@ -257,7 +258,7 @@ class InstallerTest extends TestCase
      * @param ?string $expectOutput
      * @param ?string $expectOutputOptimized
      * @param string $expect
-     * @param int|string $expectResult
+     * @param int|class-string<\Throwable> $expectResult
      */
     public function testIntegrationWithPoolOptimizer($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult)
     {
@@ -280,7 +281,7 @@ class InstallerTest extends TestCase
      * @param ?string $expectOutput
      * @param ?string $expectOutputOptimized
      * @param string $expect
-     * @param int|string $expectResult
+     * @param int|class-string<\Throwable> $expectResult
      */
     public function testIntegrationWithRawPool($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult)
     {
@@ -301,7 +302,7 @@ class InstallerTest extends TestCase
      * @param ?mixed[] $expectInstalled
      * @param ?string $expectOutput
      * @param string $expect
-     * @param int|string $expectResult
+     * @param int|class-string<\Throwable> $expectResult
      * @return void
      */
     private function doTestIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult)
@@ -318,7 +319,8 @@ class InstallerTest extends TestCase
         // Prepare for exceptions
         if (!is_int($expectResult)) {
             $normalizedOutput = rtrim(str_replace("\n", PHP_EOL, $expect));
-            $this->setExpectedException($expectResult, $normalizedOutput);
+            self::expectException($expectResult);
+            self::expectExceptionMessage($normalizedOutput);
         }
 
         // Create Composer mock object according to configuration
@@ -451,6 +453,9 @@ class InstallerTest extends TestCase
 
         $application->setAutoExit(false);
         $appOutput = fopen('php://memory', 'w+');
+        if (false === $appOutput) {
+            self::fail('Failed to open memory stream');
+        }
         $input = new StringInput($run.' -vvv');
         $input->setInteractive(false);
         $result = $application->run($input, new StreamOutput($appOutput));
@@ -553,7 +558,7 @@ class InstallerTest extends TestCase
                 if (!empty($testData['LOCK'])) {
                     $lock = JsonFile::parseJson($testData['LOCK']);
                     if (!isset($lock['hash'])) {
-                        $lock['hash'] = md5(json_encode($composer));
+                        $lock['hash'] = md5(JsonFile::encode($composer, 0));
                     }
                 }
                 if (!empty($testData['INSTALLED'])) {

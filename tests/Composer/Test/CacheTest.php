@@ -28,7 +28,7 @@ class CacheTest extends TestCase
     /** @var Cache&\PHPUnit\Framework\MockObject\MockObject */
     private $cache;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->root = $this->getUniqueTmpDirectory();
         $this->files = array();
@@ -44,7 +44,7 @@ class CacheTest extends TestCase
 
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->cache = $this->getMockBuilder('Composer\Cache')
-            ->setMethods(array('getFinder'))
+            ->onlyMethods(array('getFinder'))
             ->setConstructorArgs(array($io, $this->root))
             ->getMock();
         $this->cache
@@ -53,8 +53,9 @@ class CacheTest extends TestCase
             ->will($this->returnValue($this->finder));
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         if (is_dir($this->root)) {
             $fs = new Filesystem;
             $fs->removeDirectory($this->root);

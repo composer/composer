@@ -52,7 +52,8 @@ class SilencerTest extends TestCase
     public function testSilencedException()
     {
         $verification = microtime();
-        $this->setExpectedException('\RuntimeException', $verification);
+        self::expectException('RuntimeException');
+        self::expectExceptionMessage($verification);
         Silencer::call(function () use ($verification) {
             throw new \RuntimeException($verification);
         });

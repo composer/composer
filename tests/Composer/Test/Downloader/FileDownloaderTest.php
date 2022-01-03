@@ -30,7 +30,7 @@ class FileDownloaderTest extends TestCase
     /** @var \Composer\Config&\PHPUnit\Framework\MockObject\MockObject */
     private $config;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock();
         $this->config = $this->getMockBuilder('Composer\Config')->getMock();
@@ -67,7 +67,7 @@ class FileDownloaderTest extends TestCase
             ->will($this->returnValue(null))
         ;
 
-        $this->setExpectedException('InvalidArgumentException');
+        self::expectException('InvalidArgumentException');
 
         $downloader = $this->getDownloader();
         $downloader->download($packageMock, '/path');
@@ -85,7 +85,7 @@ class FileDownloaderTest extends TestCase
             ->will($this->returnValue(array('url')))
         ;
 
-        $path = tempnam($this->getUniqueTmpDirectory(), 'c');
+        $path = $this->createTempFile($this->getUniqueTmpDirectory());
         $downloader = $this->getDownloader();
 
         try {
@@ -220,7 +220,7 @@ class FileDownloaderTest extends TestCase
         $dispatcher = new EventDispatcher(
             $composerMock,
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            new ProcessExecutorMock
+            $this->getProcessExecutorMock()
         );
         $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function (PreFileDownloadEvent $event) use ($expectedUrl) {
             $event->setProcessedUrl($expectedUrl);
@@ -322,7 +322,7 @@ class FileDownloaderTest extends TestCase
         $dispatcher = new EventDispatcher(
             $composerMock,
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            new ProcessExecutorMock
+            $this->getProcessExecutorMock()
         );
         $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function (PreFileDownloadEvent $event) use ($customCacheKey) {
             $event->setCustomCacheKey($customCacheKey);
@@ -387,15 +387,12 @@ class FileDownloaderTest extends TestCase
 
         $this->config = $this->getMockBuilder('Composer\Config')->getMock();
         $this->config
-            ->expects($this->at(0))
+            ->expects($this->atLeast(2))
             ->method('get')
-            ->with('cache-files-ttl')
-            ->will($this->returnValue($expectedTtl));
-        $this->config
-            ->expects($this->at(1))
-            ->method('get')
-            ->with('cache-files-maxsize')
-            ->will($this->returnValue('500M'));
+            ->willReturnMap([
+                ['cache-files-ttl', 0, $expectedTtl],
+                ['cache-files-maxsize', 0, '500M'],
+            ]);
 
         $cacheMock = $this->getMockBuilder('Composer\Cache')
                      ->disableOriginalConstructor()
@@ -492,13 +489,12 @@ class FileDownloaderTest extends TestCase
             ->will($this->returnValue(array($distUrl)));
 
         $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $ioMock->expects($this->at(0))
+        $ioMock->expects($this->atLeast(2))
             ->method('writeError')
-            ->with($this->stringContains('Downloading'));
-
-        $ioMock->expects($this->at(1))
-            ->method('writeError')
-            ->with($this->stringContains('Downgrading'));
+            ->withConsecutive(
+                [$this->stringContains('Downloading')],
+                [$this->stringContains('Downgrading')]
+            );
 
         $path = $this->getUniqueTmpDirectory();
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();

@@ -21,13 +21,14 @@ class RepositoryManagerTest extends TestCase
     /** @var string */
     protected $tmpdir;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->tmpdir = $this->getUniqueTmpDirectory();
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         if (is_dir($this->tmpdir)) {
             $fs = new Filesystem();
             $fs->removeDirectory($this->tmpdir);
@@ -56,17 +57,17 @@ class RepositoryManagerTest extends TestCase
      *
      * @param string               $type
      * @param array<string, mixed> $options
-     * @param string|null          $exception
+     * @param class-string<\Throwable>|null $exception
      */
-    public function testRepoCreation($type, $options, $exception = null)
+    public function testRepoCreation($type, $options, ?string $exception = null)
     {
-        if ($exception) {
-            $this->setExpectedException($exception);
+        if ($exception !== null) {
+            self::expectException($exception);
         }
 
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            $config = $this->getMockBuilder('Composer\Config')->setMethods(array('get'))->getMock(),
+            $config = $this->getMockBuilder('Composer\Config')->onlyMethods(array('get'))->getMock(),
             $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
             $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
@@ -118,7 +119,7 @@ class RepositoryManagerTest extends TestCase
     {
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            $config = $this->getMockBuilder('Composer\Config')->setMethods(array('get'))->getMock(),
+            $config = $this->getMockBuilder('Composer\Config')->onlyMethods(array('get'))->getMock(),
             $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
             $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );

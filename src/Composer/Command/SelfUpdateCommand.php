@@ -298,6 +298,9 @@ TAGSPUBKEY
             }
 
             $pubkeyid = openssl_pkey_get_public($sigFile);
+            if (false === $pubkeyid) {
+                throw new \RuntimeException('Failed loading the public key from '.$sigFile);
+            }
             $algo = defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
             if (!in_array('sha384', array_map('strtolower', openssl_get_md_methods()))) {
                 throw new \RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
@@ -308,6 +311,7 @@ TAGSPUBKEY
 
             // PHP 8 automatically frees the key instance and deprecates the function
             if (PHP_VERSION_ID < 80000) {
+                // @phpstan-ignore-next-line
                 openssl_free_key($pubkeyid);
             }
 

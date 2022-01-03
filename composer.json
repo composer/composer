@@ -22,7 +22,7 @@
         }
     ],
     "require": {
-        "php": "^5.3.2 || ^7.0 || ^8.0",
+        "php": "^7.2.5 || ^8.0",
         "composer/ca-bundle": "^1.0",
         "composer/metadata-minifier": "^1.0",
         "composer/semver": "^3.0",
@@ -31,17 +31,20 @@
         "justinrainbow/json-schema": "^5.2.11",
         "psr/log": "^1.0 || ^2.0",
         "seld/jsonlint": "^1.4",
-        "seld/phar-utils": "^1.0",
-        "symfony/console": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0",
-        "symfony/filesystem": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
-        "symfony/finder": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
-        "symfony/process": "^2.8.52 || ^3.4.35 || ^4.4 || ^5.0 || ^6.0",
-        "react/promise": "^1.2 || ^2.7",
+        "seld/phar-utils": "^1.2",
+        "symfony/console": "^5.4.1 || ^6.0",
+        "symfony/filesystem": "^5.4 || ^6.0",
+        "symfony/finder": "^5.4 || ^6.0",
+        "symfony/process": "^5.4 || ^6.0",
+        "react/promise": "^2.8",
         "composer/pcre": "^1.0"
     },
     "require-dev": {
-        "symfony/phpunit-bridge": "^4.2 || ^5.0 || ^6.0",
-        "phpspec/prophecy": "^1.10"
+        "symfony/phpunit-bridge": "^6.0",
+        "phpstan/phpstan": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.0",
+        "phpstan/phpstan-deprecation-rules": "^1",
+        "phpstan/phpstan-strict-rules": "^1"
     },
     "suggest": {
         "ext-openssl": "Enabling the openssl extension allows you to access https URLs for repositories and packages",
@@ -50,13 +53,13 @@
     },
     "config": {
         "platform": {
-            "php": "5.3.9"
+            "php": "7.2.5"
         },
         "platform-check": false
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.2-dev"
+            "dev-main": "2.3-dev"
         }
     },
     "autoload": {
@@ -80,18 +83,11 @@
     "scripts": {
         "compile": "@php -dphar.readonly=0 bin/compile",
         "test": "@php simple-phpunit",
-        "phpstan-setup": [
-            "@composer config platform --unset",
-            "@composer update",
-            "@composer require --dev phpstan/phpstan:^1.0 phpstan/phpstan-phpunit:^1.0 phpstan/phpstan-deprecation-rules:^1 phpstan/phpstan-strict-rules:^1 phpunit/phpunit:^7.5.20 --with-all-dependencies",
-            "git checkout composer.json composer.lock"
-        ],
         "phpstan": "@php vendor/bin/phpstan analyse --configuration=phpstan/config.neon"
     },
     "scripts-descriptions": {
         "compile": "Compile composer.phar",
         "test": "Run all tests",
-        "phpstan-setup": "Prepare environment to run PHPStan locally (must be run with PHP7.4)",
         "phpstan": "Runs PHPStan (after phpstan-setup was executed, must be run with PHP7.4)"
     },
     "support": {

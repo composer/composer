@@ -47,6 +47,9 @@ class RunScriptCommandTest extends TestCase
             ->method('hasArgument')
             ->with('command')
             ->willReturn(false);
+        $input
+            ->method('isInteractive')
+            ->willReturn(false);
 
         $output = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
 
@@ -73,17 +76,14 @@ class RunScriptCommandTest extends TestCase
         $composer->setEventDispatcher($ed);
 
         $command = $this->getMockBuilder('Composer\Command\RunScriptCommand')
-            ->setMethods(array(
+            ->onlyMethods(array(
                 'mergeApplicationDefinition',
-                'bind',
                 'getSynopsis',
                 'initialize',
-                'isInteractive',
                 'getComposer',
             ))
             ->getMock();
         $command->expects($this->any())->method('getComposer')->willReturn($composer);
-        $command->method('isInteractive')->willReturn(false);
 
         $command->run($input, $output);
     }

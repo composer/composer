@@ -32,15 +32,16 @@ class FilesystemTest extends TestCase
      */
     private $testFile;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->fs = new Filesystem;
         $this->workingDir = $this->getUniqueTmpDirectory();
         $this->testFile = $this->getUniqueTmpDirectory() . '/composer_test_file';
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         if (is_dir($this->workingDir)) {
             $this->fs->removeDirectory($this->workingDir);
         }
@@ -307,7 +308,8 @@ class FilesystemTest extends TestCase
         if (!defined('PHP_WINDOWS_VERSION_BUILD')) {
             $this->assertFalse($fs->isJunction($this->workingDir));
             $this->assertFalse($fs->removeJunction($this->workingDir));
-            $this->setExpectedException('LogicException', 'not available on non-Windows platform');
+            self::expectException('LogicException');
+            self::expectExceptionMessage('not available on non-Windows platform');
         }
 
         $target = $this->workingDir . '/real/../real/nesting';

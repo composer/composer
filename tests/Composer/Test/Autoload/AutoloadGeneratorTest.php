@@ -29,7 +29,7 @@ use Composer\Installer\InstallationManager;
 use Composer\Config;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Platform;
-use PHPUnit_Framework_MockObject_MockObject as MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class AutoloadGeneratorTest extends TestCase
 {
@@ -54,12 +54,12 @@ class AutoloadGeneratorTest extends TestCase
     private $origDir;
 
     /**
-     * @var InstallationManager|MockObject
+     * @var InstallationManager&MockObject
      */
     private $im;
 
     /**
-     * @var InstalledRepositoryInterface|MockObject
+     * @var InstalledRepositoryInterface&MockObject
      */
     private $repository;
 
@@ -74,7 +74,7 @@ class AutoloadGeneratorTest extends TestCase
     private $fs;
 
     /**
-     * @var EventDispatcher|MockObject
+     * @var EventDispatcher&MockObject
      */
     private $eventDispatcher;
 
@@ -89,7 +89,7 @@ class AutoloadGeneratorTest extends TestCase
      */
     public $configValueMap;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->fs = new Filesystem;
         $that = $this;
@@ -148,8 +148,9 @@ class AutoloadGeneratorTest extends TestCase
         $this->generator = new AutoloadGenerator($this->eventDispatcher);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         chdir($this->origDir);
 
         if (is_dir($this->workingDir)) {
@@ -957,17 +958,13 @@ EOF;
         $notAutoloadPackages[] = $b = new Package('b/b', '1.0', '1.0');
         $notAutoloadPackages[] = $c = new Package('c/c', '1.0', '1.0');
 
-        $this->repository->expects($this->at(1))
+        $this->repository->expects($this->exactly(3))
             ->method('getCanonicalPackages')
-            ->will($this->returnValue($autoloadPackages));
-
-        $this->repository->expects($this->at(3))
-            ->method('getCanonicalPackages')
-            ->will($this->returnValue($notAutoloadPackages));
-
-        $this->repository->expects($this->at(5))
-            ->method('getCanonicalPackages')
-            ->will($this->returnValue($notAutoloadPackages));
+            ->willReturnOnConsecutiveCalls(
+                $autoloadPackages,
+                $notAutoloadPackages,
+                $notAutoloadPackages
+            );
 
         $this->fs->ensureDirectoryExists($this->vendorDir.'/a/a');
         $this->fs->ensureDirectoryExists($this->vendorDir.'/b/b');
@@ -1283,14 +1280,12 @@ EOF;
     public function testPreAndPostEventsAreDispatchedDuringAutoloadDump()
     {
         $this->eventDispatcher
-            ->expects($this->at(0))
+            ->expects($this->exactly(2))
             ->method('dispatchScript')
-            ->with(ScriptEvents::PRE_AUTOLOAD_DUMP, false);
-
-        $this->eventDispatcher
-            ->expects($this->at(1))
-            ->method('dispatchScript')
-            ->with(ScriptEvents::POST_AUTOLOAD_DUMP, false);
+            ->withConsecutive(
+                [ScriptEvents::PRE_AUTOLOAD_DUMP, false],
+                [ScriptEvents::POST_AUTOLOAD_DUMP, false]
+            );
 
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setAutoload(array('psr-0' => array('Prefix' => 'foo/bar/non/existing/')));
@@ -1866,38 +1861,16 @@ EOF;
     /**
      * @param string $expected
      * @param string $actual
-     * @param string $message
-     * @param bool   $canonicalize
-     * @param bool   $ignoreCase
+     * @param string|null $message
      *
      * @return void
      */
-    public static function assertFileContentEquals($expected, $actual, $message = '', $canonicalize = false, $ignoreCase = false)
+    public static function assertFileContentEquals(string $expected, string $actual, ?string $message = null)
     {
-        self::assertEqualsNormalized(
-            file_get_contents($expected),
-            file_get_contents($actual),
-            $message ?: $expected.' equals '.$actual,
-            0,
-            10,
-            $canonicalize,
-            $ignoreCase
+        self::assertSame(
+            str_replace("\r", '', (string) file_get_contents($expected)),
+            str_replace("\r", '', (string) file_get_contents($actual)),
+            $message ?? $expected.' equals '.$actual
         );
-    }
-
-    /**
-     * @param string $expected
-     * @param string $actual
-     * @param string $message
-     * @param int    $delta
-     * @param int    $maxDepth
-     * @param bool   $canonicalize
-     * @param bool   $ignoreCase
-     *
-     * @return void
-     */
-    public static function assertEqualsNormalized($expected, $actual, $message = '', $delta = 0, $maxDepth = 10, $canonicalize = false, $ignoreCase = false)
-    {
-        parent::assertEquals(str_replace("\r", '', $expected), str_replace("\r", '', $actual), $message, $delta, $maxDepth, $canonicalize, $ignoreCase);
     }
 }

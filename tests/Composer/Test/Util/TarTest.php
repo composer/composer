@@ -35,13 +35,13 @@ class TarTest extends TestCase
 
     public function testThrowsExceptionIfTheTarHasNoComposerJson()
     {
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/nojson.tar.gz');
     }
 
     public function testThrowsExceptionIfTheComposerJsonIsInASubSubfolder()
     {
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/subfolders.tar.gz');
     }
 
@@ -59,7 +59,7 @@ class TarTest extends TestCase
 
     public function testMultipleTopLevelDirsIsInvalid()
     {
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
         Tar::getComposerJson(__DIR__.'/Fixtures/Tar/multiple.tar.gz');
     }
 }

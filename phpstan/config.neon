@@ -3,6 +3,7 @@ includes:
     - ../vendor/phpstan/phpstan-deprecation-rules/rules.neon
     - ../vendor/phpstan/phpstan-strict-rules/rules.neon
     - ./baseline.neon
+    - ./ignore-by-php-version.neon.php
 
 parameters:
     level: 8
@@ -36,22 +37,16 @@ parameters:
         # we don't have different constructors for parent/child
         - '~^Unsafe usage of new static\(\)\.$~'
 
-        # BC with older PHPUnit
-        - '~^Call to an undefined static method Composer\\Test\\PolyfillTestCase::setExpectedException\(\)\.$~'
-        - '~^Call to an undefined method Composer\\Test\\[a-zA-Z0-9\\]+::(assertFileDoesNotExist|assertMatchesRegularExpression)\(\)\.$~'
-
-        # Mock errors
-        - '~^Call to an undefined method (PHPUnit\\Framework\\MockObject\\MockObject|Prophecy\\Prophecy\\ObjectProphecy)::.*$~'
-
         # Ignore some irrelevant errors in test files
         - '~Method Composer\\Test\\[^:]+::(setUp(BeforeClass)?|tearDown(AfterClass)?|test[^(]+)\(\) has no return type specified.~'
         - '~Method Composer\\Test\\[^:]+::(data\w+|provide\w+|\w+?Provider)\(\) has no return type specified.~'
 
         # PHPUnit assertions as instance methods
         - '~Dynamic call to static method PHPUnit\\Framework\\Assert::\w+\(\)~'
-        - '~Dynamic call to static method PHPUnit\\Framework\\TestCase::(once|at|exactly|will|exactly|returnValue|returnCallback|any|atLeastOnce|throwException|onConsecutiveCalls|never|returnValueMap)\(\)~'
+        - '~Dynamic call to static method PHPUnit\\Framework\\TestCase::(once|atLeast|exactly|will|exactly|returnValue|returnCallback|any|atLeastOnce|throwException|onConsecutiveCalls|never|returnValueMap)\(\)~'
 
     bootstrapFiles:
+        - ./locate-phpunit-autoloader.php
         - ../tests/bootstrap.php
 
     paths:

@@ -34,14 +34,15 @@ class JsonConfigSourceTest extends TestCase
         return __DIR__.'/Fixtures/'.$name;
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->fs = new Filesystem;
         $this->workingDir = $this->getUniqueTmpDirectory();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         if (is_dir($this->workingDir)) {
             $this->fs->removeDirectory($this->workingDir);
         }

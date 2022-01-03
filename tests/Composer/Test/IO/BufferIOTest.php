@@ -27,7 +27,8 @@ class BufferIOTest extends TestCase
         $input = $refl->getValue($bufferIO);
 
         if (!$input instanceof StreamableInputInterface) {
-            $this->setExpectedException('\RuntimeException', 'Setting the user inputs requires at least the version 3.2 of the symfony/console component.');
+            self::expectException('\RuntimeException');
+            self::expectExceptionMessage('Setting the user inputs requires at least the version 3.2 of the symfony/console component.');
         }
 
         $bufferIO->setUserInputs(array(

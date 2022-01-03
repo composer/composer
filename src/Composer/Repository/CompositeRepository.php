@@ -178,8 +178,7 @@ class CompositeRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    #[\ReturnTypeWillChange]
-    public function count()
+    public function count(): int
     {
         $total = 0;
         foreach ($this->repositories as $repository) {

@@ -68,7 +68,7 @@ class PluginInstallerTest extends TestCase
      */
     protected $io;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $loader = new JsonLoader(new ArrayLoader());
         $this->packages = array();
@@ -127,8 +127,9 @@ class PluginInstallerTest extends TestCase
         $this->composer->setPluginManager($this->pm);
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $filesystem = new Filesystem();
         $filesystem->removeDirectory($this->directory);
     }
@@ -282,7 +283,7 @@ class PluginInstallerTest extends TestCase
     {
         // reset the plugin manager's installed plugins
         $this->pm = $this->getMockBuilder('Composer\Plugin\PluginManager')
-                         ->setMethods(array('getPluginApiVersion'))
+                         ->onlyMethods(array('getPluginApiVersion'))
                          ->setConstructorArgs(array($this->io, $this->composer))
                          ->getMock();
 
@@ -431,13 +432,13 @@ class PluginInstallerTest extends TestCase
     /**
      * @dataProvider invalidImplementationClassNames
      * @param callable $invalidImplementationClassNames
-     * @param string $expect
+     * @param class-string<\Throwable> $expect
      *
      * @return void
      */
     public function testQueryingWithInvalidCapabilityClassNameThrows($invalidImplementationClassNames, $expect = 'UnexpectedValueException')
     {
-        $this->setExpectedException($expect);
+        self::expectException($expect);
 
         $capabilityApi = 'Composer\Plugin\Capability\Capability';
 

@@ -32,7 +32,7 @@ class DefaultPolicyTest extends TestCase
     /** @var DefaultPolicy */
     protected $policy;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->repositorySet = new RepositorySet('dev');
         $this->repo = new ArrayRepository;

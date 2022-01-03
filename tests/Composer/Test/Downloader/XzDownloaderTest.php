@@ -31,7 +31,7 @@ class XzDownloaderTest extends TestCase
      */
     private $testDir;
 
-    public function setUp()
+    public function setUp(): void
     {
         if (Platform::isWindows()) {
             $this->markTestSkipped('Skip test on Windows');
@@ -39,8 +39,12 @@ class XzDownloaderTest extends TestCase
         $this->testDir = $this->getUniqueTmpDirectory();
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
+        if (Platform::isWindows()) {
+            return;
+        }
+        parent::tearDown();
         $this->fs = new Filesystem;
         $this->fs->removeDirectory($this->testDir);
     }

@@ -17,7 +17,7 @@ use Composer\Test\TestCase;
 
 class ProxyHelperTest extends TestCase
 {
-    protected function setUp()
+    protected function setUp(): void
     {
         unset(
             $_SERVER['HTTP_PROXY'],
@@ -30,8 +30,9 @@ class ProxyHelperTest extends TestCase
         );
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         unset(
             $_SERVER['HTTP_PROXY'],
             $_SERVER['http_proxy'],
@@ -52,7 +53,7 @@ class ProxyHelperTest extends TestCase
     {
         $_SERVER['http_proxy'] = $url;
 
-        $this->setExpectedException('RuntimeException');
+        self::expectException('RuntimeException');
         ProxyHelper::getProxyData();
     }
 

@@ -28,7 +28,7 @@ class FossilDriverTest extends TestCase
      */
     protected $config;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->home = $this->getUniqueTmpDirectory();
         $this->config = new Config();
@@ -39,8 +39,9 @@ class FossilDriverTest extends TestCase
         ));
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
+        parent::tearDown();
         $fs = new Filesystem();
         $fs->removeDirectory($this->home);
     }
