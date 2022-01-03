@@ -45,9 +45,6 @@ class HhvmDetectorTest extends TestCase
         if (defined('HHVM_VERSION_ID')) {
             self::markTestSkipped('Running with HHVM');
         }
-        if (PHP_VERSION_ID < 50400) {
-            self::markTestSkipped('Test only works on PHP 5.4+');
-        }
         if (Platform::isWindows()) {
             self::markTestSkipped('Test does not run on Windows');
         }

@@ -40,10 +40,6 @@ class ClassMapGeneratorTest extends TestCase
      */
     public function getTestCreateMapTests()
     {
-        if (PHP_VERSION_ID == 50303) {
-            $this->markTestSkipped('Test segfaults on travis 5.3.3 due to ClassMap\LongString');
-        }
-
         $classmap = array(
             'Foo\\Bar\\A' => realpath(__DIR__) . '/Fixtures/classmap/sameNsMultipleClasses.php',
             'Foo\\Bar\\B' => realpath(__DIR__) . '/Fixtures/classmap/sameNsMultipleClasses.php',
