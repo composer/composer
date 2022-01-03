@@ -89,6 +89,6 @@ class ZipArchiver implements ArchiverInterface
      */
     private function compressionAvailable()
     {
-        return class_exists('ZipArchive');
+        return class_exists(\ZipArchive::class);
     }
 }

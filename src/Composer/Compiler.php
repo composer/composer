@@ -65,7 +65,7 @@ class Compiler
         $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
         // TODO in v2.3 always call with an array
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+        if (method_exists(\Symfony\Component\Process\Process::class, 'fromShellCommandline')) {
             $process = new Process(array('git', 'describe', '--tags', '--exact-match', 'HEAD'), __DIR__);
         } else {
             // @phpstan-ignore-next-line

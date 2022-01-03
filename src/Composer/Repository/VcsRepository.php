@@ -78,16 +78,16 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     {
         parent::__construct();
         $this->drivers = $drivers ?: array(
-            'github' => 'Composer\Repository\Vcs\GitHubDriver',
-            'gitlab' => 'Composer\Repository\Vcs\GitLabDriver',
-            'bitbucket' => 'Composer\Repository\Vcs\GitBitbucketDriver',
-            'git-bitbucket' => 'Composer\Repository\Vcs\GitBitbucketDriver',
-            'git' => 'Composer\Repository\Vcs\GitDriver',
-            'hg' => 'Composer\Repository\Vcs\HgDriver',
-            'perforce' => 'Composer\Repository\Vcs\PerforceDriver',
-            'fossil' => 'Composer\Repository\Vcs\FossilDriver',
+            'github' => \Composer\Repository\Vcs\GitHubDriver::class,
+            'gitlab' => \Composer\Repository\Vcs\GitLabDriver::class,
+            'bitbucket' => \Composer\Repository\Vcs\GitBitbucketDriver::class,
+            'git-bitbucket' => \Composer\Repository\Vcs\GitBitbucketDriver::class,
+            'git' => \Composer\Repository\Vcs\GitDriver::class,
+            'hg' => \Composer\Repository\Vcs\HgDriver::class,
+            'perforce' => \Composer\Repository\Vcs\PerforceDriver::class,
+            'fossil' => \Composer\Repository\Vcs\FossilDriver::class,
             // svn must be last because identifying a subversion server for sure is practically impossible
-            'svn' => 'Composer\Repository\Vcs\SvnDriver',
+            'svn' => \Composer\Repository\Vcs\SvnDriver::class,
         );
 
         $this->url = $repoConfig['url'];

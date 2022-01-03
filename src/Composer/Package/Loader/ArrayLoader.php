@@ -49,9 +49,9 @@ class ArrayLoader implements LoaderInterface
     /**
      * @inheritDoc
      */
-    public function load(array $config, $class = 'Composer\Package\CompletePackage')
+    public function load(array $config, $class = \Composer\Package\CompletePackage::class)
     {
-        if ($class !== 'Composer\Package\CompletePackage' && $class !== 'Composer\Package\RootPackage') {
+        if ($class !== \Composer\Package\CompletePackage::class && $class !== \Composer\Package\RootPackage::class) {
             trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
         }
 
@@ -87,7 +87,7 @@ class ArrayLoader implements LoaderInterface
         $linkCache = array();
 
         foreach ($versions as $version) {
-            $package = $this->createObject($version, 'Composer\Package\CompletePackage');
+            $package = $this->createObject($version, \Composer\Package\CompletePackage::class);
 
             $this->configureCachedLinks($linkCache, $package, $version);
             $package = $this->configureObject($package, $version);

@@ -529,7 +529,7 @@ EOT
             $errors['json'] = true;
         }
 
-        if (!extension_loaded('Phar')) {
+        if (!extension_loaded(\Phar::class)) {
             $errors['phar'] = true;
         }
 

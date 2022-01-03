@@ -371,7 +371,7 @@ class Factory
             $io->loadConfiguration($config);
 
             // load existing Composer\InstalledVersions instance if available
-            if (!class_exists('Composer\InstalledVersions', false) && file_exists($installedVersionsPath = $config->get('vendor-dir').'/composer/InstalledVersions.php')) {
+            if (!class_exists(\Composer\InstalledVersions::class, false) && file_exists($installedVersionsPath = $config->get('vendor-dir').'/composer/InstalledVersions.php')) {
                 include $installedVersionsPath;
             }
         }
@@ -400,7 +400,7 @@ class Factory
         $parser = new VersionParser;
         $guesser = new VersionGuesser($config, $process, $parser);
         $loader = $this->loadRootPackage($rm, $config, $parser, $guesser, $io);
-        $package = $loader->load($localConfig, 'Composer\Package\RootPackage', $cwd);
+        $package = $loader->load($localConfig, \Composer\Package\RootPackage::class, $cwd);
         $composer->setPackage($package);
 
         // load local repository

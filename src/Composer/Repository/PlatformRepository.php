@@ -332,18 +332,18 @@ class PlatformRepository extends ArrayRepository
                     }
 
                     // Add a separate version for the CLDR library version
-                    if ($this->runtime->hasClass('ResourceBundle')) {
-                        $cldrVersion = $this->runtime->invoke(array('ResourceBundle', 'create'), array('root', 'ICUDATA', false))->get('Version');
+                    if ($this->runtime->hasClass(\ResourceBundle::class)) {
+                        $cldrVersion = $this->runtime->invoke(array(\ResourceBundle::class, 'create'), array('root', 'ICUDATA', false))->get('Version');
                         $this->addLibrary('icu-cldr', $cldrVersion, 'ICU CLDR project version');
                     }
 
-                    if ($this->runtime->hasClass('IntlChar')) {
-                        $this->addLibrary('icu-unicode', implode('.', array_slice($this->runtime->invoke(array('IntlChar', 'getUnicodeVersion')), 0, 3)), 'ICU unicode version');
+                    if ($this->runtime->hasClass(\IntlChar::class)) {
+                        $this->addLibrary('icu-unicode', implode('.', array_slice($this->runtime->invoke(array(\IntlChar::class, 'getUnicodeVersion')), 0, 3)), 'ICU unicode version');
                     }
                     break;
 
                 case 'imagick':
-                    $imageMagickVersion = $this->runtime->construct('Imagick')->getVersion();
+                    $imageMagickVersion = $this->runtime->construct(\Imagick::class)->getVersion();
                     // 6.x: ImageMagick 6.2.9 08/24/06 Q16 http://www.imagemagick.org
                     // 7.x: ImageMagick 7.0.8-34 Q16 x86_64 2019-03-23 https://imagemagick.org
                     Preg::match('/^ImageMagick (?<version>[\d.]+)(?:-(?<patch>\d+))?/', $imageMagickVersion['versionString'], $matches);
@@ -492,8 +492,8 @@ class PlatformRepository extends ArrayRepository
                     break;
 
                 case 'zip':
-                    if ($this->runtime->hasConstant('LIBZIP_VERSION', 'ZipArchive')) {
-                        $this->addLibrary($name.'-libzip', $this->runtime->getConstant('LIBZIP_VERSION', 'ZipArchive'), null, array('zip'));
+                    if ($this->runtime->hasConstant('LIBZIP_VERSION', \ZipArchive::class)) {
+                        $this->addLibrary($name.'-libzip', $this->runtime->getConstant('LIBZIP_VERSION', \ZipArchive::class), null, array('zip'));
                     }
                     break;
 

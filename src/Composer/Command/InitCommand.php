@@ -732,7 +732,7 @@ EOT
         $gitBin = $finder->find('git');
 
         // TODO in v2.3 always call with an array
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+        if (method_exists(\Symfony\Component\Process\Process::class, 'fromShellCommandline')) {
             $cmd = new Process(array($gitBin, 'config', '-l'));
         } else {
             // @phpstan-ignore-next-line

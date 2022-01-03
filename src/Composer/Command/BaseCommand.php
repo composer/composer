@@ -282,7 +282,7 @@ abstract class BaseCommand extends Command
      */
     protected function getTerminalWidth()
     {
-        if (class_exists('Symfony\Component\Console\Terminal')) {
+        if (class_exists(\Symfony\Component\Console\Terminal::class)) {
             $terminal = new Terminal();
             $width = $terminal->getWidth();
         } else {

@@ -129,7 +129,7 @@ class ProcessExecutor
         $this->errorOutput = '';
 
         // TODO in v3, commands should be passed in as arrays of cmd + args
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+        if (method_exists(\Symfony\Component\Process\Process::class, 'fromShellCommandline')) {
             $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
         } else {
             /** @phpstan-ignore-next-line */
@@ -273,7 +273,7 @@ class ProcessExecutor
 
         try {
             // TODO in v3, commands should be passed in as arrays of cmd + args
-            if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+            if (method_exists(\Symfony\Component\Process\Process::class, 'fromShellCommandline')) {
                 $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
             } else {
                 $process = new Process($command, $cwd, null, null, static::getTimeout());

@@ -64,7 +64,7 @@ class ZipDownloader extends ArchiveDownloader
         }
 
         if (null === self::$hasZipArchive) {
-            self::$hasZipArchive = class_exists('ZipArchive');
+            self::$hasZipArchive = class_exists(\ZipArchive::class);
         }
 
         if (!self::$hasZipArchive && !self::$unzipCommands) {

@@ -366,7 +366,7 @@ EOF;
             );
         }
 
-        $classMap['Composer\\InstalledVersions'] = "\$vendorDir . '/composer/InstalledVersions.php',\n";
+        $classMap[\Composer\InstalledVersions::class] = "\$vendorDir . '/composer/InstalledVersions.php',\n";
         ksort($classMap);
         foreach ($classMap as $class => $code) {
             $classmapFile .= '    '.var_export($class, true).' => '.$code;

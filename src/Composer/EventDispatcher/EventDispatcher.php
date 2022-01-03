@@ -242,7 +242,7 @@ class EventDispatcher
                         throw $e;
                     }
                 } else {
-                    $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
+                    $args = implode(' ', array_map(array(\Composer\Util\ProcessExecutor::class, 'escape'), $event->getArguments()));
                     $exec = $callable . ($args === '' ? '' : ' '.$args);
                     if ($this->io->isVerbose()) {
                         $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
