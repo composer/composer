@@ -134,16 +134,10 @@ class StrictConfirmationQuestionTest extends TestCase
      */
     protected function createInput($entry)
     {
-        $stream = $this->getInputStream($entry);
         $input = new ArrayInput(array('--no-interaction'));
-        $dialog = new QuestionHelper();
+        $input->setStream($this->getInputStream($entry));
 
-        if (method_exists($dialog, 'setInputStream')) {
-            $dialog->setInputStream($stream);
-        }
-        if ($input instanceof StreamableInputInterface) {
-            $input->setStream($stream);
-        }
+        $dialog = new QuestionHelper();
 
         return array($input, $dialog);
     }

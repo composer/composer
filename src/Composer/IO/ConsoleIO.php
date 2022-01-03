@@ -97,7 +97,7 @@ class ConsoleIO extends BaseIO
      */
     public function isVerbose()
     {
-        return $this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERBOSE;
+        return $this->output->isVerbose();
     }
 
     /**
@@ -105,7 +105,7 @@ class ConsoleIO extends BaseIO
      */
     public function isVeryVerbose()
     {
-        return $this->output->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE;
+        return $this->output->isVeryVerbose();
     }
 
     /**
@@ -113,7 +113,7 @@ class ConsoleIO extends BaseIO
      */
     public function isDebug()
     {
-        return $this->output->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG;
+        return $this->output->isDebug();
     }
 
     /**
