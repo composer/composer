@@ -241,7 +241,7 @@ class ClassMapGenerator
         }
 
         // return early if there is no chance of matching anything in this file
-        Preg::matchAll('{\b(?:class|interface'.$extraTypes.')\s}i', $contents, $matches);
+        Preg::matchAll('{\b(?:class|interface|trait'.$extraTypes.')\s}i', $contents, $matches);
         if (!$matches) {
             return array();
         }
@@ -252,7 +252,7 @@ class ClassMapGenerator
 
         Preg::matchAll('{
             (?:
-                 \b(?<![\$:>])(?P<type>class|interface'.$extraTypes.') \s++ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+)
+                 \b(?<![\$:>])(?P<type>class|interface|trait'.$extraTypes.') \s++ (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+)
                | \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;]
             )
         }ix', $contents, $matches);
@@ -293,11 +293,14 @@ class ClassMapGenerator
     {
         static $extraTypes = null;
 
-        if (PHP_VERSION_ID >= 80100 || (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>='))) {
-            $extraTypes .= '|enum';
-        }
+        if (null === $extraTypes) {
+            $extraTypes = '';
+            if (PHP_VERSION_ID >= 80100 || (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>='))) {
+                $extraTypes .= '|enum';
+            }
 
-        PhpFileCleaner::setTypeConfig(array_merge(['trait', 'class', 'interface'], array_filter(explode('|', $extraTypes))));
+            PhpFileCleaner::setTypeConfig(array_merge(['class', 'interface', 'trait'], array_filter(explode('|', $extraTypes))));
+        }
 
         return $extraTypes;
     }
