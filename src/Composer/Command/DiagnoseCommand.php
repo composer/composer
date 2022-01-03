@@ -557,10 +557,6 @@ EOT
             $errors['php'] = PHP_VERSION;
         }
 
-        if (!isset($errors['php']) && PHP_VERSION_ID < 70205) {
-            $warnings['php'] = PHP_VERSION;
-        }
-
         if (!extension_loaded('openssl')) {
             $errors['openssl'] = true;
         }
@@ -690,11 +686,6 @@ EOT
                     case 'curlwrappers':
                         $text = "PHP was compiled with --with-curlwrappers which will cause issues with HTTP authentication and GitHub.".PHP_EOL;
                         $text .= " Recompile it without this flag if possible";
-                        break;
-
-                    case 'php':
-                        $text = "Your PHP ({$current}) is quite old, upgrading to PHP 7.2.5 or higher is recommended.".PHP_EOL;
-                        $text .= " Composer works with 7.2.5+ for most people, but there might be edge case issues.";
                         break;
 
                     case 'openssl_version':
