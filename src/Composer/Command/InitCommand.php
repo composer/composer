@@ -348,15 +348,14 @@ EOT
             }
         }
 
-        $self = $this;
         $author = $io->askAndValidate(
             'Author [<comment>'.$author.'</comment>, n to skip]: ',
-            function ($value) use ($self, $author) {
+            function ($value) use ($author) {
                 if ($value === 'n' || $value === 'no') {
                     return;
                 }
                 $value = $value ?: $author;
-                $author = $self->parseAuthorString($value);
+                $author = $this->parseAuthorString($value);
 
                 return sprintf('%s <%s>', $author['name'], $author['email']);
             },

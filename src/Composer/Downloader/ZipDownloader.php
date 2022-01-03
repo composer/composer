@@ -126,9 +126,8 @@ class ZipDownloader extends ArchiveDownloader
 
         $executable = $commandSpec[0];
 
-        $self = $this;
         $io = $this->io;
-        $tryFallback = function ($processError) use ($isLastChance, $io, $self, $file, $path, $package, $executable) {
+        $tryFallback = function ($processError) use ($isLastChance, $io, $file, $path, $package, $executable) {
             if ($isLastChance) {
                 throw $processError;
             }
@@ -143,15 +142,15 @@ class ZipDownloader extends ArchiveDownloader
                 $io->writeError('    Unzip with '.$executable.' command failed, falling back to ZipArchive class');
             }
 
-            return $self->extractWithZipArchive($package, $file, $path);
+            return $this->extractWithZipArchive($package, $file, $path);
         };
 
         try {
             $promise = $this->process->executeAsync($command);
 
-            return $promise->then(function ($process) use ($tryFallback, $command, $package, $file, $self) {
+            return $promise->then(function ($process) use ($tryFallback, $command, $package, $file) {
                 if (!$process->isSuccessful()) {
-                    if (isset($self->cleanupExecuted[$package->getName()])) {
+                    if (isset($this->cleanupExecuted[$package->getName()])) {
                         throw new \RuntimeException('Failed to extract '.$package->getName().' as the installation was aborted by another package operation.');
                     }
 
@@ -174,11 +173,8 @@ class ZipDownloader extends ArchiveDownloader
      * @param  string           $file File to extract
      * @param  string           $path Path where to extract file
      * @return PromiseInterface
-     *
-     * TODO v3 should make this private once we can drop PHP 5.3 support
-     * @protected
      */
-    public function extractWithZipArchive(PackageInterface $package, $file, $path)
+    private function extractWithZipArchive(PackageInterface $package, $file, $path)
     {
         $processError = null;
         $zipArchive = $this->zipArchiveObject ?: new ZipArchive();
@@ -214,11 +210,8 @@ class ZipDownloader extends ArchiveDownloader
      * @param  string                $file File to extract
      * @param  string                $path Path where to extract file
      * @return PromiseInterface|null
-     *
-     * TODO v3 should make this private once we can drop PHP 5.3 support
-     * @protected
      */
-    public function extract(PackageInterface $package, $file, $path)
+    protected function extract(PackageInterface $package, $file, $path)
     {
         return $this->extractWithSystemUnzip($package, $file, $path);
     }

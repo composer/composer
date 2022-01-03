@@ -436,7 +436,6 @@ class InstallationManager
             }
 
             $dispatcher = $this->eventDispatcher;
-            $installManager = $this;
             $io = $this->io;
 
             $promise = $installer->prepare($opType, $package, $initialPackage);
@@ -444,11 +443,11 @@ class InstallationManager
                 $promise = \React\Promise\resolve();
             }
 
-            $promise = $promise->then(function () use ($opType, $installManager, $repo, $operation) {
-                return $installManager->$opType($repo, $operation);
+            $promise = $promise->then(function () use ($opType, $repo, $operation) {
+                return $this->$opType($repo, $operation);
             })->then($cleanupPromises[$index])
-            ->then(function () use ($installManager, $devMode, $repo) {
-                $repo->write($devMode, $installManager);
+            ->then(function () use ($devMode, $repo) {
+                $repo->write($devMode, $this);
             }, function ($e) use ($opType, $package, $io) {
                 $io->writeError('    <error>' . ucfirst($opType) .' of '.$package->getPrettyName().' failed</error>');
 

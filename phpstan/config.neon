@@ -56,6 +56,3 @@ parameters:
         - Composer\Composer::VERSION
         - Composer\Composer::RELEASE_DATE
         - Composer\Composer::SOURCE_VERSION
-
-rules:
-    - Composer\PHPStanRules\AnonymousFunctionWithThisRule

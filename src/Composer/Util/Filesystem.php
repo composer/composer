@@ -157,9 +157,7 @@ class Filesystem
 
         $promise = $this->getProcess()->executeAsync($cmd);
 
-        $self = $this;
-
-        return $promise->then(function ($process) use ($directory, $self) {
+        return $promise->then(function ($process) use ($directory) {
             // clear stat cache because external processes aren't tracked by the php stat cache
             clearstatcache();
 
@@ -169,7 +167,7 @@ class Filesystem
                 }
             }
 
-            return \React\Promise\resolve($self->removeDirectoryPhp($directory));
+            return \React\Promise\resolve($this->removeDirectoryPhp($directory));
         });
     }
 

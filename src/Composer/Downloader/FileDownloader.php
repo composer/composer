@@ -150,11 +150,10 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $httpDownloader = $this->httpDownloader;
         $eventDispatcher = $this->eventDispatcher;
         $filesystem = $this->filesystem;
-        $self = $this;
 
         $accept = null;
         $reject = null;
-        $download = function () use ($io, $output, $httpDownloader, $cache, $cacheKeyGenerator, $eventDispatcher, $package, $fileName, &$urls, &$accept, &$reject, $self) {
+        $download = function () use ($io, $output, $httpDownloader, $cache, $cacheKeyGenerator, $eventDispatcher, $package, $fileName, &$urls, &$accept, &$reject) {
             /** @var array{base: string, processed: string, cacheKey: string} $url */
             $url = reset($urls);
             $index = key($urls);
@@ -184,7 +183,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                 // the cache is corrupt the archive will be deleted and the next attempt will re-download it
                 // see https://github.com/composer/composer/issues/10028
                 if (!$cache->isReadOnly()) {
-                    $self->lastCacheWrites[$package->getName()] = $cacheKey;
+                    $this->lastCacheWrites[$package->getName()] = $cacheKey;
                 }
                 $result = \React\Promise\resolve($fileName);
             } else {
@@ -222,13 +221,13 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             });
         };
 
-        $accept = function ($response) use ($cache, $package, $fileName, $self, &$urls) {
+        $accept = function ($response) use ($cache, $package, $fileName, &$urls) {
             $url = reset($urls);
             $cacheKey = $url['cacheKey'];
             FileDownloader::$downloadMetadata[$package->getName()] = @filesize($fileName) ?: $response->getHeader('Content-Length') ?: '?';
 
             if ($cache && !$cache->isReadOnly()) {
-                $self->lastCacheWrites[$package->getName()] = $cacheKey;
+                $this->lastCacheWrites[$package->getName()] = $cacheKey;
                 $cache->copyFrom($cacheKey, $fileName);
             }
 
@@ -237,12 +236,12 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             return $fileName;
         };
 
-        $reject = function ($e) use ($io, &$urls, $download, $fileName, $package, &$retries, $filesystem, $self) {
+        $reject = function ($e) use ($io, &$urls, $download, $fileName, $package, &$retries, $filesystem) {
             // clean up
             if (file_exists($fileName)) {
                 $filesystem->unlink($fileName);
             }
-            $self->clearLastCacheWrite($package);
+            $this->clearLastCacheWrite($package);
 
             if ($e instanceof IrrecoverableDownloadException) {
                 throw $e;
@@ -361,12 +360,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * TODO mark private in v3
-     * @protected This is public due to PHP 5.3
-     *
      * @return void
      */
-    public function clearLastCacheWrite(PackageInterface $package)
+    protected function clearLastCacheWrite(PackageInterface $package)
     {
         if ($this->cache && isset($this->lastCacheWrites[$package->getName()])) {
             $this->cache->remove($this->lastCacheWrites[$package->getName()]);
@@ -375,27 +371,21 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     }
 
     /**
-     * TODO mark private in v3
-     * @protected This is public due to PHP 5.3
-     *
      * @param string $path
      *
      * @return void
      */
-    public function addCleanupPath(PackageInterface $package, $path)
+    protected function addCleanupPath(PackageInterface $package, $path)
     {
         $this->additionalCleanupPaths[$package->getName()][] = $path;
     }
 
     /**
-     * TODO mark private in v3
-     * @protected This is public due to PHP 5.3
-     *
      * @param string $path
      *
      * @return void
      */
-    public function removeCleanupPath(PackageInterface $package, $path)
+    protected function removeCleanupPath(PackageInterface $package, $path)
     {
         if (isset($this->additionalCleanupPaths[$package->getName()])) {
             $idx = array_search($path, $this->additionalCleanupPaths[$package->getName()]);
@@ -416,11 +406,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         if (!$promise instanceof PromiseInterface) {
             $promise = \React\Promise\resolve();
         }
-        $self = $this;
-        $io = $this->io;
 
-        return $promise->then(function () use ($self, $target, $path) {
-            $promise = $self->install($target, $path, false);
+        return $promise->then(function () use ($target, $path) {
+            $promise = $this->install($target, $path, false);
 
             return $promise;
         });

@@ -192,16 +192,15 @@ class DownloadManager
         $sources = $this->getAvailableSources($package, $prevPackage);
 
         $io = $this->io;
-        $self = $this;
 
-        $download = function ($retry = false) use (&$sources, $io, $package, $self, $targetDir, &$download, $prevPackage) {
+        $download = function ($retry = false) use (&$sources, $io, $package, $targetDir, &$download, $prevPackage) {
             $source = array_shift($sources);
             if ($retry) {
                 $io->writeError('    <warning>Now trying to download from ' . $source . '</warning>');
             }
             $package->setInstallationSource($source);
 
-            $downloader = $self->getDownloaderForPackage($package);
+            $downloader = $this->getDownloaderForPackage($package);
             if (!$downloader) {
                 return \React\Promise\resolve();
             }
@@ -332,10 +331,8 @@ class DownloadManager
         // we wipe the dir and do a new install instead of updating it
         $promise = $initialDownloader->remove($initial, $targetDir);
         if ($promise) {
-            $self = $this;
-
-            return $promise->then(function ($res) use ($self, $target, $targetDir) {
-                return $self->install($target, $targetDir);
+            return $promise->then(function ($res) use ($target, $targetDir) {
+                return $this->install($target, $targetDir);
             });
         }
 

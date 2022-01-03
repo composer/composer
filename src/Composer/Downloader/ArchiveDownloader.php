@@ -28,9 +28,8 @@ abstract class ArchiveDownloader extends FileDownloader
 {
     /**
      * @var array<string, true>
-     * @protected
      */
-    public $cleanupExecuted = array();
+    protected $cleanupExecuted = array();
 
     /**
      * @return PromiseInterface|null
@@ -92,22 +91,20 @@ abstract class ArchiveDownloader extends FileDownloader
         $fileName = $this->getFileName($package, $path);
 
         $filesystem = $this->filesystem;
-        $self = $this;
 
-        $cleanup = function () use ($path, $filesystem, $temporaryDir, $package, $self) {
+        $cleanup = function () use ($path, $filesystem, $temporaryDir, $package) {
             // remove cache if the file was corrupted
-            $self->clearLastCacheWrite($package);
+            $this->clearLastCacheWrite($package);
 
             // clean up
             $filesystem->removeDirectory($temporaryDir);
             if (is_dir($path) && realpath($path) !== getcwd()) {
                 $filesystem->removeDirectory($path);
             }
-            $self->removeCleanupPath($package, $temporaryDir);
-            $self->removeCleanupPath($package, realpath($path));
+            $this->removeCleanupPath($package, $temporaryDir);
+            $this->removeCleanupPath($package, realpath($path));
         };
 
-        $promise = null;
         try {
             $promise = $this->extract($package, $fileName, $temporaryDir);
         } catch (\Exception $e) {
@@ -119,7 +116,7 @@ abstract class ArchiveDownloader extends FileDownloader
             $promise = \React\Promise\resolve();
         }
 
-        return $promise->then(function () use ($self, $package, $filesystem, $fileName, $temporaryDir, $path) {
+        return $promise->then(function () use ($package, $filesystem, $fileName, $temporaryDir, $path) {
             $filesystem->unlink($fileName);
 
             /**
@@ -203,9 +200,9 @@ abstract class ArchiveDownloader extends FileDownloader
 
             $promise = $filesystem->removeDirectoryAsync($temporaryDir);
 
-            return $promise->then(function () use ($self, $package, $path, $temporaryDir) {
-                $self->removeCleanupPath($package, $temporaryDir);
-                $self->removeCleanupPath($package, $path);
+            return $promise->then(function () use ($package, $path, $temporaryDir) {
+                $this->removeCleanupPath($package, $temporaryDir);
+                $this->removeCleanupPath($package, $path);
             });
         }, function ($e) use ($cleanup) {
             $cleanup();

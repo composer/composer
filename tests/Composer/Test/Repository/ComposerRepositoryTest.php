@@ -37,7 +37,7 @@ class ComposerRepositoryTest extends TestCase
         );
 
         $repository = $this->getMockBuilder('Composer\Repository\ComposerRepository')
-            ->onlyMethods(array('loadRootServerFile', 'createPackages'))
+            ->onlyMethods(array('loadRootServerFile'))
             ->setConstructorArgs(array(
                 $repoConfig,
                 new NullIO,
@@ -52,22 +52,15 @@ class ComposerRepositoryTest extends TestCase
             ->method('loadRootServerFile')
             ->will($this->returnValue($repoPackages));
 
-        $stubs = array();
-        foreach ($expected as $at => $arg) {
-            $stubs[] = $this->getPackage('stub/stub', '1.0.0');
-        }
-
-        $repository
-            ->expects($this->once())
-            ->method('createPackages')
-            ->with($this->identicalTo($expected), $this->equalTo('root file (http://example.org/packages.json)'))
-            ->will($this->returnValue($stubs));
-
         // Triggers initialization
         $packages = $repository->getPackages();
 
         // Final sanity check, ensure the correct number of packages were added.
         $this->assertCount(count($expected), $packages);
+
+        foreach ($expected as $index => $pkg) {
+            self::assertSame($pkg['name'].' '.$pkg['version'], $packages[$index]->getName().' '.$packages[$index]->getPrettyVersion());
+        }
     }
 
     public function loadDataProvider()

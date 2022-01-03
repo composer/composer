@@ -514,14 +514,12 @@ class Config
      */
     private function process($value, $flags)
     {
-        $config = $this;
-
         if (!is_string($value)) {
             return $value;
         }
 
-        return Preg::replaceCallback('#\{\$(.+)\}#', function ($match) use ($config, $flags) {
-            return $config->get($match[1], $flags);
+        return Preg::replaceCallback('#\{\$(.+)\}#', function ($match) use ($flags) {
+            return $this->get($match[1], $flags);
         }, $value);
     }
 

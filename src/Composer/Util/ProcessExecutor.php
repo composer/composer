@@ -344,12 +344,7 @@ class ProcessExecutor
         return $active;
     }
 
-    /**
-     * @private
-     *
-     * @return void
-     */
-    public function markJobDone()
+    private function markJobDone(): void
     {
         $this->runningJobs--;
     }
