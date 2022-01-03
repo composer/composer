@@ -64,13 +64,7 @@ class Compiler
         $this->versionDate = new \DateTime(trim($process->getOutput()));
         $this->versionDate->setTimezone(new \DateTimeZone('UTC'));
 
-        // TODO in v2.3 always call with an array
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = new Process(array('git', 'describe', '--tags', '--exact-match', 'HEAD'), __DIR__);
-        } else {
-            // @phpstan-ignore-next-line
-            $process = new Process('git describe --tags --exact-match HEAD');
-        }
+        $process = new Process(array('git', 'describe', '--tags', '--exact-match', 'HEAD'), __DIR__);
         if ($process->run() == 0) {
             $this->version = trim($process->getOutput());
         } else {
