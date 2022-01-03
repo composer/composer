@@ -553,12 +553,8 @@ EOT
             $errors['ioncube'] = ioncube_loader_version();
         }
 
-        if (PHP_VERSION_ID < 50302) {
+        if (PHP_VERSION_ID < 70205) {
             $errors['php'] = PHP_VERSION;
-        }
-
-        if (!isset($errors['php']) && PHP_VERSION_ID < 50304) {
-            $warnings['php'] = PHP_VERSION;
         }
 
         if (!extension_loaded('openssl')) {
@@ -634,7 +630,7 @@ EOT
                         break;
 
                     case 'php':
-                        $text = PHP_EOL."Your PHP ({$current}) is too old, you must upgrade to PHP 5.3.2 or higher.";
+                        $text = PHP_EOL."Your PHP ({$current}) is too old, you must upgrade to PHP 7.2.5 or higher.";
                         break;
 
                     case 'allow_url_fopen':
@@ -690,11 +686,6 @@ EOT
                     case 'curlwrappers':
                         $text = "PHP was compiled with --with-curlwrappers which will cause issues with HTTP authentication and GitHub.".PHP_EOL;
                         $text .= " Recompile it without this flag if possible";
-                        break;
-
-                    case 'php':
-                        $text = "Your PHP ({$current}) is quite old, upgrading to PHP 5.3.4 or higher is recommended.".PHP_EOL;
-                        $text .= " Composer works with 5.3.2+ for most people, but there might be edge case issues.";
                         break;
 
                     case 'openssl_version':

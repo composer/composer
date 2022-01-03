@@ -685,9 +685,6 @@ class Factory
             if (false !== strpos($e->getMessage(), 'cafile')) {
                 $io->write('<error>Unable to locate a valid CA certificate file. You must set a valid \'cafile\' option.</error>');
                 $io->write('<error>A valid CA certificate file is required for SSL/TLS protection.</error>');
-                if (PHP_VERSION_ID < 50600) {
-                    $io->write('<error>It is recommended you upgrade to PHP 5.6+ which can detect your system CA file automatically.</error>');
-                }
                 $io->write('<error>You can disable this error, at your own risk, by setting the \'disable-tls\' option to true.</error>');
             }
             throw $e;

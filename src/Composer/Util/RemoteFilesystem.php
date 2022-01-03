@@ -332,18 +332,6 @@ class RemoteFilesystem
 
                 throw $e;
             }
-
-            if (PHP_VERSION_ID < 50600 && !empty($options['ssl']['peer_fingerprint'])) {
-                // Emulate fingerprint validation on PHP < 5.6
-                $params = stream_context_get_params($ctx);
-                $expectedPeerFingerprint = $options['ssl']['peer_fingerprint'];
-                $peerFingerprint = TlsHelper::getCertificateFingerprint($params['options']['ssl']['peer_certificate']);
-
-                // Constant time compare??!
-                if ($expectedPeerFingerprint !== $peerFingerprint) {
-                    throw new TransportException('Peer fingerprint did not match');
-                }
-            }
         } catch (\Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
@@ -668,17 +656,6 @@ class RemoteFilesystem
         if ($this->disableTls === false && PHP_VERSION_ID < 50600 && !stream_is_local($this->fileUrl)) {
             $host = parse_url($this->fileUrl, PHP_URL_HOST);
 
-            if (PHP_VERSION_ID < 50304) {
-                // PHP < 5.3.4 does not support follow_location, for those people
-                // do some really nasty hard coded transformations. These will
-                // still breakdown if the site redirects to a domain we don't
-                // expect.
-
-                if ($host === 'github.com' || $host === 'api.github.com') {
-                    $host = '*.github.com';
-                }
-            }
-
             $tlsOptions['ssl']['CN_match'] = $host;
             $tlsOptions['ssl']['SNI_server_name'] = $host;
 
@@ -878,12 +855,7 @@ class RemoteFilesystem
             $decode = $contentEncoding && 'gzip' === strtolower($contentEncoding);
 
             if ($decode) {
-                if (PHP_VERSION_ID >= 50400) {
-                    $result = zlib_decode($result);
-                } else {
-                    // work around issue with gzuncompress & co that do not work with all gzip checksums
-                    $result = file_get_contents('compress.zlib://data:application/octet-stream;base64,'.base64_encode($result));
-                }
+                $result = zlib_decode($result);
 
                 if ($result === false) {
                     throw new TransportException('Failed to decode zlib stream');

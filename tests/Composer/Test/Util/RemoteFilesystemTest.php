@@ -252,10 +252,6 @@ class RemoteFilesystemTest extends TestCase
         $this->assertTrue($res['ssl']['verify_peer']);
         $this->assertTrue($res['ssl']['SNI_enabled']);
         $this->assertEquals(7, $res['ssl']['verify_depth']);
-        if (PHP_VERSION_ID < 50600) {
-            $this->assertEquals('www.example.org', $res['ssl']['CN_match']);
-            $this->assertEquals('www.example.org', $res['ssl']['SNI_server_name']);
-        }
         $this->assertEquals('/some/path/file.crt', $res['ssl']['cafile']);
         if (version_compare(PHP_VERSION, '5.4.13') >= 0) {
             $this->assertTrue($res['ssl']['disable_compression']);

@@ -248,11 +248,7 @@ class Cache
             return false;
         }
 
-        if (PHP_VERSION_ID > 70000) {
-            return !random_int(0, 50);
-        }
-
-        return !mt_rand(0, 50);
+        return !random_int(0, 50);
     }
 
     /**

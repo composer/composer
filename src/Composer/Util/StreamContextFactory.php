@@ -225,9 +225,7 @@ final class StreamContextFactory
         /**
          * Disable TLS compression to prevent CRIME attacks where supported.
          */
-        if (PHP_VERSION_ID >= 50413) {
-            $defaults['ssl']['disable_compression'] = true;
-        }
+        $defaults['ssl']['disable_compression'] = true;
 
         return $defaults;
     }
