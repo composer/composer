@@ -819,11 +819,6 @@ EOT
             return true;
         }
 
-        // php <5.3.3 has a very broken email validator, so bypass checks
-        if (PHP_VERSION_ID < 50303) {
-            return true;
-        }
-
         return false !== filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 

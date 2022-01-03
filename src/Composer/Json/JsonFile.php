@@ -238,35 +238,12 @@ class JsonFile
      */
     public static function encode($data, $options = 448)
     {
-        if (PHP_VERSION_ID >= 50400) {
-            $json = json_encode($data, $options);
-            if (false === $json) {
-                self::throwEncodeError(json_last_error());
-            }
-
-            //  compact brackets to follow recent php versions
-            if (PHP_VERSION_ID < 50428 || (PHP_VERSION_ID >= 50500 && PHP_VERSION_ID < 50512) || (defined('JSON_C_VERSION') && version_compare(phpversion('json'), '1.3.6', '<'))) {
-                $json = Preg::replace('/\[\s+\]/', '[]', $json);
-                $json = Preg::replace('/\{\s+\}/', '{}', $json);
-            }
-
-            return $json;
-        }
-
-        $json = json_encode($data);
+        $json = json_encode($data, $options);
         if (false === $json) {
             self::throwEncodeError(json_last_error());
         }
 
-        $prettyPrint = (bool) ($options & self::JSON_PRETTY_PRINT);
-        $unescapeUnicode = (bool) ($options & self::JSON_UNESCAPED_UNICODE);
-        $unescapeSlashes = (bool) ($options & self::JSON_UNESCAPED_SLASHES);
-
-        if (!$prettyPrint && !$unescapeUnicode && !$unescapeSlashes) {
-            return $json;
-        }
-
-        return JsonFormatter::format($json, $unescapeUnicode, $unescapeSlashes);
+        return $json;
     }
 
     /**

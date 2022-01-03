@@ -222,12 +222,11 @@ final class StreamContextFactory
             throw new TransportException('The configured capath was not valid or could not be read.');
         }
 
+
         /**
          * Disable TLS compression to prevent CRIME attacks where supported.
          */
-        if (PHP_VERSION_ID >= 50413) {
-            $defaults['ssl']['disable_compression'] = true;
-        }
+        $defaults['ssl']['disable_compression'] = true;
 
         return $defaults;
     }
