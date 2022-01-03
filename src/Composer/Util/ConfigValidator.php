@@ -29,7 +29,7 @@ use Composer\Spdx\SpdxLicenses;
  */
 class ConfigValidator
 {
-    const CHECK_VERSION = 1;
+    public const CHECK_VERSION = 1;
 
     /** @var IOInterface */
     private $io;

@@ -36,10 +36,10 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class BaseDependencyCommand extends BaseCommand
 {
-    const ARGUMENT_PACKAGE = 'package';
-    const ARGUMENT_CONSTRAINT = 'version';
-    const OPTION_RECURSIVE = 'recursive';
-    const OPTION_TREE = 'tree';
+    public const ARGUMENT_PACKAGE = 'package';
+    public const ARGUMENT_CONSTRAINT = 'version';
+    public const OPTION_RECURSIVE = 'recursive';
+    public const OPTION_TREE = 'tree';
 
     /** @var ?string[] */
     protected $colors;

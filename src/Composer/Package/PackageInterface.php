@@ -21,9 +21,9 @@ use Composer\Repository\RepositoryInterface;
  */
 interface PackageInterface
 {
-    const DISPLAY_SOURCE_REF_IF_DEV = 0;
-    const DISPLAY_SOURCE_REF = 1;
-    const DISPLAY_DIST_REF = 2;
+    public const DISPLAY_SOURCE_REF_IF_DEV = 0;
+    public const DISPLAY_SOURCE_REF = 1;
+    public const DISPLAY_DIST_REF = 2;
 
     /**
      * Returns the package's name without version info, thus not a unique identifier

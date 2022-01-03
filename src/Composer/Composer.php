@@ -52,10 +52,10 @@ class Composer
      * const RELEASE_DATE = '@release_date@';
      * const SOURCE_VERSION = '1.8-dev+source';
      */
-    const VERSION = '@package_version@';
-    const BRANCH_ALIAS_VERSION = '@package_branch_alias_version@';
-    const RELEASE_DATE = '@release_date@';
-    const SOURCE_VERSION = '2.3.999-dev+source';
+    public const VERSION = '@package_version@';
+    public const BRANCH_ALIAS_VERSION = '@package_branch_alias_version@';
+    public const RELEASE_DATE = '@release_date@';
+    public const SOURCE_VERSION = '2.3.999-dev+source';
 
     /**
      * Version number of the internal composer-runtime-api package
@@ -66,7 +66,7 @@ class Composer
      *
      * @var string
      */
-    const RUNTIME_API_VERSION = '2.2.2';
+    public const RUNTIME_API_VERSION = '2.2.2';
 
     /**
      * @return string

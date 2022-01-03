@@ -32,11 +32,11 @@ use React\Promise\PromiseInterface;
  */
 class HttpDownloader
 {
-    const STATUS_QUEUED = 1;
-    const STATUS_STARTED = 2;
-    const STATUS_COMPLETED = 3;
-    const STATUS_FAILED = 4;
-    const STATUS_ABORTED = 5;
+    public const STATUS_QUEUED = 1;
+    public const STATUS_STARTED = 2;
+    public const STATUS_COMPLETED = 3;
+    public const STATUS_FAILED = 4;
+    public const STATUS_ABORTED = 5;
 
     /** @var IOInterface */
     private $io;

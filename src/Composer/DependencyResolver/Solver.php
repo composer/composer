@@ -23,8 +23,8 @@ use Composer\Package\BasePackage;
  */
 class Solver
 {
-    const BRANCH_LITERALS = 0;
-    const BRANCH_LEVEL = 1;
+    public const BRANCH_LITERALS = 0;
+    public const BRANCH_LEVEL = 1;
 
     /** @var PolicyInterface */
     protected $policy;

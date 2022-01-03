@@ -24,9 +24,9 @@ use Composer\Spdx\SpdxLicenses;
  */
 class ValidatingArrayLoader implements LoaderInterface
 {
-    const CHECK_ALL = 3;
-    const CHECK_UNBOUND_CONSTRAINTS = 1;
-    const CHECK_STRICT_CONSTRAINTS = 2;
+    public const CHECK_ALL = 3;
+    public const CHECK_UNBOUND_CONSTRAINTS = 1;
+    public const CHECK_STRICT_CONSTRAINTS = 2;
 
     /** @var LoaderInterface */
     private $loader;

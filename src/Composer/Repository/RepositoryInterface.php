@@ -25,9 +25,9 @@ use Composer\Semver\Constraint\ConstraintInterface;
  */
 interface RepositoryInterface extends \Countable
 {
-    const SEARCH_FULLTEXT = 0;
-    const SEARCH_NAME = 1;
-    const SEARCH_VENDOR = 2;
+    public const SEARCH_FULLTEXT = 0;
+    public const SEARCH_NAME = 1;
+    public const SEARCH_VENDOR = 2;
 
     /**
      * Checks if specified package registered (installed).

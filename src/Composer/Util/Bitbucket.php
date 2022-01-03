@@ -35,7 +35,7 @@ class Bitbucket
     /** @var int|null */
     private $time;
 
-    const OAUTH2_ACCESS_TOKEN_URL = 'https://bitbucket.org/site/oauth2/access_token';
+    public const OAUTH2_ACCESS_TOKEN_URL = 'https://bitbucket.org/site/oauth2/access_token';
 
     /**
      * Constructor.

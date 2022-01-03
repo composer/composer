@@ -28,14 +28,14 @@ use Composer\Downloader\TransportException;
  */
 class JsonFile
 {
-    const LAX_SCHEMA = 1;
-    const STRICT_SCHEMA = 2;
+    public const LAX_SCHEMA = 1;
+    public const STRICT_SCHEMA = 2;
 
-    const JSON_UNESCAPED_SLASHES = 64;
-    const JSON_PRETTY_PRINT = 128;
-    const JSON_UNESCAPED_UNICODE = 256;
+    public const JSON_UNESCAPED_SLASHES = 64;
+    public const JSON_PRETTY_PRINT = 128;
+    public const JSON_UNESCAPED_UNICODE = 256;
 
-    const COMPOSER_SCHEMA_PATH = '/../../../res/composer-schema.json';
+    public const COMPOSER_SCHEMA_PATH = '/../../../res/composer-schema.json';
 
     /** @var string */
     private $path;
