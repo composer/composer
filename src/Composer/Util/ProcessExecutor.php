@@ -255,10 +255,6 @@ class ProcessExecutor
             } else {
                 $process = new Process($command, $cwd, null, null, static::getTimeout());
             }
-        } catch (\Exception $e) {
-            call_user_func($job['reject'], $e);
-
-            return;
         } catch (\Throwable $e) {
             call_user_func($job['reject'], $e);
 
@@ -269,10 +265,6 @@ class ProcessExecutor
 
         try {
             $process->start();
-        } catch (\Exception $e) {
-            call_user_func($job['reject'], $e);
-
-            return;
         } catch (\Throwable $e) {
             call_user_func($job['reject'], $e);
 
