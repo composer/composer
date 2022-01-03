@@ -253,7 +253,7 @@ class Application extends BaseApplication
             ), true, IOInterface::DEBUG);
 
             if (PHP_VERSION_ID < 70205) {
-                $io->writeError('<warning>Composer only officially supports PHP 7.2.5 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.', upgrading is strongly recommended.</warning>');
+                $io->writeError('<warning>Composer supports PHP 7.2.5 and above, you will most likely encounter problems with your PHP '.PHP_VERSION.'. Upgrading is strongly recommended but you can use Composer 2.2.x LTS as a fallback.</warning>');
             }
 
             if (XdebugHandler::isXdebugActive() && !Platform::getEnv('COMPOSER_DISABLE_XDEBUG_WARN')) {
