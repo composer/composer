@@ -106,28 +106,23 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $partialPackagesByName = null;
 
     /**
-     * TODO v3 should make this private once we can drop PHP 5.3 support
-     * @private
      * @var array list of package names which are fresh and can be loaded from the cache directly in case loadPackage is called several times
      *            useful for v2 metadata repositories with lazy providers
      * @phpstan-var array<string, true>
      */
-    public $freshMetadataUrls = array();
+    private $freshMetadataUrls = array();
 
     /**
-     * TODO v3 should make this private once we can drop PHP 5.3 support
-     * @private
      * @var array list of package names which returned a 404 and should not be re-fetched in case loadPackage is called several times
      *            useful for v2 metadata repositories with lazy providers
      * @phpstan-var array<string, true>
      */
-    public $packagesNotFoundCache = array();
+    private $packagesNotFoundCache = array();
+
     /**
-     * TODO v3 should make this private once we can drop PHP 5.3 support
-     * @private
      * @var VersionParser
      */
-    public $versionParser;
+    private $versionParser;
 
     /**
      * @param array<string, mixed> $repoConfig
@@ -867,7 +862,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $packages = array();
         $namesFound = array();
         $promises = array();
-        $repo = $this;
 
         if (!$this->lazyProvidersUrl) {
             throw new \LogicException('loadAsyncPackages only supports v2 protocol composer repos with a metadata-url');
@@ -903,7 +897,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
-                ->then(function ($response) use (&$packages, &$namesFound, $url, $cacheKey, $contents, $realName, $constraint, $repo, $acceptableStabilities, $stabilityFlags, $alreadyLoaded) {
+                ->then(function ($response) use (&$packages, &$namesFound, $url, $cacheKey, $contents, $realName, $constraint, $acceptableStabilities, $stabilityFlags, $alreadyLoaded) {
                     $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
 
                     if (true === $response) {
@@ -925,10 +919,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     $versionsToLoad = array();
                     foreach ($versions as $version) {
                         if (!isset($version['version_normalized'])) {
-                            $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
+                            $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                         } elseif ($version['version_normalized'] === VersionParser::DEFAULT_BRANCH_ALIAS) {
                             // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEFAULT_BRANCH_ALIAS, we renormalize it
-                            $version['version_normalized'] = $repo->versionParser->normalize($version['version']);
+                            $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                         }
 
                         // avoid loading packages which have already been loaded
@@ -936,18 +930,18 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                             continue;
                         }
 
-                        if ($repo->isVersionAcceptable($constraint, $realName, $version, $acceptableStabilities, $stabilityFlags)) {
+                        if ($this->isVersionAcceptable($constraint, $realName, $version, $acceptableStabilities, $stabilityFlags)) {
                             $versionsToLoad[] = $version;
                         }
                     }
 
-                    $loadedPackages = $repo->createPackages($versionsToLoad, $packagesSource);
+                    $loadedPackages = $this->createPackages($versionsToLoad, $packagesSource);
                     foreach ($loadedPackages as $package) {
-                        $package->setRepository($repo);
+                        $package->setRepository($this);
                         $packages[spl_object_hash($package)] = $package;
 
                         if ($package instanceof AliasPackage && !isset($packages[spl_object_hash($package->getAliasOf())])) {
-                            $package->getAliasOf()->setRepository($repo);
+                            $package->getAliasOf()->setRepository($this);
                             $packages[spl_object_hash($package->getAliasOf())] = $package->getAliasOf();
                         }
                     }
@@ -961,10 +955,6 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * TODO v3 should make this private once we can drop PHP 5.3 support
-     *
-     * @private
-     *
      * @param ConstraintInterface|null $constraint
      * @param string $name package name (must be lowercased already)
      * @param array<string, mixed> $versionData
@@ -975,7 +965,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      *
      * @return bool
      */
-    public function isVersionAcceptable($constraint, $name, $versionData, array $acceptableStabilities = null, array $stabilityFlags = null)
+    private function isVersionAcceptable($constraint, $name, $versionData, array $acceptableStabilities = null, array $stabilityFlags = null)
     {
         $versions = array($versionData['version_normalized']);
 
@@ -1248,15 +1238,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     }
 
     /**
-     * TODO v3 should make this private once we can drop PHP 5.3 support
-     * @private
-     *
      * @param mixed[] $packages
      * @param string|null $source
      *
      * @return list<CompletePackage|CompleteAliasPackage>
      */
-    public function createPackages(array $packages, $source = null)
+    private function createPackages(array $packages, $source = null)
     {
         if (!$packages) {
             return array();
@@ -1499,25 +1486,24 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $cache = $this->cache;
         $degradedMode = &$this->degradedMode;
         $eventDispatcher = $this->eventDispatcher;
-        $repo = $this;
 
-        $accept = function ($response) use ($io, $url, $filename, $cache, $cacheKey, $eventDispatcher, $repo) {
+        $accept = function ($response) use ($io, $url, $filename, $cache, $cacheKey, $eventDispatcher) {
             // package not found is acceptable for a v2 protocol repository
             if ($response->getStatusCode() === 404) {
-                $repo->packagesNotFoundCache[$filename] = true;
+                $this->packagesNotFoundCache[$filename] = true;
 
                 return array('packages' => array());
             }
 
             $json = (string) $response->getBody();
             if ($json === '' && $response->getStatusCode() === 304) {
-                $repo->freshMetadataUrls[$filename] = true;
+                $this->freshMetadataUrls[$filename] = true;
 
                 return true;
             }
 
             if ($eventDispatcher) {
-                $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $filename, 'metadata', array('response' => $response, 'repository' => $repo));
+                $postFileDownloadEvent = new PostFileDownloadEvent(PluginEvents::POST_FILE_DOWNLOAD, null, null, $filename, 'metadata', array('response' => $response, 'repository' => $this));
                 $eventDispatcher->dispatch($postFileDownloadEvent->getName(), $postFileDownloadEvent);
             }
 
@@ -1533,14 +1519,14 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             if (!$cache->isReadOnly()) {
                 $cache->write($cacheKey, $json);
             }
-            $repo->freshMetadataUrls[$filename] = true;
+            $this->freshMetadataUrls[$filename] = true;
 
             return $data;
         };
 
-        $reject = function ($e) use ($filename, $accept, $io, $url, &$degradedMode, $repo, $lastModifiedTime) {
+        $reject = function ($e) use ($filename, $accept, $io, $url, &$degradedMode, $lastModifiedTime) {
             if ($e instanceof TransportException && $e->getStatusCode() === 404) {
-                $repo->packagesNotFoundCache[$filename] = true;
+                $this->packagesNotFoundCache[$filename] = true;
 
                 return false;
             }

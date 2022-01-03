@@ -49,9 +49,8 @@ class GitTest extends TestCase
      */
     public function testRunCommandPublicGitHubRepositoryNotInitialClone($protocol, $expectedUrl)
     {
-        $that = $this;
-        $commandCallable = function ($url) use ($that, $expectedUrl) {
-            $that->assertSame($expectedUrl, $url);
+        $commandCallable = function ($url) use ($expectedUrl) {
+            $this->assertSame($expectedUrl, $url);
 
             return 'git command';
         };
@@ -75,9 +74,8 @@ class GitTest extends TestCase
     {
         self::expectException('RuntimeException');
 
-        $that = $this;
-        $commandCallable = function ($url) use ($that) {
-            $that->assertSame('https://github.com/acme/repo', $url);
+        $commandCallable = function ($url) {
+            $this->assertSame('https://github.com/acme/repo', $url);
 
             return 'git command';
         };

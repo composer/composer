@@ -180,8 +180,6 @@ class FileDownloaderTest extends TestCase
 
     public function testDownloadWithCustomProcessedUrl()
     {
-        $self = $this;
-
         $path = $this->getUniqueTmpDirectory();
 
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -232,16 +230,16 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyTo')
-            ->will($this->returnCallback(function ($cacheKey) use ($self, $expectedCacheKey) {
-                $self->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+                $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
 
                 return false;
             }));
         $cacheMock
             ->expects($this->any())
             ->method('copyFrom')
-            ->will($this->returnCallback(function ($cacheKey) use ($self, $expectedCacheKey) {
-                $self->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+                $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
 
                 return false;
             }));
@@ -250,8 +248,8 @@ class FileDownloaderTest extends TestCase
         $httpDownloaderMock
             ->expects($this->any())
             ->method('addCopy')
-            ->will($this->returnCallback(function ($url) use ($self, $expectedUrl) {
-                $self->assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
+            ->will($this->returnCallback(function ($url) use ($expectedUrl) {
+                $this->assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
 
                 return \React\Promise\resolve(
                     new Response(array('url' => 'http://example.org/'), 200, array(), 'file~')
@@ -281,8 +279,6 @@ class FileDownloaderTest extends TestCase
 
     public function testDownloadWithCustomCacheKey()
     {
-        $self = $this;
-
         $path = $this->getUniqueTmpDirectory();
 
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -334,16 +330,16 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyTo')
-            ->will($this->returnCallback(function ($cacheKey) use ($self, $expectedCacheKey) {
-                $self->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+                $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
 
                 return false;
             }));
         $cacheMock
             ->expects($this->any())
             ->method('copyFrom')
-            ->will($this->returnCallback(function ($cacheKey) use ($self, $expectedCacheKey) {
-                $self->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+                $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
 
                 return false;
             }));
@@ -352,8 +348,8 @@ class FileDownloaderTest extends TestCase
         $httpDownloaderMock
             ->expects($this->any())
             ->method('addCopy')
-            ->will($this->returnCallback(function ($url) use ($self, $expectedUrl) {
-                $self->assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
+            ->will($this->returnCallback(function ($url) use ($expectedUrl) {
+                $this->assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
 
                 return \React\Promise\resolve(
                     new Response(array('url' => 'http://example.org/'), 200, array(), 'file~')

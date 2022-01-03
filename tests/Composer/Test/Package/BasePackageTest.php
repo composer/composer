@@ -79,13 +79,12 @@ class BasePackageTest extends TestCase
             ),
         );
 
-        $self = $this;
-        $createPackage = function ($arr) use ($self) {
-            $package = $self->getMockForAbstractClass('\Composer\Package\BasePackage', array(), '', false);
-            $package->expects($self->once())->method('isDev')->will($self->returnValue(true));
-            $package->expects($self->any())->method('getSourceType')->will($self->returnValue('git'));
-            $package->expects($self->once())->method('getPrettyVersion')->will($self->returnValue('PrettyVersion'));
-            $package->expects($self->any())->method('getSourceReference')->will($self->returnValue($arr['sourceReference']));
+        $createPackage = function ($arr) {
+            $package = $this->getMockForAbstractClass('\Composer\Package\BasePackage', array(), '', false);
+            $package->expects($this->once())->method('isDev')->will($this->returnValue(true));
+            $package->expects($this->any())->method('getSourceType')->will($this->returnValue('git'));
+            $package->expects($this->once())->method('getPrettyVersion')->will($this->returnValue('PrettyVersion'));
+            $package->expects($this->any())->method('getSourceReference')->will($this->returnValue($arr['sourceReference']));
 
             return array($package, $arr['truncate'], $arr['expected']);
         };

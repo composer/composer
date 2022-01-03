@@ -70,15 +70,12 @@ class PluginInstaller extends LibraryInstaller
             $promise = \React\Promise\resolve();
         }
 
-        $pluginManager = $this->composer->getPluginManager();
-        $self = $this;
-
-        return $promise->then(function () use ($self, $pluginManager, $package, $repo) {
+        return $promise->then(function () use ($package, $repo) {
             try {
                 Platform::workaroundFilesystemIssues();
-                $pluginManager->registerPackage($package, true);
+                $this->composer->getPluginManager()->registerPackage($package, true);
             } catch (\Exception $e) {
-                $self->rollbackInstall($e, $repo, $package);
+                $this->rollbackInstall($e, $repo, $package);
             }
         });
     }
@@ -93,16 +90,13 @@ class PluginInstaller extends LibraryInstaller
             $promise = \React\Promise\resolve();
         }
 
-        $pluginManager = $this->composer->getPluginManager();
-        $self = $this;
-
-        return $promise->then(function () use ($self, $pluginManager, $initial, $target, $repo) {
+        return $promise->then(function () use ($initial, $target, $repo) {
             try {
                 Platform::workaroundFilesystemIssues();
-                $pluginManager->deactivatePackage($initial);
-                $pluginManager->registerPackage($target, true);
+                $this->composer->getPluginManager()->deactivatePackage($initial);
+                $this->composer->getPluginManager()->registerPackage($target, true);
             } catch (\Exception $e) {
-                $self->rollbackInstall($e, $repo, $target);
+                $this->rollbackInstall($e, $repo, $target);
             }
         });
     }
@@ -114,13 +108,7 @@ class PluginInstaller extends LibraryInstaller
         return parent::uninstall($repo, $package);
     }
 
-    /**
-     * TODO v3 should make this private once we can drop PHP 5.3 support
-     * @private
-     *
-     * @return void
-     */
-    public function rollbackInstall(\Exception $e, InstalledRepositoryInterface $repo, PackageInterface $package)
+    private function rollbackInstall(\Exception $e, InstalledRepositoryInterface $repo, PackageInterface $package): void
     {
         $this->io->writeError('Plugin initialization failed ('.$e->getMessage().'), uninstalling plugin');
         parent::uninstall($repo, $package);

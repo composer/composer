@@ -264,7 +264,6 @@ class HttpDownloader
             };
         }
 
-        $downloader = $this;
         $curl = $this->curl;
 
         $canceler = function () use (&$job, $curl) {
@@ -282,19 +281,18 @@ class HttpDownloader
         };
 
         $promise = new Promise($resolver, $canceler);
-        $promise = $promise->then(function ($response) use (&$job, $downloader) {
+        $promise = $promise->then(function ($response) use (&$job) {
             $job['status'] = HttpDownloader::STATUS_COMPLETED;
             $job['response'] = $response;
 
-            // TODO 3.0 this should be done directly on $this when PHP 5.3 is dropped
-            $downloader->markJobDone();
+            $this->markJobDone();
 
             return $response;
-        }, function ($e) use (&$job, $downloader) {
+        }, function ($e) use (&$job) {
             $job['status'] = HttpDownloader::STATUS_FAILED;
             $job['exception'] = $e;
 
-            $downloader->markJobDone();
+            $this->markJobDone();
 
             throw $e;
         });
@@ -351,11 +349,7 @@ class HttpDownloader
         }
     }
 
-    /**
-     * @private
-     * @return void
-     */
-    public function markJobDone()
+    private function markJobDone(): void
     {
         $this->runningJobs--;
     }

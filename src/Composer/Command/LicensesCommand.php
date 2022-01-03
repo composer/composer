@@ -85,13 +85,7 @@ EOT
                 $table = new Table($output);
                 $table->setStyle('compact');
                 $tableStyle = $table->getStyle();
-                if (method_exists($tableStyle, 'setVerticalBorderChars')) {
-                    $tableStyle->setVerticalBorderChars('');
-                } else {
-                    // TODO remove in composer 2.2
-                    // @phpstan-ignore-next-line
-                    $tableStyle->setVerticalBorderChar('');
-                }
+                $tableStyle->setVerticalBorderChars('');
                 $tableStyle->setCellRowContentFormat('%s  ');
                 $table->setHeaders(array('Name', 'Version', 'License'));
                 foreach ($packages as $package) {

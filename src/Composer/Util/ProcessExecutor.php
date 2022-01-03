@@ -115,16 +115,6 @@ class ProcessExecutor
             $this->io->writeError('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
         }
 
-        // TODO in 2.2, these two checks can be dropped as Symfony 4+ supports them out of the box
-        // make sure that null translate to the proper directory in case the dir is a symlink
-        // and we call a git command, because msysgit does not handle symlinks properly
-        if (null === $cwd && Platform::isWindows() && false !== strpos($command, 'git') && getcwd()) {
-            $cwd = realpath(getcwd());
-        }
-        if (null !== $cwd && !is_dir($cwd)) {
-            throw new \RuntimeException('The given CWD for the process does not exist: '.$cwd);
-        }
-
         $this->captureOutput = func_num_args() > 3;
         $this->errorOutput = '';
 
@@ -181,8 +171,6 @@ class ProcessExecutor
             $job['reject'] = $reject;
         };
 
-        $self = $this;
-
         $canceler = function () use (&$job) {
             if ($job['status'] === ProcessExecutor::STATUS_QUEUED) {
                 $job['status'] = ProcessExecutor::STATUS_ABORTED;
@@ -204,21 +192,20 @@ class ProcessExecutor
         };
 
         $promise = new Promise($resolver, $canceler);
-        $promise = $promise->then(function () use (&$job, $self) {
+        $promise = $promise->then(function () use (&$job) {
             if ($job['process']->isSuccessful()) {
                 $job['status'] = ProcessExecutor::STATUS_COMPLETED;
             } else {
                 $job['status'] = ProcessExecutor::STATUS_FAILED;
             }
 
-            // TODO 3.0 this should be done directly on $this when PHP 5.3 is dropped
-            $self->markJobDone();
+            $this->markJobDone();
 
             return $job['process'];
-        }, function ($e) use (&$job, $self) {
+        }, function ($e) use (&$job) {
             $job['status'] = ProcessExecutor::STATUS_FAILED;
 
-            $self->markJobDone();
+            $this->markJobDone();
 
             throw $e;
         });
@@ -261,16 +248,6 @@ class ProcessExecutor
             $this->io->writeError('Executing async command ('.($cwd ?: 'CWD').'): '.$safeCommand);
         }
 
-        // TODO in 2.2, these two checks can be dropped as Symfony 4+ supports them out of the box
-        // make sure that null translate to the proper directory in case the dir is a symlink
-        // and we call a git command, because msysgit does not handle symlinks properly
-        if (null === $cwd && Platform::isWindows() && false !== strpos($command, 'git') && getcwd()) {
-            $cwd = realpath(getcwd());
-        }
-        if (null !== $cwd && !is_dir($cwd)) {
-            throw new \RuntimeException('The given CWD for the process does not exist: '.$cwd);
-        }
-
         try {
             // TODO in v3, commands should be passed in as arrays of cmd + args
             if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
@@ -278,10 +255,6 @@ class ProcessExecutor
             } else {
                 $process = new Process($command, $cwd, null, null, static::getTimeout());
             }
-        } catch (\Exception $e) {
-            call_user_func($job['reject'], $e);
-
-            return;
         } catch (\Throwable $e) {
             call_user_func($job['reject'], $e);
 
@@ -292,10 +265,6 @@ class ProcessExecutor
 
         try {
             $process->start();
-        } catch (\Exception $e) {
-            call_user_func($job['reject'], $e);
-
-            return;
         } catch (\Throwable $e) {
             call_user_func($job['reject'], $e);
 
@@ -367,12 +336,7 @@ class ProcessExecutor
         return $active;
     }
 
-    /**
-     * @private
-     *
-     * @return void
-     */
-    public function markJobDone()
+    private function markJobDone(): void
     {
         $this->runningJobs--;
     }

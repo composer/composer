@@ -85,13 +85,7 @@ class AllFunctionalTest extends TestCase
             }
         }
 
-        // TODO in v2.3 always call with an array
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $proc = new Process(array((defined('PHP_BINARY') ? PHP_BINARY : 'php'), '-dphar.readonly=0', './bin/compile'), $target);
-        } else {
-            // @phpstan-ignore-next-line
-            $proc = new Process((defined('PHP_BINARY') ? escapeshellcmd(PHP_BINARY) : 'php').' -dphar.readonly=0 '.escapeshellarg('./bin/compile'), $target);
-        }
+        $proc = new Process([PHP_BINARY, '-dphar.readonly=0', './bin/compile'], $target);
         $exitcode = $proc->run();
 
         if ($exitcode !== 0 || trim($proc->getOutput())) {

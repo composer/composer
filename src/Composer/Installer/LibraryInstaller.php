@@ -287,15 +287,8 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
                     $promise = \React\Promise\resolve();
                 }
 
-                $self = $this;
-
-                return $promise->then(function () use ($self, $target) {
-                    $reflMethod = new \ReflectionMethod($self, 'installCode');
-                    $reflMethod->setAccessible(true);
-
-                    // equivalent of $this->installCode($target) with php 5.3 support
-                    // TODO remove this once 5.3 support is dropped
-                    return $reflMethod->invoke($self, $target);
+                return $promise->then(function () use ($target) {
+                    return $this->installCode($target);
                 });
             }
 

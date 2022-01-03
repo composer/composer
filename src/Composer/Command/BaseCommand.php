@@ -266,13 +266,7 @@ abstract class BaseCommand extends Command
         $renderer = new Table($output);
         $renderer->setStyle('compact');
         $rendererStyle = $renderer->getStyle();
-        if (method_exists($rendererStyle, 'setVerticalBorderChars')) {
-            $rendererStyle->setVerticalBorderChars('');
-        } else {
-            // TODO remove in composer 2.2
-            // @phpstan-ignore-next-line
-            $rendererStyle->setVerticalBorderChar('');
-        }
+        $rendererStyle->setVerticalBorderChars('');
         $rendererStyle->setCellRowContentFormat('%s  ');
         $renderer->setRows($table)->render();
     }
@@ -282,20 +276,9 @@ abstract class BaseCommand extends Command
      */
     protected function getTerminalWidth()
     {
-        if (class_exists('Symfony\Component\Console\Terminal')) {
-            $terminal = new Terminal();
-            $width = $terminal->getWidth();
-        } else {
-            // For versions of Symfony console before 3.2
-            // TODO remove in composer 2.2
-            // @phpstan-ignore-next-line
-            list($width) = $this->getApplication()->getTerminalDimensions();
-        }
-        if (null === $width) {
-            // In case the width is not detected, we're probably running the command
-            // outside of a real terminal, use space without a limit
-            $width = PHP_INT_MAX;
-        }
+        $terminal = new Terminal();
+        $width = $terminal->getWidth();
+
         if (Platform::isWindows()) {
             $width--;
         } else {

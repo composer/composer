@@ -294,12 +294,10 @@ class JsonManipulator
             return false;
         }
 
-        $that = $this;
-
         // child exists
         $childRegex = '{'.self::$DEFINES.'(?P<start>"'.preg_quote($name).'"\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
         if (Preg::isMatch($childRegex, $children, $matches)) {
-            $children = Preg::replaceCallback($childRegex, function ($matches) use ($subName, $value, $that) {
+            $children = Preg::replaceCallback($childRegex, function ($matches) use ($subName, $value) {
                 if ($subName !== null) {
                     $curVal = json_decode($matches['content'], true);
                     if (!is_array($curVal)) {
@@ -309,7 +307,7 @@ class JsonManipulator
                     $value = $curVal;
                 }
 
-                return $matches['start'] . $that->format($value, 1) . $matches['end'];
+                return $matches['start'] . $this->format($value, 1) . $matches['end'];
             }, $children);
         } else {
             Preg::match('#^{ (?P<leadingspace>\s*?) (?P<content>\S+.*?)? (?P<trailingspace>\s*) }$#sx', $children, $match);
@@ -452,12 +450,11 @@ class JsonManipulator
             return true;
         }
 
-        $that = $this;
-        $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($that, $name, $subName, $childrenClean) {
+        $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($name, $subName, $childrenClean) {
             if ($subName !== null) {
                 $curVal = json_decode($matches['content'], true);
                 unset($curVal[$name][$subName]);
-                $childrenClean = $that->format($curVal);
+                $childrenClean = $this->format($curVal);
             }
 
             return $matches['start'] . $childrenClean . $matches['end'];

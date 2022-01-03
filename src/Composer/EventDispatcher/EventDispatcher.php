@@ -323,17 +323,9 @@ class EventDispatcher
                     break;
                 }
             }
-        } catch (\Exception $e) { // TODO Composer 2.2 turn all this into a finally
+        } finally {
             $this->popEvent();
-
-            throw $e;
-        } catch (\Throwable $e) {
-            $this->popEvent();
-
-            throw $e;
         }
-
-        $this->popEvent();
 
         return $returnMax;
     }

@@ -348,15 +348,14 @@ EOT
             }
         }
 
-        $self = $this;
         $author = $io->askAndValidate(
             'Author [<comment>'.$author.'</comment>, n to skip]: ',
-            function ($value) use ($self, $author) {
+            function ($value) use ($author) {
                 if ($value === 'n' || $value === 'no') {
                     return;
                 }
                 $value = $value ?: $author;
-                $author = $self->parseAuthorString($value);
+                $author = $this->parseAuthorString($value);
 
                 return sprintf('%s <%s>', $author['name'], $author['email']);
             },
@@ -731,13 +730,7 @@ EOT
         $finder = new ExecutableFinder();
         $gitBin = $finder->find('git');
 
-        // TODO in v2.3 always call with an array
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $cmd = new Process(array($gitBin, 'config', '-l'));
-        } else {
-            // @phpstan-ignore-next-line
-            $cmd = new Process(sprintf('%s config -l', ProcessExecutor::escape($gitBin)));
-        }
+        $cmd = new Process(array($gitBin, 'config', '-l'));
         $cmd->run();
 
         if ($cmd->isSuccessful()) {

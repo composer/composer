@@ -518,13 +518,7 @@ class Perforce
     {
         $command = $this->generateP4Command(' login -a');
 
-        // TODO in v3 generate command as an array
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = Process::fromShellCommandline($command, null, null, $password);
-        } else {
-            // @phpstan-ignore-next-line
-            $process = new Process($command, null, null, $password);
-        }
+        $process = Process::fromShellCommandline($command, null, null, $password);
 
         return $process->run();
     }
