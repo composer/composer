@@ -292,13 +292,12 @@ class ClassMapGenerator
     private static function getExtraTypes()
     {
         static $extraTypes = null;
-        if (null === $extraTypes) {
-            $extraTypes = '|trait';
-            if (PHP_VERSION_ID >= 80100 || (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>='))) {
-                $extraTypes .= '|enum';
-            }
-            PhpFileCleaner::setTypeConfig(array_merge(array('class', 'interface'), array_filter(explode('|', $extraTypes))));
+
+        if (PHP_VERSION_ID >= 80100 || (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>='))) {
+            $extraTypes .= '|enum';
         }
+
+        PhpFileCleaner::setTypeConfig(array_merge(['trait', 'class', 'interface'], array_filter(explode('|', $extraTypes))));
 
         return $extraTypes;
     }
