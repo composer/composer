@@ -293,7 +293,7 @@ class ClassMapGenerator
     {
         static $extraTypes = null;
         if (null === $extraTypes) {
-            $extraTypes = PHP_VERSION_ID < 50400 ? '' : '|trait';
+            $extraTypes = '|trait';
             if (PHP_VERSION_ID >= 80100 || (defined('HHVM_VERSION') && version_compare(HHVM_VERSION, '3.3', '>='))) {
                 $extraTypes .= '|enum';
             }

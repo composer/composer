@@ -332,18 +332,6 @@ class RemoteFilesystem
 
                 throw $e;
             }
-
-            if (PHP_VERSION_ID < 50600 && !empty($options['ssl']['peer_fingerprint'])) {
-                // Emulate fingerprint validation on PHP < 5.6
-                $params = stream_context_get_params($ctx);
-                $expectedPeerFingerprint = $options['ssl']['peer_fingerprint'];
-                $peerFingerprint = TlsHelper::getCertificateFingerprint($params['options']['ssl']['peer_certificate']);
-
-                // Constant time compare??!
-                if ($expectedPeerFingerprint !== $peerFingerprint) {
-                    throw new TransportException('Peer fingerprint did not match');
-                }
-            }
         } catch (\Exception $e) {
             if ($e instanceof TransportException && !empty($http_response_header[0])) {
                 $e->setHeaders($http_response_header);
