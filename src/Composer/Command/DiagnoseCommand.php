@@ -626,7 +626,7 @@ EOT
                         break;
 
                     case 'php':
-                        $text = PHP_EOL."Your PHP ({$current}) is too old, you must upgrade to PHP 5.3.2 or higher.";
+                        $text = PHP_EOL."Your PHP ({$current}) is too old, you must upgrade to PHP 7.2.5 or higher.";
                         break;
 
                     case 'allow_url_fopen':
@@ -685,8 +685,8 @@ EOT
                         break;
 
                     case 'php':
-                        $text = "Your PHP ({$current}) is quite old, upgrading to PHP 5.3.4 or higher is recommended.".PHP_EOL;
-                        $text .= " Composer works with 5.3.2+ for most people, but there might be edge case issues.";
+                        $text = "Your PHP ({$current}) is quite old, upgrading to PHP 7.2.5 or higher is recommended.".PHP_EOL;
+                        $text .= " Composer works with 7.2.5+ for most people, but there might be edge case issues.";
                         break;
 
                     case 'openssl_version':

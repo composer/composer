@@ -222,7 +222,6 @@ final class StreamContextFactory
             throw new TransportException('The configured capath was not valid or could not be read.');
         }
 
-
         /**
          * Disable TLS compression to prevent CRIME attacks where supported.
          */
