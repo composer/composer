@@ -21,6 +21,8 @@ use Composer\Pcre\Preg;
  *
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * @abandoned
  */
 class JsonFormatter
 {
