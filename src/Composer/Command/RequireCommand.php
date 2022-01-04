@@ -246,7 +246,7 @@ EOT
                         return 0;
                     }
 
-                    list($requireKey, $removeKey) = array($removeKey, $requireKey);
+                    [$requireKey, $removeKey] = array($removeKey, $requireKey);
                 }
             }
         }
@@ -266,7 +266,7 @@ EOT
             foreach ($requirements as $package => $version) {
                 $composerDefinition[$requireKey][$package] = $version;
                 unset($composerDefinition[$removeKey][$package]);
-                if (isset($composerDefinition[$removeKey]) && count($composerDefinition[$removeKey]) === 0) {
+                if (isset($composerDefinition[$removeKey]) && (is_array($composerDefinition[$removeKey]) || $composerDefinition[$removeKey] instanceof \Countable ? count($composerDefinition[$removeKey]) : 0) === 0) {
                     unset($composerDefinition[$removeKey]);
                 }
             }
@@ -402,7 +402,7 @@ EOT
         $install = Installer::create($io, $composer);
 
         $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($composer->getConfig(), $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($composer->getConfig(), $input);
 
         $install
             ->setDryRun($input->getOption('dry-run'))

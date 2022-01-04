@@ -201,6 +201,7 @@ class GitHubDriver extends VcsDriver
      */
     private function getFundingInfo()
     {
+        $funding = null;
         if (null !== $this->fundingInfo) {
             return $this->fundingInfo;
         }

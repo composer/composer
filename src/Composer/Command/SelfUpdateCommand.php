@@ -36,8 +36,8 @@ use Symfony\Component\Finder\Finder;
  */
 class SelfUpdateCommand extends BaseCommand
 {
-    const HOMEPAGE = 'getcomposer.org';
-    const OLD_INSTALL_EXT = '-old.phar';
+    public const HOMEPAGE = 'getcomposer.org';
+    public const OLD_INSTALL_EXT = '-old.phar';
 
     /**
      * @return void
@@ -82,8 +82,8 @@ EOT
     {
         // trigger autoloading of a few classes which may be needed when verifying/swapping the phar file
         // to ensure we do not try to load them from the new phar, see https://github.com/composer/composer/issues/10252
-        class_exists('Composer\Util\Platform');
-        class_exists('Composer\Downloader\FilesystemException');
+        class_exists(\Composer\Util\Platform::class);
+        class_exists(\Composer\Downloader\FilesystemException::class);
 
         $config = Factory::createConfig();
 
@@ -214,7 +214,7 @@ EOT
             return 0;
         }
 
-        $tempFilename = $tmpDir . '/' . basename($localFilename, '.phar').'-temp'.rand(0, 10000000).'.phar';
+        $tempFilename = $tmpDir . '/' . basename($localFilename, '.phar').'-temp'.random_int(0, 10000000).'.phar';
         $backupFile = sprintf(
             '%s/%s-%s%s',
             $rollbackDir,

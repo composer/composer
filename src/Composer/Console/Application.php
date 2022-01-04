@@ -566,7 +566,7 @@ class Application extends BaseApplication
 
         if (null !== $composer) {
             $pm = $composer->getPluginManager();
-            foreach ($pm->getPluginCapabilities('Composer\Plugin\Capability\CommandProvider', array('composer' => $composer, 'io' => $this->io)) as $capability) {
+            foreach ($pm->getPluginCapabilities(\Composer\Plugin\Capability\CommandProvider::class, array('composer' => $composer, 'io' => $this->io)) as $capability) {
                 $newCommands = $capability->getCommands();
                 if (!is_array($newCommands)) {
                     throw new \UnexpectedValueException('Plugin capability '.get_class($capability).' failed to return an array from getCommands');

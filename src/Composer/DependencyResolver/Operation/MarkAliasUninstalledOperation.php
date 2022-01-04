@@ -21,7 +21,7 @@ use Composer\Package\AliasPackage;
  */
 class MarkAliasUninstalledOperation extends SolverOperation implements OperationInterface
 {
-    const TYPE = 'markAliasUninstalled';
+    public const TYPE = 'markAliasUninstalled';
 
     /**
      * @var AliasPackage

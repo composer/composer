@@ -25,9 +25,9 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
  */
 class SuggestedPackagesReporter
 {
-    const MODE_LIST = 1;
-    const MODE_BY_PACKAGE = 2;
-    const MODE_BY_SUGGESTION = 4;
+    public const MODE_LIST = 1;
+    public const MODE_BY_PACKAGE = 2;
+    public const MODE_BY_SUGGESTION = 4;
 
     /**
      * @var array<array{source: string, target: string, reason: string}>

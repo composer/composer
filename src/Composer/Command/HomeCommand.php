@@ -107,7 +107,7 @@ EOT
     private function handlePackage(CompletePackageInterface $package, $showHomepage, $showOnly)
     {
         $support = $package->getSupport();
-        $url = isset($support['source']) ? $support['source'] : $package->getSourceUrl();
+        $url = $support['source'] ?? $package->getSourceUrl();
         if (!$url || $showHomepage) {
             $url = $package->getHomepage();
         }

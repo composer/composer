@@ -21,7 +21,7 @@ use Composer\Package\AliasPackage;
  */
 class MarkAliasInstalledOperation extends SolverOperation implements OperationInterface
 {
-    const TYPE = 'markAliasInstalled';
+    public const TYPE = 'markAliasInstalled';
 
     /**
      * @var AliasPackage

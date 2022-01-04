@@ -20,8 +20,8 @@ namespace Composer\DependencyResolver;
  */
 class Decisions implements \Iterator, \Countable
 {
-    const DECISION_LITERAL = 0;
-    const DECISION_REASON = 1;
+    public const DECISION_LITERAL = 0;
+    public const DECISION_REASON = 1;
 
     /** @var Pool */
     protected $pool;
@@ -256,7 +256,7 @@ class Decisions implements \Iterator, \Countable
     {
         $packageId = abs($literal);
 
-        $previousDecision = isset($this->decisionMap[$packageId]) ? $this->decisionMap[$packageId] : null;
+        $previousDecision = $this->decisionMap[$packageId] ?? null;
         if ($previousDecision != 0) {
             $literalString = $this->pool->literalToPrettyString($literal, array());
             $package = $this->pool->literalToPackage($literal);

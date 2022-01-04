@@ -19,7 +19,7 @@ namespace Composer\DependencyResolver\Operation;
  */
 abstract class SolverOperation implements OperationInterface
 {
-    const TYPE = null;
+    public const TYPE = null;
 
     /**
      * Returns operation type.

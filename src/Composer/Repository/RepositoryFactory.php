@@ -121,21 +121,21 @@ class RepositoryFactory
     public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, ProcessExecutor $process = null)
     {
         $rm = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher, $process);
-        $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
-        $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('package', 'Composer\Repository\PackageRepository');
-        $rm->setRepositoryClass('pear', 'Composer\Repository\PearRepository');
-        $rm->setRepositoryClass('git', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('bitbucket', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('git-bitbucket', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('github', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('gitlab', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('svn', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('fossil', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('perforce', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('hg', 'Composer\Repository\VcsRepository');
-        $rm->setRepositoryClass('artifact', 'Composer\Repository\ArtifactRepository');
-        $rm->setRepositoryClass('path', 'Composer\Repository\PathRepository');
+        $rm->setRepositoryClass('composer', \Composer\Repository\ComposerRepository::class);
+        $rm->setRepositoryClass('vcs', \Composer\Repository\VcsRepository::class);
+        $rm->setRepositoryClass('package', \Composer\Repository\PackageRepository::class);
+        $rm->setRepositoryClass('pear', \Composer\Repository\PearRepository::class);
+        $rm->setRepositoryClass('git', \Composer\Repository\VcsRepository::class);
+        $rm->setRepositoryClass('bitbucket', \Composer\Repository\VcsRepository::class);
+        $rm->setRepositoryClass('git-bitbucket', \Composer\Repository\VcsRepository::class);
+        $rm->setRepositoryClass('github', \Composer\Repository\VcsRepository::class);
+        $rm->setRepositoryClass('gitlab', \Composer\Repository\VcsRepository::class);
+        $rm->setRepositoryClass('svn', \Composer\Repository\VcsRepository::class);
+        $rm->setRepositoryClass('fossil', \Composer\Repository\VcsRepository::class);
+        $rm->setRepositoryClass('perforce', \Composer\Repository\VcsRepository::class);
+        $rm->setRepositoryClass('hg', \Composer\Repository\VcsRepository::class);
+        $rm->setRepositoryClass('artifact', \Composer\Repository\ArtifactRepository::class);
+        $rm->setRepositoryClass('path', \Composer\Repository\PathRepository::class);
 
         return $rm;
     }

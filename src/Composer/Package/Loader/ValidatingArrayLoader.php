@@ -24,9 +24,9 @@ use Composer\Spdx\SpdxLicenses;
  */
 class ValidatingArrayLoader implements LoaderInterface
 {
-    const CHECK_ALL = 3;
-    const CHECK_UNBOUND_CONSTRAINTS = 1;
-    const CHECK_STRICT_CONSTRAINTS = 2;
+    public const CHECK_ALL = 3;
+    public const CHECK_UNBOUND_CONSTRAINTS = 1;
+    public const CHECK_STRICT_CONSTRAINTS = 2;
 
     /** @var LoaderInterface */
     private $loader;
@@ -59,7 +59,7 @@ class ValidatingArrayLoader implements LoaderInterface
     /**
      * @inheritDoc
      */
-    public function load(array $config, $class = 'Composer\Package\CompletePackage')
+    public function load(array $config, $class = \Composer\Package\CompletePackage::class)
     {
         $this->errors = array();
         $this->warnings = array();
@@ -554,7 +554,7 @@ class ValidatingArrayLoader implements LoaderInterface
             return false;
         }
 
-        if (!isset($this->config[$property]) || !count($this->config[$property])) {
+        if (!isset($this->config[$property]) || !(is_array($this->config[$property]) || $this->config[$property] instanceof \Countable ? count($this->config[$property]) : 0)) {
             if ($mandatory) {
                 $this->errors[] = $property.' : must be present and contain at least one element';
             }

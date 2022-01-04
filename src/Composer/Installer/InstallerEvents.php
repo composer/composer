@@ -22,5 +22,5 @@ class InstallerEvents
      *
      * @var string
      */
-    const PRE_OPERATIONS_EXEC = 'pre-operations-exec';
+    public const PRE_OPERATIONS_EXEC = 'pre-operations-exec';
 }

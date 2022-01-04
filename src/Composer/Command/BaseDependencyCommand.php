@@ -36,10 +36,10 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class BaseDependencyCommand extends BaseCommand
 {
-    const ARGUMENT_PACKAGE = 'package';
-    const ARGUMENT_CONSTRAINT = 'version';
-    const OPTION_RECURSIVE = 'recursive';
-    const OPTION_TREE = 'tree';
+    public const ARGUMENT_PACKAGE = 'package';
+    public const ARGUMENT_CONSTRAINT = 'version';
+    public const OPTION_RECURSIVE = 'recursive';
+    public const OPTION_TREE = 'tree';
 
     /** @var ?string[] */
     protected $colors;
@@ -65,7 +65,7 @@ class BaseDependencyCommand extends BaseCommand
         ));
 
         // Parse package name and constraint
-        list($needle, $textConstraint) = array_pad(
+        [$needle, $textConstraint] = array_pad(
             explode(':', $input->getArgument(self::ARGUMENT_PACKAGE)),
             2,
             $input->hasArgument(self::ARGUMENT_CONSTRAINT) ? $input->getArgument(self::ARGUMENT_CONSTRAINT) : '*'
@@ -148,7 +148,7 @@ class BaseDependencyCommand extends BaseCommand
                  * @var PackageInterface $package
                  * @var Link             $link
                  */
-                list($package, $link, $children) = $result;
+                [$package, $link, $children] = $result;
                 $unique = (string) $link;
                 if (isset($doubles[$unique])) {
                     continue;
@@ -202,10 +202,10 @@ class BaseDependencyCommand extends BaseCommand
         $count = count($results);
         $idx = 0;
         foreach ($results as $result) {
-            list($package, $link, $children) = $result;
+            [$package, $link, $children] = $result;
 
-            $color = $this->colors[$level % count($this->colors)];
-            $prevColor = $this->colors[($level - 1) % count($this->colors)];
+            $color = $this->colors[$level % count((array) $this->colors)];
+            $prevColor = $this->colors[($level - 1) % count((array) $this->colors)];
             $isLast = (++$idx == $count);
             $versionText = $package->getPrettyVersion() === RootPackage::DEFAULT_PRETTY_VERSION ? '' : $package->getPrettyVersion();
             $packageText = rtrim(sprintf('<%s>%s</%1$s> %s', $color, $package->getPrettyName(), $versionText));

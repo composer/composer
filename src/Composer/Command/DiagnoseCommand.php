@@ -205,7 +205,7 @@ EOT
     private function checkComposerSchema()
     {
         $validator = new ConfigValidator($this->getIO());
-        list($errors, , $warnings) = $validator->validate(Factory::getComposerFile());
+        [$errors, , $warnings] = $validator->validate(Factory::getComposerFile());
 
         if ($errors || $warnings) {
             $messages = array(
@@ -450,7 +450,7 @@ EOT
 
             return '<comment>'.$version['version'].'</comment> '.
                 'libz <comment>'.(!empty($version['libz_version']) ? $version['libz_version'] : 'missing').'</comment> '.
-                'ssl <comment>'.(isset($version['ssl_version']) ? $version['ssl_version'] : 'missing').'</comment>';
+                'ssl <comment>'.($version['ssl_version'] ?? 'missing').'</comment>';
         }
 
         return '<error>missing, using php streams fallback, which reduces performance</error>';
@@ -529,7 +529,7 @@ EOT
             $errors['json'] = true;
         }
 
-        if (!extension_loaded('Phar')) {
+        if (!extension_loaded(\Phar::class)) {
             $errors['phar'] = true;
         }
 

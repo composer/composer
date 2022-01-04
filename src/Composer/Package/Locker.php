@@ -234,7 +234,7 @@ class Locker
                 '__root__',
                 '1.0.0',
                 Link::TYPE_REQUIRE,
-                isset($lockData['platform']) ? $lockData['platform'] : array()
+                $lockData['platform'] ?? array()
             );
         }
 
@@ -243,7 +243,7 @@ class Locker
                 '__root__',
                 '1.0.0',
                 Link::TYPE_REQUIRE,
-                isset($lockData['platform-dev']) ? $lockData['platform-dev'] : array()
+                $lockData['platform-dev'] ?? array()
             );
 
             $requirements = array_merge($requirements, $devRequirements);
@@ -259,7 +259,7 @@ class Locker
     {
         $lockData = $this->getLockData();
 
-        return isset($lockData['minimum-stability']) ? $lockData['minimum-stability'] : 'stable';
+        return $lockData['minimum-stability'] ?? 'stable';
     }
 
     /**
@@ -269,7 +269,7 @@ class Locker
     {
         $lockData = $this->getLockData();
 
-        return isset($lockData['stability-flags']) ? $lockData['stability-flags'] : array();
+        return $lockData['stability-flags'] ?? array();
     }
 
     /**
@@ -281,7 +281,7 @@ class Locker
 
         // return null if not set to allow caller logic to choose the
         // right behavior since old lock files have no prefer-stable
-        return isset($lockData['prefer-stable']) ? $lockData['prefer-stable'] : null;
+        return $lockData['prefer-stable'] ?? null;
     }
 
     /**
@@ -293,7 +293,7 @@ class Locker
 
         // return null if not set to allow caller logic to choose the
         // right behavior since old lock files have no prefer-lowest
-        return isset($lockData['prefer-lowest']) ? $lockData['prefer-lowest'] : null;
+        return $lockData['prefer-lowest'] ?? null;
     }
 
     /**
@@ -303,7 +303,7 @@ class Locker
     {
         $lockData = $this->getLockData();
 
-        return isset($lockData['platform-overrides']) ? $lockData['platform-overrides'] : array();
+        return $lockData['platform-overrides'] ?? array();
     }
 
     /**
@@ -315,7 +315,7 @@ class Locker
     {
         $lockData = $this->getLockData();
 
-        return isset($lockData['aliases']) ? $lockData['aliases'] : array();
+        return $lockData['aliases'] ?? array();
     }
 
     /**
@@ -442,7 +442,7 @@ class Locker
             unset($spec['version_normalized']);
 
             // always move time to the end of the package definition
-            $time = isset($spec['time']) ? $spec['time'] : null;
+            $time = $spec['time'] ?? null;
             unset($spec['time']);
             if ($package->isDev() && $package->getInstallationSource() === 'source') {
                 // use the exact commit time of the current reference if it's a dev package

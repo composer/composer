@@ -79,7 +79,7 @@ class ErrorHandler
      */
     public static function register(IOInterface $io = null)
     {
-        set_error_handler(array(__CLASS__, 'handle'));
+        set_error_handler(array(self::class, 'handle'));
         error_reporting(E_ALL | E_STRICT);
         self::$io = $io;
     }

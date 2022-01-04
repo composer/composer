@@ -35,7 +35,7 @@ class Bitbucket
     /** @var int|null */
     private $time;
 
-    const OAUTH2_ACCESS_TOKEN_URL = 'https://bitbucket.org/site/oauth2/access_token';
+    public const OAUTH2_ACCESS_TOKEN_URL = 'https://bitbucket.org/site/oauth2/access_token';
 
     /**
      * Constructor.
@@ -231,7 +231,7 @@ class Bitbucket
             throw new \LogicException('Expected a token configured with expires_in present, got '.json_encode($this->token));
         }
 
-        $time = null === $this->time ? time() : $this->time;
+        $time = $this->time ?? time();
         $consumer = array(
             "consumer-key" => $consumerKey,
             "consumer-secret" => $consumerSecret,

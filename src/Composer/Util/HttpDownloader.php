@@ -32,11 +32,11 @@ use React\Promise\PromiseInterface;
  */
 class HttpDownloader
 {
-    const STATUS_QUEUED = 1;
-    const STATUS_STARTED = 2;
-    const STATUS_COMPLETED = 3;
-    const STATUS_FAILED = 4;
-    const STATUS_ABORTED = 5;
+    public const STATUS_QUEUED = 1;
+    public const STATUS_STARTED = 2;
+    public const STATUS_COMPLETED = 3;
+    public const STATUS_FAILED = 4;
+    public const STATUS_ABORTED = 5;
 
     /** @var IOInterface */
     private $io;
@@ -105,7 +105,7 @@ class HttpDownloader
      */
     public function get($url, $options = array())
     {
-        list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null), true);
+        [$job] = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null), true);
         $this->wait($job['id']);
 
         $response = $this->getResponse($job['id']);
@@ -122,7 +122,7 @@ class HttpDownloader
 
             $this->curl = null;
 
-            list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null), true);
+            [$job] = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null), true);
             $this->wait($job['id']);
 
             $response = $this->getResponse($job['id']);
@@ -142,7 +142,7 @@ class HttpDownloader
      */
     public function add($url, $options = array())
     {
-        list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null));
+        [, $promise] = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null));
 
         return $promise;
     }
@@ -159,7 +159,7 @@ class HttpDownloader
      */
     public function copy($url, $to, $options = array())
     {
-        list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to), true);
+        [$job] = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to), true);
         $this->wait($job['id']);
 
         return $this->getResponse($job['id']);
@@ -177,7 +177,7 @@ class HttpDownloader
      */
     public function addCopy($url, $to, $options = array())
     {
-        list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to));
+        [, $promise] = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to));
 
         return $promise;
     }

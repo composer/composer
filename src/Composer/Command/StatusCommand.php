@@ -32,9 +32,9 @@ use Composer\Util\ProcessExecutor;
  */
 class StatusCommand extends BaseCommand
 {
-    const EXIT_CODE_ERRORS = 1;
-    const EXIT_CODE_UNPUSHED_CHANGES = 2;
-    const EXIT_CODE_VERSION_CHANGES = 4;
+    public const EXIT_CODE_ERRORS = 1;
+    public const EXIT_CODE_UNPUSHED_CHANGES = 2;
+    public const EXIT_CODE_VERSION_CHANGES = 4;
 
     /**
      * @return void

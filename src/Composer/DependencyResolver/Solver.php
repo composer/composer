@@ -23,8 +23,8 @@ use Composer\Package\BasePackage;
  */
 class Solver
 {
-    const BRANCH_LITERALS = 0;
-    const BRANCH_LEVEL = 1;
+    public const BRANCH_LITERALS = 0;
+    public const BRANCH_LEVEL = 1;
 
     /** @var PolicyInterface */
     protected $policy;
@@ -320,7 +320,7 @@ class Solver
             }
 
             // conflict
-            list($learnLiteral, $newLevel, $newRule, $why) = $this->analyze($level, $rule);
+            [$learnLiteral, $newLevel, $newRule, $why] = $this->analyze($level, $rule);
 
             if ($newLevel <= 0 || $newLevel >= $level) {
                 throw new SolverBugException(
@@ -792,7 +792,7 @@ class Solver
                 $lastBranchOffset = 0;
 
                 for ($i = \count($this->branches) - 1; $i >= 0; $i--) {
-                    list($literals, $l) = $this->branches[$i];
+                    [$literals, $l] = $this->branches[$i];
 
                     foreach ($literals as $offset => $literal) {
                         if ($literal && $literal > 0 && $this->decisions->decisionLevel($literal) > $l + 1) {

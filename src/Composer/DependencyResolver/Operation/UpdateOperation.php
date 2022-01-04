@@ -22,7 +22,7 @@ use Composer\Package\Version\VersionParser;
  */
 class UpdateOperation extends SolverOperation implements OperationInterface
 {
-    const TYPE = 'update';
+    public const TYPE = 'update';
 
     /**
      * @var PackageInterface

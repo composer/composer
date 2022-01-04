@@ -37,5 +37,5 @@ interface LoaderInterface
      *
      * @phpstan-param class-string<PackageClass> $class
      */
-    public function load(array $config, $class = 'Composer\Package\CompletePackage');
+    public function load(array $config, $class = \Composer\Package\CompletePackage::class);
 }

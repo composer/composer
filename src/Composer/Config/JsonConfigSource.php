@@ -104,7 +104,7 @@ class JsonConfigSource implements ConfigSourceInterface
         $authConfig = $this->authConfig;
         $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) use ($authConfig) {
             if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
-                list($key, $host) = explode('.', $key, 2);
+                [$key, $host] = explode('.', $key, 2);
                 if ($authConfig) {
                     $config[$key][$host] = $val;
                 } else {
@@ -124,7 +124,7 @@ class JsonConfigSource implements ConfigSourceInterface
         $authConfig = $this->authConfig;
         $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) use ($authConfig) {
             if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
-                list($key, $host) = explode('.', $key, 2);
+                [$key, $host] = explode('.', $key, 2);
                 if ($authConfig) {
                     unset($config[$key][$host]);
                 } else {
@@ -201,7 +201,7 @@ class JsonConfigSource implements ConfigSourceInterface
             unset($config[$type][$name]);
         });
         $this->manipulateJson('removeMainKeyIfEmpty', $type, function (&$config, $type) {
-            if (0 === count($config[$type])) {
+            if (0 === (is_array($config[$type]) || $config[$type] instanceof \Countable ? count($config[$type]) : 0)) {
                 unset($config[$type]);
             }
         });
@@ -244,11 +244,11 @@ class JsonConfigSource implements ConfigSourceInterface
         // override manipulator method for auth config files
         if ($this->authConfig && $method === 'addConfigSetting') {
             $method = 'addSubNode';
-            list($mainNode, $name) = explode('.', $args[0], 2);
+            [$mainNode, $name] = explode('.', $args[0], 2);
             $args = array($mainNode, $name, $args[1]);
         } elseif ($this->authConfig && $method === 'removeConfigSetting') {
             $method = 'removeSubNode';
-            list($mainNode, $name) = explode('.', $args[0], 2);
+            [$mainNode, $name] = explode('.', $args[0], 2);
             $args = array($mainNode, $name);
         }
 

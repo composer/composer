@@ -49,9 +49,9 @@ class ArrayLoader implements LoaderInterface
     /**
      * @inheritDoc
      */
-    public function load(array $config, $class = 'Composer\Package\CompletePackage')
+    public function load(array $config, $class = \Composer\Package\CompletePackage::class)
     {
-        if ($class !== 'Composer\Package\CompletePackage' && $class !== 'Composer\Package\RootPackage') {
+        if ($class !== \Composer\Package\CompletePackage::class && $class !== \Composer\Package\RootPackage::class) {
             trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
         }
 
@@ -87,7 +87,7 @@ class ArrayLoader implements LoaderInterface
         $linkCache = array();
 
         foreach ($versions as $version) {
-            $package = $this->createObject($version, 'Composer\Package\CompletePackage');
+            $package = $this->createObject($version, \Composer\Package\CompletePackage::class);
 
             $this->configureCachedLinks($linkCache, $package, $version);
             $package = $this->configureObject($package, $version);
@@ -182,7 +182,7 @@ class ArrayLoader implements LoaderInterface
             }
             $package->setSourceType($config['source']['type']);
             $package->setSourceUrl($config['source']['url']);
-            $package->setSourceReference(isset($config['source']['reference']) ? $config['source']['reference'] : null);
+            $package->setSourceReference($config['source']['reference'] ?? null);
             if (isset($config['source']['mirrors'])) {
                 $package->setSourceMirrors($config['source']['mirrors']);
             }
@@ -199,8 +199,8 @@ class ArrayLoader implements LoaderInterface
             }
             $package->setDistType($config['dist']['type']);
             $package->setDistUrl($config['dist']['url']);
-            $package->setDistReference(isset($config['dist']['reference']) ? $config['dist']['reference'] : null);
-            $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
+            $package->setDistReference($config['dist']['reference'] ?? null);
+            $package->setDistSha1Checksum($config['dist']['shasum'] ?? null);
             if (isset($config['dist']['mirrors'])) {
                 $package->setDistMirrors($config['dist']['mirrors']);
             }
@@ -343,7 +343,7 @@ class ArrayLoader implements LoaderInterface
                             $linkCache[$name][$type][$target][$constraint] = array($target, $this->createLink($name, $prettyVersion, $opts['method'], $target, $constraint));
                         }
 
-                        list($target, $link) = $linkCache[$name][$type][$target][$constraint];
+                        [$target, $link] = $linkCache[$name][$type][$target][$constraint];
                         $links[$target] = $link;
                     }
                 }

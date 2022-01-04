@@ -78,21 +78,21 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     {
         parent::__construct();
         $this->drivers = $drivers ?: array(
-            'github' => 'Composer\Repository\Vcs\GitHubDriver',
-            'gitlab' => 'Composer\Repository\Vcs\GitLabDriver',
-            'bitbucket' => 'Composer\Repository\Vcs\GitBitbucketDriver',
-            'git-bitbucket' => 'Composer\Repository\Vcs\GitBitbucketDriver',
-            'git' => 'Composer\Repository\Vcs\GitDriver',
-            'hg' => 'Composer\Repository\Vcs\HgDriver',
-            'perforce' => 'Composer\Repository\Vcs\PerforceDriver',
-            'fossil' => 'Composer\Repository\Vcs\FossilDriver',
+            'github' => \Composer\Repository\Vcs\GitHubDriver::class,
+            'gitlab' => \Composer\Repository\Vcs\GitLabDriver::class,
+            'bitbucket' => \Composer\Repository\Vcs\GitBitbucketDriver::class,
+            'git-bitbucket' => \Composer\Repository\Vcs\GitBitbucketDriver::class,
+            'git' => \Composer\Repository\Vcs\GitDriver::class,
+            'hg' => \Composer\Repository\Vcs\HgDriver::class,
+            'perforce' => \Composer\Repository\Vcs\PerforceDriver::class,
+            'fossil' => \Composer\Repository\Vcs\FossilDriver::class,
             // svn must be last because identifying a subversion server for sure is practically impossible
-            'svn' => 'Composer\Repository\Vcs\SvnDriver',
+            'svn' => \Composer\Repository\Vcs\SvnDriver::class,
         );
 
         $this->url = $repoConfig['url'];
         $this->io = $io;
-        $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
+        $this->type = $repoConfig['type'] ?? 'vcs';
         $this->isVerbose = $io->isVerbose();
         $this->isVeryVerbose = $io->isVeryVerbose();
         $this->config = $config;
@@ -104,7 +104,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
     public function getRepoName()
     {
-        $driverClass = get_class($this->getDriver());
+        $driverClass = $this->getDriver() !== null ? get_class($this->getDriver()) : self::class;
         $driverType = array_search($driverClass, $this->drivers);
         if (!$driverType) {
             $driverType = $driverClass;
@@ -289,7 +289,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                     continue;
                 }
 
-                $tagPackageName = $this->packageName ?: (isset($data['name']) ? $data['name'] : '');
+                $tagPackageName = $this->packageName ?: ($data['name'] ?? '');
                 if ($existingPackage = $this->findPackage($tagPackageName, $data['version_normalized'])) {
                     if ($isVeryVerbose) {
                         $this->io->writeError('<warning>Skipped tag '.$tag.', it conflicts with an another tag ('.$existingPackage->getPrettyVersion().') as both resolve to '.$data['version_normalized'].' internally</warning>');
@@ -437,7 +437,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         // keep the name of the main identifier for all packages
         // this ensures that a package can be renamed in one place and that all old tags
         // will still be installable using that new name without requiring re-tagging
-        $dataPackageName = isset($data['name']) ? $data['name'] : null;
+        $dataPackageName = $data['name'] ?? null;
         $data['name'] = $this->packageName ?: $dataPackageName;
 
         if (!isset($data['dist'])) {

@@ -167,7 +167,7 @@ abstract class VcsDriver implements VcsDriverInterface
      */
     protected function getContents($url)
     {
-        $options = isset($this->repoConfig['options']) ? $this->repoConfig['options'] : array();
+        $options = $this->repoConfig['options'] ?? array();
 
         return $this->httpDownloader->get($url, $options);
     }

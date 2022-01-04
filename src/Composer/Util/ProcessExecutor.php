@@ -25,11 +25,11 @@ use React\Promise\PromiseInterface;
  */
 class ProcessExecutor
 {
-    const STATUS_QUEUED = 1;
-    const STATUS_STARTED = 2;
-    const STATUS_COMPLETED = 3;
-    const STATUS_FAILED = 4;
-    const STATUS_ABORTED = 5;
+    public const STATUS_QUEUED = 1;
+    public const STATUS_STARTED = 2;
+    public const STATUS_COMPLETED = 3;
+    public const STATUS_FAILED = 4;
+    public const STATUS_ABORTED = 5;
 
     /** @var int */
     protected static $timeout = 300;
@@ -119,7 +119,7 @@ class ProcessExecutor
         $this->errorOutput = '';
 
         // TODO in v3, commands should be passed in as arrays of cmd + args
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+        if (method_exists(\Symfony\Component\Process\Process::class, 'fromShellCommandline')) {
             $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
         } else {
             /** @phpstan-ignore-next-line */
@@ -250,7 +250,7 @@ class ProcessExecutor
 
         try {
             // TODO in v3, commands should be passed in as arrays of cmd + args
-            if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
+            if (method_exists(\Symfony\Component\Process\Process::class, 'fromShellCommandline')) {
                 $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
             } else {
                 $process = new Process($command, $cwd, null, null, static::getTimeout());

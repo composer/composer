@@ -807,7 +807,7 @@ class Filesystem
     public function junction($target, $junction)
     {
         if (!Platform::isWindows()) {
-            throw new \LogicException(sprintf('Function %s is not available on non-Windows platform', __CLASS__));
+            throw new \LogicException(sprintf('Function %s is not available on non-Windows platform', self::class));
         }
         if (!is_dir($target)) {
             throw new IOException(sprintf('Cannot junction to "%s" as it is not a directory.', $target), 0, null, $target);

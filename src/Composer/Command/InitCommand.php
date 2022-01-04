@@ -524,7 +524,7 @@ EOT
             foreach ($requires as $requirement) {
                 if (!isset($requirement['version'])) {
                     // determine the best version automatically
-                    list($name, $version) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $platformRepo, $preferredStability, null, null, $fixed);
+                    [$name, $version] = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $platformRepo, $preferredStability, null, null, $fixed);
                     $requirement['version'] = $version;
 
                     // replace package name from packagist.org
@@ -537,7 +537,7 @@ EOT
                     ));
                 } else {
                     // check that the specified version/constraint exists before we proceed
-                    list($name) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $platformRepo, $preferredStability, $checkProvidedVersions ? $requirement['version'] : null, 'dev', $fixed);
+                    [$name] = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $platformRepo, $preferredStability, $checkProvidedVersions ? $requirement['version'] : null, 'dev', $fixed);
 
                     // replace package name from packagist.org
                     $requirement['name'] = $name;
@@ -658,7 +658,7 @@ EOT
                     );
 
                     if (false === $constraint) {
-                        list(, $constraint) = $this->findBestVersionAndNameForPackage($input, $package, $platformRepo, $preferredStability);
+                        [, $constraint] = $this->findBestVersionAndNameForPackage($input, $package, $platformRepo, $preferredStability);
 
                         $io->writeError(sprintf(
                             'Using version <info>%s</info> for <info>%s</info>',

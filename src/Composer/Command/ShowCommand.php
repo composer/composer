@@ -243,7 +243,7 @@ EOT
         // show single package or single version
         if (($packageFilter && false === strpos($packageFilter, '*')) || !empty($package)) {
             if (empty($package)) {
-                list($package, $versions) = $this->getPackage($installedRepo, $repos, $input->getArgument('package'), $input->getArgument('version'));
+                [$package, $versions] = $this->getPackage($installedRepo, $repos, $input->getArgument('package'), $input->getArgument('version'));
 
                 if (empty($package)) {
                     $options = $input->getOptions();
@@ -1035,7 +1035,7 @@ EOT
                 $requires = $package['requires'];
                 $treeBar = '├';
                 $j = 0;
-                $total = count($requires);
+                $total = is_array($requires) || $requires instanceof \Countable ? count($requires) : 0;
                 foreach ($requires as $require) {
                     $requireName = $require['name'];
                     $j++;
@@ -1126,14 +1126,14 @@ EOT
             $requires = $package['requires'];
             $treeBar = $previousTreeBar . '  ├';
             $i = 0;
-            $total = count($requires);
+            $total = is_array($requires) || $requires instanceof \Countable ? count($requires) : 0;
             foreach ($requires as $require) {
                 $currentTree = $packagesInTree;
                 $i++;
                 if ($i === $total) {
                     $treeBar = $previousTreeBar . '  └';
                 }
-                $colorIdent = $level % count($this->colors);
+                $colorIdent = $level % count((array) $this->colors);
                 $color = $this->colors[$colorIdent];
 
                 $circularWarn = in_array(
@@ -1175,7 +1175,7 @@ EOT
         array $packagesInTree
     ) {
         $children = array();
-        list($package) = $this->getPackage(
+        [$package] = $this->getPackage(
             $installedRepo,
             $remoteRepos,
             $name,

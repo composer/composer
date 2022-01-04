@@ -106,7 +106,7 @@ EOT
             }
             $nameLength += 1;
             foreach ($results as $result) {
-                $description = isset($result['description']) ? $result['description'] : '';
+                $description = $result['description'] ?? '';
                 $warning = !empty($result['abandoned']) ? '<warning>! Abandoned !</warning> ' : '';
                 $remaining = $width - $nameLength - strlen($warning) - 2;
                 if (strlen($description) > $remaining) {

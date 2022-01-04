@@ -69,9 +69,9 @@ class RootPackageLoader extends ArrayLoader
      *
      * @phpstan-param class-string<PackageClass> $class
      */
-    public function load(array $config, $class = 'Composer\Package\RootPackage', $cwd = null)
+    public function load(array $config, $class = \Composer\Package\RootPackage::class, $cwd = null)
     {
-        if ($class !== 'Composer\Package\RootPackage') {
+        if ($class !== \Composer\Package\RootPackage::class) {
             trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
         }
 

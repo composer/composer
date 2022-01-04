@@ -616,8 +616,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                     }
                     $result[$candidate['name']] = array(
                         'name' => $candidate['name'],
-                        'description' => isset($candidate['description']) ? $candidate['description'] : '',
-                        'type' => isset($candidate['type']) ? $candidate['type'] : '',
+                        'description' => $candidate['description'] ?? '',
+                        'type' => $candidate['type'] ?? '',
                     );
                 }
             }
@@ -873,7 +873,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 $packageNames[$name.'~dev'] = $constraint;
             }
             // if only dev stability is requested, we skip loading the non dev file
-            if (isset($acceptableStabilities['dev']) && count($acceptableStabilities) === 1 && count($stabilityFlags) === 0) {
+            if (isset($acceptableStabilities['dev']) && count($acceptableStabilities) === 1 && count((array) $stabilityFlags) === 0) {
                 unset($packageNames[$name]);
             }
         }
@@ -893,7 +893,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $lastModified = null;
             if ($contents = $this->cache->read($cacheKey)) {
                 $contents = json_decode($contents, true);
-                $lastModified = isset($contents['last-modified']) ? $contents['last-modified'] : null;
+                $lastModified = $contents['last-modified'] ?? null;
             }
 
             $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
@@ -1268,7 +1268,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             return $packageInstances;
         } catch (\Exception $e) {
-            throw new \RuntimeException('Could not load packages '.(isset($packages[0]['name']) ? $packages[0]['name'] : json_encode($packages)).' in '.$this->getRepoName().($source ? ' from '.$source : '').': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
+            throw new \RuntimeException('Could not load packages '.($packages[0]['name'] ?? json_encode($packages)).' in '.$this->getRepoName().($source ? ' from '.$source : '').': ['.get_class($e).'] '.$e->getMessage(), 0, $e);
         }
     }
 

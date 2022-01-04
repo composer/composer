@@ -184,7 +184,7 @@ EOT
             /**
              * @var Link|null $link
              */
-            list($platformPackage, $version, $link, $status) = $result;
+            [$platformPackage, $version, $link, $status] = $result;
             $rows[] = array(
                 $platformPackage,
                 $version,

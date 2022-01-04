@@ -489,6 +489,7 @@ class CurlDownloader
      */
     private function handleRedirect(array $job, Response $response)
     {
+        $targetUrl = null;
         if ($locationHeader = $response->getHeader('location')) {
             if (parse_url($locationHeader, PHP_URL_SCHEME)) {
                 // Absolute URL; e.g. https://example.com/composer

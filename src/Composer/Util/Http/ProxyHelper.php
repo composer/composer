@@ -66,6 +66,7 @@ class ProxyHelper
      */
     public static function getContextOptions($proxyUrl)
     {
+        $options = [];
         $proxy = parse_url($proxyUrl);
 
         // Remove any authorization

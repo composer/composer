@@ -94,7 +94,7 @@ class RemoteFilesystem
         // handle the other externally set options normally.
         $this->options = array_replace_recursive($this->options, $options);
         $this->config = $config;
-        $this->authHelper = isset($authHelper) ? $authHelper : new AuthHelper($io, $config);
+        $this->authHelper = $authHelper ?? new AuthHelper($io, $config);
         $this->proxyManager = ProxyManager::getInstance();
     }
 
@@ -222,6 +222,7 @@ class RemoteFilesystem
      */
     protected function get($originUrl, $fileUrl, $additionalOptions = array(), $fileName = null, $progress = true)
     {
+        $degradedPackagist = null;
         $this->scheme = parse_url($fileUrl, PHP_URL_SCHEME);
         $this->bytesMax = 0;
         $this->originUrl = $originUrl;
@@ -569,7 +570,7 @@ class RemoteFilesystem
         }
 
         // https://www.php.net/manual/en/reserved.variables.httpresponseheader.php
-        $responseHeaders = isset($http_response_header) ? $http_response_header : array();
+        $responseHeaders = $http_response_header ?? array();
 
         if (null !== $e) {
             throw $e;
@@ -717,6 +718,7 @@ class RemoteFilesystem
      */
     private function handleRedirect(array $http_response_header, array $additionalOptions, $result)
     {
+        $targetUrl = null;
         if ($locationHeader = Response::findHeaderValue($http_response_header, 'location')) {
             if (parse_url($locationHeader, PHP_URL_SCHEME)) {
                 // Absolute URL; e.g. https://example.com/composer

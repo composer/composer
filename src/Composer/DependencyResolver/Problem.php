@@ -82,7 +82,7 @@ class Problem
         // TODO doesn't this entirely defeat the purpose of the problem sections? what's the point of sections?
         $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
 
-        if (count($reasons) === 1) {
+        if ((is_array($reasons) || $reasons instanceof \Countable ? count($reasons) : 0) === 1) {
             reset($reasons);
             $rule = current($reasons);
 

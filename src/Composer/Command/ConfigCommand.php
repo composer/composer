@@ -264,7 +264,7 @@ EOT
             $data = $this->config->all();
             if (Preg::isMatch('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
                 if (!isset($matches[1]) || $matches[1] === '') {
-                    $value = isset($data['repositories']) ? $data['repositories'] : array();
+                    $value = $data['repositories'] ?? array();
                 } else {
                     if (!isset($data['repositories'][$matches[1]])) {
                         throw new \InvalidArgumentException('There is no '.$matches[1].' repository defined');
@@ -544,7 +544,7 @@ EOT
                 return 0;
             }
 
-            list($validator) = $uniqueConfigValues['preferred-install'];
+            [$validator] = $uniqueConfigValues['preferred-install'];
             if (!$validator($values[0])) {
                 throw new \RuntimeException('Invalid value for '.$settingKey.'. Should be one of: auto, source, or dist');
             }
@@ -657,7 +657,7 @@ EOT
                 return 0;
             }
 
-            if (2 === count($values)) {
+            if (2 === (is_array($values) || $values instanceof \Countable ? count($values) : 0)) {
                 $this->configSource->addRepository($matches[1], array(
                     'type' => $values[0],
                     'url' => $values[1],
@@ -666,7 +666,7 @@ EOT
                 return 0;
             }
 
-            if (1 === count($values)) {
+            if (1 === (is_array($values) || $values instanceof \Countable ? count($values) : 0)) {
                 $value = strtolower($values[0]);
                 if (true === $booleanValidator($value)) {
                     if (false === $booleanNormalizer($value)) {
@@ -700,7 +700,7 @@ EOT
                     $currentValue = $this->configFile->read();
                     $bits = explode('.', $settingKey);
                     foreach ($bits as $bit) {
-                        $currentValue = isset($currentValue[$bit]) ? $currentValue[$bit] : null;
+                        $currentValue = $currentValue[$bit] ?? null;
                     }
                     if (is_array($currentValue)) {
                         $value = array_merge($currentValue, $value);
@@ -762,23 +762,23 @@ EOT
             }
 
             if ($matches[1] === 'bitbucket-oauth') {
-                if (2 !== count($values)) {
-                    throw new \RuntimeException('Expected two arguments (consumer-key, consumer-secret), got '.count($values));
+                if (2 !== (is_array($values) || $values instanceof \Countable ? count($values) : 0)) {
+                    throw new \RuntimeException('Expected two arguments (consumer-key, consumer-secret), got '.(is_array($values) || $values instanceof \Countable ? count($values) : 0));
                 }
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('consumer-key' => $values[0], 'consumer-secret' => $values[1]));
-            } elseif ($matches[1] === 'gitlab-token' && 2 === count($values)) {
+            } elseif ($matches[1] === 'gitlab-token' && 2 === (is_array($values) || $values instanceof \Countable ? count($values) : 0)) {
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'token' => $values[1]));
             } elseif (in_array($matches[1], array('github-oauth', 'gitlab-oauth', 'gitlab-token', 'bearer'), true)) {
-                if (1 !== count($values)) {
+                if (1 !== (is_array($values) || $values instanceof \Countable ? count($values) : 0)) {
                     throw new \RuntimeException('Too many arguments, expected only one token');
                 }
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], $values[0]);
             } elseif ($matches[1] === 'http-basic') {
-                if (2 !== count($values)) {
-                    throw new \RuntimeException('Expected two arguments (username, password), got '.count($values));
+                if (2 !== (is_array($values) || $values instanceof \Countable ? count($values) : 0)) {
+                    throw new \RuntimeException('Expected two arguments (username, password), got '.(is_array($values) || $values instanceof \Countable ? count($values) : 0));
                 }
                 $this->configSource->removeConfigSetting($matches[1].'.'.$matches[2]);
                 $this->authConfigSource->addConfigSetting($matches[1].'.'.$matches[2], array('username' => $values[0], 'password' => $values[1]));
@@ -795,7 +795,7 @@ EOT
                 return 0;
             }
 
-            $this->configSource->addProperty($settingKey, count($values) > 1 ? $values : $values[0]);
+            $this->configSource->addProperty($settingKey, (is_array($values) || $values instanceof \Countable ? count($values) : 0) > 1 ? $values : $values[0]);
 
             return 0;
         }
@@ -813,7 +813,7 @@ EOT
      */
     protected function handleSingleValue($key, array $callbacks, array $values, $method)
     {
-        list($validator, $normalizer) = $callbacks;
+        [$validator, $normalizer] = $callbacks;
         if (1 !== count($values)) {
             throw new \RuntimeException('You can only pass one value. Example: php composer.phar config process-timeout 300');
         }
@@ -848,7 +848,7 @@ EOT
      */
     protected function handleMultiValue($key, array $callbacks, array $values, $method)
     {
-        list($validator, $normalizer) = $callbacks;
+        [$validator, $normalizer] = $callbacks;
         if (true !== $validation = $validator($values)) {
             throw new \RuntimeException(sprintf(
                 '%s is an invalid value'.($validation ? ' ('.$validation.')' : ''),
@@ -878,7 +878,7 @@ EOT
                 continue;
             }
 
-            $rawVal = isset($rawContents[$key]) ? $rawContents[$key] : null;
+            $rawVal = $rawContents[$key] ?? null;
 
             if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
                 $k .= Preg::replace('{^config\.}', '', $key . '.');

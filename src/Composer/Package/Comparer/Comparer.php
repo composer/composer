@@ -133,7 +133,7 @@ class Comparer
                     if (is_link($dir.'/'.$file)) {
                         $array[$dir][$file] = readlink($dir.'/'.$file);
                     } elseif (is_dir($dir.'/'.$file)) {
-                        if (!count($array)) {
+                        if (!(is_array($array) || $array instanceof \Countable ? count($array) : 0)) {
                             $array[0] = 'Temp';
                         }
                         if (!$this->doTree($dir.'/'.$file, $array)) {
@@ -144,7 +144,7 @@ class Comparer
                     }
                 }
             }
-            if (count($array) > 1 && isset($array['0'])) {
+            if ((is_array($array) || $array instanceof \Countable ? count($array) : 0) > 1 && isset($array['0'])) {
                 unset($array['0']);
             }
 

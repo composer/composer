@@ -233,7 +233,7 @@ class InstalledVersions
                 continue;
             }
 
-            return isset($installed['versions'][$packageName]['install_path']) ? $installed['versions'][$packageName]['install_path'] : null;
+            return $installed['versions'][$packageName]['install_path'] ?? null;
         }
 
         throw new \OutOfBoundsException('Package "' . $packageName . '" is not installed');
@@ -316,7 +316,7 @@ class InstalledVersions
     private static function getInstalled()
     {
         if (null === self::$canGetVendors) {
-            self::$canGetVendors = method_exists('Composer\Autoload\ClassLoader', 'getRegisteredLoaders');
+            self::$canGetVendors = method_exists(\Composer\Autoload\ClassLoader::class, 'getRegisteredLoaders');
         }
 
         $installed = array();

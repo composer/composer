@@ -188,7 +188,7 @@ EOT
         $filteredPackages = array_filter($packages, function ($package) {
             return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
         });
-        $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
+        $updateMirrors = $input->getOption('lock') || count((array) $filteredPackages) != (is_array($packages) || $packages instanceof \Countable ? count($packages) : 0);
         $packages = $filteredPackages;
 
         if ($updateMirrors && !empty($packages)) {
@@ -205,7 +205,7 @@ EOT
         $install = Installer::create($io, $composer);
 
         $config = $composer->getConfig();
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($config, $input);
 
         $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
         $authoritative = $input->getOption('classmap-authoritative') || $config->get('classmap-authoritative');

@@ -62,6 +62,7 @@ final class TlsHelper
      */
     public static function getCertificateNames($certificate)
     {
+        $info = [];
         if (is_array($certificate)) {
             $info = $certificate;
         } elseif (CaBundle::isOpensslParseSafe()) {

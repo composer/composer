@@ -29,19 +29,19 @@ use Composer\Semver\Constraint\ConstraintInterface;
 abstract class Rule
 {
     // reason constants and // their reason data contents
-    const RULE_ROOT_REQUIRE = 2; // array{packageName: string, constraint: ConstraintInterface}
-    const RULE_FIXED = 3; // array{package: BasePackage}
-    const RULE_PACKAGE_CONFLICT = 6; // Link
-    const RULE_PACKAGE_REQUIRES = 7; // Link
-    const RULE_PACKAGE_SAME_NAME = 10; // string (package name)
-    const RULE_LEARNED = 12; // int (rule id)
-    const RULE_PACKAGE_ALIAS = 13; // BasePackage
-    const RULE_PACKAGE_INVERSE_ALIAS = 14; // BasePackage
+    public const RULE_ROOT_REQUIRE = 2; // array{packageName: string, constraint: ConstraintInterface}
+    public const RULE_FIXED = 3; // array{package: BasePackage}
+    public const RULE_PACKAGE_CONFLICT = 6; // Link
+    public const RULE_PACKAGE_REQUIRES = 7; // Link
+    public const RULE_PACKAGE_SAME_NAME = 10; // string (package name)
+    public const RULE_LEARNED = 12; // int (rule id)
+    public const RULE_PACKAGE_ALIAS = 13; // BasePackage
+    public const RULE_PACKAGE_INVERSE_ALIAS = 14; // BasePackage
 
     // bitfield defs
-    const BITFIELD_TYPE = 0;
-    const BITFIELD_REASON = 8;
-    const BITFIELD_DISABLED = 16;
+    public const BITFIELD_TYPE = 0;
+    public const BITFIELD_REASON = 8;
+    public const BITFIELD_DISABLED = 16;
 
     /** @var int */
     protected $bitfield;
@@ -244,7 +244,7 @@ abstract class Rule
                 if ($reasonData = $this->getReasonData()) {
                     // swap literals if they are not in the right order with package2 being the conflicter
                     if ($reasonData->getSource() === $package1->getName()) {
-                        list($package2, $package1) = array($package1, $package2);
+                        [$package2, $package1] = array($package1, $package2);
                     }
                 }
 
@@ -313,7 +313,7 @@ abstract class Rule
 
                     // swap literals if they are not in the right order with package2 being the conflicter
                     if ($reasonData->getSource() === $package1->getName()) {
-                        list($package2, $package1) = array($package1, $package2);
+                        [$package2, $package1] = array($package1, $package2);
                         $conflictTarget = $package1->getPrettyName().' '.$reasonData->getPrettyConstraint();
                     }
 

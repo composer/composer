@@ -242,7 +242,7 @@ class EventDispatcher
                         throw $e;
                     }
                 } else {
-                    $args = implode(' ', array_map(array('Composer\Util\ProcessExecutor', 'escape'), $event->getArguments()));
+                    $args = implode(' ', array_map(array(\Composer\Util\ProcessExecutor::class, 'escape'), $event->getArguments()));
                     $exec = $callable . ($args === '' ? '' : ' '.$args);
                     if ($this->io->isVerbose()) {
                         $this->io->writeError(sprintf('> %s: %s', $event->getName(), $exec));
@@ -266,7 +266,7 @@ class EventDispatcher
                         if (false === strpos($exec, '=')) {
                             Platform::clearEnv(substr($exec, 8));
                         } else {
-                            list($var, $value) = explode('=', substr($exec, 8), 2);
+                            [$var, $value] = explode('=', substr($exec, 8), 2);
                             Platform::putEnv($var, $value);
                         }
 
@@ -428,10 +428,10 @@ class EventDispatcher
             if (is_string($params)) {
                 $this->addListener($eventName, array($subscriber, $params));
             } elseif (is_string($params[0])) {
-                $this->addListener($eventName, array($subscriber, $params[0]), isset($params[1]) ? $params[1] : 0);
+                $this->addListener($eventName, array($subscriber, $params[0]), $params[1] ?? 0);
             } else {
                 foreach ($params as $listener) {
-                    $this->addListener($eventName, array($subscriber, $listener[0]), isset($listener[1]) ? $listener[1] : 0);
+                    $this->addListener($eventName, array($subscriber, $listener[0]), $listener[1] ?? 0);
                 }
             }
         }

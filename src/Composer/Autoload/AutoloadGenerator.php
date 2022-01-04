@@ -362,11 +362,11 @@ EOF;
 
             $this->io->writeError(
                 '<warning>Warning: Ambiguous class resolution, "'.$className.'"'.
-                ' was found '. (count($ambiguousPaths) + 1) .'x: in "'.$cleanPath.'" and "'. implode('", "', $ambiguousPaths) .'", the first will be used.</warning>'
+                ' was found '. ((is_array($ambiguousPaths) || $ambiguousPaths instanceof \Countable ? count($ambiguousPaths) : 0) + 1) .'x: in "'.$cleanPath.'" and "'. implode('", "', $ambiguousPaths) .'", the first will be used.</warning>'
             );
         }
 
-        $classMap['Composer\\InstalledVersions'] = "\$vendorDir . '/composer/InstalledVersions.php',\n";
+        $classMap[\Composer\InstalledVersions::class] = "\$vendorDir . '/composer/InstalledVersions.php',\n";
         ksort($classMap);
         foreach ($classMap as $class => $code) {
             $classmapFile .= '    '.var_export($class, true).' => '.$code;
@@ -638,7 +638,7 @@ EOF;
         $includePaths = array();
 
         foreach ($packageMap as $item) {
-            list($package, $installPath) = $item;
+            [$package, $installPath] = $item;
 
             if (null !== $package->getTargetDir() && strlen($package->getTargetDir()) > 0) {
                 $installPath = substr($installPath, 0, -strlen('/'.$package->getTargetDir()));
@@ -1044,7 +1044,7 @@ CLASSMAPAUTHORITATIVE;
         }
 
         if ($this->apcu) {
-            $apcuPrefix = var_export(($this->apcuPrefix !== null ? $this->apcuPrefix : substr(base64_encode(md5(uniqid('', true), true)), 0, -3)), true);
+            $apcuPrefix = var_export(($this->apcuPrefix ?? substr(base64_encode(md5(uniqid('', true), true)), 0, -3)), true);
             $file .= <<<APCU
         \$loader->setApcuPrefix($apcuPrefix);
 
@@ -1132,6 +1132,8 @@ FOOTER;
      */
     protected function getStaticFile($suffix, $targetDir, $vendorPath, $basePath, &$staticPhpVersion)
     {
+        $vendorDir = null;
+        $baseDir = null;
         $staticPhpVersion = 50600;
 
         $file = <<<HEADER
@@ -1191,7 +1193,7 @@ HEADER;
         }
 
         foreach ($maps as $prop => $value) {
-            if (count($value) > 32767) {
+            if ((is_array($value) || $value instanceof \Countable ? count($value) : 0) > 32767) {
                 // Static arrays are limited to 32767 values on PHP 5.6
                 // See https://bugs.php.net/68057
                 $staticPhpVersion = 70000;
@@ -1235,7 +1237,7 @@ INITIALIZER;
         $autoloads = array();
 
         foreach ($packageMap as $item) {
-            list($package, $installPath) = $item;
+            [$package, $installPath] = $item;
 
             $autoload = $package->getAutoload();
             if ($this->devMode && $package === $rootPackage) {
@@ -1390,7 +1392,7 @@ INITIALIZER;
         $paths = array();
 
         foreach ($packageMap as $item) {
-            list($package, $path) = $item;
+            [$package, $path] = $item;
             $name = $package->getName();
             $packages[$name] = $package;
             $paths[$name] = $path;

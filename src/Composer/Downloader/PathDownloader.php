@@ -32,8 +32,8 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
  */
 class PathDownloader extends FileDownloader implements VcsCapableDownloaderInterface
 {
-    const STRATEGY_SYMLINK = 10;
-    const STRATEGY_MIRROR = 20;
+    public const STRATEGY_SYMLINK = 10;
+    public const STRATEGY_MIRROR = 20;
 
     /**
      * @inheritDoc
@@ -91,7 +91,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         // Get the transport options with default values
         $transportOptions = $package->getTransportOptions() + array('relative' => true);
 
-        list($currentStrategy, $allowedStrategies) = $this->computeAllowedStrategies($transportOptions);
+        [$currentStrategy, $allowedStrategies] = $this->computeAllowedStrategies($transportOptions);
 
         $symfonyFilesystem = new SymfonyFilesystem();
         $this->filesystem->removeDirectory($path);
@@ -231,7 +231,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             return ': Source already present';
         }
 
-        list($currentStrategy) = $this->computeAllowedStrategies($package->getTransportOptions());
+        [$currentStrategy] = $this->computeAllowedStrategies($package->getTransportOptions());
 
         if ($currentStrategy === self::STRATEGY_SYMLINK) {
             if (Platform::isWindows()) {
@@ -260,7 +260,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             $currentStrategy = self::STRATEGY_MIRROR;
         }
 
-        $symlinkOption = isset($transportOptions['symlink']) ? $transportOptions['symlink'] : null;
+        $symlinkOption = $transportOptions['symlink'] ?? null;
 
         if (true === $symlinkOption) {
             $currentStrategy = self::STRATEGY_SYMLINK;

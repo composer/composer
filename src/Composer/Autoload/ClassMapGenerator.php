@@ -246,7 +246,7 @@ class ClassMapGenerator
             return array();
         }
 
-        $p = new PhpFileCleaner($contents, count($matches[0]));
+        $p = new PhpFileCleaner($contents, is_array($matches[0]) || $matches[0] instanceof \Countable ? count($matches[0]) : 0);
         $contents = $p->clean();
         unset($p);
 
@@ -260,7 +260,7 @@ class ClassMapGenerator
         $classes = array();
         $namespace = '';
 
-        for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
+        for ($i = 0, $len = is_array($matches['type']) || $matches['type'] instanceof \Countable ? count($matches['type']) : 0; $i < $len; $i++) {
             if (!empty($matches['ns'][$i])) {
                 $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
             } else {
