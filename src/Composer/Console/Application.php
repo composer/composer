@@ -338,8 +338,6 @@ class Application extends BaseApplication
                 $io->writeError('<info>Memory usage: '.round(memory_get_usage() / 1024 / 1024, 2).'MiB (peak: '.round(memory_get_peak_usage() / 1024 / 1024, 2).'MiB), time: '.round(microtime(true) - $startTime, 2).'s');
             }
 
-            restore_error_handler();
-
             return $result;
         } catch (ScriptExecutionException $e) {
             return (int) $e->getCode();
@@ -349,9 +347,9 @@ class Application extends BaseApplication
 
             $this->hintCommonErrors($e);
 
-            restore_error_handler();
-
             throw $e;
+        } finally {
+            restore_error_handler();
         }
     }
 
