@@ -281,12 +281,7 @@ class ArchivableFilesFinderTest extends TestCase
      */
     protected function getArchivedFiles($command)
     {
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = Process::fromShellCommandline($command, $this->sources);
-        } else {
-            // @phpstan-ignore-next-line symfony/process 2.8 accepts a string but not 5.3 which is used only for PHPStan
-            $process = new Process($command, $this->sources);
-        }
+        $process = Process::fromShellCommandline($command, $this->sources);
         $process->run();
 
         $archive = new \PharData($this->sources.'/archive.zip');

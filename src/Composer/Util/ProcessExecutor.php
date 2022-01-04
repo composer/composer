@@ -118,13 +118,7 @@ class ProcessExecutor
         $this->captureOutput = func_num_args() > 3;
         $this->errorOutput = '';
 
-        // TODO in v3, commands should be passed in as arrays of cmd + args
-        if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
-        } else {
-            /** @phpstan-ignore-next-line */
-            $process = new Process($command, $cwd, null, null, static::getTimeout());
-        }
+        $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
         if (!Platform::isWindows() && $tty) {
             try {
                 $process->setTty(true);
@@ -249,12 +243,7 @@ class ProcessExecutor
         }
 
         try {
-            // TODO in v3, commands should be passed in as arrays of cmd + args
-            if (method_exists('Symfony\Component\Process\Process', 'fromShellCommandline')) {
-                $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
-            } else {
-                $process = new Process($command, $cwd, null, null, static::getTimeout());
-            }
+            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
         } catch (\Throwable $e) {
             call_user_func($job['reject'], $e);
 
