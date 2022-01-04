@@ -128,7 +128,7 @@ class InstallerTest extends TestCase
         $lockJsonMock->expects($this->any())
             ->method('write')
             ->will($this->returnCallback(function ($value, $options = 0) use (&$lockData) {
-                $lockData = json_encode($value, JsonFile::JSON_PRETTY_PRINT);
+                $lockData = json_encode($value, JSON_PRETTY_PRINT);
             }));
 
         $tempLockData = null;
@@ -339,7 +339,7 @@ class InstallerTest extends TestCase
         $repositoryManager->setLocalRepository(new InstalledFilesystemRepositoryMock($jsonMock));
 
         // emulate a writable lock file
-        $lockData = $lock ? json_encode($lock, JsonFile::JSON_PRETTY_PRINT) : null;
+        $lockData = $lock ? json_encode($lock, JSON_PRETTY_PRINT) : null;
         $lockJsonMock = $this->getMockBuilder('Composer\Json\JsonFile')->disableOriginalConstructor()->getMock();
         $lockJsonMock->expects($this->any())
             ->method('read')
@@ -354,7 +354,7 @@ class InstallerTest extends TestCase
         $lockJsonMock->expects($this->any())
             ->method('write')
             ->will($this->returnCallback(function ($value, $options = 0) use (&$lockData) {
-                $lockData = json_encode($value, JsonFile::JSON_PRETTY_PRINT);
+                $lockData = json_encode($value, JSON_PRETTY_PRINT);
             }));
 
         if ($expectLock) {

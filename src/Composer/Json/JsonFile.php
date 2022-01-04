@@ -31,9 +31,12 @@ class JsonFile
     const LAX_SCHEMA = 1;
     const STRICT_SCHEMA = 2;
 
-    const JSON_UNESCAPED_SLASHES = 64;
-    const JSON_PRETTY_PRINT = 128;
-    const JSON_UNESCAPED_UNICODE = 256;
+    /** @deprecated Use \JSON_UNESCAPED_SLASHES */
+    public const JSON_UNESCAPED_SLASHES = 64;
+    /** @deprecated Use \JSON_PRETTY_PRINT */
+    public const JSON_PRETTY_PRINT = 128;
+    /** @deprecated Use \JSON_UNESCAPED_UNICODE */
+    public const JSON_UNESCAPED_UNICODE = 256;
 
     const COMPOSER_SCHEMA_PATH = '/../../../res/composer-schema.json';
 
@@ -116,12 +119,12 @@ class JsonFile
     /**
      * Writes json file.
      *
-     * @param  mixed[]                          $hash    writes hash into json file
-     * @param  int                                  $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+     * @param  mixed[]                              $hash    writes hash into json file
+     * @param  int                                  $options json_encode options
      * @throws \UnexpectedValueException|\Exception
      * @return void
      */
-    public function write(array $hash, $options = 448)
+    public function write(array $hash, $options = JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
     {
         if ($this->path === 'php://memory') {
             file_put_contents($this->path, static::encode($hash, $options));
@@ -146,7 +149,7 @@ class JsonFile
         $retries = 3;
         while ($retries--) {
             try {
-                $this->filePutContentsIfModified($this->path, static::encode($hash, $options). ($options & self::JSON_PRETTY_PRINT ? "\n" : ''));
+                $this->filePutContentsIfModified($this->path, static::encode($hash, $options). ($options & JSON_PRETTY_PRINT ? "\n" : ''));
                 break;
             } catch (\Exception $e) {
                 if ($retries) {

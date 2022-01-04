@@ -87,21 +87,18 @@ class ClassMapGeneratorTest extends TestCase
             array(__DIR__ . '/Fixtures/template', array()),
         );
 
-        if (PHP_VERSION_ID >= 50400) {
-            $data[] = array(__DIR__ . '/Fixtures/php5.4', array(
-                'TFoo' => __DIR__ . '/Fixtures/php5.4/traits.php',
-                'CFoo' => __DIR__ . '/Fixtures/php5.4/traits.php',
-                'Foo\\TBar' => __DIR__ . '/Fixtures/php5.4/traits.php',
-                'Foo\\IBar' => __DIR__ . '/Fixtures/php5.4/traits.php',
-                'Foo\\TFooBar' => __DIR__ . '/Fixtures/php5.4/traits.php',
-                'Foo\\CBar' => __DIR__ . '/Fixtures/php5.4/traits.php',
-            ));
-        }
-        if (PHP_VERSION_ID >= 70000) {
-            $data[] = array(__DIR__ . '/Fixtures/php7.0', array(
-                'Dummy\Test\AnonClassHolder' => __DIR__ . '/Fixtures/php7.0/anonclass.php',
-            ));
-        }
+        $data[] = array(__DIR__ . '/Fixtures/php5.4', array(
+            'TFoo' => __DIR__ . '/Fixtures/php5.4/traits.php',
+            'CFoo' => __DIR__ . '/Fixtures/php5.4/traits.php',
+            'Foo\\TBar' => __DIR__ . '/Fixtures/php5.4/traits.php',
+            'Foo\\IBar' => __DIR__ . '/Fixtures/php5.4/traits.php',
+            'Foo\\TFooBar' => __DIR__ . '/Fixtures/php5.4/traits.php',
+            'Foo\\CBar' => __DIR__ . '/Fixtures/php5.4/traits.php',
+        ));
+
+        $data[] = array(__DIR__ . '/Fixtures/php7.0', array(
+            'Dummy\Test\AnonClassHolder' => __DIR__ . '/Fixtures/php7.0/anonclass.php',
+        ));
 
         if (PHP_VERSION_ID >= 80100) {
             $data[] = array(__DIR__ . '/Fixtures/php8.1', array(

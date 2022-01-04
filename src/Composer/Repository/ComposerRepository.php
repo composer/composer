@@ -1514,7 +1514,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $response->collect();
             if ($lastModifiedDate) {
                 $data['last-modified'] = $lastModifiedDate;
-                $json = JsonFile::encode($data, JsonFile::JSON_UNESCAPED_SLASHES | JsonFile::JSON_UNESCAPED_UNICODE);
+                $json = JsonFile::encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             }
             if (!$cache->isReadOnly()) {
                 $cache->write($cacheKey, $json);

@@ -312,7 +312,7 @@ class JsonFileTest extends TestCase
 
         $data = "\\/ƌ";
 
-        $this->assertJsonFormat('"\\\\\\/ƌ"', $data, JsonFile::JSON_UNESCAPED_UNICODE);
+        $this->assertJsonFormat('"\\\\\\/ƌ"', $data, JSON_UNESCAPED_UNICODE);
     }
 
     public function testEscapedSlashes()
