@@ -17,6 +17,7 @@ use Composer\Pcre\Preg;
 
 /**
  * @author Chris Smith <chris@cs278.org>
+ * @deprecated Use composer/ca-bundle and composer/composer 2.2 if you still need PHP 5 compatibility, this class will be removed in Composer 3.0
  */
 final class TlsHelper
 {

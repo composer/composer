@@ -91,7 +91,7 @@ class BinaryInstallerTest extends TestCase
 
     public function executableBinaryProvider()
     {
-        $tests = array(
+        return array(
             'simple php file' => array(<<<'EOL'
 <?php
 
@@ -108,21 +108,14 @@ EOL
             'phar file' => array(
                 base64_decode('IyEvdXNyL2Jpbi9lbnYgcGhwCjw/cGhwCgpQaGFyOjptYXBQaGFyKCd0ZXN0LnBoYXInKTsKCnJlcXVpcmUgJ3BoYXI6Ly90ZXN0LnBoYXIvcnVuLnBocCc7CgpfX0hBTFRfQ09NUElMRVIoKTsgPz4NCj4AAAABAAAAEQAAAAEACQAAAHRlc3QucGhhcgAAAAAHAAAAcnVuLnBocCoAAADb9n9hKgAAAMUDDWGkAQAAAAAAADw/cGhwIGVjaG8gInN1Y2Nlc3MgIi4kX1NFUlZFUlsiYXJndiJdWzFdO1SOC0IE3+UN0yzrHIwyspp9slhmAgAAAEdCTUI=')
             ),
-        );
-
-        if (PHP_VERSION_ID >= 70000) {
-            $tests += array(
-                'shebang with strict types declare' => array(<<<'EOL'
+            'shebang with strict types declare' => array(<<<'EOL'
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
 echo 'success '.$_SERVER['argv'][1];
 EOL
-                ),
-            );
-        }
-
-        return $tests;
+            ),
+        );
     }
 
     /**

@@ -29,6 +29,7 @@ class TlsHelperTest extends TestCase
         $certificate['subject']['commonName'] = $expectedCn = array_shift($certNames);
         $certificate['extensions']['subjectAltName'] = $certNames ? 'DNS:'.implode(',DNS:', $certNames) : '';
 
+        // @phpstan-ignore-next-line
         $result = TlsHelper::checkCertificateHost($certificate, $hostname, $foundCn);
 
         if (true === $expectedResult) {
@@ -71,6 +72,7 @@ class TlsHelperTest extends TestCase
         $certificate['subject']['commonName'] = 'example.net';
         $certificate['extensions']['subjectAltName'] = 'DNS: example.com, IP: 127.0.0.1, DNS: getcomposer.org, Junk: blah, DNS: composer.example.org';
 
+        // @phpstan-ignore-next-line
         $names = TlsHelper::getCertificateNames($certificate);
 
         $this->assertSame('example.net', $names['cn']);

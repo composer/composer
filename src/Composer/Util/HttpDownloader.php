@@ -110,24 +110,6 @@ class HttpDownloader
 
         $response = $this->getResponse($job['id']);
 
-        // check for failed curl response (empty body but successful looking response)
-        if (
-            $this->curl
-            && PHP_VERSION_ID < 70000
-            && $response->getBody() === null
-            && $response->getStatusCode() === 200
-            && $response->getHeader('content-length') !== '0'
-        ) {
-            $this->io->writeError('<warning>cURL downloader failed to return a response, disabling it and proceeding in slow mode.</warning>');
-
-            $this->curl = null;
-
-            list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null), true);
-            $this->wait($job['id']);
-
-            $response = $this->getResponse($job['id']);
-        }
-
         return $response;
     }
 

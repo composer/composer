@@ -22,7 +22,7 @@ use Composer\Pcre\Preg;
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  *
- * @abandoned Use json_encode or JsonFile::encode() with modern JSON_* flags to configure formatting - this class will be removed in 3.0
+ * @deprecated Use json_encode or JsonFile::encode() with modern JSON_* flags to configure formatting - this class will be removed in 3.0
  */
 class JsonFormatter
 {

@@ -51,8 +51,6 @@ class RemoteFilesystem
     private $lastProgress;
     /** @var mixed[] */
     private $options = array();
-    /** @var array<string, array{cn: string, fp: string}> */
-    private $peerCertificateMap = array();
     /** @var bool */
     private $disableTls = false;
     /** @var string[] */
@@ -463,41 +461,6 @@ class RemoteFilesystem
             }
         }
 
-        // Handle SSL cert match issues
-        if (false === $result && false !== strpos($errorMessage, 'Peer certificate') && PHP_VERSION_ID < 50600) {
-            // Certificate name error, PHP doesn't support subjectAltName on PHP < 5.6
-            // The procedure to handle sAN for older PHP's is:
-            //
-            // 1. Open socket to remote server and fetch certificate (disabling peer
-            //    validation because PHP errors without giving up the certificate.)
-            //
-            // 2. Verifying the domain in the URL against the names in the sAN field.
-            //    If there is a match record the authority [host/port], certificate
-            //    common name, and certificate fingerprint.
-            //
-            // 3. Retry the original request but changing the CN_match parameter to
-            //    the common name extracted from the certificate in step 2.
-            //
-            // 4. To prevent any attempt at being hoodwinked by switching the
-            //    certificate between steps 2 and 3 the fingerprint of the certificate
-            //    presented in step 3 is compared against the one recorded in step 2.
-            if (CaBundle::isOpensslParseSafe()) {
-                $certDetails = $this->getCertificateCnAndFp($this->fileUrl, $options);
-
-                if ($certDetails) {
-                    $this->peerCertificateMap[$this->getUrlAuthority($this->fileUrl)] = $certDetails;
-
-                    $this->retry = true;
-                }
-            } else {
-                $this->io->writeError('');
-                $this->io->writeError(sprintf(
-                    '<error>Your version of PHP, %s, is affected by CVE-2013-6420 and cannot safely perform certificate validation, we strongly suggest you upgrade.</error>',
-                    PHP_VERSION
-                ));
-            }
-        }
-
         if ($this->retry) {
             $this->retry = false;
 
@@ -651,35 +614,6 @@ class RemoteFilesystem
     protected function getOptionsForUrl($originUrl, $additionalOptions)
     {
         $tlsOptions = array();
-
-        // Setup remaining TLS options - the matching may need monitoring, esp. www vs none in CN
-        if ($this->disableTls === false && PHP_VERSION_ID < 50600 && !stream_is_local($this->fileUrl)) {
-            $host = parse_url($this->fileUrl, PHP_URL_HOST);
-
-            $tlsOptions['ssl']['CN_match'] = $host;
-            $tlsOptions['ssl']['SNI_server_name'] = $host;
-
-            $urlAuthority = $this->getUrlAuthority($this->fileUrl);
-
-            if (isset($this->peerCertificateMap[$urlAuthority])) {
-                // Handle subjectAltName on lesser PHP's.
-                $certMap = $this->peerCertificateMap[$urlAuthority];
-
-                $this->io->writeError('', true, IOInterface::DEBUG);
-                $this->io->writeError(sprintf(
-                    'Using <info>%s</info> as CN for subjectAltName enabled host <info>%s</info>',
-                    $certMap['cn'],
-                    $urlAuthority
-                ), true, IOInterface::DEBUG);
-
-                $tlsOptions['ssl']['CN_match'] = $certMap['cn'];
-                $tlsOptions['ssl']['peer_fingerprint'] = $certMap['fp'];
-            } elseif (!CaBundle::isOpensslParseSafe() && $host === 'repo.packagist.org') {
-                // handle subjectAltName for packagist.org's repo domain on very old PHPs
-                $tlsOptions['ssl']['CN_match'] = 'packagist.org';
-            }
-        }
-
         $headers = array();
 
         if (extension_loaded('zlib')) {
@@ -757,88 +691,6 @@ class RemoteFilesystem
         }
 
         return false;
-    }
-
-    /**
-     * Fetch certificate common name and fingerprint for validation of SAN.
-     *
-     * @todo Remove when PHP 5.6 is minimum supported version.
-     *
-     * @param string  $url
-     * @param mixed[] $options
-     *
-     * @return ?array{cn: string, fp: string}
-     */
-    private function getCertificateCnAndFp($url, $options)
-    {
-        if (PHP_VERSION_ID >= 50600) {
-            throw new \BadMethodCallException(sprintf(
-                '%s must not be used on PHP >= 5.6',
-                __METHOD__
-            ));
-        }
-
-        $context = StreamContextFactory::getContext($url, $options, array('options' => array(
-            'ssl' => array(
-                'capture_peer_cert' => true,
-                'verify_peer' => false, // Yes this is fucking insane! But PHP is lame.
-            ), ),
-        ));
-
-        // Ideally this would just use stream_socket_client() to avoid sending a
-        // HTTP request but that does not capture the certificate.
-        if (false === $handle = @fopen($url, 'rb', false, $context)) {
-            return null;
-        }
-
-        // Close non authenticated connection without reading any content.
-        fclose($handle);
-        $handle = null;
-
-        $params = stream_context_get_params($context);
-
-        if (!empty($params['options']['ssl']['peer_certificate'])) {
-            $peerCertificate = $params['options']['ssl']['peer_certificate'];
-
-            if (TlsHelper::checkCertificateHost($peerCertificate, parse_url($url, PHP_URL_HOST), $commonName)) {
-                return array(
-                    'cn' => $commonName,
-                    'fp' => TlsHelper::getCertificateFingerprint($peerCertificate),
-                );
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @param string $url
-     *
-     * @return string
-     */
-    private function getUrlAuthority($url)
-    {
-        $defaultPorts = array(
-            'ftp' => 21,
-            'http' => 80,
-            'https' => 443,
-            'ssh2.sftp' => 22,
-            'ssh2.scp' => 22,
-        );
-
-        $scheme = parse_url($url, PHP_URL_SCHEME);
-
-        if (!isset($defaultPorts[$scheme])) {
-            throw new \InvalidArgumentException(sprintf(
-                'Could not get default port for unknown scheme: %s',
-                $scheme
-            ));
-        }
-
-        $defaultPort = $defaultPorts[$scheme];
-        $port = parse_url($url, PHP_URL_PORT) ?: $defaultPort;
-
-        return parse_url($url, PHP_URL_HOST).':'.$port;
     }
 
     /**
