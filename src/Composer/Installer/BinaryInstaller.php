@@ -158,6 +158,10 @@ class BinaryInstaller
             return trim($match[1]);
         }
 
+        if (substr($bin, -4) === '.jar') {
+            return 'java -jar ';
+        }
+
         return 'php';
     }
 
@@ -224,7 +228,7 @@ class BinaryInstaller
         $binPath = $this->filesystem->findShortestPath($link, $bin);
         $caller = self::determineBinaryCaller($bin);
 
-        // if the target is a php file, we run the unixy proxy file
+        // if the target is a php file, we run the unixy proxy file (a php script in this case)
         // to ensure that _composer_autoload_path gets defined, instead
         // of running the binary directly
         if ($caller === 'php') {
@@ -394,6 +398,11 @@ include $binPathExported;
 PROXY;
         }
 
+        $caller = '';
+        if (substr($bin, -4) === '.jar') {
+            $caller = 'java -jar ';
+        }
+
         return <<<PROXY
 #!/usr/bin/env sh
 
@@ -415,7 +424,7 @@ fi
 
 export COMPOSER_BIN_DIR=\$(cd "\${self%[/\\\\]*}" > /dev/null; pwd)
 
-"\${dir}/$binFile" "\$@"
+$caller"\${dir}/$binFile" "\$@"
 
 PROXY;
     }
