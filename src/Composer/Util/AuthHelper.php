@@ -92,6 +92,22 @@ class AuthHelper
             $message = "\n";
 
             $rateLimited = $gitHubUtil->isRateLimited($headers);
+            $requiresSso = $gitHubUtil->requiresSso($headers);
+
+            if ($requiresSso) {
+                $ssoUrl = $gitHubUtil->getSsoUrl($headers);
+                $message = sprintf(
+                        'GitHub API token requires SSO authorization. Authorize this token at ' . $ssoUrl,
+                        $ssoUrl
+                    ) . "\n";
+                $this->io->writeError($message);
+                if (!$this->io->isInteractive()) {
+                    throw new TransportException('Could not authenticate against ' . $origin, 403);
+                }
+                $this->io->ask('After authorizing your token, confirm that you would like to retry the request');
+                return ['retry' => TRUE, 'storeAuth' => $storeAuth];
+            }
+
             if ($rateLimited) {
                 $rateLimit = $gitHubUtil->getRateLimit($headers);
                 if ($this->io->hasAuthentication($origin)) {
