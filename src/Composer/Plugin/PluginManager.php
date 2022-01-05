@@ -705,7 +705,7 @@ class PluginManager
 
                 $this->io->writeError('<warning>'.$package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is currently not in your allow-plugins config. See https://getcomposer.org/allow-plugins</warning>');
                 while (true) {
-                    switch ($answer = $this->io->ask('Do you trust "<info>'.$package.'</info>" to execute code and wish to enable it now? (writes "allow-plugins" to composer.json) [<comment>y,n,d,?</comment>] ', '?')) {
+                    switch ($answer = $this->io->ask('Do you trust "<fg=green;options=bold>'.$package.'</>" to execute code and wish to enable it now? (writes "allow-plugins" to composer.json) [<comment>y,n,d,?</comment>] ', '?')) {
                         case 'y':
                         case 'n':
                         case 'd':
