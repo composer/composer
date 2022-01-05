@@ -40,6 +40,8 @@ use Composer\Repository\RootPackageRepository;
 use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Semver;
 use Composer\Spdx\SpdxLicenses;
+use Composer\Util\PackageInfo;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -326,6 +328,7 @@ EOT
         }
 
         // list packages
+        /** @var array<string, array<string, string|CompletePackageInterface>> $packages */
         $packages = array();
         $packageFilterRegex = null;
         if (null !== $packageFilter) {
@@ -437,6 +440,10 @@ EOT
                         }
 
                         $packageViewData['name'] = $package->getPrettyName();
+                        if ($format !== 'json' || true !== $input->getOption('name-only')) {
+                            $packageViewData['homepage'] = $package instanceof CompletePackageInterface ? $package->getHomepage() : null;
+                            $packageViewData['source'] = PackageInfo::getViewSourceUrl($package);
+                        }
                         $nameLength = max($nameLength, strlen($package->getPrettyName()));
                         if ($writeVersion) {
                             $packageViewData['version'] = $package->getFullPrettyVersion();
@@ -528,11 +535,16 @@ EOT
                 }
 
                 foreach ($packages as $package) {
-                    $io->write($indent . str_pad($package['name'], $nameLength, ' '), false);
+                    $link = $package['source'] ?? $package['homepage'] ?? '';
+                    if ($link !== '') {
+                        $io->write($indent . '<href='.OutputFormatter::escape($link).'>'.$package['name'].'</>'. str_repeat(' ', $nameLength - strlen($package['name'])), false);
+                    } else {
+                        $io->write($indent . str_pad($package['name'], $nameLength, ' '), false);
+                    }
                     if (isset($package['version']) && $writeVersion) {
                         $io->write(' ' . str_pad($package['version'], $versionLength, ' '), false);
                     }
-                    if (isset($package['latest']) && $writeLatest) {
+                    if (isset($package['latest']) && isset($package['latest-status']) && $writeLatest) {
                         $latestVersion = $package['latest'];
                         $updateStatus = $package['latest-status'];
                         $style = $this->updateStatusToVersionStyle($updateStatus);

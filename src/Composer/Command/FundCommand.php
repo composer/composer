@@ -19,6 +19,7 @@ use Composer\Package\CompletePackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Repository\CompositeRepository;
 use Composer\Semver\Constraint\MatchAllConstraint;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -116,7 +117,7 @@ class FundCommand extends BaseCommand
                         $prev = $line;
                     }
 
-                    $io->write(sprintf('    %s', $url));
+                    $io->write(sprintf('    <href=%s>%s</>', OutputFormatter::escape($url), $url));
                 }
             }
 

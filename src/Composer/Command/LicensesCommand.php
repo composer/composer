@@ -18,6 +18,8 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\PackageInterface;
 use Composer\Repository\RepositoryInterface;
+use Composer\Util\PackageInfo;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -89,8 +91,15 @@ EOT
                 $tableStyle->setCellRowContentFormat('%s  ');
                 $table->setHeaders(array('Name', 'Version', 'License'));
                 foreach ($packages as $package) {
+                    $link = PackageInfo::getViewSourceOrHomepageUrl($package);
+                    if ($link !== null) {
+                        $name = '<href='.OutputFormatter::escape($link).'>'.$package->getPrettyName().'</>';
+                    } else {
+                        $name = $package->getPrettyName();
+                    }
+
                     $table->addRow(array(
-                        $package->getPrettyName(),
+                        $name,
                         $package->getFullPrettyVersion(),
                         implode(', ', $package instanceof CompletePackageInterface ? $package->getLicense() : array()) ?: 'none',
                     ));

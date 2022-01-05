@@ -91,7 +91,7 @@ interface RepositoryInterface extends \Countable
      * @param string $type  The type of package to search for. Defaults to all types of packages
      *
      * @return array[] an array of array('name' => '...', 'description' => '...'|null, 'abandoned' => 'string'|true|unset) For SEARCH_VENDOR the name will be in "vendor" form
-     * @phpstan-return list<array{name: string, description: ?string, abandoned?: string|true}>
+     * @phpstan-return list<array{name: string, description: ?string, abandoned?: string|true, url?: string}>
      */
     public function search($query, $mode = 0, $type = null);
 
