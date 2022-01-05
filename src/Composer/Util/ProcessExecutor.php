@@ -279,6 +279,8 @@ class ProcessExecutor
                 if (!$job['process']->isRunning()) {
                     call_user_func($job['resolve'], $job['process']);
                 }
+
+                $job['process']->checkTimeout();
             }
 
             if ($this->runningJobs < $this->maxJobs) {
