@@ -904,10 +904,19 @@ EOT
             if ($showSource) {
                 $source = ' (' . $this->config->getSourceOfValue($k . $key) . ')';
             }
-            if (is_string($rawVal) && $rawVal != $value) {
-                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $rawVal . ' (' . $value . ')</info>' . $source, true, IOInterface::QUIET);
+
+            if (null !== $k && 0 === strpos($k, 'repositories')) {
+                $link = 'https://getcomposer.org/doc/05-repositories.md';
             } else {
-                $io->write('[<comment>' . $k . $key . '</comment>] <info>' . $value . '</info>' . $source, true, IOInterface::QUIET);
+                $id = Preg::replace('{\..*$}', '', $k === '' || $k === null ? (string) $key : $k);
+                $id = Preg::replace('{[^a-z0-9]}i', '-', strtolower(trim($id)));
+                $id = Preg::replace('{-+}', '-', $id);
+                $link = 'https://getcomposer.org/doc/06-config.md#' . $id;
+            }
+            if (is_string($rawVal) && $rawVal != $value) {
+                $io->write('[<fg=yellow;href=' . $link .'>' . $k . $key . '</>] <info>' . $rawVal . ' (' . $value . ')</info>' . $source, true, IOInterface::QUIET);
+            } else {
+                $io->write('[<fg=yellow;href=' . $link .'>' . $k . $key . '</>] <info>' . $value . '</info>' . $source, true, IOInterface::QUIET);
             }
         }
     }

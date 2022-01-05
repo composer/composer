@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\Factory;
 use Composer\Json\JsonFile;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -113,7 +114,12 @@ EOT
                     $description = substr($description, 0, $remaining - 3) . '...';
                 }
 
-                $io->write(str_pad($result['name'], $nameLength, ' ') . $warning . $description);
+                $link = $result['url'] ?? null;
+                if ($link !== null) {
+                    $io->write('<href='.OutputFormatter::escape($link).'>'.$result['name'].'</>'. str_repeat(' ', $nameLength - strlen($result['name'])) . $warning . $description);
+                } else {
+                    $io->write(str_pad($result['name'], $nameLength, ' ') . $warning . $description);
+                }
             }
         } elseif ($format === 'json') {
             $io->write(JsonFile::encode($results));
