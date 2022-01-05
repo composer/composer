@@ -26,7 +26,7 @@ use React\Promise\Promise;
 class ProcessExecutorMock extends ProcessExecutor
 {
     /**
-     * @var array<array{cmd: string, return: int, stdout: string, stderr: string, callback: callable|null}>|null
+     * @var array<array{cmd: string|list<string>, return: int, stdout: string, stderr: string, callback: callable|null}>|null
      */
     private $expectations = null;
     /**
@@ -43,19 +43,20 @@ class ProcessExecutorMock extends ProcessExecutor
     private $log = array();
 
     /**
-     * @param array<string|array{cmd: string, return?: int, stdout?: string, stderr?: string, callback?: callable}> $expectations
-     * @param bool                                                                                                 $strict         set to true if you want to provide *all* expected commands, and not just a subset you are interested in testing
-     * @param array{return: int, stdout?: string, stderr?: string}                                                 $defaultHandler default command handler for undefined commands if not in strict mode
+     * @param array<string|array{cmd: string|list<string>, return?: int, stdout?: string, stderr?: string, callback?: callable}> $expectations
+     * @param bool                                                                                                               $strict         set to true if you want to provide *all* expected commands, and not just a subset you are interested in testing
+     * @param array{return: int, stdout?: string, stderr?: string}                                                               $defaultHandler default command handler for undefined commands if not in strict mode
      *
      * @return void
      */
     public function expects(array $expectations, $strict = false, array $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => ''))
     {
+        /** @var array{cmd: string|list<string>, return?: int, stdout?: string, stderr?: string, callback?: callable} $default */
         $default = array('cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null);
         $this->expectations = array_map(function ($expect) use ($default) {
             if (is_string($expect)) {
                 $expect = array('cmd' => $expect);
-            } elseif ($diff = array_diff_key(array_merge($default, $expect), $default)) {
+            } elseif (count($diff = array_diff_key(array_merge($default, $expect), $default)) > 0) {
                 throw new \UnexpectedValueException('Unexpected keys in process execution step: '.implode(', ', array_keys($diff)));
             }
 
@@ -74,7 +75,7 @@ class ProcessExecutorMock extends ProcessExecutor
 
         if (count($this->expectations) > 0) {
             $expectations = array_map(function ($expect) {
-                return $expect['cmd'];
+                return is_array($expect['cmd']) ? implode(' ', $expect['cmd']) : $expect['cmd'];
             }, $this->expectations);
             throw new AssertionFailedError(
                 'There are still '.count($this->expectations).' expected process calls which have not been consumed:'.PHP_EOL.
@@ -106,7 +107,7 @@ class ProcessExecutorMock extends ProcessExecutor
     }
 
     /**
-     * @param string $command
+     * @param string|list<string> $command
      * @param string $cwd
      * @param bool $tty
      * @param callable $output
@@ -119,7 +120,8 @@ class ProcessExecutorMock extends ProcessExecutor
 
         $callback = is_callable($output) ? $output : array($this, 'outputHandler');
 
-        $this->log[] = $command;
+        $commandString = is_array($command) ? implode(' ', $command) : $command;
+        $this->log[] = $commandString;
 
         if (is_array($this->expectations) && count($this->expectations) > 0 && $command === $this->expectations[0]['cmd']) {
             $expect = array_shift($this->expectations);
@@ -135,8 +137,8 @@ class ProcessExecutorMock extends ProcessExecutor
             $return = $this->defaultHandler['return'];
         } else {
             throw new AssertionFailedError(
-                'Received unexpected command "'.$command.'" in "'.$cwd.'"'.PHP_EOL.
-                (is_array($this->expectations) && count($this->expectations) > 0 ? 'Expected "'.$this->expectations[0]['cmd'].'" at this point.' : 'Expected no more calls at this point.').PHP_EOL.
+                'Received unexpected command '.var_export($command, true).' in "'.$cwd.'"'.PHP_EOL.
+                (is_array($this->expectations) && count($this->expectations) > 0 ? 'Expected '.var_export($this->expectations[0]['cmd'], true).' at this point.' : 'Expected no more calls at this point.').PHP_EOL.
                 'Received calls:'.PHP_EOL.implode(PHP_EOL, array_slice($this->log, 0, -1))
             );
         }
