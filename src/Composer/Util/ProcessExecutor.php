@@ -102,18 +102,7 @@ class ProcessExecutor
      */
     private function doExecute($command, $cwd, $tty, &$output = null)
     {
-        if ($this->io && $this->io->isDebug()) {
-            $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
-                // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx) we obfuscate that
-                if (Preg::isMatch('{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+)$}', $m['user'])) {
-                    return '://***:***@';
-                }
-
-                return '://'.$m['user'].':***@';
-            }, $command);
-            $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
-            $this->io->writeError('Executing command ('.($cwd ?: 'CWD').'): '.$safeCommand);
-        }
+        $this->outputCommandRun($command, $cwd, false);
 
         // TODO in 2.2, these two checks can be dropped as Symfony 4+ supports them out of the box
         // make sure that null translate to the proper directory in case the dir is a symlink
@@ -249,17 +238,7 @@ class ProcessExecutor
         $command = $job['command'];
         $cwd = $job['cwd'];
 
-        if ($this->io && $this->io->isDebug()) {
-            $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
-                if (Preg::isMatch('{^[a-f0-9]{12,}$}', $m['user'])) {
-                    return '://***:***@';
-                }
-
-                return '://'.$m['user'].':***@';
-            }, $command);
-            $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
-            $this->io->writeError('Executing async command ('.($cwd ?: 'CWD').'): '.$safeCommand);
-        }
+        $this->outputCommandRun($command, $cwd, true);
 
         // TODO in 2.2, these two checks can be dropped as Symfony 4+ supports them out of the box
         // make sure that null translate to the proper directory in case the dir is a symlink
@@ -452,6 +431,33 @@ class ProcessExecutor
     public static function escape($argument)
     {
         return self::escapeArgument($argument);
+    }
+
+    /**
+     * @param string  $command
+     * @param ?string $cwd
+     * @param bool    $async
+     * @return void
+     */
+    private function outputCommandRun($command, $cwd, $async)
+    {
+        if (null === $this->io || !$this->io->isDebug()) {
+            return;
+        }
+
+        $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
+            // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx) we obfuscate that
+            if (Preg::isMatch('{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+)$}', $m['user'])) {
+                return '://***:***@';
+            }
+            if (Preg::isMatch('{^[a-f0-9]{12,}$}', $m['user'])) {
+                return '://***:***@';
+            }
+
+            return '://'.$m['user'].':***@';
+        }, $command);
+        $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
+        $this->io->writeError('Executing'.($async ? ' async' : '').' command ('.($cwd ?: 'CWD').'): '.$safeCommand);
     }
 
     /**
