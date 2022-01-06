@@ -35,7 +35,7 @@ class VersionGuesserTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
-            array('cmd' => 'git branch -a --no-color --no-abbrev -v', 'return' => 128),
+            array('cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'], 'return' => 128),
             array('cmd' => 'git describe --exact-match --tags', 'return' => 128),
             array('cmd' => 'git log --pretty="%H" -n1 HEAD'.GitUtil::getNoShowSignatureFlag($process), 'return' => 128),
             array('cmd' => 'hg branch', 'return' => 0, 'stdout' => $branch),
@@ -63,7 +63,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* master $commitHash Commit message\n(no branch) $anotherCommitHash Commit message\n",
             ),
         ), true);
@@ -88,7 +88,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 // Assumption here is that arbitrary would be the default branch
                 'stdout' => "  arbitrary $commitHash Commit message\n* current $anotherCommitHash Another message\n",
             ),
@@ -111,7 +111,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "  arbitrary $commitHash Commit message\n* feature $anotherCommitHash Another message\n",
             ),
             array(
@@ -139,7 +139,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "  latest-testing $commitHash Commit message\n* feature $anotherCommitHash Another message\n",
             ),
             array(
@@ -167,7 +167,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* latest-testing $commitHash Commit message\n  current $anotherCommitHash Another message\n  master $anotherCommitHash Another message\n",
             ),
         ), true);
@@ -190,7 +190,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* (no branch) $commitHash Commit message\n",
             ),
             'git describe --exact-match --tags',
@@ -211,7 +211,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* (HEAD detached at FETCH_HEAD) $commitHash Commit message\n",
             ),
             'git describe --exact-match --tags',
@@ -232,7 +232,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* (HEAD detached at 03a15d220) $commitHash Commit message\n",
             ),
             'git describe --exact-match --tags',
@@ -251,7 +251,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* (HEAD detached at v2.0.5-alpha2) 433b98d4218c181bae01865901aac045585e8a1a Commit message\n",
             ),
             array(
@@ -273,7 +273,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* (HEAD detached at 1.0.0) c006f0c12bbbf197b5c071ffb1c0e9812bb14a4d Commit message\n",
             ),
             array(
@@ -296,7 +296,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* foo 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n",
             ),
         ), true);
@@ -314,7 +314,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* 1.5 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n",
             ),
         ), true);
@@ -333,7 +333,7 @@ class VersionGuesserTest extends TestCase
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
             array(
-                'cmd' => 'git branch -a --no-color --no-abbrev -v',
+                'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* feature-branch 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n".
                         "remotes/origin/1.5 03a15d220da53c52eddd5f32ffca64a7b3801bea Commit message\n",
             ),

@@ -137,7 +137,7 @@ class VersionGuesser
         $isDetached = false;
 
         // try to fetch current version from git branch
-        if (0 === $this->process->execute('git branch -a --no-color --no-abbrev -v', $output, $path)) {
+        if (0 === $this->process->execute(['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'], $output, $path)) {
             $branches = array();
             $isFeatureBranch = false;
 

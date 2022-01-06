@@ -62,7 +62,7 @@ class ProcessExecutor
     /**
      * runs a process on the commandline
      *
-     * @param  string  $command the command to execute
+     * @param  string|list<string> $command the command to execute
      * @param  mixed   $output  the output will be written into this var if passed by ref
      *                          if a callable is passed it will be used as output handler
      * @param  ?string $cwd     the working directory
@@ -80,7 +80,7 @@ class ProcessExecutor
     /**
      * runs a process on the commandline in TTY mode
      *
-     * @param  string  $command the command to execute
+     * @param  string|list<string>  $command the command to execute
      * @param  ?string $cwd     the working directory
      * @return int     statuscode
      */
@@ -94,7 +94,7 @@ class ProcessExecutor
     }
 
     /**
-     * @param  string  $command
+     * @param  string|list<string> $command
      * @param  ?string $cwd
      * @param  bool    $tty
      * @param  mixed   $output
@@ -107,7 +107,12 @@ class ProcessExecutor
         $this->captureOutput = func_num_args() > 3;
         $this->errorOutput = '';
 
-        $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+        if (is_string($command)) {
+            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+        } else {
+            $process = new Process($command, $cwd, null, null, static::getTimeout());
+        }
+
         if (!Platform::isWindows() && $tty) {
             try {
                 $process->setTty(true);
@@ -131,8 +136,8 @@ class ProcessExecutor
     /**
      * starts a process on the commandline in async mode
      *
-     * @param  string           $command the command to execute
-     * @param  string           $cwd     the working directory
+     * @param  string|list<string> $command the command to execute
+     * @param  string              $cwd     the working directory
      * @return PromiseInterface
      */
     public function executeAsync($command, $cwd = null)
@@ -222,7 +227,11 @@ class ProcessExecutor
         $this->outputCommandRun($command, $cwd, true);
 
         try {
-            $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+            if (is_string($command)) {
+                $process = Process::fromShellCommandline($command, $cwd, null, null, static::getTimeout());
+            } else {
+                $process = new Process($command, $cwd, null, null, static::getTimeout());
+            }
         } catch (\Throwable $e) {
             call_user_func($job['reject'], $e);
 
@@ -389,17 +398,15 @@ class ProcessExecutor
     }
 
     /**
-     * @param string  $command
-     * @param ?string $cwd
-     * @param bool    $async
-     * @return void
+     * @param string|list<string> $command
      */
-    private function outputCommandRun($command, $cwd, $async)
+    private function outputCommandRun($command, ?string $cwd, bool $async): void
     {
         if (null === $this->io || !$this->io->isDebug()) {
             return;
         }
 
+        $commandString = is_string($command) ? $command : implode(' ', array_map(self::class.'::escape', $command));
         $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
             // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx) we obfuscate that
             if (Preg::isMatch('{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+)$}', $m['user'])) {
@@ -410,7 +417,7 @@ class ProcessExecutor
             }
 
             return '://'.$m['user'].':***@';
-        }, $command);
+        }, $commandString);
         $safeCommand = Preg::replace("{--password (.*[^\\\\]\') }", '--password \'***\' ', $safeCommand);
         $this->io->writeError('Executing'.($async ? ' async' : '').' command ('.($cwd ?: 'CWD').'): '.$safeCommand);
     }
