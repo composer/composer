@@ -422,6 +422,15 @@ fi
 
 export COMPOSER_BIN_DIR=\$(cd "\${self%[/\\\\]*}" > /dev/null; pwd)
 
+# If bash is sourcing this file, we have to source the target as well
+bashSource="\$BASH_SOURCE"
+if [ -n "\$bashSource" ]; then
+    if [ "\$bashSource" != "\$0" ]; then
+        source "\${dir}/$binFile" "\$@"
+        return
+    fi
+fi
+
 "\${dir}/$binFile" "\$@"
 
 PROXY;
