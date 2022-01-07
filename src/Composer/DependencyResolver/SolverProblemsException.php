@@ -17,6 +17,8 @@ use Composer\Repository\RepositorySet;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>
+ *
+ * @method self::ERROR_DEPENDENCY_RESOLUTION_FAILED getCode()
  */
 class SolverProblemsException extends \RuntimeException
 {

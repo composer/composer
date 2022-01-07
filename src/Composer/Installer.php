@@ -384,6 +384,7 @@ class Installer
      * @param bool $doInstall
      *
      * @return int
+     * @phpstan-return self::ERROR_*
      */
     protected function doUpdate(InstalledRepositoryInterface $localRepo, $doInstall)
     {
@@ -645,6 +646,7 @@ class Installer
      * @param  InstalledRepositoryInterface $localRepo
      * @param  bool                         $alreadySolved Whether the function is called as part of an update command or independently
      * @return int                          exit code
+     * @phpstan-return self::ERROR_*
      */
     protected function doInstall(InstalledRepositoryInterface $localRepo, $alreadySolved = false)
     {
