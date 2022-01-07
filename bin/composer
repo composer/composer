@@ -67,7 +67,7 @@ if (function_exists('ini_set')) {
 
 // Workaround PHP bug on Windows where env vars containing Unicode chars are mangled in $_SERVER
 // see https://github.com/php/php-src/issues/7896
-if (Platform::isWindows()) {
+if (PHP_VERSION_ID >= 70113 && Platform::isWindows()) {
     $_SERVER = array_merge($_SERVER, array_intersect_ukey($_SERVER, getenv(), 'strcasecmp'));
 }
 
