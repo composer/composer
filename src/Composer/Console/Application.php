@@ -340,7 +340,7 @@ class Application extends BaseApplication
 
             return $result;
         } catch (ScriptExecutionException $e) {
-            return (int) $e->getCode();
+            return $e->getCode();
         } catch (\Exception $e) {
             $ghe = new GithubActionError($this->io);
             $ghe->emit($e->getMessage());
