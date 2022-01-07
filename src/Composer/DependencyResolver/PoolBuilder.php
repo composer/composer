@@ -459,6 +459,10 @@ class PoolBuilder
                             }
                         }
                     }
+                } elseif (isset($this->pathRepoUnlocked[$require]) && !isset($this->loadedPackages[$require])) {
+                    // if doing a partial update and a package depends on a path-repo-unlocked package which is not referenced by the root, we need to ensure it gets loaded as it was not loaded by the request's root requirements
+                    // and would not be loaded above if update propagation is not allowed (which happens if the requirer is itself a path-repo-unlocked package) or if transitive deps are not allowed to be unlocked
+                    $this->markPackageNameForLoading($request, $require, $linkConstraint);
                 }
             } else {
                 $this->markPackageNameForLoading($request, $require, $linkConstraint);

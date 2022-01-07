@@ -67,8 +67,12 @@ if (function_exists('ini_set')) {
 
 // Workaround PHP bug on Windows where env vars containing Unicode chars are mangled in $_SERVER
 // see https://github.com/php/php-src/issues/7896
-if (Platform::isWindows()) {
-    $_SERVER = array_merge($_SERVER, array_intersect_ukey($_SERVER, getenv(), 'strcasecmp'));
+if (PHP_VERSION_ID >= 70113 && Platform::isWindows()) {
+    foreach ($_SERVER as $serverVar => $serverVal) {
+        if (($serverVal = getenv($serverVar)) !== false) {
+            $_SERVER[$serverVar] = $serverVal;
+        }
+    }
 }
 
 Platform::putEnv('COMPOSER_BINARY', realpath($_SERVER['argv'][0]));
