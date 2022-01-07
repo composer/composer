@@ -397,9 +397,16 @@ PROXY;
         return <<<PROXY
 #!/usr/bin/env sh
 
-self=\$(realpath \$0 2> /dev/null)
+# Support bash to support `source` with fallback on $0 if this does not run with bash
+# https://stackoverflow.com/a/35006505/6512
+selfArg="\$BASH_SOURCE"
+if [ -z "\$selfArg" ]; then
+    selfArg="\$0"
+fi
+
+self=\$(realpath \$selfArg 2> /dev/null)
 if [ -z "\$self" ]; then
-    self="\$0"
+    self="\$selfArg"
 fi
 
 dir=\$(cd "\${self%[/\\\\]*}" > /dev/null; cd $binDir && pwd)
