@@ -633,7 +633,7 @@ class Installer
             $ghe = new GithubActionError($this->io);
             $ghe->emit($err."\n".$prettyProblem);
 
-            return max(self::ERROR_GENERIC_FAILURE, $e->getCode());
+            return $e->getCode();
         }
 
         $lockTransaction->setNonDevPackages($nonDevLockTransaction);
