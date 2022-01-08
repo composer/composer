@@ -172,6 +172,28 @@ class GitHub
     }
 
     /**
+     * Extract SSO URL from response.
+     *
+     * @param string[] $headers Headers from Composer\Downloader\TransportException.
+     *
+     * @return string|null
+     */
+    public function getSsoUrl(array $headers)
+    {
+        foreach ($headers as $header) {
+            $header = trim($header);
+            if (false === stripos($header, 'x-github-sso: required')) {
+                continue;
+            }
+            if (Preg::isMatch('{\burl=(?P<url>[^\s;]+)}', $header, $match)) {
+                return $match['url'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Finds whether a request failed due to rate limiting
      *
      * @param string[] $headers Headers from Composer\Downloader\TransportException.
@@ -182,6 +204,26 @@ class GitHub
     {
         foreach ($headers as $header) {
             if (Preg::isMatch('{^X-RateLimit-Remaining: *0$}i', trim($header))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Finds whether a request failed due to lacking SSO authorization
+     *
+     * @see https://docs.github.com/en/rest/overview/other-authentication-methods#authenticating-for-saml-sso
+     *
+     * @param string[] $headers Headers from Composer\Downloader\TransportException.
+     *
+     * @return bool
+     */
+    public function requiresSso(array $headers)
+    {
+        foreach ($headers as $header) {
+            if (Preg::isMatch('{^X-GitHub-SSO: required}i', trim($header))) {
                 return true;
             }
         }
