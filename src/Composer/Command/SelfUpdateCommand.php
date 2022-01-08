@@ -104,7 +104,9 @@ EOT
         $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
 
         if ($input->getOption('update-keys')) {
-            return $this->fetchKeys($io, $config);
+            $this->fetchKeys($io, $config);
+
+            return 0;
         }
 
         // ensure composer.phar location is accessible
@@ -417,7 +419,14 @@ TAGSPUBKEY
         }
 
         try {
-            rename($newFilename, $localFilename);
+            if (Platform::isWindows()) {
+                // use copy to apply permissions from the destination directory
+                // as rename uses source permissions and may block other users
+                copy($newFilename, $localFilename);
+                @unlink($newFilename);
+            } else {
+                rename($newFilename, $localFilename);
+            }
 
             return true;
         } catch (\Exception $e) {
@@ -428,6 +437,7 @@ TAGSPUBKEY
                 return $this->tryAsWindowsAdmin($localFilename, $newFilename);
             }
 
+            @unlink($newFilename);
             $action = 'Composer '.($backupTarget ? 'update' : 'rollback');
             throw new FilesystemException($action.' failed: "'.$localFilename.'" could not be written.'.PHP_EOL.$e->getMessage());
         }
@@ -528,7 +538,7 @@ TAGSPUBKEY
     /**
      * Invokes a UAC prompt to update composer.phar as an admin
      *
-     * Uses a .vbs script to elevate and run the cmd.exe move command.
+     * Uses a .vbs script to elevate and run the cmd.exe copy command.
      *
      * @param string $localFilename The composer.phar location
      * @param string $newFilename The downloaded or backup phar
@@ -554,13 +564,13 @@ TAGSPUBKEY
 
         $checksum = hash_file('sha256', $newFilename);
 
-        // cmd's internal move is fussy about backslashes
+        // cmd's internal copy is fussy about backslashes
         $source = str_replace('/', '\\', $newFilename);
         $destination = str_replace('/', '\\', $localFilename);
 
         $vbs = <<<EOT
 Set UAC = CreateObject("Shell.Application")
-UAC.ShellExecute "cmd.exe", "/c move /y ""$source"" ""$destination""", "", "runas", 0
+UAC.ShellExecute "cmd.exe", "/c copy /b /y ""$source"" ""$destination""", "", "runas", 0
 Wscript.Sleep(300)
 EOT;
 
@@ -568,12 +578,13 @@ EOT;
         exec('"'.$script.'"');
         @unlink($script);
 
-        // see if the file was moved
-        if ($result = (hash_file('sha256', $localFilename) === $checksum)) {
+        // see if the file was copied and is still accessible
+        if ($result = is_readable($localFilename) && (hash_file('sha256', $localFilename) === $checksum)) {
             $io->writeError('<info>Operation succeeded.</info>');
+            @unlink($newFilename);
         } else {
-            $io->writeError('<error>Operation failed (file not written). '.$helpMessage.'</error>');
-        };
+            $io->writeError('<error>Operation failed.'.$helpMessage.'</error>');
+        }
 
         return $result;
     }
