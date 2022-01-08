@@ -182,11 +182,12 @@ class GitHub
     {
         foreach ($headers as $header) {
             $header = trim($header);
-            if (false === strpos($header, 'x-github-sso: required')) {
+            if (false === stripos($header, 'x-github-sso: required')) {
                 continue;
             }
-            list(, $url) = explode('=', $header, 2);
-            return $url;
+            if (Preg::isMatch('{\burl=(?P<url>[^\s;]+)}', $header, $match)) {
+                return $match['url'];
+            }
         }
 
         return null;

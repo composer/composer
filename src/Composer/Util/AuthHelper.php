@@ -105,7 +105,8 @@ class AuthHelper
                     throw new TransportException('Could not authenticate against ' . $origin, 403);
                 }
                 $this->io->ask('After authorizing your token, confirm that you would like to retry the request');
-                return ['retry' => TRUE, 'storeAuth' => $storeAuth];
+
+                return array('retry' => true, 'storeAuth' => $storeAuth);
             }
 
             if ($rateLimited) {
