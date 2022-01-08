@@ -468,6 +468,7 @@ TAGSPUBKEY
                 return $this->tryAsWindowsAdmin($localFilename, $newFilename);
             }
 
+            @unlink($newFilename);
             $action = 'Composer '.($backupTarget ? 'update' : 'rollback');
             throw new FilesystemException($action.' failed: "'.$localFilename.'" could not be written.'.PHP_EOL.$e->getMessage());
         }
@@ -620,7 +621,7 @@ EOT;
         exec('"'.$script.'"');
         @unlink($script);
 
-        // see if the file was moved and is still accessible
+        // see if the file was copied and is still accessible
         if ($result = Filesystem::isReadable($localFilename) && (hash_file('sha256', $localFilename) === $checksum)) {
             $io->writeError('<info>Operation succeeded.</info>');
             @unlink($newFilename);
