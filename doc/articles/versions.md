@@ -242,7 +242,7 @@ section of the [schema page](../04-schema.md#minimum-stability).
 
 ## Testing Version Constraints
 
-You can test version constraints using [semver.mwl.be](https://semver.mwl.be).
+You can test version constraints using [semver.madewithlove.com](https://semver.madewithlove.com).
 Fill in a package name and it will autofill the default version constraint
 which Composer would add to your `composer.json` file. You can adjust the
 version constraint and the tool will highlight all releases that match.
