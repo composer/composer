@@ -181,10 +181,12 @@
         "repositories": {
             "type": ["object", "array"],
             "description": "A set of additional repositories where packages can be found.",
+            "properties": {
+                "packagist.org": { "type": "boolean", "enum": [false] }
+            },
             "additionalProperties": {
                 "anyOf": [
-                    { "$ref": "#/definitions/repository" },
-                    { "type": "boolean", "enum": [false] }
+                    { "$ref": "#/definitions/repository" }
                 ]
             },
             "items": {
@@ -192,7 +194,9 @@
                     { "$ref": "#/definitions/repository" },
                     {
                         "type": "object",
-                        "additionalProperties": { "type": "boolean", "enum": [false] },
+                        "properties": {
+                            "packagist.org": { "type": "boolean", "enum": [false] }
+                        },
                         "minProperties": 1,
                         "maxProperties": 1
                     }
