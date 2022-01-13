@@ -96,10 +96,7 @@ class AuthHelper
 
             if ($requiresSso) {
                 $ssoUrl = $gitHubUtil->getSsoUrl($headers);
-                $message = sprintf(
-                        'GitHub API token requires SSO authorization. Authorize this token at ' . $ssoUrl,
-                        $ssoUrl
-                    ) . "\n";
+                $message = 'GitHub API token requires SSO authorization. Authorize this token at ' . $ssoUrl . "\n";
                 $this->io->writeError($message);
                 if (!$this->io->isInteractive()) {
                     throw new TransportException('Could not authenticate against ' . $origin, 403);
