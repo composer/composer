@@ -271,11 +271,6 @@ parameters:
 			path: ../src/Composer/Util/Hg.php
 
 		-
-			message: "#^Array \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|false, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept array\\{url\\: string, origin\\: string, attributes\\: non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, bool\\|int\\>, options\\: array, progress\\: array, curlHandle\\: CurlHandle, filename\\: string\\|null, headerHandle\\: resource\\|false, \\.\\.\\.\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Parameter \\#1 \\$handle of function curl_close expects CurlHandle, resource given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -327,6 +322,11 @@ parameters:
 
 		-
 			message: "#^Parameter \\#2 \\$handle of function curl_multi_remove_handle expects CurlHandle, resource given\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|false, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\<literal\\-string&non\\-empty\\-string, bool\\|int\\>, options\\: array, progress\\: array, curlHandle\\: CurlHandle\\|resource, filename\\: string\\|false\\|null, headerHandle\\: resource\\|false, \\.\\.\\.\\}\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
