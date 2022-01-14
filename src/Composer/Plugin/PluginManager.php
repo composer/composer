@@ -699,6 +699,10 @@ class PluginManager
             }
         }
 
+        if ($package === 'composer/package-versions-deprecated') {
+            return false;
+        }
+
         if (!isset($warned[$package])) {
             if ($this->io->isInteractive()) {
                 $composer = $isGlobalPlugin && $this->globalComposer !== null ? $this->globalComposer : $this->composer;
