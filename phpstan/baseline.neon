@@ -2982,7 +2982,12 @@ parameters:
 
 		-
 			message: "#^Casting to int something that's already int\\.$#"
-			count: 2
+			count: 1
+			path: ../src/Composer/DependencyResolver/Solver.php
+
+		-
+			message: "#^Casting to int\\<min, 0\\>\\|int\\<2, max\\> something that's already int\\<min, 0\\>\\|int\\<2, max\\>\\.$#"
+			count: 1
 			path: ../src/Composer/DependencyResolver/Solver.php
 
 		-
