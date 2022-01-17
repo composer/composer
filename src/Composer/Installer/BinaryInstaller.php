@@ -77,6 +77,10 @@ class BinaryInstaller
                 $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': file not found in package</warning>');
                 continue;
             }
+            if (is_dir($binPath)) {
+                $this->io->writeError('    <warning>Skipped installation of bin '.$bin.' for package '.$package->getName().': found a directory at that path</warning>');
+                continue;
+            }
             if (!$this->filesystem->isAbsolutePath($binPath)) {
                 // in case a custom installer returned a relative path for the
                 // $package, we can now safely turn it into a absolute path (as we
