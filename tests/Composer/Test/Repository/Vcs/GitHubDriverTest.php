@@ -261,6 +261,7 @@ class GitHubDriverTest extends TestCase
         // clean local clone if present
         $fs = new Filesystem();
         $fs->removeDirectory(sys_get_temp_dir() . '/composer-test');
+        $this->config->merge(['config' => ['cache-vcs-dir' => sys_get_temp_dir() . '/composer-test/cache']]);
 
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
