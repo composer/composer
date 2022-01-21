@@ -116,6 +116,9 @@ class ArrayLoader implements LoaderInterface
         if (!isset($config['version']) || !is_scalar($config['version'])) {
             throw new \UnexpectedValueException('Package '.$config['name'].' has no version defined.');
         }
+        if (!is_string($config['version'])) {
+            $config['version'] = (string) $config['version'];
+        }
 
         // handle already normalized versions
         if (isset($config['version_normalized']) && is_string($config['version_normalized'])) {
@@ -129,7 +132,7 @@ class ArrayLoader implements LoaderInterface
             $version = $this->versionParser->normalize($config['version']);
         }
 
-        return new $class($config['name'], $version, (string) $config['version']);
+        return new $class($config['name'], $version, $config['version']);
     }
 
     /**
