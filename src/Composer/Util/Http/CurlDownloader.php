@@ -174,6 +174,9 @@ class CurlDownloader
 
         $curlHandle = curl_init();
         $headerHandle = fopen('php://temp/maxmemory:32768', 'w+b');
+        if (false === $headerHandle) {
+            throw new \RuntimeException('Failed to open a temp stream to store curl headers');
+        }
 
         if ($copyTo) {
             $errorMessage = '';

@@ -314,4 +314,15 @@ class ArrayLoaderTest extends TestCase
         $this->assertArrayHasKey('composer-plugin-api', $links);
         $this->assertSame('6.6.6', $links['composer-plugin-api']->getConstraint()->getPrettyString());
     }
+
+    public function testNoneStringVersion()
+    {
+        $config = array(
+            'name' => 'acme/package',
+            'version' => 1,
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertSame('1', $package->getPrettyVersion());
+    }
 }

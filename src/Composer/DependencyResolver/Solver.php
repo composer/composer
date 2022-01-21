@@ -324,7 +324,7 @@ class Solver
 
             if ($newLevel <= 0 || $newLevel >= $level) {
                 throw new SolverBugException(
-                    "Trying to revert to invalid level ".(int) $newLevel." from level ".(int) $level."."
+                    "Trying to revert to invalid level ".$newLevel." from level ".$level."."
                 );
             }
 
@@ -423,7 +423,7 @@ class Solver
             while ($l1retry) {
                 $l1retry = false;
 
-                if (!$num && !--$l1num) {
+                if (0 === $num && 0 === --$l1num) {
                     // all level 1 literals done
                     break 2;
                 }
@@ -447,7 +447,7 @@ class Solver
 
                 unset($seen[abs($literal)]);
 
-                if ($num && 0 === --$num) {
+                if (0 !== $num && 0 === --$num) {
                     if ($literal < 0) {
                         $this->testFlagLearnedPositiveLiteral = true;
                     }

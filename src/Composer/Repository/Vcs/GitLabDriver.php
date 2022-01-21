@@ -46,7 +46,7 @@ class GitLabDriver extends VcsDriver
     private $project;
 
     /**
-     * @var array<string, mixed[]> Keeps commits returned by GitLab API
+     * @var array<string|int, mixed[]> Keeps commits returned by GitLab API as commit id => info
      */
     private $commits = array();
 

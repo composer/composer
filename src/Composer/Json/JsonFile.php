@@ -152,7 +152,7 @@ class JsonFile
                 $this->filePutContentsIfModified($this->path, static::encode($hash, $options). ($options & JSON_PRETTY_PRINT ? "\n" : ''));
                 break;
             } catch (\Exception $e) {
-                if ($retries) {
+                if ($retries > 0) {
                     usleep(500000);
                     continue;
                 }

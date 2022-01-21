@@ -102,7 +102,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $rootData;
     /** @var bool */
     private $hasPartialPackages = false;
-    /** @var ?array<string, PackageInterface> */
+    /** @var ?array<string, mixed[]> */
     private $partialPackagesByName = null;
 
     /**
@@ -318,7 +318,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             if ($this->hasPartialPackages()) {
-                return array_values($this->partialPackagesByName);
+                if (!is_array($this->partialPackagesByName)) {
+                    throw new \LogicException('hasPartialPackages failed to initialize $this->partialPackagesByName');
+                }
+                return $this->createPackages($this->partialPackagesByName, 'packages.json inline packages');
             }
 
             throw new \LogicException('Composer repositories that have lazy providers and no available-packages list can not load the complete list of packages, use getPackageNames instead.');
@@ -609,6 +612,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         if ($this->hasPartialPackages()) {
+            if (!is_array($this->partialPackagesByName)) {
+                throw new \LogicException('hasPartialPackages failed to initialize $this->partialPackagesByName');
+            }
             foreach ($this->partialPackagesByName as $versions) {
                 foreach ($versions as $candidate) {
                     if (isset($result[$candidate['name']]) || !isset($candidate['provide'][$packageName])) {
@@ -1314,7 +1320,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                         $filename = str_replace('http://', 'https://', $filename);
                     }
 
-                    if ($retries) {
+                    if ($retries > 0) {
                         usleep(100000);
 
                         continue;

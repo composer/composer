@@ -14,6 +14,7 @@ namespace Composer\Plugin;
 
 use Composer\Composer;
 use Composer\EventDispatcher\EventSubscriberInterface;
+use Composer\Installer\InstallerInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
@@ -50,7 +51,7 @@ class PluginManager
 
     /** @var array<PluginInterface> */
     protected $plugins = array();
-    /** @var array<string, PluginInterface> */
+    /** @var array<string, PluginInterface|InstallerInterface> */
     protected $registeredPlugins = array();
 
     /**
@@ -284,11 +285,17 @@ class PluginManager
             }
 
             if ($oldInstallerPlugin) {
+                if (!is_a($class, 'Composer\Installer\InstallerInterface', true)) {
+                    throw new \RuntimeException('Could not activate plugin "'.$package->getName().'" as "'.$class.'" does not implement Composer\Installer\InstallerInterface');
+                }
                 $this->io->writeError('<warning>Loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').'which is a legacy composer-installer built for Composer 1.x, it is likely to cause issues as you are running Composer 2.x.</warning>');
                 $installer = new $class($this->io, $this->composer);
                 $this->composer->getInstallationManager()->addInstaller($installer);
                 $this->registeredPlugins[$package->getName()] = $installer;
             } elseif (class_exists($class)) {
+                if (!is_a($class, 'Composer\Plugin\PluginInterface', true)) {
+                    throw new \RuntimeException('Could not activate plugin "'.$package->getName().'" as "'.$class.'" does not implement Composer\Plugin\PluginInterface');
+                }
                 $plugin = new $class();
                 $this->addPlugin($plugin, $isGlobalPlugin, $package);
                 $this->registeredPlugins[$package->getName()] = $plugin;
@@ -316,20 +323,15 @@ class PluginManager
             return;
         }
 
-        $oldInstallerPlugin = ($package->getType() === 'composer-installer');
-
         if (!isset($this->registeredPlugins[$package->getName()])) {
             return;
         }
 
-        if ($oldInstallerPlugin) {
-            /** @var \Composer\Installer\InstallerInterface $installer */
-            $installer = $this->registeredPlugins[$package->getName()];
-            unset($this->registeredPlugins[$package->getName()]);
-            $this->composer->getInstallationManager()->removeInstaller($installer);
+        $plugin = $this->registeredPlugins[$package->getName()];
+        unset($this->registeredPlugins[$package->getName()]);
+        if ($plugin instanceof InstallerInterface) {
+            $this->composer->getInstallationManager()->removeInstaller($plugin);
         } else {
-            $plugin = $this->registeredPlugins[$package->getName()];
-            unset($this->registeredPlugins[$package->getName()]);
             $this->removePlugin($plugin);
         }
     }
@@ -352,16 +354,14 @@ class PluginManager
             return;
         }
 
-        $oldInstallerPlugin = ($package->getType() === 'composer-installer');
-
         if (!isset($this->registeredPlugins[$package->getName()])) {
             return;
         }
 
-        if ($oldInstallerPlugin) {
+        $plugin = $this->registeredPlugins[$package->getName()];
+        if ($plugin instanceof InstallerInterface) {
             $this->deactivatePackage($package);
         } else {
-            $plugin = $this->registeredPlugins[$package->getName()];
             unset($this->registeredPlugins[$package->getName()]);
             $this->removePlugin($plugin);
             $this->uninstallPlugin($plugin);
@@ -697,6 +697,10 @@ class PluginManager
             if (Preg::isMatch($pattern, $package)) {
                 return $allow === true;
             }
+        }
+
+        if ($package === 'composer/package-versions-deprecated') {
+            return false;
         }
 
         if (!isset($warned[$package])) {

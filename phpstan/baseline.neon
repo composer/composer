@@ -2451,11 +2451,6 @@ parameters:
 			path: ../src/Composer/Config.php
 
 		-
-			message: "#^Property Composer\\\\Config\\:\\:\\$warnedHosts \\(array\\<string, true\\>\\) does not accept non\\-empty\\-array\\<0\\|string, true\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Config.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 2
 			path: ../src/Composer/Config.php
@@ -2926,11 +2921,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/RuleSet.php
 
 		-
-			message: "#^Property Composer\\\\DependencyResolver\\\\RuleSet\\:\\:\\$rulesByHash \\(array\\<string, array\\<Composer\\\\DependencyResolver\\\\Rule\\>\\|Composer\\\\DependencyResolver\\\\Rule\\>\\) does not accept array\\<int\\|string, array\\<Composer\\\\DependencyResolver\\\\Rule\\>\\|Composer\\\\DependencyResolver\\\\Rule\\>\\.$#"
-			count: 3
-			path: ../src/Composer/DependencyResolver/RuleSet.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\DependencyResolver\\\\Rule\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/RuleSetGenerator.php
@@ -2981,16 +2971,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/Solver.php
 
 		-
-			message: "#^Casting to int something that's already int\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Solver.php
-
-		-
-			message: "#^Casting to int\\<min, 0\\>\\|int\\<2, max\\> something that's already int\\<min, 0\\>\\|int\\<2, max\\>\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Solver.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 2
 			path: ../src/Composer/DependencyResolver/Solver.php
@@ -3002,11 +2982,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in &&, Composer\\\\DependencyResolver\\\\Rule\\|null given on the left side\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Solver.php
-
-		-
-			message: "#^Only booleans are allowed in &&, int\\<0, max\\> given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Solver.php
 
@@ -3032,11 +3007,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, int given\\.$#"
-			count: 2
-			path: ../src/Composer/DependencyResolver/Solver.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, int\\<0, max\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/Solver.php
 
@@ -3876,11 +3846,6 @@ parameters:
 			path: ../src/Composer/IO/BaseIO.php
 
 		-
-			message: "#^Property Composer\\\\IO\\\\BaseIO\\:\\:\\$authentications \\(array\\<string, array\\{username\\: string, password\\: string\\}\\>\\) does not accept non\\-empty\\-array\\<string, array\\{username\\: string, password\\: string\\|null\\}\\>\\.$#"
-			count: 1
-			path: ../src/Composer/IO/BaseIO.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 6
 			path: ../src/Composer/IO/BaseIO.php
@@ -4031,11 +3996,6 @@ parameters:
 			path: ../src/Composer/Installer.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, int\\<0, max\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Installer.php
-
-		-
 			message: "#^Only booleans are allowed in \\|\\|, array\\<string\\>\\|null given on the left side\\.$#"
 			count: 2
 			path: ../src/Composer/Installer.php
@@ -4111,11 +4071,6 @@ parameters:
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
-			message: "#^Constant PHP_WINDOWS_EVENT_CTRL_C not found\\.$#"
-			count: 1
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/InstallationManager.php
@@ -4123,11 +4078,6 @@ parameters:
 		-
 			message: "#^Foreach overwrites \\$batch with its value variable\\.$#"
 			count: 2
-			path: ../src/Composer/Installer/InstallationManager.php
-
-		-
-			message: "#^Function sapi_windows_set_ctrl_handler not found\\.$#"
-			count: 3
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
@@ -4326,11 +4276,6 @@ parameters:
 			path: ../src/Composer/Json/JsonFile.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, int\\<min, 2\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Json/JsonFile.php
-
-		-
 			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Json/JsonFile.php
@@ -4479,11 +4424,6 @@ parameters:
 			message: "#^Only booleans are allowed in &&, Composer\\\\Repository\\\\RepositoryInterface\\|null given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Package/BasePackage.php
-
-		-
-			message: "#^Offset 'string' does not exist on array\\{added\\?\\: array\\<string\\>, changed\\?\\: array\\<string\\>, removed\\?\\: array\\<string\\>, string\\?\\: non\\-empty\\-array\\<int, non\\-empty\\-string\\>\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Comparer/Comparer.php
 
 		-
 			message: "#^Only booleans are allowed in &&, int\\<0, max\\>\\|false given on the right side\\.$#"
@@ -5041,28 +4981,13 @@ parameters:
 			path: ../src/Composer/Plugin/PluginManager.php
 
 		-
-			message: "#^Parameter \\#1 \\$installer of method Composer\\\\Installer\\\\InstallationManager\\:\\:addInstaller\\(\\) expects Composer\\\\Installer\\\\InstallerInterface, object given\\.$#"
-			count: 1
-			path: ../src/Composer/Plugin/PluginManager.php
-
-		-
 			message: "#^Parameter \\#1 \\$path of function dirname expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Plugin/PluginManager.php
-
-		-
-			message: "#^Parameter \\#1 \\$plugin of method Composer\\\\Plugin\\\\PluginManager\\:\\:addPlugin\\(\\) expects Composer\\\\Plugin\\\\PluginInterface, object given\\.$#"
 			count: 1
 			path: ../src/Composer/Plugin/PluginManager.php
 
 		-
 			message: "#^Parameter \\#3 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:replace\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
-			path: ../src/Composer/Plugin/PluginManager.php
-
-		-
-			message: "#^Property Composer\\\\Plugin\\\\PluginManager\\:\\:\\$registeredPlugins \\(array\\<string, Composer\\\\Plugin\\\\PluginInterface\\>\\) does not accept array\\<string, object\\>\\.$#"
-			count: 2
 			path: ../src/Composer/Plugin/PluginManager.php
 
 		-
@@ -5106,11 +5031,6 @@ parameters:
 			path: ../src/Composer/Repository/ArrayRepository.php
 
 		-
-			message: "#^Property Composer\\\\Repository\\\\ArrayRepository\\:\\:\\$packages \\(array\\<Composer\\\\Package\\\\BasePackage\\>\\|null\\) does not accept array\\<Composer\\\\Package\\\\PackageInterface\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ArrayRepository.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ArrayRepository.php
@@ -5124,11 +5044,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$filename of function sha1_file expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ArtifactRepository.php
-
-		-
-			message: "#^Argument of an invalid type array\\<string, Composer\\\\Package\\\\PackageInterface\\>\\|null supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
 			message: "#^Cannot access offset 'path' on array\\{scheme\\?\\: string, host\\?\\: string, port\\?\\: int, user\\?\\: string, pass\\?\\: string, path\\?\\: string, query\\?\\: string, fragment\\?\\: string\\}\\|false\\.$#"
@@ -5271,11 +5186,6 @@ parameters:
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, int\\<min, 2\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
 			count: 3
 			path: ../src/Composer/Repository/ComposerRepository.php
@@ -5296,22 +5206,12 @@ parameters:
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
-			message: "#^Parameter \\#1 \\$input of function array_values expects array, array\\<string, Composer\\\\Package\\\\PackageInterface\\>\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
 			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
 			count: 3
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
 			message: "#^Parameter \\#1 \\$var of function count expects array\\|Countable, array\\<string, int\\>\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
-			message: "#^Property Composer\\\\Repository\\\\ComposerRepository\\:\\:\\$partialPackagesByName \\(array\\<string, Composer\\\\Package\\\\PackageInterface\\>\\|null\\) does not accept array\\<string, array\\<int, mixed\\>\\|Composer\\\\Package\\\\PackageInterface\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
@@ -5776,16 +5676,6 @@ parameters:
 			path: ../src/Composer/Repository/Vcs/GitDriver.php
 
 		-
-			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitDriver\\:\\:\\$branches \\(array\\<string, string\\>\\) does not accept array\\<int\\|string, mixed\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitDriver.php
-
-		-
-			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitDriver\\:\\:\\$tags \\(array\\<string, string\\>\\) does not accept array\\<int\\|string, mixed\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitDriver.php
-
-		-
 			message: "#^Call to function array_search\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 2
 			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
@@ -5962,11 +5852,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#2 \\$str of function explode expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
-
-		-
-			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitLabDriver\\:\\:\\$commits \\(array\\<string, array\\>\\) does not accept array\\<int\\|string, mixed\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
 
@@ -6591,16 +6476,6 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Constant CURLOPT_PROXY_CAINFO not found\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Constant CURLOPT_PROXY_CAPATH not found\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 3
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -6776,7 +6651,7 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|false, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\<literal\\-string&non\\-empty\\-string, bool\\|int\\>, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|false\\|null, headerHandle\\: resource\\|false, \\.\\.\\.\\}\\>\\.$#"
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|false, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\<literal\\-string&non\\-empty\\-string, bool\\|int\\>, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|false\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -7004,11 +6879,6 @@ parameters:
 			message: "#^Only booleans are allowed in an if condition, Symfony\\\\Component\\\\Console\\\\Helper\\\\ProgressBar\\|null given\\.$#"
 			count: 2
 			path: ../src/Composer/Util/Loop.php
-
-		-
-			message: "#^Cannot access offset int\\<1, 16\\> on array\\|false\\.$#"
-			count: 6
-			path: ../src/Composer/Util/NoProxyPattern.php
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
@@ -7412,36 +7282,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#4 \\$path of method Composer\\\\Util\\\\Svn\\:\\:executeWithAuthRetry\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Svn.php
-
-		-
-			message: "#^Property Composer\\\\Util\\\\Svn\\:\\:\\$credentials \\(array\\{username\\: string, password\\: string\\}\\|null\\) does not accept array\\{username\\: mixed, password\\?\\: string\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Svn.php
-
-		-
-			message: "#^Property Composer\\\\Util\\\\Svn\\:\\:\\$credentials \\(array\\{username\\: string, password\\: string\\}\\|null\\) does not accept array\\{username\\: non\\-empty\\-string, password\\?\\: string\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Svn.php
-
-		-
-			message: "#^Property Composer\\\\Util\\\\Svn\\:\\:\\$credentials \\(array\\{username\\: string, password\\: string\\}\\|null\\) does not accept array\\{username\\: string\\|null, password\\?\\: string\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Svn.php
-
-		-
-			message: "#^Property Composer\\\\Util\\\\Svn\\:\\:\\$credentials \\(array\\{username\\: string, password\\: string\\}\\|null\\) does not accept array\\{username\\?\\: string, password\\: mixed\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Svn.php
-
-		-
-			message: "#^Property Composer\\\\Util\\\\Svn\\:\\:\\$credentials \\(array\\{username\\: string, password\\: string\\}\\|null\\) does not accept array\\{username\\?\\: string, password\\: string\\|null\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Svn.php
-
-		-
-			message: "#^Property Composer\\\\Util\\\\Svn\\:\\:\\$credentials \\(array\\{username\\: string, password\\: string\\}\\|null\\) does not accept array\\{username\\?\\: string, password\\: string\\}\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Svn.php
 
@@ -7966,11 +7806,6 @@ parameters:
 			path: ../tests/Composer/Test/EventDispatcher/EventDispatcherTest.php
 
 		-
-			message: "#^Call to function is_array\\(\\) with array\\<string, array\\{username\\: string, password\\: string\\}\\> will always evaluate to true\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/IO/NullIOTest.php
-
-		-
 			message: """
 				#^Call to deprecated method getRawData\\(\\) of class Composer\\\\InstalledVersions\\:
 				Use getAllRawData\\(\\) instead which returns all datasets for all autoloaders present in the process\\. getRawData only returns the first dataset loaded, which may not be what you expect\\.$#
@@ -8351,11 +8186,6 @@ parameters:
 		-
 			message: "#^Parameter \\#2 \\$capabilityClassName of method Composer\\\\Plugin\\\\PluginManager\\:\\:getPluginCapability\\(\\) expects class\\-string\\<Composer\\\\Plugin\\\\Capability\\\\Capability\\>, string given\\.$#"
 			count: 2
-			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
-
-		-
-			message: "#^Property Composer\\\\Test\\\\Plugin\\\\PluginInstallerTest\\:\\:\\$packages \\(array\\<Composer\\\\Package\\\\CompletePackage\\>\\) does not accept array\\<Composer\\\\Package\\\\CompleteAliasPackage\\|Composer\\\\Package\\\\CompletePackage\\>\\.$#"
-			count: 1
 			path: ../tests/Composer/Test/Plugin/PluginInstallerTest.php
 
 		-

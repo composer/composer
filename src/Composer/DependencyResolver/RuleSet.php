@@ -45,7 +45,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     /** @var int */
     protected $nextRuleId = 0;
 
-    /** @var array<string, Rule|Rule[]> */
+    /** @var array<int|string, Rule|Rule[]> */
     protected $rulesByHash = array();
 
     public function __construct()

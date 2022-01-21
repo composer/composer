@@ -217,8 +217,10 @@ class Svn
         $this->io->writeError("The Subversion server ({$this->url}) requested credentials:");
 
         $this->hasAuth = true;
-        $this->credentials['username'] = $this->io->ask("Username: ");
-        $this->credentials['password'] = $this->io->askAndHideAnswer("Password: ");
+        $this->credentials = array(
+            'username' => (string) $this->io->ask("Username: ", ''),
+            'password' => (string) $this->io->askAndHideAnswer("Password: "),
+        );
 
         $this->cacheCredentials = $this->io->askConfirmation("Should Subversion cache these credentials? (yes/no) ");
 
@@ -345,8 +347,10 @@ class Svn
 
         $host = parse_url($this->url, PHP_URL_HOST);
         if (isset($authConfig[$host])) {
-            $this->credentials['username'] = $authConfig[$host]['username'];
-            $this->credentials['password'] = $authConfig[$host]['password'];
+            $this->credentials = array(
+                'username' => $authConfig[$host]['username'],
+                'password' => $authConfig[$host]['password'],
+            );
 
             return $this->hasAuth = true;
         }
@@ -366,8 +370,10 @@ class Svn
             return $this->hasAuth = false;
         }
 
-        $this->credentials['username'] = $uri['user'];
-        $this->credentials['password'] = !empty($uri['pass']) ? $uri['pass'] : '';
+        $this->credentials = array(
+            'username' => $uri['user'],
+            'password' => !empty($uri['pass']) ? $uri['pass'] : '',
+        );
 
         return $this->hasAuth = true;
     }
