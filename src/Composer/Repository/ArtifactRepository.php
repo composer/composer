@@ -79,7 +79,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
 
         $directory = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::FOLLOW_SYMLINKS);
         $iterator = new \RecursiveIteratorIterator($directory);
-        $regex = new \RegexIterator($iterator, '/^.+\.(zip|phar|tar|gz|tgz)$/i');
+        $regex = new \RegexIterator($iterator, '/^.+\.(zip|tar|gz|tgz)$/i');
         foreach ($regex as $file) {
             /* @var $file \SplFileInfo */
             if (!$file->isFile()) {
