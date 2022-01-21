@@ -74,6 +74,9 @@ class ValidatingArrayLoader implements LoaderInterface
             if (!is_scalar($this->config['version'])) {
                 $this->validateString('version');
             } else {
+                if (!is_string($this->config['version'])) {
+                    $this->config['version'] = (string) $this->config['version'];
+                }
                 try {
                     $this->versionParser->normalize($this->config['version']);
                 } catch (\Exception $e) {
