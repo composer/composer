@@ -251,7 +251,7 @@ class VersionGuesser
             // re-use the HgDriver to fetch branches (this properly includes bookmarks)
             $io = new NullIO();
             $driver = new HgDriver(array('url' => $path), $io, $this->config, new HttpDownloader($io, $this->config), $this->process);
-            $branches = array_keys($driver->getBranches());
+            $branches = array_map('strval', array_keys($driver->getBranches()));
 
             // try to find the best (nearest) version branch to assume this feature's version
             $result = $this->guessFeatureVersion($packageConfig, $version, $branches, 'hg log -r "not ancestors(\'%candidate%\') and ancestors(\'%branch%\')" --template "{node}\\n"', $path);

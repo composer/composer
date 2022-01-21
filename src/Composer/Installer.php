@@ -354,7 +354,7 @@ class Installer
                 $fundingCount++;
             }
         }
-        if ($fundingCount) {
+        if ($fundingCount > 0) {
             $this->io->writeError(array(
                 sprintf(
                     "<info>%d package%s you are using %s looking for funding.</info>",

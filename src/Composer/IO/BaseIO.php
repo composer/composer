@@ -19,7 +19,7 @@ use Psr\Log\LogLevel;
 
 abstract class BaseIO implements IOInterface
 {
-    /** @var array<string, array{username: string, password: string}> */
+    /** @var array<string, array{username: string|null, password: string|null}> */
     protected $authentications = array();
 
     /**

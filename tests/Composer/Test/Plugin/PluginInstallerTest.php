@@ -15,6 +15,7 @@ namespace Composer\Test\Plugin;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Installer\PluginInstaller;
+use Composer\Package\CompleteAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\ArrayLoader;
@@ -44,7 +45,7 @@ class PluginInstallerTest extends TestCase
     protected $autoloadGenerator;
 
     /**
-     * @var CompletePackage[]
+     * @var array<CompletePackage|CompleteAliasPackage>
      */
     protected $packages;
 
@@ -274,7 +275,7 @@ class PluginInstallerTest extends TestCase
 
     /**
      * @param string            $newPluginApiVersion
-     * @param CompletePackage[] $plugins
+     * @param array<CompletePackage|CompleteAliasPackage> $plugins
      *
      * @return void
      */

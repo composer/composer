@@ -26,9 +26,9 @@ use Composer\Config;
  */
 class GitDriver extends VcsDriver
 {
-    /** @var array<string, string> Map of tag name to identifier */
+    /** @var array<int|string, string> Map of tag name (can be turned to an int by php if it is a numeric name) to identifier */
     protected $tags;
-    /** @var array<string, string> Map of branch name to identifier */
+    /** @var array<int|string, string> Map of branch name (can be turned to an int by php if it is a numeric name) to identifier */
     protected $branches;
     /** @var string */
     protected $rootIdentifier;
@@ -172,7 +172,7 @@ class GitDriver extends VcsDriver
             $this->process->execute('git show-ref --tags --dereference', $output, $this->repoDir);
             foreach ($output = $this->process->splitLines($output) as $tag) {
                 if ($tag && Preg::isMatch('{^([a-f0-9]{40}) refs/tags/(\S+?)(\^\{\})?$}', $tag, $match)) {
-                    $this->tags[$match[2]] = $match[1];
+                    $this->tags[$match[2]] = (string) $match[1];
                 }
             }
         }
