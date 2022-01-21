@@ -113,12 +113,15 @@ class ArrayLoader implements LoaderInterface
         if (!isset($config['name'])) {
             throw new \UnexpectedValueException('Unknown package has no name defined ('.json_encode($config).').');
         }
-        if (!isset($config['version'])) {
+        if (!isset($config['version']) || !is_scalar($config['version'])) {
             throw new \UnexpectedValueException('Package '.$config['name'].' has no version defined.');
+        }
+        if (!is_string($config['version'])) {
+            $config['version'] = (string) $config['version'];
         }
 
         // handle already normalized versions
-        if (isset($config['version_normalized'])) {
+        if (isset($config['version_normalized']) && is_string($config['version_normalized'])) {
             $version = $config['version_normalized'];
 
             // handling of existing repos which need to remain composer v1 compatible, in case the version_normalized contained VersionParser::DEFAULT_BRANCH_ALIAS, we renormalize it
