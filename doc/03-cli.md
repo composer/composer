@@ -156,6 +156,8 @@ composer.json you can use `--with` and provide a custom version constraint:
 php composer.phar update --with vendor/package:2.0.1
 ```
 
+Note that the others packages will be updated.
+
 The custom constraint has to be a subset of the existing constraint you have,
 and this feature is only available for your root package dependencies.
 
