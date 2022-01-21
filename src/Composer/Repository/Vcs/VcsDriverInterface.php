@@ -62,14 +62,14 @@ interface VcsDriverInterface
     /**
      * Return list of branches in the repository
      *
-     * @return array<string, string> Branch names as keys, identifiers as values
+     * @return array<int|string, string> Branch names as keys, identifiers as values
      */
     public function getBranches();
 
     /**
      * Return list of tags in the repository
      *
-     * @return array<string, string> Tag names as keys, identifiers as values
+     * @return array<int|string, string> Tag names as keys, identifiers as values
      */
     public function getTags();
 

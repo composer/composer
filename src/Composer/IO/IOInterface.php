@@ -198,7 +198,7 @@ interface IOInterface extends LoggerInterface
     /**
      * Get all authentication information entered.
      *
-     * @return array<string, array{username: string, password: string}> The map of authentication data
+     * @return array<string, array{username: string|null, password: string|null}> The map of authentication data
      */
     public function getAuthentications();
 

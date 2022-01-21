@@ -606,10 +606,12 @@ class Config
             }
             if ($io) {
                 $host = parse_url($url, PHP_URL_HOST);
-                if (!isset($this->warnedHosts[$host])) {
-                    $io->writeError("<warning>Warning: Accessing $host over $scheme which is an insecure protocol.</warning>");
+                if (is_string($host)) {
+                    if (!isset($this->warnedHosts[$host])) {
+                        $io->writeError("<warning>Warning: Accessing $host over $scheme which is an insecure protocol.</warning>");
+                    }
+                    $this->warnedHosts[$host] = true;
                 }
-                $this->warnedHosts[$host] = true;
             }
         }
     }

@@ -83,7 +83,7 @@
         "phpstan-setup": [
             "@composer config platform --unset",
             "@composer update",
-            "@composer require --dev phpstan/phpstan:^1.0 phpstan/phpstan-phpunit:^1.0 phpstan/phpstan-deprecation-rules:^1 phpstan/phpstan-strict-rules:^1 phpunit/phpunit:^7.5.20 --with-all-dependencies",
+            "@composer require --dev phpstan/phpstan:1.4.* phpstan/phpstan-phpunit:1.0.* phpstan/phpstan-deprecation-rules:1.0.* phpstan/phpstan-strict-rules:1.1.* phpunit/phpunit:^7.5.20 --with-all-dependencies",
             "git checkout composer.json composer.lock"
         ],
         "phpstan": "@php vendor/bin/phpstan analyse --configuration=phpstan/config.neon"

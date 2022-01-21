@@ -223,6 +223,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         foreach ($driver->getTags() as $tag => $identifier) {
+            $tag = (string) $tag;
             $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $tag . '</comment>)';
             if ($isVeryVerbose) {
                 $this->io->writeError($msg);
@@ -330,6 +331,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         }
 
         foreach ($branches as $branch => $identifier) {
+            $branch = (string) $branch;
             $msg = 'Reading composer.json of <info>' . ($this->packageName ?: $this->url) . '</info> (<comment>' . $branch . '</comment>)';
             if ($isVeryVerbose) {
                 $this->io->writeError($msg);

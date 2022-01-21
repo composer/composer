@@ -210,12 +210,13 @@ class ArrayRepository implements RepositoryInterface
     /**
      * Adds a new package to the repository
      *
-     * @param PackageInterface $package
-     *
      * @return void
      */
     public function addPackage(PackageInterface $package)
     {
+        if (!$package instanceof BasePackage) {
+            throw new \InvalidArgumentException('Only subclasses of BasePackage are supported');
+        }
         if (null === $this->packages) {
             $this->initialize();
         }
