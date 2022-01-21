@@ -1,3 +1,7 @@
+### [1.10.25] 2022-01-21
+
+  * Fixed selfupdate on Windows + PHP 8.1 regression (#10446)
+
 ### [1.10.24] 2021-12-09
 
   * Added v1 deprecation warning when running install. Please make sure you upgrade to Composer 2, see https://blog.packagist.com/deprecating-composer-1-support/
@@ -948,6 +952,7 @@
 
   * Initial release
 
+[1.10.25]: https://github.com/composer/composer/compare/1.10.24...1.10.25
 [1.10.24]: https://github.com/composer/composer/compare/1.10.23...1.10.24
 [1.10.23]: https://github.com/composer/composer/compare/1.10.22...1.10.23
 [1.10.22]: https://github.com/composer/composer/compare/1.10.21...1.10.22
