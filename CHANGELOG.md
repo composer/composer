@@ -1,3 +1,10 @@
+### [2.2.5] 2022-01-21
+
+  * Disabled `composer/package-versions-deprecated` by default as it can function using `Composer\InstalledVersions` at runtime (#10458)
+  * Fixed artifact repositories crashing if a phar file was present in the directory (#10406)
+  * Fixed binary proxy issue on PHP <8 when fseek is used on the proxied binary path (#10468)
+  * Fixed handling of non-string versions in package repositories metadata (#10470)
+
 ### [2.2.4] 2022-01-08
 
   * Fixed handling of process timeout when running async processes during installation
@@ -1367,6 +1374,7 @@
 
   * Initial release
 
+[2.2.5]: https://github.com/composer/composer/compare/2.2.4...2.2.5
 [2.2.4]: https://github.com/composer/composer/compare/2.2.3...2.2.4
 [2.2.3]: https://github.com/composer/composer/compare/2.2.2...2.2.3
 [2.2.2]: https://github.com/composer/composer/compare/2.2.1...2.2.2
