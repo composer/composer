@@ -56,7 +56,7 @@ EOT
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // init repos
         $platformRepo = new PlatformRepository;
@@ -69,7 +69,7 @@ EOT
             return 1;
         }
 
-        if (!($composer = $this->getComposer(false))) {
+        if (!($composer = $this->tryComposer())) {
             $composer = Factory::create($this->getIO(), array(), $input->hasParameterOption('--no-plugins'));
         }
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();

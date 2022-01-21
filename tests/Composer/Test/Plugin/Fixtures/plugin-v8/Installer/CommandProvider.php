@@ -35,7 +35,7 @@ class Command extends BaseCommand
         $this->setName('custom-plugin-command');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Executing');
 

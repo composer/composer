@@ -64,10 +64,23 @@ class HttpDownloaderMock extends HttpDownloader
                 throw new \UnexpectedValueException('Unexpected keys in process execution step: '.implode(', ', array_keys($diff)));
             }
 
-            return array_merge($default, $expect);
+            // set defaults in a PHPStan-happy way (array_merge is not well supported)
+            $expect['url'] = $expect['url'] ?? $default['url'];
+            $expect['options'] = $expect['options'] ?? $default['options'];
+            $expect['status'] = $expect['status'] ?? $default['status'];
+            $expect['body'] = $expect['body'] ?? $default['body'];
+            $expect['headers'] = $expect['headers'] ?? $default['headers'];
+
+            return $expect;
         }, $expectations);
         $this->strict = $strict;
-        $this->defaultHandler = array_merge($this->defaultHandler, $defaultHandler);
+
+        // set defaults in a PHPStan-happy way (array_merge is not well supported)
+        $defaultHandler['status'] = $defaultHandler['status'] ?? $this->defaultHandler['status'];
+        $defaultHandler['body'] = $defaultHandler['body'] ?? $this->defaultHandler['body'];
+        $defaultHandler['headers'] = $defaultHandler['headers'] ?? $this->defaultHandler['headers'];
+
+        $this->defaultHandler = $defaultHandler;
     }
 
     public function assertComplete(): void

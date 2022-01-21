@@ -70,11 +70,11 @@ EOT
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = $this->getIO();
 
-        $composer = $this->getComposer(true, $input->getOption('no-plugins'), $input->getOption('no-scripts'));
+        $composer = $this->requireComposer();
 
         $localRepo = $composer->getRepositoryManager()->getLocalRepository();
         $packagesToReinstall = array();
@@ -139,8 +139,6 @@ EOT
         $downloadManager = $composer->getDownloadManager();
         $package = $composer->getPackage();
 
-        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
-
         $installationManager->setOutputProgress(!$input->getOption('no-progress'));
         if ($input->getOption('no-plugins')) {
             $installationManager->disablePlugins();
@@ -166,7 +164,7 @@ EOT
             $generator = $composer->getAutoloadGenerator();
             $generator->setClassMapAuthoritative($authoritative);
             $generator->setApcu($apcu, $apcuPrefix);
-            $generator->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
+            $generator->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input));
             $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
         }
 

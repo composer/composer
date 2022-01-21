@@ -296,11 +296,6 @@ parameters:
 			path: ../src/Composer/Cache.php
 
 		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ArchiveCommand.php
-
-		-
 			message: "#^Only booleans are allowed in &&, Composer\\\\Composer\\|null given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ArchiveCommand.php
@@ -336,37 +331,7 @@ parameters:
 			path: ../src/Composer/Command/ArchiveCommand.php
 
 		-
-			message: "#^Instanceof between Composer\\\\Console\\\\Application and Composer\\\\Console\\\\Application will always evaluate to true\\.$#"
-			count: 2
-			path: ../src/Composer/Command/BaseCommand.php
-
-		-
-			message: "#^Only booleans are allowed in &&, mixed given on the right side\\.$#"
-			count: 3
-			path: ../src/Composer/Command/BaseCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/BaseCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\Composer\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/BaseCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 2
-			path: ../src/Composer/Command/BaseCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 2
-			path: ../src/Composer/Command/BaseCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Command/BaseCommand.php
 
@@ -374,26 +339,6 @@ parameters:
 			message: "#^Parameter \\#3 \\$command of class Composer\\\\Plugin\\\\PreCommandRunEvent constructor expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/BaseCommand.php
-
-		-
-			message: "#^Cannot call method getConfig\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/BaseDependencyCommand.php
-
-		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/BaseDependencyCommand.php
-
-		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/BaseDependencyCommand.php
-
-		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/BaseDependencyCommand.php
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
@@ -411,11 +356,6 @@ parameters:
 			path: ../src/Composer/Command/BaseDependencyCommand.php
 
 		-
-			message: "#^Only booleans are allowed in an elseif condition, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/BaseDependencyCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\Package\\\\BasePackage\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/BaseDependencyCommand.php
@@ -427,16 +367,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/BaseDependencyCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 1
-			path: ../src/Composer/Command/BaseDependencyCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Command/BaseDependencyCommand.php
 
@@ -471,21 +401,6 @@ parameters:
 			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
 
 		-
-			message: "#^Cannot call method getLocker\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
-			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
-
-		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
-			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
-
-		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Semver\\\\Constraint\\\\ConstraintInterface\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
@@ -496,28 +411,13 @@ parameters:
 			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 3
-			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a ternary operator condition, Composer\\\\Package\\\\Link\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a ternary operator condition, mixed given\\.$#"
-			count: 3
-			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, array\\<Composer\\\\Package\\\\BasePackage\\> given\\.$#"
 			count: 1
-			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 2
 			path: ../src/Composer/Command/CheckPlatformReqsCommand.php
 
 		-
@@ -531,18 +431,13 @@ parameters:
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
-			message: "#^Only booleans are allowed in &&, mixed given on the left side\\.$#"
-			count: 6
-			path: ../src/Composer/Command/ConfigCommand.php
-
-		-
 			message: "#^Only booleans are allowed in &&, mixed given on the right side\\.$#"
-			count: 5
+			count: 2
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
@@ -551,18 +446,8 @@ parameters:
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a ternary operator condition, mixed given\\.$#"
-			count: 4
-			path: ../src/Composer/Command/ConfigCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an elseif condition, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
-			path: ../src/Composer/Command/ConfigCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 11
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
@@ -611,18 +496,8 @@ parameters:
 			path: ../src/Composer/Command/CreateProjectCommand.php
 
 		-
-			message: "#^Only booleans are allowed in &&, mixed given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Command/CreateProjectCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Package\\\\PackageInterface\\|false given\\.$#"
 			count: 1
-			path: ../src/Composer/Command/CreateProjectCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 3
 			path: ../src/Composer/Command/CreateProjectCommand.php
 
 		-
@@ -636,18 +511,8 @@ parameters:
 			path: ../src/Composer/Command/CreateProjectCommand.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 2
-			path: ../src/Composer/Command/CreateProjectCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
 			count: 2
-			path: ../src/Composer/Command/CreateProjectCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 1
 			path: ../src/Composer/Command/CreateProjectCommand.php
 
 		-
@@ -672,7 +537,7 @@ parameters:
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 5
+			count: 3
 			path: ../src/Composer/Command/CreateProjectCommand.php
 
 		-
@@ -791,82 +656,12 @@ parameters:
 			path: ../src/Composer/Command/DiagnoseCommand.php
 
 		-
-			message: "#^Cannot call method getAutoloadGenerator\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/DumpAutoloadCommand.php
-
-		-
-			message: "#^Cannot call method getConfig\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/DumpAutoloadCommand.php
-
-		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/DumpAutoloadCommand.php
-
-		-
-			message: "#^Cannot call method getInstallationManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/DumpAutoloadCommand.php
-
-		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/DumpAutoloadCommand.php
-
-		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/DumpAutoloadCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
+			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
 			count: 3
 			path: ../src/Composer/Command/DumpAutoloadCommand.php
 
 		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 2
-			path: ../src/Composer/Command/DumpAutoloadCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
-			count: 4
-			path: ../src/Composer/Command/DumpAutoloadCommand.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 2
-			path: ../src/Composer/Command/DumpAutoloadCommand.php
-
-		-
-			message: "#^Cannot call method getConfig\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ExecCommand.php
-
-		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ExecCommand.php
-
-		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ExecCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, array\\<mixed, mixed\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ExecCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ExecCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ExecCommand.php
 
@@ -876,13 +671,13 @@ parameters:
 			path: ../src/Composer/Command/ExecCommand.php
 
 		-
-			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
+			message: "#^Parameter \\#2 \\$listener of method Composer\\\\EventDispatcher\\\\EventDispatcher\\:\\:addListener\\(\\) expects callable\\(\\)\\: mixed, string given\\.$#"
 			count: 1
-			path: ../src/Composer/Command/FundCommand.php
+			path: ../src/Composer/Command/ExecCommand.php
 
 		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
+			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
+			count: 1
 			path: ../src/Composer/Command/FundCommand.php
 
 		-
@@ -911,16 +706,6 @@ parameters:
 			path: ../src/Composer/Command/GlobalCommand.php
 
 		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/HomeCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/HomeCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/HomeCommand.php
@@ -928,11 +713,6 @@ parameters:
 		-
 			message: "#^Only booleans are allowed in a negated boolean, string\\|null given\\.$#"
 			count: 2
-			path: ../src/Composer/Command/HomeCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, mixed given\\.$#"
-			count: 1
 			path: ../src/Composer/Command/HomeCommand.php
 
 		-
@@ -961,18 +741,8 @@ parameters:
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Cannot call method search\\(\\) on Composer\\\\Repository\\\\CompositeRepository\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 9
+			count: 8
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
@@ -986,67 +756,7 @@ parameters:
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
-			message: "#^Only booleans are allowed in &&, Composer\\\\Package\\\\PackageInterface\\|false given on the right side\\.$#"
-			count: 3
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in &&, string\\|null given on the left side\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Package\\\\BasePackage\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Package\\\\PackageInterface\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Repository\\\\CompositeRepository\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Repository\\\\PlatformRepository\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, array\\<int, string\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, true\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, Composer\\\\Composer\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, bool\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
 
@@ -1056,52 +766,12 @@ parameters:
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, Composer\\\\Package\\\\BasePackage\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, Composer\\\\Package\\\\PackageInterface\\|false given\\.$#"
-			count: 3
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, Composer\\\\Repository\\\\InstalledRepositoryInterface\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, array\\<string\\> given\\.$#"
-			count: 2
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, int\\<0, max\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 2
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 2
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
 			message: "#^Parameter \\#1 \\$author of method Composer\\\\Command\\\\InitCommand\\:\\:formatAuthors\\(\\) expects string, array\\|float\\|int\\<min, \\-1\\>\\|int\\<1, max\\>\\|string\\|true given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
 			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
 
@@ -1116,39 +786,14 @@ parameters:
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
-			message: "#^Parameter \\#3 \\$length of function substr expects int, int\\<0, max\\>\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
 			message: "#^Property Composer\\\\Command\\\\InitCommand\\:\\:\\$gitConfig \\(array\\<string, string\\>\\) does not accept array\\<int\\|string, mixed\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 15
+			count: 8
 			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Cannot call method getConfig\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InstallCommand.php
-
-		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InstallCommand.php
-
-		-
-			message: "#^Cannot call method getInstallationManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InstallCommand.php
-
-		-
-			message: "#^Cannot call method getLocker\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
-			path: ../src/Composer/Command/InstallCommand.php
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Package\\\\Locker\\|null given\\.$#"
@@ -1156,33 +801,8 @@ parameters:
 			path: ../src/Composer/Command/InstallCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 3
-			path: ../src/Composer/Command/InstallCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 5
-			path: ../src/Composer/Command/InstallCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 2
-			path: ../src/Composer/Command/InstallCommand.php
-
-		-
 			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
-			count: 4
-			path: ../src/Composer/Command/InstallCommand.php
-
-		-
-			message: "#^Parameter \\#2 \\$composer of static method Composer\\\\Installer\\:\\:create\\(\\) expects Composer\\\\Composer, Composer\\\\Composer\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InstallCommand.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 2
+			count: 3
 			path: ../src/Composer/Command/InstallCommand.php
 
 		-
@@ -1191,27 +811,7 @@ parameters:
 			path: ../src/Composer/Command/LicensesCommand.php
 
 		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/LicensesCommand.php
-
-		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/LicensesCommand.php
-
-		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/LicensesCommand.php
-
-		-
 			message: "#^Foreach overwrites \\$package with its value variable\\.$#"
-			count: 1
-			path: ../src/Composer/Command/LicensesCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/LicensesCommand.php
 
@@ -1219,51 +819,6 @@ parameters:
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 2
 			path: ../src/Composer/Command/LicensesCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/OutdatedCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 8
-			path: ../src/Composer/Command/OutdatedCommand.php
-
-		-
-			message: "#^Cannot call method getAutoloadGenerator\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ReinstallCommand.php
-
-		-
-			message: "#^Cannot call method getConfig\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ReinstallCommand.php
-
-		-
-			message: "#^Cannot call method getDownloadManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ReinstallCommand.php
-
-		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ReinstallCommand.php
-
-		-
-			message: "#^Cannot call method getInstallationManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ReinstallCommand.php
-
-		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ReinstallCommand.php
-
-		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ReinstallCommand.php
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, array\\<int, Composer\\\\Package\\\\PackageInterface\\> given\\.$#"
@@ -1271,62 +826,12 @@ parameters:
 			path: ../src/Composer/Command/ReinstallCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 2
-			path: ../src/Composer/Command/ReinstallCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ReinstallCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 2
-			path: ../src/Composer/Command/ReinstallCommand.php
-
-		-
 			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
-			count: 4
-			path: ../src/Composer/Command/ReinstallCommand.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 2
-			path: ../src/Composer/Command/ReinstallCommand.php
-
-		-
-			message: "#^Cannot call method getConfig\\(\\) on Composer\\\\Composer\\|null\\.$#"
 			count: 3
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
-			message: "#^Cannot call method getInstallationManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RemoveCommand.php
+			path: ../src/Composer/Command/ReinstallCommand.php
 
 		-
 			message: "#^Cannot call method getLockedRepository\\(\\) on Composer\\\\Package\\\\Locker\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
-			message: "#^Cannot call method getLocker\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 3
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Command/RemoveCommand.php
 
@@ -1346,21 +851,6 @@ parameters:
 			path: ../src/Composer/Command/RemoveCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 6
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an elseif condition, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\Composer\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/RemoveCommand.php
@@ -1371,18 +861,8 @@ parameters:
 			path: ../src/Composer/Command/RemoveCommand.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 8
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 3
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
 			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
-			count: 5
+			count: 3
 			path: ../src/Composer/Command/RemoveCommand.php
 
 		-
@@ -1391,48 +871,8 @@ parameters:
 			path: ../src/Composer/Command/RemoveCommand.php
 
 		-
-			message: "#^Parameter \\#2 \\$composer of static method Composer\\\\Installer\\:\\:create\\(\\) expects Composer\\\\Composer, Composer\\\\Composer\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 2
-			path: ../src/Composer/Command/RemoveCommand.php
-
-		-
-			message: "#^Cannot call method getConfig\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 6
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
-			message: "#^Cannot call method getInstallationManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
-			message: "#^Cannot call method getLocker\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
+			message: "#^Cannot call method getRepoName\\(\\) on Composer\\\\Repository\\\\RepositoryInterface\\|null\\.$#"
 			count: 4
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
-			message: "#^Cannot call method getPluginManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
 			path: ../src/Composer/Command/RequireCommand.php
 
 		-
@@ -1442,7 +882,7 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 4
+			count: 3
 			path: ../src/Composer/Command/RequireCommand.php
 
 		-
@@ -1457,17 +897,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 6
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, mixed given\\.$#"
-			count: 4
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 3
+			count: 1
 			path: ../src/Composer/Command/RequireCommand.php
 
 		-
@@ -1476,22 +906,12 @@ parameters:
 			path: ../src/Composer/Command/RequireCommand.php
 
 		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 5
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
 			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
-			count: 7
+			count: 4
 			path: ../src/Composer/Command/RequireCommand.php
 
 		-
 			message: "#^Parameter \\#1 \\$contents of class Composer\\\\Json\\\\JsonManipulator constructor expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RequireCommand.php
-
-		-
-			message: "#^Parameter \\#2 \\$composer of static method Composer\\\\Installer\\:\\:create\\(\\) expects Composer\\\\Composer, Composer\\\\Composer\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/RequireCommand.php
 
@@ -1507,7 +927,7 @@ parameters:
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 3
+			count: 1
 			path: ../src/Composer/Command/RequireCommand.php
 
 		-
@@ -1516,44 +936,9 @@ parameters:
 			path: ../src/Composer/Command/RunScriptCommand.php
 
 		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 2
-			path: ../src/Composer/Command/RunScriptCommand.php
-
-		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RunScriptCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, int\\<0, max\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/RunScriptCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 2
-			path: ../src/Composer/Command/RunScriptCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RunScriptCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RunScriptCommand.php
-
-		-
-			message: "#^Parameter \\#2 \\$composer of class Composer\\\\Script\\\\Event constructor expects Composer\\\\Composer, Composer\\\\Composer\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/RunScriptCommand.php
-
-		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ScriptAliasCommand.php
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
@@ -1742,7 +1127,7 @@ parameters:
 
 		-
 			message: "#^Cannot call method getInstallationManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 4
+			count: 2
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
@@ -1751,17 +1136,7 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 3
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
 			message: "#^Cannot call method getPrettyVersion\\(\\) on Composer\\\\Package\\\\BasePackage\\|int\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
@@ -1773,11 +1148,6 @@ parameters:
 		-
 			message: "#^Cannot call method isLocked\\(\\) on Composer\\\\Package\\\\Locker\\|null\\.$#"
 			count: 2
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 3
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
@@ -1841,16 +1211,6 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Only booleans are allowed in &&, mixed given on the left side\\.$#"
-			count: 14
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Only booleans are allowed in &&, mixed given on the right side\\.$#"
-			count: 5
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
 			message: "#^Only booleans are allowed in &&, string given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
@@ -1891,23 +1251,8 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 10
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, string\\|null given\\.$#"
 			count: 1
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an elseif condition, mixed given\\.$#"
-			count: 5
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
@@ -1951,13 +1296,8 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 14
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
@@ -1968,16 +1308,6 @@ parameters:
 		-
 			message: "#^Only booleans are allowed in \\|\\|, array\\<string, Composer\\\\Package\\\\Link\\> given on the right side\\.$#"
 			count: 1
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 3
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
-			count: 4
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
@@ -2047,38 +1377,13 @@ parameters:
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 12
+			count: 10
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
 			message: "#^Variable method call on Composer\\\\Package\\\\CompletePackageInterface\\.$#"
 			count: 2
 			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Cannot call method getConfig\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/StatusCommand.php
-
-		-
-			message: "#^Cannot call method getDownloadManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/StatusCommand.php
-
-		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 3
-			path: ../src/Composer/Command/StatusCommand.php
-
-		-
-			message: "#^Cannot call method getInstallationManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/StatusCommand.php
-
-		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/StatusCommand.php
 
 		-
 			message: "#^Only booleans are allowed in &&, array\\<string, string\\|null\\>\\|null given on the right side\\.$#"
@@ -2101,11 +1406,6 @@ parameters:
 			path: ../src/Composer/Command/StatusCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/StatusCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a ternary operator condition, array\\<string, array\\<string, array\\<string, string\\|null\\>\\>\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/StatusCommand.php
@@ -2123,11 +1423,6 @@ parameters:
 		-
 			message: "#^Only booleans are allowed in an if condition, array\\<string, string\\> given\\.$#"
 			count: 2
-			path: ../src/Composer/Command/StatusCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 3
 			path: ../src/Composer/Command/StatusCommand.php
 
 		-
@@ -2161,32 +1456,12 @@ parameters:
 			path: ../src/Composer/Command/SuggestsCommand.php
 
 		-
-			message: "#^Cannot call method getConfig\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/SuggestsCommand.php
-
-		-
 			message: "#^Cannot call method getLockedRepository\\(\\) on Composer\\\\Package\\\\Locker\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Command/SuggestsCommand.php
 
 		-
-			message: "#^Cannot call method getLocker\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/SuggestsCommand.php
-
-		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 3
-			path: ../src/Composer/Command/SuggestsCommand.php
-
-		-
 			message: "#^Cannot call method getPlatformOverrides\\(\\) on Composer\\\\Package\\\\Locker\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/SuggestsCommand.php
-
-		-
-			message: "#^Cannot call method getRepositoryManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Command/SuggestsCommand.php
 
@@ -2198,16 +1473,6 @@ parameters:
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 2
-			path: ../src/Composer/Command/SuggestsCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 2
-			path: ../src/Composer/Command/SuggestsCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 3
 			path: ../src/Composer/Command/SuggestsCommand.php
 
 		-
@@ -2226,26 +1491,6 @@ parameters:
 			path: ../src/Composer/Command/UpdateCommand.php
 
 		-
-			message: "#^Cannot call method getConfig\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/UpdateCommand.php
-
-		-
-			message: "#^Cannot call method getEventDispatcher\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/UpdateCommand.php
-
-		-
-			message: "#^Cannot call method getInstallationManager\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/UpdateCommand.php
-
-		-
-			message: "#^Cannot call method getPackage\\(\\) on Composer\\\\Composer\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Command/UpdateCommand.php
-
-		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 3
 			path: ../src/Composer/Command/UpdateCommand.php
@@ -2256,43 +1501,8 @@ parameters:
 			path: ../src/Composer/Command/UpdateCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 5
-			path: ../src/Composer/Command/UpdateCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an elseif condition, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/UpdateCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 7
-			path: ../src/Composer/Command/UpdateCommand.php
-
-		-
-			message: "#^Only booleans are allowed in \\|\\|, mixed given on the left side\\.$#"
-			count: 3
-			path: ../src/Composer/Command/UpdateCommand.php
-
-		-
 			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
-			count: 4
-			path: ../src/Composer/Command/UpdateCommand.php
-
-		-
-			message: "#^Parameter \\#2 \\$composer of static method Composer\\\\Installer\\:\\:create\\(\\) expects Composer\\\\Composer, Composer\\\\Composer\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/UpdateCommand.php
-
-		-
-			message: "#^Parameter \\#4 \\$composer of method Composer\\\\Command\\\\UpdateCommand\\:\\:getPackagesInteractively\\(\\) expects Composer\\\\Composer, Composer\\\\Composer\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/UpdateCommand.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 2
+			count: 3
 			path: ../src/Composer/Command/UpdateCommand.php
 
 		-
@@ -2311,23 +1521,8 @@ parameters:
 			path: ../src/Composer/Command/ValidateCommand.php
 
 		-
-			message: "#^Only booleans are allowed in &&, mixed given on the left side\\.$#"
-			count: 2
-			path: ../src/Composer/Command/ValidateCommand.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, array\\<Composer\\\\Package\\\\BasePackage\\> given\\.$#"
 			count: 1
-			path: ../src/Composer/Command/ValidateCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 2
-			path: ../src/Composer/Command/ValidateCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, mixed given\\.$#"
-			count: 2
 			path: ../src/Composer/Command/ValidateCommand.php
 
 		-
@@ -2343,11 +1538,6 @@ parameters:
 		-
 			message: "#^Only booleans are allowed in an if condition, array\\<string\\> given\\.$#"
 			count: 5
-			path: ../src/Composer/Command/ValidateCommand.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 1
 			path: ../src/Composer/Command/ValidateCommand.php
 
 		-
@@ -2468,16 +1658,6 @@ parameters:
 		-
 			message: "#^Parameter \\#1 \\$function of function call_user_func_array expects callable\\(\\)\\: mixed, array\\{Composer\\\\Json\\\\JsonManipulator, string\\} given\\.$#"
 			count: 1
-			path: ../src/Composer/Config/JsonConfigSource.php
-
-		-
-			message: "#^Parameter \\#3 \\$fallback of method Composer\\\\Config\\\\JsonConfigSource\\:\\:manipulateJson\\(\\) expects callable\\(\\)\\: mixed, array\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Config/JsonConfigSource.php
-
-		-
-			message: "#^Parameter \\#3 \\$fallback of method Composer\\\\Config\\\\JsonConfigSource\\:\\:manipulateJson\\(\\) expects callable\\(\\)\\: mixed, string given\\.$#"
-			count: 3
 			path: ../src/Composer/Config/JsonConfigSource.php
 
 		-
@@ -6161,11 +5341,6 @@ parameters:
 			path: ../src/Composer/Util/AuthHelper.php
 
 		-
-			message: "#^Parameter \\#2 \\$username of method Composer\\\\IO\\\\IOInterface\\:\\:setAuthentication\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/AuthHelper.php
-
-		-
 			message: "#^Parameter \\#3 \\$consumerSecret of method Composer\\\\Util\\\\Bitbucket\\:\\:requestToken\\(\\) expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/AuthHelper.php
@@ -6346,11 +5521,6 @@ parameters:
 			path: ../src/Composer/Util/Git.php
 
 		-
-			message: "#^Only booleans are allowed in an if condition, array\\<string, string\\|null\\>\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Git.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Git.php
@@ -6362,16 +5532,11 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$str of function rawurlencode expects string, string\\|null given\\.$#"
-			count: 17
+			count: 15
 			path: ../src/Composer/Util/Git.php
 
 		-
 			message: "#^Parameter \\#2 \\$consumerKey of method Composer\\\\Util\\\\Bitbucket\\:\\:requestToken\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Git.php
-
-		-
-			message: "#^Parameter \\#2 \\$username of method Composer\\\\IO\\\\IOInterface\\:\\:setAuthentication\\(\\) expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Git.php
 
@@ -6496,11 +5661,6 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, array\\<array\\<string, array\\|\\(callable\\)\\|resource\\|string\\|false\\>\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, resource\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -6527,7 +5687,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
-			count: 7
+			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
@@ -6626,17 +5786,12 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#6 \\$copyTo of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:initDownload\\(\\) expects string\\|null, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Parameter \\#7 \\$attributes of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:initDownload\\(\\) expects array\\{retryAuthFailure\\?\\: bool, redirects\\?\\: int, retries\\?\\: int, storeAuth\\?\\: bool\\}, non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, bool\\|int\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|false, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\<literal\\-string&non\\-empty\\-string, bool\\|int\\>, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|false\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\.$#"
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -7969,12 +7124,7 @@ parameters:
 			path: ../tests/Composer/Test/Json/JsonValidationExceptionTest.php
 
 		-
-			message: "#^Property Composer\\\\Test\\\\Mock\\\\HttpDownloaderMock\\:\\:\\$defaultHandler \\(array\\{status\\: int, body\\: string, headers\\: array\\<string\\>\\}\\) does not accept non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, array\\<string\\>\\|int\\|string\\>\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/HttpDownloaderMock.php
-
-		-
-			message: "#^Property Composer\\\\Test\\\\Mock\\\\HttpDownloaderMock\\:\\:\\$expectations \\(array\\<array\\{url\\: string, options\\: array\\|null, status\\: int, body\\: string, headers\\: array\\<int, string\\>\\}\\>\\|null\\) does not accept array\\<non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, array\\|int\\|string\\|null\\>\\>\\.$#"
+			message: "#^Offset 'url' on array\\{url\\: string, options\\?\\: array, status\\?\\: int, body\\?\\: string, headers\\?\\: array\\<string\\>\\} on left side of \\?\\? always exists and is not nullable\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Mock/HttpDownloaderMock.php
 
@@ -7989,6 +7139,36 @@ parameters:
 			path: ../tests/Composer/Test/Mock/InstallationManagerMock.php
 
 		-
+			message: "#^Offset 'callback' does not exist on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\}\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
+
+		-
+			message: "#^Offset 'cmd' on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\} on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
+
+		-
+			message: "#^Offset 'return' does not exist on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\}\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
+
+		-
+			message: "#^Offset 'return' on array\\{return\\: int, stdout\\?\\: string, stderr\\?\\: string\\} on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
+
+		-
+			message: "#^Offset 'stderr' does not exist on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\}\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
+
+		-
+			message: "#^Offset 'stdout' does not exist on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\}\\.$#"
+			count: 1
+			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
+
+		-
 			message: "#^Only booleans are allowed in an if condition, string given\\.$#"
 			count: 2
 			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
@@ -7996,16 +7176,6 @@ parameters:
 		-
 			message: "#^Parameter \\#2 \\$cwd of method Composer\\\\Test\\\\Mock\\\\ProcessExecutorMock\\:\\:doExecute\\(\\) expects string, string\\|null given\\.$#"
 			count: 4
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
-
-		-
-			message: "#^Property Composer\\\\Test\\\\Mock\\\\ProcessExecutorMock\\:\\:\\$defaultHandler \\(array\\{return\\: int, stdout\\: string, stderr\\: string\\}\\) does not accept non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, int\\|string\\>\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
-
-		-
-			message: "#^Property Composer\\\\Test\\\\Mock\\\\ProcessExecutorMock\\:\\:\\$expectations \\(array\\<array\\{cmd\\: array\\<int, string\\>\\|string, return\\: int, stdout\\: string, stderr\\: string, callback\\: \\(callable\\(\\)\\: mixed\\)\\|null\\}\\>\\|null\\) does not accept array\\<non\\-empty\\-array\\<literal\\-string&non\\-empty\\-string, array\\<int, string\\>\\|\\(callable\\(\\)\\: mixed\\)\\|int\\|string\\>\\>\\.$#"
-			count: 1
 			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
 
 		-

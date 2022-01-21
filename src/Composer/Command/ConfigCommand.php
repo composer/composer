@@ -208,10 +208,9 @@ EOT
     }
 
     /**
-     * @return int
      * @throws \Seld\JsonLint\ParsingException
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // Open file in editor
         if (true === $input->getOption('editor')) {
@@ -242,7 +241,7 @@ EOT
 
         // List the configuration of the file settings
         if (true === $input->getOption('list')) {
-            $this->listConfiguration($this->config->all(), $this->config->raw(), $output, null, (bool) $input->getOption('source'));
+            $this->listConfiguration($this->config->all(), $this->config->raw(), $output, null, $input->getOption('source'));
 
             return 0;
         }

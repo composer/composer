@@ -53,7 +53,7 @@ class BaseDependencyCommand extends BaseCommand
     protected function doExecute(InputInterface $input, OutputInterface $output, $inverted = false)
     {
         // Emit command event on startup
-        $composer = $this->getComposer();
+        $composer = $this->requireComposer();
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, $this->getName(), $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 

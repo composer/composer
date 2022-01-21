@@ -237,7 +237,7 @@ class Git
                     $storeAuth = $this->config->get('store-auths');
                 }
 
-                if ($auth) {
+                if (null !== $auth) {
                     $authUrl = $match[1] . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . $match[3];
 
                     $command = call_user_func($commandCallable, $authUrl);

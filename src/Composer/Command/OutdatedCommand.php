@@ -21,7 +21,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class OutdatedCommand extends ShowCommand
+class OutdatedCommand extends BaseCommand
 {
     /**
      * @return void
@@ -63,7 +63,7 @@ EOT
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $args = array(
             'command' => 'show',
@@ -75,7 +75,7 @@ EOT
         if ($input->getOption('direct')) {
             $args['--direct'] = true;
         }
-        if ($input->getArgument('package')) {
+        if (null !== $input->getArgument('package')) {
             $args['package'] = $input->getArgument('package');
         }
         if ($input->getOption('strict')) {
@@ -90,9 +90,7 @@ EOT
         if ($input->getOption('no-dev')) {
             $args['--no-dev'] = true;
         }
-        if ($input->getOption('ignore-platform-req')) {
-            $args['--ignore-platform-req'] = $input->getOption('ignore-platform-req');
-        }
+        $args['--ignore-platform-req'] = $input->getOption('ignore-platform-req');
         if ($input->getOption('ignore-platform-reqs')) {
             $args['--ignore-platform-reqs'] = true;
         }

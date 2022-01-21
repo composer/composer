@@ -80,7 +80,7 @@ EOT
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         if ($input->getOption('unused')) {
-            $composer = $this->getComposer();
+            $composer = $this->requireComposer();
             $locker = $composer->getLocker();
             if (!$locker->isLocked()) {
                 throw new \UnexpectedValueException('A valid composer.lock file is required to run this command with --unused');
@@ -115,7 +115,7 @@ EOT
             }
             $input->setArgument('packages', array_merge($input->getArgument('packages'), $unused));
 
-            if (!$input->getArgument('packages')) {
+            if (count($input->getArgument('packages')) === 0) {
                 $this->getIO()->writeError('<info>No unused packages to remove</info>');
                 $this->setCode(function () {
                     return 0;
@@ -125,7 +125,6 @@ EOT
     }
 
     /**
-     * @return int
      * @throws \Seld\JsonLint\ParsingException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -210,13 +209,13 @@ EOT
             return 0;
         }
 
-        if ($composer = $this->getComposer(false)) {
+        if ($composer = $this->tryComposer()) {
             $composer->getPluginManager()->deactivateInstalledPlugins();
         }
 
         // Update packages
         $this->resetComposer();
-        $composer = $this->getComposer(true, $input->getOption('no-plugins'), $input->getOption('no-scripts'));
+        $composer = $this->requireComposer();
 
         if ($dryRun) {
             $rootPackage = $composer->getPackage();
@@ -258,8 +257,6 @@ EOT
 
         $io->writeError('<info>Running composer update '.implode(' ', $packages).$flags.'</info>');
 
-        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
-
         $install
             ->setVerbose($input->getOption('verbose'))
             ->setDevMode($updateDevMode)
@@ -269,7 +266,7 @@ EOT
             ->setUpdate(true)
             ->setInstall(!$input->getOption('no-install'))
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
-            ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
+            ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setDryRun($dryRun)
         ;
 

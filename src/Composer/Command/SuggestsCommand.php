@@ -50,12 +50,9 @@ EOT
         ;
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $composer = $this->getComposer();
+        $composer = $this->requireComposer();
 
         $installedRepos = array(
             new RootPackageRepository(clone $composer->getPackage()),

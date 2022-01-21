@@ -57,19 +57,16 @@ EOT
             );
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $repos = $this->initializeRepos();
         $io = $this->getIO();
         $return = 0;
 
         $packages = $input->getArgument('packages');
-        if (!$packages) {
+        if (count($packages) === 0) {
             $io->writeError('No package specified, opening homepage for the root package');
-            $packages = array($this->getComposer()->getPackage()->getName());
+            $packages = array($this->requireComposer()->getPackage()->getName());
         }
 
         foreach ($packages as $packageName) {
@@ -163,7 +160,7 @@ EOT
      */
     private function initializeRepos()
     {
-        $composer = $this->getComposer(false);
+        $composer = $this->tryComposer();
 
         if ($composer) {
             return array_merge(

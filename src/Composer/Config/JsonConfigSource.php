@@ -62,7 +62,7 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function addRepository($name, $config, $append = true)
     {
-        $this->manipulateJson('addRepository', $name, $config, $append, function (&$config, $repo, $repoConfig) use ($append) {
+        $this->manipulateJson('addRepository', function (&$config, $repo, $repoConfig) use ($append) {
             // if converting from an array format to hashmap format, and there is a {"packagist.org":false} repo, we have
             // to convert it to "packagist.org": false key on the hashmap otherwise it fails schema validation
             if (isset($config['repositories'])) {
@@ -83,7 +83,7 @@ class JsonConfigSource implements ConfigSourceInterface
             } else {
                 $config['repositories'] = array($repo => $repoConfig) + $config['repositories'];
             }
-        });
+        }, $name, $config, $append);
     }
 
     /**
@@ -91,9 +91,9 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function removeRepository($name)
     {
-        $this->manipulateJson('removeRepository', $name, function (&$config, $repo) {
+        $this->manipulateJson('removeRepository', function (&$config, $repo) {
             unset($config['repositories'][$repo]);
-        });
+        }, $name);
     }
 
     /**
@@ -102,7 +102,7 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addConfigSetting($name, $value)
     {
         $authConfig = $this->authConfig;
-        $this->manipulateJson('addConfigSetting', $name, $value, function (&$config, $key, $val) use ($authConfig) {
+        $this->manipulateJson('addConfigSetting', function (&$config, $key, $val) use ($authConfig) {
             if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
                 list($key, $host) = explode('.', $key, 2);
                 if ($authConfig) {
@@ -113,7 +113,7 @@ class JsonConfigSource implements ConfigSourceInterface
             } else {
                 $config['config'][$key] = $val;
             }
-        });
+        }, $name, $value);
     }
 
     /**
@@ -122,7 +122,7 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeConfigSetting($name)
     {
         $authConfig = $this->authConfig;
-        $this->manipulateJson('removeConfigSetting', $name, function (&$config, $key) use ($authConfig) {
+        $this->manipulateJson('removeConfigSetting', function (&$config, $key) use ($authConfig) {
             if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
                 list($key, $host) = explode('.', $key, 2);
                 if ($authConfig) {
@@ -133,7 +133,7 @@ class JsonConfigSource implements ConfigSourceInterface
             } else {
                 unset($config['config'][$key]);
             }
-        });
+        }, $name);
     }
 
     /**
@@ -141,7 +141,7 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function addProperty($name, $value)
     {
-        $this->manipulateJson('addProperty', $name, $value, function (&$config, $key, $val) {
+        $this->manipulateJson('addProperty', function (&$config, $key, $val) {
             if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
@@ -156,7 +156,7 @@ class JsonConfigSource implements ConfigSourceInterface
             } else {
                 $config[$key] = $val;
             }
-        });
+        }, $name, $value);
     }
 
     /**
@@ -164,7 +164,7 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function removeProperty($name)
     {
-        $this->manipulateJson('removeProperty', $name, function (&$config, $key) {
+        $this->manipulateJson('removeProperty', function (&$config, $key) {
             if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
@@ -179,7 +179,7 @@ class JsonConfigSource implements ConfigSourceInterface
             } else {
                 unset($config[$key]);
             }
-        });
+        }, $name);
     }
 
     /**
@@ -187,9 +187,9 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function addLink($type, $name, $value)
     {
-        $this->manipulateJson('addLink', $type, $name, $value, function (&$config, $type, $name, $value) {
+        $this->manipulateJson('addLink', function (&$config, $type, $name, $value) {
             $config[$type][$name] = $value;
-        });
+        }, $type, $name, $value);
     }
 
     /**
@@ -197,30 +197,25 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function removeLink($type, $name)
     {
-        $this->manipulateJson('removeSubNode', $type, $name, function (&$config, $type, $name) {
+        $this->manipulateJson('removeSubNode', function (&$config, $type, $name) {
             unset($config[$type][$name]);
-        });
-        $this->manipulateJson('removeMainKeyIfEmpty', $type, function (&$config, $type) {
+        }, $type, $name);
+        $this->manipulateJson('removeMainKeyIfEmpty', function (&$config, $type) {
             if (0 === count($config[$type])) {
                 unset($config[$type]);
             }
-        });
+        }, $type);
     }
 
     /**
      * @param string $method
-     * @param mixed ...$args
      * @param callable $fallback
+     * @param mixed ...$args
      *
      * @return void
      */
-    protected function manipulateJson($method, $args, $fallback)
+    private function manipulateJson($method, $fallback, ...$args)
     {
-        $args = func_get_args();
-        // remove method & fallback
-        array_shift($args);
-        $fallback = array_pop($args);
-
         if ($this->file->exists()) {
             if (!is_writable($this->file->getPath())) {
                 throw new \RuntimeException(sprintf('The file "%s" is not writable.', $this->file->getPath()));

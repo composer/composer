@@ -61,7 +61,7 @@ class ApplicationTest extends TestCase
 
         $inputMock->expects($this->any())
             ->method('getFirstArgument')
-            ->will($this->returnValue('show'));
+            ->will($this->returnValue('about'));
 
         $output = new BufferedOutput();
         $expectedOutput = '';
@@ -122,7 +122,7 @@ class ApplicationTest extends TestCase
 
         $inputMock->expects($this->any())
             ->method('getFirstArgument')
-            ->will($this->returnValue('show'));
+            ->will($this->returnValue('about'));
 
         $outputMock->expects($this->never())
             ->method("writeln");

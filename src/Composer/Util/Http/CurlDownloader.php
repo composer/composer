@@ -28,7 +28,7 @@ use React\Promise\Promise;
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
  * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int, retries: int, storeAuth: bool}
- * @phpstan-type Job array{url: string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: resource, filename: string|false, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable}
+ * @phpstan-type Job array{url: string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: resource, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable}
  */
 class CurlDownloader
 {
@@ -158,12 +158,11 @@ class CurlDownloader
      */
     private function initDownload($resolve, $reject, $origin, $url, $options, $copyTo = null, array $attributes = array())
     {
-        $attributes = array_merge(array(
-            'retryAuthFailure' => true,
-            'redirects' => 0,
-            'retries' => 0,
-            'storeAuth' => false,
-        ), $attributes);
+        // set defaults in a PHPStan-happy way (array_merge is not well supported)
+        $attributes['retryAuthFailure'] = $attributes['retryAuthFailure'] ?? true;
+        $attributes['redirects'] = $attributes['redirects'] ?? 0;
+        $attributes['retries'] = $attributes['retries'] ?? 0;
+        $attributes['storeAuth'] = $attributes['storeAuth'] ?? false;
 
         $originalOptions = $options;
 
@@ -300,7 +299,7 @@ class CurlDownloader
             if (is_resource($job['bodyHandle'])) {
                 fclose($job['bodyHandle']);
             }
-            if ($job['filename']) {
+            if (null !== $job['filename']) {
                 @unlink($job['filename'].'~');
             }
             unset($this->jobs[$id]);
@@ -314,7 +313,7 @@ class CurlDownloader
     {
         static $timeoutWarning = false;
 
-        if (!$this->jobs) {
+        if (count($this->jobs) === 0) {
             return;
         }
 
@@ -382,7 +381,7 @@ class CurlDownloader
                 }
 
                 // prepare response object
-                if ($job['filename']) {
+                if (null !== $job['filename']) {
                     $contents = $job['filename'].'~';
                     if ($statusCode >= 300) {
                         rewind($job['bodyHandle']);
@@ -437,7 +436,7 @@ class CurlDownloader
                 }
 
                 // resolve promise
-                if ($job['filename']) {
+                if (null !== $job['filename']) {
                     rename($job['filename'].'~', $job['filename']);
                     call_user_func($job['resolve'], $response);
                 } else {
@@ -582,7 +581,7 @@ class CurlDownloader
      */
     private function restartJob(array $job, $url, array $attributes = array())
     {
-        if ($job['filename']) {
+        if (null !== $job['filename']) {
             @unlink($job['filename'].'~');
         }
 
@@ -599,7 +598,7 @@ class CurlDownloader
      */
     private function failResponse(array $job, Response $response, $errorMessage)
     {
-        if ($job['filename']) {
+        if (null !== $job['filename']) {
             @unlink($job['filename'].'~');
         }
 
@@ -623,7 +622,7 @@ class CurlDownloader
         if (is_resource($job['bodyHandle'])) {
             fclose($job['bodyHandle']);
         }
-        if ($job['filename']) {
+        if (null !== $job['filename']) {
             @unlink($job['filename'].'~');
         }
         call_user_func($job['reject'], $e);

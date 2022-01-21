@@ -53,9 +53,12 @@ class ArchiveCommandTest extends TestCase
                 'mergeApplicationDefinition',
                 'getSynopsis',
                 'initialize',
-                'getComposer',
+                'tryComposer',
+                'requireComposer',
             ))->getMock();
-        $command->expects($this->atLeastOnce())->method('getComposer')
+        $command->expects($this->atLeastOnce())->method('tryComposer')
+            ->willReturn($composer);
+        $command->expects($this->atLeastOnce())->method('requireComposer')
             ->willReturn($composer);
 
         $command->run($input, $output);
@@ -74,10 +77,10 @@ class ArchiveCommandTest extends TestCase
                 'mergeApplicationDefinition',
                 'getSynopsis',
                 'initialize',
-                'getComposer',
+                'tryComposer',
                 'archive',
             ))->getMock();
-        $command->expects($this->once())->method('getComposer')
+        $command->expects($this->once())->method('tryComposer')
             ->willReturn(null);
         $command->expects($this->once())->method('archive')
             ->with(

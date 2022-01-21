@@ -109,10 +109,6 @@ EOT
         ;
     }
 
-    /**
-     * @return int
-     * @throws \Exception
-     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = $this->getIO();
@@ -123,7 +119,7 @@ EOT
             $io->writeError('<warning>You are using the deprecated option "--no-suggest". It has no effect and will break in Composer 3.</warning>');
         }
 
-        $composer = $this->getComposer(true, $input->getOption('no-plugins'), $input->getOption('no-scripts'));
+        $composer = $this->requireComposer();
 
         if (!HttpDownloader::isCurlEnabled()) {
             $io->writeError('<warning>Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled.</warning>');
@@ -133,7 +129,7 @@ EOT
         $reqs = $this->formatRequirements($input->getOption('with'));
 
         // extract --with shorthands from the allowlist
-        if ($packages) {
+        if (count($packages) > 0) {
             $allowlistPackagesWithRequirements = array_filter($packages, function ($pkg) {
                 return Preg::isMatch('{\S+[ =:]\S+}', $pkg);
             });
@@ -219,8 +215,6 @@ EOT
             $updateAllowTransitiveDependencies = Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE;
         }
 
-        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
-
         $install
             ->setDryRun($input->getOption('dry-run'))
             ->setVerbose($input->getOption('verbose'))
@@ -236,7 +230,7 @@ EOT
             ->setUpdateMirrors($updateMirrors)
             ->setUpdateAllowList($packages)
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
-            ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
+            ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
         ;
