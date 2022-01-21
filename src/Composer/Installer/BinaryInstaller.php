@@ -333,6 +333,16 @@ if (PHP_VERSION_ID < 80000) {
                 return \$operation ? flock(\$this->handle, \$operation) : true;
             }
 
+            public function stream_seek(\$offset, \$whence)
+            {
+                if (0 === fseek(\$this->handle, \$offset, \$whence)) {
+                    \$this->position = ftell(\$this->handle);
+                    return true;
+                }
+
+                return false;
+            }
+
             public function stream_tell()
             {
                 return \$this->position;
