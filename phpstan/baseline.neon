@@ -4071,6 +4071,11 @@ parameters:
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
+			message: "#^Constant PHP_WINDOWS_EVENT_CTRL_C not found\\.$#"
+			count: 1
+			path: ../src/Composer/Installer/InstallationManager.php
+
+		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 1
 			path: ../src/Composer/Installer/InstallationManager.php
@@ -4078,6 +4083,11 @@ parameters:
 		-
 			message: "#^Foreach overwrites \\$batch with its value variable\\.$#"
 			count: 2
+			path: ../src/Composer/Installer/InstallationManager.php
+
+		-
+			message: "#^Function sapi_windows_set_ctrl_handler not found\\.$#"
+			count: 3
 			path: ../src/Composer/Installer/InstallationManager.php
 
 		-
@@ -6473,6 +6483,16 @@ parameters:
 		-
 			message: "#^Cannot access offset 'features' on array\\|false\\.$#"
 			count: 2
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Constant CURLOPT_PROXY_CAINFO not found\\.$#"
+			count: 1
+			path: ../src/Composer/Util/Http/CurlDownloader.php
+
+		-
+			message: "#^Constant CURLOPT_PROXY_CAPATH not found\\.$#"
+			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
