@@ -254,8 +254,8 @@ abstract class BasePackage implements PackageInterface
      * Build a regexp from a package name, expanding * globs as required
      *
      * @param  string $allowPattern
-     * @param  string $wrap         Wrap the cleaned string by the given string
-     * @return string
+     * @param  non-empty-string $wrap         Wrap the cleaned string by the given string
+     * @return non-empty-string
      */
     public static function packageNameToRegexp($allowPattern, $wrap = '{^%s$}i')
     {
@@ -268,8 +268,8 @@ abstract class BasePackage implements PackageInterface
      * Build a regexp from package names, expanding * globs as required
      *
      * @param string[] $packageNames
-     * @param string $wrap
-     * @return string
+     * @param non-empty-string $wrap
+     * @return non-empty-string
      */
     public static function packageNamesToRegexp(array $packageNames, $wrap = '{^(?:%s)$}iD')
     {

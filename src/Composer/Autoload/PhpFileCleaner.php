@@ -20,10 +20,10 @@ use Composer\Pcre\Preg;
  */
 class PhpFileCleaner
 {
-    /** @var array<array{name: string, length: int, pattern: string}> */
+    /** @var array<array{name: string, length: int, pattern: non-empty-string}> */
     private static $typeConfig;
 
-    /** @var string */
+    /** @var non-empty-string */
     private static $restPattern;
 
     /**
@@ -266,7 +266,7 @@ class PhpFileCleaner
     }
 
     /**
-     * @param string $regex
+     * @param non-empty-string $regex
      * @param ?array<int, string> $match
      * @return bool
      */

@@ -80,7 +80,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     protected $hasAvailablePackageList = false;
     /** @var ?array<string> */
     protected $availablePackages = null;
-    /** @var ?array<string> */
+    /** @var ?array<non-empty-string> */
     protected $availablePackagePatterns = null;
     /** @var ?string */
     protected $lazyProvidersUrl = null;

@@ -26,7 +26,7 @@ abstract class BaseExcludeFilter
     protected $sourcePath;
 
     /**
-     * @var array<array{0: string, 1: bool, 2: bool}> array of [$pattern, $negate, $stripLeadingSlash] arrays
+     * @var array<array{0: non-empty-string, 1: bool, 2: bool}> array of [$pattern, $negate, $stripLeadingSlash] arrays
      */
     protected $excludePatterns;
 
@@ -78,7 +78,7 @@ abstract class BaseExcludeFilter
      * @param string[] $lines A set of lines to be parsed
      * @param callable $lineParser The parser to be used on each line
      *
-     * @return array<array{0: string, 1: bool, 2: bool}> Exclude patterns to be used in filter()
+     * @return array<array{0: non-empty-string, 1: bool, 2: bool}> Exclude patterns to be used in filter()
      */
     protected function parseLines(array $lines, $lineParser)
     {
@@ -106,7 +106,7 @@ abstract class BaseExcludeFilter
      *
      * @param string[] $rules A list of exclude rules in gitignore syntax
      *
-     * @return array<int, array{0: string, 1: bool, 2: bool}> Exclude patterns
+     * @return array<int, array{0: non-empty-string, 1: bool, 2: bool}> Exclude patterns
      */
     protected function generatePatterns($rules)
     {
@@ -123,7 +123,7 @@ abstract class BaseExcludeFilter
      *
      * @param string $rule An exclude rule in gitignore syntax
      *
-     * @return array{0: string, 1: bool, 2: bool} An exclude pattern
+     * @return array{0: non-empty-string, 1: bool, 2: bool} An exclude pattern
      */
     protected function generatePattern($rule)
     {
