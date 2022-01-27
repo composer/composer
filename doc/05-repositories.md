@@ -755,6 +755,25 @@ variables are parsed in both Windows and Linux/Mac notations. For example
 > **Note:** Repository paths can also contain wildcards like `*` and `?`.
 > For details, see the [PHP glob function](https://php.net/glob).
 
+You can configure the behavior of reference building for a package. Field reference showing when something changed in package.
+There are the following options:
+- null - reference will be always null
+- config - reference is building basing on hash of composer.json and repo config
+- auto (used by default) - reference is building basing on hash of composer.json and repo config, but if the package folder contain git repository, then reference will be equal to the last commit hash in this folder
+```json
+{
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/my-package",
+            "options": {
+                "reference": "auto"
+            }
+        }
+    ]
+}
+```
+
 ## Disabling Packagist.org
 
 You can disable the default Packagist.org repository by adding this to your

@@ -56,6 +56,13 @@ use Composer\Util\Git as GitUtil;
  *             "symlink": false
  *         }
  *     },
+ *     {
+ *         "type": "path",
+ *         "url": "../../relative/path/to/package/",
+ *         "options": {
+ *             "reference": "none"
+ *         }
+ *     },
  * ]
  * @endcode
  *
@@ -81,7 +88,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
     /**
      * @var mixed[]
-     * @phpstan-var array{url: string, options?: array{symlink?: bool, relative?: bool, versions?: array<string, string>}}
+     * @phpstan-var array{url: string, options?: array{symlink?: bool, reference?: string, relative?: bool, versions?: array<string, string>}}
      */
     private $repoConfig;
 
@@ -91,14 +98,14 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
     private $process;
 
     /**
-     * @var array{symlink?: bool, relative?: bool, versions?: array<string, string>}
+     * @var array{symlink?: bool, reference?: string, relative: bool, versions?: array<string, string>}
      */
     private $options;
 
     /**
      * Initializes path repository.
      *
-     * @param array{url?: string, options?: array{symlink?: bool, relative?: bool, versions?: array<string, string>}} $repoConfig
+     * @param array{url?: string, options?: array{symlink?: bool, reference?: string, relative?: bool, versions?: array<string, string>}} $repoConfig
      * @param IOInterface $io
      * @param Config      $config
      */
@@ -171,12 +178,16 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             $package['dist'] = array(
                 'type' => 'path',
                 'url' => $url,
-                'reference' => sha1($json . serialize($this->options)),
             );
+            $reference = $this->options['reference'] ?? 'auto';
+            if ('none' === $reference) {
+                $package['dist']['reference'] = null;
+            } elseif ('config' === $reference || 'auto' === $reference) {
+                $package['dist']['reference'] = sha1($json . serialize($this->options));
+            }
 
             // copy symlink/relative options to transport options
             $package['transport-options'] = array_intersect_key($this->options, array('symlink' => true, 'relative' => true));
-
             // use the version provided as option if available
             if (isset($package['name'], $this->options['versions'][$package['name']])) {
                 $package['version'] = $this->options['versions'][$package['name']];
@@ -194,7 +205,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
             }
 
             $output = '';
-            if (is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H'.GitUtil::getNoShowSignatureFlag($this->process), $output, $path)) {
+            if ('auto' === $reference && is_dir($path . DIRECTORY_SEPARATOR . '.git') && 0 === $this->process->execute('git log -n1 --pretty=%H'.GitUtil::getNoShowSignatureFlag($this->process), $output, $path)) {
                 $package['dist']['reference'] = trim($output);
             }
 
