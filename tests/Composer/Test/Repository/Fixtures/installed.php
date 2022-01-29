@@ -86,21 +86,48 @@ return array(
                 '1.4',
                 '2.0',
             ),
+            'provided_by' => array(
+                'a/provider' => array(
+                    '^1.1'
+                ),
+                'a/provider2' => array(
+                    '1.2',
+                    '1.4',
+                ),
+                '__root__' => array(
+                    '2.0',
+                )
+            )
         ),
         'foo/impl2' => array(
             'dev_requirement' => false,
             'provided' => array(
                 '2.0',
             ),
+            'provided_by' => array(
+                'a/provider' => array(
+                    '2.0',
+                )
+            ),
             'replaced' => array(
                 '2.2',
             ),
+            'replaced_by' => array(
+                'b/replacer' => array(
+                    '2.2'
+                )
+            )
         ),
         'foo/replaced' => array(
             'dev_requirement' => false,
             'replaced' => array(
                 '^3.0',
             ),
+            'replaced_by' => array(
+                'b/replacer' => array(
+                    '^3.0'
+                )
+            )
         ),
         'meta/package' => array(
             'pretty_version' => '3.0',
