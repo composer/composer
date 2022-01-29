@@ -269,7 +269,13 @@ class FilesystemRepository extends WritableArrayRepository
                     $replaced = $package->getPrettyVersion();
                 }
                 if (!isset($versions['versions'][$replace->getTarget()]['replaced']) || !in_array($replaced, $versions['versions'][$replace->getTarget()]['replaced'], true)) {
+
+                    // This does not give enough information about what package(s) replace the current package!
+                    // SHOULD be deprecated! We keep it to avoid breaking changes in composer 2.x
                     $versions['versions'][$replace->getTarget()]['replaced'][] = $replaced;
+
+                    // This ensures to that the replacement's source is available in the data structure.
+                    $versions['versions'][$replace->getTarget()]['replaced_by'][$replace->getSource()][] = $replaced;
                 }
             }
             foreach ($package->getProvides() as $provide) {
@@ -287,7 +293,13 @@ class FilesystemRepository extends WritableArrayRepository
                     $provided = $package->getPrettyVersion();
                 }
                 if (!isset($versions['versions'][$provide->getTarget()]['provided']) || !in_array($provided, $versions['versions'][$provide->getTarget()]['provided'], true)) {
+
+                    // This does not give enough information about what package(s) provide for the current package!
+                    // SHOULD be deprecated! We keep it to avoid breaking changes in composer 2.x
                     $versions['versions'][$provide->getTarget()]['provided'][] = $provided;
+
+                    // This ensures to that the provided package's source is available in the data structure.
+                    $versions['versions'][$provide->getTarget()]['provided_by'][$provide->getSource()][] = $provided;
                 }
             }
         }
