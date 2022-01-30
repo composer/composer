@@ -15,12 +15,12 @@ use Composer\Semver\Intervals;
 final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFilterInterface
 {
     /**
-     * @var string
+     * @var non-empty-string
      */
     private $ignoreRegex;
 
     /**
-     * @var string
+     * @var non-empty-string
      */
     private $ignoreUpperBoundRegex;
 

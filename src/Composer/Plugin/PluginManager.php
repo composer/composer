@@ -55,12 +55,12 @@ class PluginManager
     protected $registeredPlugins = array();
 
     /**
-     * @var array<string, bool>|null
+     * @var array<non-empty-string, bool>|null
      */
     private $allowPluginRules;
 
     /**
-     * @var array<string, bool>|null
+     * @var array<non-empty-string, bool>|null
      */
     private $allowGlobalPluginRules;
 
@@ -643,7 +643,7 @@ class PluginManager
 
     /**
      * @param  array<string, bool>|bool|null $allowPluginsConfig
-     * @return array<string, bool>|null
+     * @return array<non-empty-string, bool>|null
      */
     private function parseAllowedPlugins($allowPluginsConfig)
     {
