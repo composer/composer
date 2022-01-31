@@ -540,7 +540,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->loadRootServerFile(600);
 
         if ($this->searchUrl && $mode === self::SEARCH_FULLTEXT) {
-            $url = str_replace(array('%query%', '%type%'), array($query, $type), $this->searchUrl);
+            $url = str_replace(array('%query%', '%type%'), array(urlencode($query), $type), $this->searchUrl);
 
             $search = $this->httpDownloader->get($url, $this->options)->decodeJson();
 
