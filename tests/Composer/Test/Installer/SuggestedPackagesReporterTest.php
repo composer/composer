@@ -12,7 +12,9 @@
 
 namespace Composer\Test\Installer;
 
+use Composer\InstalledVersions;
 use Composer\Installer\SuggestedPackagesReporter;
+use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
 
 /**
@@ -186,9 +188,12 @@ class SuggestedPackagesReporterTest extends TestCase
             ->method('write')
             ->with(' - <info>target1</info>: [1;37;42m Like us on Facebook [0m');
 
+        $expectedWrite = InstalledVersions::satisfies(new VersionParser(), 'symfony/console', '^4.4.37 || ~5.3.14 || ^5.4.3 || ^6.0.3')
+            ? ' - <info>target2</info>: \\<bg=green\\>Like us on Facebook\\</\\>'
+            : ' - <info>target2</info>: \\<bg=green>Like us on Facebook\\</>';
         $this->io->expects($this->at(2))
             ->method('write')
-            ->with(' - <info>target2</info>: \\<bg=green>Like us on Facebook\\</>');
+            ->with($expectedWrite);
 
         $this->suggestedPackagesReporter->output(SuggestedPackagesReporter::MODE_BY_PACKAGE);
     }
