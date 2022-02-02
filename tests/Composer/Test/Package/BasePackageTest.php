@@ -95,7 +95,7 @@ class BasePackageTest extends TestCase
 
     /**
      * @param string[] $packageNames
-     * @param string $wrap
+     * @param non-empty-string $wrap
      * @param string $expectedRegexp
      *
      * @dataProvider dataPackageNamesToRegexp

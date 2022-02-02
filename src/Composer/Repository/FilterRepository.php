@@ -25,7 +25,7 @@ class FilterRepository implements RepositoryInterface
 {
     /** @var ?string */
     private $only = null;
-    /** @var ?string */
+    /** @var ?non-empty-string */
     private $exclude = null;
     /** @var bool */
     private $canonical = true;
@@ -204,6 +204,10 @@ class FilterRepository implements RepositoryInterface
 
         if ($this->only) {
             return Preg::isMatch($this->only, $name);
+        }
+
+        if ($this->exclude === null) {
+            return true;
         }
 
         return !Preg::isMatch($this->exclude, $name);
