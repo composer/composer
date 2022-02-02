@@ -272,11 +272,18 @@ class ClassMapGenerator
                     // This is an XHP class, https://github.com/facebook/xhp
                     $name = 'xhp'.substr(str_replace(array('-', ':'), array('_', '__'), $name), 1);
                 } elseif ($matches['type'][$i] === 'enum') {
-                    // In Hack, something like:
+                    // something like:
                     //   enum Foo: int { HERP = '123'; }
                     // The regex above captures the colon, which isn't part of
                     // the class name.
-                    $name = rtrim($name, ':');
+                    // or:
+                    //   enum Foo:int { HERP = '123'; }
+                    // The regex above captures the colon and type, which isn't part of
+                    // the class name.
+                    $colonPos = strrpos($name, ':');
+                    if (false !== $colonPos) {
+                        $name = substr($name, 0, $colonPos);
+                    }
                 }
                 $classes[] = ltrim($namespace . $name, '\\');
             }

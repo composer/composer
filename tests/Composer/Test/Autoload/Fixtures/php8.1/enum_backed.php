@@ -1,6 +1,6 @@
 <?php
 
-enum RolesBackedEnum: string {
+enum RolesBackedEnum:string {
     case Admin = 'Administrator';
     case Guest = 'Guest';
     case Moderator = 'Moderator';
