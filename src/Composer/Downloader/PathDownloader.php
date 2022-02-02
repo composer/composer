@@ -272,6 +272,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         // Check we can use junctions safely if we are on Windows
         if (Platform::isWindows() && self::STRATEGY_SYMLINK === $currentStrategy && !$this->safeJunctions()) {
+            if (!in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
+                throw new \RuntimeException('You are on an old Windows / old PHP combo which does not allow Composer to use junctions/symlinks and this path repository has symlink:true in its options so copying is not allowed');
+            }
             $currentStrategy = self::STRATEGY_MIRROR;
             $allowedStrategies = array(self::STRATEGY_MIRROR);
         }
