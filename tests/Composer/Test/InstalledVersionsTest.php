@@ -12,11 +12,13 @@
 
 namespace Composer\Test;
 
+use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
 use Composer\Semver\VersionParser;
 
 class InstalledVersionsTest extends TestCase
 {
+    /** @var array<ClassLoader> */
     private static $previousRegisteredLoaders;
 
     /**
