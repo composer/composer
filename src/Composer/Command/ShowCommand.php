@@ -463,7 +463,8 @@ EOT
 
                         $packageIsAbandoned = false;
                         if ($latestPackage instanceof CompletePackageInterface && $latestPackage->isAbandoned()) {
-                            $replacement = is_string($latestPackage->getReplacementPackage())
+                            $replacementPackageName = $latestPackage->getReplacementPackage();
+                            $replacement = $replacementPackageName !== null
                                 ? 'Use ' . $latestPackage->getReplacementPackage() . ' instead'
                                 : 'No replacement was suggested';
                             $packageWarning = sprintf(
@@ -472,7 +473,7 @@ EOT
                                 $replacement
                             );
                             $packageViewData['warning'] = $packageWarning;
-                            $packageIsAbandoned = true;
+                            $packageIsAbandoned = $replacementPackageName ?? true;
                         }
 
                         $packageViewData['abandoned'] = $packageIsAbandoned;
