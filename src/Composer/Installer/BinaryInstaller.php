@@ -235,14 +235,14 @@ class BinaryInstaller
             return "@ECHO OFF\r\n".
                 "setlocal DISABLEDELAYEDEXPANSION\r\n".
                 "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape(basename($link, '.bat')), '"\'')."\r\n".
-                "SET COMPOSER_BIN_DIR=%~dp0\r\n".
+                "SET COMPOSER_RUNTIME_BIN_DIR=%~dp0\r\n".
                 "{$caller} \"%BIN_TARGET%\" %*\r\n";
         }
 
         return "@ECHO OFF\r\n".
             "setlocal DISABLEDELAYEDEXPANSION\r\n".
             "SET BIN_TARGET=%~dp0/".trim(ProcessExecutor::escape($binPath), '"\'')."\r\n".
-            "SET COMPOSER_BIN_DIR=%~dp0\r\n".
+            "SET COMPOSER_RUNTIME_BIN_DIR=%~dp0\r\n".
             "{$caller} \"%BIN_TARGET%\" %*\r\n";
     }
 
@@ -434,7 +434,7 @@ if [ -d /proc/cygdrive ]; then
     esac
 fi
 
-export COMPOSER_BIN_DIR=\$(cd "\${self%[/\\\\]*}" > /dev/null; pwd)
+export COMPOSER_RUNTIME_BIN_DIR=\$(cd "\${self%[/\\\\]*}" > /dev/null; pwd)
 
 # If bash is sourcing this file, we have to source the target as well
 bashSource="\$BASH_SOURCE"
