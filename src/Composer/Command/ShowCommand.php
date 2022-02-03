@@ -461,8 +461,10 @@ EOT
                             $packageViewData['path'] = strtok(realpath($composer->getInstallationManager()->getInstallPath($package)), "\r\n");
                         }
 
+                        $packageIsAbandoned = false;
                         if ($latestPackage instanceof CompletePackageInterface && $latestPackage->isAbandoned()) {
-                            $replacement = is_string($latestPackage->getReplacementPackage())
+                            $replacementPackageName = $latestPackage->getReplacementPackage();
+                            $replacement = $replacementPackageName !== null
                                 ? 'Use ' . $latestPackage->getReplacementPackage() . ' instead'
                                 : 'No replacement was suggested';
                             $packageWarning = sprintf(
@@ -471,7 +473,10 @@ EOT
                                 $replacement
                             );
                             $packageViewData['warning'] = $packageWarning;
+                            $packageIsAbandoned = $replacementPackageName ?? true;
                         }
+
+                        $packageViewData['abandoned'] = $packageIsAbandoned;
                     } else {
                         $packageViewData['name'] = $package;
                         $nameLength = max($nameLength, strlen($package));
