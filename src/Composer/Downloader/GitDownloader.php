@@ -135,7 +135,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $this->setPushUrl($path, $url);
         }
 
-        if ($newRef = $this->updateToCommit($path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
+        if ($newRef = $this->updateToCommit($package, $path, (string) $ref, $package->getPrettyVersion())) {
             if ($package->getDistReference() === $package->getSourceReference()) {
                 $package->setDistReference($newRef);
             }
@@ -186,7 +186,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
-        if ($newRef = $this->updateToCommit($path, $ref, $target->getPrettyVersion(), $target->getReleaseDate())) {
+        if ($newRef = $this->updateToCommit($target, $path, (string) $ref, $target->getPrettyVersion())) {
             if ($target->getDistReference() === $target->getSourceReference()) {
                 $target->setDistReference($newRef);
             }
@@ -434,12 +434,11 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      *
      * @param  string            $path
      * @param  string            $reference
-     * @param  string            $branch
-     * @param  \DateTime         $date
+     * @param  string            $prettyVersion
      * @throws \RuntimeException
      * @return null|string       if a string is returned, it is the commit reference that was checked out if the original could not be found
      */
-    protected function updateToCommit($path, $reference, $branch, $date)
+    protected function updateToCommit(PackageInterface $package, $path, $reference, $prettyVersion)
     {
         $force = !empty($this->hasDiscardedChanges[$path]) || !empty($this->hasStashedChanges[$path]) ? '-f ' : '';
 
@@ -449,7 +448,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         // If the non-existent branch is actually the name of a file, the file
         // is checked out.
         $template = 'git checkout '.$force.'%s -- && git reset --hard %1$s --';
-        $branch = Preg::replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $branch);
+        $branch = Preg::replace('{(?:^dev-|(?:\.x)?-dev$)}i', '', $prettyVersion);
 
         $branches = null;
         if (0 === $this->process->execute('git branch -r', $output, $path)) {
@@ -489,12 +488,15 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             return null;
         }
 
+        $exceptionExtra = '';
+
         // reference was not found (prints "fatal: reference is not a tree: $ref")
         if (false !== strpos($this->process->getErrorOutput(), $reference)) {
             $this->io->writeError('    <warning>'.$reference.' is gone (history was rewritten?)</warning>');
+            $exceptionExtra = "\nIt looks like the commit hash is not available in the repository, maybe ".($package->isDev() ? 'the commit was removed from the branch' : 'the tag was recreated').'? Run "composer update '.$package->getPrettyName().'" to resolve this.';
         }
 
-        throw new \RuntimeException(Url::sanitize('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput()));
+        throw new \RuntimeException(Url::sanitize('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput() . $exceptionExtra));
     }
 
     /**

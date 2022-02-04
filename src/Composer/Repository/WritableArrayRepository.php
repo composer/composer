@@ -27,6 +27,17 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
      */
     protected $devPackageNames = array();
 
+    /** @var bool|null */
+    private $devMode = null;
+
+    /**
+     * @return bool|null true if dev requirements were installed, false if --no-dev was used, null if yet unknown
+     */
+    public function getDevMode()
+    {
+        return $this->devMode;
+    }
+
     /**
      * @inheritDoc
      */
@@ -48,6 +59,7 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
      */
     public function write($devMode, InstallationManager $installationManager)
     {
+        $this->devMode = $devMode;
     }
 
     /**
@@ -55,6 +67,7 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
      */
     public function reload()
     {
+        $this->devMode = null;
     }
 
     /**

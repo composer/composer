@@ -126,7 +126,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                     }
                 }
             } catch (IOException $e) {
-                if (in_array(self::STRATEGY_MIRROR, $allowedStrategies)) {
+                if (in_array(self::STRATEGY_MIRROR, $allowedStrategies, true)) {
                     if ($output) {
                         $this->io->writeError('');
                         $this->io->writeError('    <error>Symlink failed, fallback to use mirroring!</error>');
@@ -272,6 +272,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
 
         // Check we can use junctions safely if we are on Windows
         if (Platform::isWindows() && self::STRATEGY_SYMLINK === $currentStrategy && !$this->safeJunctions()) {
+            if (!in_array(self::STRATEGY_MIRROR, $allowedStrategies, true)) {
+                throw new \RuntimeException('You are on an old Windows / old PHP combo which does not allow Composer to use junctions/symlinks and this path repository has symlink:true in its options so copying is not allowed');
+            }
             $currentStrategy = self::STRATEGY_MIRROR;
             $allowedStrategies = array(self::STRATEGY_MIRROR);
         }

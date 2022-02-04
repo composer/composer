@@ -36,6 +36,8 @@ class FilesystemRepository extends WritableArrayRepository
     private $rootPackage;
     /** @var Filesystem */
     private $filesystem;
+    /** @var bool|null */
+    private $devMode = null;
 
     /**
      * Initializes filesystem repository.
@@ -54,6 +56,14 @@ class FilesystemRepository extends WritableArrayRepository
         if ($dumpVersions && !$rootPackage) {
             throw new \InvalidArgumentException('Expected a root package instance if $dumpVersions is true');
         }
+    }
+
+    /**
+     * @return bool|null true if dev requirements were installed, false if --no-dev was used, null if yet unknown
+     */
+    public function getDevMode()
+    {
+        return $this->devMode;
     }
 
     /**
@@ -77,6 +87,9 @@ class FilesystemRepository extends WritableArrayRepository
 
             if (isset($data['dev-package-names'])) {
                 $this->setDevPackageNames($data['dev-package-names']);
+            }
+            if (isset($data['dev'])) {
+                $this->devMode = $data['dev'];
             }
 
             if (!is_array($packages)) {

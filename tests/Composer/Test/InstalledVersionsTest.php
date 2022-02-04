@@ -12,11 +12,15 @@
 
 namespace Composer\Test;
 
+use Composer\Autoload\ClassLoader;
 use Composer\InstalledVersions;
 use Composer\Semver\VersionParser;
 
 class InstalledVersionsTest extends TestCase
 {
+    /** @var array<ClassLoader> */
+    private static $previousRegisteredLoaders;
+
     /**
      * @var string
      */
@@ -28,12 +32,16 @@ class InstalledVersionsTest extends TestCase
         // class loaders are registered
         $prop = new \ReflectionProperty('Composer\Autoload\ClassLoader', 'registeredLoaders');
         $prop->setAccessible(true);
+        self::$previousRegisteredLoaders = $prop->getValue();
         $prop->setValue(array());
     }
 
     public static function tearDownAfterClass(): void
     {
-        self::setUpBeforeClass();
+        $prop = new \ReflectionProperty('Composer\Autoload\ClassLoader', 'registeredLoaders');
+        $prop->setAccessible(true);
+        $prop->setValue(self::$previousRegisteredLoaders);
+        InstalledVersions::reload(null); // @phpstan-ignore-line
     }
 
     public function setUp(): void

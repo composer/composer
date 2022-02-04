@@ -173,8 +173,9 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 'url' => $url,
                 'reference' => sha1($json . serialize($this->options)),
             );
-            $package['transport-options'] = $this->options;
-            unset($package['transport-options']['versions']);
+
+            // copy symlink/relative options to transport options
+            $package['transport-options'] = array_intersect_key($this->options, array('symlink' => true, 'relative' => true));
 
             // use the version provided as option if available
             if (isset($package['name'], $this->options['versions'][$package['name']])) {

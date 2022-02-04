@@ -200,6 +200,36 @@ class ComposerRepositoryTest extends TestCase
         );
     }
 
+    public function testSearchWithSpecialChars()
+    {
+        $repoConfig = array(
+            'url' => 'http://example.org',
+        );
+
+        $result = array(
+            'results' => array(
+                array(
+                    'name' => 'foo',
+                    'description' => null,
+                ),
+            ),
+        );
+
+        $httpDownloader = new HttpDownloaderMock(array(
+            'http://example.org/packages.json' => JsonFile::encode(array('search' => '/search.json?q=%query%&type=%type%')),
+            'http://example.org/search.json?q=foo+bar&type=' => JsonFile::encode(array()),
+        ));
+        $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $repository = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), $httpDownloader, $eventDispatcher);
+
+        $this->assertEmpty(
+            $repository->search('foo bar', RepositoryInterface::SEARCH_FULLTEXT)
+        );
+    }
+
     public function testSearchWithAbandonedPackages()
     {
         $repoConfig = array(

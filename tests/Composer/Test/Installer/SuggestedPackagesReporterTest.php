@@ -12,7 +12,9 @@
 
 namespace Composer\Test\Installer;
 
+use Composer\InstalledVersions;
 use Composer\Installer\SuggestedPackagesReporter;
+use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
 
 /**
@@ -178,12 +180,16 @@ class SuggestedPackagesReporterTest extends TestCase
         $this->suggestedPackagesReporter->addPackage('source', 'target1', "\x1b[1;37;42m Like us\r\non Facebook \x1b[0m");
         $this->suggestedPackagesReporter->addPackage('source', 'target2', "<bg=green>Like us on Facebook</>");
 
+        $expectedWrite = InstalledVersions::satisfies(new VersionParser(), 'symfony/console', '^4.4.37 || ~5.3.14 || ^5.4.3 || ^6.0.3')
+            ? ' - <info>target2</info>: \\<bg=green\\>Like us on Facebook\\</\\>'
+            : ' - <info>target2</info>: \\<bg=green>Like us on Facebook\\</>';
+
         $this->io->expects($this->exactly(4))
             ->method('write')
             ->withConsecutive(
                 ['<comment>source</comment> suggests:'],
                 [' - <info>target1</info>: [1;37;42m Like us on Facebook [0m'],
-                [' - <info>target2</info>: \\<bg=green>Like us on Facebook\\</>'],
+                [$expectedWrite],
                 ['']
             );
 

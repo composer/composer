@@ -1711,17 +1711,17 @@ parameters:
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
+			message: "#^Binary operation \"\\.\" between ' in ' and array\\|bool\\|float\\|int\\|string results in an error\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ShowCommand.php
+
+		-
 			message: "#^Binary operation \"\\.\" between '\\<info\\>latest\\</info\\>…' and array\\<string\\>\\|string results in an error\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
 			message: "#^Binary operation \"\\.\" between non\\-empty\\-string and array\\<string\\>\\|string results in an error\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ShowCommand.php
-
-		-
-			message: "#^Binary operation \"\\.\" between non\\-empty\\-string and array\\|bool\\|float\\|int\\|string results in an error\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
 
@@ -1892,7 +1892,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 9
+			count: 10
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
@@ -1952,7 +1952,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
-			count: 13
+			count: 14
 			path: ../src/Composer/Command/ShowCommand.php
 
 		-
@@ -2651,11 +2651,6 @@ parameters:
 			path: ../src/Composer/DependencyResolver/GenericRule.php
 
 		-
-			message: "#^Cannot access offset 0 on array\\{int, Composer\\\\DependencyResolver\\\\Rule\\}\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/LockTransaction.php
-
-		-
 			message: "#^Only booleans are allowed in &&, DateTime\\|null given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/LockTransaction.php
@@ -2727,12 +2722,12 @@ parameters:
 
 		-
 			message: "#^Cannot call method getRepoName\\(\\) on Composer\\\\Repository\\\\RepositoryInterface\\|null\\.$#"
-			count: 4
+			count: 3
 			path: ../src/Composer/DependencyResolver/Problem.php
 
 		-
 			message: "#^Cannot call method getRepository\\(\\) on Composer\\\\Package\\\\PackageInterface\\|false\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/DependencyResolver/Problem.php
 
 		-
@@ -2959,16 +2954,6 @@ parameters:
 			message: "#^Only booleans are allowed in an if condition, array\\<int\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/DependencyResolver/RuleWatchGraph.php
-
-		-
-			message: "#^Cannot access offset 0 on array\\{int, Composer\\\\DependencyResolver\\\\Rule\\}\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Solver.php
-
-		-
-			message: "#^Cannot access offset 1 on array\\{int, Composer\\\\DependencyResolver\\\\Rule\\}\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/DependencyResolver/Solver.php
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
@@ -3356,18 +3341,8 @@ parameters:
 			path: ../src/Composer/Downloader/GitDownloader.php
 
 		-
-			message: "#^Parameter \\#2 \\$reference of method Composer\\\\Downloader\\\\GitDownloader\\:\\:updateToCommit\\(\\) expects string, string\\|null given\\.$#"
-			count: 2
-			path: ../src/Composer/Downloader/GitDownloader.php
-
-		-
 			message: "#^Parameter \\#3 \\$ref of method Composer\\\\Util\\\\Git\\:\\:fetchRefOrSyncMirror\\(\\) expects string, string\\|null given\\.$#"
 			count: 1
-			path: ../src/Composer/Downloader/GitDownloader.php
-
-		-
-			message: "#^Parameter \\#4 \\$date of method Composer\\\\Downloader\\\\GitDownloader\\:\\:updateToCommit\\(\\) expects DateTime, DateTime\\|null given\\.$#"
-			count: 2
 			path: ../src/Composer/Downloader/GitDownloader.php
 
 		-
@@ -3421,7 +3396,17 @@ parameters:
 			path: ../src/Composer/Downloader/HgDownloader.php
 
 		-
-			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
+			message: "#^Call to function in_array\\(\\) with arguments 20, array\\{0\\: 10\\|20, 1\\?\\: 20\\} and true will always evaluate to true\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/PathDownloader.php
+
+		-
+			message: "#^Call to function in_array\\(\\) with arguments 20, non\\-empty\\-array\\<int, 10\\|20\\> and true will always evaluate to true\\.$#"
+			count: 1
+			path: ../src/Composer/Downloader/PathDownloader.php
+
+		-
+			message: "#^Else branch is unreachable because previous condition is always true\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/PathDownloader.php
 
@@ -5386,11 +5371,6 @@ parameters:
 			path: ../src/Composer/Repository/FilterRepository.php
 
 		-
-			message: "#^Parameter \\#1 \\$pattern of static method Composer\\\\Pcre\\\\Preg\\:\\:isMatch\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/FilterRepository.php
-
-		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 7
 			path: ../src/Composer/Repository/InstalledRepository.php
@@ -5423,11 +5403,6 @@ parameters:
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 2
-			path: ../src/Composer/Repository/PathRepository.php
-
-		-
-			message: "#^Offset 'versions' does not exist on array\\{symlink\\?\\: bool, relative\\?\\: bool, versions\\?\\: array\\<string, string\\>\\}\\.$#"
-			count: 1
 			path: ../src/Composer/Repository/PathRepository.php
 
 		-
@@ -6832,7 +6807,7 @@ parameters:
 
 		-
 			message: "#^Offset 'options' does not exist on array\\{url\\: string, options\\?\\: array, copyTo\\?\\: string\\|null\\}\\.$#"
-			count: 5
+			count: 3
 			path: ../src/Composer/Util/HttpDownloader.php
 
 		-

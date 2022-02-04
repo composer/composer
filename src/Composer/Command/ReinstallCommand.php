@@ -21,6 +21,8 @@ use Composer\Package\BasePackage;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
+use Composer\Script\ScriptEvents;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -127,7 +129,8 @@ EOT
         });
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'reinstall', $input, $output);
-        $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
+        $eventDispatcher = $composer->getEventDispatcher();
+        $eventDispatcher->dispatch($commandEvent->getName(), $commandEvent);
 
         $config = $composer->getConfig();
         list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
@@ -146,8 +149,13 @@ EOT
         $downloadManager->setPreferSource($preferSource);
         $downloadManager->setPreferDist($preferDist);
 
-        $installationManager->execute($localRepo, $uninstallOperations, true);
-        $installationManager->execute($localRepo, $installOperations, true);
+        $devMode = $localRepo->getDevMode() !== null ? $localRepo->getDevMode() : true;
+
+        Platform::putEnv('COMPOSER_DEV_MODE', $devMode ? '1' : '0');
+        $eventDispatcher->dispatchScript(ScriptEvents::PRE_INSTALL_CMD, $devMode);
+
+        $installationManager->execute($localRepo, $uninstallOperations, $devMode);
+        $installationManager->execute($localRepo, $installOperations, $devMode);
 
         if (!$input->getOption('no-autoloader')) {
             $optimize = $input->getOption('optimize-autoloader') || $config->get('optimize-autoloader');
@@ -161,6 +169,8 @@ EOT
             $generator->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
             $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
         }
+
+        $eventDispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, $devMode);
 
         return 0;
     }
