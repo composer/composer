@@ -1,3 +1,13 @@
+### [2.2.6] 2022-02-04
+
+  * BC Break: due to an oversight, the `COMPOSER_BIN_DIR` env var for binaries added in Composer 2.2.2 had to be renamed to `COMPOSER_RUNTIME_BIN_DIR` (#10512)
+  * Fixed enum parsing in classmap generation with syntax like `enum foo:string` without space after `:` (#10498)
+  * Fixed package search not urlencoding the input (#10500)
+  * Fixed `reinstall` command not firing `pre-install-cmd`/`post-install-cmd` events (#10514)
+  * Fixed edge case in path repositories where a symlink: true option would be ignored on old Windows and old PHP combos (#10482)
+  * Fixed test suite compatibility with latest symfony/console releases (#10499)
+  * Fixed some error reporting edge cases (#10484, #10451, #10493)
+
 ### [2.2.5] 2022-01-21
 
   * Disabled `composer/package-versions-deprecated` by default as it can function using `Composer\InstalledVersions` at runtime (#10458)
@@ -1374,6 +1384,7 @@
 
   * Initial release
 
+[2.2.6]: https://github.com/composer/composer/compare/2.2.5...2.2.6
 [2.2.5]: https://github.com/composer/composer/compare/2.2.4...2.2.5
 [2.2.4]: https://github.com/composer/composer/compare/2.2.3...2.2.4
 [2.2.3]: https://github.com/composer/composer/compare/2.2.2...2.2.3
