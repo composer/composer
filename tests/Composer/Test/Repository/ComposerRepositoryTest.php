@@ -206,24 +206,21 @@ class ComposerRepositoryTest extends TestCase
             'url' => 'http://example.org',
         );
 
-        $result = array(
-            'results' => array(
-                array(
-                    'name' => 'foo',
-                    'description' => null,
-                ),
-            ),
+        $httpDownloader = $this->getHttpDownloaderMock();
+        $httpDownloader->expects(
+            [
+                ['url' => 'http://example.org/packages.json', 'body' => JsonFile::encode(array('search' => '/search.json?q=%query%&type=%type%'))],
+                ['url' => 'http://example.org/search.json?q=foo+bar&type=', 'body' => JsonFile::encode(array())],
+            ],
+            true
         );
-
-        $httpDownloader = new HttpDownloaderMock(array(
-            'http://example.org/packages.json' => JsonFile::encode(array('search' => '/search.json?q=%query%&type=%type%')),
-            'http://example.org/search.json?q=foo+bar&type=' => JsonFile::encode(array()),
-        ));
         $eventDispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $repository = new ComposerRepository($repoConfig, new NullIO, FactoryMock::createConfig(), $httpDownloader, $eventDispatcher);
+        $config = FactoryMock::createConfig();
+        $config->merge(['config' => ['cache-read-only' => true]]);
+        $repository = new ComposerRepository($repoConfig, new NullIO, $config, $httpDownloader, $eventDispatcher);
 
         $this->assertEmpty(
             $repository->search('foo bar', RepositoryInterface::SEARCH_FULLTEXT)
