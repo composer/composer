@@ -135,7 +135,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $this->setPushUrl($path, $url);
         }
 
-        if ($newRef = $this->updateToCommit($package, $path, $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
+        if ($newRef = $this->updateToCommit($package, $path, (string) $ref, $package->getPrettyVersion(), $package->getReleaseDate())) {
             if ($package->getDistReference() === $package->getSourceReference()) {
                 $package->setDistReference($newRef);
             }
@@ -186,7 +186,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         };
 
         $this->gitUtil->runCommand($commandCallable, $url, $path);
-        if ($newRef = $this->updateToCommit($target, $path, $ref, $target->getPrettyVersion(), $target->getReleaseDate())) {
+        if ($newRef = $this->updateToCommit($target, $path, (string) $ref, $target->getPrettyVersion(), $target->getReleaseDate())) {
             if ($target->getDistReference() === $target->getSourceReference()) {
                 $target->setDistReference($newRef);
             }
@@ -435,11 +435,10 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      * @param  string            $path
      * @param  string            $reference
      * @param  string            $prettyVersion
-     * @param  \DateTime         $date
      * @throws \RuntimeException
      * @return null|string       if a string is returned, it is the commit reference that was checked out if the original could not be found
      */
-    protected function updateToCommit(PackageInterface $package, $path, $reference, $prettyVersion, $date)
+    protected function updateToCommit(PackageInterface $package, $path, $reference, $prettyVersion)
     {
         $force = !empty($this->hasDiscardedChanges[$path]) || !empty($this->hasStashedChanges[$path]) ? '-f ' : '';
 
