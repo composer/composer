@@ -48,6 +48,6 @@ Your requirements could not be resolved to an installable set of packages.
 
   Problem 1
     - Root composer.json requires main/dep * -> satisfiable by main/dep[1.0.0].
-    - main/dep 1.0.0 requires locked/dep ^2.1 -> found locked/dep[2.1.0] in the lock file and locked/dep[2.0.5] from package repo (defining 2 packages) but it does not match your constraint and is therefore not installable. Make sure you either fix the constraint or avoid updating this package to keep the one from the lock file.
+    - main/dep 1.0.0 requires locked/dep ^2.1 -> found locked/dep[2.0.5] but it does not match your constraint and is therefore not installable. Make sure you either fix the constraint or avoid updating this package to keep the one present in the lock file (locked/dep[2.1.0]).
 
 --EXPECT--

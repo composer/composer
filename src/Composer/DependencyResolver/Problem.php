@@ -554,8 +554,18 @@ class Problem
         if ($nextRepo instanceof LockArrayRepository) {
             $singular = count($higherRepoPackages) === 1;
 
-            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ',
-                'found '.self::getPackageList($nextRepoPackages, $isVerbose, $pool, $constraint).' in the lock file and '.self::getPackageList($higherRepoPackages, $isVerbose, $pool, $constraint).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' but ' . ($singular ? 'it does' : 'these do') . ' not match your '.$reason.' and ' . ($singular ? 'is' : 'are') . ' therefore not installable. Make sure you either fix the '.$reason.' or avoid updating this package to keep the one from the lock file.', );
+            $suggestion = 'Make sure you either fix the '.$reason.' or avoid updating this package to keep the one present in the lock file ('.self::getPackageList($nextRepoPackages, $isVerbose, $pool, $constraint).').';
+            // symlinked path repos cannot be locked so do not suggest keeping it locked
+            if ($nextRepoPackages[0]->getDistType() === 'path') {
+                $transportOptions = $nextRepoPackages[0]->getTransportOptions();
+                if (!isset($transportOptions['symlink']) || $transportOptions['symlink'] !== false) {
+                    $suggestion = 'Make sure you fix the '.$reason.' as packages installed from symlinked path repos are updated even in partial updates and the one from the lock file can thus not be used.';
+                }
+            }
+
+            return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ',
+                'found ' . self::getPackageList($higherRepoPackages, $isVerbose, $pool, $constraint).' but ' . ($singular ? 'it does' : 'these do') . ' not match your '.$reason.' and ' . ($singular ? 'is' : 'are') . ' therefore not installable. '.$suggestion,
+            );
         }
 
         return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', it is ', 'satisfiable by '.self::getPackageList($nextRepoPackages, $isVerbose, $pool, $constraint).' from '.$nextRepo->getRepoName().' but '.self::getPackageList($higherRepoPackages, $isVerbose, $pool, $constraint).' from '.reset($higherRepoPackages)->getRepository()->getRepoName().' has higher repository priority. The packages from the higher priority repository do not match your '.$reason.' and are therefore not installable. That repository is canonical so the lower priority repo\'s packages are not installable. See https://getcomposer.org/repoprio for details and assistance.');
