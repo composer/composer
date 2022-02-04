@@ -247,16 +247,21 @@ EOT
 
                 if (empty($package)) {
                     $options = $input->getOptions();
-                    if (!isset($options['working-dir']) || !file_exists('composer.json')) {
-                        if (PlatformRepository::isPlatformPackage($input->getArgument('package')) && !$input->getOption('platform')) {
-                            throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found, try using --platform (-p) to show platform packages.');
-                        }
-                        throw new \InvalidArgumentException('Package ' . $packageFilter . ' not found');
+                    $hint = '';
+                    if ($input->getOption('locked')) {
+                        $hint .= ' in lock file';
+                    }
+                    if (isset($options['working-dir'])) {
+                        $hint .= ' in ' . $options['working-dir'] . '/composer.json';
+                    }
+                    if (PlatformRepository::isPlatformPackage($input->getArgument('package')) && !$input->getOption('platform')) {
+                        $hint .= ', try using --platform (-p) to show platform packages';
+                    }
+                    if (!$input->getOption('all')) {
+                        $hint .= ', try using --all (-a) to show all available packages';
                     }
 
-                    $io->writeError('Package ' . $packageFilter . ' not found in ' . $options['working-dir'] . '/composer.json');
-
-                    return 1;
+                    throw new \InvalidArgumentException('Package "' . $packageFilter . '" not found'.$hint.'.');
                 }
             } else {
                 $versions = array($package->getPrettyVersion() => $package->getVersion());
