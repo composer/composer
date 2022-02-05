@@ -18,6 +18,8 @@ use Composer\Repository\RepositoryInterface;
  * Defines the essential information a package has that is used during solving/installation
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * @phpstan-type AutoloadMapping array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>}
  */
 interface PackageInterface
 {
@@ -303,7 +305,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
-     * @phpstan-return array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>}
+     * @phpstan-return AutoloadMapping
      */
     public function getAutoload();
 
@@ -316,7 +318,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of dev autoloading rules
-     * @phpstan-return array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>}
+     * @phpstan-return AutoloadMapping
      */
     public function getDevAutoload();
 
