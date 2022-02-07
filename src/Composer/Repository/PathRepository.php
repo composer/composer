@@ -98,7 +98,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
     private $process;
 
     /**
-     * @var array{symlink?: bool, reference?: string, relative: bool, versions?: array<string, string>}
+     * @var array{symlink?: bool, reference?: string, relative?: bool, versions?: array<string, string>}
      */
     private $options;
 
