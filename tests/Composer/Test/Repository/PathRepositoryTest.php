@@ -154,4 +154,50 @@ class PathRepositoryTest extends TestCase
         $relativeUrl = str_replace(DIRECTORY_SEPARATOR, '/', $relativeUrl);
         $this->assertSame($relativeUrl, $package->getDistUrl());
     }
+
+    public function testReferenceNone()
+    {
+        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
+            ->getMock();
+
+        $config = new \Composer\Config();
+
+        $options = array(
+            'reference' => 'none',
+        );
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
+        $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);
+        $packages = $repository->getPackages();
+
+        $this->assertGreaterThanOrEqual(2, $repository->count());
+
+        foreach ($packages as $package) {
+            $this->assertEquals($package->getDistReference(), null);
+        }
+    }
+
+    public function testReferenceConfig()
+    {
+        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
+            ->getMock();
+
+        $config = new \Composer\Config();
+
+        $options = array(
+            'reference' => 'config',
+            'relative' => true,
+        );
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
+        $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);
+        $packages = $repository->getPackages();
+
+        $this->assertGreaterThanOrEqual(2, $repository->count());
+
+        foreach ($packages as $package) {
+            $this->assertEquals(
+                $package->getDistReference(),
+                sha1(file_get_contents($package->getDistUrl() . '/composer.json') . serialize($options))
+            );
+        }
+    }
 }
