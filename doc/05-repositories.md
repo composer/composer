@@ -755,11 +755,17 @@ variables are parsed in both Windows and Linux/Mac notations. For example
 > **Note:** Repository paths can also contain wildcards like `*` and `?`.
 > For details, see the [PHP glob function](https://php.net/glob).
 
-You can configure the behavior of reference building for a package. Field reference showing when something changed in package.
+You can configure the way the package's dist reference (which appears in
+the composer.lock file) is built.
+
 There are the following options:
-- null - reference will be always null
-- config - reference is building basing on hash of composer.json and repo config
-- auto (used by default) - reference is building basing on hash of composer.json and repo config, but if the package folder contain git repository, then reference will be equal to the last commit hash in this folder
+- `null` - reference will be always null. This can help reduce lock file conflicts
+  in the lock file but reduces clarity as to when the last update happened and whether
+  the package is in the latest state.
+- `config` - reference is built based on a hash of the package's composer.json and repo config
+- `auto` (used by default) - reference is built basing on the hash like with `config`, but if
+  the package folder contains a git repository, the HEAD commit's hash is used as reference instead.
+
 ```json
 {
     "repositories": [
@@ -767,7 +773,7 @@ There are the following options:
             "type": "path",
             "url": "../../packages/my-package",
             "options": {
-                "reference": "auto"
+                "reference": "config"
             }
         }
     ]
