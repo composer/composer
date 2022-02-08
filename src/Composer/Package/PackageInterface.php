@@ -19,7 +19,7 @@ use Composer\Repository\RepositoryInterface;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  *
- * @phpstan-type AutoloadMapping array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>}
+ * @phpstan-type AutoloadMapping array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>, exclude-from-classmap?: list<string>}
  */
 interface PackageInterface
 {
