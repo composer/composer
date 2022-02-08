@@ -21,7 +21,7 @@ use Composer\Util\ComposerMirror;
  *
  * @author Nils Adermann <naderman@naderman.de>
  *
- * @phpstan-import-type AutoloadMapping from \Composer\Package\PackageInterface
+ * @phpstan-import-type AutoloadMapping from PackageInterface
  */
 class Package extends BasePackage
 {
