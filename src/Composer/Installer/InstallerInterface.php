@@ -111,10 +111,10 @@ interface InstallerInterface
     public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null);
 
     /**
-     * Returns the installation path of a package
+     * Returns the absolute installation path of a package.
      *
      * @param  PackageInterface $package
-     * @return string           path to install to, which MUST not end with a slash
+     * @return string           absolute path to install to, which MUST not end with a slash
      */
     public function getInstallPath(PackageInterface $package);
 }

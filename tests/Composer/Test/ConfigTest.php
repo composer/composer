@@ -13,6 +13,7 @@
 namespace Composer\Test;
 
 use Composer\Config;
+use Composer\Util\Platform;
 
 class ConfigTest extends TestCase
 {
@@ -325,22 +326,24 @@ class ConfigTest extends TestCase
 
     public function testProcessTimeout()
     {
-        putenv('COMPOSER_PROCESS_TIMEOUT=0');
+        Platform::putEnv('COMPOSER_PROCESS_TIMEOUT', '0');
         $config = new Config(true);
         $this->assertEquals(0, $config->get('process-timeout'));
-        putenv('COMPOSER_PROCESS_TIMEOUT');
+        Platform::clearEnv('COMPOSER_PROCESS_TIMEOUT');
     }
 
     public function testHtaccessProtect()
     {
-        putenv('COMPOSER_HTACCESS_PROTECT=0');
+        Platform::putEnv('COMPOSER_HTACCESS_PROTECT', '0');
         $config = new Config(true);
         $this->assertEquals(0, $config->get('htaccess-protect'));
-        putenv('COMPOSER_HTACCESS_PROTECT');
+        Platform::clearEnv('COMPOSER_HTACCESS_PROTECT');
     }
 
     public function testGetSourceOfValue()
     {
+        Platform::clearEnv('COMPOSER_PROCESS_TIMEOUT');
+
         $config = new Config;
 
         $this->assertSame(Config::SOURCE_DEFAULT, $config->getSourceOfValue('process-timeout'));
@@ -355,9 +358,9 @@ class ConfigTest extends TestCase
 
     public function testGetSourceOfValueEnvVariables()
     {
-        putenv('COMPOSER_HTACCESS_PROTECT=0');
+        Platform::putEnv('COMPOSER_HTACCESS_PROTECT', '0');
         $config = new Config;
         $this->assertEquals('COMPOSER_HTACCESS_PROTECT', $config->getSourceOfValue('htaccess-protect'));
-        putenv('COMPOSER_HTACCESS_PROTECT');
+        Platform::clearEnv('COMPOSER_HTACCESS_PROTECT');
     }
 }
