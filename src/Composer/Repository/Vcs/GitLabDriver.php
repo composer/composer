@@ -94,7 +94,7 @@ class GitLabDriver extends VcsDriver
     public function initialize()
     {
         if (!Preg::isMatch(self::URL_REGEX, $this->url, $match)) {
-            throw new \InvalidArgumentException('The URL provided is invalid. It must be the HTTP URL of a GitLab project.');
+            throw new \InvalidArgumentException(sprintf('The GitLab repository URL %s is invalid. It must be the HTTP URL of a GitLab project.', $this->url));
         }
 
         $guessedDomain = !empty($match['domain']) ? $match['domain'] : $match['domain2'];

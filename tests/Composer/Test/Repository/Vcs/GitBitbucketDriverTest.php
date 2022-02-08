@@ -218,6 +218,14 @@ class GitBitbucketDriverTest extends TestCase
         );
     }
 
+    public function testInitializeInvalidRepositoryUrl()
+    {
+        $this->setExpectedException('\InvalidArgumentException');
+
+        $driver = $this->getDriver(array('url' => 'https://bitbucket.org/acme'));
+        $driver->initialize();
+    }
+
     public function testSupports()
     {
         $this->assertTrue(
