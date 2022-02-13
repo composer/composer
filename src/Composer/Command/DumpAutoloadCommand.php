@@ -31,7 +31,7 @@ class DumpAutoloadCommand extends BaseCommand
     {
         $this
             ->setName('dump-autoload')
-            ->setAliases(array('dumpautoload'))
+            ->setAliases(array('dumpautoload', 'da'))
             ->setDescription('Dumps the autoloader.')
             ->setDefinition(array(
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.'),
@@ -47,7 +47,7 @@ class DumpAutoloadCommand extends BaseCommand
                 <<<EOT
 <info>php composer.phar dump-autoload</info>
 
-Read more at https://getcomposer.org/doc/03-cli.md#dump-autoload-dumpautoload-
+Read more at https://getcomposer.org/doc/03-cli.md#dump-autoload-dumpautoload-da
 EOT
             )
         ;

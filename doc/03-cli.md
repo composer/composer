@@ -859,7 +859,7 @@ By default the command checks for the packages on packagist.org.
   does not fulfill it. Multiple requirements can be ignored via wildcard.
 * **--ask:** Ask the user to provide a target directory for the new project.
 
-## dump-autoload (dumpautoload)
+## dump-autoload / dumpautoload / da
 
 If you need to update the autoloader because of new classes in a classmap
 package for example, you can use `dump-autoload` to do that without having to
