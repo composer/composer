@@ -5071,11 +5071,6 @@ parameters:
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
-			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:getProviderNames\\(\\) should return array\\<string\\> but returns array\\<int, int\\|string\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
 			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:getProviders\\(\\) should return array\\<string, array\\{name\\: string, description\\: string, type\\: string\\}\\> but returns array\\<int\\|string, array\\{name\\: mixed, description\\: mixed, type\\: mixed\\}\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
@@ -5187,16 +5182,11 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 13
+			count: 12
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
 			message: "#^Only booleans are allowed in \\|\\|, string\\|null given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
-			message: "#^Parameter \\#1 \\$input of function array_keys expects array, array\\<string, array\\<string, string\\>\\>\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
