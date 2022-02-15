@@ -330,16 +330,20 @@ class ConfigTest extends TestCase
     {
         Platform::putEnv('COMPOSER_PROCESS_TIMEOUT', '0');
         $config = new Config(true);
-        $this->assertEquals(0, $config->get('process-timeout'));
+        $result = $config->get('process-timeout');
         Platform::clearEnv('COMPOSER_PROCESS_TIMEOUT');
+
+        $this->assertEquals(0, $result);
     }
 
     public function testHtaccessProtect()
     {
         Platform::putEnv('COMPOSER_HTACCESS_PROTECT', '0');
         $config = new Config(true);
-        $this->assertEquals(0, $config->get('htaccess-protect'));
+        $result = $config->get('htaccess-protect');
         Platform::clearEnv('COMPOSER_HTACCESS_PROTECT');
+
+        $this->assertEquals(0, $result);
     }
 
     public function testGetSourceOfValue()
@@ -362,7 +366,9 @@ class ConfigTest extends TestCase
     {
         Platform::putEnv('COMPOSER_HTACCESS_PROTECT', '0');
         $config = new Config;
-        $this->assertEquals('COMPOSER_HTACCESS_PROTECT', $config->getSourceOfValue('htaccess-protect'));
+        $result = $config->getSourceOfValue('htaccess-protect');
         Platform::clearEnv('COMPOSER_HTACCESS_PROTECT');
+
+        $this->assertEquals('COMPOSER_HTACCESS_PROTECT', $result);
     }
 }
