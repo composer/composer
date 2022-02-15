@@ -125,7 +125,8 @@ EOT
                 $usedLicenses = array();
                 foreach ($packages as $package) {
                     $license = $package instanceof CompletePackageInterface ? $package->getLicense() : array();
-                    $licenseName = $license[0];
+                    $licenseName =  array_key_exists(0, $license) ? $license[0] : 'none';
+
                     if (!isset($usedLicenses[$licenseName])) {
                         $usedLicenses[$licenseName] = 0;
                     }
