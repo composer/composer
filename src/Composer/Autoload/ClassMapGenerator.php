@@ -271,7 +271,7 @@ class ClassMapGenerator
                 if ($name[0] === ':') {
                     // This is an XHP class, https://github.com/facebook/xhp
                     $name = 'xhp'.substr(str_replace(array('-', ':'), array('_', '__'), $name), 1);
-                } elseif ($matches['type'][$i] === 'enum') {
+                } elseif (strtolower($matches['type'][$i]) === 'enum') {
                     // something like:
                     //   enum Foo: int { HERP = '123'; }
                     // The regex above captures the colon, which isn't part of
