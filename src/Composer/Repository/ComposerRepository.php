@@ -652,7 +652,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             return array();
         }
 
-        if ($this->providersUrl) {
+        if (null !== $this->providersUrl && null !== $this->providerListing) {
             return array_keys($this->providerListing);
         }
 

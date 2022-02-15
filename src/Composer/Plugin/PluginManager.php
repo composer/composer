@@ -656,7 +656,7 @@ class PluginManager
         }
 
         if (false === $allowPluginsConfig) {
-            return array('{^$}D' => false);
+            return array('{}' => false);
         }
 
         $rules = array();
