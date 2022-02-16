@@ -543,12 +543,6 @@ EOT
                         $requirement['version'],
                         $requirement['name']
                     ));
-                } else {
-                    // check that the specified version/constraint exists before we proceed
-                    list($name) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $platformRepo, $preferredStability, $checkProvidedVersions ? $requirement['version'] : null, 'dev', $fixed);
-
-                    // replace package name from packagist.org
-                    $requirement['name'] = $name;
                 }
 
                 $result[] = $requirement['name'] . ' ' . $requirement['version'];
