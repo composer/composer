@@ -16,6 +16,9 @@ namespace Composer\Package;
  * Defines additional fields that are only needed for the root package
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ *
+ * @phpstan-import-type AutoloadRules from PackageInterface
+ * @phpstan-import-type DevAutoloadRules from PackageInterface
  */
 interface RootPackageInterface extends CompletePackageInterface
 {
@@ -122,7 +125,8 @@ interface RootPackageInterface extends CompletePackageInterface
     /**
      * Set the autoload mapping
      *
-     * @param array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>} $autoload Mapping of autoloading rules
+     * @param array $autoload Mapping of autoloading rules
+     * @phpstan-param AutoloadRules $autoload
      *
      * @return void
      */
@@ -131,7 +135,8 @@ interface RootPackageInterface extends CompletePackageInterface
     /**
      * Set the dev autoload mapping
      *
-     * @param array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>} $devAutoload Mapping of dev autoloading rules
+     * @param array $devAutoload Mapping of dev autoloading rules
+     * @phpstan-param DevAutoloadRules $devAutoload
      *
      * @return void
      */

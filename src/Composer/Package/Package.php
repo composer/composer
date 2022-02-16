@@ -20,6 +20,9 @@ use Composer\Util\ComposerMirror;
  * Core package definitions that are needed to resolve dependencies and install packages
  *
  * @author Nils Adermann <naderman@naderman.de>
+ *
+ * @phpstan-import-type AutoloadRules from PackageInterface
+ * @phpstan-import-type DevAutoloadRules from PackageInterface
  */
 class Package extends BasePackage
 {
@@ -79,9 +82,15 @@ class Package extends BasePackage
     protected $devRequires = array();
     /** @var array<string, string> */
     protected $suggests = array();
-    /** @var array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>} */
+    /**
+     * @var array
+     * @phpstan-var AutoloadRules
+     */
     protected $autoload = array();
-    /** @var array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>} */
+    /**
+     * @var array
+     * @phpstan-var DevAutoloadRules
+     */
     protected $devAutoload = array();
     /** @var string[] */
     protected $includePaths = array();
@@ -598,7 +607,7 @@ class Package extends BasePackage
      *
      * @return void
      *
-     * @phpstan-param array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>} $autoload
+     * @phpstan-param AutoloadRules $autoload
      */
     public function setAutoload(array $autoload)
     {
@@ -620,7 +629,7 @@ class Package extends BasePackage
      *
      * @return void
      *
-     * @phpstan-param array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>} $devAutoload
+     * @phpstan-param DevAutoloadRules $devAutoload
      */
     public function setDevAutoload(array $devAutoload)
     {

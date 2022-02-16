@@ -95,12 +95,6 @@ trait PackageDiscoveryTrait
                         $requirement['version'],
                         $requirement['name']
                     ));
-                } else {
-                    // check that the specified version/constraint exists before we proceed
-                    list($name) = $this->findBestVersionAndNameForPackage($input, $requirement['name'], $platformRepo, $preferredStability, $checkProvidedVersions ? $requirement['version'] : null, 'dev', $fixed);
-
-                    // replace package name from packagist.org
-                    $requirement['name'] = $name;
                 }
 
                 $result[] = $requirement['name'] . ' ' . $requirement['version'];
@@ -139,20 +133,8 @@ trait PackageDiscoveryTrait
                 $matches = array_values($matches);
 
                 $exactMatch = false;
-                $choices = array();
-                foreach ($matches as $position => $foundPackage) {
-                    $abandoned = '';
-                    if (isset($foundPackage['abandoned'])) {
-                        if (is_string($foundPackage['abandoned'])) {
-                            $replacement = sprintf('Use %s instead', $foundPackage['abandoned']);
-                        } else {
-                            $replacement = 'No replacement was suggested';
-                        }
-                        $abandoned = sprintf('<warning>Abandoned. %s.</warning>', $replacement);
-                    }
-
-                    $choices[] = sprintf(' <info>%5s</info> %s %s', "[$position]", $foundPackage['name'], $abandoned);
-                    if ($foundPackage['name'] === $package) {
+                foreach ($matches as $match) {
+                    if ($match['name'] === $package) {
                         $exactMatch = true;
                         break;
                     }
@@ -160,6 +142,26 @@ trait PackageDiscoveryTrait
 
                 // no match, prompt which to pick
                 if (!$exactMatch) {
+                    $providers = $this->getRepos()->getProviders($package);
+                    if (count($providers) > 0) {
+                        array_unshift($matches, array('name' => $package, 'description' => ''));
+                    }
+
+                    $choices = array();
+                    foreach ($matches as $position => $foundPackage) {
+                        $abandoned = '';
+                        if (isset($foundPackage['abandoned'])) {
+                            if (is_string($foundPackage['abandoned'])) {
+                                $replacement = sprintf('Use %s instead', $foundPackage['abandoned']);
+                            } else {
+                                $replacement = 'No replacement was suggested';
+                            }
+                            $abandoned = sprintf('<warning>Abandoned. %s.</warning>', $replacement);
+                        }
+
+                        $choices[] = sprintf(' <info>%5s</info> %s %s', "[$position]", $foundPackage['name'], $abandoned);
+                    }
+
                     $io->writeError(array(
                         '',
                         sprintf('Found <info>%s</info> packages matching <info>%s</info>', count($matches), $package),
@@ -257,7 +259,8 @@ trait PackageDiscoveryTrait
         $platformRequirementFilter = $this->getPlatformRequirementFilter($input);
 
         // find the latest version allowed in this repo set
-        $versionSelector = new VersionSelector($this->getRepositorySet($input, $minimumStability), $platformRepo);
+        $repoSet = $this->getRepositorySet($input, $minimumStability);
+        $versionSelector = new VersionSelector($repoSet, $platformRepo);
         $effectiveMinimumStability = $minimumStability ?? $this->getMinimumStability($input);
 
         $package = $versionSelector->findBestCandidate($name, $requiredVersion, $preferredStability, $platformRequirementFilter);
@@ -267,6 +270,22 @@ trait PackageDiscoveryTrait
             // so if platform reqs are ignored we just take the user's word for it
             if ($platformRequirementFilter->isIgnored($name)) {
                 return array($name, $requiredVersion ?: '*');
+            }
+
+            // Check if it is a virtual package provided by others
+            $providers = $repoSet->getProviders($name);
+            if (count($providers) > 0) {
+                $constraint = '*';
+                if ($input->isInteractive()) {
+                    $constraint = $this->getIO()->askAndValidate('Package "<info>'.$name.'</info>" does not exist but is provided by '.count($providers).' packages. Which version constraint would you like to use? [<info>*</info>] ', function ($value) {
+                        $parser = new VersionParser();
+                        $parser->parseConstraints($value);
+
+                        return $value;
+                    }, 3, '*');
+                }
+
+                return array($name, $constraint);
             }
 
             // Check whether the package requirements were the problem

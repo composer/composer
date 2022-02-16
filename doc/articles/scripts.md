@@ -46,7 +46,9 @@ Composer fires the following named events during its execution process:
 ### Installer Events
 
 - **pre-operations-exec**: occurs before the install/upgrade/.. operations
-  are executed when installing a lock file.
+  are executed when installing a lock file. Plugins that need to hook into
+  this event will need to be installed globally to be usable, as otherwise
+  they would not be loaded yet when a fresh install of a project happens.
 
 ### Package Events
 
