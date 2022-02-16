@@ -691,11 +691,16 @@ EOT
     /**
      * @param string $author
      *
-     * @return array<int, array{name: string, email: string|null}>
+     * @return array<int, array{name: string, email?: string}>
      */
     protected function formatAuthors($author)
     {
-        return array(array_filter($this->parseAuthorString($author), 'is_string'));
+        $author = $this->parseAuthorString($author);
+        if (null === $author['email']) {
+            unset($author['email']);
+        }
+
+        return array($author);
     }
 
     /**
