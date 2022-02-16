@@ -93,7 +93,7 @@ EOT
                     $tableStyle->setVerticalBorderChar('');
                 }
                 $tableStyle->setCellRowContentFormat('%s  ');
-                $table->setHeaders(array('Name', 'Version', 'License'));
+                $table->setHeaders(array('Name', 'Version', 'Licenses'));
                 foreach ($packages as $package) {
                     $table->addRow(array(
                         $package->getPrettyName(),
@@ -124,13 +124,16 @@ EOT
             case 'summary':
                 $usedLicenses = array();
                 foreach ($packages as $package) {
-                    $license = $package instanceof CompletePackageInterface ? $package->getLicense() : array();
-                    $licenseName =  array_key_exists(0, $license) ? $license[0] : 'none';
-
-                    if (!isset($usedLicenses[$licenseName])) {
-                        $usedLicenses[$licenseName] = 0;
+                    $licenses = $package instanceof CompletePackageInterface ? $package->getLicense() : array();
+                    if (count($licenses) === 0) {
+                        $licenses[] = 'none';
                     }
-                    $usedLicenses[$licenseName]++;
+                    foreach ($licenses as $licenseName) {
+                        if (!isset($usedLicenses[$licenseName])) {
+                            $usedLicenses[$licenseName] = 0;
+                        }
+                        $usedLicenses[$licenseName]++;
+                    }
                 }
 
                 // Sort licenses so that the most used license will appear first
