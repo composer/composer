@@ -75,10 +75,9 @@ EOT
     }
 
     /**
-     * @return int
      * @throws FilesystemException
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         // trigger autoloading of a few classes which may be needed when verifying/swapping the phar file
         // to ensure we do not try to load them from the new phar, see https://github.com/composer/composer/issues/10252

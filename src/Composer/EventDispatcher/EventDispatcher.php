@@ -33,7 +33,7 @@ use Symfony\Component\Process\ExecutableFinder;
  * The Event Dispatcher.
  *
  * Example in command:
- *     $dispatcher = new EventDispatcher($this->getComposer(), $this->getApplication()->getIO());
+ *     $dispatcher = new EventDispatcher($this->requireComposer(), $this->getApplication()->getIO());
  *     // ...
  *     $dispatcher->dispatch(ScriptEvents::POST_INSTALL_CMD);
  *     // ...

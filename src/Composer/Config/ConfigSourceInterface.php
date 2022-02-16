@@ -63,7 +63,7 @@ interface ConfigSourceInterface
      * Add a property
      *
      * @param string $name  Name
-     * @param string $value Value
+     * @param string|string[] $value Value
      *
      * @return void
      */

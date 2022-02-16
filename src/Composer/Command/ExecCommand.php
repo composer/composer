@@ -49,14 +49,11 @@ EOT
         ;
     }
 
-    /**
-     * @return int
-     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
+        $composer = $this->requireComposer();
         $binDir = $composer->getConfig()->get('bin-dir');
-        if ($input->getOption('list') || !$input->getArgument('binary')) {
+        if ($input->getOption('list') || null === $input->getArgument('binary')) {
             $bins = glob($binDir . '/*');
             $bins = array_merge($bins, array_map(function ($e) {
                 return "$e (local)";

@@ -135,10 +135,10 @@ interface IOInterface extends LoggerInterface
      * Asks a question to the user.
      *
      * @param string $question The question to ask
-     * @param string $default  The default answer if none is given by the user
+     * @param string|bool|int|float|null $default  The default answer if none is given by the user
      *
      * @throws \RuntimeException If there is no data to read in the input stream
-     * @return string|null       The user answer
+     * @return mixed       The user answer
      */
     public function ask($question, $default = null);
 

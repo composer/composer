@@ -69,9 +69,9 @@ EOT
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $composer = $this->getComposer(false);
+        $composer = $this->tryComposer();
         $config = null;
 
         if ($composer) {
@@ -86,20 +86,16 @@ EOT
             $config = Factory::createConfig();
         }
 
-        if (null === $input->getOption('format')) {
-            $input->setOption('format', $config->get('archive-format'));
-        }
-        if (null === $input->getOption('dir')) {
-            $input->setOption('dir', $config->get('archive-dir'));
-        }
+        $format = $input->getOption('format') ?? $config->get('archive-format');
+        $dir = $input->getOption('dir') ?? $config->get('archive-dir');
 
         $returnCode = $this->archive(
             $this->getIO(),
             $config,
             $input->getArgument('package'),
             $input->getArgument('version'),
-            $input->getOption('format'),
-            $input->getOption('dir'),
+            $format,
+            $dir,
             $input->getOption('file'),
             $input->getOption('ignore-filters'),
             $composer
@@ -113,17 +109,9 @@ EOT
     }
 
     /**
-     * @param string|null $packageName
-     * @param string|null $version
-     * @param string $format
-     * @param string $dest
-     * @param string|null $fileName
-     * @param bool $ignoreFilters
-     *
-     * @return int
      * @throws \Exception
      */
-    protected function archive(IOInterface $io, Config $config, $packageName = null, $version = null, $format = 'tar', $dest = '.', $fileName = null, $ignoreFilters = false, Composer $composer = null)
+    protected function archive(IOInterface $io, Config $config, ?string $packageName, ?string $version, string $format, string $dest, ?string $fileName, bool $ignoreFilters, ?Composer $composer): int
     {
         if ($composer) {
             $archiveManager = $composer->getArchiveManager();
@@ -142,7 +130,7 @@ EOT
                 return 1;
             }
         } else {
-            $package = $this->getComposer()->getPackage();
+            $package = $this->requireComposer()->getPackage();
         }
 
         $io->writeError('<info>Creating the archive into "'.$dest.'".</info>');
@@ -166,7 +154,7 @@ EOT
     {
         $io->writeError('<info>Searching for the specified package.</info>');
 
-        if ($composer = $this->getComposer(false)) {
+        if ($composer = $this->tryComposer()) {
             $localRepo = $composer->getRepositoryManager()->getLocalRepository();
             $repo = new CompositeRepository(array_merge(array($localRepo), $composer->getRepositoryManager()->getRepositories()));
         } else {

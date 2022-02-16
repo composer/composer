@@ -80,10 +80,10 @@ class RunScriptCommandTest extends TestCase
                 'mergeApplicationDefinition',
                 'getSynopsis',
                 'initialize',
-                'getComposer',
+                'requireComposer',
             ))
             ->getMock();
-        $command->expects($this->any())->method('getComposer')->willReturn($composer);
+        $command->expects($this->any())->method('requireComposer')->willReturn($composer);
 
         $command->run($input, $output);
     }

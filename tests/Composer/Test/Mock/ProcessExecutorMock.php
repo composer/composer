@@ -55,15 +55,30 @@ class ProcessExecutorMock extends ProcessExecutor
         $default = array('cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null);
         $this->expectations = array_map(function ($expect) use ($default) {
             if (is_string($expect)) {
-                $expect = array('cmd' => $expect);
+                $command = $expect;
+                $expect = $default;
+                $expect['cmd'] = $command;
             } elseif (count($diff = array_diff_key(array_merge($default, $expect), $default)) > 0) {
                 throw new \UnexpectedValueException('Unexpected keys in process execution step: '.implode(', ', array_keys($diff)));
             }
 
-            return array_merge($default, $expect);
+            // set defaults in a PHPStan-happy way (array_merge is not well supported)
+            $expect['cmd'] = $expect['cmd'] ?? $default['cmd'];
+            $expect['return'] = $expect['return'] ?? $default['return'];
+            $expect['stdout'] = $expect['stdout'] ?? $default['stdout'];
+            $expect['stderr'] = $expect['stderr'] ?? $default['stderr'];
+            $expect['callback'] = $expect['callback'] ?? $default['callback'];
+
+            return $expect;
         }, $expectations);
         $this->strict = $strict;
-        $this->defaultHandler = array_merge($this->defaultHandler, $defaultHandler);
+
+        // set defaults in a PHPStan-happy way (array_merge is not well supported)
+        $defaultHandler['return'] = $defaultHandler['return'] ?? $this->defaultHandler['return'];
+        $defaultHandler['stdout'] = $defaultHandler['stdout'] ?? $this->defaultHandler['stdout'];
+        $defaultHandler['stderr'] = $defaultHandler['stderr'] ?? $this->defaultHandler['stderr'];
+
+        $this->defaultHandler = $defaultHandler;
     }
 
     public function assertComplete(): void

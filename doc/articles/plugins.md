@@ -263,12 +263,12 @@ class CommandProvider implements CommandProviderCapability
 
 class Command extends BaseCommand
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('custom-plugin-command');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Executing');
     }

@@ -59,12 +59,9 @@ EOT
         ;
     }
 
-    /**
-     * @return int
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $composer = $this->getComposer();
+        $composer = $this->requireComposer();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'status', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -86,7 +83,7 @@ EOT
     private function doExecute(InputInterface $input)
     {
         // init repos
-        $composer = $this->getComposer();
+        $composer = $this->requireComposer();
 
         $installedRepo = $composer->getRepositoryManager()->getLocalRepository();
 

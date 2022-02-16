@@ -2,6 +2,8 @@ includes:
     - ../vendor/phpstan/phpstan-phpunit/extension.neon
     - ../vendor/phpstan/phpstan-deprecation-rules/rules.neon
     - ../vendor/phpstan/phpstan-strict-rules/rules.neon
+    - ../vendor/phpstan/phpstan-symfony/extension.neon
+    - ../vendor/phpstan/phpstan-symfony/rules.neon
     - ./baseline.neon
     - ./ignore-by-php-version.neon.php
 
@@ -50,6 +52,9 @@ parameters:
     paths:
         - ../src
         - ../tests
+
+    symfony:
+        consoleApplicationLoader: ../tests/console-application.php
 
     dynamicConstantNames:
         - Composer\Composer::BRANCH_ALIAS_VERSION

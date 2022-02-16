@@ -14,6 +14,7 @@ namespace Composer\Command;
 
 use Composer\DependencyResolver\Request;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\Repository\RepositorySet;
 use Composer\Util\Filesystem;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -38,8 +39,16 @@ use Composer\Util\Silencer;
  * @author Jérémy Romey <jeremy@free-agent.fr>
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
-class RequireCommand extends InitCommand
+class RequireCommand extends BaseCommand
 {
+    use PackageDiscoveryTrait;
+
+    // Properties for PackageDiscoveryTrait
+    /** @var ?CompositeRepository */
+    protected $repos;
+    /** @var RepositorySet[] */
+    private $repositorySets;
+
     /** @var bool */
     private $newlyCreated;
     /** @var bool */
@@ -110,7 +119,6 @@ EOT
     }
 
     /**
-     * @return int
      * @throws \Seld\JsonLint\ParsingException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -177,11 +185,11 @@ EOT
             }
         }
 
-        $composer = $this->getComposer(true, $input->getOption('no-plugins'));
+        $composer = $this->requireComposer();
         $repos = $composer->getRepositoryManager()->getRepositories();
 
-        $platformOverrides = $composer->getConfig()->get('platform') ?: array();
-        // initialize $this->repos as it is used by the parent InitCommand
+        $platformOverrides = $composer->getConfig()->get('platform');
+        // initialize $this->repos as it is used by the PackageDiscoveryTrait
         $this->repos = new CompositeRepository(array_merge(
             array($platformRepo = new PlatformRepository(array(), $platformOverrides)),
             $repos
@@ -256,7 +264,7 @@ EOT
         $this->firstRequire = $this->newlyCreated;
         if (!$this->firstRequire) {
             $composerDefinition = $this->json->read();
-            if (empty($composerDefinition['require']) && empty($composerDefinition['require-dev'])) {
+            if (count($composerDefinition['require'] ?? []) === 0 && count($composerDefinition['require-dev'] ?? []) === 0) {
                 $this->firstRequire = true;
             }
         }
@@ -355,7 +363,7 @@ EOT
     {
         // Update packages
         $this->resetComposer();
-        $composer = $this->getComposer(true, $input->getOption('no-plugins'), $input->getOption('no-scripts'));
+        $composer = $this->requireComposer();
 
         $this->dependencyResolutionCompleted = false;
         $composer->getEventDispatcher()->addListener(InstallerEvents::PRE_OPERATIONS_EXEC, array($this, 'markSolverComplete'), 10000);
@@ -401,7 +409,6 @@ EOT
 
         $install = Installer::create($io, $composer);
 
-        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
         list($preferSource, $preferDist) = $this->getPreferredInstallOptions($composer->getConfig(), $input);
 
         $install
@@ -416,7 +423,7 @@ EOT
             ->setUpdate(true)
             ->setInstall(!$input->getOption('no-install'))
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
-            ->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs))
+            ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
         ;
@@ -472,7 +479,7 @@ EOT
         return true;
     }
 
-    protected function interact(InputInterface $input, OutputInterface $output)
+    protected function interact(InputInterface $input, OutputInterface $output): void
     {
         return;
     }

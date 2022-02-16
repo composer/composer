@@ -54,7 +54,7 @@ class RunScriptCommand extends BaseCommand
             ->setAliases(array('run'))
             ->setDescription('Runs the scripts defined in composer.json.')
             ->setDefinition(array(
-                new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run.'),
+                new InputArgument('script', InputArgument::REQUIRED, 'Script name to run.'),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
                 new InputOption('timeout', null, InputOption::VALUE_REQUIRED, 'Sets script timeout in seconds, or 0 for never.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
@@ -73,13 +73,10 @@ EOT
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input->getOption('list')) {
             return $this->listScripts($output);
-        }
-        if (!$input->getArgument('script')) {
-            throw new \RuntimeException('Missing required argument "script"');
         }
 
         $script = $input->getArgument('script');
@@ -89,7 +86,7 @@ EOT
             }
         }
 
-        $composer = $this->getComposer();
+        $composer = $this->requireComposer();
         $devMode = $input->getOption('dev') || !$input->getOption('no-dev');
         $event = new ScriptEvent($script, $composer, $this->getIO(), $devMode);
         $hasListeners = $composer->getEventDispatcher()->hasEventListeners($event);
@@ -117,7 +114,7 @@ EOT
      */
     protected function listScripts(OutputInterface $output)
     {
-        $scripts = $this->getComposer()->getPackage()->getScripts();
+        $scripts = $this->requireComposer()->getPackage()->getScripts();
 
         if (!count($scripts)) {
             return 0;

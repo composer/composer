@@ -53,12 +53,9 @@ EOT
         ;
     }
 
-    /**
-     * @return int
-     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $composer = $this->getComposer();
+        $composer = $this->requireComposer();
 
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'dump-autoload', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
@@ -81,8 +78,6 @@ EOT
             $this->getIO()->write('<info>Generating autoload files</info>');
         }
 
-        $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
-
         $generator = $composer->getAutoloadGenerator();
         if ($input->getOption('no-dev')) {
             $generator->setDevMode(false);
@@ -96,7 +91,7 @@ EOT
         $generator->setClassMapAuthoritative($authoritative);
         $generator->setRunScripts(true);
         $generator->setApcu($apcu, $apcuPrefix);
-        $generator->setPlatformRequirementFilter(PlatformRequirementFilterFactory::fromBoolOrList($ignorePlatformReqs));
+        $generator->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input));
         $numberOfClasses = $generator->dump($config, $localRepo, $package, $installationManager, 'composer', $optimize);
 
         if ($authoritative) {
