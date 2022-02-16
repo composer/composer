@@ -350,13 +350,17 @@ EOT
 
         $self = $this;
         $author = $io->askAndValidate(
-            'Author [<comment>'.$author.'</comment>, n to skip]: ',
+            'Author ['.(is_string($author) ? '<comment>'.$author.'</comment>, ' : '') . 'n to skip]: ',
             function ($value) use ($self, $author) {
                 if ($value === 'n' || $value === 'no') {
                     return;
                 }
                 $value = $value ?: $author;
                 $author = $self->parseAuthorString($value);
+
+                if ($author['email'] === null) {
+                    return $author['name'];
+                }
 
                 return sprintf('%s <%s>', $author['name'], $author['email']);
             },
@@ -471,22 +475,20 @@ EOT
     /**
      * @private
      * @param  string $author
-     * @return array{name: string, email: string}
+     * @return array{name: string, email: string|null}
      */
     public function parseAuthorString($author)
     {
-        if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+) <(?P<email>.+?)>$/u', $author, $match)) {
-            if ($this->isValidEmail($match['email'])) {
-                return array(
-                    'name' => trim($match['name']),
-                    'email' => $match['email'],
-                );
-            }
+        if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+)(?: <(?P<email>.+?)>)?$/u', $author, $match)) {
+            return array(
+                'name' => trim($match['name']),
+                'email' => (isset($match['email']) && '' !== $match['email'] && $this->isValidEmail($match['email'])) ? $match['email'] : null,
+            );
         }
 
         throw new \InvalidArgumentException(
-            'Invalid author string.  Must be in the format: '.
-            'John Smith <john@example.com>'
+            'Invalid author string.  Must be in the formats: '.
+            'Jane Doe or John Smith <john@example.com>'
         );
     }
 
@@ -684,11 +686,11 @@ EOT
     /**
      * @param string $author
      *
-     * @return array<int, array{name: string, email: string}>
+     * @return array<int, array{name: string, email: string|null}>
      */
     protected function formatAuthors($author)
     {
-        return array($this->parseAuthorString($author));
+        return array(array_filter($this->parseAuthorString($author)));
     }
 
     /**
