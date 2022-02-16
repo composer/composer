@@ -21,7 +21,8 @@ use Composer\Util\ComposerMirror;
  *
  * @author Nils Adermann <naderman@naderman.de>
  *
- * @phpstan-import-type ComposerAudoload from PackageInterface
+ * @phpstan-import-type AutoloadRules from PackageInterface
+ * @phpstan-import-type DevAutoloadRules from PackageInterface
  */
 class Package extends BasePackage
 {
@@ -81,9 +82,15 @@ class Package extends BasePackage
     protected $devRequires = array();
     /** @var array<string, string> */
     protected $suggests = array();
-    /** @var ComposerAudoload */
+    /**
+     * @var array
+     * @phpstan-var AutoloadRules
+     */
     protected $autoload = array();
-    /** @var ComposerAudoload */
+    /**
+     * @var array
+     * @phpstan-var DevAutoloadRules
+     */
     protected $devAutoload = array();
     /** @var string[] */
     protected $includePaths = array();
@@ -600,7 +607,7 @@ class Package extends BasePackage
      *
      * @return void
      *
-     * @phpstan-param ComposerAudoload $autoload
+     * @phpstan-param AutoloadRules $autoload
      */
     public function setAutoload(array $autoload)
     {
@@ -622,7 +629,7 @@ class Package extends BasePackage
      *
      * @return void
      *
-     * @phpstan-param ComposerAudoload $devAutoload
+     * @phpstan-param DevAutoloadRules $devAutoload
      */
     public function setDevAutoload(array $devAutoload)
     {

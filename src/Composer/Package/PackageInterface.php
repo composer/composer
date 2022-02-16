@@ -19,7 +19,8 @@ use Composer\Repository\RepositoryInterface;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  *
- * @phpstan-type ComposerAudoload array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>, exclude-from-classmap?: list<string>}
+ * @phpstan-type AutoloadRules    array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>, exclude-from-classmap?: list<string>}
+ * @phpstan-type DevAutoloadRules array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>}
  */
 interface PackageInterface
 {
@@ -305,7 +306,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of autoloading rules
-     * @phpstan-return ComposerAudoload
+     * @phpstan-return AutoloadRules
      */
     public function getAutoload();
 
@@ -318,7 +319,7 @@ interface PackageInterface
      * directories for autoloading using the type specified.
      *
      * @return array Mapping of dev autoloading rules
-     * @phpstan-return ComposerAudoload
+     * @phpstan-return DevAutoloadRules
      */
     public function getDevAutoload();
 
