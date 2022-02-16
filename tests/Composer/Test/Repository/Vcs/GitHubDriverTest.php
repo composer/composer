@@ -14,11 +14,11 @@ namespace Composer\Test\Repository\Vcs;
 
 use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\GitHubDriver;
+use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
-use Composer\Util\Http\Response;
-use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Config;
+use Composer\Util\Http\Response;
 use Composer\Util\ProcessExecutor;
 
 class GitHubDriverTest extends TestCase
@@ -339,6 +339,50 @@ class GitHubDriverTest extends TestCase
         $this->assertEquals($sha, $source['reference']);
 
         $process->assertComplete($this);
+    }
+
+    /**
+     * @return void
+     */
+    public function initializeInvalidReoUrl()
+    {
+        $this->setExpectedException('\InvalidArgumentException');
+
+        $repoConfig = array(
+            'url' => 'https://github.com/acme',
+        );
+
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+        $httpDownloader = $this->getMockBuilder('Composer\Util\HttpDownloader')
+            ->setConstructorArgs(array($io, $this->config))
+            ->getMock();
+
+        $gitHubDriver = new GitHubDriver($repoConfig, $io, $this->config, $httpDownloader, new ProcessExecutorMock);
+        $gitHubDriver->initialize();
+    }
+
+    /**
+     * @dataProvider supportsProvider
+     * @param bool $expected
+     * @param string $repoUrl
+     */
+    public function testSupports($expected, $repoUrl)
+    {
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+
+        $this->assertSame($expected, GitHubDriver::supports($io, $this->config, $repoUrl));
+    }
+
+    /**
+     * @return list<array{bool, string}>
+     */
+    public function supportsProvider()
+    {
+        return array(
+            array(false, 'https://github.com/acme'),
+            array(true, 'https://github.com/acme/repository'),
+            array(true, 'git@github.com:acme/repository.git'),
+        );
     }
 
     /**

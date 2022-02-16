@@ -59,7 +59,10 @@ class GitHubDriver extends VcsDriver
      */
     public function initialize()
     {
-        Preg::match('#^(?:(?:https?|git)://([^/]+)/|git@([^:]+):/?)([^/]+)/(.+?)(?:\.git|/)?$#', $this->url, $match);
+        if (!Preg::isMatch('#^(?:(?:https?|git)://([^/]+)/|git@([^:]+):/?)([^/]+)/(.+?)(?:\.git|/)?$#', $this->url, $match)) {
+            throw new \InvalidArgumentException(sprintf('The GitHub repository URL %s is invalid.', $this->url));
+        }
+
         $this->owner = $match[3];
         $this->repository = $match[4];
         $this->originUrl = strtolower(!empty($match[1]) ? $match[1] : $match[2]);
