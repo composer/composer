@@ -479,10 +479,15 @@ EOT
      */
     public function parseAuthorString($author)
     {
-        if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+)(?: <(?P<email>.+?)>)?$/u', $author, $match)) {
+        if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+)(?:\s+<(?P<email>.+?)>)?$/u', $author, $match)) {
+            $hasEmail = isset($match['email']) && '' !== $match['email'];
+            if ($hasEmail && !$this->isValidEmail($match['email'])) {
+                throw new \InvalidArgumentException('Invalid email "'.$match['email'].'"');
+            }
+
             return array(
                 'name' => trim($match['name']),
-                'email' => (isset($match['email']) && '' !== $match['email'] && $this->isValidEmail($match['email'])) ? $match['email'] : null,
+                'email' => $hasEmail ? $match['email'] : null,
             );
         }
 
@@ -690,7 +695,7 @@ EOT
      */
     protected function formatAuthors($author)
     {
-        return array(array_filter($this->parseAuthorString($author)));
+        return array(array_filter($this->parseAuthorString($author), 'is_string'));
     }
 
     /**
