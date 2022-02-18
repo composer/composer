@@ -12,10 +12,12 @@
 
 namespace Composer\EventDispatcher;
 
+use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
 use Composer\Composer;
+use Composer\PartialComposer;
 use Composer\Pcre\Preg;
 use Composer\Util\Platform;
 use Composer\DependencyResolver\Operation\OperationInterface;
@@ -44,7 +46,7 @@ use Symfony\Component\Process\ExecutableFinder;
  */
 class EventDispatcher
 {
-    /** @var Composer */
+    /** @var PartialComposer */
     protected $composer;
     /** @var IOInterface */
     protected $io;
@@ -62,11 +64,11 @@ class EventDispatcher
     /**
      * Constructor.
      *
-     * @param Composer        $composer The composer instance
+     * @param PartialComposer $composer The composer instance
      * @param IOInterface     $io       The IOInterface instance
      * @param ProcessExecutor $process
      */
-    public function __construct(Composer $composer, IOInterface $io, ProcessExecutor $process = null)
+    public function __construct(PartialComposer $composer, IOInterface $io, ProcessExecutor $process = null)
     {
         $this->composer = $composer;
         $this->io = $io;
@@ -116,6 +118,8 @@ class EventDispatcher
      */
     public function dispatchScript($eventName, $devMode = false, $additionalArgs = array(), $flags = array())
     {
+        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
+
         return $this->doDispatch(new Script\Event($eventName, $this->composer, $this->io, $devMode, $additionalArgs, $flags));
     }
 
@@ -133,6 +137,8 @@ class EventDispatcher
      */
     public function dispatchPackageEvent($eventName, $devMode, RepositoryInterface $localRepo, array $operations, OperationInterface $operation)
     {
+        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
+
         return $this->doDispatch(new PackageEvent($eventName, $this->composer, $this->io, $devMode, $localRepo, $operations, $operation));
     }
 
@@ -149,6 +155,8 @@ class EventDispatcher
      */
     public function dispatchInstallerEvent($eventName, $devMode, $executeOperations, Transaction $transaction)
     {
+        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
+
         return $this->doDispatch(new InstallerEvent($eventName, $this->composer, $this->io, $devMode, $executeOperations, $transaction));
     }
 
@@ -485,6 +493,8 @@ class EventDispatcher
         if (empty($scripts[$event->getName()])) {
             return array();
         }
+
+        assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
 
         if ($this->loader) {
             $this->loader->unregister();

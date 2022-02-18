@@ -13,6 +13,7 @@
 namespace Composer\Plugin;
 
 use Composer\Composer;
+use Composer\Autoload\AutoloadGenerator;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Installer\InstallerInterface;
 use Composer\IO\IOInterface;
@@ -20,6 +21,7 @@ use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\Package;
 use Composer\Package\Version\VersionParser;
+use Composer\PartialComposer;
 use Composer\Pcre\Preg;
 use Composer\Repository\RepositoryInterface;
 use Composer\Repository\InstalledRepository;
@@ -42,7 +44,7 @@ class PluginManager
     protected $composer;
     /** @var IOInterface */
     protected $io;
-    /** @var ?Composer */
+    /** @var PartialComposer|null */
     protected $globalComposer;
     /** @var VersionParser */
     protected $versionParser;
@@ -67,15 +69,7 @@ class PluginManager
     /** @var int */
     private static $classCounter = 0;
 
-    /**
-     * Initializes plugin manager
-     *
-     * @param IOInterface $io
-     * @param Composer    $composer
-     * @param Composer    $globalComposer
-     * @param bool        $disablePlugins
-     */
-    public function __construct(IOInterface $io, Composer $composer, Composer $globalComposer = null, $disablePlugins = false)
+    public function __construct(IOInterface $io, Composer $composer, PartialComposer $globalComposer = null, bool $disablePlugins = false)
     {
         $this->io = $io;
         $this->composer = $composer;
@@ -118,10 +112,9 @@ class PluginManager
         }
 
         $repo = $this->composer->getRepositoryManager()->getLocalRepository();
-        $globalRepo = $this->globalComposer ? $this->globalComposer->getRepositoryManager()->getLocalRepository() : null;
         $this->deactivateRepository($repo, false);
-        if ($globalRepo) {
-            $this->deactivateRepository($globalRepo, true);
+        if ($this->globalComposer !== null) {
+            $this->deactivateRepository($this->globalComposer->getRepositoryManager()->getLocalRepository(), true);
         }
     }
 
@@ -137,10 +130,8 @@ class PluginManager
 
     /**
      * Gets global composer or null when main composer is not fully loaded
-     *
-     * @return Composer|null
      */
-    public function getGlobalComposer(): ?Composer
+    public function getGlobalComposer(): ?PartialComposer
     {
         return $this->globalComposer;
     }
@@ -558,6 +549,7 @@ class PluginManager
             return $this->composer->getInstallationManager()->getInstallPath($package);
         }
 
+        assert(null !== $this->globalComposer);
         return $this->globalComposer->getInstallationManager()->getInstallPath($package);
     }
 

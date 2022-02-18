@@ -17,6 +17,7 @@ use Composer\Package\Loader\RootPackageLoader;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Factory;
+use Composer\PartialComposer;
 use Composer\Repository\RepositoryManager;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
@@ -32,7 +33,7 @@ use Composer\Util\ProcessExecutor;
 
 class FactoryMock extends Factory
 {
-    public static function createConfig(IOInterface $io = null, $cwd = null): Config
+    public static function createConfig(IOInterface $io = null, ?string $cwd = null): Config
     {
         $config = new Config(true, $cwd);
 
@@ -59,7 +60,7 @@ class FactoryMock extends Factory
         return new InstallationManagerMock();
     }
 
-    protected function createDefaultInstallers(InstallationManager $im, Composer $composer, IOInterface $io, ProcessExecutor $process = null): void
+    protected function createDefaultInstallers(InstallationManager $im, PartialComposer $composer, IOInterface $io, ProcessExecutor $process = null): void
     {
     }
 

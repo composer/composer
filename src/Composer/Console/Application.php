@@ -560,7 +560,7 @@ class Application extends BaseApplication
 
         $composer = $this->getComposer(false, false);
         if (null === $composer) {
-            $composer = Factory::createGlobal($this->io);
+            $composer = Factory::createGlobal($this->io, $this->disablePluginsByDefault, $this->disableScriptsByDefault);
         }
 
         if (null !== $composer) {
