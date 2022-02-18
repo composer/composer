@@ -105,7 +105,7 @@ EOT
     /**
      * @inheritDoc
      */
-    public function isProxyCommand()
+    public function isProxyCommand(): bool
     {
         return true;
     }

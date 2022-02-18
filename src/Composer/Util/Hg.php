@@ -103,7 +103,7 @@ class Hg
      *
      * @return string|null The hg version number, if present.
      */
-    public static function getVersion(ProcessExecutor $process)
+    public static function getVersion(ProcessExecutor $process): ?string
     {
         if (false === self::$version) {
             self::$version = null;

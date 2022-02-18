@@ -397,7 +397,7 @@ TAGSPUBKEY
      * @return int
      * @throws FilesystemException
      */
-    protected function rollback(OutputInterface $output, $rollbackDir, $localFilename)
+    protected function rollback(OutputInterface $output, $rollbackDir, $localFilename): int
     {
         $rollbackVersion = $this->getLastBackupVersion($rollbackDir);
         if (!$rollbackVersion) {
@@ -431,7 +431,7 @@ TAGSPUBKEY
      * @throws FilesystemException If the file cannot be moved
      * @return bool                Whether the phar is valid and has been moved
      */
-    protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
+    protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null): bool
     {
         $io = $this->getIO();
         @chmod($newFilename, fileperms($localFilename));
@@ -520,7 +520,7 @@ TAGSPUBKEY
      * @param string $rollbackDir
      * @return Finder
      */
-    protected function getOldInstallationFinder($rollbackDir)
+    protected function getOldInstallationFinder($rollbackDir): Finder
     {
         return Finder::create()
             ->depth(0)
@@ -541,7 +541,7 @@ TAGSPUBKEY
      * @throws \Exception
      * @return bool       If the operation succeeded
      */
-    protected function validatePhar($pharFile, &$error)
+    protected function validatePhar($pharFile, &$error): bool
     {
         if (ini_get('phar.readonly')) {
             return true;
@@ -569,7 +569,7 @@ TAGSPUBKEY
      *
      * @return bool
      */
-    protected function isWindowsNonAdminUser()
+    protected function isWindowsNonAdminUser(): bool
     {
         if (!Platform::isWindows()) {
             return false;
@@ -590,7 +590,7 @@ TAGSPUBKEY
      * @param  string $newFilename   The downloaded or backup phar
      * @return bool   Whether composer.phar has been updated
      */
-    protected function tryAsWindowsAdmin($localFilename, $newFilename)
+    protected function tryAsWindowsAdmin($localFilename, $newFilename): bool
     {
         $io = $this->getIO();
 

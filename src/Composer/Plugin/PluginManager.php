@@ -130,7 +130,7 @@ class PluginManager
      *
      * @return array<PluginInterface> plugins
      */
-    public function getPlugins()
+    public function getPlugins(): array
     {
         return $this->plugins;
     }
@@ -140,7 +140,7 @@ class PluginManager
      *
      * @return Composer|null
      */
-    public function getGlobalComposer()
+    public function getGlobalComposer(): ?Composer
     {
         return $this->globalComposer;
     }
@@ -374,7 +374,7 @@ class PluginManager
      *
      * @return string
      */
-    protected function getPluginApiVersion()
+    protected function getPluginApiVersion(): string
     {
         return PluginInterface::PLUGIN_API_VERSION;
     }
@@ -567,7 +567,7 @@ class PluginManager
      * @throws \RuntimeException On empty or non-string implementation class name value
      * @return null|string       The fully qualified class of the implementation or null if Plugin is not of Capable type or does not provide it
      */
-    protected function getCapabilityImplementationClassName(PluginInterface $plugin, $capability)
+    protected function getCapabilityImplementationClassName(PluginInterface $plugin, $capability): ?string
     {
         if (!($plugin instanceof Capable)) {
             return null;
@@ -600,7 +600,7 @@ class PluginManager
      * @phpstan-param class-string<CapabilityClass> $capabilityClassName
      * @phpstan-return null|CapabilityClass
      */
-    public function getPluginCapability(PluginInterface $plugin, $capabilityClassName, array $ctorArgs = array())
+    public function getPluginCapability(PluginInterface $plugin, $capabilityClassName, array $ctorArgs = array()): ?Capability
     {
         if ($capabilityClass = $this->getCapabilityImplementationClassName($plugin, $capabilityClassName)) {
             if (!class_exists($capabilityClass)) {
@@ -631,7 +631,7 @@ class PluginManager
      *                                                            Keeping it an array will allow future values to be passed w\o changing the signature.
      * @return CapabilityClass[]
      */
-    public function getPluginCapabilities($capabilityClassName, array $ctorArgs = array())
+    public function getPluginCapabilities($capabilityClassName, array $ctorArgs = array()): array
     {
         $capabilities = array();
         foreach ($this->getPlugins() as $plugin) {

@@ -144,7 +144,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getComposerInformation($identifier)
+    public function getComposerInformation($identifier): array
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getComposerInformation($identifier);
@@ -184,7 +184,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getFileContent($file, $identifier)
+    public function getFileContent($file, $identifier): ?string
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getFileContent($file, $identifier);
@@ -216,7 +216,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getChangeDate($identifier)
+    public function getChangeDate($identifier): ?\DateTime
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getChangeDate($identifier);
@@ -232,7 +232,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @return string
      */
-    public function getRepositoryUrl()
+    public function getRepositoryUrl(): string
     {
         if ($this->protocol) {
             return $this->project["{$this->protocol}_url_to_repo"];
@@ -244,7 +244,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getUrl();
@@ -256,7 +256,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getDist($identifier)
+    public function getDist($identifier): ?array
     {
         $url = $this->getApiUrl().'/repository/archive.zip?sha='.$identifier;
 
@@ -266,7 +266,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getSource($identifier)
+    public function getSource($identifier): array
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getSource($identifier);
@@ -278,7 +278,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getRootIdentifier()
+    public function getRootIdentifier(): string
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getRootIdentifier();
@@ -290,7 +290,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getBranches()
+    public function getBranches(): array
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getBranches();
@@ -306,7 +306,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getTags()
+    public function getTags(): array
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getTags();
@@ -322,7 +322,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @return string Base URL for GitLab API v3
      */
-    public function getApiUrl()
+    public function getApiUrl(): string
     {
         return $this->scheme.'://'.$this->originUrl.'/api/v4/projects/'.$this->urlEncodeAll($this->namespace).'%2F'.$this->urlEncodeAll($this->repository);
     }
@@ -352,7 +352,7 @@ class GitLabDriver extends VcsDriver
      *
      * @return string[] where keys are named references like tags or branches and the value a sha
      */
-    protected function getReferences($type)
+    protected function getReferences($type): array
     {
         $perPage = 100;
         $resource = $this->getApiUrl().'/repository/'.$type.'?per_page='.$perPage;
@@ -402,7 +402,7 @@ class GitLabDriver extends VcsDriver
      * @return true
      * @throws \RuntimeException
      */
-    protected function attemptCloneFallback()
+    protected function attemptCloneFallback(): bool
     {
         if ($this->isPrivate === false) {
             $url = $this->generatePublicUrl();
@@ -430,7 +430,7 @@ class GitLabDriver extends VcsDriver
      *
      * @return string
      */
-    protected function generateSshUrl()
+    protected function generateSshUrl(): string
     {
         if ($this->hasNonstandardOrigin) {
             return 'ssh://git@'.$this->originUrl.'/'.$this->namespace.'/'.$this->repository.'.git';
@@ -442,7 +442,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @return string
      */
-    protected function generatePublicUrl()
+    protected function generatePublicUrl(): string
     {
         return $this->scheme . '://' . $this->originUrl . '/'.$this->namespace.'/'.$this->repository.'.git';
     }
@@ -469,7 +469,7 @@ class GitLabDriver extends VcsDriver
      *
      * @param bool $fetchingRepoData
      */
-    protected function getContents($url, $fetchingRepoData = false)
+    protected function getContents($url, $fetchingRepoData = false): Response
     {
         try {
             $response = parent::getContents($url);
@@ -568,7 +568,7 @@ class GitLabDriver extends VcsDriver
      *
      * @inheritDoc
      */
-    public static function supports(IOInterface $io, Config $config, $url, $deep = false)
+    public static function supports(IOInterface $io, Config $config, $url, $deep = false): bool
     {
         if (!Preg::isMatch(self::URL_REGEX, $url, $match)) {
             return false;
@@ -594,7 +594,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @return string|null
      */
-    protected function getNextPage(Response $response)
+    protected function getNextPage(Response $response): ?string
     {
         $header = $response->getHeader('link');
 

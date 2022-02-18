@@ -38,7 +38,7 @@ class MarkAliasUninstalledOperation extends SolverOperation implements Operation
      *
      * @return AliasPackage
      */
-    public function getPackage()
+    public function getPackage(): AliasPackage
     {
         return $this->package;
     }
@@ -46,7 +46,7 @@ class MarkAliasUninstalledOperation extends SolverOperation implements Operation
     /**
      * @inheritDoc
      */
-    public function show($lock)
+    public function show($lock): string
     {
         return 'Marking <info>'.$this->package->getPrettyName().'</info> (<comment>'.$this->package->getFullPrettyVersion().'</comment>) as uninstalled, alias of <info>'.$this->package->getAliasOf()->getPrettyName().'</info> (<comment>'.$this->package->getAliasOf()->getFullPrettyVersion().'</comment>)';
     }

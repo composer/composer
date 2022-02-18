@@ -44,7 +44,7 @@ class Loop
     /**
      * @return HttpDownloader
      */
-    public function getHttpDownloader()
+    public function getHttpDownloader(): HttpDownloader
     {
         return $this->httpDownloader;
     }
@@ -52,7 +52,7 @@ class Loop
     /**
      * @return ProcessExecutor|null
      */
-    public function getProcessExecutor()
+    public function getProcessExecutor(): ?ProcessExecutor
     {
         return $this->processExecutor;
     }

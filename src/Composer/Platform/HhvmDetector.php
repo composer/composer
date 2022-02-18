@@ -42,7 +42,7 @@ class HhvmDetector
     /**
      * @return string|null
      */
-    public function getVersion()
+    public function getVersion(): ?string
     {
         if (null !== self::$hhvmVersion) {
             return self::$hhvmVersion ?: null;

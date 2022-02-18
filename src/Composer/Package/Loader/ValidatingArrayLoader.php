@@ -431,7 +431,7 @@ class ValidatingArrayLoader implements LoaderInterface
     /**
      * @return string[]
      */
-    public function getWarnings()
+    public function getWarnings(): array
     {
         return $this->warnings;
     }
@@ -439,7 +439,7 @@ class ValidatingArrayLoader implements LoaderInterface
     /**
      * @return string[]
      */
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->errors;
     }
@@ -450,7 +450,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @return string|null
      */
-    public static function hasPackageNamingError($name, $isLink = false)
+    public static function hasPackageNamingError($name, $isLink = false): ?string
     {
         if (PlatformRepository::isPlatformPackage($name)) {
             return null;

@@ -24,7 +24,7 @@ class Zip
      *
      * @return string|null
      */
-    public static function getComposerJson($pathToZip)
+    public static function getComposerJson($pathToZip): ?string
     {
         if (!extension_loaded('zip')) {
             throw new \RuntimeException('The Zip Util requires PHP\'s zip extension');

@@ -31,7 +31,7 @@ class IniHelper
      *
      * @return string[]
      */
-    public static function getAll()
+    public static function getAll(): array
     {
         return XdebugHandler::getAllIniFiles();
     }
@@ -41,7 +41,7 @@ class IniHelper
      *
      * @return string
      */
-    public static function getMessage()
+    public static function getMessage(): string
     {
         $paths = self::getAll();
 

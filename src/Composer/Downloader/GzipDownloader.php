@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
@@ -23,7 +24,7 @@ use Composer\Util\ProcessExecutor;
  */
 class GzipDownloader extends ArchiveDownloader
 {
-    protected function extract(PackageInterface $package, $file, $path)
+    protected function extract(PackageInterface $package, $file, $path): ?PromiseInterface
     {
         $filename = pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_FILENAME);
         $targetFilepath = $path . DIRECTORY_SEPARATOR . $filename;

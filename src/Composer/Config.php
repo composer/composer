@@ -148,7 +148,7 @@ class Config
     /**
      * @return ConfigSourceInterface
      */
-    public function getConfigSource()
+    public function getConfigSource(): ConfigSourceInterface
     {
         return $this->configSource;
     }
@@ -164,7 +164,7 @@ class Config
     /**
      * @return ConfigSourceInterface
      */
-    public function getAuthConfigSource()
+    public function getAuthConfigSource(): ConfigSourceInterface
     {
         return $this->authConfigSource;
     }
@@ -263,7 +263,7 @@ class Config
     /**
      * @return array<int|string, mixed>
      */
-    public function getRepositories()
+    public function getRepositories(): array
     {
         return $this->repositories;
     }
@@ -441,7 +441,7 @@ class Config
      *
      * @return array<string, mixed[]>
      */
-    public function all($flags = 0)
+    public function all($flags = 0): array
     {
         $all = array(
             'repositories' => $this->getRepositories(),
@@ -457,7 +457,7 @@ class Config
      * @param string $key
      * @return string
      */
-    public function getSourceOfValue($key)
+    public function getSourceOfValue($key): string
     {
         $this->get($key);
 
@@ -485,7 +485,7 @@ class Config
     /**
      * @return array<string, mixed[]>
      */
-    public function raw()
+    public function raw(): array
     {
         return array(
             'repositories' => $this->getRepositories(),
@@ -499,7 +499,7 @@ class Config
      * @param  string $key
      * @return bool
      */
-    public function has($key)
+    public function has($key): bool
     {
         return array_key_exists($key, $this->config);
     }

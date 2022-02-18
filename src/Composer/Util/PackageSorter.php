@@ -24,7 +24,7 @@ class PackageSorter
      * @param  PackageInterface[] $packages
      * @return PackageInterface[] sorted array
      */
-    public static function sortPackages(array $packages)
+    public static function sortPackages(array $packages): array
     {
         $usageList = array();
 

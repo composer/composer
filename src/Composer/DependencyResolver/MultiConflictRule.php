@@ -42,7 +42,7 @@ class MultiConflictRule extends Rule
     /**
      * @return int[]
      */
-    public function getLiterals()
+    public function getLiterals(): array
     {
         return $this->literals;
     }
@@ -65,7 +65,7 @@ class MultiConflictRule extends Rule
      * @param  Rule $rule The rule to check against
      * @return bool Whether the rules are equal
      */
-    public function equals(Rule $rule)
+    public function equals(Rule $rule): bool
     {
         if ($rule instanceof MultiConflictRule) {
             return $this->literals === $rule->getLiterals();
@@ -77,7 +77,7 @@ class MultiConflictRule extends Rule
     /**
      * @return bool
      */
-    public function isAssertion()
+    public function isAssertion(): bool
     {
         return false;
     }

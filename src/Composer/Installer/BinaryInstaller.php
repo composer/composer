@@ -149,7 +149,7 @@ class BinaryInstaller
      *
      * @return string
      */
-    public static function determineBinaryCaller($bin)
+    public static function determineBinaryCaller($bin): string
     {
         if ('.bat' === substr($bin, -4) || '.exe' === substr($bin, -4)) {
             return 'call';
@@ -168,7 +168,7 @@ class BinaryInstaller
     /**
      * @return string[]
      */
-    protected function getBinaries(PackageInterface $package)
+    protected function getBinaries(PackageInterface $package): array
     {
         return $package->getBinaries();
     }
@@ -223,7 +223,7 @@ class BinaryInstaller
      *
      * @return string
      */
-    protected function generateWindowsProxyCode($bin, $link)
+    protected function generateWindowsProxyCode($bin, $link): string
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
         $caller = self::determineBinaryCaller($bin);
@@ -252,7 +252,7 @@ class BinaryInstaller
      *
      * @return string
      */
-    protected function generateUnixyProxyCode($bin, $link)
+    protected function generateUnixyProxyCode($bin, $link): string
     {
         $binPath = $this->filesystem->findShortestPath($link, $bin);
 

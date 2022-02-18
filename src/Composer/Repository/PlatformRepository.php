@@ -84,7 +84,7 @@ class PlatformRepository extends ArrayRepository
         parent::__construct($packages);
     }
 
-    public function getRepoName()
+    public function getRepoName(): string
     {
         return 'platform repo';
     }
@@ -93,7 +93,7 @@ class PlatformRepository extends ArrayRepository
      * @param  string  $name
      * @return bool
      */
-    public function isPlatformPackageDisabled($name)
+    public function isPlatformPackageDisabled($name): bool
     {
         return isset($this->disabledPackages[$name]);
     }
@@ -101,7 +101,7 @@ class PlatformRepository extends ArrayRepository
     /**
      * @return array<string, CompletePackageInterface>
      */
-    public function getDisabledPackages()
+    public function getDisabledPackages(): array
     {
         return $this->disabledPackages;
     }
@@ -704,7 +704,7 @@ class PlatformRepository extends ArrayRepository
      * @param  string $name
      * @return bool
      */
-    public static function isPlatformPackage($name)
+    public static function isPlatformPackage($name): bool
     {
         static $cache = array();
 
@@ -730,7 +730,7 @@ class PlatformRepository extends ArrayRepository
         return self::$lastSeenPlatformPhp;
     }
 
-    public function search($query, $mode = 0, $type = null)
+    public function search($query, $mode = 0, $type = null): array
     {
         // suppress vendor search as there are no vendors to match in platform packages
         if ($mode === self::SEARCH_VENDOR) {

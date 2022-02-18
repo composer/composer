@@ -76,7 +76,7 @@ class Platform
      * @param  string $path
      * @return string
      */
-    public static function expandPath($path)
+    public static function expandPath($path): string
     {
         if (Preg::isMatch('#^~[\\/]#', $path)) {
             return self::getUserDirectory() . substr($path, 1);
@@ -96,7 +96,7 @@ class Platform
      * @throws \RuntimeException If the user home could not reliably be determined
      * @return string            The formal user home as detected from environment parameters
      */
-    public static function getUserDirectory()
+    public static function getUserDirectory(): string
     {
         if (false !== ($home = self::getEnv('HOME'))) {
             return $home;
@@ -118,7 +118,7 @@ class Platform
     /**
      * @return bool Whether the host machine is running on the Windows Subsystem for Linux (WSL)
      */
-    public static function isWindowsSubsystemForLinux()
+    public static function isWindowsSubsystemForLinux(): bool
     {
         if (null === self::$isWindowsSubsystemForLinux) {
             self::$isWindowsSubsystemForLinux = false;
@@ -144,7 +144,7 @@ class Platform
     /**
      * @return bool Whether the host machine is running a Windows OS
      */
-    public static function isWindows()
+    public static function isWindows(): bool
     {
         return \defined('PHP_WINDOWS_VERSION_BUILD');
     }
@@ -153,7 +153,7 @@ class Platform
      * @param  string $str
      * @return int    return a guaranteed binary length of the string, regardless of silly mbstring configs
      */
-    public static function strlen($str)
+    public static function strlen($str): int
     {
         static $useMbString = null;
         if (null === $useMbString) {
@@ -171,7 +171,7 @@ class Platform
      * @param  ?resource $fd Open file descriptor or null to default to STDOUT
      * @return bool
      */
-    public static function isTty($fd = null)
+    public static function isTty($fd = null): bool
     {
         if ($fd === null) {
             $fd = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'w');

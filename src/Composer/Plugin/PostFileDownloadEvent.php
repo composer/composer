@@ -81,7 +81,7 @@ class PostFileDownloadEvent extends Event
      *
      * @return string|null
      */
-    public function getFileName()
+    public function getFileName(): ?string
     {
         return $this->fileName;
     }
@@ -91,7 +91,7 @@ class PostFileDownloadEvent extends Event
      *
      * @return string|null
      */
-    public function getChecksum()
+    public function getChecksum(): ?string
     {
         return $this->checksum;
     }
@@ -101,7 +101,7 @@ class PostFileDownloadEvent extends Event
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
@@ -127,7 +127,7 @@ class PostFileDownloadEvent extends Event
      * @return \Composer\Package\PackageInterface|null The package.
      * @deprecated Use getContext instead
      */
-    public function getPackage()
+    public function getPackage(): ?\Composer\Package\PackageInterface
     {
         trigger_error('PostFileDownloadEvent::getPackage is deprecated since Composer 2.1, use getContext instead.', E_USER_DEPRECATED);
         $context = $this->getContext();
@@ -140,7 +140,7 @@ class PostFileDownloadEvent extends Event
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }

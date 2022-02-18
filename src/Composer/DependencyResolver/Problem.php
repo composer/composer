@@ -54,7 +54,7 @@ class Problem
      * @param Rule $rule A rule which is a reason for this problem
      * @return void
      */
-    public function addRule(Rule $rule)
+    public function addRule(Rule $rule): void
     {
         $this->addReason(spl_object_hash($rule), $rule);
     }
@@ -64,7 +64,7 @@ class Problem
      *
      * @return array<int, array<int, Rule>> The problem's reasons
      */
-    public function getReasons()
+    public function getReasons(): array
     {
         return $this->reasons;
     }
@@ -77,7 +77,7 @@ class Problem
      * @param array<Rule[]> $learnedPool
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
     {
         // TODO doesn't this entirely defeat the purpose of the problem sections? what's the point of sections?
         $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
@@ -165,7 +165,7 @@ class Problem
     /**
      * @return bool
      */
-    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
+    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool): bool
     {
         foreach ($this->reasons as $sectionRules) {
             foreach ($sectionRules as $rule) {
@@ -185,7 +185,7 @@ class Problem
      * @param Rule   $reason The reason descriptor
      * @return void
      */
-    protected function addReason($id, Rule $reason)
+    protected function addReason($id, Rule $reason): void
     {
         // TODO: if a rule is part of a problem description in two sections, isn't this going to remove a message
         // that is important to understand the issue?
@@ -199,7 +199,7 @@ class Problem
     /**
      * @return void
      */
-    public function nextSection()
+    public function nextSection(): void
     {
         $this->section++;
     }
@@ -576,7 +576,7 @@ class Problem
      *
      * @return string
      */
-    protected static function constraintToText(ConstraintInterface $constraint = null)
+    protected static function constraintToText(ConstraintInterface $constraint = null): string
     {
         return $constraint ? ' '.$constraint->getPrettyString() : '';
     }

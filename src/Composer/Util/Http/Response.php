@@ -50,7 +50,7 @@ class Response
     /**
      * @return int
      */
-    public function getStatusCode()
+    public function getStatusCode(): int
     {
         return $this->code;
     }
@@ -58,7 +58,7 @@ class Response
     /**
      * @return string|null
      */
-    public function getStatusMessage()
+    public function getStatusMessage(): ?string
     {
         $value = null;
         foreach ($this->headers as $header) {
@@ -75,7 +75,7 @@ class Response
     /**
      * @return string[]
      */
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->headers;
     }
@@ -84,7 +84,7 @@ class Response
      * @param  string  $name
      * @return ?string
      */
-    public function getHeader($name)
+    public function getHeader($name): ?string
     {
         return self::findHeaderValue($this->headers, $name);
     }
@@ -92,7 +92,7 @@ class Response
     /**
      * @return ?string
      */
-    public function getBody()
+    public function getBody(): ?string
     {
         return $this->body;
     }
@@ -120,7 +120,7 @@ class Response
      * @param  string      $name    header name (case insensitive)
      * @return string|null
      */
-    public static function findHeaderValue(array $headers, $name)
+    public static function findHeaderValue(array $headers, $name): ?string
     {
         $value = null;
         foreach ($headers as $header) {

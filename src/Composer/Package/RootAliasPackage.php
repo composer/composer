@@ -35,7 +35,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @return RootPackage
      */
-    public function getAliasOf()
+    public function getAliasOf(): RootPackage
     {
         return $this->aliasOf;
     }
@@ -43,7 +43,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getAliases()
+    public function getAliases(): array
     {
         return $this->aliasOf->getAliases();
     }
@@ -51,7 +51,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getMinimumStability()
+    public function getMinimumStability(): string
     {
         return $this->aliasOf->getMinimumStability();
     }
@@ -59,7 +59,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getStabilityFlags()
+    public function getStabilityFlags(): array
     {
         return $this->aliasOf->getStabilityFlags();
     }
@@ -67,7 +67,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getReferences()
+    public function getReferences(): array
     {
         return $this->aliasOf->getReferences();
     }
@@ -75,7 +75,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getPreferStable()
+    public function getPreferStable(): bool
     {
         return $this->aliasOf->getPreferStable();
     }
@@ -83,7 +83,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getConfig()
+    public function getConfig(): array
     {
         return $this->aliasOf->getConfig();
     }

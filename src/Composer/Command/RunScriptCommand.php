@@ -112,7 +112,7 @@ EOT
     /**
      * @return int
      */
-    protected function listScripts(OutputInterface $output)
+    protected function listScripts(OutputInterface $output): int
     {
         $scripts = $this->requireComposer()->getPackage()->getScripts();
 

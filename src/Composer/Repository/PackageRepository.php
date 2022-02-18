@@ -61,7 +61,7 @@ class PackageRepository extends ArrayRepository
         }
     }
 
-    public function getRepoName()
+    public function getRepoName(): string
     {
         return Preg::replace('{^array }', 'package ', parent::getRepoName());
     }

@@ -50,7 +50,7 @@ class BaseDependencyCommand extends BaseCommand
      * @param  bool            $inverted Whether to invert matching process (why-not vs why behaviour)
      * @return int             Exit code of the operation.
      */
-    protected function doExecute(InputInterface $input, OutputInterface $output, $inverted = false)
+    protected function doExecute(InputInterface $input, OutputInterface $output, $inverted = false): int
     {
         // Emit command event on startup
         $composer = $this->requireComposer();

@@ -187,7 +187,7 @@ EOT
      * @return int
      * @throws \Exception
      */
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName = null, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $noInstall = false, PlatformRequirementFilterInterface $platformRequirementFilter = null, $secureHttp = true, $addRepository = false)
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName = null, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $noInstall = false, PlatformRequirementFilterInterface $platformRequirementFilter = null, $secureHttp = true, $addRepository = false): int
     {
         $oldCwd = getcwd();
 
@@ -350,7 +350,7 @@ EOT
      * @return bool
      * @throws \Exception
      */
-    protected function installRootPackage(IOInterface $io, Config $config, $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, array $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $secureHttp = true)
+    protected function installRootPackage(IOInterface $io, Config $config, $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, array $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $secureHttp = true): bool
     {
         if (!$secureHttp) {
             $config->merge(array('config' => array('secure-http' => false)), Config::SOURCE_COMMAND);

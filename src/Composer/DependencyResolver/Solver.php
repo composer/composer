@@ -68,7 +68,7 @@ class Solver
     /**
      * @return int
      */
-    public function getRuleSetSize()
+    public function getRuleSetSize(): int
     {
         return \count($this->rules);
     }
@@ -76,7 +76,7 @@ class Solver
     /**
      * @return Pool
      */
-    public function getPool()
+    public function getPool(): Pool
     {
         return $this->pool;
     }
@@ -190,7 +190,7 @@ class Solver
     /**
      * @return LockTransaction
      */
-    public function solve(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null)
+    public function solve(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null): LockTransaction
     {
         $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
 
@@ -233,7 +233,7 @@ class Solver
      * @param  int       $level
      * @return Rule|null A rule on conflict, otherwise null.
      */
-    protected function propagate($level)
+    protected function propagate($level): ?Rule
     {
         while ($this->decisions->validOffset($this->propagateIndex)) {
             $decision = $this->decisions->atOffset($this->propagateIndex);
@@ -370,7 +370,7 @@ class Solver
      * @param  int   $level
      * @return array{int, int, GenericRule, int}
      */
-    protected function analyze($level, Rule $rule)
+    protected function analyze($level, Rule $rule): array
     {
         $analyzedRule = $rule;
         $ruleLevel = 1;

@@ -45,7 +45,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function getMinimumStability()
+    public function getMinimumStability(): string
     {
         return $this->minimumStability;
     }
@@ -61,7 +61,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function getStabilityFlags()
+    public function getStabilityFlags(): array
     {
         return $this->stabilityFlags;
     }
@@ -77,7 +77,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function getPreferStable()
+    public function getPreferStable(): bool
     {
         return $this->preferStable;
     }
@@ -93,7 +93,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function getConfig()
+    public function getConfig(): array
     {
         return $this->config;
     }
@@ -109,7 +109,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function getReferences()
+    public function getReferences(): array
     {
         return $this->references;
     }
@@ -125,7 +125,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function getAliases()
+    public function getAliases(): array
     {
         return $this->aliases;
     }

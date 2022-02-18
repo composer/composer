@@ -66,7 +66,7 @@ class VersionGuesser
      * @return array|null
      * @phpstan-return Version|null
      */
-    public function guessVersion(array $packageConfig, $path)
+    public function guessVersion(array $packageConfig, $path): ?array
     {
         if (!function_exists('proc_open')) {
             return null;

@@ -158,7 +158,7 @@ class PoolBuilder
      * @param RepositoryInterface[] $repositories
      * @return Pool
      */
-    public function buildPool(array $repositories, Request $request)
+    public function buildPool(array $repositories, Request $request): Pool
     {
         if ($request->getUpdateAllowList()) {
             $this->updateAllowList = $request->getUpdateAllowList();

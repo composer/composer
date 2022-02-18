@@ -42,7 +42,7 @@ trait PackageDiscoveryTrait
     /**
      * @return CompositeRepository
      */
-    protected function getRepos()
+    protected function getRepos(): CompositeRepository
     {
         if (null === $this->repos) {
             $this->repos = new CompositeRepository(array_merge(

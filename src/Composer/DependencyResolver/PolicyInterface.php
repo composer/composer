@@ -26,12 +26,12 @@ interface PolicyInterface
      *
      * @phpstan-param Constraint::STR_OP_* $operator
      */
-    public function versionCompare(PackageInterface $a, PackageInterface $b, $operator);
+    public function versionCompare(PackageInterface $a, PackageInterface $b, $operator): bool;
 
     /**
      * @param  int[]   $literals
      * @param  ?string $requiredPackage
      * @return int[]
      */
-    public function selectPreferredPackages(Pool $pool, array $literals, $requiredPackage = null);
+    public function selectPreferredPackages(Pool $pool, array $literals, $requiredPackage = null): array;
 }

@@ -46,7 +46,7 @@ class SolverProblemsException extends \RuntimeException
      * @param bool $isDevExtraction
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false): string
     {
         $installedMap = $request->getPresentMap(true);
         $missingExtensions = array();
@@ -100,7 +100,7 @@ class SolverProblemsException extends \RuntimeException
     /**
      * @return Problem[]
      */
-    public function getProblems()
+    public function getProblems(): array
     {
         return $this->problems;
     }

@@ -172,7 +172,7 @@ class VersionSelector
      * @param  PackageInterface $package
      * @return string
      */
-    public function findRecommendedRequireVersion(PackageInterface $package)
+    public function findRecommendedRequireVersion(PackageInterface $package): string
     {
         // Extensions which are versioned in sync with PHP should rather be required as "*" to simplify
         // the requires and have only one required version to change when bumping the php requirement

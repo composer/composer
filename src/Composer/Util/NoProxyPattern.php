@@ -51,7 +51,7 @@ class NoProxyPattern
      *
      * @return bool
      */
-    public function test($url)
+    public function test($url): bool
     {
         if ($this->noproxy) {
             return true;
@@ -115,7 +115,7 @@ class NoProxyPattern
      *
      * @return bool
      */
-    protected function match($index, $hostName, $url)
+    protected function match($index, $hostName, $url): bool
     {
         if (!$rule = $this->getRule($index, $hostName)) {
             // Data must have been misformatted
@@ -154,7 +154,7 @@ class NoProxyPattern
      *
      * @return bool
      */
-    protected function matchRange(stdClass $network, stdClass $target)
+    protected function matchRange(stdClass $network, stdClass $target): bool
     {
         $net = unpack('C*', $network->ip);
         $mask = unpack('C*', $network->netmask);

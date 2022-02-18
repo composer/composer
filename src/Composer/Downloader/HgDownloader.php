@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Hg as HgUtils;
@@ -24,7 +25,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
+    protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null): ?PromiseInterface
     {
         if (null === HgUtils::getVersion($this->process)) {
             throw new \RuntimeException('hg was not found in your PATH, skipping source download');
@@ -36,7 +37,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doInstall(PackageInterface $package, $path, $url)
+    protected function doInstall(PackageInterface $package, $path, $url): ?PromiseInterface
     {
         $hgUtils = new HgUtils($this->io, $this->config, $this->process);
 
@@ -58,7 +59,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
+    protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url): ?PromiseInterface
     {
         $hgUtils = new HgUtils($this->io, $this->config, $this->process);
 
@@ -81,7 +82,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    public function getLocalChanges(PackageInterface $package, $path)
+    public function getLocalChanges(PackageInterface $package, $path): ?string
     {
         if (!is_dir($path.'/.hg')) {
             return null;
@@ -95,7 +96,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function getCommitLogs($fromReference, $toReference, $path)
+    protected function getCommitLogs($fromReference, $toReference, $path): string
     {
         $command = sprintf('hg log -r %s:%s --style compact', ProcessExecutor::escape($fromReference), ProcessExecutor::escape($toReference));
 
@@ -109,7 +110,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function hasMetadataRepository($path)
+    protected function hasMetadataRepository($path): bool
     {
         return is_dir($path . '/.hg');
     }

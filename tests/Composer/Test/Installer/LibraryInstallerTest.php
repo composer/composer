@@ -76,10 +76,10 @@ class LibraryInstallerTest extends TestCase
 
         $this->rootDir = $this->getUniqueTmpDirectory();
         $this->vendorDir = $this->rootDir.DIRECTORY_SEPARATOR.'vendor';
-        $this->ensureDirectoryExistsAndClear($this->vendorDir);
+        self::ensureDirectoryExistsAndClear($this->vendorDir);
 
         $this->binDir = $this->rootDir.DIRECTORY_SEPARATOR.'bin';
-        $this->ensureDirectoryExistsAndClear($this->binDir);
+        self::ensureDirectoryExistsAndClear($this->binDir);
 
         $this->config->merge(array(
             'config' => array(
@@ -132,7 +132,7 @@ class LibraryInstallerTest extends TestCase
         $this->assertFalse($library->isInstalled($repository, $package));
 
         // package being in repo and vendor/pkg/foo dir present means it is seen as installed
-        $this->ensureDirectoryExistsAndClear($this->vendorDir.'/'.$package->getPrettyName());
+        self::ensureDirectoryExistsAndClear($this->vendorDir.'/'.$package->getPrettyName());
         $this->assertTrue($library->isInstalled($repository, $package));
 
         $repository->removePackage($package);

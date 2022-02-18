@@ -78,7 +78,7 @@ class Locker
      *
      * @return string
      */
-    public static function getContentHash($composerFileContents)
+    public static function getContentHash($composerFileContents): string
     {
         $content = JsonFile::parseJson($composerFileContents, 'composer.json');
 
@@ -115,7 +115,7 @@ class Locker
      *
      * @return bool
      */
-    public function isLocked()
+    public function isLocked(): bool
     {
         if (!$this->virtualFileWritten && !$this->lockFile->exists()) {
             return false;
@@ -131,7 +131,7 @@ class Locker
      *
      * @return bool
      */
-    public function isFresh()
+    public function isFresh(): bool
     {
         $lock = $this->lockFile->read();
 
@@ -156,7 +156,7 @@ class Locker
      * @throws \RuntimeException
      * @return \Composer\Repository\LockArrayRepository
      */
-    public function getLockedRepository($withDevReqs = false)
+    public function getLockedRepository($withDevReqs = false): \Composer\Repository\LockArrayRepository
     {
         $lockData = $this->getLockData();
         $packages = new LockArrayRepository();
@@ -205,7 +205,7 @@ class Locker
     /**
      * @return string[] Names of dependencies installed through require-dev
      */
-    public function getDevPackageNames()
+    public function getDevPackageNames(): array
     {
         $names = array();
         $lockData = $this->getLockData();
@@ -224,7 +224,7 @@ class Locker
      * @param  bool                     $withDevReqs if true, the platform requirements from the require-dev block are also returned
      * @return \Composer\Package\Link[]
      */
-    public function getPlatformRequirements($withDevReqs = false)
+    public function getPlatformRequirements($withDevReqs = false): array
     {
         $lockData = $this->getLockData();
         $requirements = array();
@@ -255,7 +255,7 @@ class Locker
     /**
      * @return string
      */
-    public function getMinimumStability()
+    public function getMinimumStability(): string
     {
         $lockData = $this->getLockData();
 
@@ -265,7 +265,7 @@ class Locker
     /**
      * @return array<string, string>
      */
-    public function getStabilityFlags()
+    public function getStabilityFlags(): array
     {
         $lockData = $this->getLockData();
 
@@ -275,7 +275,7 @@ class Locker
     /**
      * @return bool|null
      */
-    public function getPreferStable()
+    public function getPreferStable(): ?bool
     {
         $lockData = $this->getLockData();
 
@@ -287,7 +287,7 @@ class Locker
     /**
      * @return bool|null
      */
-    public function getPreferLowest()
+    public function getPreferLowest(): ?bool
     {
         $lockData = $this->getLockData();
 
@@ -299,7 +299,7 @@ class Locker
     /**
      * @return array<string, string>
      */
-    public function getPlatformOverrides()
+    public function getPlatformOverrides(): array
     {
         $lockData = $this->getLockData();
 
@@ -311,7 +311,7 @@ class Locker
      *
      * @phpstan-return list<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
-    public function getAliases()
+    public function getAliases(): array
     {
         $lockData = $this->getLockData();
 
@@ -321,7 +321,7 @@ class Locker
     /**
      * @return array<string, mixed>
      */
-    public function getLockData()
+    public function getLockData(): array
     {
         if (null !== $this->lockDataCache) {
             return $this->lockDataCache;
@@ -353,7 +353,7 @@ class Locker
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides, $write = true)
+    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides, $write = true): bool
     {
         // keep old default branch names normalized to DEFAULT_BRANCH_ALIAS for BC as that is how Composer 1 outputs the lock file
         // when loading the lock file the version is anyway ignored in Composer 2, so it has no adverse effect

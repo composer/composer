@@ -71,7 +71,7 @@ class PoolOptimizer
     /**
      * @return Pool
      */
-    public function optimize(Request $request, Pool $pool)
+    public function optimize(Request $request, Pool $pool): Pool
     {
         $this->prepare($request, $pool);
 

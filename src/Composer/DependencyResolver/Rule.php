@@ -71,7 +71,7 @@ abstract class Rule
     /**
      * @return int[]
      */
-    abstract public function getLiterals();
+    abstract public function getLiterals(): array;
 
     /**
      * @return int|string
@@ -84,12 +84,12 @@ abstract class Rule
      * @param Rule $rule
      * @return bool
      */
-    abstract public function equals(Rule $rule);
+    abstract public function equals(Rule $rule): bool;
 
     /**
      * @return int
      */
-    public function getReason()
+    public function getReason(): int
     {
         return ($this->bitfield & (255 << self::BITFIELD_REASON)) >> self::BITFIELD_REASON;
     }
@@ -105,7 +105,7 @@ abstract class Rule
     /**
      * @return string|null
      */
-    public function getRequiredPackage()
+    public function getRequiredPackage(): ?string
     {
         $reason = $this->getReason();
 
@@ -136,7 +136,7 @@ abstract class Rule
     /**
      * @return int
      */
-    public function getType()
+    public function getType(): int
     {
         return ($this->bitfield & (255 << self::BITFIELD_TYPE)) >> self::BITFIELD_TYPE;
     }
@@ -160,7 +160,7 @@ abstract class Rule
     /**
      * @return bool
      */
-    public function isDisabled()
+    public function isDisabled(): bool
     {
         return (bool) (($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
@@ -168,7 +168,7 @@ abstract class Rule
     /**
      * @return bool
      */
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return !(($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
@@ -176,12 +176,12 @@ abstract class Rule
     /**
      * @return bool
      */
-    abstract public function isAssertion();
+    abstract public function isAssertion(): bool;
 
     /**
      * @return bool
      */
-    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
+    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool): bool
     {
         if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
             if (PlatformRepository::isPlatformPackage($this->reasonData->getTarget())) {
@@ -267,7 +267,7 @@ abstract class Rule
      * @param array<Rule[]> $learnedPool
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
     {
         $literals = $this->getLiterals();
 
@@ -484,7 +484,7 @@ abstract class Rule
      * @param bool $useRemovedVersionGroup
      * @return string
      */
-    protected function formatPackagesUnique(Pool $pool, array $packages, $isVerbose, ConstraintInterface $constraint = null, $useRemovedVersionGroup = false)
+    protected function formatPackagesUnique(Pool $pool, array $packages, $isVerbose, ConstraintInterface $constraint = null, $useRemovedVersionGroup = false): string
     {
         foreach ($packages as $index => $package) {
             if (!\is_object($package)) {

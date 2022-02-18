@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use React\Promise\PromiseInterface;
 use Composer\Package\Archiver\ArchivableFilesFinder;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\PackageInterface;
@@ -38,7 +39,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true): ?PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
@@ -74,7 +75,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function install(PackageInterface $package, $path, $output = true)
+    public function install(PackageInterface $package, $path, $output = true): ?PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
@@ -160,7 +161,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function remove(PackageInterface $package, $path, $output = true)
+    public function remove(PackageInterface $package, $path, $output = true): ?PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         /**
@@ -205,7 +206,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function getVcsReference(PackageInterface $package, $path)
+    public function getVcsReference(PackageInterface $package, $path): ?string
     {
         $path = Filesystem::trimTrailingSlash($path);
         $parser = new VersionParser;
@@ -223,7 +224,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    protected function getInstallOperationAppendix(PackageInterface $package, $path)
+    protected function getInstallOperationAppendix(PackageInterface $package, $path): string
     {
         $realUrl = realpath($package->getDistUrl());
 

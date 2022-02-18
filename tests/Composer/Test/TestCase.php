@@ -122,6 +122,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @return CompletePackage|CompleteAliasPackage|RootPackage|RootAliasPackage
      *
      * @phpstan-param class-string<PackageClass> $class
+     * @phpstan-return PackageClass
      */
     protected function getPackage($name, $version, $class = 'Composer\Package\CompletePackage')
     {

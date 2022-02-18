@@ -191,7 +191,7 @@ EOT
      * @param  array<string, PackageInterface> $bucket   the list to add packages to
      * @return array<string, PackageInterface>
      */
-    public function appendPackages(array $packages, array $bucket)
+    public function appendPackages(array $packages, array $bucket): array
     {
         foreach ($packages as $package) {
             $bucket[$package->getName()] = $package;

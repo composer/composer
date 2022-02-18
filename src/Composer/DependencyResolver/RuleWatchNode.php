@@ -80,7 +80,7 @@ class RuleWatchNode
      *
      * @return Rule
      */
-    public function getRule()
+    public function getRule(): Rule
     {
         return $this->rule;
     }
@@ -91,7 +91,7 @@ class RuleWatchNode
      * @param  int $literal The watched literal that should not be returned
      * @return int A literal
      */
-    public function getOtherWatch($literal)
+    public function getOtherWatch($literal): int
     {
         if ($this->watch1 == $literal) {
             return $this->watch2;

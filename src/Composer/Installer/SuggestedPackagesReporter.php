@@ -47,7 +47,7 @@ class SuggestedPackagesReporter
     /**
      * @return array<array{source: string, target: string, reason: string}> Suggested packages with source, target and reason keys.
      */
-    public function getPackages()
+    public function getPackages(): array
     {
         return $this->suggestedPackages;
     }
@@ -63,7 +63,7 @@ class SuggestedPackagesReporter
      * @param  string                    $reason Reason the target package to be suggested
      * @return SuggestedPackagesReporter
      */
-    public function addPackage($source, $target, $reason)
+    public function addPackage($source, $target, $reason): SuggestedPackagesReporter
     {
         $this->suggestedPackages[] = array(
             'source' => $source,
@@ -80,7 +80,7 @@ class SuggestedPackagesReporter
      * @param  PackageInterface          $package
      * @return SuggestedPackagesReporter
      */
-    public function addSuggestionsFromPackage(PackageInterface $package)
+    public function addSuggestionsFromPackage(PackageInterface $package): SuggestedPackagesReporter
     {
         $source = $package->getPrettyName();
         foreach ($package->getSuggests() as $target => $reason) {

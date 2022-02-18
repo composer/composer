@@ -36,7 +36,7 @@ class ErrorHandler
      * @throws \ErrorException
      * @return bool
      */
-    public static function handle($level, $message, $file, $line)
+    public static function handle($level, $message, $file, $line): bool
     {
         // error code is not included in error_reporting
         if (!(error_reporting() & $level)) {

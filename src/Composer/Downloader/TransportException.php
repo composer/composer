@@ -39,7 +39,7 @@ class TransportException extends \RuntimeException
     /**
      * @return ?array<string>
      */
-    public function getHeaders()
+    public function getHeaders(): ?array
     {
         return $this->headers;
     }
@@ -57,7 +57,7 @@ class TransportException extends \RuntimeException
     /**
      * @return ?string
      */
-    public function getResponse()
+    public function getResponse(): ?string
     {
         return $this->response;
     }
@@ -75,7 +75,7 @@ class TransportException extends \RuntimeException
     /**
      * @return ?int
      */
-    public function getStatusCode()
+    public function getStatusCode(): ?int
     {
         return $this->statusCode;
     }
@@ -83,7 +83,7 @@ class TransportException extends \RuntimeException
     /**
      * @return array<mixed>
      */
-    public function getResponseInfo()
+    public function getResponseInfo(): array
     {
         return $this->responseInfo;
     }

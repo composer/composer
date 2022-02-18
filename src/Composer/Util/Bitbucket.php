@@ -58,7 +58,7 @@ class Bitbucket
     /**
      * @return string
      */
-    public function getToken()
+    public function getToken(): string
     {
         if (!isset($this->token['access_token'])) {
             return '';
@@ -73,7 +73,7 @@ class Bitbucket
      * @param  string $originUrl The host this Bitbucket instance is located at
      * @return bool   true on success
      */
-    public function authorizeOAuth($originUrl)
+    public function authorizeOAuth($originUrl): bool
     {
         if ($originUrl !== 'bitbucket.org') {
             return false;
@@ -140,7 +140,7 @@ class Bitbucket
      * @throws TransportException|\Exception
      * @return bool                          true on success
      */
-    public function authorizeOAuthInteractively($originUrl, $message = null)
+    public function authorizeOAuthInteractively($originUrl, $message = null): bool
     {
         if ($message) {
             $this->io->writeError($message);
@@ -194,7 +194,7 @@ class Bitbucket
      * @param  string $consumerSecret
      * @return string
      */
-    public function requestToken($originUrl, $consumerKey, $consumerSecret)
+    public function requestToken($originUrl, $consumerKey, $consumerSecret): string
     {
         if ($this->token !== null || $this->getTokenFromConfig($originUrl)) {
             return $this->token['access_token'];

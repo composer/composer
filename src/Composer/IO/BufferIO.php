@@ -50,7 +50,7 @@ class BufferIO extends ConsoleIO
     /**
      * @return string output
      */
-    public function getOutput()
+    public function getOutput(): string
     {
         fseek($this->output->getStream(), 0);
 

@@ -35,12 +35,12 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
     /**
      * @return CompletePackage
      */
-    public function getAliasOf()
+    public function getAliasOf(): CompletePackage
     {
         return $this->aliasOf;
     }
 
-    public function getScripts()
+    public function getScripts(): array
     {
         return $this->aliasOf->getScripts();
     }
@@ -50,7 +50,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         $this->aliasOf->setScripts($scripts);
     }
 
-    public function getRepositories()
+    public function getRepositories(): array
     {
         return $this->aliasOf->getRepositories();
     }
@@ -60,7 +60,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         $this->aliasOf->setRepositories($repositories);
     }
 
-    public function getLicense()
+    public function getLicense(): array
     {
         return $this->aliasOf->getLicense();
     }
@@ -70,7 +70,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         $this->aliasOf->setLicense($license);
     }
 
-    public function getKeywords()
+    public function getKeywords(): array
     {
         return $this->aliasOf->getKeywords();
     }
@@ -80,7 +80,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         $this->aliasOf->setKeywords($keywords);
     }
 
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->aliasOf->getDescription();
     }
@@ -90,7 +90,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         $this->aliasOf->setDescription($description);
     }
 
-    public function getHomepage()
+    public function getHomepage(): ?string
     {
         return $this->aliasOf->getHomepage();
     }
@@ -100,7 +100,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         $this->aliasOf->setHomepage($homepage);
     }
 
-    public function getAuthors()
+    public function getAuthors(): array
     {
         return $this->aliasOf->getAuthors();
     }
@@ -110,7 +110,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         $this->aliasOf->setAuthors($authors);
     }
 
-    public function getSupport()
+    public function getSupport(): array
     {
         return $this->aliasOf->getSupport();
     }
@@ -120,7 +120,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         $this->aliasOf->setSupport($support);
     }
 
-    public function getFunding()
+    public function getFunding(): array
     {
         return $this->aliasOf->getFunding();
     }
@@ -130,12 +130,12 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         $this->aliasOf->setFunding($funding);
     }
 
-    public function isAbandoned()
+    public function isAbandoned(): bool
     {
         return $this->aliasOf->isAbandoned();
     }
 
-    public function getReplacementPackage()
+    public function getReplacementPackage(): ?string
     {
         return $this->aliasOf->getReplacementPackage();
     }
@@ -145,7 +145,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         $this->aliasOf->setAbandoned($abandoned);
     }
 
-    public function getArchiveName()
+    public function getArchiveName(): ?string
     {
         return $this->aliasOf->getArchiveName();
     }
@@ -155,7 +155,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         $this->aliasOf->setArchiveName($name);
     }
 
-    public function getArchiveExcludes()
+    public function getArchiveExcludes(): array
     {
         return $this->aliasOf->getArchiveExcludes();
     }

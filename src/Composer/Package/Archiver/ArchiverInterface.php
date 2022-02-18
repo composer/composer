@@ -30,7 +30,7 @@ interface ArchiverInterface
      *
      * @return string The path to the written archive file
      */
-    public function archive($sources, $target, $format, array $excludes = array(), $ignoreFilters = false);
+    public function archive($sources, $target, $format, array $excludes = array(), $ignoreFilters = false): string;
 
     /**
      * Format supported by the archiver.
@@ -40,5 +40,5 @@ interface ArchiverInterface
      *
      * @return bool true if the format is supported by the archiver
      */
-    public function supports($format, $sourceType);
+    public function supports($format, $sourceType): bool;
 }

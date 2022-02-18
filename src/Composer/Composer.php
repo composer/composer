@@ -71,7 +71,7 @@ class Composer
     /**
      * @return string
      */
-    public static function getVersion()
+    public static function getVersion(): string
     {
         // no replacement done, this must be a source checkout
         if (self::VERSION === '@package_version'.'@') {
@@ -92,7 +92,7 @@ class Composer
     private $package;
 
     /**
-     * @var ?Locker
+     * @var Locker|null
      */
     private $locker = null;
 
@@ -107,9 +107,9 @@ class Composer
     private $repositoryManager;
 
     /**
-     * @var Downloader\DownloadManager
+     * @var Downloader\DownloadManager|null
      */
-    private $downloadManager;
+    private $downloadManager = null;
 
     /**
      * @var Installer\InstallationManager
@@ -117,9 +117,9 @@ class Composer
     private $installationManager;
 
     /**
-     * @var Plugin\PluginManager
+     * @var Plugin\PluginManager|null
      */
-    private $pluginManager;
+    private $pluginManager = null;
 
     /**
      * @var Config
@@ -132,14 +132,14 @@ class Composer
     private $eventDispatcher;
 
     /**
-     * @var Autoload\AutoloadGenerator
+     * @var Autoload\AutoloadGenerator|null
      */
-    private $autoloadGenerator;
+    private $autoloadGenerator = null;
 
     /**
-     * @var ArchiveManager
+     * @var ArchiveManager|null
      */
-    private $archiveManager;
+    private $archiveManager = null;
 
     /**
      * @return void
@@ -152,7 +152,7 @@ class Composer
     /**
      * @return RootPackageInterface
      */
-    public function getPackage()
+    public function getPackage(): RootPackageInterface
     {
         return $this->package;
     }
@@ -168,7 +168,7 @@ class Composer
     /**
      * @return Config
      */
-    public function getConfig()
+    public function getConfig(): Config
     {
         return $this->config;
     }
@@ -184,7 +184,7 @@ class Composer
     /**
      * @return ?Locker
      */
-    public function getLocker()
+    public function getLocker(): ?Locker
     {
         return $this->locker;
     }
@@ -200,7 +200,7 @@ class Composer
     /**
      * @return Loop
      */
-    public function getLoop()
+    public function getLoop(): Loop
     {
         return $this->loop;
     }
@@ -216,7 +216,7 @@ class Composer
     /**
      * @return RepositoryManager
      */
-    public function getRepositoryManager()
+    public function getRepositoryManager(): RepositoryManager
     {
         return $this->repositoryManager;
     }
@@ -229,10 +229,7 @@ class Composer
         $this->downloadManager = $manager;
     }
 
-    /**
-     * @return DownloadManager
-     */
-    public function getDownloadManager()
+    public function getDownloadManager(): ?DownloadManager
     {
         return $this->downloadManager;
     }
@@ -245,10 +242,7 @@ class Composer
         $this->archiveManager = $manager;
     }
 
-    /**
-     * @return ArchiveManager
-     */
-    public function getArchiveManager()
+    public function getArchiveManager(): ?ArchiveManager
     {
         return $this->archiveManager;
     }
@@ -264,7 +258,7 @@ class Composer
     /**
      * @return InstallationManager
      */
-    public function getInstallationManager()
+    public function getInstallationManager(): InstallationManager
     {
         return $this->installationManager;
     }
@@ -277,10 +271,7 @@ class Composer
         $this->pluginManager = $manager;
     }
 
-    /**
-     * @return PluginManager
-     */
-    public function getPluginManager()
+    public function getPluginManager(): ?PluginManager
     {
         return $this->pluginManager;
     }
@@ -296,7 +287,7 @@ class Composer
     /**
      * @return EventDispatcher
      */
-    public function getEventDispatcher()
+    public function getEventDispatcher(): EventDispatcher
     {
         return $this->eventDispatcher;
     }
@@ -309,10 +300,7 @@ class Composer
         $this->autoloadGenerator = $autoloadGenerator;
     }
 
-    /**
-     * @return AutoloadGenerator
-     */
-    public function getAutoloadGenerator()
+    public function getAutoloadGenerator(): ?AutoloadGenerator
     {
         return $this->autoloadGenerator;
     }

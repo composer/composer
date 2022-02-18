@@ -41,7 +41,7 @@ class Versions
     /**
      * @return string
      */
-    public function getChannel()
+    public function getChannel(): string
     {
         if ($this->channel) {
             return $this->channel;
@@ -79,7 +79,7 @@ class Versions
      *
      * @return array{path: string, version: string, min-php: int}
      */
-    public function getLatest($channel = null)
+    public function getLatest($channel = null): array
     {
         $versions = $this->getVersionsData();
 

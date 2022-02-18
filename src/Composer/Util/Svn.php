@@ -105,7 +105,7 @@ class Svn
      * @throws \RuntimeException
      * @return string
      */
-    public function execute($command, $url, $cwd = null, $path = null, $verbose = false)
+    public function execute($command, $url, $cwd = null, $path = null, $verbose = false): string
     {
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
@@ -125,7 +125,7 @@ class Svn
      * @throws \RuntimeException
      * @return string
      */
-    public function executeLocal($command, $path, $cwd = null, $verbose = false)
+    public function executeLocal($command, $path, $cwd = null, $verbose = false): string
     {
         // A local command has no remote url
         return $this->executeWithAuthRetry($command, $cwd, '', $path, $verbose);
@@ -205,7 +205,7 @@ class Svn
      * @throws \RuntimeException
      * @return \Composer\Util\Svn
      */
-    protected function doAuthDance()
+    protected function doAuthDance(): \Composer\Util\Svn
     {
         // cannot ask for credentials in non interactive mode
         if (!$this->io->isInteractive()) {
@@ -236,7 +236,7 @@ class Svn
      *
      * @return string
      */
-    protected function getCommand($cmd, $url, $path = null)
+    protected function getCommand($cmd, $url, $path = null): string
     {
         $cmd = sprintf(
             '%s %s%s -- %s',
@@ -260,7 +260,7 @@ class Svn
      *
      * @return string
      */
-    protected function getCredentialString()
+    protected function getCredentialString(): string
     {
         if (!$this->hasAuth()) {
             return '';
@@ -280,7 +280,7 @@ class Svn
      * @throws \LogicException
      * @return string
      */
-    protected function getPassword()
+    protected function getPassword(): string
     {
         if ($this->credentials === null) {
             throw new \LogicException("No svn auth detected.");
@@ -295,7 +295,7 @@ class Svn
      * @throws \LogicException
      * @return string
      */
-    protected function getUsername()
+    protected function getUsername(): string
     {
         if ($this->credentials === null) {
             throw new \LogicException("No svn auth detected.");
@@ -309,7 +309,7 @@ class Svn
      *
      * @return bool
      */
-    protected function hasAuth()
+    protected function hasAuth(): bool
     {
         if (null !== $this->hasAuth) {
             return $this->hasAuth;
@@ -327,7 +327,7 @@ class Svn
      *
      * @return string
      */
-    protected function getAuthCache()
+    protected function getAuthCache(): string
     {
         return $this->cacheCredentials ? '' : '--no-auth-cache ';
     }
@@ -383,7 +383,7 @@ class Svn
      *
      * @return string|null
      */
-    public function binaryVersion()
+    public function binaryVersion(): ?string
     {
         if (!self::$version) {
             if (0 === $this->process->execute('svn --version', $output)) {

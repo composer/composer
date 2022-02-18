@@ -51,7 +51,7 @@ class PreCommandRunEvent extends Event
      *
      * @return InputInterface
      */
-    public function getInput()
+    public function getInput(): InputInterface
     {
         return $this->input;
     }
@@ -61,7 +61,7 @@ class PreCommandRunEvent extends Event
      *
      * @return string
      */
-    public function getCommand()
+    public function getCommand(): string
     {
         return $this->command;
     }

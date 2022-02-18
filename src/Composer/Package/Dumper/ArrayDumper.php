@@ -26,7 +26,7 @@ class ArrayDumper
     /**
      * @return array<string, mixed>
      */
-    public function dump(PackageInterface $package)
+    public function dump(PackageInterface $package): array
     {
         $keys = array(
             'binaries' => 'bin',

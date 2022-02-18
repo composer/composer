@@ -112,13 +112,13 @@ class RuleSet implements \IteratorAggregate, \Countable
      * @param int $id
      * @return Rule
      */
-    public function ruleById($id)
+    public function ruleById($id): Rule
     {
         return $this->ruleById[$id];
     }
 
     /** @return array<self::TYPE_*, Rule[]> */
-    public function getRules()
+    public function getRules(): array
     {
         return $this->rules;
     }
@@ -132,7 +132,7 @@ class RuleSet implements \IteratorAggregate, \Countable
      * @param  self::TYPE_*|array<self::TYPE_*> $types
      * @return RuleSetIterator
      */
-    public function getIteratorFor($types)
+    public function getIteratorFor($types): RuleSetIterator
     {
         if (!\is_array($types)) {
             $types = array($types);
@@ -154,7 +154,7 @@ class RuleSet implements \IteratorAggregate, \Countable
      * @param array<self::TYPE_*>|self::TYPE_* $types
      * @return RuleSetIterator
      */
-    public function getIteratorWithout($types)
+    public function getIteratorWithout($types): RuleSetIterator
     {
         if (!\is_array($types)) {
             $types = array($types);
@@ -170,7 +170,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     }
 
     /** @return array{0: 0, 1: 1, 2: 4} */
-    public function getTypes()
+    public function getTypes(): array
     {
         $types = self::$types;
 
@@ -181,7 +181,7 @@ class RuleSet implements \IteratorAggregate, \Countable
      * @param bool $isVerbose
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null, $isVerbose = false)
+    public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null, $isVerbose = false): string
     {
         $string = "\n";
         foreach ($this->rules as $type => $rules) {

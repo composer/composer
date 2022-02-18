@@ -59,7 +59,7 @@ class DownloadManager
      * @param  bool            $preferSource prefer downloading from source
      * @return DownloadManager
      */
-    public function setPreferSource($preferSource)
+    public function setPreferSource($preferSource): DownloadManager
     {
         $this->preferSource = $preferSource;
 
@@ -72,7 +72,7 @@ class DownloadManager
      * @param  bool            $preferDist prefer downloading from dist
      * @return DownloadManager
      */
-    public function setPreferDist($preferDist)
+    public function setPreferDist($preferDist): DownloadManager
     {
         $this->preferDist = $preferDist;
 
@@ -86,7 +86,7 @@ class DownloadManager
      *
      * @return DownloadManager
      */
-    public function setPreferences(array $preferences)
+    public function setPreferences(array $preferences): DownloadManager
     {
         $this->packagePreferences = $preferences;
 
@@ -100,7 +100,7 @@ class DownloadManager
      * @param  DownloaderInterface $downloader downloader instance
      * @return DownloadManager
      */
-    public function setDownloader($type, DownloaderInterface $downloader)
+    public function setDownloader($type, DownloaderInterface $downloader): DownloadManager
     {
         $type = strtolower($type);
         $this->downloaders[$type] = $downloader;
@@ -115,7 +115,7 @@ class DownloadManager
      * @throws \InvalidArgumentException if downloader for provided type is not registered
      * @return DownloaderInterface
      */
-    public function getDownloader($type)
+    public function getDownloader($type): DownloaderInterface
     {
         $type = strtolower($type);
         if (!isset($this->downloaders[$type])) {
@@ -134,7 +134,7 @@ class DownloadManager
      *                                           wrong type
      * @return DownloaderInterface|null
      */
-    public function getDownloaderForPackage(PackageInterface $package)
+    public function getDownloaderForPackage(PackageInterface $package): ?DownloaderInterface
     {
         $installationSource = $package->getInstallationSource();
 
@@ -168,7 +168,7 @@ class DownloadManager
     /**
      * @return string
      */
-    public function getDownloaderType(DownloaderInterface $downloader)
+    public function getDownloaderType(DownloaderInterface $downloader): string
     {
         return array_search($downloader, $this->downloaders);
     }
@@ -184,7 +184,7 @@ class DownloadManager
      * @throws \RuntimeException
      * @return PromiseInterface
      */
-    public function download(PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
+    public function download(PackageInterface $package, $targetDir, PackageInterface $prevPackage = null): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $this->filesystem->ensureDirectoryExists(dirname($targetDir));
@@ -253,7 +253,7 @@ class DownloadManager
      *
      * @return PromiseInterface|null
      */
-    public function prepare($type, PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
+    public function prepare($type, PackageInterface $package, $targetDir, PackageInterface $prevPackage = null): ?PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
@@ -274,7 +274,7 @@ class DownloadManager
      * @throws \RuntimeException
      * @return PromiseInterface|null
      */
-    public function install(PackageInterface $package, $targetDir)
+    public function install(PackageInterface $package, $targetDir): ?PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
@@ -295,7 +295,7 @@ class DownloadManager
      * @throws \InvalidArgumentException if initial package is not installed
      * @return PromiseInterface|null
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $targetDir)
+    public function update(PackageInterface $initial, PackageInterface $target, $targetDir): ?PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($target);
@@ -347,7 +347,7 @@ class DownloadManager
      *
      * @return PromiseInterface|null
      */
-    public function remove(PackageInterface $package, $targetDir)
+    public function remove(PackageInterface $package, $targetDir): ?PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
@@ -368,7 +368,7 @@ class DownloadManager
      *
      * @return PromiseInterface|null
      */
-    public function cleanup($type, PackageInterface $package, $targetDir, PackageInterface $prevPackage = null)
+    public function cleanup($type, PackageInterface $package, $targetDir, PackageInterface $prevPackage = null): ?PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
@@ -386,7 +386,7 @@ class DownloadManager
      *
      * @return string
      */
-    protected function resolvePackageInstallPreference(PackageInterface $package)
+    protected function resolvePackageInstallPreference(PackageInterface $package): string
     {
         foreach ($this->packagePreferences as $pattern => $preference) {
             $pattern = '{^'.str_replace('\\*', '.*', preg_quote($pattern)).'$}i';

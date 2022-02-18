@@ -38,7 +38,7 @@ class InstalledRepository extends CompositeRepository
      *
      * @return BasePackage[]
      */
-    public function findPackagesWithReplacersAndProviders($name, $constraint = null)
+    public function findPackagesWithReplacersAndProviders($name, $constraint = null): array
     {
         $name = strtolower($name);
 
@@ -87,7 +87,7 @@ class InstalledRepository extends CompositeRepository
      * @return array[] An associative array of arrays as described above.
      * @phpstan-return array<array{0: PackageInterface, 1: Link, 2: mixed[]|bool}>
      */
-    public function getDependents($needle, $constraint = null, $invert = false, $recurse = true, $packagesFound = null)
+    public function getDependents($needle, $constraint = null, $invert = false, $recurse = true, $packagesFound = null): array
     {
         $needles = array_map('strtolower', (array) $needle);
         $results = array();
@@ -249,7 +249,7 @@ class InstalledRepository extends CompositeRepository
         return $results;
     }
 
-    public function getRepoName()
+    public function getRepoName(): string
     {
         return 'installed repo ('.implode(', ', array_map(function ($repo) {
             return $repo->getRepoName();

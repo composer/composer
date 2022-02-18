@@ -26,7 +26,7 @@ class Url
      * @param  string $ref
      * @return string the updated URL
      */
-    public static function updateDistReference(Config $config, $url, $ref)
+    public static function updateDistReference(Config $config, $url, $ref): string
     {
         $host = parse_url($url, PHP_URL_HOST);
 
@@ -64,7 +64,7 @@ class Url
      * @param  string $url
      * @return string
      */
-    public static function getOrigin(Config $config, $url)
+    public static function getOrigin(Config $config, $url): string
     {
         if (0 === strpos($url, 'file://')) {
             return $url;
@@ -108,7 +108,7 @@ class Url
      * @param  string $url
      * @return string
      */
-    public static function sanitize($url)
+    public static function sanitize($url): string
     {
         // GitHub repository rename result in redirect locations containing the access_token as GET parameter
         // e.g. https://api.github.com/repositories/9999999999?access_token=github_token

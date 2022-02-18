@@ -56,7 +56,7 @@ class RuleSetGenerator
      *
      * @phpstan-param ReasonData $reasonData
      */
-    protected function createRequireRule(BasePackage $package, array $providers, $reason, $reasonData = null)
+    protected function createRequireRule(BasePackage $package, array $providers, $reason, $reasonData = null): ?Rule
     {
         $literals = array(-$package->id);
 
@@ -85,7 +85,7 @@ class RuleSetGenerator
      *
      * @phpstan-param ReasonData $reasonData
      */
-    protected function createInstallOneOfRule(array $packages, $reason, $reasonData)
+    protected function createInstallOneOfRule(array $packages, $reason, $reasonData): Rule
     {
         $literals = array();
         foreach ($packages as $package) {
@@ -109,7 +109,7 @@ class RuleSetGenerator
      *
      * @phpstan-param ReasonData $reasonData
      */
-    protected function createRule2Literals(BasePackage $issuer, BasePackage $provider, $reason, $reasonData = null)
+    protected function createRule2Literals(BasePackage $issuer, BasePackage $provider, $reason, $reasonData = null): ?Rule
     {
         // ignore self conflict
         if ($issuer === $provider) {
@@ -127,7 +127,7 @@ class RuleSetGenerator
      *
      * @phpstan-param ReasonData $reasonData
      */
-    protected function createMultiConflictRule(array $packages, $reason, $reasonData)
+    protected function createMultiConflictRule(array $packages, $reason, $reasonData): Rule
     {
         $literals = array();
         foreach ($packages as $package) {
@@ -323,7 +323,7 @@ class RuleSetGenerator
     /**
      * @return RuleSet
      */
-    public function getRulesFor(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null)
+    public function getRulesFor(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null): RuleSet
     {
         $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
 

@@ -28,7 +28,7 @@ class RootPackageRepository extends ArrayRepository
         parent::__construct(array($package));
     }
 
-    public function getRepoName()
+    public function getRepoName(): string
     {
         return 'root package repo';
     }

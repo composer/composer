@@ -82,7 +82,7 @@ class ArchiveManager
      *
      * @return string A filename without an extension
      */
-    public function getPackageFilename(CompletePackageInterface $package)
+    public function getPackageFilename(CompletePackageInterface $package): string
     {
         if ($package->getArchiveName()) {
             $baseName = $package->getArchiveName();
@@ -121,7 +121,7 @@ class ArchiveManager
      * @throws \RuntimeException
      * @return string                    The path of the created archive
      */
-    public function archive(CompletePackageInterface $package, $format, $targetDir, $fileName = null, $ignoreFilters = false)
+    public function archive(CompletePackageInterface $package, $format, $targetDir, $fileName = null, $ignoreFilters = false): string
     {
         if (empty($format)) {
             throw new \InvalidArgumentException('Format must be specified');

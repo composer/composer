@@ -128,18 +128,14 @@ class PlatformRepositoryTest extends TestCase
             ->willReturn(array());
         $runtime
             ->method('hasConstant')
-            ->willReturnMap(
-                array_map(function ($constant) {
-                    return array($constant, null, true);
-                }, array_keys($constants))
-            );
+            ->willReturnCallback(function ($constant, $class = null) use ($constants) {
+                return isset($constants[ltrim($class.'::'.$constant, ':')]);
+            });
         $runtime
             ->method('getConstant')
-            ->willReturnMap(
-                array_map(function ($constant, $value) {
-                    return array($constant, null, $value);
-                }, array_keys($constants), array_values($constants))
-            );
+            ->willReturnCallback(function ($constant, $class = null) use ($constants) {
+                return $constants[ltrim($class.'::'.$constant, ':')] ?? null;
+            });
         $runtime
             ->method('invoke')
             ->willReturnMap($functions);
@@ -163,23 +159,20 @@ class PlatformRepositoryTest extends TestCase
             ->willReturn(false);
         $runtime
             ->method('hasConstant')
-            ->willReturnMap(
-                array(
-                    array('PHP_ZTS', false),
-                    array('AF_INET6', false),
-                )
-            );
+            ->willReturn(false); // suppressing PHP_ZTS & AF_INET6
+
+        $constants = [
+            'PHP_VERSION' => '7.0.0',
+            'PHP_DEBUG' => false,
+        ];
+        $runtime
+            ->method('getConstant')
+            ->willReturnCallback(function ($constant, $class = null) use ($constants) {
+                return $constants[ltrim($class.'::'.$constant, ':')] ?? null;
+            });
         $runtime
             ->method('getExtensions')
             ->willReturn(array());
-        $runtime
-            ->method('getConstant')
-            ->willReturnMap(
-                array(
-                    array('PHP_VERSION', null, '7.0.0'),
-                    array('PHP_DEBUG', null, false),
-                )
-            );
         $repository = new PlatformRepository(array(), array(), $runtime);
         $package = $repository->findPackage('php-ipv6', '*');
         self::assertNull($package);
@@ -1130,28 +1123,30 @@ Linked Version => 1.2.11',
         $constants[] = array('PHP_VERSION', null, '7.1.0');
         $runtime
             ->method('hasConstant')
-            ->willReturnMap(
-                array_map(
-                    function ($constantDefintion) {
-                        return array($constantDefintion[0], $constantDefintion[1], true);
-                    },
-                    $constants
-                )
-            );
+            ->willReturnCallback(function ($constant, $class = null) use ($constants) {
+                foreach ($constants as $definition) {
+                    if ($definition[0] === $constant && $definition[1] === $class) {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
         $runtime
             ->method('getConstant')
             ->willReturnMap($constants);
 
         $runtime
             ->method('hasClass')
-            ->willReturnMap(
-                array_map(
-                    function ($classDefinition) {
-                        return array($classDefinition[0], true);
-                    },
-                    $classDefinitions
-                )
-            );
+            ->willReturnCallback(function ($class) use ($classDefinitions) {
+                foreach ($classDefinitions as $definition) {
+                    if ($definition[0] === $class) {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
         $runtime
             ->method('construct')
             ->willReturnMap($classDefinitions);

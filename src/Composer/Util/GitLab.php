@@ -55,7 +55,7 @@ class GitLab
      *
      * @return bool true on success
      */
-    public function authorizeOAuth($originUrl)
+    public function authorizeOAuth($originUrl): bool
     {
         // before composer 1.9, origin URLs had no port number in them
         $bcOriginUrl = Preg::replace('{:\d+}', '', $originUrl);
@@ -112,7 +112,7 @@ class GitLab
      *
      * @return bool true on success
      */
-    public function authorizeOAuthInteractively($scheme, $originUrl, $message = null)
+    public function authorizeOAuthInteractively($scheme, $originUrl, $message = null): bool
     {
         if ($message) {
             $this->io->writeError($message);

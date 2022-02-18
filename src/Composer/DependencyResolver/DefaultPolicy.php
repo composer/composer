@@ -44,7 +44,7 @@ class DefaultPolicy implements PolicyInterface
      *
      * @phpstan-param Constraint::STR_OP_* $operator
      */
-    public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
+    public function versionCompare(PackageInterface $a, PackageInterface $b, $operator): bool
     {
         if ($this->preferStable && ($stabA = $a->getStability()) !== ($stabB = $b->getStability())) {
             return BasePackage::$stabilities[$stabA] < BasePackage::$stabilities[$stabB];
@@ -61,7 +61,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  string $requiredPackage
      * @return int[]
      */
-    public function selectPreferredPackages(Pool $pool, array $literals, $requiredPackage = null)
+    public function selectPreferredPackages(Pool $pool, array $literals, $requiredPackage = null): array
     {
         $packages = $this->groupLiteralsByName($pool, $literals);
 
@@ -90,7 +90,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  int[] $literals
      * @return array<string, int[]>
      */
-    protected function groupLiteralsByName(Pool $pool, $literals)
+    protected function groupLiteralsByName(Pool $pool, $literals): array
     {
         $packages = array();
         foreach ($literals as $literal) {
@@ -111,7 +111,7 @@ class DefaultPolicy implements PolicyInterface
      * @param bool $ignoreReplace
      * @return int
      */
-    public function compareByPriority(Pool $pool, BasePackage $a, BasePackage $b, $requiredPackage = null, $ignoreReplace = false)
+    public function compareByPriority(Pool $pool, BasePackage $a, BasePackage $b, $requiredPackage = null, $ignoreReplace = false): int
     {
         // prefer aliases to the original package
         if ($a->getName() === $b->getName()) {
@@ -164,7 +164,7 @@ class DefaultPolicy implements PolicyInterface
      *
      * @return bool
      */
-    protected function replaces(BasePackage $source, BasePackage $target)
+    protected function replaces(BasePackage $source, BasePackage $target): bool
     {
         foreach ($source->getReplaces() as $link) {
             if ($link->getTarget() === $target->getName()
@@ -182,7 +182,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  int[] $literals
      * @return int[]
      */
-    protected function pruneToBestVersion(Pool $pool, $literals)
+    protected function pruneToBestVersion(Pool $pool, $literals): array
     {
         $operator = $this->preferLowest ? '<' : '>';
         $bestLiterals = array($literals[0]);
@@ -213,7 +213,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  int[] $literals
      * @return int[]
      */
-    protected function pruneRemoteAliases(Pool $pool, array $literals)
+    protected function pruneRemoteAliases(Pool $pool, array $literals): array
     {
         $hasLocalAlias = false;
 

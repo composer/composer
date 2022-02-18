@@ -38,7 +38,7 @@ class UninstallOperation extends SolverOperation implements OperationInterface
      *
      * @return PackageInterface
      */
-    public function getPackage()
+    public function getPackage(): PackageInterface
     {
         return $this->package;
     }
@@ -46,7 +46,7 @@ class UninstallOperation extends SolverOperation implements OperationInterface
     /**
      * @inheritDoc
      */
-    public function show($lock)
+    public function show($lock): string
     {
         return self::format($this->package, $lock);
     }
@@ -55,7 +55,7 @@ class UninstallOperation extends SolverOperation implements OperationInterface
      * @param bool $lock
      * @return string
      */
-    public static function format(PackageInterface $package, $lock = false)
+    public static function format(PackageInterface $package, $lock = false): string
     {
         return 'Removing <info>'.$package->getPrettyName().'</info> (<comment>'.$package->getFullPrettyVersion().'</comment>)';
     }
