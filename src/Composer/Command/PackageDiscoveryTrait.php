@@ -24,6 +24,11 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 trait PackageDiscoveryTrait
 {
+    /** @var ?CompositeRepository */
+    private $repos;
+    /** @var RepositorySet[] */
+    private $repositorySets;
+
     /**
      * @return CompositeRepository
      */

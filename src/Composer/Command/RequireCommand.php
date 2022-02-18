@@ -43,12 +43,6 @@ class RequireCommand extends BaseCommand
 {
     use PackageDiscoveryTrait;
 
-    // Properties for PackageDiscoveryTrait
-    /** @var ?CompositeRepository */
-    protected $repos;
-    /** @var RepositorySet[] */
-    private $repositorySets;
-
     /** @var bool */
     private $newlyCreated;
     /** @var bool */

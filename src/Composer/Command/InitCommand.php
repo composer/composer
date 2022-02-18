@@ -48,12 +48,6 @@ class InitCommand extends BaseCommand
 {
     use PackageDiscoveryTrait;
 
-    // Properties for PackageDiscoveryTrait
-    /** @var ?CompositeRepository */
-    protected $repos;
-    /** @var RepositorySet[] */
-    private $repositorySets;
-
     /** @var array<string, string> */
     private $gitConfig;
 
@@ -71,7 +65,6 @@ class InitCommand extends BaseCommand
                 new InputOption('name', null, InputOption::VALUE_REQUIRED, 'Name of the package'),
                 new InputOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package'),
                 new InputOption('author', null, InputOption::VALUE_REQUIRED, 'Author name of package'),
-                // new InputOption('version', null, InputOption::VALUE_NONE, 'Version of package'),
                 new InputOption('type', null, InputOption::VALUE_OPTIONAL, 'Type of package (e.g. library, project, metapackage, composer-plugin)'),
                 new InputOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package'),
                 new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
