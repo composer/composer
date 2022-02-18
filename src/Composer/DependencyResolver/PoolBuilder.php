@@ -287,6 +287,8 @@ class PoolBuilder
         $this->skippedLoad = array();
         $this->indexCounter = 0;
 
+        $this->io->debug('Built pool.');
+
         $pool = $this->runOptimizer($request, $pool);
 
         Intervals::clear();
@@ -690,6 +692,9 @@ class PoolBuilder
             return $pool;
         }
 
+        $this->io->debug('Running pool optimizer.');
+
+        $before = microtime(true);
         $total = \count($pool->getPackages());
 
         $pool = $this->poolOptimizer->optimize($request, $pool);
@@ -700,6 +705,7 @@ class PoolBuilder
             return $pool;
         }
 
+        $this->io->write(sprintf('Pool optimizer completed in %.3f seconds', microtime(true) - $before), true, IOInterface::VERY_VERBOSE);
         $this->io->write(sprintf(
             '<info>Found %s package versions referenced in your dependency graph. %s (%d%%) were optimized away.</info>',
             number_format($total),
