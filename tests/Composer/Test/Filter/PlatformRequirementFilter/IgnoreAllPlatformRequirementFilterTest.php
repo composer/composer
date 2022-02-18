@@ -23,7 +23,7 @@ final class IgnoreAllPlatformRequirementFilterTest extends TestCase
      * @param string $req
      * @param bool $expectIgnored
      */
-    public function testIsIgnored($req, $expectIgnored)
+    public function testIsIgnored($req, $expectIgnored): void
     {
         $platformRequirementFilter = new IgnoreAllPlatformRequirementFilter();
 

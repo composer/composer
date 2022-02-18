@@ -23,7 +23,7 @@ class ValidatingArrayLoaderTest extends TestCase
      *
      * @param array<string, mixed> $config
      */
-    public function testLoadSuccess($config)
+    public function testLoadSuccess($config): void
     {
         $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $internalLoader
@@ -212,7 +212,7 @@ class ValidatingArrayLoaderTest extends TestCase
      * @param array<string, mixed> $config
      * @param string[]             $expectedErrors
      */
-    public function testLoadFailureThrowsException($config, $expectedErrors)
+    public function testLoadFailureThrowsException($config, $expectedErrors): void
     {
         $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
@@ -233,7 +233,7 @@ class ValidatingArrayLoaderTest extends TestCase
      * @param array<string, mixed> $config
      * @param string[]             $expectedWarnings
      */
-    public function testLoadWarnings($config, $expectedWarnings)
+    public function testLoadWarnings($config, $expectedWarnings): void
     {
         $internalLoader = $this->getMockBuilder('Composer\Package\Loader\LoaderInterface')->getMock();
         $loader = new ValidatingArrayLoader($internalLoader, true, null, ValidatingArrayLoader::CHECK_ALL);
@@ -252,7 +252,7 @@ class ValidatingArrayLoaderTest extends TestCase
      * @param string[]             $expectedWarnings
      * @param bool                 $mustCheck
      */
-    public function testLoadSkipsWarningDataWhenIgnoringErrors($config, $expectedWarnings, $mustCheck = true)
+    public function testLoadSkipsWarningDataWhenIgnoringErrors($config, $expectedWarnings, $mustCheck = true): void
     {
         if (!$mustCheck) {
             $this->assertTrue(true);

@@ -33,7 +33,7 @@ class HomeCommand extends BaseCommand
      *
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('browse')
@@ -128,7 +128,7 @@ EOT
      * @param string $url
      * @return void
      */
-    private function openBrowser($url)
+    private function openBrowser($url): void
     {
         $url = ProcessExecutor::escape($url);
 

@@ -52,7 +52,7 @@ class FossilDownloaderTest extends TestCase
         return new FossilDownloader($io, $config, $executor, $filesystem);
     }
 
-    public function testInstallForPackageWithoutSourceReference()
+    public function testInstallForPackageWithoutSourceReference(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
@@ -65,7 +65,7 @@ class FossilDownloaderTest extends TestCase
         $downloader->install($packageMock, '/path');
     }
 
-    public function testInstall()
+    public function testInstall(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -86,7 +86,7 @@ class FossilDownloaderTest extends TestCase
         $downloader->install($packageMock, 'repo');
     }
 
-    public function testUpdateforPackageWithoutSourceReference()
+    public function testUpdateforPackageWithoutSourceReference(): void
     {
         $initialPackageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $sourcePackageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -102,7 +102,7 @@ class FossilDownloaderTest extends TestCase
         $downloader->cleanup('update', $sourcePackageMock, '/path', $initialPackageMock);
     }
 
-    public function testUpdate()
+    public function testUpdate(): void
     {
         // Ensure file exists
         $file = $this->workingDir . '/.fslckout';
@@ -134,7 +134,7 @@ class FossilDownloaderTest extends TestCase
         $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
     }
 
-    public function testRemove()
+    public function testRemove(): void
     {
         // Ensure file exists
         $file = $this->workingDir . '/.fslckout';
@@ -159,7 +159,7 @@ class FossilDownloaderTest extends TestCase
         $downloader->cleanup('uninstall', $packageMock, $this->workingDir);
     }
 
-    public function testGetInstallationSource()
+    public function testGetInstallationSource(): void
     {
         $downloader = $this->getDownloaderMock(null);
 

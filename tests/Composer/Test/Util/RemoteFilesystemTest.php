@@ -24,7 +24,7 @@ use ReflectionProperty;
 
 class RemoteFilesystemTest extends TestCase
 {
-    public function testGetOptionsForUrl()
+    public function testGetOptionsForUrl(): void
     {
         $io = $this->getIOInterfaceMock();
         $io
@@ -37,7 +37,7 @@ class RemoteFilesystemTest extends TestCase
         $this->assertTrue(isset($res['http']['header']) && is_array($res['http']['header']), 'getOptions must return an array with headers');
     }
 
-    public function testGetOptionsForUrlWithAuthorization()
+    public function testGetOptionsForUrlWithAuthorization(): void
     {
         $io = $this->getIOInterfaceMock();
         $io
@@ -62,7 +62,7 @@ class RemoteFilesystemTest extends TestCase
         $this->assertTrue($found, 'getOptions must have an Authorization header');
     }
 
-    public function testGetOptionsForUrlWithStreamOptions()
+    public function testGetOptionsForUrlWithStreamOptions(): void
     {
         $io = $this->getIOInterfaceMock();
         $io
@@ -88,7 +88,7 @@ class RemoteFilesystemTest extends TestCase
         );
     }
 
-    public function testGetOptionsForUrlWithCallOptionsKeepsHeader()
+    public function testGetOptionsForUrlWithCallOptionsKeepsHeader(): void
     {
         $io = $this->getIOInterfaceMock();
         $io
@@ -121,14 +121,14 @@ class RemoteFilesystemTest extends TestCase
         $this->assertGreaterThan(1, count($res['http']['header']));
     }
 
-    public function testCallbackGetFileSize()
+    public function testCallbackGetFileSize(): void
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
         $this->callCallbackGet($fs, STREAM_NOTIFY_FILE_SIZE_IS, 0, '', 0, 0, 20);
         $this->assertAttributeEqualsCustom(20, 'bytesMax', $fs);
     }
 
-    public function testCallbackGetNotifyProgress()
+    public function testCallbackGetNotifyProgress(): void
     {
         $io = $this->getIOInterfaceMock();
         $io
@@ -144,7 +144,7 @@ class RemoteFilesystemTest extends TestCase
         $this->assertAttributeEqualsCustom(50, 'lastProgress', $fs);
     }
 
-    public function testCallbackGetPassesThrough404()
+    public function testCallbackGetPassesThrough404(): void
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
@@ -152,14 +152,14 @@ class RemoteFilesystemTest extends TestCase
         $this->assertTrue(true, 'callbackGet must pass through 404');
     }
 
-    public function testGetContents()
+    public function testGetContents(): void
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
         $this->assertStringContainsString('testGetContents', $fs->getContents('http://example.org', 'file://'.__FILE__));
     }
 
-    public function testCopy()
+    public function testCopy(): void
     {
         $fs = new RemoteFilesystem($this->getIOInterfaceMock(), $this->getConfigMock());
 
@@ -170,7 +170,7 @@ class RemoteFilesystemTest extends TestCase
         unlink($file);
     }
 
-    public function testCopyWithNoRetryOnFailure()
+    public function testCopyWithNoRetryOnFailure(): void
     {
         self::expectException('Composer\Downloader\TransportException');
         $fs = $this->getRemoteFilesystemWithMockedMethods(array('getRemoteContents'));
@@ -194,7 +194,7 @@ class RemoteFilesystemTest extends TestCase
         );
     }
 
-    public function testCopyWithSuccessOnRetry()
+    public function testCopyWithSuccessOnRetry(): void
     {
         $authHelper = $this->getAuthHelperWithMockedMethods(array('promptAuthIfNeeded'));
         $fs = $this->getRemoteFilesystemWithMockedMethods(array('getRemoteContents'), $authHelper);
@@ -241,7 +241,7 @@ class RemoteFilesystemTest extends TestCase
     /**
      * @group TLS
      */
-    public function testGetOptionsForUrlCreatesSecureTlsDefaults()
+    public function testGetOptionsForUrlCreatesSecureTlsDefaults(): void
     {
         $io = $this->getIOInterfaceMock();
 
@@ -279,7 +279,7 @@ class RemoteFilesystemTest extends TestCase
      * @param string $contents
      * @dataProvider provideBitbucketPublicDownloadUrls
      */
-    public function testBitBucketPublicDownload($url, $contents)
+    public function testBitBucketPublicDownload($url, $contents): void
     {
         /** @var ConsoleIO $io */
         $io = $this
@@ -302,7 +302,7 @@ class RemoteFilesystemTest extends TestCase
      * @param string $contents
      * @dataProvider provideBitbucketPublicDownloadUrls
      */
-    public function testBitBucketPublicDownloadWithAuthConfigured($url, $contents)
+    public function testBitBucketPublicDownloadWithAuthConfigured($url, $contents): void
     {
         /** @var MockObject|ConsoleIO $io */
         $io = $this
@@ -385,7 +385,7 @@ class RemoteFilesystemTest extends TestCase
      *
      * @return void
      */
-    private function callCallbackGet(RemoteFilesystem $fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
+    private function callCallbackGet(RemoteFilesystem $fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax): void
     {
         $ref = new ReflectionMethod($fs, 'callbackGet');
         $ref->setAccessible(true);
@@ -399,7 +399,7 @@ class RemoteFilesystemTest extends TestCase
      *
      * @return void
      */
-    private function setAttribute($object, $attribute, $value)
+    private function setAttribute($object, $attribute, $value): void
     {
         $attr = new ReflectionProperty($object, $attribute);
         $attr->setAccessible(true);
@@ -413,7 +413,7 @@ class RemoteFilesystemTest extends TestCase
      *
      * @return void
      */
-    private function assertAttributeEqualsCustom($value, $attribute, $object)
+    private function assertAttributeEqualsCustom($value, $attribute, $object): void
     {
         $attr = new ReflectionProperty($object, $attribute);
         $attr->setAccessible(true);

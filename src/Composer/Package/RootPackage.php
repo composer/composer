@@ -37,7 +37,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * {@inerhitDoc}
      */
-    public function setMinimumStability($minimumStability)
+    public function setMinimumStability($minimumStability): void
     {
         $this->minimumStability = $minimumStability;
     }
@@ -53,7 +53,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * @inheritDoc
      */
-    public function setStabilityFlags(array $stabilityFlags)
+    public function setStabilityFlags(array $stabilityFlags): void
     {
         $this->stabilityFlags = $stabilityFlags;
     }
@@ -69,7 +69,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * {@inerhitDoc}
      */
-    public function setPreferStable($preferStable)
+    public function setPreferStable($preferStable): void
     {
         $this->preferStable = $preferStable;
     }
@@ -85,7 +85,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * {@inerhitDoc}
      */
-    public function setConfig(array $config)
+    public function setConfig(array $config): void
     {
         $this->config = $config;
     }
@@ -101,7 +101,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * {@inerhitDoc}
      */
-    public function setReferences(array $references)
+    public function setReferences(array $references): void
     {
         $this->references = $references;
     }
@@ -117,7 +117,7 @@ class RootPackage extends CompletePackage implements RootPackageInterface
     /**
      * {@inerhitDoc}
      */
-    public function setAliases(array $aliases)
+    public function setAliases(array $aliases): void
     {
         $this->aliases = $aliases;
     }

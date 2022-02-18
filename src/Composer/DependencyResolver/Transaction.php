@@ -69,7 +69,7 @@ class Transaction
      * @param PackageInterface[] $resultPackages
      * @return void
      */
-    private function setResultPackageMaps($resultPackages)
+    private function setResultPackageMaps($resultPackages): void
     {
         $packageSort = function (PackageInterface $a, PackageInterface $b) {
             // sort alias packages by the same name behind their non alias version

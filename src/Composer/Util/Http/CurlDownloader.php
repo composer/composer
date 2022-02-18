@@ -180,7 +180,7 @@ class CurlDownloader
         if ($copyTo) {
             $errorMessage = '';
             // @phpstan-ignore-next-line
-            set_error_handler(function ($code, $msg) use (&$errorMessage) {
+            set_error_handler(function ($code, $msg) use (&$errorMessage): void {
                 if ($errorMessage) {
                     $errorMessage .= "\n";
                 }
@@ -287,7 +287,7 @@ class CurlDownloader
      * @param  int  $id
      * @return void
      */
-    public function abortRequest($id)
+    public function abortRequest($id): void
     {
         if (isset($this->jobs[$id], $this->jobs[$id]['curlHandle'])) {
             $job = $this->jobs[$id];
@@ -309,7 +309,7 @@ class CurlDownloader
     /**
      * @return void
      */
-    public function tick()
+    public function tick(): void
     {
         static $timeoutWarning = false;
 
@@ -579,7 +579,7 @@ class CurlDownloader
      *
      * @return void
      */
-    private function restartJob(array $job, $url, array $attributes = array())
+    private function restartJob(array $job, $url, array $attributes = array()): void
     {
         if (null !== $job['filename']) {
             @unlink($job['filename'].'~');
@@ -614,7 +614,7 @@ class CurlDownloader
      * @param  Job                $job
      * @return void
      */
-    private function rejectJob(array $job, \Exception $e)
+    private function rejectJob(array $job, \Exception $e): void
     {
         if (is_resource($job['headerHandle'])) {
             fclose($job['headerHandle']);
@@ -632,7 +632,7 @@ class CurlDownloader
      * @param  int  $code
      * @return void
      */
-    private function checkCurlResult($code)
+    private function checkCurlResult($code): void
     {
         if ($code != CURLM_OK && $code != CURLM_CALL_MULTI_PERFORM) {
             throw new \RuntimeException(

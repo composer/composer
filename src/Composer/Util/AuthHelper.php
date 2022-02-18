@@ -41,7 +41,7 @@ class AuthHelper
      *
      * @return void
      */
-    public function storeAuth($origin, $storeAuth)
+    public function storeAuth($origin, $storeAuth): void
     {
         $store = false;
         $configSource = $this->config->getAuthConfigSource();

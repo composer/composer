@@ -62,7 +62,7 @@ class LockTransaction extends Transaction
     /**
      * @return void
      */
-    public function setResultPackages(Pool $pool, Decisions $decisions)
+    public function setResultPackages(Pool $pool, Decisions $decisions): void
     {
         $this->resultPackages = array('all' => array(), 'non-dev' => array(), 'dev' => array());
         foreach ($decisions as $i => $decision) {
@@ -82,7 +82,7 @@ class LockTransaction extends Transaction
     /**
      * @return void
      */
-    public function setNonDevPackages(LockTransaction $extractionResult)
+    public function setNonDevPackages(LockTransaction $extractionResult): void
     {
         $packages = $extractionResult->getNewLockPackages(false);
 

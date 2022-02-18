@@ -17,7 +17,7 @@ use Composer\Test\TestCase;
 
 class PoolTest extends TestCase
 {
-    public function testPool()
+    public function testPool(): void
     {
         $package = $this->getPackage('foo', '1');
 
@@ -27,7 +27,7 @@ class PoolTest extends TestCase
         $this->assertEquals(array($package), $pool->whatProvides('foo'));
     }
 
-    public function testWhatProvidesPackageWithConstraint()
+    public function testWhatProvidesPackageWithConstraint(): void
     {
         $firstPackage = $this->getPackage('foo', '1');
         $secondPackage = $this->getPackage('foo', '2');
@@ -41,7 +41,7 @@ class PoolTest extends TestCase
         $this->assertEquals(array($secondPackage), $pool->whatProvides('foo', $this->getVersionConstraint('==', '2')));
     }
 
-    public function testPackageById()
+    public function testPackageById(): void
     {
         $package = $this->getPackage('foo', '1');
 
@@ -50,7 +50,7 @@ class PoolTest extends TestCase
         $this->assertSame($package, $pool->packageById(1));
     }
 
-    public function testWhatProvidesWhenPackageCannotBeFound()
+    public function testWhatProvidesWhenPackageCannotBeFound(): void
     {
         $pool = $this->createPool();
 

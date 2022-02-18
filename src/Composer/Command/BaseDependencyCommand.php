@@ -136,7 +136,7 @@ class BaseDependencyCommand extends BaseCommand
      *
      * @return void
      */
-    protected function printTable(OutputInterface $output, $results)
+    protected function printTable(OutputInterface $output, $results): void
     {
         $table = array();
         $doubles = array();
@@ -172,7 +172,7 @@ class BaseDependencyCommand extends BaseCommand
      *
      * @return void
      */
-    protected function initStyles(OutputInterface $output)
+    protected function initStyles(OutputInterface $output): void
     {
         $this->colors = array(
             'green',
@@ -197,7 +197,7 @@ class BaseDependencyCommand extends BaseCommand
      *
      * @return void
      */
-    protected function printTree($results, $prefix = '', $level = 1)
+    protected function printTree($results, $prefix = '', $level = 1): void
     {
         $count = count($results);
         $idx = 0;
@@ -223,7 +223,7 @@ class BaseDependencyCommand extends BaseCommand
      *
      * @return void
      */
-    private function writeTreeLine($line)
+    private function writeTreeLine($line): void
     {
         $io = $this->getIO();
         if (!$io->isDecorated()) {

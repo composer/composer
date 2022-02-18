@@ -93,7 +93,7 @@ class Pool implements \Countable
      * @param BasePackage[] $packages
      * @return void
      */
-    private function setPackages(array $packages)
+    private function setPackages(array $packages): void
     {
         $id = 1;
 

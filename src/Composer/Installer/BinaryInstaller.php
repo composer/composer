@@ -62,7 +62,7 @@ class BinaryInstaller
      *
      * @return void
      */
-    public function installBinaries(PackageInterface $package, $installPath, $warnOnOverwrite = true)
+    public function installBinaries(PackageInterface $package, $installPath, $warnOnOverwrite = true): void
     {
         $binaries = $this->getBinaries($package);
         if (!$binaries) {
@@ -120,7 +120,7 @@ class BinaryInstaller
     /**
      * @return void
      */
-    public function removeBinaries(PackageInterface $package)
+    public function removeBinaries(PackageInterface $package): void
     {
         $this->initializeBinDir();
 
@@ -180,7 +180,7 @@ class BinaryInstaller
      *
      * @return void
      */
-    protected function installFullBinaries($binPath, $link, $bin, PackageInterface $package)
+    protected function installFullBinaries($binPath, $link, $bin, PackageInterface $package): void
     {
         // add unixy support for cygwin and similar environments
         if ('.bat' !== substr($binPath, -4)) {
@@ -202,7 +202,7 @@ class BinaryInstaller
      *
      * @return void
      */
-    protected function installUnixyProxyBinaries($binPath, $link)
+    protected function installUnixyProxyBinaries($binPath, $link): void
     {
         file_put_contents($link, $this->generateUnixyProxyCode($binPath, $link));
         Silencer::call('chmod', $link, 0777 & ~umask());
@@ -211,7 +211,7 @@ class BinaryInstaller
     /**
      * @return void
      */
-    protected function initializeBinDir()
+    protected function initializeBinDir(): void
     {
         $this->filesystem->ensureDirectoryExists($this->binDir);
         $this->binDir = realpath($this->binDir);

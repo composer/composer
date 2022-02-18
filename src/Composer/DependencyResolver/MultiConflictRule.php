@@ -86,7 +86,7 @@ class MultiConflictRule extends Rule
      * @return never
      * @throws \RuntimeException
      */
-    public function disable()
+    public function disable(): void
     {
         throw new \RuntimeException("Disabling multi conflict rules is not possible. Please contact composer at https://github.com/composer/composer to let us debug what lead to this situation.");
     }

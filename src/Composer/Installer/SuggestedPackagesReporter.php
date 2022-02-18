@@ -104,7 +104,7 @@ class SuggestedPackagesReporter
      * @param  PackageInterface|null    $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
      * @return void
      */
-    public function output($mode, InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
+    public function output($mode, InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null): void
     {
         $suggestedPackages = $this->getFilteredSuggestions($installedRepo, $onlyDependentsOf);
 
@@ -170,7 +170,7 @@ class SuggestedPackagesReporter
      * @param  PackageInterface|null    $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
      * @return void
      */
-    public function outputMinimalistic(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
+    public function outputMinimalistic(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null): void
     {
         $suggestedPackages = $this->getFilteredSuggestions($installedRepo, $onlyDependentsOf);
         if ($suggestedPackages) {

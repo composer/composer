@@ -163,7 +163,7 @@ class PrePoolCreateEvent extends Event
      *
      * @return void
      */
-    public function setPackages(array $packages)
+    public function setPackages(array $packages): void
     {
         $this->packages = $packages;
     }
@@ -173,7 +173,7 @@ class PrePoolCreateEvent extends Event
      *
      * @return void
      */
-    public function setUnacceptableFixedPackages(array $packages)
+    public function setUnacceptableFixedPackages(array $packages): void
     {
         $this->unacceptableFixedPackages = $packages;
     }

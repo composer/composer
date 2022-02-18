@@ -38,7 +38,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function initialize()
+    public function initialize(): void
     {
         // Make sure fossil is installed and reachable.
         $this->checkFossil();
@@ -71,7 +71,7 @@ class FossilDriver extends VcsDriver
      *
      * @return void
      */
-    protected function checkFossil()
+    protected function checkFossil(): void
     {
         if (0 !== $this->process->execute('fossil version', $ignoredOutput)) {
             throw new \RuntimeException("fossil was not found, check that it is installed and in your PATH env.\n\n" . $this->process->getErrorOutput());
@@ -83,7 +83,7 @@ class FossilDriver extends VcsDriver
      *
      * @return void
      */
-    protected function updateLocalRepo()
+    protected function updateLocalRepo(): void
     {
         $fs = new Filesystem();
         $fs->ensureDirectoryExists($this->checkoutDir);

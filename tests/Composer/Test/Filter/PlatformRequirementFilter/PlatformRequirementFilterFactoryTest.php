@@ -23,7 +23,7 @@ final class PlatformRequirementFilterFactoryTest extends TestCase
      * @param mixed $boolOrList
      * @param class-string $expectedInstance
      */
-    public function testFromBoolOrList($boolOrList, $expectedInstance)
+    public function testFromBoolOrList($boolOrList, $expectedInstance): void
     {
         $this->assertInstanceOf($expectedInstance, PlatformRequirementFilterFactory::fromBoolOrList($boolOrList));
     }
@@ -40,7 +40,7 @@ final class PlatformRequirementFilterFactoryTest extends TestCase
         );
     }
 
-    public function testFromBoolThrowsExceptionIfTypeIsUnknown()
+    public function testFromBoolThrowsExceptionIfTypeIsUnknown(): void
     {
         self::expectException('InvalidArgumentException');
         self::expectExceptionMessage('PlatformRequirementFilter: Unknown $boolOrList parameter NULL. Please report at https://github.com/composer/composer/issues/new.');
@@ -48,14 +48,14 @@ final class PlatformRequirementFilterFactoryTest extends TestCase
         PlatformRequirementFilterFactory::fromBoolOrList(null);
     }
 
-    public function testIgnoreAll()
+    public function testIgnoreAll(): void
     {
         $platformRequirementFilter = PlatformRequirementFilterFactory::ignoreAll();
 
         $this->assertInstanceOf('Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter', $platformRequirementFilter);
     }
 
-    public function testIgnoreNothing()
+    public function testIgnoreNothing(): void
     {
         $platformRequirementFilter = PlatformRequirementFilterFactory::ignoreNothing();
 

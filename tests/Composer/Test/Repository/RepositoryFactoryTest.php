@@ -17,7 +17,7 @@ use Composer\Test\TestCase;
 
 class RepositoryFactoryTest extends TestCase
 {
-    public function testManagerWithAllRepositoryTypes()
+    public function testManagerWithAllRepositoryTypes(): void
     {
         $manager = RepositoryFactory::manager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
@@ -59,7 +59,7 @@ class RepositoryFactoryTest extends TestCase
      *
      * @phpstan-param array{url?: string} $config
      */
-    public function testGenerateRepositoryName($index, array $config, array $existingRepos, $expected)
+    public function testGenerateRepositoryName($index, array $config, array $existingRepos, $expected): void
     {
         $this->assertSame($expected, RepositoryFactory::generateRepositoryName($index, $config, $existingRepos));
     }

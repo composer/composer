@@ -23,7 +23,7 @@ class GitExcludeFilterTest extends TestCase
      * @param string  $ignore
      * @param mixed[] $expected
      */
-    public function testPatternEscape($ignore, $expected)
+    public function testPatternEscape($ignore, $expected): void
     {
         $filter = new GitExcludeFilter('/');
 

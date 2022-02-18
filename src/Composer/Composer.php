@@ -144,7 +144,7 @@ class Composer
     /**
      * @return void
      */
-    public function setPackage(RootPackageInterface $package)
+    public function setPackage(RootPackageInterface $package): void
     {
         $this->package = $package;
     }
@@ -160,7 +160,7 @@ class Composer
     /**
      * @return void
      */
-    public function setConfig(Config $config)
+    public function setConfig(Config $config): void
     {
         $this->config = $config;
     }
@@ -176,7 +176,7 @@ class Composer
     /**
      * @return void
      */
-    public function setLocker(Locker $locker)
+    public function setLocker(Locker $locker): void
     {
         $this->locker = $locker;
     }
@@ -192,7 +192,7 @@ class Composer
     /**
      * @return void
      */
-    public function setLoop(Loop $loop)
+    public function setLoop(Loop $loop): void
     {
         $this->loop = $loop;
     }
@@ -208,7 +208,7 @@ class Composer
     /**
      * @return void
      */
-    public function setRepositoryManager(RepositoryManager $manager)
+    public function setRepositoryManager(RepositoryManager $manager): void
     {
         $this->repositoryManager = $manager;
     }
@@ -224,7 +224,7 @@ class Composer
     /**
      * @return void
      */
-    public function setDownloadManager(DownloadManager $manager)
+    public function setDownloadManager(DownloadManager $manager): void
     {
         $this->downloadManager = $manager;
     }
@@ -240,7 +240,7 @@ class Composer
     /**
      * @return void
      */
-    public function setArchiveManager(ArchiveManager $manager)
+    public function setArchiveManager(ArchiveManager $manager): void
     {
         $this->archiveManager = $manager;
     }
@@ -256,7 +256,7 @@ class Composer
     /**
      * @return void
      */
-    public function setInstallationManager(InstallationManager $manager)
+    public function setInstallationManager(InstallationManager $manager): void
     {
         $this->installationManager = $manager;
     }
@@ -272,7 +272,7 @@ class Composer
     /**
      * @return void
      */
-    public function setPluginManager(PluginManager $manager)
+    public function setPluginManager(PluginManager $manager): void
     {
         $this->pluginManager = $manager;
     }
@@ -288,7 +288,7 @@ class Composer
     /**
      * @return void
      */
-    public function setEventDispatcher(EventDispatcher $eventDispatcher)
+    public function setEventDispatcher(EventDispatcher $eventDispatcher): void
     {
         $this->eventDispatcher = $eventDispatcher;
     }
@@ -304,7 +304,7 @@ class Composer
     /**
      * @return void
      */
-    public function setAutoloadGenerator(AutoloadGenerator $autoloadGenerator)
+    public function setAutoloadGenerator(AutoloadGenerator $autoloadGenerator): void
     {
         $this->autoloadGenerator = $autoloadGenerator;
     }

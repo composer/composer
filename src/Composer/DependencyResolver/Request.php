@@ -64,7 +64,7 @@ class Request
      * @param string $packageName
      * @return void
      */
-    public function requireName($packageName, ConstraintInterface $constraint = null)
+    public function requireName($packageName, ConstraintInterface $constraint = null): void
     {
         $packageName = strtolower($packageName);
 
@@ -85,7 +85,7 @@ class Request
      *
      * @return void
      */
-    public function fixPackage(BasePackage $package)
+    public function fixPackage(BasePackage $package): void
     {
         $this->fixedPackages[spl_object_hash($package)] = $package;
     }
@@ -102,7 +102,7 @@ class Request
      *
      * @return void
      */
-    public function lockPackage(BasePackage $package)
+    public function lockPackage(BasePackage $package): void
     {
         $this->lockedPackages[spl_object_hash($package)] = $package;
     }
@@ -116,7 +116,7 @@ class Request
      *
      * @return void
      */
-    public function fixLockedPackage(BasePackage $package)
+    public function fixLockedPackage(BasePackage $package): void
     {
         $this->fixedPackages[spl_object_hash($package)] = $package;
         $this->fixedLockedPackages[spl_object_hash($package)] = $package;
@@ -125,7 +125,7 @@ class Request
     /**
      * @return void
      */
-    public function unlockPackage(BasePackage $package)
+    public function unlockPackage(BasePackage $package): void
     {
         unset($this->lockedPackages[spl_object_hash($package)]);
     }
@@ -135,7 +135,7 @@ class Request
      * @param false|self::UPDATE_* $updateAllowTransitiveDependencies
      * @return void
      */
-    public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies)
+    public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies): void
     {
         $this->updateAllowList = $updateAllowList;
         $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;

@@ -34,7 +34,7 @@ final class GithubActionError
      *
      * @return void
      */
-    public function emit($message, $file = null, $line = null)
+    public function emit($message, $file = null, $line = null): void
     {
         if (Platform::getEnv('GITHUB_ACTIONS') && !Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING')) {
             $message = $this->escapeData($message);

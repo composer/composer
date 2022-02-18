@@ -62,7 +62,7 @@ class ConfigCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('config')
@@ -154,7 +154,7 @@ EOT
      * @return void
      * @throws \Exception
      */
-    protected function initialize(InputInterface $input, OutputInterface $output)
+    protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         parent::initialize($input, $output);
 
@@ -810,7 +810,7 @@ EOT
      *
      * @return void
      */
-    protected function handleSingleValue($key, array $callbacks, array $values, $method)
+    protected function handleSingleValue($key, array $callbacks, array $values, $method): void
     {
         list($validator, $normalizer) = $callbacks;
         if (1 !== count($values)) {
@@ -845,7 +845,7 @@ EOT
      *
      * @return void
      */
-    protected function handleMultiValue($key, array $callbacks, array $values, $method)
+    protected function handleMultiValue($key, array $callbacks, array $values, $method): void
     {
         list($validator, $normalizer) = $callbacks;
         if (true !== $validation = $validator($values)) {
@@ -868,7 +868,7 @@ EOT
      *
      * @return void
      */
-    protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, $k = null, $showSource = false)
+    protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, $k = null, $showSource = false): void
     {
         $origK = $k;
         $io = $this->getIO();

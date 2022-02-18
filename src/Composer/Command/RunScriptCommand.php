@@ -47,7 +47,7 @@ class RunScriptCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('run-script')

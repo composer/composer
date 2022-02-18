@@ -23,7 +23,7 @@ class VersionParserTest extends TestCase
      * @param string[]                     $pairs
      * @param array<array<string, string>> $result
      */
-    public function testParseNameVersionPairs($pairs, $result)
+    public function testParseNameVersionPairs($pairs, $result): void
     {
         $versionParser = new VersionParser();
 
@@ -48,7 +48,7 @@ class VersionParserTest extends TestCase
      * @param string $to
      * @param bool   $expected
      */
-    public function testIsUpgrade($from, $to, $expected)
+    public function testIsUpgrade($from, $to, $expected): void
     {
         $this->assertSame($expected, VersionParser::isUpgrade($from, $to));
     }

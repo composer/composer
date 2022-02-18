@@ -45,7 +45,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getScripts();
     }
 
-    public function setScripts(array $scripts)
+    public function setScripts(array $scripts): void
     {
         $this->aliasOf->setScripts($scripts);
     }
@@ -55,7 +55,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getRepositories();
     }
 
-    public function setRepositories(array $repositories)
+    public function setRepositories(array $repositories): void
     {
         $this->aliasOf->setRepositories($repositories);
     }
@@ -65,7 +65,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getLicense();
     }
 
-    public function setLicense(array $license)
+    public function setLicense(array $license): void
     {
         $this->aliasOf->setLicense($license);
     }
@@ -75,7 +75,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getKeywords();
     }
 
-    public function setKeywords(array $keywords)
+    public function setKeywords(array $keywords): void
     {
         $this->aliasOf->setKeywords($keywords);
     }
@@ -85,7 +85,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getDescription();
     }
 
-    public function setDescription($description)
+    public function setDescription($description): void
     {
         $this->aliasOf->setDescription($description);
     }
@@ -95,7 +95,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getHomepage();
     }
 
-    public function setHomepage($homepage)
+    public function setHomepage($homepage): void
     {
         $this->aliasOf->setHomepage($homepage);
     }
@@ -105,7 +105,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getAuthors();
     }
 
-    public function setAuthors(array $authors)
+    public function setAuthors(array $authors): void
     {
         $this->aliasOf->setAuthors($authors);
     }
@@ -115,7 +115,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getSupport();
     }
 
-    public function setSupport(array $support)
+    public function setSupport(array $support): void
     {
         $this->aliasOf->setSupport($support);
     }
@@ -125,7 +125,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getFunding();
     }
 
-    public function setFunding(array $funding)
+    public function setFunding(array $funding): void
     {
         $this->aliasOf->setFunding($funding);
     }
@@ -140,7 +140,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getReplacementPackage();
     }
 
-    public function setAbandoned($abandoned)
+    public function setAbandoned($abandoned): void
     {
         $this->aliasOf->setAbandoned($abandoned);
     }
@@ -150,7 +150,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getArchiveName();
     }
 
-    public function setArchiveName($name)
+    public function setArchiveName($name): void
     {
         $this->aliasOf->setArchiveName($name);
     }
@@ -160,7 +160,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getArchiveExcludes();
     }
 
-    public function setArchiveExcludes(array $excludes)
+    public function setArchiveExcludes(array $excludes): void
     {
         $this->aliasOf->setArchiveExcludes($excludes);
     }

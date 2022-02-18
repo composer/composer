@@ -77,7 +77,7 @@ class BufferIO extends ConsoleIO
      *
      * @return void
      */
-    public function setUserInputs(array $inputs)
+    public function setUserInputs(array $inputs): void
     {
         if (!$this->input instanceof StreamableInputInterface) {
             throw new \RuntimeException('Setting the user inputs requires at least the version 3.2 of the symfony/console component.');

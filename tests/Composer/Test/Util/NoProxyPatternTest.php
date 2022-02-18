@@ -24,7 +24,7 @@ class NoProxyPatternTest extends TestCase
      * @param string $url
      * @param bool   $expected
      */
-    public function testHostName($noproxy, $url, $expected)
+    public function testHostName($noproxy, $url, $expected): void
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);
@@ -55,7 +55,7 @@ class NoProxyPatternTest extends TestCase
      * @param string $url
      * @param bool   $expected
      */
-    public function testIpAddress($noproxy, $url, $expected)
+    public function testIpAddress($noproxy, $url, $expected): void
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);
@@ -84,7 +84,7 @@ class NoProxyPatternTest extends TestCase
      * @param string $url
      * @param bool   $expected
      */
-    public function testIpRange($noproxy, $url, $expected)
+    public function testIpRange($noproxy, $url, $expected): void
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);
@@ -113,7 +113,7 @@ class NoProxyPatternTest extends TestCase
      * @param string $url
      * @param bool   $expected
      */
-    public function testPort($noproxy, $url, $expected)
+    public function testPort($noproxy, $url, $expected): void
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);

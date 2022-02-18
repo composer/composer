@@ -16,7 +16,7 @@ use Composer\Package\Archiver\PharArchiver;
 
 class PharArchiverTest extends ArchiverTest
 {
-    public function testTarArchive()
+    public function testTarArchive(): void
     {
         // Set up repository
         $this->setupDummyRepo();
@@ -31,7 +31,7 @@ class PharArchiverTest extends ArchiverTest
         $this->filesystem->removeDirectory(dirname($target));
     }
 
-    public function testZipArchive()
+    public function testZipArchive(): void
     {
         // Set up repository
         $this->setupDummyRepo();
@@ -51,7 +51,7 @@ class PharArchiverTest extends ArchiverTest
      *
      * @return void
      */
-    protected function setupDummyRepo()
+    protected function setupDummyRepo(): void
     {
         $currentWorkDir = getcwd();
         chdir($this->testDir);
@@ -72,7 +72,7 @@ class PharArchiverTest extends ArchiverTest
      *
      * @return void
      */
-    protected function writeFile($path, $content, $currentWorkDir)
+    protected function writeFile($path, $content, $currentWorkDir): void
     {
         if (!file_exists(dirname($path))) {
             mkdir(dirname($path), 0777, true);

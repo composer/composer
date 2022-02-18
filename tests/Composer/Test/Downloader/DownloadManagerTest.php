@@ -30,7 +30,7 @@ class DownloadManagerTest extends TestCase
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
-    public function testSetGetDownloader()
+    public function testSetGetDownloader(): void
     {
         $downloader = $this->createDownloaderMock();
         $manager = new DownloadManager($this->io, false, $this->filesystem);
@@ -42,7 +42,7 @@ class DownloadManagerTest extends TestCase
         $manager->getDownloader('unregistered');
     }
 
-    public function testGetDownloaderForIncorrectlyInstalledPackage()
+    public function testGetDownloaderForIncorrectlyInstalledPackage(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -57,7 +57,7 @@ class DownloadManagerTest extends TestCase
         $manager->getDownloaderForPackage($package);
     }
 
-    public function testGetDownloaderForCorrectlyInstalledDistPackage()
+    public function testGetDownloaderForCorrectlyInstalledDistPackage(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -89,7 +89,7 @@ class DownloadManagerTest extends TestCase
         $this->assertSame($downloader, $manager->getDownloaderForPackage($package));
     }
 
-    public function testGetDownloaderForIncorrectlyInstalledDistPackage()
+    public function testGetDownloaderForIncorrectlyInstalledDistPackage(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -123,7 +123,7 @@ class DownloadManagerTest extends TestCase
         $manager->getDownloaderForPackage($package);
     }
 
-    public function testGetDownloaderForCorrectlyInstalledSourcePackage()
+    public function testGetDownloaderForCorrectlyInstalledSourcePackage(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -155,7 +155,7 @@ class DownloadManagerTest extends TestCase
         $this->assertSame($downloader, $manager->getDownloaderForPackage($package));
     }
 
-    public function testGetDownloaderForIncorrectlyInstalledSourcePackage()
+    public function testGetDownloaderForIncorrectlyInstalledSourcePackage(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -189,7 +189,7 @@ class DownloadManagerTest extends TestCase
         $manager->getDownloaderForPackage($package);
     }
 
-    public function testGetDownloaderForMetapackage()
+    public function testGetDownloaderForMetapackage(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -202,7 +202,7 @@ class DownloadManagerTest extends TestCase
         $this->assertNull($manager->getDownloaderForPackage($package));
     }
 
-    public function testFullPackageDownload()
+    public function testFullPackageDownload(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -238,7 +238,7 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testFullPackageDownloadFailover()
+    public function testFullPackageDownloadFailover(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -291,7 +291,7 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testBadPackageDownload()
+    public function testBadPackageDownload(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -309,7 +309,7 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testDistOnlyPackageDownload()
+    public function testDistOnlyPackageDownload(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -345,7 +345,7 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testSourceOnlyPackageDownload()
+    public function testSourceOnlyPackageDownload(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -381,7 +381,7 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testMetapackagePackageDownload()
+    public function testMetapackagePackageDownload(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -411,7 +411,7 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testFullPackageDownloadWithSourcePreferred()
+    public function testFullPackageDownloadWithSourcePreferred(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -448,7 +448,7 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testDistOnlyPackageDownloadWithSourcePreferred()
+    public function testDistOnlyPackageDownloadWithSourcePreferred(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -485,7 +485,7 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testSourceOnlyPackageDownloadWithSourcePreferred()
+    public function testSourceOnlyPackageDownloadWithSourcePreferred(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -522,7 +522,7 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testBadPackageDownloadWithSourcePreferred()
+    public function testBadPackageDownloadWithSourcePreferred(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -541,7 +541,7 @@ class DownloadManagerTest extends TestCase
         $manager->download($package, 'target_dir');
     }
 
-    public function testUpdateDistWithEqualTypes()
+    public function testUpdateDistWithEqualTypes(): void
     {
         $initial = $this->createPackageMock();
         $initial
@@ -579,7 +579,7 @@ class DownloadManagerTest extends TestCase
         $manager->update($initial, $target, 'vendor/bundles/FOS/UserBundle');
     }
 
-    public function testUpdateDistWithNotEqualTypes()
+    public function testUpdateDistWithNotEqualTypes(): void
     {
         $initial = $this->createPackageMock();
         $initial
@@ -636,7 +636,7 @@ class DownloadManagerTest extends TestCase
      * @param bool $targetIsDev
      * @param string[] $expected
      */
-    public function testGetAvailableSourcesUpdateSticksToSameSource($prevPkgSource, $prevPkgIsDev, $targetAvailable, $targetIsDev, $expected)
+    public function testGetAvailableSourcesUpdateSticksToSameSource($prevPkgSource, $prevPkgIsDev, $targetAvailable, $targetIsDev, $expected): void
     {
         $initial = null;
         if ($prevPkgSource) {
@@ -689,7 +689,7 @@ class DownloadManagerTest extends TestCase
         );
     }
 
-    public function testUpdateMetapackage()
+    public function testUpdateMetapackage(): void
     {
         $initial = $this->createPackageMock();
         $target = $this->createPackageMock();
@@ -707,7 +707,7 @@ class DownloadManagerTest extends TestCase
         $manager->update($initial, $target, 'vendor/pkg');
     }
 
-    public function testRemove()
+    public function testRemove(): void
     {
         $package = $this->createPackageMock();
 
@@ -730,7 +730,7 @@ class DownloadManagerTest extends TestCase
         $manager->remove($package, 'vendor/bundles/FOS/UserBundle');
     }
 
-    public function testMetapackageRemove()
+    public function testMetapackageRemove(): void
     {
         $package = $this->createPackageMock();
 
@@ -750,7 +750,7 @@ class DownloadManagerTest extends TestCase
     /**
      * @covers Composer\Downloader\DownloadManager::resolvePackageInstallPreference
      */
-    public function testInstallPreferenceWithoutPreferenceDev()
+    public function testInstallPreferenceWithoutPreferenceDev(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -793,7 +793,7 @@ class DownloadManagerTest extends TestCase
     /**
      * @covers Composer\Downloader\DownloadManager::resolvePackageInstallPreference
      */
-    public function testInstallPreferenceWithoutPreferenceNoDev()
+    public function testInstallPreferenceWithoutPreferenceNoDev(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -836,7 +836,7 @@ class DownloadManagerTest extends TestCase
     /**
      * @covers Composer\Downloader\DownloadManager::resolvePackageInstallPreference
      */
-    public function testInstallPreferenceWithoutMatchDev()
+    public function testInstallPreferenceWithoutMatchDev(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -883,7 +883,7 @@ class DownloadManagerTest extends TestCase
     /**
      * @covers Composer\Downloader\DownloadManager::resolvePackageInstallPreference
      */
-    public function testInstallPreferenceWithoutMatchNoDev()
+    public function testInstallPreferenceWithoutMatchNoDev(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -930,7 +930,7 @@ class DownloadManagerTest extends TestCase
     /**
      * @covers Composer\Downloader\DownloadManager::resolvePackageInstallPreference
      */
-    public function testInstallPreferenceWithMatchAutoDev()
+    public function testInstallPreferenceWithMatchAutoDev(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -977,7 +977,7 @@ class DownloadManagerTest extends TestCase
     /**
      * @covers Composer\Downloader\DownloadManager::resolvePackageInstallPreference
      */
-    public function testInstallPreferenceWithMatchAutoNoDev()
+    public function testInstallPreferenceWithMatchAutoNoDev(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -1024,7 +1024,7 @@ class DownloadManagerTest extends TestCase
     /**
      * @covers Composer\Downloader\DownloadManager::resolvePackageInstallPreference
      */
-    public function testInstallPreferenceWithMatchSource()
+    public function testInstallPreferenceWithMatchSource(): void
     {
         $package = $this->createPackageMock();
         $package
@@ -1067,7 +1067,7 @@ class DownloadManagerTest extends TestCase
     /**
      * @covers Composer\Downloader\DownloadManager::resolvePackageInstallPreference
      */
-    public function testInstallPreferenceWithMatchDist()
+    public function testInstallPreferenceWithMatchDist(): void
     {
         $package = $this->createPackageMock();
         $package

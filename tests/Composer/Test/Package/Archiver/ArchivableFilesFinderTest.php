@@ -102,7 +102,7 @@ class ArchivableFilesFinderTest extends TestCase
         $fs->removeDirectory($this->sources);
     }
 
-    public function testManualExcludes()
+    public function testManualExcludes(): void
     {
         $excludes = array(
             'prefixB.foo',
@@ -154,7 +154,7 @@ class ArchivableFilesFinderTest extends TestCase
         ));
     }
 
-    public function testGitExcludes()
+    public function testGitExcludes(): void
     {
         $this->skipIfNotExecutable('git');
 
@@ -202,7 +202,7 @@ class ArchivableFilesFinderTest extends TestCase
         ));
     }
 
-    public function testSkipExcludes()
+    public function testSkipExcludes(): void
     {
         $excludes = array(
             'prefixB.foo',
@@ -303,7 +303,7 @@ class ArchivableFilesFinderTest extends TestCase
      *
      * @return void
      */
-    protected function assertArchivableFiles($expectedFiles)
+    protected function assertArchivableFiles($expectedFiles): void
     {
         $actualFiles = $this->getArchivableFiles();
 

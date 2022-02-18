@@ -44,7 +44,7 @@ class Compiler
      *
      * @throws \RuntimeException
      */
-    public function compile($pharFile = 'composer.phar')
+    public function compile($pharFile = 'composer.phar'): void
     {
         if (file_exists($pharFile)) {
             unlink($pharFile);
@@ -217,7 +217,7 @@ class Compiler
      *
      * @return void
      */
-    private function addFile(\Phar $phar, \SplFileInfo $file, $strip = true)
+    private function addFile(\Phar $phar, \SplFileInfo $file, $strip = true): void
     {
         $path = $this->getRelativeFilePath($file);
         $content = file_get_contents($file);
@@ -245,7 +245,7 @@ class Compiler
     /**
      * @return void
      */
-    private function addComposerBin(\Phar $phar)
+    private function addComposerBin(\Phar $phar): void
     {
         $content = file_get_contents(__DIR__.'/../../bin/composer');
         $content = Preg::replace('{^#!/usr/bin/env php\s*}', '', $content);

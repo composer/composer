@@ -27,7 +27,7 @@ class TransactionTest extends TestCase
     {
     }
 
-    public function testTransactionGenerationAndSorting()
+    public function testTransactionGenerationAndSorting(): void
     {
         $presentPackages = array(
             $packageA = $this->getPackage('a/a', 'dev-master'),
@@ -103,7 +103,7 @@ class TransactionTest extends TestCase
      * @param array<array<string, string>> $expected
      * @return void
      */
-    protected function checkTransactionOperations(Transaction $transaction, array $expected)
+    protected function checkTransactionOperations(Transaction $transaction, array $expected): void
     {
         $result = array();
         foreach ($transaction->getOperations() as $operation) {

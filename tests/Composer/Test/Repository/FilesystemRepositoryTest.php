@@ -21,7 +21,7 @@ use Composer\Util\Filesystem;
 
 class FilesystemRepositoryTest extends TestCase
 {
-    public function testRepositoryRead()
+    public function testRepositoryRead(): void
     {
         $json = $this->createJsonFileMock();
 
@@ -46,7 +46,7 @@ class FilesystemRepositoryTest extends TestCase
         $this->assertSame('vendor', $packages[0]->getType());
     }
 
-    public function testCorruptedRepositoryFile()
+    public function testCorruptedRepositoryFile(): void
     {
         self::expectException('Composer\Repository\InvalidRepositoryException');
         $json = $this->createJsonFileMock();
@@ -65,7 +65,7 @@ class FilesystemRepositoryTest extends TestCase
         $repository->getPackages();
     }
 
-    public function testUnexistentRepositoryFile()
+    public function testUnexistentRepositoryFile(): void
     {
         $json = $this->createJsonFileMock();
 
@@ -79,7 +79,7 @@ class FilesystemRepositoryTest extends TestCase
         $this->assertEquals(array(), $repository->getPackages());
     }
 
-    public function testRepositoryWrite()
+    public function testRepositoryWrite(): void
     {
         $json = $this->createJsonFileMock();
 
@@ -125,7 +125,7 @@ class FilesystemRepositoryTest extends TestCase
         $repository->write(true, $im);
     }
 
-    public function testRepositoryWritesInstalledPhp()
+    public function testRepositoryWritesInstalledPhp(): void
     {
         $dir = $this->getUniqueTmpDirectory();
         chdir($dir);

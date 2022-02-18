@@ -53,7 +53,7 @@ class Hg
      *
      * @return void
      */
-    public function runCommand($commandCallable, $url, $cwd)
+    public function runCommand($commandCallable, $url, $cwd): void
     {
         $this->config->prohibitUrlByConfig($url, $this->io);
 

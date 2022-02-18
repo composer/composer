@@ -34,7 +34,7 @@ class PoolOptimizerTest extends TestCase
      * @param BasePackage[] $expectedPackages
      * @param string $message
      */
-    public function testPoolOptimizer(array $requestData, array $packagesBefore, array $expectedPackages, $message)
+    public function testPoolOptimizer(array $requestData, array $packagesBefore, array $expectedPackages, $message): void
     {
         $lockedRepo = new LockArrayRepository();
 

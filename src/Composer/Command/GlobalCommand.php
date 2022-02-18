@@ -29,7 +29,7 @@ class GlobalCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('global')

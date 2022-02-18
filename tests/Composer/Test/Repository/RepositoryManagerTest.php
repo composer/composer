@@ -35,7 +35,7 @@ class RepositoryManagerTest extends TestCase
         }
     }
 
-    public function testPrepend()
+    public function testPrepend(): void
     {
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
@@ -59,7 +59,7 @@ class RepositoryManagerTest extends TestCase
      * @param array<string, mixed> $options
      * @param class-string<\Throwable>|null $exception
      */
-    public function testRepoCreation($type, $options, ?string $exception = null)
+    public function testRepoCreation($type, $options, ?string $exception = null): void
     {
         if ($exception !== null) {
             self::expectException($exception);
@@ -115,7 +115,7 @@ class RepositoryManagerTest extends TestCase
         return $cases;
     }
 
-    public function testFilterRepoWrapping()
+    public function testFilterRepoWrapping(): void
     {
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),

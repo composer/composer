@@ -45,7 +45,7 @@ class PackageRepository extends ArrayRepository
     /**
      * Initializes repository (reads file, or remote address).
      */
-    protected function initialize()
+    protected function initialize(): void
     {
         parent::initialize();
 

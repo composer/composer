@@ -298,7 +298,7 @@ class PoolBuilder
      * @param string $name
      * @return void
      */
-    private function markPackageNameForLoading(Request $request, $name, ConstraintInterface $constraint)
+    private function markPackageNameForLoading(Request $request, $name, ConstraintInterface $constraint): void
     {
         // Skip platform requires at this stage
         if (PlatformRepository::isPlatformPackage($name)) {
@@ -357,7 +357,7 @@ class PoolBuilder
      * @param RepositoryInterface[] $repositories
      * @return void
      */
-    private function loadPackagesMarkedForLoading(Request $request, array $repositories)
+    private function loadPackagesMarkedForLoading(Request $request, array $repositories): void
     {
         foreach ($this->packagesToLoad as $name => $constraint) {
             $this->loadedPackages[$name] = $constraint;
@@ -394,7 +394,7 @@ class PoolBuilder
      * @param RepositoryInterface[] $repositories
      * @return void
      */
-    private function loadPackage(Request $request, array $repositories, BasePackage $package, $propagateUpdate)
+    private function loadPackage(Request $request, array $repositories, BasePackage $package, $propagateUpdate): void
     {
         $index = $this->indexCounter++;
         $this->packages[$index] = $package;
@@ -568,7 +568,7 @@ class PoolBuilder
     /**
      * @return void
      */
-    private function warnAboutNonMatchingUpdateAllowList(Request $request)
+    private function warnAboutNonMatchingUpdateAllowList(Request $request): void
     {
         foreach ($this->updateAllowList as $pattern => $void) {
             $patternRegexp = BasePackage::packageNameToRegexp($pattern);
@@ -600,7 +600,7 @@ class PoolBuilder
      * @param string $name
      * @return void
      */
-    private function unlockPackage(Request $request, array $repositories, $name)
+    private function unlockPackage(Request $request, array $repositories, $name): void
     {
         foreach ($this->skippedLoad[$name] as $packageOrReplacer) {
             // if we unfixed a replaced package name, we also need to unfix the replacer itself
@@ -666,7 +666,7 @@ class PoolBuilder
      * @param int $index
      * @return void
      */
-    private function removeLoadedPackage(Request $request, array $repositories, BasePackage $package, $index)
+    private function removeLoadedPackage(Request $request, array $repositories, BasePackage $package, $index): void
     {
         $repoIndex = array_search($package->getRepository(), $repositories, true);
 

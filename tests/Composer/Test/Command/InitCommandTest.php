@@ -17,7 +17,7 @@ use Composer\Test\TestCase;
 
 class InitCommandTest extends TestCase
 {
-    public function testParseValidAuthorString()
+    public function testParseValidAuthorString(): void
     {
         $command = new InitCommand;
         $author = $command->parseAuthorString('John Smith <john@example.com>');
@@ -25,7 +25,7 @@ class InitCommandTest extends TestCase
         $this->assertEquals('john@example.com', $author['email']);
     }
 
-    public function testParseValidAuthorStringWithoutEmail()
+    public function testParseValidAuthorStringWithoutEmail(): void
     {
         $command = new InitCommand;
         $author = $command->parseAuthorString('John Smith');
@@ -33,7 +33,7 @@ class InitCommandTest extends TestCase
         $this->assertNull($author['email']);
     }
 
-    public function testParseValidUtf8AuthorString()
+    public function testParseValidUtf8AuthorString(): void
     {
         $command = new InitCommand;
         $author = $command->parseAuthorString('Matti Meikäläinen <matti@example.com>');
@@ -41,7 +41,7 @@ class InitCommandTest extends TestCase
         $this->assertEquals('matti@example.com', $author['email']);
     }
 
-    public function testParseValidUtf8AuthorStringWithNonSpacingMarks()
+    public function testParseValidUtf8AuthorStringWithNonSpacingMarks(): void
     {
         // \xCC\x88 is UTF-8 for U+0308 diaeresis (umlaut) combining mark
         $utf8_expected = "Matti Meika\xCC\x88la\xCC\x88inen";
@@ -51,7 +51,7 @@ class InitCommandTest extends TestCase
         $this->assertEquals('matti@example.com', $author['email']);
     }
 
-    public function testParseNumericAuthorString()
+    public function testParseNumericAuthorString(): void
     {
         $command = new InitCommand;
         $author = $command->parseAuthorString('h4x0r <h4x@example.com>');
@@ -63,7 +63,7 @@ class InitCommandTest extends TestCase
      * Test scenario for issue #5631
      * @link https://github.com/composer/composer/issues/5631 Issue #5631
      */
-    public function testParseValidAlias1AuthorString()
+    public function testParseValidAlias1AuthorString(): void
     {
         $command = new InitCommand;
         $author = $command->parseAuthorString(
@@ -77,7 +77,7 @@ class InitCommandTest extends TestCase
      * Test scenario for issue #5631
      * @link https://github.com/composer/composer/issues/5631 Issue #5631
      */
-    public function testParseValidAlias2AuthorString()
+    public function testParseValidAlias2AuthorString(): void
     {
         $command = new InitCommand;
         $author = $command->parseAuthorString(
@@ -87,35 +87,35 @@ class InitCommandTest extends TestCase
         $this->assertEquals('john@example.com', $author['email']);
     }
 
-    public function testParseEmptyAuthorString()
+    public function testParseEmptyAuthorString(): void
     {
         $command = new InitCommand;
         self::expectException('InvalidArgumentException');
         $command->parseAuthorString('');
     }
 
-    public function testParseAuthorStringWithInvalidEmail()
+    public function testParseAuthorStringWithInvalidEmail(): void
     {
         $command = new InitCommand;
         self::expectException('InvalidArgumentException');
         $command->parseAuthorString('John Smith <john>');
     }
 
-    public function testNamespaceFromValidPackageName()
+    public function testNamespaceFromValidPackageName(): void
     {
         $command = new InitCommand;
         $namespace = $command->namespaceFromPackageName('new_projects.acme-extra/package-name');
         $this->assertEquals('NewProjectsAcmeExtra\PackageName', $namespace);
     }
 
-    public function testNamespaceFromInvalidPackageName()
+    public function testNamespaceFromInvalidPackageName(): void
     {
         $command = new InitCommand;
         $namespace = $command->namespaceFromPackageName('invalid-package-name');
         $this->assertNull($namespace);
     }
 
-    public function testNamespaceFromMissingPackageName()
+    public function testNamespaceFromMissingPackageName(): void
     {
         $command = new InitCommand;
         $namespace = $command->namespaceFromPackageName('');

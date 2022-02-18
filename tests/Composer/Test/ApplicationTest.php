@@ -25,7 +25,7 @@ class ApplicationTest extends TestCase
         putenv('COMPOSER_NO_INTERACTION');
     }
 
-    public function testDevWarning()
+    public function testDevWarning(): void
     {
         $application = new Application;
 
@@ -84,7 +84,7 @@ class ApplicationTest extends TestCase
      * @param  string $command
      * @return void
      */
-    public function ensureNoDevWarning($command)
+    public function ensureNoDevWarning($command): void
     {
         $application = new Application;
 
@@ -133,12 +133,12 @@ class ApplicationTest extends TestCase
         $application->doRun($inputMock, $outputMock);
     }
 
-    public function testDevWarningPrevented()
+    public function testDevWarningPrevented(): void
     {
         $this->ensureNoDevWarning('self-update');
     }
 
-    public function testDevWarningPreventedAlias()
+    public function testDevWarningPreventedAlias(): void
     {
         $this->ensureNoDevWarning('self-up');
     }

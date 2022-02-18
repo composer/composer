@@ -135,7 +135,7 @@ class PluginInstallerTest extends TestCase
         $filesystem->removeDirectory($this->directory);
     }
 
-    public function testInstallNewPlugin()
+    public function testInstallNewPlugin(): void
     {
         $this->repository
             ->expects($this->any())
@@ -154,7 +154,7 @@ class PluginInstallerTest extends TestCase
         );
     }
 
-    public function testInstallPluginWithRootPackageHavingFilesAutoload()
+    public function testInstallPluginWithRootPackageHavingFilesAutoload(): void
     {
         $this->repository
             ->expects($this->any())
@@ -176,7 +176,7 @@ class PluginInstallerTest extends TestCase
         $this->assertEquals('installer-v1', $plugins[0]->version);  // @phpstan-ignore-line
     }
 
-    public function testInstallMultiplePlugins()
+    public function testInstallMultiplePlugins(): void
     {
         $this->repository
             ->expects($this->any())
@@ -195,7 +195,7 @@ class PluginInstallerTest extends TestCase
         $this->assertEquals('activate v4-plugin1'.PHP_EOL.'activate v4-plugin2'.PHP_EOL, $this->io->getOutput());
     }
 
-    public function testUpgradeWithNewClassName()
+    public function testUpgradeWithNewClassName(): void
     {
         $this->repository
             ->expects($this->any())
@@ -216,7 +216,7 @@ class PluginInstallerTest extends TestCase
         $this->assertEquals('activate v1'.PHP_EOL.'deactivate v1'.PHP_EOL.'activate v2'.PHP_EOL, $this->io->getOutput());
     }
 
-    public function testUninstall()
+    public function testUninstall(): void
     {
         $this->repository
             ->expects($this->any())
@@ -236,7 +236,7 @@ class PluginInstallerTest extends TestCase
         $this->assertEquals('activate v1'.PHP_EOL.'deactivate v1'.PHP_EOL.'uninstall v1'.PHP_EOL, $this->io->getOutput());
     }
 
-    public function testUpgradeWithSameClassName()
+    public function testUpgradeWithSameClassName(): void
     {
         $this->repository
             ->expects($this->any())
@@ -256,7 +256,7 @@ class PluginInstallerTest extends TestCase
         $this->assertEquals('activate v2'.PHP_EOL.'deactivate v2'.PHP_EOL.'activate v3'.PHP_EOL, $this->io->getOutput());
     }
 
-    public function testRegisterPluginOnlyOneTime()
+    public function testRegisterPluginOnlyOneTime(): void
     {
         $this->repository
             ->expects($this->any())
@@ -280,7 +280,7 @@ class PluginInstallerTest extends TestCase
      *
      * @return void
      */
-    private function setPluginApiVersionWithPlugins($newPluginApiVersion, array $plugins = array())
+    private function setPluginApiVersionWithPlugins($newPluginApiVersion, array $plugins = array()): void
     {
         // reset the plugin manager's installed plugins
         $this->pm = $this->getMockBuilder('Composer\Plugin\PluginManager')
@@ -310,7 +310,7 @@ class PluginInstallerTest extends TestCase
         $this->pm->loadInstalledPlugins();
     }
 
-    public function testStarPluginVersionWorksWithAnyAPIVersion()
+    public function testStarPluginVersionWorksWithAnyAPIVersion(): void
     {
         $starVersionPlugin = array($this->packages[4]);
 
@@ -327,7 +327,7 @@ class PluginInstallerTest extends TestCase
         $this->assertCount(1, $this->pm->getPlugins());
     }
 
-    public function testPluginConstraintWorksOnlyWithCertainAPIVersion()
+    public function testPluginConstraintWorksOnlyWithCertainAPIVersion(): void
     {
         $pluginWithApiConstraint = array($this->packages[5]);
 
@@ -344,7 +344,7 @@ class PluginInstallerTest extends TestCase
         $this->assertCount(1, $this->pm->getPlugins());
     }
 
-    public function testPluginRangeConstraintsWorkOnlyWithCertainAPIVersion()
+    public function testPluginRangeConstraintsWorkOnlyWithCertainAPIVersion(): void
     {
         $pluginWithApiConstraint = array($this->packages[6]);
 
@@ -358,7 +358,7 @@ class PluginInstallerTest extends TestCase
         $this->assertCount(0, $this->pm->getPlugins());
     }
 
-    public function testCommandProviderCapability()
+    public function testCommandProviderCapability(): void
     {
         $this->repository
             ->expects($this->any())
@@ -377,14 +377,14 @@ class PluginInstallerTest extends TestCase
         $this->assertInstanceOf('Composer\Command\BaseCommand', $commands[0]);
     }
 
-    public function testIncapablePluginIsCorrectlyDetected()
+    public function testIncapablePluginIsCorrectlyDetected(): void
     {
         $plugin = $this->getMockBuilder('Composer\Plugin\PluginInterface')
                        ->getMock();
         $this->assertNull($this->pm->getPluginCapability($plugin, 'Fake\Ability'));
     }
 
-    public function testCapabilityImplementsComposerPluginApiClassAndIsConstructedWithArgs()
+    public function testCapabilityImplementsComposerPluginApiClassAndIsConstructedWithArgs(): void
     {
         $capabilityApi = 'Composer\Plugin\Capability\Capability';
         $capabilityImplementation = 'Composer\Test\Plugin\Mock\Capability';
@@ -437,7 +437,7 @@ class PluginInstallerTest extends TestCase
      *
      * @return void
      */
-    public function testQueryingWithInvalidCapabilityClassNameThrows($invalidImplementationClassNames, $expect = 'UnexpectedValueException')
+    public function testQueryingWithInvalidCapabilityClassNameThrows($invalidImplementationClassNames, $expect = 'UnexpectedValueException'): void
     {
         self::expectException($expect);
 
@@ -456,7 +456,7 @@ class PluginInstallerTest extends TestCase
     }
 
     /** @return void */
-    public function testQueryingNonProvidedCapabilityReturnsNullSafely()
+    public function testQueryingNonProvidedCapabilityReturnsNullSafely(): void
     {
         $capabilityApi = 'Composer\Plugin\Capability\MadeUpCapability';
 
@@ -478,7 +478,7 @@ class PluginInstallerTest extends TestCase
      *
      * @return void
      */
-    public function testQueryingWithNonExistingOrWrongCapabilityClassTypesThrows($wrongImplementationClassTypes)
+    public function testQueryingWithNonExistingOrWrongCapabilityClassTypesThrows($wrongImplementationClassTypes): void
     {
         $this->testQueryingWithInvalidCapabilityClassNameThrows($wrongImplementationClassTypes, 'RuntimeException');
     }

@@ -128,7 +128,7 @@ abstract class Rule
      * @param RuleSet::TYPE_* $type
      * @return void
      */
-    public function setType($type)
+    public function setType($type): void
     {
         $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_TYPE)) | ((255 & $type) << self::BITFIELD_TYPE);
     }
@@ -144,7 +144,7 @@ abstract class Rule
     /**
      * @return void
      */
-    public function disable()
+    public function disable(): void
     {
         $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_DISABLED)) | (1 << self::BITFIELD_DISABLED);
     }
@@ -152,7 +152,7 @@ abstract class Rule
     /**
      * @return void
      */
-    public function enable()
+    public function enable(): void
     {
         $this->bitfield &= ~(255 << self::BITFIELD_DISABLED);
     }

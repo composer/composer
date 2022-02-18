@@ -92,7 +92,7 @@ class PluginManager
      *
      * @return void
      */
-    public function loadInstalledPlugins()
+    public function loadInstalledPlugins(): void
     {
         if ($this->disablePlugins) {
             return;
@@ -111,7 +111,7 @@ class PluginManager
      *
      * @return void
      */
-    public function deactivateInstalledPlugins()
+    public function deactivateInstalledPlugins(): void
     {
         if ($this->disablePlugins) {
             return;
@@ -159,7 +159,7 @@ class PluginManager
      *
      * @throws \UnexpectedValueException
      */
-    public function registerPackage(PackageInterface $package, $failOnMissingClasses = false, $isGlobalPlugin = false)
+    public function registerPackage(PackageInterface $package, $failOnMissingClasses = false, $isGlobalPlugin = false): void
     {
         if ($this->disablePlugins) {
             return;
@@ -318,7 +318,7 @@ class PluginManager
      *
      * @throws \UnexpectedValueException
      */
-    public function deactivatePackage(PackageInterface $package)
+    public function deactivatePackage(PackageInterface $package): void
     {
         if ($this->disablePlugins) {
             return;
@@ -349,7 +349,7 @@ class PluginManager
      *
      * @throws \UnexpectedValueException
      */
-    public function uninstallPackage(PackageInterface $package)
+    public function uninstallPackage(PackageInterface $package): void
     {
         if ($this->disablePlugins) {
             return;
@@ -392,7 +392,7 @@ class PluginManager
      *
      * @return void
      */
-    public function addPlugin(PluginInterface $plugin, $isGlobalPlugin = false, PackageInterface $sourcePackage = null)
+    public function addPlugin(PluginInterface $plugin, $isGlobalPlugin = false, PackageInterface $sourcePackage = null): void
     {
         if ($sourcePackage === null) {
             trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);
@@ -429,7 +429,7 @@ class PluginManager
      *
      * @return void
      */
-    public function removePlugin(PluginInterface $plugin)
+    public function removePlugin(PluginInterface $plugin): void
     {
         $index = array_search($plugin, $this->plugins, true);
         if ($index === false) {
@@ -454,7 +454,7 @@ class PluginManager
      *
      * @return void
      */
-    public function uninstallPlugin(PluginInterface $plugin)
+    public function uninstallPlugin(PluginInterface $plugin): void
     {
         $this->io->writeError('Uninstalling plugin '.get_class($plugin), true, IOInterface::DEBUG);
         $plugin->uninstall($this->composer, $this->io);
@@ -476,7 +476,7 @@ class PluginManager
      *
      * @throws \RuntimeException
      */
-    private function loadRepository(RepositoryInterface $repo, $isGlobalRepo)
+    private function loadRepository(RepositoryInterface $repo, $isGlobalRepo): void
     {
         $packages = $repo->getPackages();
         $sortedPackages = PackageSorter::sortPackages($packages);
@@ -503,7 +503,7 @@ class PluginManager
      *
      * @return void
      */
-    private function deactivateRepository(RepositoryInterface $repo, $isGlobalRepo)
+    private function deactivateRepository(RepositoryInterface $repo, $isGlobalRepo): void
     {
         $packages = $repo->getPackages();
         $sortedPackages = array_reverse(PackageSorter::sortPackages($packages));

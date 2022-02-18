@@ -59,7 +59,7 @@ class GzipDownloader extends ArchiveDownloader
      *
      * @return void
      */
-    private function extractUsingExt($file, $targetFilepath)
+    private function extractUsingExt($file, $targetFilepath): void
     {
         $archiveFile = gzopen($file, 'rb');
         $targetFile = fopen($targetFilepath, 'wb');

@@ -73,7 +73,7 @@ class PerforceDownloader extends VcsDownloader
      *
      * @return void
      */
-    public function initPerforce(PackageInterface $package, $path, $url)
+    public function initPerforce(PackageInterface $package, $path, $url): void
     {
         if (!empty($this->perforce)) {
             $this->perforce->initializePath($path);
@@ -126,7 +126,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @return void
      */
-    public function setPerforce(Perforce $perforce)
+    public function setPerforce(Perforce $perforce): void
     {
         $this->perforce = $perforce;
     }

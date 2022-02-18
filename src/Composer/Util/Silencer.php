@@ -47,7 +47,7 @@ class Silencer
      *
      * @return void
      */
-    public static function restore()
+    public static function restore(): void
     {
         if (!empty(self::$stack)) {
             error_reporting(array_pop(self::$stack));

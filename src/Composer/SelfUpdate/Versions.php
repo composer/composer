@@ -63,7 +63,7 @@ class Versions
      *
      * @return void
      */
-    public function setChannel($channel)
+    public function setChannel($channel): void
     {
         if (!in_array($channel, self::$channels, true)) {
             throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: ' . implode(', ', self::$channels));

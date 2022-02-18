@@ -49,7 +49,7 @@ class ProxyHelperTest extends TestCase
      *
      * @param string $url
      */
-    public function testThrowsOnMalformedUrl($url)
+    public function testThrowsOnMalformedUrl($url): void
     {
         $_SERVER['http_proxy'] = $url;
 
@@ -71,7 +71,7 @@ class ProxyHelperTest extends TestCase
      * @param string $url
      * @param string $expected
      */
-    public function testUrlFormatting($url, $expected)
+    public function testUrlFormatting($url, $expected): void
     {
         $_SERVER['http_proxy'] = $url;
 
@@ -96,7 +96,7 @@ class ProxyHelperTest extends TestCase
      * @param string               $expected
      * @param int                  $index
      */
-    public function testLowercaseOverridesUppercase(array $server, $expected, $index)
+    public function testLowercaseOverridesUppercase(array $server, $expected, $index): void
     {
         $_SERVER = array_merge($_SERVER, $server);
 
@@ -121,7 +121,7 @@ class ProxyHelperTest extends TestCase
      * @param string               $expected
      * @param int                  $index
      */
-    public function testCGIUpperCaseOverridesHttp(array $server, $expected, $index)
+    public function testCGIUpperCaseOverridesHttp(array $server, $expected, $index): void
     {
         $_SERVER = array_merge($_SERVER, $server);
 
@@ -138,7 +138,7 @@ class ProxyHelperTest extends TestCase
         );
     }
 
-    public function testNoHttpsProxyUsesHttpProxy()
+    public function testNoHttpsProxyUsesHttpProxy(): void
     {
         $_SERVER['http_proxy'] = 'http://http.com';
 
@@ -146,7 +146,7 @@ class ProxyHelperTest extends TestCase
         $this->assertSame('http://http.com:80', $httpsProxy);
     }
 
-    public function testNoHttpProxyDoesNotUseHttpsProxy()
+    public function testNoHttpProxyDoesNotUseHttpsProxy(): void
     {
         $_SERVER['https_proxy'] = 'http://https.com';
 
@@ -162,7 +162,7 @@ class ProxyHelperTest extends TestCase
      *
      * @phpstan-param array{http: array{proxy: string, header?: string}} $expected
      */
-    public function testGetContextOptions($url, $expected)
+    public function testGetContextOptions($url, $expected): void
     {
         $this->assertEquals($expected, ProxyHelper::getContextOptions($url));
     }
@@ -190,7 +190,7 @@ class ProxyHelperTest extends TestCase
      * @param string  $requestUrl
      * @param mixed[] $expected
      */
-    public function testSetRequestFullUri($requestUrl, $expected)
+    public function testSetRequestFullUri($requestUrl, $expected): void
     {
         $options = array();
         ProxyHelper::setRequestFullUri($requestUrl, $options);

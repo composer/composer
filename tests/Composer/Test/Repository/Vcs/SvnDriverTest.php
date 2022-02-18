@@ -47,7 +47,7 @@ class SvnDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    public function testWrongCredentialsInUrl()
+    public function testWrongCredentialsInUrl(): void
     {
         self::expectException('RuntimeException');
         self::expectExceptionMessage("Repository https://till:secret@corp.svn.local/repo could not be processed, wrong credentials provided (svn: OPTIONS of 'https://corp.svn.local/repo': authorization failed: Could not authenticate to server: rejected Basic challenge (https://corp.svn.local/))");
@@ -100,7 +100,7 @@ class SvnDriverTest extends TestCase
      * @param string $url
      * @param bool   $assertion
      */
-    public function testSupport($url, $assertion)
+    public function testSupport($url, $assertion): void
     {
         $config = new Config();
         $result = SvnDriver::supports($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $config, $url);

@@ -22,7 +22,7 @@ use Composer\Test\TestCase;
 
 class RuleSetTest extends TestCase
 {
-    public function testAdd()
+    public function testAdd(): void
     {
         $rules = array(
             RuleSet::TYPE_PACKAGE => array(),
@@ -44,7 +44,7 @@ class RuleSetTest extends TestCase
         $this->assertEquals($rules, $ruleSet->getRules());
     }
 
-    public function testAddIgnoresDuplicates()
+    public function testAddIgnoresDuplicates(): void
     {
         $rules = array(
             RuleSet::TYPE_REQUEST => array(
@@ -63,7 +63,7 @@ class RuleSetTest extends TestCase
         $this->assertCount(1, $ruleSet->getIteratorFor(array(RuleSet::TYPE_REQUEST)));
     }
 
-    public function testAddWhenTypeIsNotRecognized()
+    public function testAddWhenTypeIsNotRecognized(): void
     {
         $ruleSet = new RuleSet;
 
@@ -72,7 +72,7 @@ class RuleSetTest extends TestCase
         $ruleSet->add(new GenericRule(array(), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint)), 7);
     }
 
-    public function testCount()
+    public function testCount(): void
     {
         $ruleSet = new RuleSet;
 
@@ -82,7 +82,7 @@ class RuleSetTest extends TestCase
         $this->assertEquals(2, $ruleSet->count());
     }
 
-    public function testRuleById()
+    public function testRuleById(): void
     {
         $ruleSet = new RuleSet;
 
@@ -92,7 +92,7 @@ class RuleSetTest extends TestCase
         $this->assertSame($rule, $ruleSet->ruleById[0]);
     }
 
-    public function testGetIterator()
+    public function testGetIterator(): void
     {
         $ruleSet = new RuleSet;
 
@@ -108,7 +108,7 @@ class RuleSetTest extends TestCase
         $this->assertSame($rule2, $iterator->current());
     }
 
-    public function testGetIteratorFor()
+    public function testGetIteratorFor(): void
     {
         $ruleSet = new RuleSet;
         $rule1 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
@@ -122,7 +122,7 @@ class RuleSetTest extends TestCase
         $this->assertSame($rule2, $iterator->current());
     }
 
-    public function testGetIteratorWithout()
+    public function testGetIteratorWithout(): void
     {
         $ruleSet = new RuleSet;
         $rule1 = new GenericRule(array(1), Rule::RULE_ROOT_REQUIRE, array('packageName' => '', 'constraint' => new MatchAllConstraint));
@@ -136,7 +136,7 @@ class RuleSetTest extends TestCase
         $this->assertSame($rule2, $iterator->current());
     }
 
-    public function testPrettyString()
+    public function testPrettyString(): void
     {
         $pool = new Pool(array(
             $p = $this->getPackage('foo', '2.1'),

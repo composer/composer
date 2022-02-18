@@ -42,7 +42,7 @@ class SelfUpdateCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('self-update')
@@ -346,7 +346,7 @@ TAGSPUBKEY
      * @return void
      * @throws \Exception
      */
-    protected function fetchKeys(IOInterface $io, Config $config)
+    protected function fetchKeys(IOInterface $io, Config $config): void
     {
         if (!$io->isInteractive()) {
             throw new \RuntimeException('Public keys can not be fetched in non-interactive mode, please run Composer interactively');
@@ -483,7 +483,7 @@ TAGSPUBKEY
      *
      * @return void
      */
-    protected function cleanBackups($rollbackDir, $except = null)
+    protected function cleanBackups($rollbackDir, $except = null): void
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
         $io = $this->getIO();

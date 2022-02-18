@@ -20,7 +20,7 @@ class BasePackageTest extends TestCase
     /**
      * @doesNotPerformAssertions
      */
-    public function testSetSameRepository()
+    public function testSetSameRepository(): void
     {
         $package = $this->getMockForAbstractClass('Composer\Package\BasePackage', array('foo'));
         $repository = $this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock();
@@ -33,7 +33,7 @@ class BasePackageTest extends TestCase
         }
     }
 
-    public function testSetAnotherRepository()
+    public function testSetAnotherRepository(): void
     {
         self::expectException('LogicException');
 
@@ -49,7 +49,7 @@ class BasePackageTest extends TestCase
      * @param bool   $truncate
      * @param string $expected
      */
-    public function testFormatVersionForDevPackage(BasePackage $package, $truncate, $expected)
+    public function testFormatVersionForDevPackage(BasePackage $package, $truncate, $expected): void
     {
         $this->assertSame($expected, $package->getFullPrettyVersion($truncate));
     }
@@ -99,7 +99,7 @@ class BasePackageTest extends TestCase
      *
      * @dataProvider dataPackageNamesToRegexp
      */
-    public function testPackageNamesToRegexp(array $packageNames, $wrap, $expectedRegexp)
+    public function testPackageNamesToRegexp(array $packageNames, $wrap, $expectedRegexp): void
     {
         $regexp = BasePackage::packageNamesToRegexp($packageNames, $wrap);
 

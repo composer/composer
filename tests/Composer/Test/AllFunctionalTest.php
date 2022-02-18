@@ -63,7 +63,7 @@ class AllFunctionalTest extends TestCase
         $fs->removeDirectory(dirname(self::$pharPath));
     }
 
-    public function testBuildPhar()
+    public function testBuildPhar(): void
     {
         if (defined('HHVM_VERSION')) {
             $this->markTestSkipped('Building the phar does not work on HHVM.');
@@ -100,7 +100,7 @@ class AllFunctionalTest extends TestCase
      * @depends testBuildPhar
      * @param string $testFile
      */
-    public function testIntegration($testFile)
+    public function testIntegration($testFile): void
     {
         $testData = $this->parseTestFile($testFile);
         $this->testDir = self::getUniqueTmpDirectory();
@@ -121,7 +121,7 @@ class AllFunctionalTest extends TestCase
         $proc = Process::fromShellCommandline(escapeshellcmd(PHP_BINARY).' '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'], $this->testDir, $env, null, 300);
         $output = '';
 
-        $exitCode = $proc->run(function ($type, $buffer) use (&$output) {
+        $exitCode = $proc->run(function ($type, $buffer) use (&$output): void {
             $output .= $buffer;
         });
 

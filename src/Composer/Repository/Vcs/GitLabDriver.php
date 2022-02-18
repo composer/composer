@@ -91,7 +91,7 @@ class GitLabDriver extends VcsDriver
      *
      * @inheritDoc
      */
-    public function initialize()
+    public function initialize(): void
     {
         if (!Preg::isMatch(self::URL_REGEX, $this->url, $match)) {
             throw new \InvalidArgumentException(sprintf('The GitLab repository URL %s is invalid. It must be the HTTP URL of a GitLab project.', $this->url));
@@ -136,7 +136,7 @@ class GitLabDriver extends VcsDriver
      *
      * @return void
      */
-    public function setHttpDownloader(HttpDownloader $httpDownloader)
+    public function setHttpDownloader(HttpDownloader $httpDownloader): void
     {
         $this->httpDownloader = $httpDownloader;
     }
@@ -383,7 +383,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @return void
      */
-    protected function fetchProject()
+    protected function fetchProject(): void
     {
         // we need to fetch the default branch from the api
         $resource = $this->getApiUrl();
@@ -452,7 +452,7 @@ class GitLabDriver extends VcsDriver
      *
      * @return void
      */
-    protected function setupGitDriver($url)
+    protected function setupGitDriver($url): void
     {
         $this->gitDriver = new GitDriver(
             array('url' => $url),

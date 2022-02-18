@@ -45,7 +45,7 @@ class InstallationManagerMock extends InstallationManager
     {
     }
 
-    public function execute(InstalledRepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true)
+    public function execute(InstalledRepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true): void
     {
         foreach ($operations as $operation) {
             $method = $operation->getOperationType();
@@ -103,7 +103,7 @@ class InstallationManagerMock extends InstallationManager
         return null;
     }
 
-    public function markAliasInstalled(InstalledRepositoryInterface $repo, MarkAliasInstalledOperation $operation)
+    public function markAliasInstalled(InstalledRepositoryInterface $repo, MarkAliasInstalledOperation $operation): void
     {
         $package = $operation->getPackage();
 
@@ -113,7 +113,7 @@ class InstallationManagerMock extends InstallationManager
         parent::markAliasInstalled($repo, $operation);
     }
 
-    public function markAliasUninstalled(InstalledRepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
+    public function markAliasUninstalled(InstalledRepositoryInterface $repo, MarkAliasUninstalledOperation $operation): void
     {
         $this->uninstalled[] = $operation->getPackage();
         $this->trace[] = strip_tags((string) $operation);
@@ -145,7 +145,7 @@ class InstallationManagerMock extends InstallationManager
         return $this->uninstalled;
     }
 
-    public function notifyInstalls(IOInterface $io)
+    public function notifyInstalls(IOInterface $io): void
     {
         // noop
     }

@@ -40,7 +40,7 @@ class FilterRepositoryTest extends TestCase
      * @param string[]                                                               $expected
      * @param array{only?: array<string>, exclude?: array<string>, canonical?: bool} $config
      */
-    public function testRepoMatching($expected, $config)
+    public function testRepoMatching($expected, $config): void
     {
         $repo = new FilterRepository($this->arrayRepo, $config);
         $packages = $repo->getPackages();
@@ -62,7 +62,7 @@ class FilterRepositoryTest extends TestCase
         );
     }
 
-    public function testCanonicalDefaultTrue()
+    public function testCanonicalDefaultTrue(): void
     {
         $repo = new FilterRepository($this->arrayRepo, array());
         $result = $repo->loadPackages(array('foo/aaa' => new MatchAllConstraint), BasePackage::$stabilities, array());
@@ -70,7 +70,7 @@ class FilterRepositoryTest extends TestCase
         $this->assertCount(1, $result['namesFound']);
     }
 
-    public function testNonCanonical()
+    public function testNonCanonical(): void
     {
         $repo = new FilterRepository($this->arrayRepo, array('canonical' => false));
         $result = $repo->loadPackages(array('foo/aaa' => new MatchAllConstraint), BasePackage::$stabilities, array());

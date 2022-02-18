@@ -28,7 +28,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class EventDispatcherTest extends TestCase
 {
-    public function testListenerExceptionsAreCaught()
+    public function testListenerExceptionsAreCaught(): void
     {
         self::expectException('RuntimeException');
 
@@ -56,7 +56,7 @@ class EventDispatcherTest extends TestCase
      *
      * @param string $command
      */
-    public function testDispatcherCanExecuteSingleCommandLineScript($command)
+    public function testDispatcherCanExecuteSingleCommandLineScript($command): void
     {
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
@@ -85,7 +85,7 @@ class EventDispatcherTest extends TestCase
      *
      * @param bool $devMode
      */
-    public function testDispatcherPassDevModeToAutoloadGeneratorForScriptEvents($devMode)
+    public function testDispatcherPassDevModeToAutoloadGeneratorForScriptEvents($devMode): void
     {
         $composer = $this->createComposerInstance();
 
@@ -177,7 +177,7 @@ class EventDispatcherTest extends TestCase
         return $rm;
     }
 
-    public function testDispatcherRemoveListener()
+    public function testDispatcherRemoveListener(): void
     {
         $composer = $this->createComposerInstance();
 
@@ -220,7 +220,7 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals($expected, $io->getOutput());
     }
 
-    public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack()
+    public function testDispatcherCanExecuteCliAndPhpInSameEventScriptStack(): void
     {
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
@@ -257,7 +257,7 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals($expected, $io->getOutput());
     }
 
-    public function testDispatcherCanPutEnv()
+    public function testDispatcherCanPutEnv(): void
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
@@ -286,7 +286,7 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals($expected, $io->getOutput());
     }
 
-    public function testDispatcherAppendsDirBinOnPathForEveryListener()
+    public function testDispatcherAppendsDirBinOnPathForEveryListener(): void
     {
         $currentDirectoryBkp = getcwd();
         $composerBinDirBkp = Platform::getEnv('COMPOSER_BIN_DIR');
@@ -323,7 +323,7 @@ class EventDispatcherTest extends TestCase
     /**
      * @return void
      */
-    public static function createsVendorBinFolderChecksEnvDoesNotContainsBin()
+    public static function createsVendorBinFolderChecksEnvDoesNotContainsBin(): void
     {
         mkdir(__DIR__ . '/vendor/bin', 0700, true);
         $val = getenv('PATH');
@@ -338,7 +338,7 @@ class EventDispatcherTest extends TestCase
     /**
      * @return void
      */
-    public static function createsVendorBinFolderChecksEnvContainsBin()
+    public static function createsVendorBinFolderChecksEnvContainsBin(): void
     {
         $val = getenv('PATH');
 
@@ -352,7 +352,7 @@ class EventDispatcherTest extends TestCase
     /**
      * @return void
      */
-    public static function getTestEnv()
+    public static function getTestEnv(): void
     {
         $val = getenv('ABC');
         if ($val !== '123') {
@@ -360,7 +360,7 @@ class EventDispatcherTest extends TestCase
         }
     }
 
-    public function testDispatcherCanExecuteComposerScriptGroups()
+    public function testDispatcherCanExecuteComposerScriptGroups(): void
     {
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
@@ -407,7 +407,7 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals($expected, $io->getOutput());
     }
 
-    public function testRecursionInScriptsNames()
+    public function testRecursionInScriptsNames(): void
     {
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
@@ -446,7 +446,7 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals($expected, $io->getOutput());
     }
 
-    public function testDispatcherDetectInfiniteRecursion()
+    public function testDispatcherDetectInfiniteRecursion(): void
     {
         self::expectException('RuntimeException');
 
@@ -509,7 +509,7 @@ class EventDispatcherTest extends TestCase
         );
     }
 
-    public function testDispatcherOutputsCommand()
+    public function testDispatcherOutputsCommand(): void
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
@@ -536,7 +536,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }
 
-    public function testDispatcherOutputsErrorOnFailedCommand()
+    public function testDispatcherOutputsErrorOnFailedCommand(): void
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
@@ -572,7 +572,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher->dispatchScript(ScriptEvents::POST_INSTALL_CMD, false);
     }
 
-    public function testDispatcherInstallerEvents()
+    public function testDispatcherInstallerEvents(): void
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(
@@ -595,7 +595,7 @@ class EventDispatcherTest extends TestCase
     /**
      * @return void
      */
-    public static function call()
+    public static function call(): void
     {
         throw new \RuntimeException();
     }

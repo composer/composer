@@ -20,7 +20,7 @@ use Composer\Semver\Constraint\MatchAllConstraint;
 
 class PackageSorterTest extends TestCase
 {
-    public function testSortingDoesNothingWithNoDependencies()
+    public function testSortingDoesNothingWithNoDependencies(): void
     {
         $packages[] = $this->createPackage('foo/bar1', array());
         $packages[] = $this->createPackage('foo/bar2', array());
@@ -108,7 +108,7 @@ class PackageSorterTest extends TestCase
      * @param Package[] $packages
      * @param string[]  $expectedOrderedList
      */
-    public function testSortingOrdersDependenciesHigherThanPackage($packages, $expectedOrderedList)
+    public function testSortingOrdersDependenciesHigherThanPackage($packages, $expectedOrderedList): void
     {
         $sortedPackages = PackageSorter::sortPackages($packages);
         $sortedPackageNames = array_map(function ($package) {

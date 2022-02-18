@@ -223,7 +223,7 @@ class Bitbucket
      *
      * @return void
      */
-    private function storeInAuthConfig($originUrl, $consumerKey, $consumerSecret)
+    private function storeInAuthConfig($originUrl, $consumerKey, $consumerSecret): void
     {
         $this->config->getConfigSource()->removeConfigSetting('bitbucket-oauth.'.$originUrl);
 

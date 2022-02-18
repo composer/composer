@@ -144,7 +144,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      *
      * This method will basically read the folder and add the found package.
      */
-    protected function initialize()
+    protected function initialize(): void
     {
         parent::initialize();
 

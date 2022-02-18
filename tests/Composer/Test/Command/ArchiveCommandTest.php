@@ -20,7 +20,7 @@ use Symfony\Component\Console\Input\ArrayInput;
 
 class ArchiveCommandTest extends TestCase
 {
-    public function testUsesConfigFromComposerObject()
+    public function testUsesConfigFromComposerObject(): void
     {
         $input = new ArrayInput(array());
 
@@ -64,7 +64,7 @@ class ArchiveCommandTest extends TestCase
         $command->run($input, $output);
     }
 
-    public function testUsesConfigFromFactoryWhenComposerIsNotDefined()
+    public function testUsesConfigFromFactoryWhenComposerIsNotDefined(): void
     {
         $input = new ArrayInput(array());
 

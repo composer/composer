@@ -23,7 +23,7 @@ class RequestProxyTest extends TestCase
      * @param string $url
      * @param bool   $expectedSecure
      */
-    public function testIsSecure($url, $expectedSecure)
+    public function testIsSecure($url, $expectedSecure): void
     {
         $proxy = new RequestProxy($url, array(), '');
 
@@ -47,7 +47,7 @@ class RequestProxyTest extends TestCase
      * @param string $format
      * @param string $expected
      */
-    public function testGetFormattedUrlFormat($url, $format, $expected)
+    public function testGetFormattedUrlFormat($url, $format, $expected): void
     {
         $proxy = new RequestProxy($url, array(), $url);
 

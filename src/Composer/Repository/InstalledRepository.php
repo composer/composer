@@ -259,7 +259,7 @@ class InstalledRepository extends CompositeRepository
     /**
      * @inheritDoc
      */
-    public function addRepository(RepositoryInterface $repository)
+    public function addRepository(RepositoryInterface $repository): void
     {
         if (
             $repository instanceof LockArrayRepository

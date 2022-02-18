@@ -79,7 +79,7 @@ class GitBitbucketDriverTest extends TestCase
         return $driver;
     }
 
-    public function testGetRootIdentifierWrongScmType()
+    public function testGetRootIdentifierWrongScmType(): void
     {
         self::expectException('RuntimeException');
         self::expectExceptionMessage('https://bitbucket.org/user/repo.git does not appear to be a git repository, use https://bitbucket.org/user/repo but remember that Bitbucket no longer supports the mercurial repositories. https://bitbucket.org/blog/sunsetting-mercurial-support-in-bitbucket');
@@ -195,7 +195,7 @@ class GitBitbucketDriverTest extends TestCase
      * @depends testDriver
      * @param \Composer\Repository\Vcs\VcsDriverInterface $driver
      */
-    public function testGetParams($driver)
+    public function testGetParams($driver): void
     {
         $url = 'https://bitbucket.org/user/repo.git';
 
@@ -217,7 +217,7 @@ class GitBitbucketDriverTest extends TestCase
         );
     }
 
-    public function testInitializeInvalidRepositoryUrl()
+    public function testInitializeInvalidRepositoryUrl(): void
     {
         $this->expectException('\InvalidArgumentException');
 
@@ -225,7 +225,7 @@ class GitBitbucketDriverTest extends TestCase
         $driver->initialize();
     }
 
-    public function testSupports()
+    public function testSupports(): void
     {
         $this->assertTrue(
             GitBitbucketDriver::supports($this->io, $this->config, 'https://bitbucket.org/user/repo.git')

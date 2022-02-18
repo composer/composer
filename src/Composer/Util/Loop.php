@@ -62,15 +62,15 @@ class Loop
      * @param  ?ProgressBar       $progress
      * @return void
      */
-    public function wait(array $promises, ProgressBar $progress = null)
+    public function wait(array $promises, ProgressBar $progress = null): void
     {
         /** @var \Exception|null */
         $uncaught = null;
 
         \React\Promise\all($promises)->then(
-            function () {
+            function (): void {
             },
-            function ($e) use (&$uncaught) {
+            function ($e) use (&$uncaught): void {
                 $uncaught = $e;
             }
         );
@@ -122,7 +122,7 @@ class Loop
     /**
      * @return void
      */
-    public function abortJobs()
+    public function abortJobs(): void
     {
         foreach ($this->currentPromises as $promiseGroup) {
             foreach ($promiseGroup as $promise) {

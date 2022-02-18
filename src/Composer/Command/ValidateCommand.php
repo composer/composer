@@ -38,7 +38,7 @@ class ValidateCommand extends BaseCommand
      * configure
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('validate')
@@ -169,7 +169,7 @@ EOT
      *
      * @return void
      */
-    private function outputResult(IOInterface $io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false)
+    private function outputResult(IOInterface $io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false): void
     {
         $doPrintSchemaUrl = false;
 

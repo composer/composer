@@ -166,7 +166,7 @@ class CompositeRepository implements RepositoryInterface
     /**
      * @return void
      */
-    public function removePackage(PackageInterface $package)
+    public function removePackage(PackageInterface $package): void
     {
         foreach ($this->repositories as $repository) {
             if ($repository instanceof WritableRepositoryInterface) {
@@ -195,7 +195,7 @@ class CompositeRepository implements RepositoryInterface
      *
      * @return void
      */
-    public function addRepository(RepositoryInterface $repository)
+    public function addRepository(RepositoryInterface $repository): void
     {
         if ($repository instanceof self) {
             foreach ($repository->getRepositories() as $repo) {

@@ -40,7 +40,7 @@ class RuleWatchGraph
      * @param RuleWatchNode $node The rule node to be inserted into the graph
      * @return void
      */
-    public function insert(RuleWatchNode $node)
+    public function insert(RuleWatchNode $node): void
     {
         if ($node->getRule()->isAssertion()) {
             return;
@@ -156,7 +156,7 @@ class RuleWatchGraph
      * @param RuleWatchNode $node        The rule node to be moved
      * @return void
      */
-    protected function moveWatch($fromLiteral, $toLiteral, RuleWatchNode $node)
+    protected function moveWatch($fromLiteral, $toLiteral, RuleWatchNode $node): void
     {
         if (!isset($this->watchChains[$toLiteral])) {
             $this->watchChains[$toLiteral] = new RuleWatchChain;

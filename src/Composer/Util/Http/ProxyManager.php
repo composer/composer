@@ -72,7 +72,7 @@ class ProxyManager
      *
      * @return void
      */
-    public static function reset()
+    public static function reset(): void
     {
         self::$instance = null;
     }
@@ -133,7 +133,7 @@ class ProxyManager
      *
      * @return void
      */
-    private function initProxyData()
+    private function initProxyData(): void
     {
         try {
             list($httpProxy, $httpsProxy, $noProxy) = ProxyHelper::getProxyData();

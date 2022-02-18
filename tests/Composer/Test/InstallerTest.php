@@ -74,7 +74,7 @@ class InstallerTest extends TestCase
      * @param RepositoryInterface[] $repositories
      * @param mixed[] $options
      */
-    public function testInstaller(RootPackageInterface $rootPackage, $repositories, array $options)
+    public function testInstaller(RootPackageInterface $rootPackage, $repositories, array $options): void
     {
         $io = new BufferIO('', OutputInterface::VERBOSITY_NORMAL, new OutputFormatter(false));
 
@@ -127,7 +127,7 @@ class InstallerTest extends TestCase
             }));
         $lockJsonMock->expects($this->any())
             ->method('write')
-            ->will($this->returnCallback(function ($value, $options = 0) use (&$lockData) {
+            ->will($this->returnCallback(function ($value, $options = 0) use (&$lockData): void {
                 $lockData = json_encode($value, JSON_PRETTY_PRINT);
             }));
 
@@ -237,7 +237,7 @@ class InstallerTest extends TestCase
      * @param string $expect
      * @param int|class-string<\Throwable> $expectResult
      */
-    public function testSlowIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult)
+    public function testSlowIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult): void
     {
         Platform::putEnv('COMPOSER_POOL_OPTIMIZER', '0');
 
@@ -260,7 +260,7 @@ class InstallerTest extends TestCase
      * @param string $expect
      * @param int|class-string<\Throwable> $expectResult
      */
-    public function testIntegrationWithPoolOptimizer($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult)
+    public function testIntegrationWithPoolOptimizer($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult): void
     {
         Platform::putEnv('COMPOSER_POOL_OPTIMIZER', '1');
 
@@ -283,7 +283,7 @@ class InstallerTest extends TestCase
      * @param string $expect
      * @param int|class-string<\Throwable> $expectResult
      */
-    public function testIntegrationWithRawPool($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult)
+    public function testIntegrationWithRawPool($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult): void
     {
         Platform::putEnv('COMPOSER_POOL_OPTIMIZER', '0');
 
@@ -305,7 +305,7 @@ class InstallerTest extends TestCase
      * @param int|class-string<\Throwable> $expectResult
      * @return void
      */
-    private function doTestIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult)
+    private function doTestIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult): void
     {
         if ($condition) {
             eval('$res = '.$condition.';');
@@ -353,7 +353,7 @@ class InstallerTest extends TestCase
             }));
         $lockJsonMock->expects($this->any())
             ->method('write')
-            ->will($this->returnCallback(function ($value, $options = 0) use (&$lockData) {
+            ->will($this->returnCallback(function ($value, $options = 0) use (&$lockData): void {
                 $lockData = json_encode($value, JSON_PRETTY_PRINT);
             }));
 
@@ -361,7 +361,7 @@ class InstallerTest extends TestCase
             $actualLock = array();
             $lockJsonMock->expects($this->atLeastOnce())
                 ->method('write')
-                ->will($this->returnCallback(function ($hash, $options) use (&$actualLock) {
+                ->will($this->returnCallback(function ($hash, $options) use (&$actualLock): void {
                     // need to do assertion outside of mock for nice phpunit output
                     // so store value temporarily in reference for later assetion
                     $actualLock = $hash;

@@ -249,7 +249,7 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getExtra();
     }
 
-    public function setInstallationSource($type)
+    public function setInstallationSource($type): void
     {
         $this->aliasOf->setInstallationSource($type);
     }
@@ -279,12 +279,12 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getSourceReference();
     }
 
-    public function setSourceReference($reference)
+    public function setSourceReference($reference): void
     {
         $this->aliasOf->setSourceReference($reference);
     }
 
-    public function setSourceMirrors($mirrors)
+    public function setSourceMirrors($mirrors): void
     {
         $this->aliasOf->setSourceMirrors($mirrors);
     }
@@ -314,7 +314,7 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getDistReference();
     }
 
-    public function setDistReference($reference)
+    public function setDistReference($reference): void
     {
         $this->aliasOf->setDistReference($reference);
     }
@@ -324,7 +324,7 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getDistSha1Checksum();
     }
 
-    public function setTransportOptions(array $options)
+    public function setTransportOptions(array $options): void
     {
         $this->aliasOf->setTransportOptions($options);
     }
@@ -334,7 +334,7 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getTransportOptions();
     }
 
-    public function setDistMirrors($mirrors)
+    public function setDistMirrors($mirrors): void
     {
         $this->aliasOf->setDistMirrors($mirrors);
     }
@@ -384,17 +384,17 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->isDefaultBranch();
     }
 
-    public function setDistUrl($url)
+    public function setDistUrl($url): void
     {
         $this->aliasOf->setDistUrl($url);
     }
 
-    public function setDistType($type)
+    public function setDistType($type): void
     {
         $this->aliasOf->setDistType($type);
     }
 
-    public function setSourceDistReferences($reference)
+    public function setSourceDistReferences($reference): void
     {
         $this->aliasOf->setSourceDistReferences($reference);
     }

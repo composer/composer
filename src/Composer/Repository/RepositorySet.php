@@ -118,7 +118,7 @@ class RepositorySet
      *
      * @return void
      */
-    public function allowInstalledRepositories($allow = true)
+    public function allowInstalledRepositories($allow = true): void
     {
         $this->allowInstalledRepositories = $allow;
     }
@@ -142,7 +142,7 @@ class RepositorySet
      *
      * @return void
      */
-    public function addRepository(RepositoryInterface $repo)
+    public function addRepository(RepositoryInterface $repo): void
     {
         if ($this->locked) {
             throw new \RuntimeException("Pool has already been created from this repository set, it cannot be modified anymore.");

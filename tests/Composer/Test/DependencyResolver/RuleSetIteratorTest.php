@@ -43,7 +43,7 @@ class RuleSetIteratorTest extends TestCase
         );
     }
 
-    public function testForeach()
+    public function testForeach(): void
     {
         $ruleSetIterator = new RuleSetIterator($this->rules);
 
@@ -61,7 +61,7 @@ class RuleSetIteratorTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function testKeys()
+    public function testKeys(): void
     {
         $ruleSetIterator = new RuleSetIterator($this->rules);
 

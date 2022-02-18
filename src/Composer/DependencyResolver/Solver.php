@@ -86,7 +86,7 @@ class Solver
     /**
      * @return void
      */
-    private function makeAssertionRuleDecisions()
+    private function makeAssertionRuleDecisions(): void
     {
         $decisionStart = \count($this->decisions) - 1;
 
@@ -159,7 +159,7 @@ class Solver
     /**
      * @return void
      */
-    protected function setupFixedMap(Request $request)
+    protected function setupFixedMap(Request $request): void
     {
         $this->fixedMap = array();
         foreach ($request->getFixedPackages() as $package) {
@@ -170,7 +170,7 @@ class Solver
     /**
      * @return void
      */
-    protected function checkForRootRequireProblems(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter)
+    protected function checkForRootRequireProblems(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         foreach ($request->getRequires() as $packageName => $constraint) {
             if ($platformRequirementFilter->isIgnored($packageName)) {
@@ -261,7 +261,7 @@ class Solver
      *
      * @return void
      */
-    private function revert($level)
+    private function revert($level): void
     {
         while (!$this->decisions->isEmpty()) {
             $literal = $this->decisions->lastLiteral();
@@ -518,7 +518,7 @@ class Solver
      * @param array<string, true> $ruleSeen
      * @return void
      */
-    private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen)
+    private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen): void
     {
         $why = spl_object_hash($conflictRule);
         $ruleSeen[$why] = true;
@@ -606,7 +606,7 @@ class Solver
      *
      * @return void
      */
-    private function enableDisableLearnedRules()
+    private function enableDisableLearnedRules(): void
     {
         foreach ($this->rules->getIteratorFor(RuleSet::TYPE_LEARNED) as $rule) {
             $why = $this->learnedWhy[spl_object_hash($rule)];
@@ -631,7 +631,7 @@ class Solver
     /**
      * @return void
      */
-    private function runSat()
+    private function runSat(): void
     {
         $this->propagateIndex = 0;
 

@@ -50,7 +50,7 @@ class HgDriverTest extends TestCase
      *
      * @param string $repositoryUrl
      */
-    public function testSupports($repositoryUrl)
+    public function testSupports($repositoryUrl): void
     {
         $this->assertTrue(
             HgDriver::supports($this->io, $this->config, $repositoryUrl)

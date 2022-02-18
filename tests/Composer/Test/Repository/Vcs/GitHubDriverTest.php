@@ -44,7 +44,7 @@ class GitHubDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    public function testPrivateRepository()
+    public function testPrivateRepository(): void
     {
         $repoUrl = 'http://github.com/composer/packagist';
         $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
@@ -105,7 +105,7 @@ class GitHubDriverTest extends TestCase
         $this->assertEquals('SOMESHA', $source['reference']);
     }
 
-    public function testPublicRepository()
+    public function testPublicRepository(): void
     {
         $repoUrl = 'http://github.com/composer/packagist';
         $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
@@ -147,7 +147,7 @@ class GitHubDriverTest extends TestCase
         $this->assertEquals($sha, $source['reference']);
     }
 
-    public function testPublicRepository2()
+    public function testPublicRepository2(): void
     {
         $repoUrl = 'http://github.com/composer/packagist';
         $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
@@ -196,7 +196,7 @@ class GitHubDriverTest extends TestCase
         $this->assertArrayNotHasKey('abandoned', $data);
     }
 
-    public function testPublicRepositoryArchived()
+    public function testPublicRepositoryArchived(): void
     {
         $repoUrl = 'http://github.com/composer/packagist';
         $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
@@ -233,7 +233,7 @@ class GitHubDriverTest extends TestCase
         $this->assertTrue($data['abandoned']);
     }
 
-    public function testPrivateRepositoryNoInteraction()
+    public function testPrivateRepositoryNoInteraction(): void
     {
         $repoUrl = 'http://github.com/composer/packagist';
         $repoApiUrl = 'https://api.github.com/repos/composer/packagist';
@@ -305,7 +305,7 @@ class GitHubDriverTest extends TestCase
     /**
      * @return void
      */
-    public function initializeInvalidReoUrl()
+    public function initializeInvalidReoUrl(): void
     {
         $this->expectException('\InvalidArgumentException');
 
@@ -327,7 +327,7 @@ class GitHubDriverTest extends TestCase
      * @param bool $expected
      * @param string $repoUrl
      */
-    public function testSupports($expected, $repoUrl)
+    public function testSupports($expected, $repoUrl): void
     {
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
@@ -353,7 +353,7 @@ class GitHubDriverTest extends TestCase
      *
      * @return void
      */
-    protected function setAttribute($object, $attribute, $value)
+    protected function setAttribute($object, $attribute, $value): void
     {
         $attr = new \ReflectionProperty($object, $attribute);
         $attr->setAccessible(true);

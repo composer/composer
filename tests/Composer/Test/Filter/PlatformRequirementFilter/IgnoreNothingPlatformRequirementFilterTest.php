@@ -22,7 +22,7 @@ final class IgnoreNothingPlatformRequirementFilterTest extends TestCase
      *
      * @param string $req
      */
-    public function testIsIgnored($req)
+    public function testIsIgnored($req): void
     {
         $platformRequirementFilter = new IgnoreNothingPlatformRequirementFilter();
 

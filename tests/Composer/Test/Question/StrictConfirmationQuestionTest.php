@@ -45,7 +45,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @param string $answer
      */
-    public function testAskConfirmationBadAnswer($answer)
+    public function testAskConfirmationBadAnswer($answer): void
     {
         list($input, $dialog) = $this->createInput($answer."\n");
 
@@ -64,7 +64,7 @@ class StrictConfirmationQuestionTest extends TestCase
      * @param bool   $expected
      * @param bool   $default
      */
-    public function testAskConfirmation($question, $expected, $default = true)
+    public function testAskConfirmation($question, $expected, $default = true): void
     {
         list($input, $dialog) = $this->createInput($question."\n");
 
@@ -89,7 +89,7 @@ class StrictConfirmationQuestionTest extends TestCase
         );
     }
 
-    public function testAskConfirmationWithCustomTrueAndFalseAnswer()
+    public function testAskConfirmationWithCustomTrueAndFalseAnswer(): void
     {
         $question = new StrictConfirmationQuestion('Do you like French fries?', false, '/^ja$/i', '/^nein$/i');
 

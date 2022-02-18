@@ -48,7 +48,7 @@ class ArchiveManagerTest extends ArchiverTest
         $this->targetDir = $this->testDir.'/composer_archiver_tests';
     }
 
-    public function testUnknownFormat()
+    public function testUnknownFormat(): void
     {
         self::expectException('RuntimeException');
 
@@ -57,7 +57,7 @@ class ArchiveManagerTest extends ArchiverTest
         $this->manager->archive($package, '__unknown_format__', $this->targetDir);
     }
 
-    public function testArchiveTar()
+    public function testArchiveTar(): void
     {
         $this->skipIfNotExecutable('git');
 
@@ -76,7 +76,7 @@ class ArchiveManagerTest extends ArchiverTest
         unlink($target);
     }
 
-    public function testArchiveCustomFileName()
+    public function testArchiveCustomFileName(): void
     {
         $this->skipIfNotExecutable('git');
 
@@ -120,7 +120,7 @@ class ArchiveManagerTest extends ArchiverTest
      *
      * @return void
      */
-    protected function setupGitRepo()
+    protected function setupGitRepo(): void
     {
         $currentWorkDir = getcwd();
         chdir($this->testDir);

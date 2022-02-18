@@ -35,7 +35,7 @@ class ArrayDumperTest extends TestCase
         $this->packageExpects('getTransportOptions', array());
     }
 
-    public function testRequiredInformation()
+    public function testRequiredInformation(): void
     {
         $this
             ->packageExpects('getPrettyName', 'foo')
@@ -54,7 +54,7 @@ class ArrayDumperTest extends TestCase
         );
     }
 
-    public function testRootPackage()
+    public function testRootPackage(): void
     {
         $this->package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
 
@@ -67,7 +67,7 @@ class ArrayDumperTest extends TestCase
         $this->assertSame('dev', $config['minimum-stability']);
     }
 
-    public function testDumpAbandoned()
+    public function testDumpAbandoned(): void
     {
         $this->packageExpects('isAbandoned', true);
         $this->packageExpects('getReplacementPackage', true);
@@ -77,7 +77,7 @@ class ArrayDumperTest extends TestCase
         $this->assertTrue($config['abandoned']);
     }
 
-    public function testDumpAbandonedReplacement()
+    public function testDumpAbandonedReplacement(): void
     {
         $this->packageExpects('isAbandoned', true);
         $this->packageExpects('getReplacementPackage', 'foo/bar');
@@ -95,7 +95,7 @@ class ArrayDumperTest extends TestCase
      * @param string $method
      * @param mixed  $expectedValue
      */
-    public function testKeys($key, $value, $method = null, $expectedValue = null)
+    public function testKeys($key, $value, $method = null, $expectedValue = null): void
     {
         $this->package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
 

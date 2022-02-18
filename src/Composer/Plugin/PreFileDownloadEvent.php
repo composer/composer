@@ -95,7 +95,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return void
      */
-    public function setProcessedUrl($processedUrl)
+    public function setProcessedUrl($processedUrl): void
     {
         $this->processedUrl = $processedUrl;
     }
@@ -117,7 +117,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return void
      */
-    public function setCustomCacheKey($customCacheKey)
+    public function setCustomCacheKey($customCacheKey): void
     {
         $this->customCacheKey = $customCacheKey;
     }
@@ -166,7 +166,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return void
      */
-    public function setTransportOptions(array $options)
+    public function setTransportOptions(array $options): void
     {
         $this->transportOptions = $options;
     }

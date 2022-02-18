@@ -34,7 +34,7 @@ class HhvmDetector
     /**
      * @return void
      */
-    public function reset()
+    public function reset(): void
     {
         self::$hhvmVersion = null;
     }

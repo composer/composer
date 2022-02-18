@@ -109,7 +109,7 @@ class Response
      * @return void
      * @phpstan-impure
      */
-    public function collect()
+    public function collect(): void
     {
         /** @phpstan-ignore-next-line */
         $this->request = $this->code = $this->headers = $this->body = null;

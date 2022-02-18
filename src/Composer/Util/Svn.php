@@ -86,7 +86,7 @@ class Svn
     /**
      * @return void
      */
-    public static function cleanEnv()
+    public static function cleanEnv(): void
     {
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
         Platform::clearEnv('DYLD_LIBRARY_PATH');
@@ -194,7 +194,7 @@ class Svn
      * @param  bool $cacheCredentials
      * @return void
      */
-    public function setCacheCredentials($cacheCredentials)
+    public function setCacheCredentials($cacheCredentials): void
     {
         $this->cacheCredentials = $cacheCredentials;
     }

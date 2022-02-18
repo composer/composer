@@ -42,7 +42,7 @@ class VcsRepositoryTest extends TestCase
     /**
      * @return void
      */
-    protected function initialize()
+    protected function initialize(): void
     {
         $locator = new ExecutableFinder();
         if (!$locator->find('git')) {
@@ -63,7 +63,7 @@ class VcsRepositoryTest extends TestCase
 
         // init
         $process = new ProcessExecutor;
-        $exec = function ($command) use ($process) {
+        $exec = function ($command) use ($process): void {
             $cwd = getcwd();
             if ($process->execute($command, $output, $cwd) !== 0) {
                 throw new \RuntimeException('Failed to execute '.$command.': '.$process->getErrorOutput());
@@ -147,7 +147,7 @@ class VcsRepositoryTest extends TestCase
         $fs->removeDirectory(self::$gitRepo);
     }
 
-    public function testLoadVersions()
+    public function testLoadVersions(): void
     {
         $expected = array(
             '0.6.0' => true,

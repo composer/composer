@@ -54,7 +54,7 @@ class RuleWatchNode
      * @param Decisions $decisions The decisions made so far by the solver
      * @return void
      */
-    public function watch2OnHighest(Decisions $decisions)
+    public function watch2OnHighest(Decisions $decisions): void
     {
         $literals = $this->rule->getLiterals();
 
@@ -107,7 +107,7 @@ class RuleWatchNode
      * @param int $to   The literal to be watched now
      * @return void
      */
-    public function moveWatch($from, $to)
+    public function moveWatch($from, $to): void
     {
         if ($this->watch1 == $from) {
             $this->watch1 = $to;

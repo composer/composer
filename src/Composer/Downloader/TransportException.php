@@ -31,7 +31,7 @@ class TransportException extends \RuntimeException
      *
      * @return void
      */
-    public function setHeaders($headers)
+    public function setHeaders($headers): void
     {
         $this->headers = $headers;
     }
@@ -49,7 +49,7 @@ class TransportException extends \RuntimeException
      *
      * @return void
      */
-    public function setResponse($response)
+    public function setResponse($response): void
     {
         $this->response = $response;
     }
@@ -67,7 +67,7 @@ class TransportException extends \RuntimeException
      *
      * @return void
      */
-    public function setStatusCode($statusCode)
+    public function setStatusCode($statusCode): void
     {
         $this->statusCode = $statusCode;
     }
@@ -93,7 +93,7 @@ class TransportException extends \RuntimeException
      *
      * @return void
      */
-    public function setResponseInfo(array $responseInfo)
+    public function setResponseInfo(array $responseInfo): void
     {
         $this->responseInfo = $responseInfo;
     }

@@ -102,7 +102,7 @@ class LibraryInstallerTest extends TestCase
         $this->fs->removeDirectory($this->rootDir);
     }
 
-    public function testInstallerCreationShouldNotCreateVendorDirectory()
+    public function testInstallerCreationShouldNotCreateVendorDirectory(): void
     {
         $this->fs->removeDirectory($this->vendorDir);
 
@@ -110,7 +110,7 @@ class LibraryInstallerTest extends TestCase
         $this->assertFileDoesNotExist($this->vendorDir);
     }
 
-    public function testInstallerCreationShouldNotCreateBinDirectory()
+    public function testInstallerCreationShouldNotCreateBinDirectory(): void
     {
         $this->fs->removeDirectory($this->binDir);
 
@@ -118,7 +118,7 @@ class LibraryInstallerTest extends TestCase
         $this->assertFileDoesNotExist($this->binDir);
     }
 
-    public function testIsInstalled()
+    public function testIsInstalled(): void
     {
         $library = new LibraryInstaller($this->io, $this->composer);
         $package = $this->createPackageMock();
@@ -137,7 +137,7 @@ class LibraryInstallerTest extends TestCase
      * @depends testInstallerCreationShouldNotCreateVendorDirectory
      * @depends testInstallerCreationShouldNotCreateBinDirectory
      */
-    public function testInstall()
+    public function testInstall(): void
     {
         $library = new LibraryInstaller($this->io, $this->composer);
         $package = $this->createPackageMock();
@@ -166,7 +166,7 @@ class LibraryInstallerTest extends TestCase
      * @depends testInstallerCreationShouldNotCreateVendorDirectory
      * @depends testInstallerCreationShouldNotCreateBinDirectory
      */
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')
           ->getMock();
@@ -228,7 +228,7 @@ class LibraryInstallerTest extends TestCase
         $library->update($this->repository, $initial, $target);
     }
 
-    public function testUninstall()
+    public function testUninstall(): void
     {
         $library = new LibraryInstaller($this->io, $this->composer);
         $package = $this->createPackageMock();
@@ -265,7 +265,7 @@ class LibraryInstallerTest extends TestCase
         $library->uninstall($this->repository, $package);
     }
 
-    public function testGetInstallPath()
+    public function testGetInstallPath(): void
     {
         $library = new LibraryInstaller($this->io, $this->composer);
         $package = $this->createPackageMock();
@@ -278,7 +278,7 @@ class LibraryInstallerTest extends TestCase
         $this->assertEquals($this->vendorDir.'/'.$package->getName(), $library->getInstallPath($package));
     }
 
-    public function testGetInstallPathWithTargetDir()
+    public function testGetInstallPathWithTargetDir(): void
     {
         $library = new LibraryInstaller($this->io, $this->composer);
         $package = $this->createPackageMock();
@@ -299,7 +299,7 @@ class LibraryInstallerTest extends TestCase
      * @depends testInstallerCreationShouldNotCreateVendorDirectory
      * @depends testInstallerCreationShouldNotCreateBinDirectory
      */
-    public function testEnsureBinariesInstalled()
+    public function testEnsureBinariesInstalled(): void
     {
         $binaryInstallerMock = $this->getMockBuilder('Composer\Installer\BinaryInstaller')
             ->disableOriginalConstructor()

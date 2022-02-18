@@ -73,12 +73,12 @@ class PerforceTest extends TestCase
      *
      * @return void
      */
-    protected function createNewPerforceWithWindowsFlag($flag)
+    protected function createNewPerforceWithWindowsFlag($flag): void
     {
         $this->perforce = new Perforce($this->repoConfig, self::TEST_PORT, self::TEST_PATH, $this->processExecutor, $flag, $this->io);
     }
 
-    public function testGetClientWithoutStream()
+    public function testGetClientWithoutStream(): void
     {
         $client = $this->perforce->getClient();
 
@@ -86,7 +86,7 @@ class PerforceTest extends TestCase
         $this->assertEquals($expected, $client);
     }
 
-    public function testGetClientFromStream()
+    public function testGetClientFromStream(): void
     {
         $this->setPerforceToStream();
 
@@ -96,13 +96,13 @@ class PerforceTest extends TestCase
         $this->assertEquals($expected, $client);
     }
 
-    public function testGetStreamWithoutStream()
+    public function testGetStreamWithoutStream(): void
     {
         $stream = $this->perforce->getStream();
         $this->assertEquals("//depot", $stream);
     }
 
-    public function testGetStreamWithStream()
+    public function testGetStreamWithStream(): void
     {
         $this->setPerforceToStream();
 
@@ -110,26 +110,26 @@ class PerforceTest extends TestCase
         $this->assertEquals('//depot/branch', $stream);
     }
 
-    public function testGetStreamWithoutLabelWithStreamWithoutLabel()
+    public function testGetStreamWithoutLabelWithStreamWithoutLabel(): void
     {
         $stream = $this->perforce->getStreamWithoutLabel('//depot/branch');
         $this->assertEquals('//depot/branch', $stream);
     }
 
-    public function testGetStreamWithoutLabelWithStreamWithLabel()
+    public function testGetStreamWithoutLabelWithStreamWithLabel(): void
     {
         $stream = $this->perforce->getStreamWithoutLabel('//depot/branching@label');
         $this->assertEquals('//depot/branching', $stream);
     }
 
-    public function testGetClientSpec()
+    public function testGetClientSpec(): void
     {
         $clientSpec = $this->perforce->getP4ClientSpec();
         $expected = 'path/composer_perforce_TEST_depot.p4.spec';
         $this->assertEquals($expected, $clientSpec);
     }
 
-    public function testGenerateP4Command()
+    public function testGenerateP4Command(): void
     {
         $command = 'do something';
         $p4Command = $this->perforce->generateP4Command($command);
@@ -137,13 +137,13 @@ class PerforceTest extends TestCase
         $this->assertEquals($expected, $p4Command);
     }
 
-    public function testQueryP4UserWithUserAlreadySet()
+    public function testQueryP4UserWithUserAlreadySet(): void
     {
         $this->perforce->queryP4user();
         $this->assertEquals(self::TEST_P4USER, $this->perforce->getUser());
     }
 
-    public function testQueryP4UserWithUserSetInP4VariablesWithWindowsOS()
+    public function testQueryP4UserWithUserSetInP4VariablesWithWindowsOS(): void
     {
         $this->createNewPerforceWithWindowsFlag(true);
         $this->perforce->setUser(null);
@@ -156,7 +156,7 @@ class PerforceTest extends TestCase
         $this->assertEquals('TEST_P4VARIABLE_USER', $this->perforce->getUser());
     }
 
-    public function testQueryP4UserWithUserSetInP4VariablesNotWindowsOS()
+    public function testQueryP4UserWithUserSetInP4VariablesNotWindowsOS(): void
     {
         $this->createNewPerforceWithWindowsFlag(false);
         $this->perforce->setUser(null);
@@ -170,7 +170,7 @@ class PerforceTest extends TestCase
         $this->assertEquals('TEST_P4VARIABLE_USER', $this->perforce->getUser());
     }
 
-    public function testQueryP4UserQueriesForUser()
+    public function testQueryP4UserQueriesForUser(): void
     {
         $this->perforce->setUser(null);
         $expectedQuestion = 'Enter P4 User:';
@@ -181,7 +181,7 @@ class PerforceTest extends TestCase
         $this->assertEquals('TEST_QUERY_USER', $this->perforce->getUser());
     }
 
-    public function testQueryP4UserStoresResponseToQueryForUserWithWindows()
+    public function testQueryP4UserStoresResponseToQueryForUserWithWindows(): void
     {
         $this->createNewPerforceWithWindowsFlag(true);
         $this->perforce->setUser(null);
@@ -203,7 +203,7 @@ class PerforceTest extends TestCase
         $this->perforce->queryP4user();
     }
 
-    public function testQueryP4UserStoresResponseToQueryForUserWithoutWindows()
+    public function testQueryP4UserStoresResponseToQueryForUserWithoutWindows(): void
     {
         $this->createNewPerforceWithWindowsFlag(false);
         $this->perforce->setUser(null);
@@ -223,7 +223,7 @@ class PerforceTest extends TestCase
         $this->perforce->queryP4user();
     }
 
-    public function testQueryP4PasswordWithPasswordAlreadySet()
+    public function testQueryP4PasswordWithPasswordAlreadySet(): void
     {
         $repoConfig = array(
             'depot' => 'depot',
@@ -236,7 +236,7 @@ class PerforceTest extends TestCase
         $this->assertEquals('TEST_PASSWORD', $password);
     }
 
-    public function testQueryP4PasswordWithPasswordSetInP4VariablesWithWindowsOS()
+    public function testQueryP4PasswordWithPasswordSetInP4VariablesWithWindowsOS(): void
     {
         $this->createNewPerforceWithWindowsFlag(true);
 
@@ -249,7 +249,7 @@ class PerforceTest extends TestCase
         $this->assertEquals('TEST_P4VARIABLE_PASSWORD', $password);
     }
 
-    public function testQueryP4PasswordWithPasswordSetInP4VariablesNotWindowsOS()
+    public function testQueryP4PasswordWithPasswordSetInP4VariablesNotWindowsOS(): void
     {
         $this->createNewPerforceWithWindowsFlag(false);
 
@@ -262,7 +262,7 @@ class PerforceTest extends TestCase
         $this->assertEquals('TEST_P4VARIABLE_PASSWORD', $password);
     }
 
-    public function testQueryP4PasswordQueriesForPassword()
+    public function testQueryP4PasswordQueriesForPassword(): void
     {
         $expectedQuestion = 'Enter password for Perforce user user: ';
         $this->io->expects($this->once())
@@ -274,7 +274,7 @@ class PerforceTest extends TestCase
         $this->assertEquals('TEST_QUERY_PASSWORD', $password);
     }
 
-    public function testWriteP4ClientSpecWithoutStream()
+    public function testWriteP4ClientSpecWithoutStream(): void
     {
         $stream = fopen('php://memory', 'w+');
         if (false === $stream) {
@@ -297,7 +297,7 @@ class PerforceTest extends TestCase
         fclose($stream);
     }
 
-    public function testWriteP4ClientSpecWithStream()
+    public function testWriteP4ClientSpecWithStream(): void
     {
         $this->setPerforceToStream();
         $stream = fopen('php://memory', 'w+');
@@ -321,7 +321,7 @@ class PerforceTest extends TestCase
         fclose($stream);
     }
 
-    public function testIsLoggedIn()
+    public function testIsLoggedIn(): void
     {
         $this->processExecutor->expects(
             [['cmd' => 'p4 -u user -p port login -s']],
@@ -330,7 +330,7 @@ class PerforceTest extends TestCase
         $this->perforce->isLoggedIn();
     }
 
-    public function testConnectClient()
+    public function testConnectClient(): void
     {
         $this->processExecutor->expects(
             ['p4 -u user -c composer_perforce_TEST_depot -p port client -i < path/composer_perforce_TEST_depot.p4.spec'],
@@ -340,7 +340,7 @@ class PerforceTest extends TestCase
         $this->perforce->connectClient();
     }
 
-    public function testGetBranchesWithStream()
+    public function testGetBranchesWithStream(): void
     {
         $this->setPerforceToStream();
 
@@ -362,7 +362,7 @@ class PerforceTest extends TestCase
         $this->assertEquals('//depot/branch@1234', $branches['master']);
     }
 
-    public function testGetBranchesWithoutStream()
+    public function testGetBranchesWithoutStream(): void
     {
         $this->processExecutor->expects(
             [
@@ -378,7 +378,7 @@ class PerforceTest extends TestCase
         $this->assertEquals('//depot@5678', $branches['master']);
     }
 
-    public function testGetTagsWithoutStream()
+    public function testGetTagsWithoutStream(): void
     {
         $this->processExecutor->expects(
             [
@@ -395,7 +395,7 @@ class PerforceTest extends TestCase
         $this->assertEquals('//depot@0.0.2', $tags['0.0.2']);
     }
 
-    public function testGetTagsWithStream()
+    public function testGetTagsWithStream(): void
     {
         $this->setPerforceToStream();
 
@@ -414,14 +414,14 @@ class PerforceTest extends TestCase
         $this->assertEquals('//depot/branch@0.0.2', $tags['0.0.2']);
     }
 
-    public function testCheckStreamWithoutStream()
+    public function testCheckStreamWithoutStream(): void
     {
         $result = $this->perforce->checkStream();
         $this->assertFalse($result);
         $this->assertFalse($this->perforce->isStream());
     }
 
-    public function testCheckStreamWithStream()
+    public function testCheckStreamWithStream(): void
     {
         $this->processExecutor->expects(
             [
@@ -438,7 +438,7 @@ class PerforceTest extends TestCase
         $this->assertTrue($this->perforce->isStream());
     }
 
-    public function testGetComposerInformationWithoutLabelWithoutStream()
+    public function testGetComposerInformationWithoutLabelWithoutStream(): void
     {
         $this->processExecutor->expects(
             [
@@ -460,7 +460,7 @@ class PerforceTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function testGetComposerInformationWithLabelWithoutStream()
+    public function testGetComposerInformationWithLabelWithoutStream(): void
     {
         $this->processExecutor->expects(
             [
@@ -487,7 +487,7 @@ class PerforceTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function testGetComposerInformationWithoutLabelWithStream()
+    public function testGetComposerInformationWithoutLabelWithStream(): void
     {
         $this->setPerforceToStream();
 
@@ -512,7 +512,7 @@ class PerforceTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function testGetComposerInformationWithLabelWithStream()
+    public function testGetComposerInformationWithLabelWithStream(): void
     {
         $this->processExecutor->expects(
             [
@@ -541,7 +541,7 @@ class PerforceTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function testSyncCodeBaseWithoutStream()
+    public function testSyncCodeBaseWithoutStream(): void
     {
         $this->processExecutor->expects(
             ['p4 -u user -c composer_perforce_TEST_depot -p port sync -f @label'],
@@ -551,7 +551,7 @@ class PerforceTest extends TestCase
         $this->perforce->syncCodeBase('label');
     }
 
-    public function testSyncCodeBaseWithStream()
+    public function testSyncCodeBaseWithStream(): void
     {
         $this->setPerforceToStream();
 
@@ -563,7 +563,7 @@ class PerforceTest extends TestCase
         $this->perforce->syncCodeBase('label');
     }
 
-    public function testCheckServerExists()
+    public function testCheckServerExists(): void
     {
         $this->processExecutor->expects(
             ['p4 -p '.ProcessExecutor::escape('perforce.does.exist:port').' info -s'],
@@ -581,7 +581,7 @@ class PerforceTest extends TestCase
      *
      * @return void
      */
-    public function testCheckServerClientError()
+    public function testCheckServerClientError(): void
     {
         $processExecutor = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
 
@@ -650,12 +650,12 @@ class PerforceTest extends TestCase
     /**
      * @return void
      */
-    private function setPerforceToStream()
+    private function setPerforceToStream(): void
     {
         $this->perforce->setStream('//depot/branch');
     }
 
-    public function testCleanupClientSpecShouldDeleteClient()
+    public function testCleanupClientSpecShouldDeleteClient(): void
     {
         $fs = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
         $this->perforce->setFilesystem($fs);

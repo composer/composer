@@ -39,7 +39,7 @@ class MetapackageInstallerTest extends TestCase
         $this->installer = new MetapackageInstaller($this->io);
     }
 
-    public function testInstall()
+    public function testInstall(): void
     {
         $package = $this->createPackageMock();
 
@@ -51,7 +51,7 @@ class MetapackageInstallerTest extends TestCase
         $this->installer->install($this->repository, $package);
     }
 
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $initial = $this->createPackageMock();
         $initial->expects($this->once())
@@ -85,7 +85,7 @@ class MetapackageInstallerTest extends TestCase
         $this->installer->update($this->repository, $initial, $target);
     }
 
-    public function testUninstall()
+    public function testUninstall(): void
     {
         $package = $this->createPackageMock();
 

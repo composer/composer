@@ -47,7 +47,7 @@ class FactoryMock extends Factory
         return new \Composer\Package\Loader\RootPackageLoader($rm, $config, $parser, new VersionGuesserMock(), $io);
     }
 
-    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage, ProcessExecutor $process = null)
+    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage, ProcessExecutor $process = null): void
     {
         $rm->setLocalRepository(new InstalledArrayRepository);
     }
@@ -57,11 +57,11 @@ class FactoryMock extends Factory
         return new InstallationManagerMock();
     }
 
-    protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io, ProcessExecutor $process = null)
+    protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io, ProcessExecutor $process = null): void
     {
     }
 
-    protected function purgePackages(InstalledRepositoryInterface $repo, Installer\InstallationManager $im)
+    protected function purgePackages(InstalledRepositoryInterface $repo, Installer\InstallationManager $im): void
     {
     }
 }

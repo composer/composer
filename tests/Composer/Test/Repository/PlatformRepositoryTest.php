@@ -21,7 +21,7 @@ use PHPUnit\Framework\Assert;
 
 class PlatformRepositoryTest extends TestCase
 {
-    public function testHhvmPackage()
+    public function testHhvmPackage(): void
     {
         $hhvmDetector = $this->getMockBuilder('Composer\Platform\HhvmDetector')->getMock();
         $platformRepository = new PlatformRepository(array(), array(), null, $hhvmDetector);
@@ -120,7 +120,7 @@ class PlatformRepositoryTest extends TestCase
      * @param array<string, string> $packages
      * @param list<array{string, list<string>, string|bool}>  $functions
      */
-    public function testPhpVersion(array $constants, array $packages, array $functions = array())
+    public function testPhpVersion(array $constants, array $packages, array $functions = array()): void
     {
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
         $runtime
@@ -152,7 +152,7 @@ class PlatformRepositoryTest extends TestCase
         }
     }
 
-    public function testInetPtonRegression()
+    public function testInetPtonRegression(): void
     {
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
 
@@ -1097,7 +1097,7 @@ Linked Version => 1.2.11',
         array $functions = array(),
         array $constants = array(),
         array $classDefinitions = array()
-    ) {
+    ): void {
         $extensions = (array) $extensions;
 
         $extensionVersion = '100.200.300';
@@ -1204,7 +1204,7 @@ Linked Version => 1.2.11',
      *
      * @return void
      */
-    private function assertPackageLinks($context, array $expectedLinks, PackageInterface $sourcePackage, array $links)
+    private function assertPackageLinks($context, array $expectedLinks, PackageInterface $sourcePackage, array $links): void
     {
         self::assertCount(count($expectedLinks), $links, sprintf('%s: expected package count to match', $context));
 
@@ -1215,7 +1215,7 @@ Linked Version => 1.2.11',
         }
     }
 
-    public function testComposerPlatformVersion()
+    public function testComposerPlatformVersion(): void
     {
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
         $runtime
@@ -1268,7 +1268,7 @@ Linked Version => 1.2.11',
      * @param bool $expectation
      * @dataProvider providePlatformPackages
      */
-    public function testValidPlatformPackages($packageName, $expectation)
+    public function testValidPlatformPackages($packageName, $expectation): void
     {
         self::assertSame($expectation, PlatformRepository::isPlatformPackage($packageName));
     }

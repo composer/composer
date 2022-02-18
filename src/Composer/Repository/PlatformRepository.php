@@ -106,7 +106,7 @@ class PlatformRepository extends ArrayRepository
         return $this->disabledPackages;
     }
 
-    protected function initialize()
+    protected function initialize(): void
     {
         parent::initialize();
 
@@ -531,7 +531,7 @@ class PlatformRepository extends ArrayRepository
     /**
      * @inheritDoc
      */
-    public function addPackage(PackageInterface $package)
+    public function addPackage(PackageInterface $package): void
     {
         if (!$package instanceof CompletePackage) {
             throw new \UnexpectedValueException('Expected CompletePackage but got '.get_class($package));
@@ -604,7 +604,7 @@ class PlatformRepository extends ArrayRepository
     /**
      * @return void
      */
-    private function addDisabledPackage(CompletePackage $package)
+    private function addDisabledPackage(CompletePackage $package): void
     {
         $package->setDescription($package->getDescription().'. <warning>Package disabled via config.platform</warning>');
         $package->setExtra(array('config.platform' => true));
@@ -620,7 +620,7 @@ class PlatformRepository extends ArrayRepository
      *
      * @return void
      */
-    private function addExtension($name, $prettyVersion)
+    private function addExtension($name, $prettyVersion): void
     {
         $extraDescription = null;
 
@@ -667,7 +667,7 @@ class PlatformRepository extends ArrayRepository
      *
      * @return void
      */
-    private function addLibrary($name, $prettyVersion, $description = null, array $replaces = array(), array $provides = array())
+    private function addLibrary($name, $prettyVersion, $description = null, array $replaces = array(), array $provides = array()): void
     {
         try {
             $version = $this->versionParser->normalize($prettyVersion);

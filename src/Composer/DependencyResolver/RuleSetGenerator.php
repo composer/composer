@@ -152,7 +152,7 @@ class RuleSetGenerator
      *
      * @return void
      */
-    private function addRule($type, Rule $newRule = null)
+    private function addRule($type, Rule $newRule = null): void
     {
         if (!$newRule) {
             return;
@@ -164,7 +164,7 @@ class RuleSetGenerator
     /**
      * @return void
      */
-    protected function addRulesForPackage(BasePackage $package, PlatformRequirementFilterInterface $platformRequirementFilter)
+    protected function addRulesForPackage(BasePackage $package, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         /** @var \SplQueue<BasePackage> */
         $workQueue = new \SplQueue;
@@ -218,7 +218,7 @@ class RuleSetGenerator
     /**
      * @return void
      */
-    protected function addConflictRules(PlatformRequirementFilterInterface $platformRequirementFilter)
+    protected function addConflictRules(PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         /** @var BasePackage $package */
         foreach ($this->addedMap as $package) {
@@ -259,7 +259,7 @@ class RuleSetGenerator
     /**
      * @return void
      */
-    protected function addRulesForRequest(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter)
+    protected function addRulesForRequest(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         foreach ($request->getFixedPackages() as $package) {
             if ($package->id == -1) {
@@ -305,7 +305,7 @@ class RuleSetGenerator
     /**
      * @return void
      */
-    protected function addRulesForRootAliases(PlatformRequirementFilterInterface $platformRequirementFilter)
+    protected function addRulesForRootAliases(PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         foreach ($this->pool->getPackages() as $package) {
             // ensure that rules for root alias packages and aliases of packages which were loaded are also loaded

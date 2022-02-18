@@ -43,7 +43,7 @@ class InstallationManagerTest extends TestCase
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
     }
 
-    public function testAddGetInstaller()
+    public function testAddGetInstaller(): void
     {
         $installer = $this->createInstallerMock();
 
@@ -63,7 +63,7 @@ class InstallationManagerTest extends TestCase
         $manager->getInstaller('unregistered');
     }
 
-    public function testAddRemoveInstaller()
+    public function testAddRemoveInstaller(): void
     {
         $installer = $this->createInstallerMock();
 
@@ -93,7 +93,7 @@ class InstallationManagerTest extends TestCase
         $this->assertSame($installer, $manager->getInstaller('vendor'));
     }
 
-    public function testExecute()
+    public function testExecute(): void
     {
         $manager = $this->getMockBuilder('Composer\Installer\InstallationManager')
             ->setConstructorArgs(array($this->loop, $this->io))
@@ -128,7 +128,7 @@ class InstallationManagerTest extends TestCase
         $manager->execute($this->repository, array($installOperation, $removeOperation, $updateOperation));
     }
 
-    public function testInstall()
+    public function testInstall(): void
     {
         $installer = $this->createInstallerMock();
         $manager = new InstallationManager($this->loop, $this->io);
@@ -156,7 +156,7 @@ class InstallationManagerTest extends TestCase
         $manager->install($this->repository, $operation);
     }
 
-    public function testUpdateWithEqualTypes()
+    public function testUpdateWithEqualTypes(): void
     {
         $installer = $this->createInstallerMock();
         $manager = new InstallationManager($this->loop, $this->io);
@@ -189,7 +189,7 @@ class InstallationManagerTest extends TestCase
         $manager->update($this->repository, $operation);
     }
 
-    public function testUpdateWithNotEqualTypes()
+    public function testUpdateWithNotEqualTypes(): void
     {
         $libInstaller = $this->createInstallerMock();
         $bundleInstaller = $this->createInstallerMock();
@@ -236,7 +236,7 @@ class InstallationManagerTest extends TestCase
         $manager->update($this->repository, $operation);
     }
 
-    public function testUninstall()
+    public function testUninstall(): void
     {
         $installer = $this->createInstallerMock();
         $manager = new InstallationManager($this->loop, $this->io);
@@ -264,7 +264,7 @@ class InstallationManagerTest extends TestCase
         $manager->uninstall($this->repository, $operation);
     }
 
-    public function testInstallBinary()
+    public function testInstallBinary(): void
     {
         $installer = $this->getMockBuilder('Composer\Installer\LibraryInstaller')
             ->disableOriginalConstructor()

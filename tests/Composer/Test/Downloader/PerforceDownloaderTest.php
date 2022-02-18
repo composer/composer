@@ -112,12 +112,12 @@ class PerforceDownloaderTest extends TestCase
     /**
      * @doesNotPerformAssertions
      */
-    public function testInitPerforceInstantiatesANewPerforceObject()
+    public function testInitPerforceInstantiatesANewPerforceObject(): void
     {
         $this->downloader->initPerforce($this->package, $this->testPath, 'SOURCE_REF');
     }
 
-    public function testInitPerforceDoesNothingIfPerforceAlreadySet()
+    public function testInitPerforceDoesNothingIfPerforceAlreadySet(): void
     {
         $perforce = $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
         $this->downloader->setPerforce($perforce);
@@ -129,7 +129,7 @@ class PerforceDownloaderTest extends TestCase
      * @depends testInitPerforceInstantiatesANewPerforceObject
      * @depends testInitPerforceDoesNothingIfPerforceAlreadySet
      */
-    public function testDoInstallWithTag()
+    public function testDoInstallWithTag(): void
     {
         //I really don't like this test but the logic of each Perforce method is tested in the Perforce class.  Really I am just enforcing workflow.
         $ref = 'SOURCE_REF@123';
@@ -153,7 +153,7 @@ class PerforceDownloaderTest extends TestCase
      * @depends testInitPerforceInstantiatesANewPerforceObject
      * @depends testInitPerforceDoesNothingIfPerforceAlreadySet
      */
-    public function testDoInstallWithNoTag()
+    public function testDoInstallWithNoTag(): void
     {
         $ref = 'SOURCE_REF';
         $label = null;

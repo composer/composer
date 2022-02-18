@@ -40,7 +40,7 @@ class StatusCommand extends BaseCommand
      * @return void
      * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('status')

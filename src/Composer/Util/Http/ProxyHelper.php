@@ -97,7 +97,7 @@ class ProxyHelper
      *
      * @return void
      */
-    public static function setRequestFullUri($requestUrl, array &$options)
+    public static function setRequestFullUri($requestUrl, array &$options): void
     {
         if ('http' === parse_url($requestUrl, PHP_URL_SCHEME)) {
             $options['http']['request_fulluri'] = true;

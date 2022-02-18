@@ -152,7 +152,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param array<string, array<string, string>> $config
      * @return void
      */
-    protected function configureLinks(PackageInterface $package, array $config)
+    protected function configureLinks(PackageInterface $package, array $config): void
     {
         $arrayLoader = new ArrayLoader();
 
@@ -175,7 +175,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param  string $directory
      * @return void
      */
-    protected static function ensureDirectoryExistsAndClear($directory)
+    protected static function ensureDirectoryExistsAndClear($directory): void
     {
         $fs = new Filesystem();
 
@@ -195,7 +195,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      *
      * @throws \PHPUnit\Framework\SkippedTestError
      */
-    protected function skipIfNotExecutable($executableName)
+    protected function skipIfNotExecutable($executableName): void
     {
         if (!isset(self::$executableCache[$executableName])) {
             $finder = new ExecutableFinder();

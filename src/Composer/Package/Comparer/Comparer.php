@@ -31,7 +31,7 @@ class Comparer
      *
      * @return void
      */
-    public function setSource($source)
+    public function setSource($source): void
     {
         $this->source = $source;
     }
@@ -41,7 +41,7 @@ class Comparer
      *
      * @return void
      */
-    public function setUpdate($update)
+    public function setUpdate($update): void
     {
         $this->update = $update;
     }
@@ -82,7 +82,7 @@ class Comparer
     /**
      * @return void
      */
-    public function doCompare()
+    public function doCompare(): void
     {
         $source = array();
         $destination = array();

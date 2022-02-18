@@ -38,7 +38,7 @@ class ClassMapGenerator
      * @param string                     $file The name of the class map file
      * @return void
      */
-    public static function dump($dirs, $file)
+    public static function dump($dirs, $file): void
     {
         $maps = array();
 

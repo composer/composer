@@ -69,17 +69,17 @@ class PackageSorter
             $weightList[$index] = $weight;
         }
 
-        $stable_sort = function (&$array) {
+        $stable_sort = function (&$array): void {
             static $transform, $restore;
 
             $i = 0;
 
             if (!$transform) {
-                $transform = function (&$v, $k) use (&$i) {
+                $transform = function (&$v, $k) use (&$i): void {
                     $v = array($v, ++$i, $k, $v);
                 };
 
-                $restore = function (&$v) {
+                $restore = function (&$v): void {
                     $v = $v[3];
                 };
             }

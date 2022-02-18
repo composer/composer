@@ -68,7 +68,7 @@ class BinaryInstallerTest extends TestCase
      * @dataProvider executableBinaryProvider
      * @param string $contents
      */
-    public function testInstallAndExecBinaryWithFullCompat($contents)
+    public function testInstallAndExecBinaryWithFullCompat($contents): void
     {
         $package = $this->createPackageMock();
         $package->expects($this->any())

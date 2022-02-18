@@ -56,7 +56,7 @@ class ArchiveManager
      *
      * @return void
      */
-    public function addArchiver(ArchiverInterface $archiver)
+    public function addArchiver(ArchiverInterface $archiver): void
     {
         $this->archivers[] = $archiver;
     }

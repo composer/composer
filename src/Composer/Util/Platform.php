@@ -51,7 +51,7 @@ class Platform
      * @param  string $value
      * @return void
      */
-    public static function putEnv($name, $value)
+    public static function putEnv($name, $value): void
     {
         $value = (string) $value;
         putenv($name . '=' . $value);
@@ -64,7 +64,7 @@ class Platform
      * @param  string $name
      * @return void
      */
-    public static function clearEnv($name)
+    public static function clearEnv($name): void
     {
         putenv($name);
         unset($_SERVER[$name], $_ENV[$name]);
@@ -202,7 +202,7 @@ class Platform
     /**
      * @return void
      */
-    public static function workaroundFilesystemIssues()
+    public static function workaroundFilesystemIssues(): void
     {
         if (self::isVirtualBoxGuest()) {
             usleep(200000);

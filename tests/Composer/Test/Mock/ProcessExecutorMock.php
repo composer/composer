@@ -48,7 +48,7 @@ class ProcessExecutorMock extends ProcessExecutor
      *
      * @return void
      */
-    public function expects(array $expectations, $strict = false, array $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => ''))
+    public function expects(array $expectations, $strict = false, array $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => '')): void
     {
         /** @var array{cmd: string|list<string>, return?: int, stdout?: string, stderr?: string, callback?: callable} $default */
         $default = array('cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null);
@@ -175,12 +175,12 @@ class ProcessExecutorMock extends ProcessExecutor
 
     public function executeAsync($command, $cwd = null)
     {
-        $resolver = function ($resolve, $reject) {
+        $resolver = function ($resolve, $reject): void {
             // TODO strictly speaking this should resolve with a mock Process instance here
             $resolve();
         };
 
-        $canceler = function () {
+        $canceler = function (): void {
             throw new \RuntimeException('Aborted process');
         };
 

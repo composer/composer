@@ -43,7 +43,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $level
      * @return void
      */
-    public function decide($literal, $level, Rule $why)
+    public function decide($literal, $level, Rule $why): void
     {
         $this->addDecision($literal, $level);
         $this->decisionQueue[] = array(
@@ -177,7 +177,7 @@ class Decisions implements \Iterator, \Countable
     /**
      * @return void
      */
-    public function reset()
+    public function reset(): void
     {
         while ($decision = array_pop($this->decisionQueue)) {
             $this->decisionMap[abs($decision[self::DECISION_LITERAL])] = 0;
@@ -188,7 +188,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $offset
      * @return void
      */
-    public function resetToOffset($offset)
+    public function resetToOffset($offset): void
     {
         while (\count($this->decisionQueue) > $offset + 1) {
             $decision = array_pop($this->decisionQueue);
@@ -199,7 +199,7 @@ class Decisions implements \Iterator, \Countable
     /**
      * @return void
      */
-    public function revertLast()
+    public function revertLast(): void
     {
         $this->decisionMap[abs($this->lastLiteral())] = 0;
         array_pop($this->decisionQueue);
@@ -252,7 +252,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $level
      * @return void
      */
-    protected function addDecision($literal, $level)
+    protected function addDecision($literal, $level): void
     {
         $packageId = abs($literal);
 

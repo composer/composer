@@ -26,7 +26,7 @@ class CheckPlatformReqsCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('check-platform-reqs')
             ->setDescription('Check that platform requirements are satisfied.')
@@ -174,7 +174,7 @@ EOT
      *
      * @return void
      */
-    protected function printTable(OutputInterface $output, $results)
+    protected function printTable(OutputInterface $output, $results): void
     {
         $rows = array();
         foreach ($results as $result) {

@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 
 class MetadataMinifierTest extends TestCase
 {
-    public function testMinifyExpand()
+    public function testMinifyExpand(): void
     {
         $package1 = new CompletePackage('foo/bar', '2.0.0.0', '2.0.0');
         $package1->setScripts(array('foo' => array('bar')));

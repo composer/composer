@@ -19,7 +19,7 @@ class ArchiveDownloaderTest extends TestCase
     /** @var \Composer\Config&\PHPUnit\Framework\MockObject\MockObject */
     protected $config;
 
-    public function testGetFileName()
+    public function testGetFileName(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -41,7 +41,7 @@ class ArchiveDownloaderTest extends TestCase
         $this->assertSame($first, $method->invoke($downloader, $packageMock, '/path'));
     }
 
-    public function testProcessUrl()
+    public function testProcessUrl(): void
     {
         if (!extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
@@ -57,7 +57,7 @@ class ArchiveDownloaderTest extends TestCase
         $this->assertEquals($expected, $url);
     }
 
-    public function testProcessUrl2()
+    public function testProcessUrl2(): void
     {
         if (!extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
@@ -73,7 +73,7 @@ class ArchiveDownloaderTest extends TestCase
         $this->assertEquals($expected, $url);
     }
 
-    public function testProcessUrl3()
+    public function testProcessUrl3(): void
     {
         if (!extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
@@ -93,7 +93,7 @@ class ArchiveDownloaderTest extends TestCase
      * @dataProvider provideUrls
      * @param string $url
      */
-    public function testProcessUrlRewriteDist($url)
+    public function testProcessUrlRewriteDist($url): void
     {
         if (!extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
@@ -132,7 +132,7 @@ class ArchiveDownloaderTest extends TestCase
      * @param string $url
      * @param string $extension
      */
-    public function testProcessUrlRewriteBitbucketDist($url, $extension)
+    public function testProcessUrlRewriteBitbucketDist($url, $extension): void
     {
         if (!extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');

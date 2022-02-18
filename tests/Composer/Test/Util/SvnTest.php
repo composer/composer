@@ -27,7 +27,7 @@ class SvnTest extends TestCase
      *
      * @dataProvider urlProvider
      */
-    public function testCredentials($url, $expect)
+    public function testCredentials($url, $expect): void
     {
         $svn = new Svn($url, new NullIO, new Config());
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
@@ -45,7 +45,7 @@ class SvnTest extends TestCase
         );
     }
 
-    public function testInteractiveString()
+    public function testInteractiveString(): void
     {
         $url = 'http://svn.example.org';
 
@@ -59,7 +59,7 @@ class SvnTest extends TestCase
         );
     }
 
-    public function testCredentialsFromConfig()
+    public function testCredentialsFromConfig(): void
     {
         $url = 'http://svn.apache.org';
 
@@ -79,7 +79,7 @@ class SvnTest extends TestCase
         $this->assertEquals($this->getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 
-    public function testCredentialsFromConfigWithCacheCredentialsTrue()
+    public function testCredentialsFromConfigWithCacheCredentialsTrue(): void
     {
         $url = 'http://svn.apache.org';
 
@@ -102,7 +102,7 @@ class SvnTest extends TestCase
         $this->assertEquals($this->getCmd(" --username 'foo' --password 'bar' "), $reflMethod->invoke($svn));
     }
 
-    public function testCredentialsFromConfigWithCacheCredentialsFalse()
+    public function testCredentialsFromConfigWithCacheCredentialsFalse(): void
     {
         $url = 'http://svn.apache.org';
 

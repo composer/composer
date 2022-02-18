@@ -26,7 +26,7 @@ class IniHelperTest extends TestCase
      */
     public static $envOriginal;
 
-    public function testWithNoIni()
+    public function testWithNoIni(): void
     {
         $paths = array(
             '',
@@ -37,7 +37,7 @@ class IniHelperTest extends TestCase
         $this->assertEquals($paths, IniHelper::getAll());
     }
 
-    public function testWithLoadedIniOnly()
+    public function testWithLoadedIniOnly(): void
     {
         $paths = array(
             'loaded.ini',
@@ -47,7 +47,7 @@ class IniHelperTest extends TestCase
         $this->assertStringContainsString('loaded.ini', IniHelper::getMessage());
     }
 
-    public function testWithLoadedIniAndAdditional()
+    public function testWithLoadedIniAndAdditional(): void
     {
         $paths = array(
             'loaded.ini',
@@ -60,7 +60,7 @@ class IniHelperTest extends TestCase
         $this->assertEquals($paths, IniHelper::getAll());
     }
 
-    public function testWithoutLoadedIniAndAdditional()
+    public function testWithoutLoadedIniAndAdditional(): void
     {
         $paths = array(
             '',
@@ -96,7 +96,7 @@ class IniHelperTest extends TestCase
      *
      * @return void
      */
-    protected function setEnv(array $paths)
+    protected function setEnv(array $paths): void
     {
         putenv('COMPOSER_ORIGINAL_INIS='.implode(PATH_SEPARATOR, $paths));
     }

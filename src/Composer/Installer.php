@@ -919,7 +919,7 @@ class Installer
      *
      * @return void
      */
-    private function requirePackagesForUpdate(Request $request, LockArrayRepository $lockedRepository = null, $includeDevRequires = true)
+    private function requirePackagesForUpdate(Request $request, LockArrayRepository $lockedRepository = null, $includeDevRequires = true): void
     {
         // if we're updating mirrors we want to keep exactly the same versions installed which are in the lock file, but we want current remote metadata
         if ($this->updateMirrors) {
@@ -988,7 +988,7 @@ class Installer
      *
      * @return void
      */
-    private function mockLocalRepositories(RepositoryManager $rm)
+    private function mockLocalRepositories(RepositoryManager $rm): void
     {
         $packages = array();
         foreach ($rm->getLocalRepository()->getPackages() as $package) {

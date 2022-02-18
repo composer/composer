@@ -21,7 +21,7 @@ use Composer\Test\TestCase;
 
 class InstalledRepositoryTest extends TestCase
 {
-    public function testFindPackagesWithReplacersAndProviders()
+    public function testFindPackagesWithReplacersAndProviders(): void
     {
         $arrayRepoOne = new InstalledArrayRepository;
         $arrayRepoOne->addPackage($foo = $this->getPackage('foo', '1'));
@@ -41,7 +41,7 @@ class InstalledRepositoryTest extends TestCase
         $this->assertEquals(array($foo, $bar2), $repo->findPackagesWithReplacersAndProviders('provided'));
     }
 
-    public function testAddRepository()
+    public function testAddRepository(): void
     {
         $arrayRepoOne = new ArrayRepository;
 

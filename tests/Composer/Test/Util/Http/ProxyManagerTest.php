@@ -46,7 +46,7 @@ class ProxyManagerTest extends TestCase
         ProxyManager::reset();
     }
 
-    public function testInstantiation()
+    public function testInstantiation(): void
     {
         $originalInstance = ProxyManager::getInstance();
         $this->assertInstanceOf('Composer\Util\Http\ProxyManager', $originalInstance);
@@ -59,7 +59,7 @@ class ProxyManagerTest extends TestCase
         $this->assertFalse($sameInstance === $newInstance);
     }
 
-    public function testGetProxyForRequestThrowsOnBadProxyUrl()
+    public function testGetProxyForRequestThrowsOnBadProxyUrl(): void
     {
         $_SERVER['http_proxy'] = 'localhost';
         $proxyManager = ProxyManager::getInstance();
@@ -77,7 +77,7 @@ class ProxyManagerTest extends TestCase
      * @param bool                 $expectedSecure
      * @param string               $expectedMessage
      */
-    public function testGetProxyForRequest($server, $url, $expectedUrl, $expectedOptions, $expectedSecure, $expectedMessage)
+    public function testGetProxyForRequest($server, $url, $expectedUrl, $expectedOptions, $expectedSecure, $expectedMessage): void
     {
         $_SERVER = array_merge($_SERVER, $server);
         $proxyManager = ProxyManager::getInstance();
@@ -139,7 +139,7 @@ class ProxyManagerTest extends TestCase
      * @param bool                 $expectedStatus
      * @param string               $expectedMessage
      */
-    public function testGetStatus($server, $expectedStatus, $expectedMessage)
+    public function testGetStatus($server, $expectedStatus, $expectedMessage): void
     {
         $_SERVER = array_merge($_SERVER, $server);
         $proxyManager = ProxyManager::getInstance();

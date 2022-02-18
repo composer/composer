@@ -48,7 +48,7 @@ class JsonConfigSourceTest extends TestCase
         }
     }
 
-    public function testAddRepository()
+    public function testAddRepository(): void
     {
         $config = $this->workingDir.'/composer.json';
         copy($this->fixturePath('composer-repositories.json'), $config);
@@ -58,7 +58,7 @@ class JsonConfigSourceTest extends TestCase
         $this->assertFileEquals($this->fixturePath('config/config-with-exampletld-repository.json'), $config);
     }
 
-    public function testAddRepositoryWithOptions()
+    public function testAddRepositoryWithOptions(): void
     {
         $config = $this->workingDir.'/composer.json';
         copy($this->fixturePath('composer-repositories.json'), $config);
@@ -76,7 +76,7 @@ class JsonConfigSourceTest extends TestCase
         $this->assertFileEquals($this->fixturePath('config/config-with-exampletld-repository-and-options.json'), $config);
     }
 
-    public function testRemoveRepository()
+    public function testRemoveRepository(): void
     {
         $config = $this->workingDir.'/composer.json';
         copy($this->fixturePath('config/config-with-exampletld-repository.json'), $config);
@@ -86,7 +86,7 @@ class JsonConfigSourceTest extends TestCase
         $this->assertFileEquals($this->fixturePath('composer-repositories.json'), $config);
     }
 
-    public function testAddPackagistRepositoryWithFalseValue()
+    public function testAddPackagistRepositoryWithFalseValue(): void
     {
         $config = $this->workingDir.'/composer.json';
         copy($this->fixturePath('composer-repositories.json'), $config);
@@ -96,7 +96,7 @@ class JsonConfigSourceTest extends TestCase
         $this->assertFileEquals($this->fixturePath('config/config-with-packagist-false.json'), $config);
     }
 
-    public function testRemovePackagist()
+    public function testRemovePackagist(): void
     {
         $config = $this->workingDir.'/composer.json';
         copy($this->fixturePath('config/config-with-packagist-false.json'), $config);
@@ -117,7 +117,7 @@ class JsonConfigSourceTest extends TestCase
      *
      * @dataProvider provideAddLinkData
      */
-    public function testAddLink($sourceFile, $type, $name, $value, $compareAgainst)
+    public function testAddLink($sourceFile, $type, $name, $value, $compareAgainst): void
     {
         $composerJson = $this->workingDir.'/composer.json';
         copy($sourceFile, $composerJson);
@@ -138,7 +138,7 @@ class JsonConfigSourceTest extends TestCase
      *
      * @dataProvider provideRemoveLinkData
      */
-    public function testRemoveLink($sourceFile, $type, $name, $compareAgainst)
+    public function testRemoveLink($sourceFile, $type, $name, $compareAgainst): void
     {
         $composerJson = $this->workingDir.'/composer.json';
         copy($sourceFile, $composerJson);
