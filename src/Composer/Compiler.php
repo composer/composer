@@ -204,7 +204,7 @@ class Compiler
     private function getRelativeFilePath($file)
     {
         $realPath = $file->getRealPath();
-        $pathPrefix = dirname(dirname(__DIR__)).DIRECTORY_SEPARATOR;
+        $pathPrefix = dirname(__DIR__, 2).DIRECTORY_SEPARATOR;
 
         $pos = strpos($realPath, $pathPrefix);
         $relativePath = ($pos !== false) ? substr_replace($realPath, '', $pos, strlen($pathPrefix)) : $realPath;

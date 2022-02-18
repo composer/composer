@@ -461,7 +461,7 @@ class Config
     {
         $this->get($key);
 
-        return isset($this->sourceOfConfigValue[$key]) ? $this->sourceOfConfigValue[$key] : self::SOURCE_UNKNOWN;
+        return $this->sourceOfConfigValue[$key] ?? self::SOURCE_UNKNOWN;
     }
 
     /**

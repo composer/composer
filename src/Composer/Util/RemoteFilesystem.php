@@ -91,7 +91,7 @@ class RemoteFilesystem
         // handle the other externally set options normally.
         $this->options = array_replace_recursive($this->options, $options);
         $this->config = $config;
-        $this->authHelper = isset($authHelper) ? $authHelper : new AuthHelper($io, $config);
+        $this->authHelper = $authHelper ?? new AuthHelper($io, $config);
         $this->proxyManager = ProxyManager::getInstance();
     }
 
@@ -531,7 +531,7 @@ class RemoteFilesystem
         }
 
         // https://www.php.net/manual/en/reserved.variables.httpresponseheader.php
-        $responseHeaders = isset($http_response_header) ? $http_response_header : array();
+        $responseHeaders = $http_response_header ?? array();
 
         if (null !== $e) {
             throw $e;

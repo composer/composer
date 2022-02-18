@@ -92,7 +92,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
 
         $this->url = $repoConfig['url'];
         $this->io = $io;
-        $this->type = isset($repoConfig['type']) ? $repoConfig['type'] : 'vcs';
+        $this->type = $repoConfig['type'] ?? 'vcs';
         $this->isVerbose = $io->isVerbose();
         $this->isVeryVerbose = $io->isVeryVerbose();
         $this->config = $config;
@@ -290,7 +290,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
                     continue;
                 }
 
-                $tagPackageName = $this->packageName ?: (isset($data['name']) ? $data['name'] : '');
+                $tagPackageName = $this->packageName ?: ($data['name'] ?? '');
                 if ($existingPackage = $this->findPackage($tagPackageName, $data['version_normalized'])) {
                     if ($isVeryVerbose) {
                         $this->io->writeError('<warning>Skipped tag '.$tag.', it conflicts with an another tag ('.$existingPackage->getPrettyVersion().') as both resolve to '.$data['version_normalized'].' internally</warning>');
@@ -439,7 +439,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         // keep the name of the main identifier for all packages
         // this ensures that a package can be renamed in one place and that all old tags
         // will still be installable using that new name without requiring re-tagging
-        $dataPackageName = isset($data['name']) ? $data['name'] : null;
+        $dataPackageName = $data['name'] ?? null;
         $data['name'] = $this->packageName ?: $dataPackageName;
 
         if (!isset($data['dist'])) {

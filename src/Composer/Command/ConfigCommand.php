@@ -263,7 +263,7 @@ EOT
             $data = $this->config->all();
             if (Preg::isMatch('/^repos?(?:itories)?(?:\.(.+))?/', $settingKey, $matches)) {
                 if (!isset($matches[1]) || $matches[1] === '') {
-                    $value = isset($data['repositories']) ? $data['repositories'] : array();
+                    $value = $data['repositories'] ?? array();
                 } else {
                     if (!isset($data['repositories'][$matches[1]])) {
                         throw new \InvalidArgumentException('There is no '.$matches[1].' repository defined');
@@ -699,7 +699,7 @@ EOT
                     $currentValue = $this->configFile->read();
                     $bits = explode('.', $settingKey);
                     foreach ($bits as $bit) {
-                        $currentValue = isset($currentValue[$bit]) ? $currentValue[$bit] : null;
+                        $currentValue = $currentValue[$bit] ?? null;
                     }
                     if (is_array($currentValue)) {
                         $value = array_merge($currentValue, $value);
@@ -877,7 +877,7 @@ EOT
                 continue;
             }
 
-            $rawVal = isset($rawContents[$key]) ? $rawContents[$key] : null;
+            $rawVal = $rawContents[$key] ?? null;
 
             if (is_array($value) && (!is_numeric(key($value)) || ($key === 'repositories' && null === $k))) {
                 $k .= Preg::replace('{^config\.}', '', $key . '.');

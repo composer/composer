@@ -159,8 +159,8 @@ class ConfigValidator
         }
 
         // check for commit references
-        $require = isset($manifest['require']) ? $manifest['require'] : array();
-        $requireDev = isset($manifest['require-dev']) ? $manifest['require-dev'] : array();
+        $require = $manifest['require'] ?? array();
+        $requireDev = $manifest['require-dev'] ?? array();
         $packages = array_merge($require, $requireDev);
         foreach ($packages as $package => $version) {
             if (Preg::isMatch('/#/', $version)) {
@@ -172,8 +172,8 @@ class ConfigValidator
         }
 
         // report scripts-descriptions for non-existent scripts
-        $scriptsDescriptions = isset($manifest['scripts-descriptions']) ? $manifest['scripts-descriptions'] : array();
-        $scripts = isset($manifest['scripts']) ? $manifest['scripts'] : array();
+        $scriptsDescriptions = $manifest['scripts-descriptions'] ?? array();
+        $scripts = $manifest['scripts'] ?? array();
         foreach ($scriptsDescriptions as $scriptName => $scriptDescription) {
             if (!array_key_exists($scriptName, $scripts)) {
                 $warnings[] = sprintf(

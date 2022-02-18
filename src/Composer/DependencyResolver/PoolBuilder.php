@@ -376,7 +376,7 @@ class PoolBuilder
             if ($repository instanceof PlatformRepository || $repository === $request->getLockedRepository()) {
                 continue;
             }
-            $result = $repository->loadPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags, isset($this->loadedPerRepo[$repoIndex]) ? $this->loadedPerRepo[$repoIndex] : array());
+            $result = $repository->loadPackages($packageBatch, $this->acceptableStabilities, $this->stabilityFlags, $this->loadedPerRepo[$repoIndex] ?? array());
 
             foreach ($result['namesFound'] as $name) {
                 // avoid loading the same package again from other repositories once it has been found

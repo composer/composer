@@ -56,8 +56,8 @@ class PoolOptimizerTest extends TestCase
             $request->requireName($package, $parser->parseConstraints($constraint));
         }
 
-        $preferStable = isset($requestData['preferStable']) ? $requestData['preferStable'] : false;
-        $preferLowest = isset($requestData['preferLowest']) ? $requestData['preferLowest'] : false;
+        $preferStable = $requestData['preferStable'] ?? false;
+        $preferLowest = $requestData['preferLowest'] ?? false;
 
         $pool = new Pool($packagesBefore);
         $poolOptimizer = new PoolOptimizer(new DefaultPolicy($preferStable, $preferLowest));

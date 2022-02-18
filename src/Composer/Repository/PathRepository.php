@@ -120,7 +120,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         $this->process = new ProcessExecutor($io);
         $this->versionGuesser = new VersionGuesser($config, $this->process, new VersionParser());
         $this->repoConfig = $repoConfig;
-        $this->options = isset($repoConfig['options']) ? $repoConfig['options'] : array();
+        $this->options = $repoConfig['options'] ?? array();
         if (!isset($this->options['relative'])) {
             $filesystem = new Filesystem();
             $this->options['relative'] = !$filesystem->isAbsolutePath($this->url);

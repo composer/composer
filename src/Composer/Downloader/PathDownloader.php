@@ -260,7 +260,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             $currentStrategy = self::STRATEGY_MIRROR;
         }
 
-        $symlinkOption = isset($transportOptions['symlink']) ? $transportOptions['symlink'] : null;
+        $symlinkOption = $transportOptions['symlink'] ?? null;
 
         if (true === $symlinkOption) {
             $currentStrategy = self::STRATEGY_SYMLINK;

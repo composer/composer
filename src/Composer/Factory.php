@@ -248,7 +248,7 @@ class Factory
      */
     public static function getComposerFile()
     {
-        return trim(Platform::getEnv('COMPOSER')) ?: './composer.json';
+        return trim((string) Platform::getEnv('COMPOSER')) ?: './composer.json';
     }
 
     /**

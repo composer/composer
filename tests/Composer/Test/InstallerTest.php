@@ -142,9 +142,9 @@ class InstallerTest extends TestCase
         $output = str_replace("\r", '', $io->getOutput());
         $this->assertEquals(0, $result, $output);
 
-        $expectedInstalled = isset($options['install']) ? $options['install'] : array();
-        $expectedUpdated = isset($options['update']) ? $options['update'] : array();
-        $expectedUninstalled = isset($options['uninstall']) ? $options['uninstall'] : array();
+        $expectedInstalled = $options['install'] ?? array();
+        $expectedUpdated = $options['update'] ?? array();
+        $expectedUninstalled = $options['uninstall'] ?? array();
 
         $installed = $installationManager->getInstalledPackages();
         $this->assertEquals($this->makePackagesComparable($expectedInstalled), $this->makePackagesComparable($installed));
@@ -575,8 +575,8 @@ class InstallerTest extends TestCase
                 if (!empty($testData['EXPECT-INSTALLED'])) {
                     $expectInstalled = JsonFile::parseJson($testData['EXPECT-INSTALLED']);
                 }
-                $expectOutput = isset($testData['EXPECT-OUTPUT']) ? $testData['EXPECT-OUTPUT'] : null;
-                $expectOutputOptimized = isset($testData['EXPECT-OUTPUT-OPTIMIZED']) ? $testData['EXPECT-OUTPUT-OPTIMIZED'] : null;
+                $expectOutput = $testData['EXPECT-OUTPUT'] ?? null;
+                $expectOutputOptimized = $testData['EXPECT-OUTPUT-OPTIMIZED'] ?? null;
                 $expect = $testData['EXPECT'];
                 if (!empty($testData['EXPECT-EXCEPTION'])) {
                     $expectResult = $testData['EXPECT-EXCEPTION'];

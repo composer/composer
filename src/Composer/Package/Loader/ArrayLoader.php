@@ -185,7 +185,7 @@ class ArrayLoader implements LoaderInterface
             }
             $package->setSourceType($config['source']['type']);
             $package->setSourceUrl($config['source']['url']);
-            $package->setSourceReference(isset($config['source']['reference']) ? $config['source']['reference'] : null);
+            $package->setSourceReference($config['source']['reference'] ?? null);
             if (isset($config['source']['mirrors'])) {
                 $package->setSourceMirrors($config['source']['mirrors']);
             }
@@ -202,8 +202,8 @@ class ArrayLoader implements LoaderInterface
             }
             $package->setDistType($config['dist']['type']);
             $package->setDistUrl($config['dist']['url']);
-            $package->setDistReference(isset($config['dist']['reference']) ? $config['dist']['reference'] : null);
-            $package->setDistSha1Checksum(isset($config['dist']['shasum']) ? $config['dist']['shasum'] : null);
+            $package->setDistReference($config['dist']['reference'] ?? null);
+            $package->setDistSha1Checksum($config['dist']['shasum'] ?? null);
             if (isset($config['dist']['mirrors'])) {
                 $package->setDistMirrors($config['dist']['mirrors']);
             }
