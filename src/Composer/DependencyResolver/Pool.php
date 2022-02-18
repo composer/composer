@@ -159,7 +159,7 @@ class Pool implements \Countable
      *                                          packages must match or null to return all
      * @return BasePackage[]
      */
-    private function computeWhatProvides($name, ConstraintInterface $constraint = null)
+    private function computeWhatProvides($name, ConstraintInterface $constraint = null): array
     {
         if (!isset($this->packageByName[$name])) {
             return array();

@@ -133,7 +133,7 @@ class JsonManipulator
      * @param array<string> $packages
      * @return void
      */
-    private function sortPackages(array &$packages = array())
+    private function sortPackages(array &$packages = array()): void
     {
         $prefix = function ($requirement) {
             if (PlatformRepository::isPlatformPackage($requirement)) {

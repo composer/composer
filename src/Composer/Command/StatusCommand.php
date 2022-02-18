@@ -80,7 +80,7 @@ EOT
     /**
      * @return int
      */
-    private function doExecute(InputInterface $input)
+    private function doExecute(InputInterface $input): int
     {
         // init repos
         $composer = $this->requireComposer();

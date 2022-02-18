@@ -160,7 +160,7 @@ class InstallerTest extends TestCase
      * @param  PackageInterface[] $packages
      * @return mixed[]
      */
-    protected function makePackagesComparable($packages)
+    protected function makePackagesComparable($packages): array
     {
         $dumper = new ArrayDumper();
 
@@ -516,7 +516,7 @@ class InstallerTest extends TestCase
      * @param  string $path
      * @return mixed[]
      */
-    public function loadIntegrationTests($path)
+    public function loadIntegrationTests($path): array
     {
         $fixturesDir = realpath(__DIR__.'/Fixtures/'.$path);
         $tests = array();
@@ -602,7 +602,7 @@ class InstallerTest extends TestCase
      * @param  string $fixturesDir
      * @return mixed[]
      */
-    protected function readTestFile(\SplFileInfo $file, $fixturesDir)
+    protected function readTestFile(\SplFileInfo $file, $fixturesDir): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
 

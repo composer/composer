@@ -134,7 +134,7 @@ class FundCommand extends BaseCommand
      * @param mixed[] $fundings
      * @return mixed[]
      */
-    private function insertFundingData(array $fundings, CompletePackageInterface $package)
+    private function insertFundingData(array $fundings, CompletePackageInterface $package): array
     {
         foreach ($package->getFunding() as $fundingOption) {
             list($vendor, $packageName) = explode('/', $package->getPrettyName());

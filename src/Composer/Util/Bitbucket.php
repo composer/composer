@@ -92,7 +92,7 @@ class Bitbucket
     /**
      * @return bool
      */
-    private function requestAccessToken()
+    private function requestAccessToken(): bool
     {
         try {
             $response = $this->httpDownloader->get(self::OAUTH2_ACCESS_TOKEN_URL, array(
@@ -246,7 +246,7 @@ class Bitbucket
      * @param  string $originUrl
      * @return bool
      */
-    private function getTokenFromConfig($originUrl)
+    private function getTokenFromConfig($originUrl): bool
     {
         $authConfig = $this->config->get('bitbucket-oauth');
 

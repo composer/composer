@@ -100,7 +100,7 @@ class ProcessExecutor
      * @param  mixed   $output
      * @return int
      */
-    private function doExecute($command, $cwd, $tty, &$output = null)
+    private function doExecute($command, $cwd, $tty, &$output = null): int
     {
         $this->outputCommandRun($command, $cwd, false);
 
@@ -210,7 +210,7 @@ class ProcessExecutor
      * @param  int  $id
      * @return void
      */
-    private function startJob($id)
+    private function startJob($id): void
     {
         $job = &$this->jobs[$id];
         if ($job['status'] !== self::STATUS_QUEUED) {
@@ -269,7 +269,7 @@ class ProcessExecutor
      *
      * @return void
      */
-    public function enableAsync()
+    public function enableAsync(): void
     {
         $this->allowAsync = true;
     }
@@ -280,7 +280,7 @@ class ProcessExecutor
      * @param  ?int $index job id
      * @return int         number of active (queued or started) jobs
      */
-    public function countActiveJobs($index = null)
+    public function countActiveJobs($index = null): int
     {
         // tick
         foreach ($this->jobs as $job) {
@@ -437,7 +437,7 @@ class ProcessExecutor
      *
      * @return string
      */
-    private static function escapeArgument($argument)
+    private static function escapeArgument($argument): string
     {
         if ('' === ($argument = (string) $argument)) {
             return escapeshellarg($argument);

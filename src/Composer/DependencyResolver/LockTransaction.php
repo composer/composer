@@ -106,7 +106,7 @@ class LockTransaction extends Transaction
      * @param bool $updateMirrors
      * @return BasePackage[]
      */
-    public function getNewLockPackages($devMode, $updateMirrors = false)
+    public function getNewLockPackages($devMode, $updateMirrors = false): array
     {
         $packages = array();
         foreach ($this->resultPackages[$devMode ? 'dev' : 'non-dev'] as $package) {
@@ -137,7 +137,7 @@ class LockTransaction extends Transaction
      * @param array<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      * @return array<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
-    public function getAliases($aliases)
+    public function getAliases($aliases): array
     {
         $usedAliases = array();
 

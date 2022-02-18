@@ -333,7 +333,7 @@ class GitLabDriver extends VcsDriver
      * @param  string $string
      * @return string
      */
-    private function urlEncodeAll($string)
+    private function urlEncodeAll($string): string
     {
         $encoded = '';
         for ($i = 0; isset($string[$i]); $i++) {

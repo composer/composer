@@ -406,7 +406,7 @@ class DownloadManager
      * @return string[]
      * @phpstan-return array<'dist'|'source'>&non-empty-array
      */
-    private function getAvailableSources(PackageInterface $package, PackageInterface $prevPackage = null)
+    private function getAvailableSources(PackageInterface $package, PackageInterface $prevPackage = null): array
     {
         $sourceType = $package->getSourceType();
         $distType = $package->getDistType();
@@ -456,7 +456,7 @@ class DownloadManager
      *
      * @return string
      */
-    private function normalizeTargetDir($dir)
+    private function normalizeTargetDir($dir): string
     {
         if ($dir === '\\' || $dir === '/') {
             return $dir;

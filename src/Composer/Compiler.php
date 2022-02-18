@@ -201,7 +201,7 @@ class Compiler
      * @param  \SplFileInfo $file
      * @return string
      */
-    private function getRelativeFilePath($file)
+    private function getRelativeFilePath($file): string
     {
         $realPath = $file->getRealPath();
         $pathPrefix = dirname(__DIR__, 2).DIRECTORY_SEPARATOR;
@@ -258,7 +258,7 @@ class Compiler
      * @param  string $source A PHP string
      * @return string The PHP string with the whitespace removed
      */
-    private function stripWhitespace($source)
+    private function stripWhitespace($source): string
     {
         if (!function_exists('token_get_all')) {
             return $source;
@@ -289,7 +289,7 @@ class Compiler
     /**
      * @return string
      */
-    private function getStub()
+    private function getStub(): string
     {
         $stub = <<<'EOF'
 #!/usr/bin/env php

@@ -346,7 +346,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      *
      * @return string[]
      */
-    private function prepareUrls(array $urls)
+    private function prepareUrls(array $urls): array
     {
         foreach ($urls as $index => $url) {
             if (Filesystem::isLocalPath($url)) {

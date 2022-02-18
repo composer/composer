@@ -1285,7 +1285,7 @@ class ResourceBundleStub
      *
      * @return ResourceBundleStub
      */
-    public static function create($locale, $bundleName, $fallback)
+    public static function create($locale, $bundleName, $fallback): ResourceBundleStub
     {
         Assert::assertSame(3, func_num_args());
         Assert::assertSame('root', $locale);
@@ -1300,7 +1300,7 @@ class ResourceBundleStub
      *
      * @return string
      */
-    public function get($field)
+    public function get($field): string
     {
         Assert::assertSame(1, func_num_args());
         Assert::assertSame('Version', $field);
@@ -1328,7 +1328,7 @@ class ImagickStub
      * @return array<string, string>
      * @phpstan-return array{versionString: string}
      */
-    public function getVersion()
+    public function getVersion(): array
     {
         Assert::assertSame(0, func_num_args());
 

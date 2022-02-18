@@ -139,7 +139,7 @@ class ArrayLoaderTest extends TestCase
      *
      * @return array<string, mixed>
      */
-    protected function fixConfigWhenLoadConfigIsFalse($config)
+    protected function fixConfigWhenLoadConfigIsFalse($config): array
     {
         $expectedConfig = $config;
         unset($expectedConfig['transport-options']);

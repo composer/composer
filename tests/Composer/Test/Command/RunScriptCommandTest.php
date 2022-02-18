@@ -89,7 +89,7 @@ class RunScriptCommandTest extends TestCase
     }
 
     /** @return bool[][] **/
-    public function getDevOptions()
+    public function getDevOptions(): array
     {
         return array(
             array(true, true),
@@ -100,7 +100,7 @@ class RunScriptCommandTest extends TestCase
     }
 
     /** @return Composer **/
-    private function createComposerInstance()
+    private function createComposerInstance(): Composer
     {
         $composer = new Composer;
         $config = new Config;

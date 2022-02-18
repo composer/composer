@@ -78,7 +78,7 @@ class PhpFileCleaner
     /**
      * @return string
      */
-    public function clean()
+    public function clean(): string
     {
         $clean = '';
 
@@ -260,7 +260,7 @@ class PhpFileCleaner
      * @param string $char
      * @return bool
      */
-    private function peek($char)
+    private function peek($char): bool
     {
         return $this->index + 1 < $this->len && $this->contents[$this->index + 1] === $char;
     }
@@ -270,7 +270,7 @@ class PhpFileCleaner
      * @param ?array<int, string> $match
      * @return bool
      */
-    private function match($regex, array &$match = null)
+    private function match($regex, array &$match = null): bool
     {
         return Preg::isMatch($regex, $this->contents, $match, 0, $this->index);
     }

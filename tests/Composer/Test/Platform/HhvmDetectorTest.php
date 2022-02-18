@@ -71,7 +71,7 @@ class HhvmDetectorTest extends TestCase
     /**
      * @return ?string
      */
-    private static function versionIdToVersion()
+    private static function versionIdToVersion(): ?string
     {
         if (!defined('HHVM_VERSION_ID')) {
             return null;

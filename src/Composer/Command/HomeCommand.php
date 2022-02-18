@@ -101,7 +101,7 @@ EOT
      * @param bool $showOnly
      * @return bool
      */
-    private function handlePackage(CompletePackageInterface $package, $showHomepage, $showOnly)
+    private function handlePackage(CompletePackageInterface $package, $showHomepage, $showOnly): bool
     {
         $support = $package->getSupport();
         $url = $support['source'] ?? $package->getSourceUrl();
@@ -158,7 +158,7 @@ EOT
      *
      * @return RepositoryInterface[]
      */
-    private function initializeRepos()
+    private function initializeRepos(): array
     {
         $composer = $this->tryComposer();
 

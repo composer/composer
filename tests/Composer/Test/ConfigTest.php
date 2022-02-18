@@ -269,7 +269,7 @@ class ConfigTest extends TestCase
     /**
      * @return string[][] List of test URLs that should pass strict security
      */
-    public function allowedUrlProvider()
+    public function allowedUrlProvider(): array
     {
         $urls = array(
             'https://packagist.org',
@@ -290,7 +290,7 @@ class ConfigTest extends TestCase
     /**
      * @return string[][] List of test URLs that should not pass strict security
      */
-    public function prohibitedUrlProvider()
+    public function prohibitedUrlProvider(): array
     {
         $urls = array(
             'http://packagist.org',

@@ -494,7 +494,7 @@ class ValidatingArrayLoader implements LoaderInterface
      * @phpstan-param non-empty-string $property
      * @phpstan-param non-empty-string $regex
      */
-    private function validateRegex($property, $regex, $mandatory = false)
+    private function validateRegex($property, $regex, $mandatory = false): bool
     {
         if (!$this->validateString($property, $mandatory)) {
             return false;
@@ -523,7 +523,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @phpstan-param non-empty-string $property
      */
-    private function validateString($property, $mandatory = false)
+    private function validateString($property, $mandatory = false): bool
     {
         if (isset($this->config[$property]) && !is_string($this->config[$property])) {
             $this->errors[] = $property.' : should be a string, '.gettype($this->config[$property]).' given';
@@ -552,7 +552,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @phpstan-param non-empty-string $property
      */
-    private function validateArray($property, $mandatory = false)
+    private function validateArray($property, $mandatory = false): bool
     {
         if (isset($this->config[$property]) && !is_array($this->config[$property])) {
             $this->errors[] = $property.' : should be an array, '.gettype($this->config[$property]).' given';
@@ -583,7 +583,7 @@ class ValidatingArrayLoader implements LoaderInterface
      * @phpstan-param non-empty-string      $property
      * @phpstan-param non-empty-string|null $regex
      */
-    private function validateFlatArray($property, $regex = null, $mandatory = false)
+    private function validateFlatArray($property, $regex = null, $mandatory = false): bool
     {
         if (!$this->validateArray($property, $mandatory)) {
             return false;
@@ -617,7 +617,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @phpstan-param non-empty-string $property
      */
-    private function validateUrl($property, $mandatory = false)
+    private function validateUrl($property, $mandatory = false): bool
     {
         if (!$this->validateString($property, $mandatory)) {
             return false;
@@ -639,7 +639,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @return bool
      */
-    private function filterUrl($value, array $schemes = array('http', 'https'))
+    private function filterUrl($value, array $schemes = array('http', 'https')): bool
     {
         if ($value === '') {
             return true;

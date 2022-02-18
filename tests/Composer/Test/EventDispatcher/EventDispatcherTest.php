@@ -603,7 +603,7 @@ class EventDispatcherTest extends TestCase
     /**
      * @return true
      */
-    public static function someMethod()
+    public static function someMethod(): bool
     {
         return true;
     }
@@ -611,7 +611,7 @@ class EventDispatcherTest extends TestCase
     /**
      * @return true
      */
-    public static function someMethod2()
+    public static function someMethod2(): bool
     {
         return true;
     }
@@ -619,7 +619,7 @@ class EventDispatcherTest extends TestCase
     /**
      * @return Composer
      */
-    private function createComposerInstance()
+    private function createComposerInstance(): Composer
     {
         $composer = new Composer;
         $config = new Config();

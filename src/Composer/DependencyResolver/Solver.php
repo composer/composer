@@ -302,7 +302,7 @@ class Solver
      * @param  string|int $literal
      * @return int
      */
-    private function setPropagateLearn($level, $literal, Rule $rule)
+    private function setPropagateLearn($level, $literal, Rule $rule): int
     {
         $level++;
 
@@ -351,7 +351,7 @@ class Solver
      * @param  int[] $decisionQueue
      * @return int
      */
-    private function selectAndInstall($level, array $decisionQueue, Rule $rule)
+    private function selectAndInstall($level, array $decisionQueue, Rule $rule): int
     {
         // choose best package to install from decisionQueue
         $literals = $this->policy->selectPreferredPackages($this->pool, $decisionQueue, $rule->getRequiredPackage());
@@ -548,7 +548,7 @@ class Solver
     /**
      * @return int
      */
-    private function analyzeUnsolvable(Rule $conflictRule)
+    private function analyzeUnsolvable(Rule $conflictRule): int
     {
         $problem = new Problem();
         $problem->addRule($conflictRule);

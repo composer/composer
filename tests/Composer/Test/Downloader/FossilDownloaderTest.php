@@ -42,7 +42,7 @@ class FossilDownloaderTest extends TestCase
      * @param \Composer\Util\Filesystem $filesystem
      * @return FossilDownloader
      */
-    protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
+    protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null): FossilDownloader
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $config = $config ?: $this->getMockBuilder('Composer\Config')->getMock();

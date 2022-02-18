@@ -32,7 +32,7 @@ final class IgnoreNothingPlatformRequirementFilterTest extends TestCase
     /**
      * @return array<string, mixed[]>
      */
-    public function dataIsIgnored()
+    public function dataIsIgnored(): array
     {
         return array(
             'php is not ignored' => array('php'),

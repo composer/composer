@@ -50,7 +50,7 @@ class PerforceTest extends TestCase
     /**
      * @return array<string, string>
      */
-    public function getTestRepoConfig()
+    public function getTestRepoConfig(): array
     {
         return array(
             'depot' => self::TEST_DEPOT,
@@ -598,7 +598,7 @@ class PerforceTest extends TestCase
     /**
      * @return string
      */
-    public static function getComposerJson()
+    public static function getComposerJson(): string
     {
         return JsonFile::encode([
             'name' => 'test/perforce',
@@ -615,7 +615,7 @@ class PerforceTest extends TestCase
      *
      * @return string[]
      */
-    private function getExpectedClientSpec($withStream)
+    private function getExpectedClientSpec($withStream): array
     {
         $expectedArray = array(
             'Client: composer_perforce_TEST_depot',

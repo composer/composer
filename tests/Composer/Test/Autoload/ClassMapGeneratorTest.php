@@ -38,7 +38,7 @@ class ClassMapGeneratorTest extends TestCase
     /**
      * @return array<array<string|array<string>>>
      */
-    public function getTestCreateMapTests()
+    public function getTestCreateMapTests(): array
     {
         $classmap = array(
             'Foo\\Bar\\A' => realpath(__DIR__) . '/Fixtures/classmap/sameNsMultipleClasses.php',

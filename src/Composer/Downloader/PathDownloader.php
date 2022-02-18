@@ -295,7 +295,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      *
      * @return bool
      */
-    private function safeJunctions()
+    private function safeJunctions(): bool
     {
         // We need to call mklink, and rmdir on Windows 7 (version 6.1)
         return function_exists('proc_open') &&

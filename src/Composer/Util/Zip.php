@@ -65,7 +65,7 @@ class Zip
      *
      * @return int
      */
-    private static function locateFile(\ZipArchive $zip, $filename)
+    private static function locateFile(\ZipArchive $zip, $filename): int
     {
         // return root composer.json if it is there and is a file
         if (false !== ($index = $zip->locateName($filename)) && $zip->getFromIndex($index) !== false) {

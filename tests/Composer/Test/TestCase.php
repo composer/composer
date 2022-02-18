@@ -67,7 +67,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @return string
      */
-    public static function getUniqueTmpDirectory()
+    public static function getUniqueTmpDirectory(): string
     {
         $attempts = 5;
         $root = sys_get_temp_dir();
@@ -86,7 +86,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @return VersionParser
      */
-    protected static function getVersionParser()
+    protected static function getVersionParser(): VersionParser
     {
         if (!self::$parser) {
             self::$parser = new VersionParser();
@@ -100,7 +100,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param string $version
      * @return Constraint
      */
-    protected function getVersionConstraint($operator, $version)
+    protected function getVersionConstraint($operator, $version): Constraint
     {
         $constraint = new Constraint(
             $operator,
@@ -214,7 +214,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      *
      * @return string The transformed command
      */
-    protected function getCmd($cmd)
+    protected function getCmd($cmd): string
     {
         if (Platform::isWindows()) {
             $cmd = Preg::replaceCallback("/('[^']*')/", function ($m) {

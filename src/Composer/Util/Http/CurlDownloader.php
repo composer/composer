@@ -133,7 +133,7 @@ class CurlDownloader
      *
      * @return int internal job id
      */
-    public function download($resolve, $reject, $origin, $url, $options, $copyTo = null)
+    public function download($resolve, $reject, $origin, $url, $options, $copyTo = null): int
     {
         $attributes = array();
         if (isset($options['retry-auth-failure'])) {
@@ -156,7 +156,7 @@ class CurlDownloader
      *
      * @return int internal job id
      */
-    private function initDownload($resolve, $reject, $origin, $url, $options, $copyTo = null, array $attributes = array())
+    private function initDownload($resolve, $reject, $origin, $url, $options, $copyTo = null, array $attributes = array()): int
     {
         // set defaults in a PHPStan-happy way (array_merge is not well supported)
         $attributes['retryAuthFailure'] = $attributes['retryAuthFailure'] ?? true;
@@ -489,7 +489,7 @@ class CurlDownloader
      * @param  Job    $job
      * @return string
      */
-    private function handleRedirect(array $job, Response $response)
+    private function handleRedirect(array $job, Response $response): string
     {
         if ($locationHeader = $response->getHeader('location')) {
             if (parse_url($locationHeader, PHP_URL_SCHEME)) {
@@ -524,7 +524,7 @@ class CurlDownloader
      * @param  Job                                        $job
      * @return array{retry: bool, storeAuth: string|bool}
      */
-    private function isAuthenticatedRetryNeeded(array $job, Response $response)
+    private function isAuthenticatedRetryNeeded(array $job, Response $response): array
     {
         if (in_array($response->getStatusCode(), array(401, 403)) && $job['attributes']['retryAuthFailure']) {
             $result = $this->authHelper->promptAuthIfNeeded($job['url'], $job['origin'], $response->getStatusCode(), $response->getStatusMessage(), $response->getHeaders());
@@ -596,7 +596,7 @@ class CurlDownloader
      * @param  string             $errorMessage
      * @return TransportException
      */
-    private function failResponse(array $job, Response $response, $errorMessage)
+    private function failResponse(array $job, Response $response, $errorMessage): TransportException
     {
         if (null !== $job['filename']) {
             @unlink($job['filename'].'~');

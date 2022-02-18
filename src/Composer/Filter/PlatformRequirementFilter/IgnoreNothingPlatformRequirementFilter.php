@@ -18,7 +18,7 @@ final class IgnoreNothingPlatformRequirementFilter implements PlatformRequiremen
      * @param string $req
      * @return false
      */
-    public function isIgnored($req)
+    public function isIgnored($req): bool
     {
         return false;
     }

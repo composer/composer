@@ -173,7 +173,7 @@ class FilesystemRepository extends WritableArrayRepository
      *
      * @return string
      */
-    private function dumpToPhpCode(array $array = array(), $level = 0)
+    private function dumpToPhpCode(array $array = array(), $level = 0): string
     {
         $lines = "array(\n";
         $level++;
@@ -211,7 +211,7 @@ class FilesystemRepository extends WritableArrayRepository
      *
      * @return ?array<mixed>
      */
-    private function generateInstalledVersions(InstallationManager $installationManager, array $installPaths, $devMode, $repoDir)
+    private function generateInstalledVersions(InstallationManager $installationManager, array $installPaths, $devMode, $repoDir): ?array
     {
         if (!$this->dumpVersions) {
             return null;

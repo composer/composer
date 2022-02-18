@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Mock;
 
+use React\Promise\PromiseInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Platform;
 use PHPUnit\Framework\Assert;
@@ -102,7 +103,7 @@ class ProcessExecutorMock extends ProcessExecutor
         Assert::assertTrue(true); // @phpstan-ignore-line
     }
 
-    public function execute($command, &$output = null, $cwd = null)
+    public function execute($command, &$output = null, $cwd = null): int
     {
         if (func_num_args() > 1) {
             return $this->doExecute($command, $cwd, false, $output);
@@ -111,7 +112,7 @@ class ProcessExecutorMock extends ProcessExecutor
         return $this->doExecute($command, $cwd, false);
     }
 
-    public function executeTty($command, $cwd = null)
+    public function executeTty($command, $cwd = null): int
     {
         if (Platform::isTty()) {
             return $this->doExecute($command, $cwd, true);
@@ -173,7 +174,7 @@ class ProcessExecutorMock extends ProcessExecutor
         return $return;
     }
 
-    public function executeAsync($command, $cwd = null)
+    public function executeAsync($command, $cwd = null): PromiseInterface
     {
         $resolver = function ($resolve, $reject): void {
             // TODO strictly speaking this should resolve with a mock Process instance here
@@ -187,7 +188,7 @@ class ProcessExecutorMock extends ProcessExecutor
         return new Promise($resolver, $canceler);
     }
 
-    public function getErrorOutput()
+    public function getErrorOutput(): string
     {
         return $this->errorOutput;
     }

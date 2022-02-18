@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Downloader;
 
+use React\Promise\PromiseInterface;
 use Composer\Downloader\ZipDownloader;
 use Composer\Package\PackageInterface;
 use Composer\Test\TestCase;
@@ -334,17 +335,17 @@ class ZipDownloaderTest extends TestCase
 
 class MockedZipDownloader extends ZipDownloader
 {
-    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true): ?PromiseInterface
     {
         return \React\Promise\resolve();
     }
 
-    public function install(PackageInterface $package, $path, $output = true)
+    public function install(PackageInterface $package, $path, $output = true): PromiseInterface
     {
         return \React\Promise\resolve();
     }
 
-    public function extract(PackageInterface $package, $file, $path)
+    public function extract(PackageInterface $package, $file, $path): ?PromiseInterface
     {
         return parent::extract($package, $file, $path);
     }

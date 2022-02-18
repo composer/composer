@@ -530,7 +530,7 @@ class PluginManager
      *
      * @return array<string, PackageInterface> Map of package names to packages
      */
-    private function collectDependencies(InstalledRepository $installedRepo, array $collected, PackageInterface $package)
+    private function collectDependencies(InstalledRepository $installedRepo, array $collected, PackageInterface $package): array
     {
         foreach ($package->getRequires() as $requireLink) {
             foreach ($installedRepo->findPackagesWithReplacersAndProviders($requireLink->getTarget()) as $requiredPackage) {
@@ -552,7 +552,7 @@ class PluginManager
      *
      * @return string Install path
      */
-    private function getInstallPath(PackageInterface $package, $global = false)
+    private function getInstallPath(PackageInterface $package, $global = false): string
     {
         if (!$global) {
             return $this->composer->getInstallationManager()->getInstallPath($package);
@@ -647,7 +647,7 @@ class PluginManager
      * @param  array<string, bool>|bool|null $allowPluginsConfig
      * @return array<non-empty-string, bool>|null
      */
-    private function parseAllowedPlugins($allowPluginsConfig)
+    private function parseAllowedPlugins($allowPluginsConfig): ?array
     {
         if (null === $allowPluginsConfig) {
             return null;
@@ -674,7 +674,7 @@ class PluginManager
      * @param bool $isGlobalPlugin
      * @return bool
      */
-    private function isPluginAllowed($package, $isGlobalPlugin)
+    private function isPluginAllowed($package, $isGlobalPlugin): bool
     {
         static $warned = array();
         $rules = $isGlobalPlugin ? $this->allowGlobalPluginRules : $this->allowPluginRules;

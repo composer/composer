@@ -43,7 +43,7 @@ class FileDownloaderTest extends TestCase
      * @param \Composer\Util\Filesystem $filesystem
      * @return \Composer\Downloader\FileDownloader
      */
-    protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $httpDownloader = null, $filesystem = null)
+    protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $httpDownloader = null, $filesystem = null): \Composer\Downloader\FileDownloader
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $config = $config ?: $this->config;

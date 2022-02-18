@@ -60,7 +60,7 @@ class Transaction
     /**
      * @return OperationInterface[]
      */
-    public function getOperations()
+    public function getOperations(): array
     {
         return $this->operations;
     }
@@ -101,7 +101,7 @@ class Transaction
     /**
      * @return OperationInterface[]
      */
-    protected function calculateOperations()
+    protected function calculateOperations(): array
     {
         $operations = array();
 
@@ -218,7 +218,7 @@ class Transaction
      *
      * @return array<string, PackageInterface>
      */
-    protected function getRootPackages()
+    protected function getRootPackages(): array
     {
         $roots = $this->resultPackageMap;
 
@@ -244,7 +244,7 @@ class Transaction
     /**
      * @return PackageInterface[]
      */
-    protected function getProvidersInResult(Link $link)
+    protected function getProvidersInResult(Link $link): array
     {
         if (!isset($this->resultPackagesByName[$link->getTarget()])) {
             return array();
@@ -266,7 +266,7 @@ class Transaction
      * @param  OperationInterface[] $operations
      * @return OperationInterface[] reordered operation list
      */
-    private function movePluginsToFront(array $operations)
+    private function movePluginsToFront(array $operations): array
     {
         $dlModifyingPluginsNoDeps = array();
         $dlModifyingPluginsWithDeps = array();
@@ -343,7 +343,7 @@ class Transaction
      * @param  OperationInterface[] $operations
      * @return OperationInterface[] reordered operation list
      */
-    private function moveUninstallsToFront(array $operations)
+    private function moveUninstallsToFront(array $operations): array
     {
         $uninstOps = array();
         foreach ($operations as $idx => $op) {

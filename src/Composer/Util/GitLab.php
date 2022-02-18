@@ -169,7 +169,7 @@ class GitLab
      *
      * @see https://docs.gitlab.com/ee/api/oauth2.html#resource-owner-password-credentials-flow
      */
-    private function createToken($scheme, $originUrl)
+    private function createToken($scheme, $originUrl): array
     {
         $username = $this->io->ask('Username: ');
         $password = $this->io->askAndHideAnswer('Password: ');

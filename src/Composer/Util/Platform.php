@@ -216,7 +216,7 @@ class Platform
      *
      * @return bool
      */
-    private static function isVirtualBoxGuest()
+    private static function isVirtualBoxGuest(): bool
     {
         if (null === self::$isVirtualBoxGuest) {
             self::$isVirtualBoxGuest = false;

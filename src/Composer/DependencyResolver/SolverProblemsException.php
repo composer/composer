@@ -109,7 +109,7 @@ class SolverProblemsException extends \RuntimeException
      * @param string[] $missingExtensions
      * @return string
      */
-    private function createExtensionHint(array $missingExtensions)
+    private function createExtensionHint(array $missingExtensions): string
     {
         $paths = IniHelper::getAll();
 
@@ -133,7 +133,7 @@ class SolverProblemsException extends \RuntimeException
      * @param Rule[][] $reasonSets
      * @return string[]
      */
-    private function getExtensionProblems(array $reasonSets)
+    private function getExtensionProblems(array $reasonSets): array
     {
         $missingExtensions = array();
         foreach ($reasonSets as $reasonSet) {

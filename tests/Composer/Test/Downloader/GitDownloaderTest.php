@@ -62,7 +62,7 @@ class GitDownloaderTest extends TestCase
      * @param ?\Composer\Config $config
      * @return \Composer\Config
      */
-    protected function setupConfig($config = null)
+    protected function setupConfig($config = null): \Composer\Config
     {
         if (!$config) {
             $config = new Config();
@@ -82,7 +82,7 @@ class GitDownloaderTest extends TestCase
      * @param \Composer\Util\Filesystem $filesystem
      * @return GitDownloader
      */
-    protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
+    protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null): GitDownloader
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $executor = $executor ?: $this->getProcessExecutorMock();
@@ -647,7 +647,7 @@ composer https://github.com/old/url (push)
      * @param string $cmd
      * @return string
      */
-    private function winCompat($cmd)
+    private function winCompat($cmd): string
     {
         if (Platform::isWindows()) {
             $cmd = str_replace('cd ', 'cd /D ', $cmd);

@@ -214,7 +214,7 @@ class JsonConfigSource implements ConfigSourceInterface
      *
      * @return void
      */
-    private function manipulateJson($method, $fallback, ...$args)
+    private function manipulateJson($method, $fallback, ...$args): void
     {
         if ($this->file->exists()) {
             if (!is_writable($this->file->getPath())) {
@@ -297,7 +297,7 @@ class JsonConfigSource implements ConfigSourceInterface
      * @param  mixed $value
      * @return int
      */
-    private function arrayUnshiftRef(&$array, &$value)
+    private function arrayUnshiftRef(&$array, &$value): int
     {
         $return = array_unshift($array, '');
         $array[0] = &$value;

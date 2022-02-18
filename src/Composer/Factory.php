@@ -696,7 +696,7 @@ class Factory
     /**
      * @return bool
      */
-    private static function useXdg()
+    private static function useXdg(): bool
     {
         foreach (array_keys($_SERVER) as $key) {
             if (strpos($key, 'XDG_') === 0) {
@@ -715,7 +715,7 @@ class Factory
      * @throws \RuntimeException
      * @return string
      */
-    private static function getUserDir()
+    private static function getUserDir(): string
     {
         $home = Platform::getEnv('HOME');
         if (!$home) {

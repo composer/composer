@@ -109,7 +109,7 @@ class BasePackageTest extends TestCase
     /**
      * @return mixed[][]
      */
-    public function dataPackageNamesToRegexp()
+    public function dataPackageNamesToRegexp(): array
     {
         return array(
             array(

@@ -260,7 +260,7 @@ class ArchivableFilesFinderTest extends TestCase
     /**
      * @return string[]
      */
-    protected function getArchivableFiles()
+    protected function getArchivableFiles(): array
     {
         $files = array();
         foreach ($this->finder as $file) {
@@ -279,7 +279,7 @@ class ArchivableFilesFinderTest extends TestCase
      *
      * @return string[]
      */
-    protected function getArchivedFiles($command)
+    protected function getArchivedFiles($command): array
     {
         $process = Process::fromShellCommandline($command, $this->sources);
         $process->run();

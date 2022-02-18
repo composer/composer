@@ -623,7 +623,7 @@ EOT
     /**
      * @return void
      */
-    private function updateDependencies(OutputInterface $output)
+    private function updateDependencies(OutputInterface $output): void
     {
         try {
             $updateCommand = $this->getApplication()->find('update');
@@ -637,7 +637,7 @@ EOT
     /**
      * @return void
      */
-    private function runDumpAutoloadCommand(OutputInterface $output)
+    private function runDumpAutoloadCommand(OutputInterface $output): void
     {
         try {
             $command = $this->getApplication()->find('dump-autoload');
@@ -652,7 +652,7 @@ EOT
      * @param array<string, string|array<string>> $options
      * @return bool
      */
-    private function hasDependencies($options)
+    private function hasDependencies($options): bool
     {
         $requires = (array) $options['require'];
         $devRequires = isset($options['require-dev']) ? (array) $options['require-dev'] : array();

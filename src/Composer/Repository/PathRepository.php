@@ -240,7 +240,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      *
      * @return string[]
      */
-    private function getUrlMatches()
+    private function getUrlMatches(): array
     {
         $flags = GLOB_MARK | GLOB_ONLYDIR;
 

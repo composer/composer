@@ -358,7 +358,7 @@ class Application extends BaseApplication
      * @throws \RuntimeException
      * @return string
      */
-    private function getNewWorkingDir(InputInterface $input)
+    private function getNewWorkingDir(InputInterface $input): string
     {
         $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
         if (false !== $workingDir && !is_dir($workingDir)) {
@@ -371,7 +371,7 @@ class Application extends BaseApplication
     /**
      * @return void
      */
-    private function hintCommonErrors(\Exception $exception)
+    private function hintCommonErrors(\Exception $exception): void
     {
         $io = $this->getIO();
 
@@ -408,7 +408,8 @@ class Application extends BaseApplication
             $io->writeError('<error>Check https://getcomposer.org/doc/06-config.md#process-timeout for details</error>', true, IOInterface::QUIET);
         }
 
-        if ($hints = HttpDownloader::getExceptionHints($exception)) {
+        $hints = HttpDownloader::getExceptionHints($exception);
+        if (null !== $hints && count($hints) > 0) {
             foreach ($hints as $hint) {
                 $io->writeError($hint, true, IOInterface::QUIET);
             }
@@ -553,7 +554,7 @@ class Application extends BaseApplication
     /**
      * @return Command\BaseCommand[]
      */
-    private function getPluginCommands()
+    private function getPluginCommands(): array
     {
         $commands = array();
 

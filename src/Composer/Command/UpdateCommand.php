@@ -245,7 +245,7 @@ EOT
      * @param array<string> $packages
      * @return array<string>
      */
-    private function getPackagesInteractively(IOInterface $io, InputInterface $input, OutputInterface $output, Composer $composer, array $packages)
+    private function getPackagesInteractively(IOInterface $io, InputInterface $input, OutputInterface $output, Composer $composer, array $packages): array
     {
         if (!$input->isInteractive()) {
             throw new \InvalidArgumentException('--interactive cannot be used in non-interactive terminals.');
@@ -312,7 +312,7 @@ EOT
      * @param string $constraint
      * @return Link
      */
-    private function appendConstraintToLink(Link $link, $constraint)
+    private function appendConstraintToLink(Link $link, $constraint): Link
     {
         $parser = new VersionParser;
         $oldPrettyString = $link->getConstraint()->getPrettyString();

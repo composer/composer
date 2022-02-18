@@ -321,7 +321,7 @@ class ArrayLoader implements LoaderInterface
      *
      * @return void
      */
-    private function configureCachedLinks(&$linkCache, $package, array $config)
+    private function configureCachedLinks(&$linkCache, $package, array $config): void
     {
         $name = $package->getName();
         $prettyVersion = $package->getPrettyVersion();
@@ -385,7 +385,7 @@ class ArrayLoader implements LoaderInterface
      * @param  string       $prettyConstraint constraint string
      * @return Link
      */
-    private function createLink($source, $sourceVersion, $description, $target, $prettyConstraint)
+    private function createLink($source, $sourceVersion, $description, $target, $prettyConstraint): Link
     {
         if (!\is_string($prettyConstraint)) {
             throw new \UnexpectedValueException('Link constraint in '.$source.' '.$description.' > '.$target.' should be a string, got '.\gettype($prettyConstraint) . ' (' . var_export($prettyConstraint, true) . ')');

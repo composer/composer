@@ -419,7 +419,7 @@ class Locker
      *
      * @phpstan-return list<array<string, mixed>>
      */
-    private function lockPackages(array $packages)
+    private function lockPackages(array $packages): array
     {
         $locked = array();
 
@@ -477,7 +477,7 @@ class Locker
      * @param  PackageInterface $package The package to scan.
      * @return string|null      The formatted datetime or null if none was found.
      */
-    private function getPackageTime(PackageInterface $package)
+    private function getPackageTime(PackageInterface $package): ?string
     {
         if (!function_exists('proc_open')) {
             return null;

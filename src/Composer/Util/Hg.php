@@ -89,7 +89,7 @@ class Hg
      *
      * @return never
      */
-    private function throwException($message, $url)
+    private function throwException($message, $url): void
     {
         if (null === self::getVersion($this->process)) {
             throw new \RuntimeException(Url::sanitize('Failed to clone ' . $url . ', hg was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));

@@ -56,7 +56,7 @@ class PerforceDownloaderTest extends TestCase
     /**
      * @return \Composer\Config
      */
-    protected function getConfig()
+    protected function getConfig(): \Composer\Config
     {
         $config = new Config();
         $settings = array('config' => array('home' => $this->testPath));
@@ -87,7 +87,7 @@ class PerforceDownloaderTest extends TestCase
     /**
      * @return string[]
      */
-    protected function getRepoConfig()
+    protected function getRepoConfig(): array
     {
         return array('url' => 'TEST_URL', 'p4user' => 'TEST_USER');
     }

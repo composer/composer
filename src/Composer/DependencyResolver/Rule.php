@@ -232,7 +232,7 @@ abstract class Rule
      * @internal
      * @return BasePackage
      */
-    public function getSourcePackage(Pool $pool)
+    public function getSourcePackage(Pool $pool): BasePackage
     {
         $literals = $this->getLiterals();
 
@@ -498,7 +498,7 @@ abstract class Rule
     /**
      * @return BasePackage
      */
-    private function deduplicateDefaultBranchAlias(BasePackage $package)
+    private function deduplicateDefaultBranchAlias(BasePackage $package): BasePackage
     {
         if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
             $package = $package->getAliasOf();

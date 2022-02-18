@@ -53,7 +53,7 @@ class StrictConfirmationQuestion extends Question
      *
      * @return callable
      */
-    private function getDefaultNormalizer()
+    private function getDefaultNormalizer(): callable
     {
         $default = $this->getDefault();
         $trueRegex = $this->trueAnswerRegex;
@@ -84,7 +84,7 @@ class StrictConfirmationQuestion extends Question
      *
      * @return callable
      */
-    private function getDefaultValidator()
+    private function getDefaultValidator(): callable
     {
         return function ($answer) {
             if (!is_bool($answer)) {

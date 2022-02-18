@@ -265,7 +265,7 @@ class RemoteFilesystemTest extends TestCase
      *
      * @return string[][]
      */
-    public function provideBitbucketPublicDownloadUrls()
+    public function provideBitbucketPublicDownloadUrls(): array
     {
         return array(
             array('https://bitbucket.org/seldaek/composer-live-test-repo/downloads/composer-unit-test-download-me.txt', '1234'),
@@ -343,7 +343,7 @@ class RemoteFilesystemTest extends TestCase
      *
      * @return mixed[]
      */
-    private function callGetOptionsForUrl(IOInterface $io, array $args = array(), array $options = array(), $fileUrl = '')
+    private function callGetOptionsForUrl(IOInterface $io, array $args = array(), array $options = array(), $fileUrl = ''): array
     {
         $fs = new RemoteFilesystem($io, $this->getConfigMock(), $options);
         $ref = new ReflectionMethod($fs, 'getOptionsForUrl');

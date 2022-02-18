@@ -63,7 +63,7 @@ final class StreamContextFactory
      * @phpstan-return array{http: array{header: string[], proxy?: string, request_fulluri: bool}, ssl?: mixed[]}
      * @return array formatted as a stream context array
      */
-    public static function initOptions($url, array $options, $forCurl = false)
+    public static function initOptions($url, array $options, $forCurl = false): array
     {
         // Make sure the headers are in an array form
         if (!isset($options['http']['header'])) {
@@ -134,7 +134,7 @@ final class StreamContextFactory
      *
      * @return mixed[]
      */
-    public static function getTlsDefaults(array $options, LoggerInterface $logger = null)
+    public static function getTlsDefaults(array $options, LoggerInterface $logger = null): array
     {
         $ciphers = implode(':', array(
             'ECDHE-RSA-AES128-GCM-SHA256',
@@ -240,7 +240,7 @@ final class StreamContextFactory
      * @param  string|string[] $header
      * @return string[]
      */
-    private static function fixHttpHeaderField($header)
+    private static function fixHttpHeaderField($header): array
     {
         if (!is_array($header)) {
             $header = explode("\r\n", $header);

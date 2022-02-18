@@ -86,7 +86,7 @@ class ZipArchiver implements ArchiverInterface
     /**
      * @return bool
      */
-    private function compressionAvailable()
+    private function compressionAvailable(): bool
     {
         return class_exists('ZipArchive');
     }

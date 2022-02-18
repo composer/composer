@@ -316,7 +316,7 @@ class InstallationManager
      *
      * @return void
      */
-    private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, $devMode, $runScripts, array $allOperations)
+    private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, $devMode, $runScripts, array $allOperations): void
     {
         $promises = array();
 
@@ -400,7 +400,7 @@ class InstallationManager
      *
      * @return void
      */
-    private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, $devMode, $runScripts, array $allOperations)
+    private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, $devMode, $runScripts, array $allOperations): void
     {
         $promises = array();
         $postExecCallbacks = array();
@@ -481,7 +481,7 @@ class InstallationManager
      *
      * @return void
      */
-    private function waitOnPromises(array $promises)
+    private function waitOnPromises(array $promises): void
     {
         $progress = null;
         if (
@@ -700,7 +700,7 @@ class InstallationManager
     /**
      * @return void
      */
-    private function markForNotification(PackageInterface $package)
+    private function markForNotification(PackageInterface $package): void
     {
         if ($package->getNotificationUrl()) {
             $this->notifiablePackages[$package->getNotificationUrl()][$package->getName()] = $package;

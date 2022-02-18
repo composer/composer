@@ -211,7 +211,7 @@ class VersionSelector
      *
      * @return string
      */
-    private function transformVersion($version, $prettyVersion, $stability)
+    private function transformVersion($version, $prettyVersion, $stability): string
     {
         // attempt to transform 2.1.1 to 2.1
         // this allows you to upgrade through minor versions
@@ -242,7 +242,7 @@ class VersionSelector
     /**
      * @return VersionParser
      */
-    private function getParser()
+    private function getParser(): VersionParser
     {
         if ($this->parser === null) {
             $this->parser = new VersionParser();

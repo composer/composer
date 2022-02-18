@@ -148,7 +148,7 @@ class ArrayDumper
      *
      * @return array<string, mixed>
      */
-    private function dumpValues(PackageInterface $package, array $keys, array $data)
+    private function dumpValues(PackageInterface $package, array $keys, array $data): array
     {
         foreach ($keys as $method => $key) {
             if (is_numeric($method)) {

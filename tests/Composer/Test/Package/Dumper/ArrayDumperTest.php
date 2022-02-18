@@ -250,7 +250,7 @@ class ArrayDumperTest extends TestCase
      *
      * @return self
      */
-    private function packageExpects($method, $value)
+    private function packageExpects($method, $value): \Composer\Test\Package\Dumper\ArrayDumperTest
     {
         $this->package
             ->expects($this->any())

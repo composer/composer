@@ -104,7 +104,7 @@ class ArchiveManagerTest extends ArchiverTest
      *
      * @return string
      */
-    protected function getTargetName(CompletePackage $package, $format, $fileName = null)
+    protected function getTargetName(CompletePackage $package, $format, $fileName = null): string
     {
         if (null === $fileName) {
             $packageName = $this->manager->getPackageFilename($package);

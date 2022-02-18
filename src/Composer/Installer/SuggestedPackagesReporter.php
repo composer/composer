@@ -183,7 +183,7 @@ class SuggestedPackagesReporter
      * @param  PackageInterface|null    $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
      * @return mixed[]
      */
-    private function getFilteredSuggestions(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null)
+    private function getFilteredSuggestions(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null): array
     {
         $suggestedPackages = $this->getPackages();
         $installedNames = array();
@@ -220,7 +220,7 @@ class SuggestedPackagesReporter
      * @param  string $string
      * @return string
      */
-    private function escapeOutput($string)
+    private function escapeOutput($string): string
     {
         return OutputFormatter::escape(
             $this->removeControlCharacters($string)
@@ -231,7 +231,7 @@ class SuggestedPackagesReporter
      * @param  string $string
      * @return string
      */
-    private function removeControlCharacters($string)
+    private function removeControlCharacters($string): string
     {
         return Preg::replace(
             '/[[:cntrl:]]/',

@@ -57,7 +57,7 @@ class PerforceDownloader extends VcsDownloader
      *
      * @return string|null
      */
-    private function getLabelFromSourceReference($ref)
+    private function getLabelFromSourceReference($ref): ?string
     {
         $pos = strpos($ref, '@');
         if (false !== $pos) {
@@ -92,7 +92,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @return array<string, mixed>
      */
-    private function getRepoConfig(VcsRepository $repository)
+    private function getRepoConfig(VcsRepository $repository): array
     {
         return $repository->getRepoConfig();
     }

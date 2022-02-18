@@ -407,7 +407,7 @@ class PluginInstallerTest extends TestCase
     }
 
     /** @return mixed[] */
-    public function invalidImplementationClassNames()
+    public function invalidImplementationClassNames(): array
     {
         return array(
             array(null),
@@ -422,7 +422,7 @@ class PluginInstallerTest extends TestCase
     }
 
     /** @return mixed[] */
-    public function nonExistingOrInvalidImplementationClassTypes()
+    public function nonExistingOrInvalidImplementationClassTypes(): array
     {
         return array(
             array('\stdClass'),

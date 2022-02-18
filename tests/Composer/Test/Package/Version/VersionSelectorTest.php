@@ -362,7 +362,7 @@ class VersionSelectorTest extends TestCase
      *
      * @return Package
      */
-    private function createPackage($version)
+    private function createPackage($version): Package
     {
         $parser = new VersionParser();
 

@@ -29,7 +29,7 @@ class JsonConfigSourceTest extends TestCase
      *
      * @return string
      */
-    protected function fixturePath($name)
+    protected function fixturePath($name): string
     {
         return __DIR__.'/Fixtures/'.$name;
     }
@@ -160,7 +160,7 @@ class JsonConfigSourceTest extends TestCase
      *
      * @phpstan-return array{string, string, string, string, string}
      */
-    protected function addLinkDataArguments($type, $name, $value, $fixtureBasename, $before)
+    protected function addLinkDataArguments($type, $name, $value, $fixtureBasename, $before): array
     {
         return array(
             $before,
@@ -217,7 +217,7 @@ class JsonConfigSourceTest extends TestCase
      *
      * @phpstan-return array{string, string, string, string}
      */
-    protected function removeLinkDataArguments($type, $name, $fixtureBasename, $after = null)
+    protected function removeLinkDataArguments($type, $name, $fixtureBasename, $after = null): array
     {
         return array(
             $this->fixturePath('removeLink/'.$fixtureBasename.'.json'),

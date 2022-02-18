@@ -102,7 +102,7 @@ class PerforceDriverTest extends TestCase
      *
      * @return Config
      */
-    protected function getTestConfig($testPath)
+    protected function getTestConfig($testPath): Config
     {
         $config = new Config();
         $config->merge(array('config' => array('home' => $testPath)));

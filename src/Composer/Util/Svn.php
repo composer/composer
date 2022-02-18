@@ -140,7 +140,7 @@ class Svn
      *
      * @return ?string
      */
-    private function executeWithAuthRetry($svnCommand, $cwd, $url, $path, $verbose)
+    private function executeWithAuthRetry($svnCommand, $cwd, $url, $path, $verbose): ?string
     {
         // Regenerate the command at each try, to use the newly user-provided credentials
         $command = $this->getCommand($svnCommand, $url, $path);
@@ -337,7 +337,7 @@ class Svn
      *
      * @return bool
      */
-    private function createAuthFromConfig()
+    private function createAuthFromConfig(): bool
     {
         if (!$this->config->has('http-basic')) {
             return $this->hasAuth = false;
@@ -363,7 +363,7 @@ class Svn
      *
      * @return bool
      */
-    private function createAuthFromUrl()
+    private function createAuthFromUrl(): bool
     {
         $uri = parse_url($this->url);
         if (empty($uri['user'])) {

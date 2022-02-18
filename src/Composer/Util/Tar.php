@@ -40,7 +40,7 @@ class Tar
      *
      * @return string
      */
-    private static function extractComposerJsonFromFolder(\PharData $phar)
+    private static function extractComposerJsonFromFolder(\PharData $phar): string
     {
         if (isset($phar['composer.json'])) {
             return $phar['composer.json']->getContent();

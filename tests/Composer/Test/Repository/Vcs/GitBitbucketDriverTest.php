@@ -64,7 +64,7 @@ class GitBitbucketDriverTest extends TestCase
      *
      * @phpstan-param array{url: string}&array<string, mixed> $repoConfig
      */
-    private function getDriver(array $repoConfig)
+    private function getDriver(array $repoConfig): GitBitbucketDriver
     {
         $driver = new GitBitbucketDriver(
             $repoConfig,

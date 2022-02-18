@@ -20,7 +20,7 @@ class VersionGuesserMock extends VersionGuesser
     {
     }
 
-    public function guessVersion(array $packageConfig, $path)
+    public function guessVersion(array $packageConfig, $path): ?array
     {
         return null;
     }

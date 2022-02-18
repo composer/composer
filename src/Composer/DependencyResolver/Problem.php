@@ -117,7 +117,7 @@ class Problem
      * @return string
      * @internal
      */
-    public static function formatDeduplicatedRules($rules, $indent, RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
+    public static function formatDeduplicatedRules($rules, $indent, RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
     {
         $messages = array();
         $templates = array();
@@ -210,7 +210,7 @@ class Problem
      * @param string $packageName
      * @return array{0: string, 1: string}
      */
-    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, ConstraintInterface $constraint = null)
+    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, ConstraintInterface $constraint = null): array
     {
         if (PlatformRepository::isPlatformPackage($packageName)) {
             // handle php/php-*/hhvm
@@ -382,7 +382,7 @@ class Problem
      * @param bool $useRemovedVersionGroup
      * @return string
      */
-    public static function getPackageList(array $packages, $isVerbose, Pool $pool = null, ConstraintInterface $constraint = null, $useRemovedVersionGroup = false)
+    public static function getPackageList(array $packages, $isVerbose, Pool $pool = null, ConstraintInterface $constraint = null, $useRemovedVersionGroup = false): string
     {
         $prepared = array();
         $hasDefaultBranch = array();
@@ -427,7 +427,7 @@ class Problem
      * @param  string $version the effective runtime version of the platform package
      * @return ?string a version string or null if it appears the package was artificially disabled
      */
-    private static function getPlatformPackageVersion(Pool $pool, $packageName, $version)
+    private static function getPlatformPackageVersion(Pool $pool, $packageName, $version): ?string
     {
         $available = $pool->whatProvides($packageName);
 
@@ -471,7 +471,7 @@ class Problem
      * @param int $maxDev
      * @return list<string> a list of pretty versions and '...' where versions were removed
      */
-    private static function condenseVersionList(array $versions, $max, $maxDev = 16)
+    private static function condenseVersionList(array $versions, $max, $maxDev = 16): array
     {
         if (count($versions) <= $max) {
             return $versions;
@@ -505,7 +505,7 @@ class Problem
      * @param PackageInterface[] $packages
      * @return bool
      */
-    private static function hasMultipleNames(array $packages)
+    private static function hasMultipleNames(array $packages): bool
     {
         $name = null;
         foreach ($packages as $package) {
@@ -527,7 +527,7 @@ class Problem
      * @param string $reason
      * @return array{0: string, 1: string}
      */
-    private static function computeCheckForLowerPrioRepo(Pool $pool, $isVerbose, $packageName, array $higherRepoPackages, array $allReposPackages, $reason, ConstraintInterface $constraint = null)
+    private static function computeCheckForLowerPrioRepo(Pool $pool, $isVerbose, $packageName, array $higherRepoPackages, array $allReposPackages, $reason, ConstraintInterface $constraint = null): array
     {
         $nextRepoPackages = array();
         $nextRepo = null;

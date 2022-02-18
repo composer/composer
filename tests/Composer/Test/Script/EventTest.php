@@ -71,7 +71,7 @@ class EventTest extends TestCase
     /**
      * @return Composer
      */
-    private function createComposerInstance()
+    private function createComposerInstance(): Composer
     {
         $composer = new Composer;
         $config = new Config;

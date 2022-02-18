@@ -195,7 +195,7 @@ class FilterRepository implements RepositoryInterface
      *
      * @return bool
      */
-    private function isAllowed($name)
+    private function isAllowed($name): bool
     {
         if (!$this->only && !$this->exclude) {
             return true;

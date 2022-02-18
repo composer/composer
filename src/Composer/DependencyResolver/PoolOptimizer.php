@@ -173,7 +173,7 @@ class PoolOptimizer
     /**
      * @return Pool Optimized pool
      */
-    private function applyRemovalsToPool(Pool $pool)
+    private function applyRemovalsToPool(Pool $pool): Pool
     {
         $packages = array();
         $removedVersions = array();
@@ -278,7 +278,7 @@ class PoolOptimizer
     /**
      * @return string
      */
-    private function calculateDependencyHash(BasePackage $package)
+    private function calculateDependencyHash(BasePackage $package): string
     {
         $hash = '';
 

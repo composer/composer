@@ -336,7 +336,7 @@ class RepositorySet
      *
      * @return array<string, array<string, array{alias: string, alias_normalized: string}>>
      */
-    private static function getRootAliasesPerPackage(array $aliases)
+    private static function getRootAliasesPerPackage(array $aliases): array
     {
         $normalizedAliases = array();
 

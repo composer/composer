@@ -30,7 +30,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @phpstan-return list<array{non-empty-string}>
      */
-    public function getAskConfirmationBadData()
+    public function getAskConfirmationBadData(): array
     {
         return array(
             array('not correct'),
@@ -77,7 +77,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @phpstan-return list<array{string, bool}>|list<array{string, bool, bool}>
      */
-    public function getAskConfirmationData()
+    public function getAskConfirmationData(): array
     {
         return array(
             array('', true),
@@ -119,7 +119,7 @@ class StrictConfirmationQuestionTest extends TestCase
     /**
      * @return StreamOutput
      */
-    protected function createOutputInterface()
+    protected function createOutputInterface(): StreamOutput
     {
         return new StreamOutput(fopen('php://memory', 'r+', false));
     }
@@ -131,7 +131,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @phpstan-return array{ArrayInput, QuestionHelper}
      */
-    protected function createInput($entry)
+    protected function createInput($entry): array
     {
         $input = new ArrayInput(array('--no-interaction'));
         $input->setStream($this->getInputStream($entry));

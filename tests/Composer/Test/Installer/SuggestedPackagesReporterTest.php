@@ -271,7 +271,7 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @return array<string, string>
      */
-    private function getSuggestedPackageArray()
+    private function getSuggestedPackageArray(): array
     {
         return array(
             'source' => 'a',

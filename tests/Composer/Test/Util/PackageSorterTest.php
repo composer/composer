@@ -124,7 +124,7 @@ class PackageSorterTest extends TestCase
      *
      * @return Package
      */
-    private function createPackage($name, $requires)
+    private function createPackage($name, $requires): Package
     {
         $package = new Package($name, '1.0.0.0', '1.0.0');
 

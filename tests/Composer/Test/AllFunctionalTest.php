@@ -179,7 +179,7 @@ class AllFunctionalTest extends TestCase
     /**
      * @return array<string, array<string>>
      */
-    public function getTestFiles()
+    public function getTestFiles(): array
     {
         $tests = array();
         foreach (Finder::create()->in(__DIR__.'/Fixtures/functional')->name('*.test')->files() as $file) {
@@ -193,7 +193,7 @@ class AllFunctionalTest extends TestCase
      * @param string $file
      * @return array{RUN: string, EXPECT?: string, EXPECT-EXIT-CODE?: int, EXPECT-REGEX?: string, EXPECT-REGEXES?: string, TEST?: string}
      */
-    private function parseTestFile($file)
+    private function parseTestFile($file): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
         $data = array();
@@ -255,7 +255,7 @@ class AllFunctionalTest extends TestCase
      * @param string $output
      * @return string
      */
-    private function cleanOutput($output)
+    private function cleanOutput($output): string
     {
         $processed = '';
 

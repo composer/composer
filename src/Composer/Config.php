@@ -531,7 +531,7 @@ class Config
      * @param  string $path
      * @return string
      */
-    private function realpath($path)
+    private function realpath($path): string
     {
         if (Preg::isMatch('{^(?:/|[a-z]:|[a-z0-9.]+://)}i', $path)) {
             return $path;

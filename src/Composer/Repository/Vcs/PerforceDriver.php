@@ -55,7 +55,7 @@ class PerforceDriver extends VcsDriver
      *
      * @return void
      */
-    private function initPerforce($repoConfig)
+    private function initPerforce($repoConfig): void
     {
         if (!empty($this->perforce)) {
             return;

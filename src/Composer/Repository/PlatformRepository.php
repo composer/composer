@@ -586,7 +586,7 @@ class PlatformRepository extends ArrayRepository
      *
      * @return CompletePackage
      */
-    private function addOverriddenPackage(array $override, $name = null)
+    private function addOverriddenPackage(array $override, $name = null): CompletePackage
     {
         $version = $this->versionParser->normalize($override['version']);
         $package = new CompletePackage($name ?: $override['name'], $version, $override['version']);
@@ -653,7 +653,7 @@ class PlatformRepository extends ArrayRepository
      * @param  string $name
      * @return string
      */
-    private function buildPackageName($name)
+    private function buildPackageName($name): string
     {
         return 'ext-' . str_replace(' ', '-', strtolower($name));
     }
@@ -725,7 +725,7 @@ class PlatformRepository extends ArrayRepository
      * @internal
      * @return string|null
      */
-    public static function getPlatformPhpVersion()
+    public static function getPlatformPhpVersion(): ?string
     {
         return self::$lastSeenPlatformPhp;
     }

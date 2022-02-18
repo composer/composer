@@ -145,7 +145,7 @@ class RepositoryFactory
      *
      * @return RepositoryInterface[]
      */
-    private static function createRepos(RepositoryManager $rm, array $repoConfigs)
+    private static function createRepos(RepositoryManager $rm, array $repoConfigs): array
     {
         $repos = array();
 

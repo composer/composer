@@ -157,7 +157,7 @@ class ClassMapGenerator
      * @param  ?IOInterface             $io            IO object
      * @return array<int, class-string> valid classes
      */
-    private static function filterByNamespace($classes, $filePath, $baseNamespace, $namespaceType, $basePath, $io)
+    private static function filterByNamespace($classes, $filePath, $baseNamespace, $namespaceType, $basePath, $io): array
     {
         $validClasses = array();
         $rejectedClasses = array();
@@ -215,7 +215,7 @@ class ClassMapGenerator
      * @throws \RuntimeException
      * @return array<int, class-string> The found classes
      */
-    private static function findClasses($path)
+    private static function findClasses($path): array
     {
         $extraTypes = self::getExtraTypes();
 
@@ -296,7 +296,7 @@ class ClassMapGenerator
     /**
      * @return string
      */
-    private static function getExtraTypes()
+    private static function getExtraTypes(): string
     {
         static $extraTypes = null;
 

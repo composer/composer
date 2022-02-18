@@ -149,7 +149,7 @@ class PoolBuilderTest extends TestCase
      * @param array<int, BasePackage> $packageIds
      * @return string[]
      */
-    private function getPackageResultSet(Pool $pool, $packageIds)
+    private function getPackageResultSet(Pool $pool, $packageIds): array
     {
         $result = array();
         for ($i = 1, $count = count($pool); $i <= $count; $i++) {
@@ -184,7 +184,7 @@ class PoolBuilderTest extends TestCase
     /**
      * @return array<string, array<string>>
      */
-    public function getIntegrationTests()
+    public function getIntegrationTests(): array
     {
         $fixturesDir = realpath(__DIR__.'/Fixtures/poolbuilder/');
         $tests = array();
@@ -223,7 +223,7 @@ class PoolBuilderTest extends TestCase
      * @param string $fixturesDir
      * @return array<string, string>
      */
-    protected function readTestFile(\SplFileInfo $file, $fixturesDir)
+    protected function readTestFile(\SplFileInfo $file, $fixturesDir): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
 

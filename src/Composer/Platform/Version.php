@@ -71,7 +71,7 @@ class Version
      * @param  string $alpha
      * @return int
      */
-    private static function convertAlphaVersionToIntVersion($alpha)
+    private static function convertAlphaVersionToIntVersion($alpha): int
     {
         return strlen($alpha) * (-ord('a') + 1) + array_sum(array_map('ord', str_split($alpha)));
     }
@@ -100,7 +100,7 @@ class Version
      *
      * @return string
      */
-    private static function convertVersionId($versionId, $base)
+    private static function convertVersionId($versionId, $base): string
     {
         return sprintf(
             '%d.%d.%d',

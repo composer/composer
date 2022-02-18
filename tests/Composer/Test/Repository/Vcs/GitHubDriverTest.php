@@ -337,7 +337,7 @@ class GitHubDriverTest extends TestCase
     /**
      * @return list<array{bool, string}>
      */
-    public function supportsProvider()
+    public function supportsProvider(): array
     {
         return array(
             array(false, 'https://github.com/acme'),
