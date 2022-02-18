@@ -35,7 +35,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
     /**
      * @return CompletePackage
      */
-    public function getAliasOf(): CompletePackage
+    public function getAliasOf()
     {
         return $this->aliasOf;
     }

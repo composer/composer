@@ -35,7 +35,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @return RootPackage
      */
-    public function getAliasOf(): RootPackage
+    public function getAliasOf()
     {
         return $this->aliasOf;
     }

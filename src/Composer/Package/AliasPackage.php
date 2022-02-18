@@ -75,7 +75,7 @@ class AliasPackage extends BasePackage
     /**
      * @return BasePackage
      */
-    public function getAliasOf(): BasePackage
+    public function getAliasOf()
     {
         return $this->aliasOf;
     }
