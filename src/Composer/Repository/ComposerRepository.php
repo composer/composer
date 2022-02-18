@@ -321,6 +321,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                 if (!is_array($this->partialPackagesByName)) {
                     throw new \LogicException('hasPartialPackages failed to initialize $this->partialPackagesByName');
                 }
+
                 return $this->createPackages($this->partialPackagesByName, 'packages.json inline packages');
             }
 

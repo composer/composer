@@ -261,7 +261,6 @@ abstract class Rule
         }
     }
 
-
     /**
      * @param bool $isVerbose
      * @param BasePackage[] $installedMap

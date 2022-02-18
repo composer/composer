@@ -167,6 +167,7 @@ class PluginManager
 
         if (!$this->isPluginAllowed($package->getName(), $isGlobalPlugin)) {
             $this->io->writeError('Skipped loading "'.$package->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').'as it is not in config.allow-plugins', true, IOInterface::DEBUG);
+
             return;
         }
 
@@ -397,6 +398,7 @@ class PluginManager
             trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);
         } elseif (!$this->isPluginAllowed($sourcePackage->getName(), $isGlobalPlugin)) {
             $this->io->writeError('Skipped loading "'.get_class($plugin).' from '.$sourcePackage->getName() . '" '.($isGlobalPlugin ? '(installed globally) ' : '').' as it is not in config.allow-plugins', true, IOInterface::DEBUG);
+
             return;
         }
 
@@ -735,7 +737,7 @@ class PluginManager
                                 'y - add package to allow-plugins in composer.json and let it run immediately',
                                 'n - add package (as disallowed) to allow-plugins in composer.json to suppress further prompts',
                                 'd - discard this, do not change composer.json and do not allow the plugin to run',
-                                '? - print help'
+                                '? - print help',
                             ));
                             break;
                     }

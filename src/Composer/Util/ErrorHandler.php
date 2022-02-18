@@ -13,7 +13,6 @@
 namespace Composer\Util;
 
 use Composer\IO\IOInterface;
-use Composer\Pcre\Preg;
 
 /**
  * Convert PHP errors into exceptions

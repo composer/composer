@@ -15,7 +15,6 @@ namespace Composer\Test\Mock;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Platform;
 use PHPUnit\Framework\Assert;
-use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\AssertionFailedError;
 use Symfony\Component\Process\Process;
 use React\Promise\Promise;

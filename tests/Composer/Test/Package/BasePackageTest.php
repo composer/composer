@@ -117,7 +117,7 @@ class BasePackageTest extends TestCase
                 array('php'), '{^%s$}i', '{^php$}i',
                 array('*'), '{^%s$}i', '{^.*$}i',
                 array('foo', 'bar'), '§%s§', '§foo|bar§',
-            )
+            ),
         );
     }
 }

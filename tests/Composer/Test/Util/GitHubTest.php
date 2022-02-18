@@ -12,10 +12,7 @@
 
 namespace Composer\Test\Util;
 
-use _PHPStan_c862bb974\Symfony\Component\Console\Output\BufferedOutput;
-use Composer\Downloader\TransportException;
 use Composer\Util\GitHub;
-use Composer\Util\Http\Response;
 use Composer\Test\TestCase;
 
 /**

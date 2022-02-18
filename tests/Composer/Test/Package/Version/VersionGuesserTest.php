@@ -18,7 +18,6 @@ use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\ProcessExecutor;
-use Composer\Test\Mock\ProcessExecutorMock;
 
 class VersionGuesserTest extends TestCase
 {

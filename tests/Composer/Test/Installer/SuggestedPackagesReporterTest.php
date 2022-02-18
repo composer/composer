@@ -204,7 +204,7 @@ class SuggestedPackagesReporterTest extends TestCase
         $this->suggestedPackagesReporter->addPackage('a', 'b', 'c');
         $this->suggestedPackagesReporter->addPackage('source package', 'target', 'because reasons');
 
-                $this->io->expects($this->exactly(6))
+        $this->io->expects($this->exactly(6))
             ->method('write')
             ->withConsecutive(
                 ['<comment>a</comment> suggests:'],

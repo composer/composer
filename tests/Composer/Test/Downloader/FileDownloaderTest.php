@@ -12,13 +12,11 @@
 
 namespace Composer\Test\Downloader;
 
-use Composer\Config;
 use Composer\Downloader\FileDownloader;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Plugin\PluginEvents;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\Test\TestCase;
-use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Util\Filesystem;
 use Composer\Util\Http\Response;
 use Composer\Util\Loop;

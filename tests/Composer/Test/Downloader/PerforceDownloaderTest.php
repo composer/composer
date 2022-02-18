@@ -18,8 +18,6 @@ use Composer\Repository\VcsRepository;
 use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Factory;
-use Composer\Util\Filesystem;
-use Composer\Test\Mock\ProcessExecutorMock;
 
 /**
  * @author Matt Whittom <Matt.Whittom@veteransunited.com>

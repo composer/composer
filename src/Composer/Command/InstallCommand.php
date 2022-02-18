@@ -12,7 +12,6 @@
 
 namespace Composer\Command;
 
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Installer;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;

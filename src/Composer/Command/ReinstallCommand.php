@@ -15,7 +15,6 @@ namespace Composer\Command;
 use Composer\DependencyResolver\Operation\InstallOperation;
 use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Transaction;
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Pcre\Preg;

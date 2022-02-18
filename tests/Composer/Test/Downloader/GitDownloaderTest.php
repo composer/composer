@@ -18,7 +18,6 @@ use Composer\Pcre\Preg;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
-use Composer\Test\Mock\ProcessExecutorMock;
 
 class GitDownloaderTest extends TestCase
 {

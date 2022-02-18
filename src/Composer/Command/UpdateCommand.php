@@ -14,7 +14,6 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\DependencyResolver\Request;
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\Package\Loader\RootPackageLoader;

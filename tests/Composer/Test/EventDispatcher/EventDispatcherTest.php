@@ -23,7 +23,6 @@ use Composer\IO\BufferIO;
 use Composer\Script\ScriptEvents;
 use Composer\Script\Event as ScriptEvent;
 use Composer\Util\ProcessExecutor;
-use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -148,7 +147,7 @@ class EventDispatcherTest extends TestCase
             ->will($this->returnValue(array()));
         $generator
             ->method('parseAutoloads')
-            ->will($this->returnValue(array('psr-0' => array(), 'psr-4' => array(), 'classmap' => array(), 'files' => array(), 'exclude-from-classmap' => array(),)));
+            ->will($this->returnValue(array('psr-0' => array(), 'psr-4' => array(), 'classmap' => array(), 'files' => array(), 'exclude-from-classmap' => array())));
         $generator
             ->method('createLoader')
             ->will($this->returnValue($this->getMockBuilder('Composer\Autoload\ClassLoader')->getMock()));

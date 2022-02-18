@@ -195,7 +195,7 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects(
             [
                 'p4 set',
-                $expectedCommand
+                $expectedCommand,
             ],
             true
         );
@@ -216,7 +216,7 @@ class PerforceTest extends TestCase
         $this->processExecutor->expects(
             [
                 'echo $P4USER',
-                $expectedCommand
+                $expectedCommand,
             ],
             true
         );
@@ -348,11 +348,11 @@ class PerforceTest extends TestCase
             [
                 [
                     'cmd' => 'p4 -u user -c composer_perforce_TEST_depot_branch -p port streams '.ProcessExecutor::escape('//depot/...'),
-                    'stdout' => 'Stream //depot/branch mainline none \'branch\'' . PHP_EOL
+                    'stdout' => 'Stream //depot/branch mainline none \'branch\'' . PHP_EOL,
                 ],
                 [
                     'cmd' => 'p4 -u user -p port changes '.ProcessExecutor::escape('//depot/branch/...'),
-                    'stdout' => 'Change 1234 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\''
+                    'stdout' => 'Change 1234 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\'',
                 ],
             ],
             true
@@ -368,7 +368,7 @@ class PerforceTest extends TestCase
             [
                 [
                     'cmd' => 'p4 -u user -p port changes '.ProcessExecutor::escape('//depot/...'),
-                    'stdout' => 'Change 5678 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\''
+                    'stdout' => 'Change 5678 on 2014/03/19 by Clark.Stuth@Clark.Stuth_test_client \'test changelist\'',
                 ],
             ],
             true
@@ -384,7 +384,7 @@ class PerforceTest extends TestCase
             [
                 [
                     'cmd' => 'p4 -u user -c composer_perforce_TEST_depot -p port labels',
-                    'stdout' => 'Label 0.0.1 2013/07/31 \'First Label!\'' . PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . PHP_EOL
+                    'stdout' => 'Label 0.0.1 2013/07/31 \'First Label!\'' . PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . PHP_EOL,
                 ],
             ],
             true
@@ -403,7 +403,7 @@ class PerforceTest extends TestCase
             [
                 [
                     'cmd' => 'p4 -u user -c composer_perforce_TEST_depot_branch -p port labels',
-                    'stdout' => 'Label 0.0.1 2013/07/31 \'First Label!\'' . PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . PHP_EOL
+                    'stdout' => 'Label 0.0.1 2013/07/31 \'First Label!\'' . PHP_EOL . 'Label 0.0.2 2013/08/01 \'Second Label!\'' . PHP_EOL,
                 ],
             ],
             true
@@ -427,7 +427,7 @@ class PerforceTest extends TestCase
             [
                 [
                     'cmd' => 'p4 -u user -p port depots',
-                    'stdout' => 'Depot depot 2013/06/25 stream /p4/1/depots/depot/... \'Created by Me\''
+                    'stdout' => 'Depot depot 2013/06/25 stream /p4/1/depots/depot/... \'Created by Me\'',
                 ],
             ],
             true
@@ -444,7 +444,7 @@ class PerforceTest extends TestCase
             [
                 [
                     'cmd' => 'p4 -u user -c composer_perforce_TEST_depot -p port  print '.ProcessExecutor::escape('//depot/composer.json'),
-                    'stdout' => PerforceTest::getComposerJson()
+                    'stdout' => PerforceTest::getComposerJson(),
                 ],
             ],
             true
@@ -466,11 +466,11 @@ class PerforceTest extends TestCase
             [
                 [
                     'cmd' => 'p4 -u user -p port  files '.ProcessExecutor::escape('//depot/composer.json@0.0.1'),
-                    'stdout' => '//depot/composer.json#1 - branch change 10001 (text)'
+                    'stdout' => '//depot/composer.json#1 - branch change 10001 (text)',
                 ],
                 [
                     'cmd' => 'p4 -u user -c composer_perforce_TEST_depot -p port  print '.ProcessExecutor::escape('//depot/composer.json@10001'),
-                    'stdout' => PerforceTest::getComposerJson()
+                    'stdout' => PerforceTest::getComposerJson(),
                 ],
             ],
             true
@@ -495,7 +495,7 @@ class PerforceTest extends TestCase
             [
                 [
                     'cmd' => 'p4 -u user -c composer_perforce_TEST_depot_branch -p port  print '.ProcessExecutor::escape('//depot/branch/composer.json'),
-                    'stdout' => PerforceTest::getComposerJson()
+                    'stdout' => PerforceTest::getComposerJson(),
                 ],
             ],
             true
@@ -605,8 +605,8 @@ class PerforceTest extends TestCase
             'description' => 'Basic project for testing',
             'minimum-stability' => 'dev',
             'autoload' => [
-                'psr-0' => []
-            ]
+                'psr-0' => [],
+            ],
         ], JSON_FORCE_OBJECT);
     }
 

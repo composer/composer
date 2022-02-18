@@ -298,7 +298,6 @@ class JsonFileTest extends TestCase
 
     public function testUnicode()
     {
-
         $data = array("Žluťoučký \" kůň" => "úpěl ďábelské ódy za €");
         $json = '{
     "Žluťoučký \" kůň": "úpěl ďábelské ódy za €"
@@ -309,7 +308,6 @@ class JsonFileTest extends TestCase
 
     public function testOnlyUnicode()
     {
-
         $data = "\\/ƌ";
 
         $this->assertJsonFormat('"\\\\\\/ƌ"', $data, JSON_UNESCAPED_UNICODE);

@@ -17,7 +17,6 @@ use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Package\BasePackage;
 use Composer\Package\AliasPackage;
-use Composer\Repository\PlatformRepository;
 
 /**
  * @author Nils Adermann <naderman@naderman.de>

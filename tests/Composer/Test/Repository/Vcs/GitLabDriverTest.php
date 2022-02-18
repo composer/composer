@@ -21,7 +21,6 @@ use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Util\ProcessExecutor;
 use PHPUnit\Framework\MockObject\MockObject;
-use Prophecy\Argument;
 use Composer\Util\Http\Response;
 
 /**

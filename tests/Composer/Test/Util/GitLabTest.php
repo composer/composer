@@ -12,10 +12,7 @@
 
 namespace Composer\Test\Util;
 
-use Composer\Downloader\TransportException;
-use Composer\Test\Mock\HttpDownloaderMock;
 use Composer\Util\GitLab;
-use Composer\Util\Http\Response;
 use Composer\Test\TestCase;
 
 /**

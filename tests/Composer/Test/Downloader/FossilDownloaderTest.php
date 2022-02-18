@@ -15,7 +15,6 @@ namespace Composer\Test\Downloader;
 use Composer\Downloader\FossilDownloader;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
-use Composer\Test\Mock\ProcessExecutorMock;
 
 class FossilDownloaderTest extends TestCase
 {

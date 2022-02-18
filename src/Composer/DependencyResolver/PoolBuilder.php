@@ -704,7 +704,7 @@ class PoolBuilder
             '<info>Found %s package versions referenced in your dependency graph. %s (%d%%) were optimized away.</info>',
             number_format($total),
             number_format($filtered),
-            round(100/$total*$filtered)
+            round(100 / $total * $filtered)
         ), true, IOInterface::VERY_VERBOSE);
 
         return $pool;

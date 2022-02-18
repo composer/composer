@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Composer\Semver\VersionParser;
-use Composer\Package\RootPackageInterface;
 use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;
 use Composer\Test\Mock\HttpDownloaderMock;
@@ -32,7 +31,6 @@ use Composer\Package\AliasPackage;
 use Composer\Package\RootAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\CompleteAliasPackage;
-use Composer\Package\CompletePackageInterface;
 use Composer\Package\Package;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase

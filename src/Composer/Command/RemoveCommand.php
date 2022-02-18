@@ -14,7 +14,6 @@ namespace Composer\Command;
 
 use Composer\Config\JsonConfigSource;
 use Composer\DependencyResolver\Request;
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Installer;
 use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;

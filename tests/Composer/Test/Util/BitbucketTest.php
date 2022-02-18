@@ -15,7 +15,6 @@ namespace Composer\Test\Util;
 use Composer\Util\Bitbucket;
 use Composer\Util\Http\Response;
 use Composer\Test\TestCase;
-use Composer\Test\Mock\ProcessExecutorMock;
 
 /**
  * @author Paul Wenke <wenke.paul@gmail.com>

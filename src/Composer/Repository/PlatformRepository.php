@@ -91,7 +91,7 @@ class PlatformRepository extends ArrayRepository
 
     /**
      * @param  string  $name
-     * @return boolean
+     * @return bool
      */
     public function isPlatformPackageDisabled($name)
     {
@@ -541,6 +541,7 @@ class PlatformRepository extends ArrayRepository
         if (isset($this->overrides[$package->getName()])) {
             if ($this->overrides[$package->getName()]['version'] === false) {
                 $this->addDisabledPackage($package);
+
                 return;
             }
 
@@ -561,6 +562,7 @@ class PlatformRepository extends ArrayRepository
         if (isset($this->overrides['php']) && 0 === strpos($package->getName(), 'php-')) {
             if (isset($this->overrides[$package->getName()]) && $this->overrides[$package->getName()]['version'] === false) {
                 $this->addDisabledPackage($package);
+
                 return;
             }
 

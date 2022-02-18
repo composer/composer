@@ -13,8 +13,6 @@
 namespace Composer\Command;
 
 use Composer\DependencyResolver\Request;
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
-use Composer\Repository\RepositorySet;
 use Composer\Util\Filesystem;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;

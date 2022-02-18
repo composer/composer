@@ -16,7 +16,6 @@ use Composer\Config;
 use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
-use Composer\CaBundle\CaBundle;
 use Composer\Pcre\Preg;
 use Composer\Util\Http\Response;
 use Composer\Util\Http\ProxyManager;

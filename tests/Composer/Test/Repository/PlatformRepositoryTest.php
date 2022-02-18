@@ -1090,7 +1090,6 @@ Linked Version => 1.2.11',
      * @param list<mixed>                $constants
      * @param list<mixed>                $classDefinitions
      */
-
     public function testLibraryInformation(
         $extensions,
         $info,

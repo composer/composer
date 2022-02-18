@@ -17,10 +17,8 @@ use Composer\Json\JsonFile;
 use Composer\Repository\ComposerRepository;
 use Composer\Repository\RepositoryInterface;
 use Composer\Test\Mock\FactoryMock;
-use Composer\Test\Mock\HttpDownloaderMock;
 use Composer\Test\TestCase;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\Version\VersionParser;
 
 class ComposerRepositoryTest extends TestCase
 {

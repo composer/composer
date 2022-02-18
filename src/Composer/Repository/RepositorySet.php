@@ -13,7 +13,6 @@
 namespace Composer\Repository;
 
 use Composer\DependencyResolver\PoolOptimizer;
-use Composer\DependencyResolver\PolicyInterface;
 use Composer\DependencyResolver\Pool;
 use Composer\DependencyResolver\PoolBuilder;
 use Composer\DependencyResolver\Request;

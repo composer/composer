@@ -13,24 +13,15 @@
 namespace Composer\Command;
 
 use Composer\Factory;
-use Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter;
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonValidationException;
 use Composer\Package\BasePackage;
-use Composer\Package\CompletePackageInterface;
 use Composer\Package\Package;
-use Composer\Package\PackageInterface;
-use Composer\Package\Version\VersionParser;
-use Composer\Package\Version\VersionSelector;
 use Composer\Pcre\Preg;
 use Composer\Repository\CompositeRepository;
 use Composer\Repository\PlatformRepository;
 use Composer\Repository\RepositoryFactory;
-use Composer\Repository\RepositorySet;
 use Composer\Util\Filesystem;
-use Composer\Util\ProcessExecutor;
-use Composer\Semver\Constraint\Constraint;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;

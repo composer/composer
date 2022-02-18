@@ -455,7 +455,7 @@ EOT
                         return 'php-only';
                     }
 
-                    return $val !== 'false' && (bool)$val;
+                    return $val !== 'false' && (bool) $val;
                 },
             ),
             'use-parent-dir' => array(
@@ -739,7 +739,7 @@ EOT
                 return 0;
             }
 
-            $this->configSource->addConfigSetting($settingKey, $values[0] === 'false' ?  false : $values[0]);
+            $this->configSource->addConfigSetting($settingKey, $values[0] === 'false' ? false : $values[0]);
 
             return 0;
         }

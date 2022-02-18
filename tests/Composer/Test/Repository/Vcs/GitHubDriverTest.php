@@ -12,13 +12,11 @@
 
 namespace Composer\Test\Repository\Vcs;
 
-use Composer\Downloader\TransportException;
 use Composer\Repository\Vcs\GitHubDriver;
 use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
-use Composer\Util\Http\Response;
 use Composer\Util\ProcessExecutor;
 
 class GitHubDriverTest extends TestCase
@@ -119,7 +117,6 @@ class GitHubDriverTest extends TestCase
             ->method('isInteractive')
             ->will($this->returnValue(true));
 
-
         $httpDownloader = $this->getHttpDownloaderMock($io, $this->config);
         $httpDownloader->expects(
             [
@@ -161,7 +158,6 @@ class GitHubDriverTest extends TestCase
         $io->expects($this->any())
             ->method('isInteractive')
             ->will($this->returnValue(true));
-
 
         $httpDownloader = $this->getHttpDownloaderMock($io, $this->config);
         $httpDownloader->expects(

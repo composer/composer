@@ -14,7 +14,6 @@ namespace Composer\Command;
 
 use Composer\Composer;
 use Composer\DependencyResolver\DefaultPolicy;
-use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\BasePackage;
