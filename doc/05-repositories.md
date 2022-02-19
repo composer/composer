@@ -46,7 +46,7 @@ add more repositories to your project by declaring them in `composer.json`.
 
 Repositories are only available to the root package and the repositories
 defined in your dependencies will not be loaded. Read the
-[FAQ entry](faqs/why-can't-composer-load-repositories-recursively.md) if you
+[FAQ entry](faqs/why-cant-composer-load-repositories-recursively.md) if you
 want to learn why.
 
 When resolving dependencies, packages are looked up from repositories from

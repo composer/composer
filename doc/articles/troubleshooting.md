@@ -94,7 +94,7 @@ indirectly) back on the root package itself, issues can occur in two cases:
 ## I have a dependency which contains a "repositories" definition in its composer.json, but it seems to be ignored.
 
 The [`repositories`](../04-schema.md#repositories) configuration property is defined as [root-only](../04-schema.md#root-package). It is not inherited. You can read more about the reasons behind this in the "[why can't
-Composer load repositories recursively?](../faqs/why-can't-composer-load-repositories-recursively.md)" article.
+Composer load repositories recursively?](../faqs/why-cant-composer-load-repositories-recursively.md)" article.
 The simplest work-around to this limitation, is moving or duplicating the `repositories` definition into your root
 composer.json.
 
