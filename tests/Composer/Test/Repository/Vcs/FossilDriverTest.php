@@ -46,7 +46,7 @@ class FossilDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    public static function supportProvider()
+    public static function supportProvider(): array
     {
         return array(
             array('http://fossil.kd2.org/kd2fw/', true),

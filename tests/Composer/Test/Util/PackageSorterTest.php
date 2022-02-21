@@ -32,7 +32,7 @@ class PackageSorterTest extends TestCase
         self::assertSame($packages, $sortedPackages);
     }
 
-    public function sortingOrdersDependenciesHigherThanPackageDataProvider()
+    public function sortingOrdersDependenciesHigherThanPackageDataProvider(): array
     {
         return array(
             'one package is dep' => array(
@@ -111,7 +111,7 @@ class PackageSorterTest extends TestCase
     public function testSortingOrdersDependenciesHigherThanPackage($packages, $expectedOrderedList): void
     {
         $sortedPackages = PackageSorter::sortPackages($packages);
-        $sortedPackageNames = array_map(function ($package) {
+        $sortedPackageNames = array_map(function ($package): string {
             return $package->getName();
         }, $sortedPackages);
 

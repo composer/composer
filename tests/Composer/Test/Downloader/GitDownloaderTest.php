@@ -220,7 +220,7 @@ class GitDownloaderTest extends TestCase
         $downloader->cleanup('install', $packageMock, 'composerPath');
     }
 
-    public function pushUrlProvider()
+    public function pushUrlProvider(): array
     {
         return array(
             // ssh proto should use git@ all along

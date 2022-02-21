@@ -83,7 +83,7 @@ class ConsoleIOTest extends TestCase
         $outputMock->expects($this->once())
             ->method('write')
             ->with(
-                $this->callback(function ($messages) {
+                $this->callback(function ($messages): bool {
                     $result = Preg::isMatch("[(.*)/(.*) First line]", $messages[0]);
                     $result = $result && Preg::isMatch("[(.*)/(.*) Second line]", $messages[1]);
 
@@ -209,7 +209,7 @@ class ConsoleIOTest extends TestCase
             ->will($this->returnValue($helperMock))
         ;
 
-        $validator = function ($value) {
+        $validator = function ($value): bool {
             return true;
         };
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);

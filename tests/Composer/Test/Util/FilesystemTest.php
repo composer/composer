@@ -65,7 +65,7 @@ class FilesystemTest extends TestCase
         $this->assertEquals($expected, $fs->findShortestPathCode($a, $b, $directory, $static));
     }
 
-    public function providePathCouplesAsCode()
+    public function providePathCouplesAsCode(): array
     {
         return array(
             array('/foo/bar', '/foo/bar', false, "__FILE__"),
@@ -128,7 +128,7 @@ class FilesystemTest extends TestCase
         $this->assertEquals($expected, $fs->findShortestPath($a, $b, $directory));
     }
 
-    public function providePathCouples()
+    public function providePathCouples(): array
     {
         return array(
             array('/foo/bar', '/foo/bar', "./bar"),
@@ -213,7 +213,7 @@ class FilesystemTest extends TestCase
         $this->assertEquals($expected, $fs->normalizePath($actual));
     }
 
-    public function provideNormalizedPaths()
+    public function provideNormalizedPaths(): array
     {
         return array(
             array('../foo', '../foo'),

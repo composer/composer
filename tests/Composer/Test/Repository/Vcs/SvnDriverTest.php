@@ -84,7 +84,7 @@ class SvnDriverTest extends TestCase
         $svn->initialize();
     }
 
-    public static function supportProvider()
+    public static function supportProvider(): array
     {
         return array(
             array('http://svn.apache.org', true),

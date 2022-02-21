@@ -71,7 +71,7 @@ class PoolOptimizerTest extends TestCase
         );
     }
 
-    public function provideIntegrationTests()
+    public function provideIntegrationTests(): array
     {
         $fixturesDir = realpath(__DIR__.'/Fixtures/pooloptimizer/');
         $tests = array();

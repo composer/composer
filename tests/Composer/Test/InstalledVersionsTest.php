@@ -79,7 +79,7 @@ class InstalledVersionsTest extends TestCase
         $this->assertSame($expected, InstalledVersions::isInstalled($name, $includeDevRequirements));
     }
 
-    public static function isInstalledProvider()
+    public static function isInstalledProvider(): array
     {
         return array(
             array(true,  'foo/impl'),
@@ -104,7 +104,7 @@ class InstalledVersionsTest extends TestCase
         $this->assertSame($expected, InstalledVersions::satisfies(new VersionParser, $name, $constraint));
     }
 
-    public static function satisfiesProvider()
+    public static function satisfiesProvider(): array
     {
         return array(
             array(true,  'foo/impl', '1.5'),
@@ -144,7 +144,7 @@ class InstalledVersionsTest extends TestCase
         $this->assertSame($expected, InstalledVersions::getVersionRanges($name));
     }
 
-    public static function getVersionRangesProvider()
+    public static function getVersionRangesProvider(): array
     {
         return array(
             array('dev-master || 1.10.x-dev',   '__root__'),
@@ -168,7 +168,7 @@ class InstalledVersionsTest extends TestCase
         $this->assertSame($expected, InstalledVersions::getVersion($name));
     }
 
-    public static function getVersionProvider()
+    public static function getVersionProvider(): array
     {
         return array(
             array('dev-master',  '__root__'),
@@ -192,7 +192,7 @@ class InstalledVersionsTest extends TestCase
         $this->assertSame($expected, InstalledVersions::getPrettyVersion($name));
     }
 
-    public static function getPrettyVersionProvider()
+    public static function getPrettyVersionProvider(): array
     {
         return array(
             array('dev-master',  '__root__'),
@@ -247,7 +247,7 @@ class InstalledVersionsTest extends TestCase
         $this->assertSame($expected, InstalledVersions::getReference($name));
     }
 
-    public static function getReferenceProvider()
+    public static function getReferenceProvider(): array
     {
         return array(
             array('sourceref-by-default',  '__root__'),

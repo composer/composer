@@ -171,7 +171,7 @@ class FilesystemRepositoryTest extends TestCase
             ->getMock();
         $im->expects($this->any())
             ->method('getInstallPath')
-            ->will($this->returnCallback(function ($package) use ($dir) {
+            ->will($this->returnCallback(function ($package) use ($dir): string {
                 // check for empty paths handling
                 if ($package->getType() === 'metapackage') {
                     return '';

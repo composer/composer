@@ -228,7 +228,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyTo')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
                 $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
 
                 return false;
@@ -236,7 +236,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyFrom')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
                 $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
 
                 return false;
@@ -328,7 +328,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyTo')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
                 $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
 
                 return false;
@@ -336,7 +336,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyFrom')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
                 $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
 
                 return false;

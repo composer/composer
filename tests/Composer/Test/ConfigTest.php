@@ -34,7 +34,7 @@ class ConfigTest extends TestCase
         $this->assertEquals($expected, $config->getRepositories());
     }
 
-    public function dataAddPackagistRepository()
+    public function dataAddPackagistRepository(): array
     {
         $data = array();
         $data['local config inherits system defaults'] = array(
@@ -282,7 +282,7 @@ class ConfigTest extends TestCase
             'ssh://[user@]host.xz[:port]/path/to/repo.git/',
         );
 
-        return array_combine($urls, array_map(function ($e) {
+        return array_combine($urls, array_map(function ($e): array {
             return array($e);
         }, $urls));
     }
@@ -303,7 +303,7 @@ class ConfigTest extends TestCase
             'git://5.6.7.8/git.git',
         );
 
-        return array_combine($urls, array_map(function ($e) {
+        return array_combine($urls, array_map(function ($e): array {
             return array($e);
         }, $urls));
     }

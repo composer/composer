@@ -57,7 +57,7 @@ class HgDriverTest extends TestCase
         );
     }
 
-    public function supportsDataProvider()
+    public function supportsDataProvider(): array
     {
         return array(
             array('ssh://bitbucket.org/user/repo'),

@@ -45,12 +45,12 @@ class FilterRepositoryTest extends TestCase
         $repo = new FilterRepository($this->arrayRepo, $config);
         $packages = $repo->getPackages();
 
-        $this->assertSame($expected, array_map(function ($p) {
+        $this->assertSame($expected, array_map(function ($p): string {
             return $p->getName();
         }, $packages));
     }
 
-    public static function provideRepoMatchingTestCases()
+    public static function provideRepoMatchingTestCases(): array
     {
         return array(
             array(array('foo/aaa', 'foo/bbb'), array('only' => array('foo/*'))),

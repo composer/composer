@@ -135,7 +135,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param string $version
      * @return AliasPackage|RootAliasPackage|CompleteAliasPackage
      */
-    protected function getAliasPackage(Package $package, $version)
+    protected function getAliasPackage(Package $package, $version): \Composer\Package\AliasPackage
     {
         $normVersion = self::getVersionParser()->normalize($version);
 

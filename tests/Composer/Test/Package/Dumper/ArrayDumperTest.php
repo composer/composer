@@ -111,7 +111,7 @@ class ArrayDumperTest extends TestCase
         $this->assertSame($expectedValue ?: $value, $config[$key]);
     }
 
-    public function provideKeys()
+    public function provideKeys(): array
     {
         return array(
             array(
@@ -247,8 +247,6 @@ class ArrayDumperTest extends TestCase
     /**
      * @param string $method
      * @param mixed  $value
-     *
-     * @return self
      */
     private function packageExpects($method, $value): \Composer\Test\Package\Dumper\ArrayDumperTest
     {

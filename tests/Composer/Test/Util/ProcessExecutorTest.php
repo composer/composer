@@ -80,7 +80,7 @@ class ProcessExecutorTest extends TestCase
         $this->assertEquals('Executing command (CWD): ' . $expectedCommandOutput, trim($buffer->getOutput()));
     }
 
-    public function hidePasswordProvider()
+    public function hidePasswordProvider(): array
     {
         return array(
             array('echo https://foo:bar@example.org/', 'echo https://foo:***@example.org/'),
@@ -151,7 +151,7 @@ class ProcessExecutorTest extends TestCase
      * Each named test is an array of:
      *   argument, win-expected, unix-expected
      */
-    public function dataEscapeArguments()
+    public function dataEscapeArguments(): array
     {
         return array(
             // empty argument - must be quoted

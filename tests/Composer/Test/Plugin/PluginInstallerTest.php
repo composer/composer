@@ -96,7 +96,7 @@ class PluginInstallerTest extends TestCase
         $im = $this->getMockBuilder('Composer\Installer\InstallationManager')->disableOriginalConstructor()->getMock();
         $im->expects($this->any())
             ->method('getInstallPath')
-            ->will($this->returnCallback(function ($package) {
+            ->will($this->returnCallback(function ($package): string {
                 return __DIR__.'/Fixtures/'.$package->getPrettyName();
             }));
 
@@ -303,7 +303,7 @@ class PluginInstallerTest extends TestCase
         $this->repository
             ->expects($this->any())
             ->method('getPackages')
-            ->will($this->returnCallback(function () use ($plugApiInternalPackage, $plugins) {
+            ->will($this->returnCallback(function () use ($plugApiInternalPackage, $plugins): array {
                 return array_merge(array($plugApiInternalPackage), $plugins);
             }));
 
@@ -394,7 +394,7 @@ class PluginInstallerTest extends TestCase
 
         $plugin->expects($this->once())
                ->method('getCapabilities')
-               ->will($this->returnCallback(function () use ($capabilityImplementation, $capabilityApi) {
+               ->will($this->returnCallback(function () use ($capabilityImplementation, $capabilityApi): array {
                    return array($capabilityApi => $capabilityImplementation);
                }));
 
@@ -448,7 +448,7 @@ class PluginInstallerTest extends TestCase
 
         $plugin->expects($this->once())
                ->method('getCapabilities')
-               ->will($this->returnCallback(function () use ($invalidImplementationClassNames, $capabilityApi) {
+               ->will($this->returnCallback(function () use ($invalidImplementationClassNames, $capabilityApi): array {
                    return array($capabilityApi => $invalidImplementationClassNames);
                }));
 
@@ -465,7 +465,7 @@ class PluginInstallerTest extends TestCase
 
         $plugin->expects($this->once())
                ->method('getCapabilities')
-               ->will($this->returnCallback(function () {
+               ->will($this->returnCallback(function (): array {
                    return array();
                }));
 

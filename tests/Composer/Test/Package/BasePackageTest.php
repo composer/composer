@@ -54,7 +54,7 @@ class BasePackageTest extends TestCase
         $this->assertSame($expected, $package->getFullPrettyVersion($truncate));
     }
 
-    public function provideFormattedVersions()
+    public function provideFormattedVersions(): array
     {
         $data = array(
             array(
@@ -79,7 +79,7 @@ class BasePackageTest extends TestCase
             ),
         );
 
-        $createPackage = function ($arr) {
+        $createPackage = function ($arr): array {
             $package = $this->getMockForAbstractClass('\Composer\Package\BasePackage', array(), '', false);
             $package->expects($this->once())->method('isDev')->will($this->returnValue(true));
             $package->expects($this->any())->method('getSourceType')->will($this->returnValue('git'));

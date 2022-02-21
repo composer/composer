@@ -666,7 +666,7 @@ class DownloadManagerTest extends TestCase
         $this->assertEquals($expected, $method->invoke($manager, $target, $initial ?? null));
     }
 
-    public static function updatesProvider()
+    public static function updatesProvider(): array
     {
         return array(
             //    prevPkg source,  prevPkg isDev, pkg available,           pkg isDev,  expected

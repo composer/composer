@@ -36,7 +36,7 @@ class PlatformRepositoryTest extends TestCase
         self::assertSame('2.1.0', $hhvm->getPrettyVersion());
     }
 
-    public function providePhpFlavorTestCases()
+    public function providePhpFlavorTestCases(): array
     {
         return array(
             array(
@@ -128,7 +128,7 @@ class PlatformRepositoryTest extends TestCase
             ->willReturn(array());
         $runtime
             ->method('hasConstant')
-            ->willReturnCallback(function ($constant, $class = null) use ($constants) {
+            ->willReturnCallback(function ($constant, $class = null) use ($constants): bool {
                 return isset($constants[ltrim($class.'::'.$constant, ':')]);
             });
         $runtime
@@ -178,7 +178,7 @@ class PlatformRepositoryTest extends TestCase
         self::assertNull($package);
     }
 
-    public static function provideLibraryTestCases()
+    public static function provideLibraryTestCases(): array
     {
         return array(
             'amqp' => array(
@@ -1103,7 +1103,7 @@ Linked Version => 1.2.11',
         $runtime
             ->method('getExtensionVersion')
             ->willReturnMap(
-                array_map(function ($extension) use ($extensionVersion) {
+                array_map(function ($extension) use ($extensionVersion): array {
                     return array($extension, $extensionVersion);
                 }, $extensions)
             );
@@ -1111,7 +1111,7 @@ Linked Version => 1.2.11',
         $runtime
             ->method('getExtensionInfo')
             ->willReturnMap(
-                array_map(function ($extension) use ($info) {
+                array_map(function ($extension) use ($info): array {
                     return array($extension, $info);
                 }, $extensions)
             );
@@ -1123,7 +1123,7 @@ Linked Version => 1.2.11',
         $constants[] = array('PHP_VERSION', null, '7.1.0');
         $runtime
             ->method('hasConstant')
-            ->willReturnCallback(function ($constant, $class = null) use ($constants) {
+            ->willReturnCallback(function ($constant, $class = null) use ($constants): bool {
                 foreach ($constants as $definition) {
                     if ($definition[0] === $constant && $definition[1] === $class) {
                         return true;
@@ -1138,7 +1138,7 @@ Linked Version => 1.2.11',
 
         $runtime
             ->method('hasClass')
-            ->willReturnCallback(function ($class) use ($classDefinitions) {
+            ->willReturnCallback(function ($class) use ($classDefinitions): bool {
                 foreach ($classDefinitions as $definition) {
                     if ($definition[0] === $class) {
                         return true;
@@ -1153,27 +1153,27 @@ Linked Version => 1.2.11',
 
         $platformRepository = new PlatformRepository(array(), array(), $runtime);
 
-        $expectations = array_map(function ($expectation) {
+        $expectations = array_map(function ($expectation): array {
             return array_replace(array(null, array(), array()), (array) $expectation);
         }, $expectations);
 
         $libraries = array_map(
-            function ($package) {
+            function ($package): string {
                 return $package['name'];
             },
             array_filter(
                 $platformRepository->search('lib', PlatformRepository::SEARCH_NAME),
-                function ($package) {
+                function ($package): bool {
                     return strpos($package['name'], 'lib-') === 0;
                 }
             )
         );
-        $expectedLibraries = array_merge(array_keys(array_filter($expectations, function ($expectation) {
+        $expectedLibraries = array_merge(array_keys(array_filter($expectations, function ($expectation): bool {
             return $expectation[0] !== false;
         })));
         self::assertCount(count(array_filter($expectedLibraries)), $libraries, sprintf('Expected: %s, got %s', var_export($expectedLibraries, true), var_export($libraries, true)));
 
-        $expectations = array_merge($expectations, array_combine(array_map(function ($extension) {
+        $expectations = array_merge($expectations, array_combine(array_map(function ($extension): string {
             return 'ext-'.$extension;
         }, $extensions), array_fill(0, count($extensions), array($extensionVersion, array(), array()))));
 
@@ -1231,7 +1231,7 @@ Linked Version => 1.2.11',
         self::assertNotNull($package, 'Composer package exists');
     }
 
-    public static function providePlatformPackages()
+    public static function providePlatformPackages(): array
     {
         return array(
             array('php', true),

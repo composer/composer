@@ -111,7 +111,7 @@ class BitbucketTest extends TestCase
         );
     }
 
-    public function testRequestAccessTokenWithValidOAuthConsumerAndValidStoredAccessToken()
+    public function testRequestAccessTokenWithValidOAuthConsumerAndValidStoredAccessToken(): \Composer\Util\Bitbucket
     {
         $this->config->expects($this->once())
             ->method('get')

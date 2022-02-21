@@ -100,7 +100,7 @@ class ProxyManagerTest extends TestCase
         $this->assertTrue($condition, 'lastProxy check');
     }
 
-    public function dataRequest()
+    public function dataRequest(): array
     {
         $server = array(
             'http_proxy' => 'http://user:p%40ss@proxy.com',
@@ -156,7 +156,7 @@ class ProxyManagerTest extends TestCase
         $this->assertTrue($condition, 'message check');
     }
 
-    public function dataStatus()
+    public function dataStatus(): array
     {
         // server, expectedStatus, expectedMessage
         return array(

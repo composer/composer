@@ -145,7 +145,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function gitlabPrivateTokenProvider()
+    public function gitlabPrivateTokenProvider(): array
     {
         return array(
           array('private-token'),
@@ -222,7 +222,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function bitbucketPublicUrlProvider()
+    public function bitbucketPublicUrlProvider(): array
     {
         return array(
             array('https://bitbucket.org/user/repo/downloads/whatever'),
@@ -260,7 +260,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function basicHttpAuthenticationProvider()
+    public function basicHttpAuthenticationProvider(): array
     {
         return array(
             array(
@@ -416,7 +416,7 @@ class AuthHelperTest extends TestCase
                 null,
                 'y'
             )
-            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
+            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer): string {
                 $validator($answer);
 
                 return $answer;
@@ -464,7 +464,7 @@ class AuthHelperTest extends TestCase
                 null,
                 'y'
             )
-            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
+            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer): string {
                 $validator($answer);
 
                 return $answer;
@@ -504,7 +504,7 @@ class AuthHelperTest extends TestCase
                 null,
                 'y'
             )
-            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
+            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer): string {
                 $validator($answer);
 
                 return $answer;

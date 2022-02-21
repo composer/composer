@@ -317,7 +317,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($expectedVersion, $recommended);
     }
 
-    public function provideRecommendedRequireVersionPackages()
+    public function provideRecommendedRequireVersionPackages(): array
     {
         return array(
             // real version, expected recommendation, [branch-alias], [pkg name]

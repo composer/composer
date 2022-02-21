@@ -120,7 +120,7 @@ class EventDispatcherTest extends TestCase
         $dispatcher->hasEventListeners($event);
     }
 
-    public function provideDevModes()
+    public function provideDevModes(): array
     {
         return array(
             array(true),
@@ -382,7 +382,7 @@ class EventDispatcherTest extends TestCase
 
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
-            ->will($this->returnCallback(function (Event $event) {
+            ->will($this->returnCallback(function (Event $event): array {
                 if ($event->getName() === 'root') {
                     return array('@group');
                 }
@@ -427,7 +427,7 @@ class EventDispatcherTest extends TestCase
 
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
-            ->will($this->returnCallback(function (Event $event) {
+            ->will($this->returnCallback(function (Event $event): array {
                 if ($event->getName() === 'hello') {
                     return array('echo Hello');
                 }
@@ -463,7 +463,7 @@ class EventDispatcherTest extends TestCase
 
         $dispatcher->expects($this->atLeastOnce())
             ->method('getListeners')
-            ->will($this->returnCallback(function (Event $event) {
+            ->will($this->returnCallback(function (Event $event): array {
                 if ($event->getName() === 'root') {
                     return array('@recurse');
                 }
@@ -500,7 +500,7 @@ class EventDispatcherTest extends TestCase
         return $dispatcher;
     }
 
-    public function provideValidCommands()
+    public function provideValidCommands(): array
     {
         return array(
             array('phpunit'),

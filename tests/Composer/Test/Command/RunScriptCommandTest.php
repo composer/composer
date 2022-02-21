@@ -61,7 +61,7 @@ class RunScriptCommandTest extends TestCase
 
         $ed->expects($this->once())
             ->method('hasEventListeners')
-            ->with($this->callback(function (ScriptEvent $event) use ($scriptName, $expectedDevMode) {
+            ->with($this->callback(function (ScriptEvent $event) use ($scriptName, $expectedDevMode): bool {
                 return $event->getName() === $scriptName
                 && $event->isDevMode() === $expectedDevMode;
             }))

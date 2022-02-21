@@ -77,7 +77,7 @@ class GitLabDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    public function provideInitializeUrls()
+    public function provideInitializeUrls(): array
     {
         return array(
             array('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject'),
@@ -92,7 +92,7 @@ class GitLabDriverTest extends TestCase
      * @param string $url
      * @param string $apiUrl
      */
-    public function testInitialize($url, $apiUrl)
+    public function testInitialize($url, $apiUrl): \Composer\Repository\Vcs\GitLabDriver
     {
         // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
         $projectData = <<<JSON
@@ -135,7 +135,7 @@ JSON;
      * @param string $url
      * @param string $apiUrl
      */
-    public function testInitializePublicProject($url, $apiUrl)
+    public function testInitializePublicProject($url, $apiUrl): \Composer\Repository\Vcs\GitLabDriver
     {
         // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
         $projectData = <<<JSON
@@ -176,7 +176,7 @@ JSON;
      * @param string $url
      * @param string $apiUrl
      */
-    public function testInitializePublicProjectAsAnonymous($url, $apiUrl)
+    public function testInitializePublicProjectAsAnonymous($url, $apiUrl): \Composer\Repository\Vcs\GitLabDriver
     {
         // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
         $projectData = <<<JSON
@@ -449,7 +449,7 @@ JSON;
         $this->assertSame($expected, GitLabDriver::supports($this->io, $this->config, $url));
     }
 
-    public function dataForTestSupports()
+    public function dataForTestSupports(): array
     {
         return array(
             array('http://gitlab.com/foo/bar', true),

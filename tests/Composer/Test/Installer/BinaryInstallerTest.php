@@ -87,7 +87,7 @@ class BinaryInstallerTest extends TestCase
         $this->assertEquals('success arg', $output);
     }
 
-    public function executableBinaryProvider()
+    public function executableBinaryProvider(): array
     {
         return array(
             'simple php file' => array(<<<'EOL'

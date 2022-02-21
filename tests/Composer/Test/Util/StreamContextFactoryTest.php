@@ -49,7 +49,7 @@ class StreamContextFactoryTest extends TestCase
         $this->assertEquals($expectedParams, $params);
     }
 
-    public function dataGetContext()
+    public function dataGetContext(): array
     {
         return array(
             array(
@@ -192,7 +192,7 @@ class StreamContextFactoryTest extends TestCase
         }
     }
 
-    public function dataSSLProxy()
+    public function dataSSLProxy(): array
     {
         return array(
             array('ssl://proxyserver:443', 'https://proxyserver/'),

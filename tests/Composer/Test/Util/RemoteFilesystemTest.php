@@ -176,7 +176,7 @@ class RemoteFilesystemTest extends TestCase
         $fs = $this->getRemoteFilesystemWithMockedMethods(array('getRemoteContents'));
 
         $fs->expects($this->once())->method('getRemoteContents')
-            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header) {
+            ->willReturnCallback(function ($originUrl, $fileUrl, $ctx, &$http_response_header): string {
                 $http_response_header = array('http/1.1 401 unauthorized');
 
                 return '';
@@ -313,7 +313,7 @@ class RemoteFilesystemTest extends TestCase
         $domains = array();
         $io
             ->method('hasAuthentication')
-            ->willReturnCallback(function ($arg) use (&$domains) {
+            ->willReturnCallback(function ($arg) use (&$domains): bool {
                 $domains[] = $arg;
                 // first time is called with bitbucket.org, then it redirects to bbuseruploads.s3.amazonaws.com so next time we have no auth configured
                 return $arg === 'bitbucket.org';

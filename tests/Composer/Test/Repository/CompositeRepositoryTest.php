@@ -138,7 +138,7 @@ class CompositeRepositoryTest extends TestCase
         $this->assertEquals(array(), call_user_func_array(array($repo, $method), $args));
     }
 
-    public function provideMethodCalls()
+    public function provideMethodCalls(): array
     {
         return array(
             array('findPackages', array('foo')),

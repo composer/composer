@@ -35,7 +35,7 @@ class ValidatingArrayLoaderTest extends TestCase
         $loader->load($config);
     }
 
-    public function successProvider()
+    public function successProvider(): array
     {
         return array(
             array( // minimal
@@ -270,7 +270,7 @@ class ValidatingArrayLoaderTest extends TestCase
         $loader->load($config);
     }
 
-    public function errorProvider()
+    public function errorProvider(): array
     {
         $invalidNames = array(
             'foo',
@@ -420,7 +420,7 @@ class ValidatingArrayLoaderTest extends TestCase
         ));
     }
 
-    public function warningProvider()
+    public function warningProvider(): array
     {
         return array(
             array(

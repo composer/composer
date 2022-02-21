@@ -122,7 +122,7 @@ class InstallerTest extends TestCase
             }));
         $lockJsonMock->expects($this->any())
             ->method('exists')
-            ->will($this->returnCallback(function () use (&$lockData) {
+            ->will($this->returnCallback(function () use (&$lockData): bool {
                 return $lockData !== null;
             }));
         $lockJsonMock->expects($this->any())
@@ -172,7 +172,7 @@ class InstallerTest extends TestCase
         return $comparable;
     }
 
-    public function provideInstaller()
+    public function provideInstaller(): array
     {
         $cases = array();
 
@@ -348,7 +348,7 @@ class InstallerTest extends TestCase
             }));
         $lockJsonMock->expects($this->any())
             ->method('exists')
-            ->will($this->returnCallback(function () use (&$lockData) {
+            ->will($this->returnCallback(function () use (&$lockData): bool {
                 return $lockData !== null;
             }));
         $lockJsonMock->expects($this->any())
@@ -390,7 +390,7 @@ class InstallerTest extends TestCase
         $install->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY);
         $install->addOption('no-dev', null, InputOption::VALUE_NONE);
         $install->addOption('dry-run', null, InputOption::VALUE_NONE);
-        $install->setCode(function ($input, $output) use ($installer) {
+        $install->setCode(function ($input, $output) use ($installer): int {
             $ignorePlatformReqs = $input->getOption('ignore-platform-reqs') ?: ($input->getOption('ignore-platform-req') ?: false);
 
             $installer
@@ -414,9 +414,9 @@ class InstallerTest extends TestCase
         $update->addOption('prefer-stable', null, InputOption::VALUE_NONE);
         $update->addOption('prefer-lowest', null, InputOption::VALUE_NONE);
         $update->addArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL);
-        $update->setCode(function ($input, $output) use ($installer) {
+        $update->setCode(function ($input, $output) use ($installer): int {
             $packages = $input->getArgument('packages');
-            $filteredPackages = array_filter($packages, function ($package) {
+            $filteredPackages = array_filter($packages, function ($package): bool {
                 return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
             });
             $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
@@ -483,7 +483,7 @@ class InstallerTest extends TestCase
                 $actualInstalled[] = $package;
             }
 
-            usort($actualInstalled, function ($a, $b) {
+            usort($actualInstalled, function ($a, $b): int {
                 return strcmp($a['name'], $b['name']);
             });
 
@@ -502,12 +502,12 @@ class InstallerTest extends TestCase
         }
     }
 
-    public function provideSlowIntegrationTests()
+    public function provideSlowIntegrationTests(): array
     {
         return $this->loadIntegrationTests('installer-slow/');
     }
 
-    public function provideIntegrationTests()
+    public function provideIntegrationTests(): array
     {
         return $this->loadIntegrationTests('installer/');
     }

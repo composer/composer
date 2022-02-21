@@ -53,7 +53,7 @@ class ProcessExecutorMock extends ProcessExecutor
     {
         /** @var array{cmd: string|list<string>, return?: int, stdout?: string, stderr?: string, callback?: callable} $default */
         $default = array('cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null);
-        $this->expectations = array_map(function ($expect) use ($default) {
+        $this->expectations = array_map(function ($expect) use ($default): array {
             if (is_string($expect)) {
                 $command = $expect;
                 $expect = $default;
@@ -89,7 +89,7 @@ class ProcessExecutorMock extends ProcessExecutor
         }
 
         if (count($this->expectations) > 0) {
-            $expectations = array_map(function ($expect) {
+            $expectations = array_map(function ($expect): string {
                 return is_array($expect['cmd']) ? implode(' ', $expect['cmd']) : $expect['cmd'];
             }, $this->expectations);
             throw new AssertionFailedError(

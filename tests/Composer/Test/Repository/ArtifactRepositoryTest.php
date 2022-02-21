@@ -53,7 +53,7 @@ class ArtifactRepositoryTest extends TestCase
 
         $this->assertSame($expectedPackages, $foundPackages);
 
-        $tarPackage = array_filter($repo->getPackages(), function (BasePackage $package) {
+        $tarPackage = array_filter($repo->getPackages(), function (BasePackage $package): bool {
             return $package->getPrettyName() === 'test/jsonInRootTarFile';
         });
         $this->assertCount(1, $tarPackage);

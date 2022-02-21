@@ -50,7 +50,7 @@ class PoolBuilderTest extends TestCase
         $minimumStability = !empty($root['minimum-stability']) ? $root['minimum-stability'] : 'stable';
         $stabilityFlags = !empty($root['stability-flags']) ? $root['stability-flags'] : array();
         $rootReferences = !empty($root['references']) ? $root['references'] : array();
-        $stabilityFlags = array_map(function ($stability) {
+        $stabilityFlags = array_map(function ($stability): int {
             return BasePackage::$stabilities[$stability];
         }, $stabilityFlags);
 
@@ -62,7 +62,7 @@ class PoolBuilderTest extends TestCase
 
         $loader = new ArrayLoader(null, true);
         $packageIds = array();
-        $loadPackage = function ($data) use ($loader, &$packageIds) {
+        $loadPackage = function ($data) use ($loader, &$packageIds): \Composer\Package\PackageInterface {
             /** @var ?int $id */
             $id = null;
             if (!empty($data['id'])) {

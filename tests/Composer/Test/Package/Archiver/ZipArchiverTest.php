@@ -31,7 +31,7 @@ class ZipArchiverTest extends ArchiverTest
         ));
     }
 
-    public function provideGitignoreExcludeNegationTestCases()
+    public function provideGitignoreExcludeNegationTestCases(): array
     {
         return array(
             array('!/docs'),

@@ -57,7 +57,7 @@ class ProxyHelperTest extends TestCase
         ProxyHelper::getProxyData();
     }
 
-    public function dataMalformed()
+    public function dataMalformed(): array
     {
         return array(
             'no-host' => array('localhost'),
@@ -79,7 +79,7 @@ class ProxyHelperTest extends TestCase
         $this->assertSame($expected, $httpProxy);
     }
 
-    public function dataFormatting()
+    public function dataFormatting(): array
     {
         // url, expected
         return array(
@@ -104,7 +104,7 @@ class ProxyHelperTest extends TestCase
         $this->assertSame($expected, $list[$index]);
     }
 
-    public function dataCaseOverrides()
+    public function dataCaseOverrides(): array
     {
         // server, expected, list index
         return array(
@@ -129,7 +129,7 @@ class ProxyHelperTest extends TestCase
         $this->assertSame($expected, $list[$index]);
     }
 
-    public function dataCGIOverrides()
+    public function dataCGIOverrides(): array
     {
         // server, expected, list index
         return array(
@@ -167,7 +167,7 @@ class ProxyHelperTest extends TestCase
         $this->assertEquals($expected, ProxyHelper::getContextOptions($url));
     }
 
-    public function dataContextOptions()
+    public function dataContextOptions(): array
     {
         // url, expected
         return array(
@@ -198,7 +198,7 @@ class ProxyHelperTest extends TestCase
         $this->assertEquals($expected, $options);
     }
 
-    public function dataRequestFullUri()
+    public function dataRequestFullUri(): array
     {
         $options = array('http' => array('request_fulluri' => true));
 

@@ -65,7 +65,7 @@ class NullIOTest extends TestCase
     {
         $io = new NullIO();
 
-        $this->assertEquals('foo', $io->askAndValidate('question', function ($x) {
+        $this->assertEquals('foo', $io->askAndValidate('question', function ($x): bool {
             return true;
         }, null, 'foo'));
     }

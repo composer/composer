@@ -115,7 +115,7 @@ class ArchiveDownloaderTest extends TestCase
         $this->assertEquals($expected, $url);
     }
 
-    public function provideUrls()
+    public function provideUrls(): array
     {
         return array(
             array('https://api.github.com/repos/composer/composer/zipball/master'),
@@ -154,7 +154,7 @@ class ArchiveDownloaderTest extends TestCase
         $this->assertEquals($expected, $url);
     }
 
-    public function provideBitbucketUrls()
+    public function provideBitbucketUrls(): array
     {
         return array(
             array('https://bitbucket.org/davereid/drush-virtualhost/get/77ca490c26ac818e024d1138aa8bd3677d1ef21f', 'zip'),

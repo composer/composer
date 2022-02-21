@@ -50,7 +50,7 @@ class InstallationManagerTest extends TestCase
         $installer
             ->expects($this->exactly(2))
             ->method('supports')
-            ->will($this->returnCallback(function ($arg) {
+            ->will($this->returnCallback(function ($arg): bool {
                 return $arg === 'vendor';
             }));
 
@@ -70,7 +70,7 @@ class InstallationManagerTest extends TestCase
         $installer
             ->expects($this->exactly(2))
             ->method('supports')
-            ->will($this->returnCallback(function ($arg) {
+            ->will($this->returnCallback(function ($arg): bool {
                 return $arg === 'vendor';
             }));
 
@@ -79,7 +79,7 @@ class InstallationManagerTest extends TestCase
         $installer2
             ->expects($this->exactly(1))
             ->method('supports')
-            ->will($this->returnCallback(function ($arg) {
+            ->will($this->returnCallback(function ($arg): bool {
                 return $arg === 'vendor';
             }));
 
@@ -212,7 +212,7 @@ class InstallationManagerTest extends TestCase
         $bundleInstaller
             ->expects($this->exactly(2))
             ->method('supports')
-            ->will($this->returnCallback(function ($arg) {
+            ->will($this->returnCallback(function ($arg): bool {
                 return $arg === 'bundles';
             }));
 

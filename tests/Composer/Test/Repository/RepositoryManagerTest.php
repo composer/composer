@@ -76,7 +76,7 @@ class RepositoryManagerTest extends TestCase
         $config
             ->expects($this->any())
             ->method('get')
-            ->will($this->returnCallback(function ($arg) use ($tmpdir) {
+            ->will($this->returnCallback(function ($arg) use ($tmpdir): ?string {
                 return 'cache-repo-dir' === $arg ? $tmpdir : null;
             }))
         ;
@@ -95,7 +95,7 @@ class RepositoryManagerTest extends TestCase
         $this->assertInstanceOf('Composer\Repository\RepositoryInterface', $rm->createRepository($type, $options));
     }
 
-    public function provideRepoCreationTestCases()
+    public function provideRepoCreationTestCases(): array
     {
         $cases = array(
             array('composer', array('url' => 'http://example.org')),

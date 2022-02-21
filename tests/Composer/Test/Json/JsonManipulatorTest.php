@@ -32,7 +32,7 @@ class JsonManipulatorTest extends TestCase
         $this->assertEquals($expected, $manipulator->getContents());
     }
 
-    public function linkProvider()
+    public function linkProvider(): array
     {
         return array(
             array(
@@ -1308,7 +1308,7 @@ class JsonManipulatorTest extends TestCase
         $this->assertEquals($expected, $manipulator->getContents());
     }
 
-    public function providerAddLinkAndSortPackages()
+    public function providerAddLinkAndSortPackages(): array
     {
         return array(
             array(
@@ -1395,7 +1395,7 @@ class JsonManipulatorTest extends TestCase
         }
     }
 
-    public function removeSubNodeProvider()
+    public function removeSubNodeProvider(): array
     {
         return array(
             'works on simple ones first' => array(

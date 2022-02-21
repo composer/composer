@@ -99,7 +99,7 @@ class GitBitbucketDriverTest extends TestCase
         $driver->getRootIdentifier();
     }
 
-    public function testDriver()
+    public function testDriver(): \Composer\Repository\Vcs\GitBitbucketDriver
     {
         $driver = $this->getDriver(array('url' => 'https://bitbucket.org/user/repo.git'));
 

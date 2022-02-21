@@ -34,7 +34,7 @@ class UrlTest extends TestCase
         $this->assertSame($expectedUrl, Url::updateDistReference($config, $url, $ref));
     }
 
-    public static function distRefsProvider()
+    public static function distRefsProvider(): array
     {
         return array(
             // github
@@ -75,7 +75,7 @@ class UrlTest extends TestCase
         $this->assertSame($expected, Url::sanitize($url));
     }
 
-    public static function sanitizeProvider()
+    public static function sanitizeProvider(): array
     {
         return array(
             // with scheme

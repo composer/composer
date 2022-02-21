@@ -174,7 +174,7 @@ class JsonConfigSourceTest extends TestCase
     /**
      * Provide data for testAddLink
      */
-    public function provideAddLinkData()
+    public function provideAddLinkData(): array
     {
         $empty = $this->fixturePath('composer-empty.json');
         $oneOfEverything = $this->fixturePath('composer-one-of-everything.json');
@@ -230,7 +230,7 @@ class JsonConfigSourceTest extends TestCase
     /**
      * Provide data for testRemoveLink
      */
-    public function provideRemoveLinkData()
+    public function provideRemoveLinkData(): array
     {
         $oneOfEverything = $this->fixturePath('composer-one-of-everything.json');
         $twoOfEverything = $this->fixturePath('composer-two-of-everything.json');

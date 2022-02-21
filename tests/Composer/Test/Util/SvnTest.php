@@ -36,7 +36,7 @@ class SvnTest extends TestCase
         $this->assertEquals($expect, $reflMethod->invoke($svn));
     }
 
-    public function urlProvider()
+    public function urlProvider(): array
     {
         return array(
             array('http://till:test@svn.example.org/', $this->getCmd(" --username 'till' --password 'test' ")),
