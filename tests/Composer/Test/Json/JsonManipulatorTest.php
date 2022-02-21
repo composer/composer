@@ -25,14 +25,14 @@ class JsonManipulatorTest extends TestCase
      * @param string $constraint
      * @param string $expected
      */
-    public function testAddLink($json, $type, $package, $constraint, $expected)
+    public function testAddLink($json, $type, $package, $constraint, $expected): void
     {
         $manipulator = new JsonManipulator($json);
         $this->assertTrue($manipulator->addLink($type, $package, $constraint));
         $this->assertEquals($expected, $manipulator->getContents());
     }
 
-    public function linkProvider()
+    public function linkProvider(): array
     {
         return array(
             array(
@@ -1301,14 +1301,14 @@ class JsonManipulatorTest extends TestCase
      * @param bool $sortPackages
      * @param string $expected
      */
-    public function testAddLinkAndSortPackages($json, $type, $package, $constraint, $sortPackages, $expected)
+    public function testAddLinkAndSortPackages($json, $type, $package, $constraint, $sortPackages, $expected): void
     {
         $manipulator = new JsonManipulator($json);
         $this->assertTrue($manipulator->addLink($type, $package, $constraint, $sortPackages));
         $this->assertEquals($expected, $manipulator->getContents());
     }
 
-    public function providerAddLinkAndSortPackages()
+    public function providerAddLinkAndSortPackages(): array
     {
         return array(
             array(
@@ -1385,7 +1385,7 @@ class JsonManipulatorTest extends TestCase
      * @param string $expected
      * @param ?string $expectedContent
      */
-    public function testRemoveSubNode($json, $name, $expected, $expectedContent = null)
+    public function testRemoveSubNode($json, $name, $expected, $expectedContent = null): void
     {
         $manipulator = new JsonManipulator($json);
 
@@ -1395,7 +1395,7 @@ class JsonManipulatorTest extends TestCase
         }
     }
 
-    public function removeSubNodeProvider()
+    public function removeSubNodeProvider(): array
     {
         return array(
             'works on simple ones first' => array(
@@ -1686,7 +1686,7 @@ class JsonManipulatorTest extends TestCase
         );
     }
 
-    public function testRemoveSubNodeFromRequire()
+    public function testRemoveSubNodeFromRequire(): void
     {
         $manipulator = new JsonManipulator('{
     "repositories": [
@@ -1736,7 +1736,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddSubNodeInRequire()
+    public function testAddSubNodeInRequire(): void
     {
         $manipulator = new JsonManipulator('{
     "repositories": [
@@ -1788,7 +1788,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddExtraWithPackage()
+    public function testAddExtraWithPackage(): void
     {
         //$this->markTestSkipped();
         $manipulator = new JsonManipulator('{
@@ -1829,7 +1829,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddConfigWithPackage()
+    public function testAddConfigWithPackage(): void
     {
         $manipulator = new JsonManipulator('{
     "repositories": [
@@ -1875,7 +1875,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddSuggestWithPackage()
+    public function testAddSuggestWithPackage(): void
     {
         $manipulator = new JsonManipulator('{
     "repositories": [
@@ -1915,7 +1915,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddRepositoryCanInitializeEmptyRepositories()
+    public function testAddRepositoryCanInitializeEmptyRepositories(): void
     {
         $manipulator = new JsonManipulator('{
   "repositories": {
@@ -1933,7 +1933,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddRepositoryCanInitializeFromScratch()
+    public function testAddRepositoryCanInitializeFromScratch(): void
     {
         $manipulator = new JsonManipulator("{
 \t\"a\": \"b\"
@@ -1951,7 +1951,7 @@ class JsonManipulatorTest extends TestCase
 ", $manipulator->getContents());
     }
 
-    public function testAddRepositoryCanAppend()
+    public function testAddRepositoryCanAppend(): void
     {
         $manipulator = new JsonManipulator('{
     "repositories": {
@@ -1977,7 +1977,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddRepositoryCanPrepend()
+    public function testAddRepositoryCanPrepend(): void
     {
         $manipulator = new JsonManipulator('{
     "repositories": {
@@ -2003,7 +2003,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddRepositoryCanOverrideDeepRepos()
+    public function testAddRepositoryCanOverrideDeepRepos(): void
     {
         $manipulator = new JsonManipulator('{
     "repositories": {
@@ -2025,7 +2025,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddConfigSettingEscapes()
+    public function testAddConfigSettingEscapes(): void
     {
         $manipulator = new JsonManipulator('{
     "config": {
@@ -2043,7 +2043,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddConfigSettingWorksFromScratch()
+    public function testAddConfigSettingWorksFromScratch(): void
     {
         $manipulator = new JsonManipulator('{
 }');
@@ -2059,7 +2059,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddConfigSettingCanAdd()
+    public function testAddConfigSettingCanAdd(): void
     {
         $manipulator = new JsonManipulator('{
     "config": {
@@ -2077,7 +2077,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddConfigSettingCanOverwrite()
+    public function testAddConfigSettingCanOverwrite(): void
     {
         $manipulator = new JsonManipulator('{
     "config": {
@@ -2096,7 +2096,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddConfigSettingCanOverwriteNumbers()
+    public function testAddConfigSettingCanOverwriteNumbers(): void
     {
         $manipulator = new JsonManipulator('{
     "config": {
@@ -2113,7 +2113,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddConfigSettingCanOverwriteArrays()
+    public function testAddConfigSettingCanOverwriteArrays(): void
     {
         $manipulator = new JsonManipulator('{
     "config": {
@@ -2148,7 +2148,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddConfigSettingCanAddSubKeyInEmptyConfig()
+    public function testAddConfigSettingCanAddSubKeyInEmptyConfig(): void
     {
         $manipulator = new JsonManipulator('{
     "config": {
@@ -2166,7 +2166,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddConfigSettingCanAddSubKeyInEmptyVal()
+    public function testAddConfigSettingCanAddSubKeyInEmptyVal(): void
     {
         $manipulator = new JsonManipulator('{
     "config": {
@@ -2195,7 +2195,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddConfigSettingCanAddSubKeyInHash()
+    public function testAddConfigSettingCanAddSubKeyInHash(): void
     {
         $manipulator = new JsonManipulator('{
     "config": {
@@ -2217,7 +2217,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddRootSettingDoesNotBreakDots()
+    public function testAddRootSettingDoesNotBreakDots(): void
     {
         $manipulator = new JsonManipulator('{
     "github-oauth": {
@@ -2235,7 +2235,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testRemoveConfigSettingCanRemoveSubKeyInHash()
+    public function testRemoveConfigSettingCanRemoveSubKeyInHash(): void
     {
         $manipulator = new JsonManipulator('{
     "config": {
@@ -2257,7 +2257,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testRemoveConfigSettingCanRemoveSubKeyInHashWithSiblings()
+    public function testRemoveConfigSettingCanRemoveSubKeyInHashWithSiblings(): void
     {
         $manipulator = new JsonManipulator('{
     "config": {
@@ -2281,7 +2281,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddMainKey()
+    public function testAddMainKey(): void
     {
         $manipulator = new JsonManipulator('{
     "foo": "bar"
@@ -2295,7 +2295,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddMainKeyWithContentHavingDollarSignFollowedByDigit()
+    public function testAddMainKeyWithContentHavingDollarSignFollowedByDigit(): void
     {
         $manipulator = new JsonManipulator('{
     "foo": "bar"
@@ -2309,7 +2309,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testAddMainKeyWithContentHavingDollarSignFollowedByDigit2()
+    public function testAddMainKeyWithContentHavingDollarSignFollowedByDigit2(): void
     {
         $manipulator = new JsonManipulator('{}');
 
@@ -2320,7 +2320,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testUpdateMainKey()
+    public function testUpdateMainKey(): void
     {
         $manipulator = new JsonManipulator('{
     "foo": "bar"
@@ -2333,7 +2333,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testUpdateMainKey2()
+    public function testUpdateMainKey2(): void
     {
         $manipulator = new JsonManipulator('{
     "a": {
@@ -2357,7 +2357,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testUpdateMainKey3()
+    public function testUpdateMainKey3(): void
     {
         $manipulator = new JsonManipulator('{
     "require": {
@@ -2380,7 +2380,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testUpdateMainKeyWithContentHavingDollarSignFollowedByDigit()
+    public function testUpdateMainKeyWithContentHavingDollarSignFollowedByDigit(): void
     {
         $manipulator = new JsonManipulator('{
     "foo": "bar"
@@ -2393,7 +2393,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testRemoveMainKey()
+    public function testRemoveMainKey(): void
     {
         $manipulator = new JsonManipulator('{
     "repositories": [
@@ -2453,7 +2453,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testRemoveMainKeyIfEmpty()
+    public function testRemoveMainKeyIfEmpty(): void
     {
         $manipulator = new JsonManipulator('{
     "repositories": [
@@ -2495,7 +2495,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testRemoveMainKeyRemovesKeyWhereValueIsNull()
+    public function testRemoveMainKeyRemovesKeyWhereValueIsNull(): void
     {
         $manipulator = new JsonManipulator(json_encode(array(
             'foo' => 9000,
@@ -2511,7 +2511,7 @@ class JsonManipulatorTest extends TestCase
         $this->assertJsonStringEqualsJsonString($expected, $manipulator->getContents());
     }
 
-    public function testIndentDetection()
+    public function testIndentDetection(): void
     {
         $manipulator = new JsonManipulator('{
 
@@ -2533,7 +2533,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testRemoveMainKeyAtEndOfFile()
+    public function testRemoveMainKeyAtEndOfFile(): void
     {
         $manipulator = new JsonManipulator('{
     "require": {
@@ -2562,7 +2562,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testEscapedUnicodeDoesNotCauseBacktrackLimitErrorGithubIssue8131()
+    public function testEscapedUnicodeDoesNotCauseBacktrackLimitErrorGithubIssue8131(): void
     {
         $manipulator = new JsonManipulator('{
   "description": "Some U\u00F1icode",
@@ -2582,7 +2582,7 @@ class JsonManipulatorTest extends TestCase
 ', $manipulator->getContents());
     }
 
-    public function testLargeFileDoesNotCauseBacktrackLimitErrorGithubIssue9595()
+    public function testLargeFileDoesNotCauseBacktrackLimitErrorGithubIssue9595(): void
     {
         $manipulator = new JsonManipulator('{
     "name": "leoloso/pop",

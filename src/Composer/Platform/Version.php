@@ -24,7 +24,7 @@ class Version
      * @param  bool        $isFips
      * @return string|null
      */
-    public static function parseOpenssl($opensslVersion, &$isFips)
+    public static function parseOpenssl($opensslVersion, &$isFips): ?string
     {
         $isFips = false;
 
@@ -43,7 +43,7 @@ class Version
      * @param  string      $libjpegVersion
      * @return string|null
      */
-    public static function parseLibjpeg($libjpegVersion)
+    public static function parseLibjpeg($libjpegVersion): ?string
     {
         if (!Preg::isMatch('/^(?<major>\d+)(?<minor>[a-z]*)$/', $libjpegVersion, $matches)) {
             return null;
@@ -56,7 +56,7 @@ class Version
      * @param  string      $zoneinfoVersion
      * @return string|null
      */
-    public static function parseZoneinfoVersion($zoneinfoVersion)
+    public static function parseZoneinfoVersion($zoneinfoVersion): ?string
     {
         if (!Preg::isMatch('/^(?<year>\d{4})(?<revision>[a-z]*)$/', $zoneinfoVersion, $matches)) {
             return null;
@@ -71,7 +71,7 @@ class Version
      * @param  string $alpha
      * @return int
      */
-    private static function convertAlphaVersionToIntVersion($alpha)
+    private static function convertAlphaVersionToIntVersion($alpha): int
     {
         return strlen($alpha) * (-ord('a') + 1) + array_sum(array_map('ord', str_split($alpha)));
     }
@@ -80,7 +80,7 @@ class Version
      * @param  int    $versionId
      * @return string
      */
-    public static function convertLibxpmVersionId($versionId)
+    public static function convertLibxpmVersionId($versionId): string
     {
         return self::convertVersionId($versionId, 100);
     }
@@ -89,7 +89,7 @@ class Version
      * @param  int    $versionId
      * @return string
      */
-    public static function convertOpenldapVersionId($versionId)
+    public static function convertOpenldapVersionId($versionId): string
     {
         return self::convertVersionId($versionId, 100);
     }
@@ -100,7 +100,7 @@ class Version
      *
      * @return string
      */
-    private static function convertVersionId($versionId, $base)
+    private static function convertVersionId($versionId, $base): string
     {
         return sprintf(
             '%d.%d.%d',

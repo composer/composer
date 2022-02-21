@@ -542,7 +542,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     /**
      * @return bool
      */
-    private function shouldRethrowTransportException(TransportException $e)
+    private function shouldRethrowTransportException(TransportException $e): bool
     {
         return in_array($e->getCode(), array(401, 403, 429), true) || $e->getCode() >= 500;
     }

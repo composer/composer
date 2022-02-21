@@ -20,7 +20,7 @@ use Composer\Test\TestCase;
 
 class LockerTest extends TestCase
 {
-    public function testIsLocked()
+    public function testIsLocked(): void
     {
         $json = $this->createJsonFileMock();
         $locker = new Locker(
@@ -42,7 +42,7 @@ class LockerTest extends TestCase
         $this->assertTrue($locker->isLocked());
     }
 
-    public function testGetNotLockedPackages()
+    public function testGetNotLockedPackages(): void
     {
         $json = $this->createJsonFileMock();
         $inst = $this->createInstallationManagerMock();
@@ -59,7 +59,7 @@ class LockerTest extends TestCase
         $locker->getLockedRepository();
     }
 
-    public function testGetLockedPackages()
+    public function testGetLockedPackages(): void
     {
         $json = $this->createJsonFileMock();
         $inst = $this->createInstallationManagerMock();
@@ -85,7 +85,7 @@ class LockerTest extends TestCase
         $this->assertNotNull($repo->findPackage('pkg2', '0.1.10'));
     }
 
-    public function testSetLockData()
+    public function testSetLockData(): void
     {
         $json = $this->createJsonFileMock();
         $inst = $this->createInstallationManagerMock();
@@ -158,7 +158,7 @@ class LockerTest extends TestCase
         $locker->setLockData(array($package1, $package2), array(), array(), array(), array(), 'dev', array(), false, false, array('foo/bar' => '1.0'));
     }
 
-    public function testLockBadPackages()
+    public function testLockBadPackages(): void
     {
         $json = $this->createJsonFileMock();
         $inst = $this->createInstallationManagerMock();
@@ -176,7 +176,7 @@ class LockerTest extends TestCase
         $locker->setLockData(array($package1), array(), array(), array(), array(), 'dev', array(), false, false, array());
     }
 
-    public function testIsFresh()
+    public function testIsFresh(): void
     {
         $json = $this->createJsonFileMock();
         $inst = $this->createInstallationManagerMock();
@@ -192,7 +192,7 @@ class LockerTest extends TestCase
         $this->assertTrue($locker->isFresh());
     }
 
-    public function testIsFreshFalse()
+    public function testIsFreshFalse(): void
     {
         $json = $this->createJsonFileMock();
         $inst = $this->createInstallationManagerMock();
@@ -207,7 +207,7 @@ class LockerTest extends TestCase
         $this->assertFalse($locker->isFresh());
     }
 
-    public function testIsFreshWithContentHash()
+    public function testIsFreshWithContentHash(): void
     {
         $json = $this->createJsonFileMock();
         $inst = $this->createInstallationManagerMock();
@@ -223,7 +223,7 @@ class LockerTest extends TestCase
         $this->assertTrue($locker->isFresh());
     }
 
-    public function testIsFreshWithContentHashAndNoHash()
+    public function testIsFreshWithContentHashAndNoHash(): void
     {
         $json = $this->createJsonFileMock();
         $inst = $this->createInstallationManagerMock();
@@ -239,7 +239,7 @@ class LockerTest extends TestCase
         $this->assertTrue($locker->isFresh());
     }
 
-    public function testIsFreshFalseWithContentHash()
+    public function testIsFreshFalseWithContentHash(): void
     {
         $json = $this->createJsonFileMock();
         $inst = $this->createInstallationManagerMock();

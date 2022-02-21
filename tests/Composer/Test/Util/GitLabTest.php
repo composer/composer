@@ -31,7 +31,7 @@ class GitLabTest extends TestCase
     /** @var string */
     private $token = 'gitlabtoken';
 
-    public function testUsernamePasswordAuthenticationFlow()
+    public function testUsernamePasswordAuthenticationFlow(): void
     {
         $io = $this->getIOMock();
         $io
@@ -70,7 +70,7 @@ class GitLabTest extends TestCase
         $this->assertTrue($gitLab->authorizeOAuthInteractively('http', $this->origin, $this->message));
     }
 
-    public function testUsernamePasswordFailure()
+    public function testUsernamePasswordFailure(): void
     {
         self::expectException('RuntimeException');
         self::expectExceptionMessage('Invalid GitLab credentials 5 times in a row, aborting.');

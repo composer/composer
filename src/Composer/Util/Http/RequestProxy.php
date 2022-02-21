@@ -47,7 +47,7 @@ class RequestProxy
      *
      * @return mixed[]
      */
-    public function getContextOptions()
+    public function getContextOptions(): array
     {
         return $this->contextOptions;
     }
@@ -58,7 +58,7 @@ class RequestProxy
      * @param  string|null $format Output format specifier
      * @return string      Safe proxy, no proxy or empty
      */
-    public function getFormattedUrl($format = '')
+    public function getFormattedUrl($format = ''): string
     {
         $result = '';
         if ($this->formattedUrl) {
@@ -74,7 +74,7 @@ class RequestProxy
      *
      * @return string Proxy url or empty
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
@@ -84,7 +84,7 @@ class RequestProxy
      *
      * @return bool False if not secure or there is no proxy
      */
-    public function isSecure()
+    public function isSecure(): bool
     {
         return $this->isSecure;
     }

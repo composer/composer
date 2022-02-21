@@ -38,7 +38,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function initialize()
+    public function initialize(): void
     {
         // Make sure fossil is installed and reachable.
         $this->checkFossil();
@@ -71,7 +71,7 @@ class FossilDriver extends VcsDriver
      *
      * @return void
      */
-    protected function checkFossil()
+    protected function checkFossil(): void
     {
         if (0 !== $this->process->execute('fossil version', $ignoredOutput)) {
             throw new \RuntimeException("fossil was not found, check that it is installed and in your PATH env.\n\n" . $this->process->getErrorOutput());
@@ -83,7 +83,7 @@ class FossilDriver extends VcsDriver
      *
      * @return void
      */
-    protected function updateLocalRepo()
+    protected function updateLocalRepo(): void
     {
         $fs = new Filesystem();
         $fs->ensureDirectoryExists($this->checkoutDir);
@@ -121,7 +121,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getRootIdentifier()
+    public function getRootIdentifier(): string
     {
         if (null === $this->rootIdentifier) {
             $this->rootIdentifier = 'trunk';
@@ -133,7 +133,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
@@ -141,7 +141,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getSource($identifier)
+    public function getSource($identifier): array
     {
         return array('type' => 'fossil', 'url' => $this->getUrl(), 'reference' => $identifier);
     }
@@ -149,7 +149,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getDist($identifier)
+    public function getDist($identifier): ?array
     {
         return null;
     }
@@ -157,7 +157,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getFileContent($file, $identifier)
+    public function getFileContent($file, $identifier): ?string
     {
         $command = sprintf('fossil cat -r %s -- %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
         $this->process->execute($command, $content, $this->checkoutDir);
@@ -172,7 +172,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getChangeDate($identifier)
+    public function getChangeDate($identifier): ?\DateTime
     {
         $this->process->execute('fossil finfo -b -n 1 composer.json', $output, $this->checkoutDir);
         list(, $date) = explode(' ', trim($output), 3);
@@ -183,7 +183,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getTags()
+    public function getTags(): array
     {
         if (null === $this->tags) {
             $tags = array();
@@ -202,7 +202,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getBranches()
+    public function getBranches(): array
     {
         if (null === $this->branches) {
             $branches = array();
@@ -222,7 +222,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public static function supports(IOInterface $io, Config $config, $url, $deep = false)
+    public static function supports(IOInterface $io, Config $config, $url, $deep = false): bool
     {
         if (Preg::isMatch('#(^(?:https?|ssh)://(?:[^@]@)?(?:chiselapp\.com|fossil\.))#i', $url)) {
             return true;

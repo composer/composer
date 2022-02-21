@@ -34,7 +34,7 @@ class LicensesCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('licenses')
@@ -163,14 +163,14 @@ EOT
      * @param  array<string, PackageInterface> $bucket
      * @return array<string, PackageInterface>
      */
-    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, $bucket = array())
+    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, $bucket = array()): array
     {
         $requires = array_keys($package->getRequires());
 
         $packageListNames = array_keys($bucket);
         $packages = array_filter(
             $repo->getPackages(),
-            function ($package) use ($requires, $packageListNames) {
+            function ($package) use ($requires, $packageListNames): bool {
                 return in_array($package->getName(), $requires) && !in_array($package->getName(), $packageListNames);
             }
         );
@@ -191,7 +191,7 @@ EOT
      * @param  array<string, PackageInterface> $bucket   the list to add packages to
      * @return array<string, PackageInterface>
      */
-    public function appendPackages(array $packages, array $bucket)
+    public function appendPackages(array $packages, array $bucket): array
     {
         foreach ($packages as $package) {
             $bucket[$package->getName()] = $package;

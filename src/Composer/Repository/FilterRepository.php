@@ -62,7 +62,7 @@ class FilterRepository implements RepositoryInterface
         $this->repo = $repo;
     }
 
-    public function getRepoName()
+    public function getRepoName(): string
     {
         return $this->repo->getRepoName();
     }
@@ -72,7 +72,7 @@ class FilterRepository implements RepositoryInterface
      *
      * @return RepositoryInterface
      */
-    public function getRepository()
+    public function getRepository(): RepositoryInterface
     {
         return $this->repo;
     }
@@ -80,7 +80,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function hasPackage(PackageInterface $package)
+    public function hasPackage(PackageInterface $package): bool
     {
         return $this->repo->hasPackage($package);
     }
@@ -88,7 +88,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function findPackage($name, $constraint)
+    public function findPackage($name, $constraint): ?BasePackage
     {
         if (!$this->isAllowed($name)) {
             return null;
@@ -100,7 +100,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function findPackages($name, $constraint = null)
+    public function findPackages($name, $constraint = null): array
     {
         if (!$this->isAllowed($name)) {
             return array();
@@ -112,7 +112,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array())
+    public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array()): array
     {
         foreach ($packageMap as $name => $constraint) {
             if (!$this->isAllowed($name)) {
@@ -135,7 +135,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function search($query, $mode = 0, $type = null)
+    public function search($query, $mode = 0, $type = null): array
     {
         $result = array();
 
@@ -151,7 +151,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function getPackages()
+    public function getPackages(): array
     {
         $result = array();
         foreach ($this->repo->getPackages() as $package) {
@@ -166,7 +166,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function getProviders($packageName)
+    public function getProviders($packageName): array
     {
         $result = array();
         foreach ($this->repo->getProviders($packageName) as $name => $provider) {
@@ -195,7 +195,7 @@ class FilterRepository implements RepositoryInterface
      *
      * @return bool
      */
-    private function isAllowed($name)
+    private function isAllowed($name): bool
     {
         if (!$this->only && !$this->exclude) {
             return true;

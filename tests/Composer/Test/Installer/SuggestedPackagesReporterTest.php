@@ -42,7 +42,7 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::__construct
      */
-    public function testConstructor()
+    public function testConstructor(): void
     {
         $this->io->expects($this->once())
             ->method('write');
@@ -54,7 +54,7 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::getPackages
      */
-    public function testGetPackagesEmptyByDefault()
+    public function testGetPackagesEmptyByDefault(): void
     {
         $this->assertEmpty($this->suggestedPackagesReporter->getPackages());
     }
@@ -63,7 +63,7 @@ class SuggestedPackagesReporterTest extends TestCase
      * @covers ::getPackages
      * @covers ::addPackage
      */
-    public function testGetPackages()
+    public function testGetPackages(): void
     {
         $suggestedPackage = $this->getSuggestedPackageArray();
         $this->suggestedPackagesReporter->addPackage(
@@ -83,7 +83,7 @@ class SuggestedPackagesReporterTest extends TestCase
      *
      * @covers ::addPackage
      */
-    public function testAddPackageAppends()
+    public function testAddPackageAppends(): void
     {
         $suggestedPackageA = $this->getSuggestedPackageArray();
         $suggestedPackageB = $this->getSuggestedPackageArray();
@@ -108,7 +108,7 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::addSuggestionsFromPackage
      */
-    public function testAddSuggestionsFromPackage()
+    public function testAddSuggestionsFromPackage(): void
     {
         $package = $this->createPackageMock();
         $package->expects($this->once())
@@ -139,7 +139,7 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::output
      */
-    public function testOutput()
+    public function testOutput(): void
     {
         $this->suggestedPackagesReporter->addPackage('a', 'b', 'c');
 
@@ -157,7 +157,7 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::output
      */
-    public function testOutputWithNoSuggestionReason()
+    public function testOutputWithNoSuggestionReason(): void
     {
         $this->suggestedPackagesReporter->addPackage('a', 'b', '');
 
@@ -175,7 +175,7 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::output
      */
-    public function testOutputIgnoresFormatting()
+    public function testOutputIgnoresFormatting(): void
     {
         $this->suggestedPackagesReporter->addPackage('source', 'target1', "\x1b[1;37;42m Like us\r\non Facebook \x1b[0m");
         $this->suggestedPackagesReporter->addPackage('source', 'target2', "<bg=green>Like us on Facebook</>");
@@ -199,7 +199,7 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::output
      */
-    public function testOutputMultiplePackages()
+    public function testOutputMultiplePackages(): void
     {
         $this->suggestedPackagesReporter->addPackage('a', 'b', 'c');
         $this->suggestedPackagesReporter->addPackage('source package', 'target', 'because reasons');
@@ -221,7 +221,7 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::output
      */
-    public function testOutputSkipInstalledPackages()
+    public function testOutputSkipInstalledPackages(): void
     {
         $repository = $this->getMockBuilder('Composer\Repository\InstalledRepository')->disableOriginalConstructor()->getMock();
         $package1 = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -259,7 +259,7 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @covers ::output
      */
-    public function testOutputNotGettingInstalledPackagesWhenNoSuggestions()
+    public function testOutputNotGettingInstalledPackagesWhenNoSuggestions(): void
     {
         $repository = $this->getMockBuilder('Composer\Repository\InstalledRepository')->disableOriginalConstructor()->getMock();
         $repository->expects($this->exactly(0))
@@ -271,7 +271,7 @@ class SuggestedPackagesReporterTest extends TestCase
     /**
      * @return array<string, string>
      */
-    private function getSuggestedPackageArray()
+    private function getSuggestedPackageArray(): array
     {
         return array(
             'source' => 'a',

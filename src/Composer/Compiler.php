@@ -44,7 +44,7 @@ class Compiler
      *
      * @throws \RuntimeException
      */
-    public function compile($pharFile = 'composer.phar')
+    public function compile($pharFile = 'composer.phar'): void
     {
         if (file_exists($pharFile)) {
             unlink($pharFile);
@@ -82,7 +82,7 @@ class Compiler
 
         $phar->startBuffering();
 
-        $finderSort = function ($a, $b) {
+        $finderSort = function ($a, $b): int {
             return strcmp(strtr($a->getRealPath(), '\\', '/'), strtr($b->getRealPath(), '\\', '/'));
         };
 
@@ -201,7 +201,7 @@ class Compiler
      * @param  \SplFileInfo $file
      * @return string
      */
-    private function getRelativeFilePath($file)
+    private function getRelativeFilePath($file): string
     {
         $realPath = $file->getRealPath();
         $pathPrefix = dirname(__DIR__, 2).DIRECTORY_SEPARATOR;
@@ -217,7 +217,7 @@ class Compiler
      *
      * @return void
      */
-    private function addFile(\Phar $phar, \SplFileInfo $file, $strip = true)
+    private function addFile(\Phar $phar, \SplFileInfo $file, $strip = true): void
     {
         $path = $this->getRelativeFilePath($file);
         $content = file_get_contents($file);
@@ -245,7 +245,7 @@ class Compiler
     /**
      * @return void
      */
-    private function addComposerBin(\Phar $phar)
+    private function addComposerBin(\Phar $phar): void
     {
         $content = file_get_contents(__DIR__.'/../../bin/composer');
         $content = Preg::replace('{^#!/usr/bin/env php\s*}', '', $content);
@@ -258,7 +258,7 @@ class Compiler
      * @param  string $source A PHP string
      * @return string The PHP string with the whitespace removed
      */
-    private function stripWhitespace($source)
+    private function stripWhitespace($source): string
     {
         if (!function_exists('token_get_all')) {
             return $source;
@@ -289,7 +289,7 @@ class Compiler
     /**
      * @return string
      */
-    private function getStub()
+    private function getStub(): string
     {
         $stub = <<<'EOF'
 #!/usr/bin/env php

@@ -25,14 +25,14 @@ use Symfony\Component\Console\Output\StreamOutput;
 
 class ProcessExecutorTest extends TestCase
 {
-    public function testExecuteCapturesOutput()
+    public function testExecuteCapturesOutput(): void
     {
         $process = new ProcessExecutor;
         $process->execute('echo foo', $output);
         $this->assertEquals("foo".PHP_EOL, $output);
     }
 
-    public function testExecuteOutputsIfNotCaptured()
+    public function testExecuteOutputsIfNotCaptured(): void
     {
         $process = new ProcessExecutor;
         ob_start();
@@ -41,7 +41,7 @@ class ProcessExecutorTest extends TestCase
         $this->assertEquals("foo".PHP_EOL, $output);
     }
 
-    public function testUseIOIsNotNullAndIfNotCaptured()
+    public function testUseIOIsNotNullAndIfNotCaptured(): void
     {
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io->expects($this->once())
@@ -52,14 +52,14 @@ class ProcessExecutorTest extends TestCase
         $process->execute('echo foo');
     }
 
-    public function testExecuteCapturesStderr()
+    public function testExecuteCapturesStderr(): void
     {
         $process = new ProcessExecutor;
         $process->execute('cat foo', $output);
         $this->assertNotNull($process->getErrorOutput());
     }
 
-    public function testTimeout()
+    public function testTimeout(): void
     {
         ProcessExecutor::setTimeout(1);
         $process = new ProcessExecutor;
@@ -73,14 +73,14 @@ class ProcessExecutorTest extends TestCase
      * @param string $command
      * @param string $expectedCommandOutput
      */
-    public function testHidePasswords($command, $expectedCommandOutput)
+    public function testHidePasswords($command, $expectedCommandOutput): void
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
         $process->execute($command, $output);
         $this->assertEquals('Executing command (CWD): ' . $expectedCommandOutput, trim($buffer->getOutput()));
     }
 
-    public function hidePasswordProvider()
+    public function hidePasswordProvider(): array
     {
         return array(
             array('echo https://foo:bar@example.org/', 'echo https://foo:***@example.org/'),
@@ -91,14 +91,14 @@ class ProcessExecutorTest extends TestCase
         );
     }
 
-    public function testDoesntHidePorts()
+    public function testDoesntHidePorts(): void
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
         $process->execute('echo https://localhost:1234/', $output);
         $this->assertEquals('Executing command (CWD): echo https://localhost:1234/', trim($buffer->getOutput()));
     }
 
-    public function testSplitLines()
+    public function testSplitLines(): void
     {
         $process = new ProcessExecutor;
         $this->assertEquals(array(), $process->splitLines(''));
@@ -109,7 +109,7 @@ class ProcessExecutorTest extends TestCase
         $this->assertEquals(array('foo', 'bar'), $process->splitLines("foo\r\nbar\n"));
     }
 
-    public function testConsoleIODoesNotFormatSymfonyConsoleStyle()
+    public function testConsoleIODoesNotFormatSymfonyConsoleStyle(): void
     {
         $output = new BufferedOutput(OutputInterface::VERBOSITY_NORMAL, true);
         $process = new ProcessExecutor(new ConsoleIO(new ArrayInput(array()), $output, new HelperSet(array())));
@@ -118,7 +118,7 @@ class ProcessExecutorTest extends TestCase
         $this->assertSame('<error>foo</error>'.PHP_EOL, $output->fetch());
     }
 
-    public function testExecuteAsyncCancel()
+    public function testExecuteAsyncCancel(): void
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
         $process->enableAsync();
@@ -141,7 +141,7 @@ class ProcessExecutorTest extends TestCase
      * @param string            $win
      * @param string            $unix
      */
-    public function testEscapeArgument($argument, $win, $unix)
+    public function testEscapeArgument($argument, $win, $unix): void
     {
         $expected = defined('PHP_WINDOWS_VERSION_BUILD') ? $win : $unix;
         $this->assertSame($expected, ProcessExecutor::escape($argument));
@@ -151,7 +151,7 @@ class ProcessExecutorTest extends TestCase
      * Each named test is an array of:
      *   argument, win-expected, unix-expected
      */
-    public function dataEscapeArguments()
+    public function dataEscapeArguments(): array
     {
         return array(
             // empty argument - must be quoted

@@ -67,7 +67,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @return string
      */
-    public static function getUniqueTmpDirectory()
+    public static function getUniqueTmpDirectory(): string
     {
         $attempts = 5;
         $root = sys_get_temp_dir();
@@ -86,7 +86,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @return VersionParser
      */
-    protected static function getVersionParser()
+    protected static function getVersionParser(): VersionParser
     {
         if (!self::$parser) {
             self::$parser = new VersionParser();
@@ -100,7 +100,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param string $version
      * @return Constraint
      */
-    protected function getVersionConstraint($operator, $version)
+    protected function getVersionConstraint($operator, $version): Constraint
     {
         $constraint = new Constraint(
             $operator,
@@ -122,6 +122,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @return CompletePackage|CompleteAliasPackage|RootPackage|RootAliasPackage
      *
      * @phpstan-param class-string<PackageClass> $class
+     * @phpstan-return PackageClass
      */
     protected function getPackage($name, $version, $class = 'Composer\Package\CompletePackage')
     {
@@ -134,7 +135,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param string $version
      * @return AliasPackage|RootAliasPackage|CompleteAliasPackage
      */
-    protected function getAliasPackage(Package $package, $version)
+    protected function getAliasPackage(Package $package, $version): \Composer\Package\AliasPackage
     {
         $normVersion = self::getVersionParser()->normalize($version);
 
@@ -152,7 +153,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param array<string, array<string, string>> $config
      * @return void
      */
-    protected function configureLinks(PackageInterface $package, array $config)
+    protected function configureLinks(PackageInterface $package, array $config): void
     {
         $arrayLoader = new ArrayLoader();
 
@@ -175,7 +176,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param  string $directory
      * @return void
      */
-    protected static function ensureDirectoryExistsAndClear($directory)
+    protected static function ensureDirectoryExistsAndClear($directory): void
     {
         $fs = new Filesystem();
 
@@ -195,7 +196,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      *
      * @throws \PHPUnit\Framework\SkippedTestError
      */
-    protected function skipIfNotExecutable($executableName)
+    protected function skipIfNotExecutable($executableName): void
     {
         if (!isset(self::$executableCache[$executableName])) {
             $finder = new ExecutableFinder();
@@ -214,7 +215,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      *
      * @return string The transformed command
      */
-    protected function getCmd($cmd)
+    protected function getCmd($cmd): string
     {
         if (Platform::isWindows()) {
             $cmd = Preg::replaceCallback("/('[^']*')/", function ($m) {

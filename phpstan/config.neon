@@ -31,15 +31,11 @@ parameters:
         - '~^Undefined variable: \$vendorDir$~'
         - '~^Undefined variable: \$baseDir$~'
 
-        # variable defined in eval
-        - '~^Undefined variable: \$res$~'
-
         # we don't have different constructors for parent/child
         - '~^Unsafe usage of new static\(\)\.$~'
 
         # Ignore some irrelevant errors in test files
-        - '~Method Composer\\Test\\[^:]+::(setUp(BeforeClass)?|tearDown(AfterClass)?|test[^(]+)\(\) has no return type specified.~'
-        - '~Method Composer\\Test\\[^:]+::(data\w+|provide\w+|\w+?Provider)\(\) has no return type specified.~'
+        - '~Method Composer\\Test\\[^:]+::(data\w+|provide\w+|\w+?Provider)\(\) (has no return type specified.|return type has no value type specified in iterable type array.)~'
 
         # PHPUnit assertions as instance methods
         - '~Dynamic call to static method PHPUnit\\Framework\\Assert::\w+\(\)~'

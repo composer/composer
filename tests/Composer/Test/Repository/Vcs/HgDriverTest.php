@@ -50,14 +50,14 @@ class HgDriverTest extends TestCase
      *
      * @param string $repositoryUrl
      */
-    public function testSupports($repositoryUrl)
+    public function testSupports($repositoryUrl): void
     {
         $this->assertTrue(
             HgDriver::supports($this->io, $this->config, $repositoryUrl)
         );
     }
 
-    public function supportsDataProvider()
+    public function supportsDataProvider(): array
     {
         return array(
             array('ssh://bitbucket.org/user/repo'),

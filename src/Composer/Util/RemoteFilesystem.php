@@ -106,7 +106,7 @@ class RemoteFilesystem
      *
      * @return bool true
      */
-    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array())
+    public function copy($originUrl, $fileUrl, $fileName, $progress = true, $options = array()): bool
     {
         return $this->get($originUrl, $fileUrl, $options, $fileName, $progress);
     }
@@ -131,7 +131,7 @@ class RemoteFilesystem
      *
      * @return mixed[] Options
      */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }
@@ -142,7 +142,7 @@ class RemoteFilesystem
      * @param  mixed[] $options
      * @return void
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->options = array_replace_recursive($this->options, $options);
     }
@@ -152,7 +152,7 @@ class RemoteFilesystem
      *
      * @return bool
      */
-    public function isTlsDisabled()
+    public function isTlsDisabled(): bool
     {
         return $this->disableTls === true;
     }
@@ -162,7 +162,7 @@ class RemoteFilesystem
      *
      * @return string[]
      */
-    public function getLastHeaders()
+    public function getLastHeaders(): array
     {
         return $this->lastHeaders;
     }
@@ -171,7 +171,7 @@ class RemoteFilesystem
      * @param  string[] $headers array of returned headers like from getLastHeaders()
      * @return int|null
      */
-    public static function findStatusCode(array $headers)
+    public static function findStatusCode(array $headers): ?int
     {
         $value = null;
         foreach ($headers as $header) {
@@ -189,7 +189,7 @@ class RemoteFilesystem
      * @param  string[]    $headers array of returned headers like from getLastHeaders()
      * @return string|null
      */
-    public function findStatusMessage(array $headers)
+    public function findStatusMessage(array $headers): ?string
     {
         $value = null;
         foreach ($headers as $header) {
@@ -290,7 +290,7 @@ class RemoteFilesystem
         $errorMessage = '';
         $errorCode = 0;
         $result = false;
-        set_error_handler(function ($code, $msg) use (&$errorMessage) {
+        set_error_handler(function ($code, $msg) use (&$errorMessage): bool {
             if ($errorMessage) {
                 $errorMessage .= "\n";
             }
@@ -445,7 +445,7 @@ class RemoteFilesystem
             }
 
             $errorMessage = '';
-            set_error_handler(function ($code, $msg) use (&$errorMessage) {
+            set_error_handler(function ($code, $msg) use (&$errorMessage): bool {
                 if ($errorMessage) {
                     $errorMessage .= "\n";
                 }
@@ -554,7 +554,7 @@ class RemoteFilesystem
      *
      * @throws TransportException
      */
-    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax)
+    protected function callbackGet($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax): void
     {
         switch ($notificationCode) {
             case STREAM_NOTIFY_FAILURE:
@@ -592,7 +592,7 @@ class RemoteFilesystem
      *
      * @return void
      */
-    protected function promptAuthAndRetry($httpStatus, $reason = null, $headers = array())
+    protected function promptAuthAndRetry($httpStatus, $reason = null, $headers = array()): void
     {
         $result = $this->authHelper->promptAuthIfNeeded($this->fileUrl, $this->originUrl, $httpStatus, $reason, $headers);
 
@@ -610,7 +610,7 @@ class RemoteFilesystem
      *
      * @return mixed[]
      */
-    protected function getOptionsForUrl($originUrl, $additionalOptions)
+    protected function getOptionsForUrl($originUrl, $additionalOptions): array
     {
         $tlsOptions = array();
         $headers = array();
@@ -698,7 +698,7 @@ class RemoteFilesystem
      *
      * @return string|null
      */
-    private function decodeResult($result, $http_response_header)
+    private function decodeResult($result, $http_response_header): ?string
     {
         // decode gzip
         if ($result && extension_loaded('zlib')) {
@@ -722,7 +722,7 @@ class RemoteFilesystem
      *
      * @return string|null
      */
-    private function normalizeResult($result)
+    private function normalizeResult($result): ?string
     {
         if ($result === false) {
             return null;

@@ -116,7 +116,7 @@ abstract class ArchiveDownloader extends FileDownloader
             $promise = \React\Promise\resolve();
         }
 
-        return $promise->then(function () use ($package, $filesystem, $fileName, $temporaryDir, $path) {
+        return $promise->then(function () use ($package, $filesystem, $fileName, $temporaryDir, $path): \React\Promise\PromiseInterface {
             $filesystem->unlink($fileName);
 
             /**
@@ -125,7 +125,7 @@ abstract class ArchiveDownloader extends FileDownloader
              * @param  string         $dir Directory
              * @return \SplFileInfo[]
              */
-            $getFolderContent = function ($dir) {
+            $getFolderContent = function ($dir): array {
                 $finder = Finder::create()
                     ->ignoreVCS(false)
                     ->ignoreDotFiles(false)

@@ -38,7 +38,7 @@ class ClassMapGenerator
      * @param string                     $file The name of the class map file
      * @return void
      */
-    public static function dump($dirs, $file)
+    public static function dump($dirs, $file): void
     {
         $maps = array();
 
@@ -61,7 +61,7 @@ class ClassMapGenerator
      * @return array<class-string, string> A class map array
      * @throws \RuntimeException When the path is neither an existing file nor directory
      */
-    public static function createMap($path, $excluded = null, IOInterface $io = null, $namespace = null, $autoloadType = null, &$scannedFiles = array())
+    public static function createMap($path, $excluded = null, IOInterface $io = null, $namespace = null, $autoloadType = null, &$scannedFiles = array()): array
     {
         $basePath = $path;
         if (is_string($path)) {
@@ -157,7 +157,7 @@ class ClassMapGenerator
      * @param  ?IOInterface             $io            IO object
      * @return array<int, class-string> valid classes
      */
-    private static function filterByNamespace($classes, $filePath, $baseNamespace, $namespaceType, $basePath, $io)
+    private static function filterByNamespace($classes, $filePath, $baseNamespace, $namespaceType, $basePath, $io): array
     {
         $validClasses = array();
         $rejectedClasses = array();
@@ -215,7 +215,7 @@ class ClassMapGenerator
      * @throws \RuntimeException
      * @return array<int, class-string> The found classes
      */
-    private static function findClasses($path)
+    private static function findClasses($path): array
     {
         $extraTypes = self::getExtraTypes();
 
@@ -296,7 +296,7 @@ class ClassMapGenerator
     /**
      * @return string
      */
-    private static function getExtraTypes()
+    private static function getExtraTypes(): string
     {
         static $extraTypes = null;
 

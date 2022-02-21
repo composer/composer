@@ -788,7 +788,7 @@ class Package extends BasePackage
      * @param  string $source
      * @return array<string, Link>
      */
-    private function convertLinksToMap(array $links, $source)
+    private function convertLinksToMap(array $links, $source): array
     {
         trigger_error('Package::'.$source.' must be called with a map of lowercased package name => Link object, got a indexed array, this is deprecated and you should fix your usage.');
         $newLinks = array();

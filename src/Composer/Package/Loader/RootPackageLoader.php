@@ -194,7 +194,7 @@ class RootPackageLoader extends ArrayLoader
      *
      * @return list<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
-    private function extractAliases(array $requires, array $aliases)
+    private function extractAliases(array $requires, array $aliases): array
     {
         foreach ($requires as $reqName => $reqVersion) {
             if (Preg::isMatch('{^([^,\s#]+)(?:#[^ ]+)? +as +([^,\s]+)$}', $reqVersion, $match)) {
@@ -224,7 +224,7 @@ class RootPackageLoader extends ArrayLoader
      * @phpstan-param array<string, BasePackage::STABILITY_*> $stabilityFlags
      * @phpstan-return array<string, BasePackage::STABILITY_*>
      */
-    public static function extractStabilityFlags(array $requires, $minimumStability, array $stabilityFlags)
+    public static function extractStabilityFlags(array $requires, $minimumStability, array $stabilityFlags): array
     {
         $stabilities = BasePackage::$stabilities;
         /** @var int $minimumStability */
@@ -286,7 +286,7 @@ class RootPackageLoader extends ArrayLoader
      *
      * @return array<string, string>
      */
-    public static function extractReferences(array $requires, array $references)
+    public static function extractReferences(array $requires, array $references): array
     {
         foreach ($requires as $reqName => $reqVersion) {
             $reqVersion = Preg::replace('{^([^,\s@]+) as .+$}', '$1', $reqVersion);

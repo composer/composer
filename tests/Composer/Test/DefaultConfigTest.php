@@ -19,7 +19,7 @@ class DefaultConfigTest extends TestCase
     /**
      * @group TLS
      */
-    public function testDefaultValuesAreAsExpected()
+    public function testDefaultValuesAreAsExpected(): void
     {
         $config = new Config;
         $this->assertFalse($config->get('disable-tls'));

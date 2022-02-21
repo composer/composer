@@ -47,9 +47,9 @@ class GitTest extends TestCase
      * @param string $protocol
      * @param string $expectedUrl
      */
-    public function testRunCommandPublicGitHubRepositoryNotInitialClone($protocol, $expectedUrl)
+    public function testRunCommandPublicGitHubRepositoryNotInitialClone($protocol, $expectedUrl): void
     {
-        $commandCallable = function ($url) use ($expectedUrl) {
+        $commandCallable = function ($url) use ($expectedUrl): string {
             $this->assertSame($expectedUrl, $url);
 
             return 'git command';
@@ -62,7 +62,7 @@ class GitTest extends TestCase
         $this->git->runCommand($commandCallable, 'https://github.com/acme/repo', null, true);
     }
 
-    public function publicGithubNoCredentialsProvider()
+    public function publicGithubNoCredentialsProvider(): array
     {
         return array(
             array('ssh', 'git@github.com:acme/repo'),
@@ -70,11 +70,11 @@ class GitTest extends TestCase
         );
     }
 
-    public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithoutAuthentication()
+    public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithoutAuthentication(): void
     {
         self::expectException('RuntimeException');
 
-        $commandCallable = function ($url) {
+        $commandCallable = function ($url): string {
             $this->assertSame('https://github.com/acme/repo', $url);
 
             return 'git command';
@@ -99,9 +99,9 @@ class GitTest extends TestCase
      * @param string $expectedUrl
      * @param int    $expectedFailuresBeforeSuccess
      */
-    public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithAuthentication($gitUrl, $protocol, $gitHubToken, $expectedUrl, $expectedFailuresBeforeSuccess)
+    public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithAuthentication($gitUrl, $protocol, $gitHubToken, $expectedUrl, $expectedFailuresBeforeSuccess): void
     {
-        $commandCallable = function ($url) use ($expectedUrl) {
+        $commandCallable = function ($url) use ($expectedUrl): string {
             if ($url !== $expectedUrl) {
                 return 'git command failing';
             }
@@ -135,7 +135,7 @@ class GitTest extends TestCase
         $this->git->runCommand($commandCallable, $gitUrl, null, true);
     }
 
-    public function privateGithubWithCredentialsProvider()
+    public function privateGithubWithCredentialsProvider(): array
     {
         return array(
             array('git@github.com:acme/repo.git', 'ssh', 'MY_GITHUB_TOKEN', 'https://token:MY_GITHUB_TOKEN@github.com/acme/repo.git', 1),
@@ -148,7 +148,7 @@ class GitTest extends TestCase
      *
      * @return void
      */
-    private function mockConfig($protocol)
+    private function mockConfig($protocol): void
     {
         $this->config
             ->method('get')

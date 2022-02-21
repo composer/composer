@@ -91,7 +91,7 @@ class HttpDownloaderMock extends HttpDownloader
         }
 
         if (count($this->expectations) > 0) {
-            $expectations = array_map(function ($expect) {
+            $expectations = array_map(function ($expect): string {
                 return $expect['url'];
             }, $this->expectations);
             throw new AssertionFailedError(

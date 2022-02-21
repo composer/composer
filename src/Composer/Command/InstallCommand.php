@@ -98,7 +98,7 @@ EOT
 
         $composer = $this->requireComposer();
 
-        if ((!$composer->getLocker() || !$composer->getLocker()->isLocked()) && !HttpDownloader::isCurlEnabled()) {
+        if (!$composer->getLocker()->isLocked() && !HttpDownloader::isCurlEnabled()) {
             $io->writeError('<warning>Composer is operating significantly slower than normal because you do not have the PHP curl extension enabled.</warning>');
         }
 

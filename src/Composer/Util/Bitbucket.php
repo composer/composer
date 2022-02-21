@@ -58,7 +58,7 @@ class Bitbucket
     /**
      * @return string
      */
-    public function getToken()
+    public function getToken(): string
     {
         if (!isset($this->token['access_token'])) {
             return '';
@@ -73,7 +73,7 @@ class Bitbucket
      * @param  string $originUrl The host this Bitbucket instance is located at
      * @return bool   true on success
      */
-    public function authorizeOAuth($originUrl)
+    public function authorizeOAuth($originUrl): bool
     {
         if ($originUrl !== 'bitbucket.org') {
             return false;
@@ -92,7 +92,7 @@ class Bitbucket
     /**
      * @return bool
      */
-    private function requestAccessToken()
+    private function requestAccessToken(): bool
     {
         try {
             $response = $this->httpDownloader->get(self::OAUTH2_ACCESS_TOKEN_URL, array(
@@ -140,7 +140,7 @@ class Bitbucket
      * @throws TransportException|\Exception
      * @return bool                          true on success
      */
-    public function authorizeOAuthInteractively($originUrl, $message = null)
+    public function authorizeOAuthInteractively($originUrl, $message = null): bool
     {
         if ($message) {
             $this->io->writeError($message);
@@ -194,7 +194,7 @@ class Bitbucket
      * @param  string $consumerSecret
      * @return string
      */
-    public function requestToken($originUrl, $consumerKey, $consumerSecret)
+    public function requestToken($originUrl, $consumerKey, $consumerSecret): string
     {
         if ($this->token !== null || $this->getTokenFromConfig($originUrl)) {
             return $this->token['access_token'];
@@ -223,7 +223,7 @@ class Bitbucket
      *
      * @return void
      */
-    private function storeInAuthConfig($originUrl, $consumerKey, $consumerSecret)
+    private function storeInAuthConfig($originUrl, $consumerKey, $consumerSecret): void
     {
         $this->config->getConfigSource()->removeConfigSetting('bitbucket-oauth.'.$originUrl);
 
@@ -246,7 +246,7 @@ class Bitbucket
      * @param  string $originUrl
      * @return bool
      */
-    private function getTokenFromConfig($originUrl)
+    private function getTokenFromConfig($originUrl): bool
     {
         $authConfig = $this->config->get('bitbucket-oauth');
 

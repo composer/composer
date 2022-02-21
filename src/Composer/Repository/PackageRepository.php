@@ -45,7 +45,7 @@ class PackageRepository extends ArrayRepository
     /**
      * Initializes repository (reads file, or remote address).
      */
-    protected function initialize()
+    protected function initialize(): void
     {
         parent::initialize();
 
@@ -61,7 +61,7 @@ class PackageRepository extends ArrayRepository
         }
     }
 
-    public function getRepoName()
+    public function getRepoName(): string
     {
         return Preg::replace('{^array }', 'package ', parent::getRepoName());
     }

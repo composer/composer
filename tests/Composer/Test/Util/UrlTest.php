@@ -26,7 +26,7 @@ class UrlTest extends TestCase
      * @param array<string, mixed> $conf
      * @param string               $ref
      */
-    public function testUpdateDistReference($url, $expectedUrl, $conf = array(), $ref = 'newref')
+    public function testUpdateDistReference($url, $expectedUrl, $conf = array(), $ref = 'newref'): void
     {
         $config = new Config();
         $config->merge(array('config' => $conf));
@@ -34,7 +34,7 @@ class UrlTest extends TestCase
         $this->assertSame($expectedUrl, Url::updateDistReference($config, $url, $ref));
     }
 
-    public static function distRefsProvider()
+    public static function distRefsProvider(): array
     {
         return array(
             // github
@@ -70,12 +70,12 @@ class UrlTest extends TestCase
      * @param string $expected
      * @param string $url
      */
-    public function testSanitize($expected, $url)
+    public function testSanitize($expected, $url): void
     {
         $this->assertSame($expected, Url::sanitize($url));
     }
 
-    public static function sanitizeProvider()
+    public static function sanitizeProvider(): array
     {
         return array(
             // with scheme

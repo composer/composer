@@ -12,15 +12,10 @@
 
 namespace Composer;
 
-use Composer\Package\RootPackageInterface;
 use Composer\Package\Locker;
 use Composer\Pcre\Preg;
-use Composer\Util\Loop;
-use Composer\Repository\RepositoryManager;
-use Composer\Installer\InstallationManager;
 use Composer\Plugin\PluginManager;
 use Composer\Downloader\DownloadManager;
-use Composer\EventDispatcher\EventDispatcher;
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Package\Archiver\ArchiveManager;
 
@@ -29,7 +24,7 @@ use Composer\Package\Archiver\ArchiveManager;
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
  * @author Nils Adermann <naderman@naderman.de>
  */
-class Composer
+class Composer extends PartialComposer
 {
     /*
      * Examples of the following constants in the various configurations they can be in
@@ -71,7 +66,7 @@ class Composer
     /**
      * @return string
      */
-    public static function getVersion()
+    public static function getVersion(): string
     {
         // no replacement done, this must be a source checkout
         if (self::VERSION === '@package_version'.'@') {
@@ -87,24 +82,9 @@ class Composer
     }
 
     /**
-     * @var RootPackageInterface
+     * @var Locker
      */
-    private $package;
-
-    /**
-     * @var ?Locker
-     */
-    private $locker = null;
-
-    /**
-     * @var Loop
-     */
-    private $loop;
-
-    /**
-     * @var Repository\RepositoryManager
-     */
-    private $repositoryManager;
+    private $locker;
 
     /**
      * @var Downloader\DownloadManager
@@ -112,24 +92,9 @@ class Composer
     private $downloadManager;
 
     /**
-     * @var Installer\InstallationManager
-     */
-    private $installationManager;
-
-    /**
      * @var Plugin\PluginManager
      */
     private $pluginManager;
-
-    /**
-     * @var Config
-     */
-    private $config;
-
-    /**
-     * @var EventDispatcher
-     */
-    private $eventDispatcher;
 
     /**
      * @var Autoload\AutoloadGenerator
@@ -141,178 +106,52 @@ class Composer
      */
     private $archiveManager;
 
-    /**
-     * @return void
-     */
-    public function setPackage(RootPackageInterface $package)
-    {
-        $this->package = $package;
-    }
-
-    /**
-     * @return RootPackageInterface
-     */
-    public function getPackage()
-    {
-        return $this->package;
-    }
-
-    /**
-     * @return void
-     */
-    public function setConfig(Config $config)
-    {
-        $this->config = $config;
-    }
-
-    /**
-     * @return Config
-     */
-    public function getConfig()
-    {
-        return $this->config;
-    }
-
-    /**
-     * @return void
-     */
-    public function setLocker(Locker $locker)
+    public function setLocker(Locker $locker): void
     {
         $this->locker = $locker;
     }
 
-    /**
-     * @return ?Locker
-     */
-    public function getLocker()
+    public function getLocker(): Locker
     {
         return $this->locker;
     }
 
-    /**
-     * @return void
-     */
-    public function setLoop(Loop $loop)
-    {
-        $this->loop = $loop;
-    }
-
-    /**
-     * @return Loop
-     */
-    public function getLoop()
-    {
-        return $this->loop;
-    }
-
-    /**
-     * @return void
-     */
-    public function setRepositoryManager(RepositoryManager $manager)
-    {
-        $this->repositoryManager = $manager;
-    }
-
-    /**
-     * @return RepositoryManager
-     */
-    public function getRepositoryManager()
-    {
-        return $this->repositoryManager;
-    }
-
-    /**
-     * @return void
-     */
-    public function setDownloadManager(DownloadManager $manager)
+    public function setDownloadManager(DownloadManager $manager): void
     {
         $this->downloadManager = $manager;
     }
 
-    /**
-     * @return DownloadManager
-     */
-    public function getDownloadManager()
+    public function getDownloadManager(): DownloadManager
     {
         return $this->downloadManager;
     }
 
-    /**
-     * @return void
-     */
-    public function setArchiveManager(ArchiveManager $manager)
+    public function setArchiveManager(ArchiveManager $manager): void
     {
         $this->archiveManager = $manager;
     }
 
-    /**
-     * @return ArchiveManager
-     */
-    public function getArchiveManager()
+    public function getArchiveManager(): ArchiveManager
     {
         return $this->archiveManager;
     }
 
-    /**
-     * @return void
-     */
-    public function setInstallationManager(InstallationManager $manager)
-    {
-        $this->installationManager = $manager;
-    }
-
-    /**
-     * @return InstallationManager
-     */
-    public function getInstallationManager()
-    {
-        return $this->installationManager;
-    }
-
-    /**
-     * @return void
-     */
-    public function setPluginManager(PluginManager $manager)
+    public function setPluginManager(PluginManager $manager): void
     {
         $this->pluginManager = $manager;
     }
 
-    /**
-     * @return PluginManager
-     */
-    public function getPluginManager()
+    public function getPluginManager(): PluginManager
     {
         return $this->pluginManager;
     }
 
-    /**
-     * @return void
-     */
-    public function setEventDispatcher(EventDispatcher $eventDispatcher)
-    {
-        $this->eventDispatcher = $eventDispatcher;
-    }
-
-    /**
-     * @return EventDispatcher
-     */
-    public function getEventDispatcher()
-    {
-        return $this->eventDispatcher;
-    }
-
-    /**
-     * @return void
-     */
-    public function setAutoloadGenerator(AutoloadGenerator $autoloadGenerator)
+    public function setAutoloadGenerator(AutoloadGenerator $autoloadGenerator): void
     {
         $this->autoloadGenerator = $autoloadGenerator;
     }
 
-    /**
-     * @return AutoloadGenerator
-     */
-    public function getAutoloadGenerator()
+    public function getAutoloadGenerator(): AutoloadGenerator
     {
         return $this->autoloadGenerator;
     }

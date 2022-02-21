@@ -43,7 +43,7 @@ class FileDownloaderTest extends TestCase
      * @param \Composer\Util\Filesystem $filesystem
      * @return \Composer\Downloader\FileDownloader
      */
-    protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $httpDownloader = null, $filesystem = null)
+    protected function getDownloader($io = null, $config = null, $eventDispatcher = null, $cache = null, $httpDownloader = null, $filesystem = null): \Composer\Downloader\FileDownloader
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $config = $config ?: $this->config;
@@ -57,7 +57,7 @@ class FileDownloaderTest extends TestCase
         return new FileDownloader($io, $this->config, $httpDownloader, $eventDispatcher, $cache, $filesystem);
     }
 
-    public function testDownloadForPackageWithoutDistReference()
+    public function testDownloadForPackageWithoutDistReference(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
@@ -71,7 +71,7 @@ class FileDownloaderTest extends TestCase
         $downloader->download($packageMock, '/path');
     }
 
-    public function testDownloadToExistingFile()
+    public function testDownloadToExistingFile(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -101,7 +101,7 @@ class FileDownloaderTest extends TestCase
         }
     }
 
-    public function testGetFileName()
+    public function testGetFileName(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
@@ -121,7 +121,7 @@ class FileDownloaderTest extends TestCase
         $this->assertMatchesRegularExpression('#/vendor/composer/tmp-[a-z0-9]+\.js#', $method->invoke($downloader, $packageMock, '/path'));
     }
 
-    public function testDownloadButFileIsUnsaved()
+    public function testDownloadButFileIsUnsaved(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -176,7 +176,7 @@ class FileDownloaderTest extends TestCase
         }
     }
 
-    public function testDownloadWithCustomProcessedUrl()
+    public function testDownloadWithCustomProcessedUrl(): void
     {
         $path = $this->getUniqueTmpDirectory();
 
@@ -218,7 +218,7 @@ class FileDownloaderTest extends TestCase
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
             $this->getProcessExecutorMock()
         );
-        $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function (PreFileDownloadEvent $event) use ($expectedUrl) {
+        $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function (PreFileDownloadEvent $event) use ($expectedUrl): void {
             $event->setProcessedUrl($expectedUrl);
         });
 
@@ -228,7 +228,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyTo')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
                 $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
 
                 return false;
@@ -236,7 +236,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyFrom')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
                 $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
 
                 return false;
@@ -275,7 +275,7 @@ class FileDownloaderTest extends TestCase
         }
     }
 
-    public function testDownloadWithCustomCacheKey()
+    public function testDownloadWithCustomCacheKey(): void
     {
         $path = $this->getUniqueTmpDirectory();
 
@@ -318,7 +318,7 @@ class FileDownloaderTest extends TestCase
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
             $this->getProcessExecutorMock()
         );
-        $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function (PreFileDownloadEvent $event) use ($customCacheKey) {
+        $dispatcher->addListener(PluginEvents::PRE_FILE_DOWNLOAD, function (PreFileDownloadEvent $event) use ($customCacheKey): void {
             $event->setCustomCacheKey($customCacheKey);
         });
 
@@ -328,7 +328,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyTo')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
                 $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyTo method:');
 
                 return false;
@@ -336,7 +336,7 @@ class FileDownloaderTest extends TestCase
         $cacheMock
             ->expects($this->any())
             ->method('copyFrom')
-            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey) {
+            ->will($this->returnCallback(function ($cacheKey) use ($expectedCacheKey): bool {
                 $this->assertEquals($expectedCacheKey, $cacheKey, 'Failed assertion on $cacheKey argument of Cache::copyFrom method:');
 
                 return false;
@@ -375,7 +375,7 @@ class FileDownloaderTest extends TestCase
         }
     }
 
-    public function testCacheGarbageCollectionIsCalled()
+    public function testCacheGarbageCollectionIsCalled(): void
     {
         $expectedTtl = '99999999';
 
@@ -403,7 +403,7 @@ class FileDownloaderTest extends TestCase
         $downloader = $this->getDownloader(null, $this->config, null, $cacheMock, null, null);
     }
 
-    public function testDownloadFileWithInvalidChecksum()
+    public function testDownloadFileWithInvalidChecksum(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -458,7 +458,7 @@ class FileDownloaderTest extends TestCase
         }
     }
 
-    public function testDowngradeShowsAppropriateMessage()
+    public function testDowngradeShowsAppropriateMessage(): void
     {
         $oldPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $oldPackage->expects($this->once())

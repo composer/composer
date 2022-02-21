@@ -19,7 +19,7 @@ final class PlatformRequirementFilterFactory
      *
      * @return PlatformRequirementFilterInterface
      */
-    public static function fromBoolOrList($boolOrList)
+    public static function fromBoolOrList($boolOrList): PlatformRequirementFilterInterface
     {
         if (is_bool($boolOrList)) {
             return $boolOrList ? self::ignoreAll() : self::ignoreNothing();
@@ -40,7 +40,7 @@ final class PlatformRequirementFilterFactory
     /**
      * @return PlatformRequirementFilterInterface
      */
-    public static function ignoreAll()
+    public static function ignoreAll(): PlatformRequirementFilterInterface
     {
         return new IgnoreAllPlatformRequirementFilter();
     }
@@ -48,7 +48,7 @@ final class PlatformRequirementFilterFactory
     /**
      * @return PlatformRequirementFilterInterface
      */
-    public static function ignoreNothing()
+    public static function ignoreNothing(): PlatformRequirementFilterInterface
     {
         return new IgnoreNothingPlatformRequirementFilter();
     }

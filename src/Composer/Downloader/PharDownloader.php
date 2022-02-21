@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
 
 /**
@@ -24,7 +25,7 @@ class PharDownloader extends ArchiveDownloader
     /**
      * @inheritDoc
      */
-    protected function extract(PackageInterface $package, $file, $path)
+    protected function extract(PackageInterface $package, $file, $path): ?PromiseInterface
     {
         // Can throw an UnexpectedValueException
         $archive = new \Phar($file);

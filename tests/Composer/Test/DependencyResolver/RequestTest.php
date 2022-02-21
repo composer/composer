@@ -19,7 +19,7 @@ use Composer\Test\TestCase;
 
 class RequestTest extends TestCase
 {
-    public function testRequestInstall()
+    public function testRequestInstall(): void
     {
         $repo = new ArrayRepository;
         $foo = $this->getPackage('foo', '1');
@@ -41,7 +41,7 @@ class RequestTest extends TestCase
         );
     }
 
-    public function testRequestInstallSamePackageFromDifferentRepositories()
+    public function testRequestInstallSamePackageFromDifferentRepositories(): void
     {
         $repo1 = new ArrayRepository;
         $repo2 = new ArrayRepository;

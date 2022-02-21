@@ -73,7 +73,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
      *
      * @return void
      */
-    private function scanDirectory($path)
+    private function scanDirectory($path): void
     {
         $io = $this->io;
 
@@ -102,7 +102,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * @return ?BasePackage
      */
-    private function getComposerInformation(\SplFileInfo $file)
+    private function getComposerInformation(\SplFileInfo $file): ?BasePackage
     {
         $json = null;
         $fileType = null;

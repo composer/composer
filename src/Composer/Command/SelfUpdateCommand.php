@@ -42,7 +42,7 @@ class SelfUpdateCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('self-update')
@@ -346,7 +346,7 @@ TAGSPUBKEY
      * @return void
      * @throws \Exception
      */
-    protected function fetchKeys(IOInterface $io, Config $config)
+    protected function fetchKeys(IOInterface $io, Config $config): void
     {
         if (!$io->isInteractive()) {
             throw new \RuntimeException('Public keys can not be fetched in non-interactive mode, please run Composer interactively');
@@ -354,7 +354,7 @@ TAGSPUBKEY
 
         $io->write('Open <info>https://composer.github.io/pubkeys.html</info> to find the latest keys');
 
-        $validator = function ($value) {
+        $validator = function ($value): string {
             if (!Preg::isMatch('{^-----BEGIN PUBLIC KEY-----$}', trim($value))) {
                 throw new \UnexpectedValueException('Invalid input');
             }
@@ -397,7 +397,7 @@ TAGSPUBKEY
      * @return int
      * @throws FilesystemException
      */
-    protected function rollback(OutputInterface $output, $rollbackDir, $localFilename)
+    protected function rollback(OutputInterface $output, $rollbackDir, $localFilename): int
     {
         $rollbackVersion = $this->getLastBackupVersion($rollbackDir);
         if (!$rollbackVersion) {
@@ -431,7 +431,7 @@ TAGSPUBKEY
      * @throws FilesystemException If the file cannot be moved
      * @return bool                Whether the phar is valid and has been moved
      */
-    protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null)
+    protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null): bool
     {
         $io = $this->getIO();
         @chmod($newFilename, fileperms($localFilename));
@@ -483,7 +483,7 @@ TAGSPUBKEY
      *
      * @return void
      */
-    protected function cleanBackups($rollbackDir, $except = null)
+    protected function cleanBackups($rollbackDir, $except = null): void
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
         $io = $this->getIO();
@@ -520,7 +520,7 @@ TAGSPUBKEY
      * @param string $rollbackDir
      * @return Finder
      */
-    protected function getOldInstallationFinder($rollbackDir)
+    protected function getOldInstallationFinder($rollbackDir): Finder
     {
         return Finder::create()
             ->depth(0)
@@ -541,7 +541,7 @@ TAGSPUBKEY
      * @throws \Exception
      * @return bool       If the operation succeeded
      */
-    protected function validatePhar($pharFile, &$error)
+    protected function validatePhar($pharFile, &$error): bool
     {
         if (ini_get('phar.readonly')) {
             return true;
@@ -569,7 +569,7 @@ TAGSPUBKEY
      *
      * @return bool
      */
-    protected function isWindowsNonAdminUser()
+    protected function isWindowsNonAdminUser(): bool
     {
         if (!Platform::isWindows()) {
             return false;
@@ -590,7 +590,7 @@ TAGSPUBKEY
      * @param  string $newFilename   The downloaded or backup phar
      * @return bool   Whether composer.phar has been updated
      */
-    protected function tryAsWindowsAdmin($localFilename, $newFilename)
+    protected function tryAsWindowsAdmin($localFilename, $newFilename): bool
     {
         $io = $this->getIO();
 

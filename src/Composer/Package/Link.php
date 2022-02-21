@@ -105,7 +105,7 @@ class Link
     /**
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -113,7 +113,7 @@ class Link
     /**
      * @return string
      */
-    public function getSource()
+    public function getSource(): string
     {
         return $this->source;
     }
@@ -121,7 +121,7 @@ class Link
     /**
      * @return string
      */
-    public function getTarget()
+    public function getTarget(): string
     {
         return $this->target;
     }
@@ -129,7 +129,7 @@ class Link
     /**
      * @return ConstraintInterface
      */
-    public function getConstraint()
+    public function getConstraint(): ConstraintInterface
     {
         return $this->constraint;
     }
@@ -138,7 +138,7 @@ class Link
      * @throws \UnexpectedValueException If no pretty constraint was provided
      * @return string
      */
-    public function getPrettyConstraint()
+    public function getPrettyConstraint(): string
     {
         if (null === $this->prettyConstraint) {
             throw new \UnexpectedValueException(sprintf('Link %s has been misconfigured and had no prettyConstraint given.', $this));
@@ -159,7 +159,7 @@ class Link
      * @param  PackageInterface $sourcePackage
      * @return string
      */
-    public function getPrettyString(PackageInterface $sourcePackage)
+    public function getPrettyString(PackageInterface $sourcePackage): string
     {
         return $sourcePackage->getPrettyString().' '.$this->description.' '.$this->target.' '.$this->constraint->getPrettyString();
     }

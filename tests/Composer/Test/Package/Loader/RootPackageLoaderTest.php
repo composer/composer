@@ -28,7 +28,7 @@ class RootPackageLoaderTest extends TestCase
      *
      * @return RootPackage|RootAliasPackage
      */
-    protected function loadPackage($data)
+    protected function loadPackage($data): \Composer\Package\PackageInterface
     {
         $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')
             ->disableOriginalConstructor()
@@ -42,7 +42,7 @@ class RootPackageLoaderTest extends TestCase
         return $loader->load($data);
     }
 
-    public function testStabilityFlagsParsing()
+    public function testStabilityFlagsParsing(): void
     {
         $package = $this->loadPackage(array(
             'require' => array(
@@ -70,7 +70,7 @@ class RootPackageLoaderTest extends TestCase
         ), $package->getStabilityFlags());
     }
 
-    public function testNoVersionIsVisibleInPrettyVersion()
+    public function testNoVersionIsVisibleInPrettyVersion(): void
     {
         $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')
             ->disableOriginalConstructor()
@@ -88,7 +88,7 @@ class RootPackageLoaderTest extends TestCase
         $this->assertEquals(RootPackage::DEFAULT_PRETTY_VERSION, $package->getPrettyVersion());
     }
 
-    public function testPrettyVersionForRootPackageInVersionBranch()
+    public function testPrettyVersionForRootPackageInVersionBranch(): void
     {
         // see #6845
         $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')->disableOriginalConstructor()->getMock();
@@ -109,7 +109,7 @@ class RootPackageLoaderTest extends TestCase
         $this->assertEquals('3.0-dev', $package->getPrettyVersion());
     }
 
-    public function testFeatureBranchPrettyVersion()
+    public function testFeatureBranchPrettyVersion(): void
     {
         if (!function_exists('proc_open')) {
             $this->markTestSkipped('proc_open() is not available');
@@ -137,7 +137,7 @@ class RootPackageLoaderTest extends TestCase
         $this->assertEquals("dev-master", $package->getPrettyVersion());
     }
 
-    public function testNonFeatureBranchPrettyVersion()
+    public function testNonFeatureBranchPrettyVersion(): void
     {
         if (!function_exists('proc_open')) {
             $this->markTestSkipped('proc_open() is not available');

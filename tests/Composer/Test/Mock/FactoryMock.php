@@ -12,9 +12,12 @@
 
 namespace Composer\Test\Mock;
 
+use Composer\Installer\InstallationManager;
+use Composer\Package\Loader\RootPackageLoader;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Factory;
+use Composer\PartialComposer;
 use Composer\Repository\RepositoryManager;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
@@ -30,7 +33,7 @@ use Composer\Util\ProcessExecutor;
 
 class FactoryMock extends Factory
 {
-    public static function createConfig(IOInterface $io = null, $cwd = null)
+    public static function createConfig(IOInterface $io = null, ?string $cwd = null): Config
     {
         $config = new Config(true, $cwd);
 
@@ -42,26 +45,26 @@ class FactoryMock extends Factory
         return $config;
     }
 
-    protected function loadRootPackage(RepositoryManager $rm, Config $config, VersionParser $parser, VersionGuesser $guesser, IOInterface $io)
+    protected function loadRootPackage(RepositoryManager $rm, Config $config, VersionParser $parser, VersionGuesser $guesser, IOInterface $io): RootPackageLoader
     {
         return new \Composer\Package\Loader\RootPackageLoader($rm, $config, $parser, new VersionGuesserMock(), $io);
     }
 
-    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage, ProcessExecutor $process = null)
+    protected function addLocalRepository(IOInterface $io, RepositoryManager $rm, $vendorDir, RootPackageInterface $rootPackage, ProcessExecutor $process = null): void
     {
         $rm->setLocalRepository(new InstalledArrayRepository);
     }
 
-    public function createInstallationManager(Loop $loop, IOInterface $io, EventDispatcher $dispatcher = null)
+    public function createInstallationManager(Loop $loop, IOInterface $io, EventDispatcher $dispatcher = null): InstallationManager
     {
         return new InstallationManagerMock();
     }
 
-    protected function createDefaultInstallers(Installer\InstallationManager $im, Composer $composer, IOInterface $io, ProcessExecutor $process = null)
+    protected function createDefaultInstallers(InstallationManager $im, PartialComposer $composer, IOInterface $io, ProcessExecutor $process = null): void
     {
     }
 
-    protected function purgePackages(InstalledRepositoryInterface $repo, Installer\InstallationManager $im)
+    protected function purgePackages(InstalledRepositoryInterface $repo, InstallationManager $im): void
     {
     }
 }

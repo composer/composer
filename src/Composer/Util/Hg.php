@@ -53,7 +53,7 @@ class Hg
      *
      * @return void
      */
-    public function runCommand($commandCallable, $url, $cwd)
+    public function runCommand($commandCallable, $url, $cwd): void
     {
         $this->config->prohibitUrlByConfig($url, $this->io);
 
@@ -89,7 +89,7 @@ class Hg
      *
      * @return never
      */
-    private function throwException($message, $url)
+    private function throwException($message, $url): void
     {
         if (null === self::getVersion($this->process)) {
             throw new \RuntimeException(Url::sanitize('Failed to clone ' . $url . ', hg was not found, check that it is installed and in your PATH env.' . "\n\n" . $this->process->getErrorOutput()));
@@ -103,7 +103,7 @@ class Hg
      *
      * @return string|null The hg version number, if present.
      */
-    public static function getVersion(ProcessExecutor $process)
+    public static function getVersion(ProcessExecutor $process): ?string
     {
         if (false === self::$version) {
             self::$version = null;

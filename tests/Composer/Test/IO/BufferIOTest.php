@@ -18,7 +18,7 @@ use Symfony\Component\Console\Input\StreamableInputInterface;
 
 class BufferIOTest extends TestCase
 {
-    public function testSetUserInputs()
+    public function testSetUserInputs(): void
     {
         $bufferIO = new BufferIO();
 

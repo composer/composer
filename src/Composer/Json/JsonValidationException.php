@@ -28,7 +28,7 @@ class JsonValidationException extends Exception
      * @param string   $message
      * @param string[] $errors
      */
-    public function __construct($message, $errors = array(), Exception $previous = null)
+    public function __construct($message, array $errors = array(), Exception $previous = null)
     {
         $this->errors = $errors;
         parent::__construct((string) $message, 0, $previous);
@@ -37,7 +37,7 @@ class JsonValidationException extends Exception
     /**
      * @return string[]
      */
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->errors;
     }

@@ -43,7 +43,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getAliases()
+    public function getAliases(): array
     {
         return $this->aliasOf->getAliases();
     }
@@ -51,7 +51,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getMinimumStability()
+    public function getMinimumStability(): string
     {
         return $this->aliasOf->getMinimumStability();
     }
@@ -59,7 +59,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getStabilityFlags()
+    public function getStabilityFlags(): array
     {
         return $this->aliasOf->getStabilityFlags();
     }
@@ -67,7 +67,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getReferences()
+    public function getReferences(): array
     {
         return $this->aliasOf->getReferences();
     }
@@ -75,7 +75,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getPreferStable()
+    public function getPreferStable(): bool
     {
         return $this->aliasOf->getPreferStable();
     }
@@ -83,7 +83,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function getConfig()
+    public function getConfig(): array
     {
         return $this->aliasOf->getConfig();
     }
@@ -91,7 +91,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setRequires(array $require)
+    public function setRequires(array $require): void
     {
         $this->requires = $this->replaceSelfVersionDependencies($require, Link::TYPE_REQUIRE);
 
@@ -101,7 +101,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setDevRequires(array $devRequire)
+    public function setDevRequires(array $devRequire): void
     {
         $this->devRequires = $this->replaceSelfVersionDependencies($devRequire, Link::TYPE_DEV_REQUIRE);
 
@@ -111,7 +111,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setConflicts(array $conflicts)
+    public function setConflicts(array $conflicts): void
     {
         $this->conflicts = $this->replaceSelfVersionDependencies($conflicts, Link::TYPE_CONFLICT);
         $this->aliasOf->setConflicts($conflicts);
@@ -120,7 +120,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setProvides(array $provides)
+    public function setProvides(array $provides): void
     {
         $this->provides = $this->replaceSelfVersionDependencies($provides, Link::TYPE_PROVIDE);
         $this->aliasOf->setProvides($provides);
@@ -129,7 +129,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setReplaces(array $replaces)
+    public function setReplaces(array $replaces): void
     {
         $this->replaces = $this->replaceSelfVersionDependencies($replaces, Link::TYPE_REPLACE);
         $this->aliasOf->setReplaces($replaces);
@@ -138,7 +138,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setAutoload(array $autoload)
+    public function setAutoload(array $autoload): void
     {
         $this->aliasOf->setAutoload($autoload);
     }
@@ -146,7 +146,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setDevAutoload(array $devAutoload)
+    public function setDevAutoload(array $devAutoload): void
     {
         $this->aliasOf->setDevAutoload($devAutoload);
     }
@@ -154,7 +154,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setStabilityFlags(array $stabilityFlags)
+    public function setStabilityFlags(array $stabilityFlags): void
     {
         $this->aliasOf->setStabilityFlags($stabilityFlags);
     }
@@ -162,7 +162,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setMinimumStability($minimumStability)
+    public function setMinimumStability($minimumStability): void
     {
         $this->aliasOf->setMinimumStability($minimumStability);
     }
@@ -170,7 +170,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setPreferStable($preferStable)
+    public function setPreferStable($preferStable): void
     {
         $this->aliasOf->setPreferStable($preferStable);
     }
@@ -178,7 +178,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setConfig(array $config)
+    public function setConfig(array $config): void
     {
         $this->aliasOf->setConfig($config);
     }
@@ -186,7 +186,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setReferences(array $references)
+    public function setReferences(array $references): void
     {
         $this->aliasOf->setReferences($references);
     }
@@ -194,7 +194,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setAliases(array $aliases)
+    public function setAliases(array $aliases): void
     {
         $this->aliasOf->setAliases($aliases);
     }
@@ -202,7 +202,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setSuggests(array $suggests)
+    public function setSuggests(array $suggests): void
     {
         $this->aliasOf->setSuggests($suggests);
     }
@@ -210,7 +210,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setExtra(array $extra)
+    public function setExtra(array $extra): void
     {
         $this->aliasOf->setExtra($extra);
     }

@@ -17,7 +17,7 @@ use Composer\Test\TestCase;
 
 class InstallerEventTest extends TestCase
 {
-    public function testGetter()
+    public function testGetter(): void
     {
         $composer = $this->getMockBuilder('Composer\Composer')->getMock();
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();

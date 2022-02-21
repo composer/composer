@@ -40,7 +40,7 @@ class StatusCommand extends BaseCommand
      * @return void
      * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('status')
@@ -80,7 +80,7 @@ EOT
     /**
      * @return int
      */
-    private function doExecute(InputInterface $input)
+    private function doExecute(InputInterface $input): int
     {
         // init repos
         $composer = $this->requireComposer();
@@ -163,7 +163,7 @@ EOT
 
             foreach ($errors as $path => $changes) {
                 if ($input->getOption('verbose')) {
-                    $indentedChanges = implode("\n", array_map(function ($line) {
+                    $indentedChanges = implode("\n", array_map(function ($line): string {
                         return '    ' . ltrim($line);
                     }, explode("\n", $changes)));
                     $io->write('<info>'.$path.'</info>:');
@@ -179,7 +179,7 @@ EOT
 
             foreach ($unpushedChanges as $path => $changes) {
                 if ($input->getOption('verbose')) {
-                    $indentedChanges = implode("\n", array_map(function ($line) {
+                    $indentedChanges = implode("\n", array_map(function ($line): string {
                         return '    ' . ltrim($line);
                     }, explode("\n", $changes)));
                     $io->write('<info>'.$path.'</info>:');

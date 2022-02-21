@@ -31,7 +31,7 @@ class ComposerMirror
      *
      * @return string
      */
-    public static function processUrl($mirrorUrl, $packageName, $version, $reference, $type, $prettyVersion = null)
+    public static function processUrl($mirrorUrl, $packageName, $version, $reference, $type, $prettyVersion = null): string
     {
         if ($reference) {
             $reference = Preg::isMatch('{^([a-f0-9]*|%reference%)$}', $reference) ? $reference : md5($reference);
@@ -56,7 +56,7 @@ class ComposerMirror
      *
      * @return string
      */
-    public static function processGitUrl($mirrorUrl, $packageName, $url, $type)
+    public static function processGitUrl($mirrorUrl, $packageName, $url, $type): string
     {
         if (Preg::isMatch('#^(?:(?:https?|git)://github\.com/|git@github\.com:)([^/]+)/(.+?)(?:\.git)?$#', $url, $match)) {
             $url = 'gh-'.$match[1].'/'.$match[2];
@@ -81,7 +81,7 @@ class ComposerMirror
      *
      * @return string
      */
-    public static function processHgUrl($mirrorUrl, $packageName, $url, $type)
+    public static function processHgUrl($mirrorUrl, $packageName, $url, $type): string
     {
         return self::processGitUrl($mirrorUrl, $packageName, $url, $type);
     }

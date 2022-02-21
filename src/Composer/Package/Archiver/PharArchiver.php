@@ -36,7 +36,7 @@ class PharArchiver implements ArchiverInterface
     /**
      * @inheritDoc
      */
-    public function archive($sources, $target, $format, array $excludes = array(), $ignoreFilters = false)
+    public function archive($sources, $target, $format, array $excludes = array(), $ignoreFilters = false): string
     {
         $sources = realpath($sources);
 
@@ -97,7 +97,7 @@ class PharArchiver implements ArchiverInterface
     /**
      * @inheritDoc
      */
-    public function supports($format, $sourceType)
+    public function supports($format, $sourceType): bool
     {
         return isset(static::$formats[$format]);
     }

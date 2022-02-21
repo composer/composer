@@ -52,7 +52,7 @@ class InstalledVersionsTest extends TestCase
         InstalledVersions::reload(require __DIR__.'/Repository/Fixtures/installed.php');
     }
 
-    public function testGetInstalledPackages()
+    public function testGetInstalledPackages(): void
     {
         $names = array(
             '__root__',
@@ -74,12 +74,12 @@ class InstalledVersionsTest extends TestCase
      * @param string $name
      * @param bool $includeDevRequirements
      */
-    public function testIsInstalled($expected, $name, $includeDevRequirements = true)
+    public function testIsInstalled($expected, $name, $includeDevRequirements = true): void
     {
         $this->assertSame($expected, InstalledVersions::isInstalled($name, $includeDevRequirements));
     }
 
-    public static function isInstalledProvider()
+    public static function isInstalledProvider(): array
     {
         return array(
             array(true,  'foo/impl'),
@@ -99,12 +99,12 @@ class InstalledVersionsTest extends TestCase
      * @param string $name
      * @param string $constraint
      */
-    public function testSatisfies($expected, $name, $constraint)
+    public function testSatisfies($expected, $name, $constraint): void
     {
         $this->assertSame($expected, InstalledVersions::satisfies(new VersionParser, $name, $constraint));
     }
 
-    public static function satisfiesProvider()
+    public static function satisfiesProvider(): array
     {
         return array(
             array(true,  'foo/impl', '1.5'),
@@ -139,12 +139,12 @@ class InstalledVersionsTest extends TestCase
      * @param string $expected
      * @param string $name
      */
-    public function testGetVersionRanges($expected, $name)
+    public function testGetVersionRanges($expected, $name): void
     {
         $this->assertSame($expected, InstalledVersions::getVersionRanges($name));
     }
 
-    public static function getVersionRangesProvider()
+    public static function getVersionRangesProvider(): array
     {
         return array(
             array('dev-master || 1.10.x-dev',   '__root__'),
@@ -163,12 +163,12 @@ class InstalledVersionsTest extends TestCase
      * @param ?string $expected
      * @param string $name
      */
-    public function testGetVersion($expected, $name)
+    public function testGetVersion($expected, $name): void
     {
         $this->assertSame($expected, InstalledVersions::getVersion($name));
     }
 
-    public static function getVersionProvider()
+    public static function getVersionProvider(): array
     {
         return array(
             array('dev-master',  '__root__'),
@@ -187,12 +187,12 @@ class InstalledVersionsTest extends TestCase
      * @param ?string $expected
      * @param string $name
      */
-    public function testGetPrettyVersion($expected, $name)
+    public function testGetPrettyVersion($expected, $name): void
     {
         $this->assertSame($expected, InstalledVersions::getPrettyVersion($name));
     }
 
-    public static function getPrettyVersionProvider()
+    public static function getPrettyVersionProvider(): array
     {
         return array(
             array('dev-master',  '__root__'),
@@ -206,13 +206,13 @@ class InstalledVersionsTest extends TestCase
         );
     }
 
-    public function testGetVersionOutOfBounds()
+    public function testGetVersionOutOfBounds(): void
     {
         self::expectException('OutOfBoundsException');
         InstalledVersions::getVersion('not/installed');
     }
 
-    public function testGetRootPackage()
+    public function testGetRootPackage(): void
     {
         $this->assertSame(array(
             'pretty_version' => 'dev-master',
@@ -231,7 +231,7 @@ class InstalledVersionsTest extends TestCase
     /**
      * @group legacy
      */
-    public function testGetRawData()
+    public function testGetRawData(): void
     {
         $dir = $this->root;
         $this->assertSame(require __DIR__.'/Repository/Fixtures/installed.php', InstalledVersions::getRawData());
@@ -242,12 +242,12 @@ class InstalledVersionsTest extends TestCase
      * @param ?string $expected
      * @param string $name
      */
-    public function testGetReference($expected, $name)
+    public function testGetReference($expected, $name): void
     {
         $this->assertSame($expected, InstalledVersions::getReference($name));
     }
 
-    public static function getReferenceProvider()
+    public static function getReferenceProvider(): array
     {
         return array(
             array('sourceref-by-default',  '__root__'),
@@ -261,7 +261,7 @@ class InstalledVersionsTest extends TestCase
         );
     }
 
-    public function testGetInstalledPackagesByType()
+    public function testGetInstalledPackagesByType(): void
     {
         $names = array(
             '__root__',
@@ -274,7 +274,7 @@ class InstalledVersionsTest extends TestCase
         $this->assertSame($names, \Composer\InstalledVersions::getInstalledPackagesByType('library'));
     }
 
-    public function testGetInstallPath()
+    public function testGetInstallPath(): void
     {
         $this->assertSame(realpath($this->root), realpath(\Composer\InstalledVersions::getInstallPath('__root__')));
         $this->assertSame('/foo/bar/vendor/c/c', \Composer\InstalledVersions::getInstallPath('c/c'));

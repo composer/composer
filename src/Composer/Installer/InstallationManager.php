@@ -199,18 +199,18 @@ class InstallationManager
 
         $loop = $this->loop;
         $io = $this->io;
-        $runCleanup = function () use (&$cleanupPromises, $loop) {
+        $runCleanup = function () use (&$cleanupPromises, $loop): void {
             $promises = array();
 
             $loop->abortJobs();
 
             foreach ($cleanupPromises as $cleanup) {
-                $promises[] = new \React\Promise\Promise(function ($resolve, $reject) use ($cleanup) {
+                $promises[] = new \React\Promise\Promise(function ($resolve, $reject) use ($cleanup): void {
                     $promise = $cleanup();
                     if (!$promise instanceof PromiseInterface) {
                         $resolve();
                     } else {
-                        $promise->then(function () use ($resolve) {
+                        $promise->then(function () use ($resolve): void {
                             $resolve();
                         });
                     }
@@ -229,7 +229,7 @@ class InstallationManager
         if ($handleInterruptsUnix) {
             pcntl_async_signals(true);
             $prevHandler = pcntl_signal_get_handler(SIGINT);
-            pcntl_signal(SIGINT, function ($sig) use ($runCleanup, $prevHandler, $io) {
+            pcntl_signal(SIGINT, function ($sig) use ($runCleanup, $prevHandler, $io): void {
                 $io->writeError('Received SIGINT, aborting', true, IOInterface::DEBUG);
                 $runCleanup();
 
@@ -241,7 +241,7 @@ class InstallationManager
             });
         }
         if ($handleInterruptsWindows) {
-            $windowsHandler = function ($event) use ($runCleanup, $io) {
+            $windowsHandler = function ($event) use ($runCleanup, $io): void {
                 if ($event !== PHP_WINDOWS_EVENT_CTRL_C) {
                     return;
                 }
@@ -316,7 +316,7 @@ class InstallationManager
      *
      * @return void
      */
-    private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, $devMode, $runScripts, array $allOperations)
+    private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, $devMode, $runScripts, array $allOperations): void
     {
         $promises = array();
 
@@ -400,7 +400,7 @@ class InstallationManager
      *
      * @return void
      */
-    private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, $devMode, $runScripts, array $allOperations)
+    private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, $devMode, $runScripts, array $allOperations): void
     {
         $promises = array();
         $postExecCallbacks = array();
@@ -446,15 +446,15 @@ class InstallationManager
             $promise = $promise->then(function () use ($opType, $repo, $operation) {
                 return $this->$opType($repo, $operation);
             })->then($cleanupPromises[$index])
-            ->then(function () use ($devMode, $repo) {
+            ->then(function () use ($devMode, $repo): void {
                 $repo->write($devMode, $this);
-            }, function ($e) use ($opType, $package, $io) {
+            }, function ($e) use ($opType, $package, $io): void {
                 $io->writeError('    <error>' . ucfirst($opType) .' of '.$package->getPrettyName().' failed</error>');
 
                 throw $e;
             });
 
-            $postExecCallbacks[] = function () use ($opType, $runScripts, $dispatcher, $devMode, $repo, $allOperations, $operation) {
+            $postExecCallbacks[] = function () use ($opType, $runScripts, $dispatcher, $devMode, $repo, $allOperations, $operation): void {
                 $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($opType);
                 if (defined($event) && $runScripts && $dispatcher) {
                     $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $allOperations, $operation);
@@ -481,7 +481,7 @@ class InstallationManager
      *
      * @return void
      */
-    private function waitOnPromises(array $promises)
+    private function waitOnPromises(array $promises): void
     {
         $progress = null;
         if (
@@ -548,8 +548,13 @@ class InstallationManager
             }
 
             $installer = $this->getInstaller($targetType);
-            $promise = $promise->then(function () use ($installer, $repo, $target) {
-                return $installer->install($repo, $target);
+            $promise = $promise->then(function () use ($installer, $repo, $target): PromiseInterface {
+                $promise = $installer->install($repo, $target);
+                if ($promise instanceof PromiseInterface) {
+                    return $promise;
+                }
+                
+                return \React\Promise\resolve();
             });
         }
 
@@ -700,7 +705,7 @@ class InstallationManager
     /**
      * @return void
      */
-    private function markForNotification(PackageInterface $package)
+    private function markForNotification(PackageInterface $package): void
     {
         if ($package->getNotificationUrl()) {
             $this->notifiablePackages[$package->getNotificationUrl()][$package->getName()] = $package;

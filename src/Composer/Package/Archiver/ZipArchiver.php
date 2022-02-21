@@ -28,7 +28,7 @@ class ZipArchiver implements ArchiverInterface
     /**
      * @inheritDoc
      */
-    public function archive($sources, $target, $format, array $excludes = array(), $ignoreFilters = false)
+    public function archive($sources, $target, $format, array $excludes = array(), $ignoreFilters = false): string
     {
         $fs = new Filesystem();
         $sources = $fs->normalizePath($sources);
@@ -78,7 +78,7 @@ class ZipArchiver implements ArchiverInterface
     /**
      * @inheritDoc
      */
-    public function supports($format, $sourceType)
+    public function supports($format, $sourceType): bool
     {
         return isset(static::$formats[$format]) && $this->compressionAvailable();
     }
@@ -86,7 +86,7 @@ class ZipArchiver implements ArchiverInterface
     /**
      * @return bool
      */
-    private function compressionAvailable()
+    private function compressionAvailable(): bool
     {
         return class_exists('ZipArchive');
     }

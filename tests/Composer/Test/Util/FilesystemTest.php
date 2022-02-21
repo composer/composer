@@ -59,13 +59,13 @@ class FilesystemTest extends TestCase
      * @param string $expected
      * @param bool   $static
      */
-    public function testFindShortestPathCode($a, $b, $directory, $expected, $static = false)
+    public function testFindShortestPathCode($a, $b, $directory, $expected, $static = false): void
     {
         $fs = new Filesystem;
         $this->assertEquals($expected, $fs->findShortestPathCode($a, $b, $directory, $static));
     }
 
-    public function providePathCouplesAsCode()
+    public function providePathCouplesAsCode(): array
     {
         return array(
             array('/foo/bar', '/foo/bar', false, "__FILE__"),
@@ -122,13 +122,13 @@ class FilesystemTest extends TestCase
      * @param string $expected
      * @param bool   $directory
      */
-    public function testFindShortestPath($a, $b, $expected, $directory = false)
+    public function testFindShortestPath($a, $b, $expected, $directory = false): void
     {
         $fs = new Filesystem;
         $this->assertEquals($expected, $fs->findShortestPath($a, $b, $directory));
     }
 
-    public function providePathCouples()
+    public function providePathCouples(): array
     {
         return array(
             array('/foo/bar', '/foo/bar', "./bar"),
@@ -173,7 +173,7 @@ class FilesystemTest extends TestCase
     /**
      * @group GH-1339
      */
-    public function testRemoveDirectoryPhp()
+    public function testRemoveDirectoryPhp(): void
     {
         @mkdir($this->workingDir . "/level1/level2", 0777, true);
         file_put_contents($this->workingDir . "/level1/level2/hello.txt", "hello world");
@@ -183,7 +183,7 @@ class FilesystemTest extends TestCase
         $this->assertFileDoesNotExist($this->workingDir . "/level1/level2/hello.txt");
     }
 
-    public function testFileSize()
+    public function testFileSize(): void
     {
         file_put_contents($this->testFile, 'Hello');
 
@@ -191,7 +191,7 @@ class FilesystemTest extends TestCase
         $this->assertGreaterThanOrEqual(5, $fs->size($this->testFile));
     }
 
-    public function testDirectorySize()
+    public function testDirectorySize(): void
     {
         @mkdir($this->workingDir, 0777, true);
         file_put_contents($this->workingDir."/file1.txt", 'Hello');
@@ -207,13 +207,13 @@ class FilesystemTest extends TestCase
      * @param string $expected
      * @param string $actual
      */
-    public function testNormalizePath($expected, $actual)
+    public function testNormalizePath($expected, $actual): void
     {
         $fs = new Filesystem;
         $this->assertEquals($expected, $fs->normalizePath($actual));
     }
 
-    public function provideNormalizedPaths()
+    public function provideNormalizedPaths(): array
     {
         return array(
             array('../foo', '../foo'),
@@ -243,7 +243,7 @@ class FilesystemTest extends TestCase
      * @link https://github.com/composer/composer/issues/3157
      * @requires function symlink
      */
-    public function testUnlinkSymlinkedDirectory()
+    public function testUnlinkSymlinkedDirectory(): void
     {
         $basepath = $this->workingDir;
         $symlinked = $basepath . "/linked";
@@ -270,7 +270,7 @@ class FilesystemTest extends TestCase
      * @link https://github.com/composer/composer/issues/3144
      * @requires function symlink
      */
-    public function testRemoveSymlinkedDirectoryWithTrailingSlash()
+    public function testRemoveSymlinkedDirectoryWithTrailingSlash(): void
     {
         @mkdir($this->workingDir . "/real", 0777, true);
         touch($this->workingDir . "/real/FILE");
@@ -299,7 +299,7 @@ class FilesystemTest extends TestCase
         $this->assertFileDoesNotExist($symlinked);
     }
 
-    public function testJunctions()
+    public function testJunctions(): void
     {
         @mkdir($this->workingDir . '/real/nesting/testing', 0777, true);
         $fs = new Filesystem();
@@ -329,7 +329,7 @@ class FilesystemTest extends TestCase
         $this->assertFalse(is_dir($junction), $junction . ' is not a directory');
     }
 
-    public function testCopy()
+    public function testCopy(): void
     {
         @mkdir($this->workingDir . '/foo/bar', 0777, true);
         @mkdir($this->workingDir . '/foo/baz', 0777, true);
@@ -354,7 +354,7 @@ class FilesystemTest extends TestCase
         $this->assertTrue(is_file($this->workingDir . '/testfile.file'));
     }
 
-    public function testCopyThenRemove()
+    public function testCopyThenRemove(): void
     {
         @mkdir($this->workingDir . '/foo/bar', 0777, true);
         @mkdir($this->workingDir . '/foo/baz', 0777, true);

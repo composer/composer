@@ -27,7 +27,7 @@ class VersionTest extends TestCase
      * 2) git log --pretty=%h --all -- crypto/opensslv.h include/openssl/opensslv.h | while read hash ; do (git show $hash:crypto/opensslv.h; git show $hash:include/openssl/opensslv.h)  | grep "define OPENSSL_VERSION_TEXT"  ; done > versions.txt
      * 3) cat versions.txt | awk -F "OpenSSL " '{print $2}'  | awk -F " " '{print $1}' | sed -e "s:\([0-9]*\.[0-9]*\.[0-9]*\):1.2.3:g" -e "s:1\.2\.3[a-z]\(-.*\)\{0,1\}$:1.2.3a\1:g"  -e "s:1\.2\.3[a-z]\{2\}\(-.*\)\{0,1\}$:1.2.3zh\1:g"  -e "s:beta[0-9]:beta3:g"  -e "s:pre[0-9]*:pre2:g" | sort | uniq
      */
-    public static function provideOpenSslVersions()
+    public static function provideOpenSslVersions(): array
     {
         return array(
             // Generated
@@ -79,7 +79,7 @@ class VersionTest extends TestCase
      * @param bool        $fipsExpected
      * @param string|null $normalizedVersion
      */
-    public function testParseOpensslVersions($input, $parsedVersion, $fipsExpected = false, $normalizedVersion = null)
+    public function testParseOpensslVersions($input, $parsedVersion, $fipsExpected = false, $normalizedVersion = null): void
     {
         self::assertSame($parsedVersion, Version::parseOpenssl($input, $isFips));
         self::assertSame($fipsExpected, $isFips);
@@ -88,7 +88,7 @@ class VersionTest extends TestCase
         self::assertSame($normalizedVersion, $this->getVersionParser()->normalize($parsedVersion));
     }
 
-    public function provideLibJpegVersions()
+    public function provideLibJpegVersions(): array
     {
         return array(
             array('9', '9.0'),
@@ -104,12 +104,12 @@ class VersionTest extends TestCase
      * @param string $input
      * @param string $parsedVersion
      */
-    public function testParseLibjpegVersion($input, $parsedVersion)
+    public function testParseLibjpegVersion($input, $parsedVersion): void
     {
         self::assertSame($parsedVersion, Version::parseLibjpeg($input));
     }
 
-    public function provideZoneinfoVersions()
+    public function provideZoneinfoVersions(): array
     {
         return array(
             array('2019c', '2019.3'),
@@ -124,7 +124,7 @@ class VersionTest extends TestCase
      * @param string $input
      * @param string $parsedVersion
      */
-    public function testParseZoneinfoVersion($input, $parsedVersion)
+    public function testParseZoneinfoVersion($input, $parsedVersion): void
     {
         self::assertSame($parsedVersion, Version::parseZoneinfoVersion($input));
     }

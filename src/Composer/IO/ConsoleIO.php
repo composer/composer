@@ -157,7 +157,7 @@ class ConsoleIO extends BaseIO
      *
      * @return void
      */
-    private function doWrite($messages, $newline, $stderr, $verbosity, $raw = false)
+    private function doWrite($messages, $newline, $stderr, $verbosity, $raw = false): void
     {
         $sfVerbosity = $this->verbosityMap[$verbosity];
         if ($sfVerbosity > $this->output->getVerbosity()) {
@@ -175,7 +175,7 @@ class ConsoleIO extends BaseIO
         if (null !== $this->startTime) {
             $memoryUsage = memory_get_usage() / 1024 / 1024;
             $timeSpent = microtime(true) - $this->startTime;
-            $messages = array_map(function ($message) use ($memoryUsage, $timeSpent) {
+            $messages = array_map(function ($message) use ($memoryUsage, $timeSpent): string {
                 return sprintf('[%.1fMiB/%.2fs] %s', $memoryUsage, $timeSpent, $message);
             }, (array) $messages);
         }
@@ -216,7 +216,7 @@ class ConsoleIO extends BaseIO
      *
      * @return void
      */
-    private function doOverwrite($messages, $newline, $size, $stderr, $verbosity)
+    private function doOverwrite($messages, $newline, $size, $stderr, $verbosity): void
     {
         // messages can be an array, let's convert it to string anyway
         $messages = implode($newline ? "\n" : '', (array) $messages);
@@ -345,7 +345,7 @@ class ConsoleIO extends BaseIO
     /**
      * @return OutputInterface
      */
-    private function getErrorOutput()
+    private function getErrorOutput(): OutputInterface
     {
         if ($this->output instanceof ConsoleOutputInterface) {
             return $this->output->getErrorOutput();

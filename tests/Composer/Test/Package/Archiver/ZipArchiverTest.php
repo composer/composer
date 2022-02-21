@@ -23,7 +23,7 @@ class ZipArchiverTest extends ArchiverTest
      *
      * @dataProvider provideGitignoreExcludeNegationTestCases
      */
-    public function testGitignoreExcludeNegation($include)
+    public function testGitignoreExcludeNegation($include): void
     {
         $this->testZipArchive(array(
             'docs/README.md' => '# The doc',
@@ -31,7 +31,7 @@ class ZipArchiverTest extends ArchiverTest
         ));
     }
 
-    public function provideGitignoreExcludeNegationTestCases()
+    public function provideGitignoreExcludeNegationTestCases(): array
     {
         return array(
             array('!/docs'),
@@ -42,7 +42,7 @@ class ZipArchiverTest extends ArchiverTest
     /**
      * @param array<string, string> $files
      */
-    public function testZipArchive(array $files = array())
+    public function testZipArchive(array $files = array()): void
     {
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('Cannot run ZipArchiverTest, missing class "ZipArchive".');
@@ -87,7 +87,7 @@ class ZipArchiverTest extends ArchiverTest
      *
      * @return void
      */
-    protected function setupDummyRepo(array &$files)
+    protected function setupDummyRepo(array &$files): void
     {
         $currentWorkDir = getcwd();
         chdir($this->testDir);
@@ -108,7 +108,7 @@ class ZipArchiverTest extends ArchiverTest
      *
      * @return void
      */
-    protected function writeFile($path, $content, $currentWorkDir)
+    protected function writeFile($path, $content, $currentWorkDir): void
     {
         if (!file_exists(dirname($path))) {
             mkdir(dirname($path), 0777, true);

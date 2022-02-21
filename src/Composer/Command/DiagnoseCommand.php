@@ -260,7 +260,8 @@ EOT
         try {
             $this->httpDownloader->get($proto . '://repo.packagist.org/packages.json');
         } catch (TransportException $e) {
-            if ($hints = HttpDownloader::getExceptionHints($e)) {
+            $hints = HttpDownloader::getExceptionHints($e);
+            if (null !== $hints && count($hints) > 0) {
                 foreach ($hints as $hint) {
                     $result[] = $hint;
                 }
@@ -436,7 +437,7 @@ EOT
     /**
      * @return string
      */
-    private function getCurlVersion()
+    private function getCurlVersion(): string
     {
         if (extension_loaded('curl')) {
             if (!HttpDownloader::isCurlEnabled()) {
@@ -458,7 +459,7 @@ EOT
      *
      * @return void
      */
-    private function outputResult($result)
+    private function outputResult($result): void
     {
         $io = $this->getIO();
         if (true === $result) {
@@ -510,7 +511,7 @@ EOT
     private function checkPlatform()
     {
         $output = '';
-        $out = function ($msg, $style) use (&$output) {
+        $out = function ($msg, $style) use (&$output): void {
             $output .= '<'.$style.'>'.$msg.'</'.$style.'>'.PHP_EOL;
         };
 

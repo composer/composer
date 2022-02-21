@@ -27,7 +27,7 @@ class ArtifactRepositoryTest extends TestCase
         }
     }
 
-    public function testExtractsConfigsFromZipArchives()
+    public function testExtractsConfigsFromZipArchives(): void
     {
         $expectedPackages = array(
             'vendor0/package0-0.0.1',
@@ -53,7 +53,7 @@ class ArtifactRepositoryTest extends TestCase
 
         $this->assertSame($expectedPackages, $foundPackages);
 
-        $tarPackage = array_filter($repo->getPackages(), function (BasePackage $package) {
+        $tarPackage = array_filter($repo->getPackages(), function (BasePackage $package): bool {
             return $package->getPrettyName() === 'test/jsonInRootTarFile';
         });
         $this->assertCount(1, $tarPackage);
@@ -61,7 +61,7 @@ class ArtifactRepositoryTest extends TestCase
         $this->assertSame('tar', $tarPackage->getDistType());
     }
 
-    public function testAbsoluteRepoUrlCreatesAbsoluteUrlPackages()
+    public function testAbsoluteRepoUrlCreatesAbsoluteUrlPackages(): void
     {
         $absolutePath = __DIR__ . '/Fixtures/artifacts';
         $coordinates = array('type' => 'artifact', 'url' => $absolutePath);
@@ -72,7 +72,7 @@ class ArtifactRepositoryTest extends TestCase
         }
     }
 
-    public function testRelativeRepoUrlCreatesRelativeUrlPackages()
+    public function testRelativeRepoUrlCreatesRelativeUrlPackages(): void
     {
         $relativePath = 'tests/Composer/Test/Repository/Fixtures/artifacts';
         $coordinates = array('type' => 'artifact', 'url' => $relativePath);

@@ -30,7 +30,7 @@ class Silencer
      * @param  int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
      * @return int      The old error reporting level.
      */
-    public static function suppress($mask = null)
+    public static function suppress($mask = null): int
     {
         if (!isset($mask)) {
             $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT;
@@ -47,7 +47,7 @@ class Silencer
      *
      * @return void
      */
-    public static function restore()
+    public static function restore(): void
     {
         if (!empty(self::$stack)) {
             error_reporting(array_pop(self::$stack));

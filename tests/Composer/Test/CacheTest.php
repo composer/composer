@@ -62,7 +62,7 @@ class CacheTest extends TestCase
         }
     }
 
-    public function testRemoveOutdatedFiles()
+    public function testRemoveOutdatedFiles(): void
     {
         $outdated = array_slice($this->files, 1);
         $this->finder
@@ -82,7 +82,7 @@ class CacheTest extends TestCase
         $this->assertFileExists("{$this->root}/cached.file0.zip");
     }
 
-    public function testRemoveFilesWhenCacheIsTooLarge()
+    public function testRemoveFilesWhenCacheIsTooLarge(): void
     {
         $emptyFinder = $this->getMockBuilder('Symfony\Component\Finder\Finder')->disableOriginalConstructor()->getMock();
         $emptyFinder
@@ -111,7 +111,7 @@ class CacheTest extends TestCase
         $this->assertFileExists("{$this->root}/cached.file3.zip");
     }
 
-    public function testClearCache()
+    public function testClearCache(): void
     {
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $cache = new Cache($io, $this->root, 'a-z0-9.', $this->filesystem);

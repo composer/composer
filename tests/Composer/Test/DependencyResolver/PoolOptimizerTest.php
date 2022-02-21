@@ -34,7 +34,7 @@ class PoolOptimizerTest extends TestCase
      * @param BasePackage[] $expectedPackages
      * @param string $message
      */
-    public function testPoolOptimizer(array $requestData, array $packagesBefore, array $expectedPackages, $message)
+    public function testPoolOptimizer(array $requestData, array $packagesBefore, array $expectedPackages, $message): void
     {
         $lockedRepo = new LockArrayRepository();
 
@@ -71,7 +71,7 @@ class PoolOptimizerTest extends TestCase
         );
     }
 
-    public function provideIntegrationTests()
+    public function provideIntegrationTests(): array
     {
         $fixturesDir = realpath(__DIR__.'/Fixtures/pooloptimizer/');
         $tests = array();
@@ -100,7 +100,7 @@ class PoolOptimizerTest extends TestCase
      * @param  string $fixturesDir
      * @return mixed[]
      */
-    protected function readTestFile(\SplFileInfo $file, $fixturesDir)
+    protected function readTestFile(\SplFileInfo $file, $fixturesDir): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
 
@@ -154,7 +154,7 @@ class PoolOptimizerTest extends TestCase
      * @param BasePackage[] $packages
      * @return string[]
      */
-    private function reducePackagesInfoForComparison(array $packages)
+    private function reducePackagesInfoForComparison(array $packages): array
     {
         $packagesInfo = array();
 
@@ -171,7 +171,7 @@ class PoolOptimizerTest extends TestCase
      * @param mixed[][] $packagesData
      * @return BasePackage[]
      */
-    private function loadPackages(array $packagesData)
+    private function loadPackages(array $packagesData): array
     {
         $packages = array();
 
@@ -189,7 +189,7 @@ class PoolOptimizerTest extends TestCase
      * @param mixed[] $packageData
      * @return BasePackage
      */
-    private function loadPackage(array $packageData)
+    private function loadPackage(array $packageData): BasePackage
     {
         $loader = new ArrayLoader();
 

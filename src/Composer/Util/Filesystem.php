@@ -177,7 +177,7 @@ class Filesystem
      *
      * @return bool|null Returns null, when no edge case was hit. Otherwise a bool whether removal was successful
      */
-    private function removeEdgeCases($directory, $fallbackToPhp = true)
+    private function removeEdgeCases($directory, $fallbackToPhp = true): ?bool
     {
         if ($this->isSymlinkedDirectory($directory)) {
             return $this->unlinkSymlinkedDirectory($directory);
@@ -711,7 +711,7 @@ class Filesystem
      *
      * @return bool
      */
-    private function unlinkImplementation($path)
+    private function unlinkImplementation($path): bool
     {
         if (Platform::isWindows() && is_dir($path) && is_link($path)) {
             return rmdir($path);
@@ -767,7 +767,7 @@ class Filesystem
      *
      * @return bool
      */
-    private function unlinkSymlinkedDirectory($directory)
+    private function unlinkSymlinkedDirectory($directory): bool
     {
         $resolved = $this->resolveSymlinkedDirectorySymlink($directory);
 
@@ -781,7 +781,7 @@ class Filesystem
      *
      * @return string resolved path to symbolic link or original pathname (unresolved)
      */
-    private function resolveSymlinkedDirectorySymlink($pathname)
+    private function resolveSymlinkedDirectorySymlink($pathname): string
     {
         if (!is_dir($pathname)) {
             return $pathname;
@@ -926,7 +926,7 @@ class Filesystem
      *
      * @return bool
      */
-    private function filesAreEqual($a, $b)
+    private function filesAreEqual($a, $b): bool
     {
         // Check if filesize is different
         if (filesize($a) !== filesize($b)) {

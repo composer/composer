@@ -19,7 +19,7 @@ class FactoryTest extends TestCase
     /**
      * @group TLS
      */
-    public function testDefaultValuesAreAsExpected()
+    public function testDefaultValuesAreAsExpected(): void
     {
         $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 

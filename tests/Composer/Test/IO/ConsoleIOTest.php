@@ -19,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ConsoleIOTest extends TestCase
 {
-    public function testIsInteractive()
+    public function testIsInteractive(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $inputMock->expects($this->exactly(2))
@@ -38,7 +38,7 @@ class ConsoleIOTest extends TestCase
         $this->assertFalse($consoleIO->isInteractive());
     }
 
-    public function testWrite()
+    public function testWrite(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
@@ -54,7 +54,7 @@ class ConsoleIOTest extends TestCase
         $consoleIO->write('some information about something', false);
     }
 
-    public function testWriteError()
+    public function testWriteError(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\ConsoleOutputInterface')->getMock();
@@ -73,7 +73,7 @@ class ConsoleIOTest extends TestCase
         $consoleIO->writeError('some information about something', false);
     }
 
-    public function testWriteWithMultipleLineStringWhenDebugging()
+    public function testWriteWithMultipleLineStringWhenDebugging(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
@@ -83,7 +83,7 @@ class ConsoleIOTest extends TestCase
         $outputMock->expects($this->once())
             ->method('write')
             ->with(
-                $this->callback(function ($messages) {
+                $this->callback(function ($messages): bool {
                     $result = Preg::isMatch("[(.*)/(.*) First line]", $messages[0]);
                     $result = $result && Preg::isMatch("[(.*)/(.*) Second line]", $messages[1]);
 
@@ -101,7 +101,7 @@ class ConsoleIOTest extends TestCase
         $consoleIO->write($example, false);
     }
 
-    public function testOverwrite()
+    public function testOverwrite(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
@@ -129,7 +129,7 @@ class ConsoleIOTest extends TestCase
         $consoleIO->overwrite('something longer than initial (<info>34</info>)');
     }
 
-    public function testAsk()
+    public function testAsk(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
@@ -157,7 +157,7 @@ class ConsoleIOTest extends TestCase
         $consoleIO->ask('Why?', 'default');
     }
 
-    public function testAskConfirmation()
+    public function testAskConfirmation(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
@@ -185,7 +185,7 @@ class ConsoleIOTest extends TestCase
         $consoleIO->askConfirmation('Why?', false);
     }
 
-    public function testAskAndValidate()
+    public function testAskAndValidate(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
@@ -209,14 +209,14 @@ class ConsoleIOTest extends TestCase
             ->will($this->returnValue($helperMock))
         ;
 
-        $validator = function ($value) {
+        $validator = function ($value): bool {
             return true;
         };
         $consoleIO = new ConsoleIO($inputMock, $outputMock, $setMock);
         $consoleIO->askAndValidate('Why?', $validator, 10, 'default');
     }
 
-    public function testSelect()
+    public function testSelect(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
@@ -245,7 +245,7 @@ class ConsoleIOTest extends TestCase
         $this->assertEquals(array('1'), $result);
     }
 
-    public function testSetAndgetAuthentication()
+    public function testSetAndgetAuthentication(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
@@ -260,7 +260,7 @@ class ConsoleIOTest extends TestCase
         );
     }
 
-    public function testGetAuthenticationWhenDidNotSet()
+    public function testGetAuthenticationWhenDidNotSet(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
@@ -274,7 +274,7 @@ class ConsoleIOTest extends TestCase
         );
     }
 
-    public function testHasAuthentication()
+    public function testHasAuthentication(): void
     {
         $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
         $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();

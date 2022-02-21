@@ -24,7 +24,7 @@ class TlsHelperTest extends TestCase
      * @param string   $hostname
      * @param string[] $certNames
      */
-    public function testCheckCertificateHost($expectedResult, $hostname, $certNames)
+    public function testCheckCertificateHost($expectedResult, $hostname, $certNames): void
     {
         $certificate['subject']['commonName'] = $expectedCn = array_shift($certNames);
         $certificate['extensions']['subjectAltName'] = $certNames ? 'DNS:'.implode(',DNS:', $certNames) : '';
@@ -41,7 +41,7 @@ class TlsHelperTest extends TestCase
         }
     }
 
-    public function dataCheckCertificateHost()
+    public function dataCheckCertificateHost(): array
     {
         return array(
             array(true, 'getcomposer.org', array('getcomposer.org')),
@@ -67,7 +67,7 @@ class TlsHelperTest extends TestCase
         );
     }
 
-    public function testGetCertificateNames()
+    public function testGetCertificateNames(): void
     {
         $certificate['subject']['commonName'] = 'example.net';
         $certificate['extensions']['subjectAltName'] = 'DNS: example.com, IP: 127.0.0.1, DNS: getcomposer.org, Junk: blah, DNS: composer.example.org';

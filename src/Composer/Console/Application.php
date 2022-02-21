@@ -94,14 +94,14 @@ class Application extends BaseApplication
         if (!$shutdownRegistered) {
             if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
                 pcntl_async_signals(true);
-                pcntl_signal(SIGINT, function ($sig) {
+                pcntl_signal(SIGINT, function ($sig): void {
                     exit(130);
                 });
             }
 
             $shutdownRegistered = true;
 
-            register_shutdown_function(function () {
+            register_shutdown_function(function (): void {
                 $lastError = error_get_last();
 
                 if ($lastError && $lastError['message'] &&
@@ -291,7 +291,7 @@ class Application extends BaseApplication
             }
 
             // Check system temp folder for usability as it can cause weird runtime issues otherwise
-            Silencer::call(function () use ($io) {
+            Silencer::call(function () use ($io): void {
                 $tempfile = sys_get_temp_dir() . '/temp-' . md5(microtime());
                 if (!(file_put_contents($tempfile, __FILE__) && (file_get_contents($tempfile) == __FILE__) && unlink($tempfile) && !file_exists($tempfile))) {
                     $io->writeError(sprintf('<error>PHP temp directory (%s) does not exist or is not writable to Composer. Set sys_temp_dir in your php.ini</error>', sys_get_temp_dir()));
@@ -358,7 +358,7 @@ class Application extends BaseApplication
      * @throws \RuntimeException
      * @return string
      */
-    private function getNewWorkingDir(InputInterface $input)
+    private function getNewWorkingDir(InputInterface $input): string
     {
         $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
         if (false !== $workingDir && !is_dir($workingDir)) {
@@ -371,7 +371,7 @@ class Application extends BaseApplication
     /**
      * @return void
      */
-    private function hintCommonErrors(\Exception $exception)
+    private function hintCommonErrors(\Exception $exception): void
     {
         $io = $this->getIO();
 
@@ -408,7 +408,8 @@ class Application extends BaseApplication
             $io->writeError('<error>Check https://getcomposer.org/doc/06-config.md#process-timeout for details</error>', true, IOInterface::QUIET);
         }
 
-        if ($hints = HttpDownloader::getExceptionHints($exception)) {
+        $hints = HttpDownloader::getExceptionHints($exception);
+        if (null !== $hints && count($hints) > 0) {
             foreach ($hints as $hint) {
                 $io->writeError($hint, true, IOInterface::QUIET);
             }
@@ -553,13 +554,13 @@ class Application extends BaseApplication
     /**
      * @return Command\BaseCommand[]
      */
-    private function getPluginCommands()
+    private function getPluginCommands(): array
     {
         $commands = array();
 
         $composer = $this->getComposer(false, false);
         if (null === $composer) {
-            $composer = Factory::createGlobal($this->io);
+            $composer = Factory::createGlobal($this->io, $this->disablePluginsByDefault, $this->disableScriptsByDefault);
         }
 
         if (null !== $composer) {

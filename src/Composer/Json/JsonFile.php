@@ -256,7 +256,7 @@ class JsonFile
      * @throws \RuntimeException
      * @return void
      */
-    private static function throwEncodeError($code)
+    private static function throwEncodeError($code): void
     {
         switch ($code) {
             case JSON_ERROR_DEPTH:

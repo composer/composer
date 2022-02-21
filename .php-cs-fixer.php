@@ -71,7 +71,6 @@ return $config->setRules([
         'random_api_migration' => true,
         'ternary_to_null_coalescing' => true,
         //'declare_strict_types' => true,
-        //'void_return' => true,
     ])
     ->setUsingCache(true)
     ->setRiskyAllowed(true)

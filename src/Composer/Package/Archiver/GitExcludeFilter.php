@@ -50,7 +50,7 @@ class GitExcludeFilter extends BaseExcludeFilter
      *
      * @return array{0: string, 1: bool, 2: bool}|null An exclude pattern for filter()
      */
-    public function parseGitAttributesLine($line)
+    public function parseGitAttributesLine($line): ?array
     {
         $parts = Preg::split('#\s+#', $line);
 

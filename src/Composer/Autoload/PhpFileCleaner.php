@@ -51,7 +51,7 @@ class PhpFileCleaner
      * @param string[] $types
      * @return void
      */
-    public static function setTypeConfig($types)
+    public static function setTypeConfig($types): void
     {
         foreach ($types as $type) {
             self::$typeConfig[$type[0]] = array(
@@ -78,7 +78,7 @@ class PhpFileCleaner
     /**
      * @return string
      */
-    public function clean()
+    public function clean(): string
     {
         $clean = '';
 
@@ -152,7 +152,7 @@ class PhpFileCleaner
     /**
      * @return void
      */
-    private function skipToPhp()
+    private function skipToPhp(): void
     {
         while ($this->index < $this->len) {
             if ($this->contents[$this->index] === '<' && $this->peek('?')) {
@@ -168,7 +168,7 @@ class PhpFileCleaner
      * @param string $delimiter
      * @return void
      */
-    private function skipString($delimiter)
+    private function skipString($delimiter): void
     {
         $this->index += 1;
         while ($this->index < $this->len) {
@@ -187,7 +187,7 @@ class PhpFileCleaner
     /**
      * @return void
      */
-    private function skipComment()
+    private function skipComment(): void
     {
         $this->index += 2;
         while ($this->index < $this->len) {
@@ -203,7 +203,7 @@ class PhpFileCleaner
     /**
      * @return void
      */
-    private function skipToNewline()
+    private function skipToNewline(): void
     {
         while ($this->index < $this->len) {
             if ($this->contents[$this->index] === "\r" || $this->contents[$this->index] === "\n") {
@@ -217,7 +217,7 @@ class PhpFileCleaner
      * @param string $delimiter
      * @return void
      */
-    private function skipHeredoc($delimiter)
+    private function skipHeredoc($delimiter): void
     {
         $firstDelimiterChar = $delimiter[0];
         $delimiterLength = \strlen($delimiter);
@@ -260,7 +260,7 @@ class PhpFileCleaner
      * @param string $char
      * @return bool
      */
-    private function peek($char)
+    private function peek($char): bool
     {
         return $this->index + 1 < $this->len && $this->contents[$this->index + 1] === $char;
     }
@@ -270,7 +270,7 @@ class PhpFileCleaner
      * @param ?array<int, string> $match
      * @return bool
      */
-    private function match($regex, array &$match = null)
+    private function match($regex, array &$match = null): bool
     {
         return Preg::isMatch($regex, $this->contents, $match, 0, $this->index);
     }

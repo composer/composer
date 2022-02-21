@@ -191,7 +191,7 @@ class HttpDownloader
      *
      * @return array{Job, PromiseInterface}
      */
-    private function addJob($request, $sync = false)
+    private function addJob($request, $sync = false): array
     {
         $request['options'] = array_replace_recursive($this->options, $request['options']);
 
@@ -216,13 +216,13 @@ class HttpDownloader
         $rfs = $this->rfs;
 
         if ($this->canUseCurl($job)) {
-            $resolver = function ($resolve, $reject) use (&$job) {
+            $resolver = function ($resolve, $reject) use (&$job): void {
                 $job['status'] = HttpDownloader::STATUS_QUEUED;
                 $job['resolve'] = $resolve;
                 $job['reject'] = $reject;
             };
         } else {
-            $resolver = function ($resolve, $reject) use (&$job, $rfs) {
+            $resolver = function ($resolve, $reject) use (&$job, $rfs): void {
                 // start job
                 $url = $job['request']['url'];
                 $options = $job['request']['options'];
@@ -248,7 +248,7 @@ class HttpDownloader
 
         $curl = $this->curl;
 
-        $canceler = function () use (&$job, $curl) {
+        $canceler = function () use (&$job, $curl): void {
             if ($job['status'] === HttpDownloader::STATUS_QUEUED) {
                 $job['status'] = HttpDownloader::STATUS_ABORTED;
             }
@@ -270,7 +270,7 @@ class HttpDownloader
             $this->markJobDone();
 
             return $response;
-        }, function ($e) use (&$job) {
+        }, function ($e) use (&$job): void {
             $job['status'] = HttpDownloader::STATUS_FAILED;
             $job['exception'] = $e;
 
@@ -291,7 +291,7 @@ class HttpDownloader
      * @param  int  $id
      * @return void
      */
-    private function startJob($id)
+    private function startJob($id): void
     {
         $job = &$this->jobs[$id];
         if ($job['status'] !== self::STATUS_QUEUED) {
@@ -355,7 +355,7 @@ class HttpDownloader
      *
      * @return void
      */
-    public function enableAsync()
+    public function enableAsync(): void
     {
         $this->allowAsync = true;
     }
@@ -366,7 +366,7 @@ class HttpDownloader
      * @param  int|null $index For internal use only, the job id
      * @return int      number of active (queued or started) jobs
      */
-    public function countActiveJobs($index = null)
+    public function countActiveJobs($index = null): int
     {
         if ($this->runningJobs < $this->maxJobs) {
             foreach ($this->jobs as $job) {
@@ -400,7 +400,7 @@ class HttpDownloader
      * @param  int $index Job id
      * @return Response
      */
-    private function getResponse($index)
+    private function getResponse($index): Response
     {
         if (!isset($this->jobs[$index])) {
             throw new \LogicException('Invalid request id');
@@ -428,7 +428,7 @@ class HttpDownloader
      * @param  array{warning?: string, info?: string, warning-versions?: string, info-versions?: string, warnings?: array<array{versions: string, message: string}>, infos?: array<array{versions: string, message: string}>} $data
      * @return void
      */
-    public static function outputWarnings(IOInterface $io, $url, $data)
+    public static function outputWarnings(IOInterface $io, $url, $data): void
     {
         // legacy warning/info keys
         foreach (array('warning', 'info') as $type) {
@@ -473,7 +473,7 @@ class HttpDownloader
      *
      * @return ?string[]
      */
-    public static function getExceptionHints(\Exception $e)
+    public static function getExceptionHints(\Exception $e): ?array
     {
         if (!$e instanceof TransportException) {
             return null;
@@ -507,7 +507,7 @@ class HttpDownloader
      * @param  Job  $job
      * @return bool
      */
-    private function canUseCurl(array $job)
+    private function canUseCurl(array $job): bool
     {
         if (!$this->curl) {
             return false;
@@ -528,7 +528,7 @@ class HttpDownloader
      * @internal
      * @return bool
      */
-    public static function isCurlEnabled()
+    public static function isCurlEnabled(): bool
     {
         return \extension_loaded('curl') && \function_exists('curl_multi_exec') && \function_exists('curl_multi_init');
     }

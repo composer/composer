@@ -45,7 +45,7 @@ class Rule2Literals extends Rule
     }
 
     /** @return int[] */
-    public function getLiterals()
+    public function getLiterals(): array
     {
         return array($this->literal1, $this->literal2);
     }
@@ -66,7 +66,7 @@ class Rule2Literals extends Rule
      * @param  Rule $rule The rule to check against
      * @return bool Whether the rules are equal
      */
-    public function equals(Rule $rule)
+    public function equals(Rule $rule): bool
     {
         // specialized fast-case
         if ($rule instanceof self) {
@@ -98,7 +98,7 @@ class Rule2Literals extends Rule
     }
 
     /** @return false */
-    public function isAssertion()
+    public function isAssertion(): bool
     {
         return false;
     }

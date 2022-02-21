@@ -100,7 +100,7 @@ class ProcessExecutor
      * @param  mixed   $output
      * @return int
      */
-    private function doExecute($command, $cwd, $tty, &$output = null)
+    private function doExecute($command, $cwd, $tty, &$output = null): int
     {
         $this->outputCommandRun($command, $cwd, false);
 
@@ -153,13 +153,13 @@ class ProcessExecutor
             'cwd' => $cwd,
         );
 
-        $resolver = function ($resolve, $reject) use (&$job) {
+        $resolver = function ($resolve, $reject) use (&$job): void {
             $job['status'] = ProcessExecutor::STATUS_QUEUED;
             $job['resolve'] = $resolve;
             $job['reject'] = $reject;
         };
 
-        $canceler = function () use (&$job) {
+        $canceler = function () use (&$job): void {
             if ($job['status'] === ProcessExecutor::STATUS_QUEUED) {
                 $job['status'] = ProcessExecutor::STATUS_ABORTED;
             }
@@ -190,7 +190,7 @@ class ProcessExecutor
             $this->markJobDone();
 
             return $job['process'];
-        }, function ($e) use (&$job) {
+        }, function ($e) use (&$job): void {
             $job['status'] = ProcessExecutor::STATUS_FAILED;
 
             $this->markJobDone();
@@ -210,7 +210,7 @@ class ProcessExecutor
      * @param  int  $id
      * @return void
      */
-    private function startJob($id)
+    private function startJob($id): void
     {
         $job = &$this->jobs[$id];
         if ($job['status'] !== self::STATUS_QUEUED) {
@@ -269,7 +269,7 @@ class ProcessExecutor
      *
      * @return void
      */
-    public function enableAsync()
+    public function enableAsync(): void
     {
         $this->allowAsync = true;
     }
@@ -280,7 +280,7 @@ class ProcessExecutor
      * @param  ?int $index job id
      * @return int         number of active (queued or started) jobs
      */
-    public function countActiveJobs($index = null)
+    public function countActiveJobs($index = null): int
     {
         // tick
         foreach ($this->jobs as $job) {
@@ -407,7 +407,7 @@ class ProcessExecutor
         }
 
         $commandString = is_string($command) ? $command : implode(' ', array_map(self::class.'::escape', $command));
-        $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
+        $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m): string {
             // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx) we obfuscate that
             if (Preg::isMatch('{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+)$}', $m['user'])) {
                 return '://***:***@';
@@ -437,7 +437,7 @@ class ProcessExecutor
      *
      * @return string
      */
-    private static function escapeArgument($argument)
+    private static function escapeArgument($argument): string
     {
         if ('' === ($argument = (string) $argument)) {
             return escapeshellarg($argument);

@@ -41,7 +41,7 @@ class Versions
     /**
      * @return string
      */
-    public function getChannel()
+    public function getChannel(): string
     {
         if ($this->channel) {
             return $this->channel;
@@ -63,7 +63,7 @@ class Versions
      *
      * @return void
      */
-    public function setChannel($channel)
+    public function setChannel($channel): void
     {
         if (!in_array($channel, self::$channels, true)) {
             throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: ' . implode(', ', self::$channels));
@@ -79,7 +79,7 @@ class Versions
      *
      * @return array{path: string, version: string, min-php: int}
      */
-    public function getLatest($channel = null)
+    public function getLatest($channel = null): array
     {
         $versions = $this->getVersionsData();
 
@@ -95,7 +95,7 @@ class Versions
     /**
      * @return array<string, array<int, array{path: string, version: string, min-php: int}>>
      */
-    private function getVersionsData()
+    private function getVersionsData(): array
     {
         if (!$this->versionsData) {
             if ($this->config->get('disable-tls') === true) {

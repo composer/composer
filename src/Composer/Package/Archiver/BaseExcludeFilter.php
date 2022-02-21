@@ -49,7 +49,7 @@ abstract class BaseExcludeFilter
      *
      * @return bool Whether the file should be excluded
      */
-    public function filter($relativePath, $exclude)
+    public function filter($relativePath, $exclude): bool
     {
         foreach ($this->excludePatterns as $patternData) {
             list($pattern, $negate, $stripLeadingSlash) = $patternData;
@@ -80,7 +80,7 @@ abstract class BaseExcludeFilter
      *
      * @return array<array{0: non-empty-string, 1: bool, 2: bool}> Exclude patterns to be used in filter()
      */
-    protected function parseLines(array $lines, $lineParser)
+    protected function parseLines(array $lines, $lineParser): array
     {
         return array_filter(
             array_map(
@@ -95,7 +95,7 @@ abstract class BaseExcludeFilter
                 },
                 $lines
             ),
-            function ($pattern) {
+            function ($pattern): bool {
                 return $pattern !== null;
             }
         );
@@ -108,7 +108,7 @@ abstract class BaseExcludeFilter
      *
      * @return array<int, array{0: non-empty-string, 1: bool, 2: bool}> Exclude patterns
      */
-    protected function generatePatterns($rules)
+    protected function generatePatterns($rules): array
     {
         $patterns = array();
         foreach ($rules as $rule) {
@@ -125,7 +125,7 @@ abstract class BaseExcludeFilter
      *
      * @return array{0: non-empty-string, 1: bool, 2: bool} An exclude pattern
      */
-    protected function generatePattern($rule)
+    protected function generatePattern($rule): array
     {
         $negate = false;
         $pattern = '';

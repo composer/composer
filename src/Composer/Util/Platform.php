@@ -51,7 +51,7 @@ class Platform
      * @param  string $value
      * @return void
      */
-    public static function putEnv($name, $value)
+    public static function putEnv($name, $value): void
     {
         $value = (string) $value;
         putenv($name . '=' . $value);
@@ -64,7 +64,7 @@ class Platform
      * @param  string $name
      * @return void
      */
-    public static function clearEnv($name)
+    public static function clearEnv($name): void
     {
         putenv($name);
         unset($_SERVER[$name], $_ENV[$name]);
@@ -76,13 +76,13 @@ class Platform
      * @param  string $path
      * @return string
      */
-    public static function expandPath($path)
+    public static function expandPath($path): string
     {
         if (Preg::isMatch('#^~[\\/]#', $path)) {
             return self::getUserDirectory() . substr($path, 1);
         }
 
-        return Preg::replaceCallback('#^(\$|(?P<percent>%))(?P<var>\w++)(?(percent)%)(?P<path>.*)#', function ($matches) {
+        return Preg::replaceCallback('#^(\$|(?P<percent>%))(?P<var>\w++)(?(percent)%)(?P<path>.*)#', function ($matches): string {
             // Treat HOME as an alias for USERPROFILE on Windows for legacy reasons
             if (Platform::isWindows() && $matches['var'] == 'HOME') {
                 return (Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE')) . $matches['path'];
@@ -96,7 +96,7 @@ class Platform
      * @throws \RuntimeException If the user home could not reliably be determined
      * @return string            The formal user home as detected from environment parameters
      */
-    public static function getUserDirectory()
+    public static function getUserDirectory(): string
     {
         if (false !== ($home = self::getEnv('HOME'))) {
             return $home;
@@ -118,7 +118,7 @@ class Platform
     /**
      * @return bool Whether the host machine is running on the Windows Subsystem for Linux (WSL)
      */
-    public static function isWindowsSubsystemForLinux()
+    public static function isWindowsSubsystemForLinux(): bool
     {
         if (null === self::$isWindowsSubsystemForLinux) {
             self::$isWindowsSubsystemForLinux = false;
@@ -144,7 +144,7 @@ class Platform
     /**
      * @return bool Whether the host machine is running a Windows OS
      */
-    public static function isWindows()
+    public static function isWindows(): bool
     {
         return \defined('PHP_WINDOWS_VERSION_BUILD');
     }
@@ -153,7 +153,7 @@ class Platform
      * @param  string $str
      * @return int    return a guaranteed binary length of the string, regardless of silly mbstring configs
      */
-    public static function strlen($str)
+    public static function strlen($str): int
     {
         static $useMbString = null;
         if (null === $useMbString) {
@@ -171,7 +171,7 @@ class Platform
      * @param  ?resource $fd Open file descriptor or null to default to STDOUT
      * @return bool
      */
-    public static function isTty($fd = null)
+    public static function isTty($fd = null): bool
     {
         if ($fd === null) {
             $fd = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'w');
@@ -202,7 +202,7 @@ class Platform
     /**
      * @return void
      */
-    public static function workaroundFilesystemIssues()
+    public static function workaroundFilesystemIssues(): void
     {
         if (self::isVirtualBoxGuest()) {
             usleep(200000);
@@ -216,7 +216,7 @@ class Platform
      *
      * @return bool
      */
-    private static function isVirtualBoxGuest()
+    private static function isVirtualBoxGuest(): bool
     {
         if (null === self::$isVirtualBoxGuest) {
             self::$isVirtualBoxGuest = false;

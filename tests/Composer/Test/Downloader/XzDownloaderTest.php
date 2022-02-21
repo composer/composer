@@ -49,7 +49,7 @@ class XzDownloaderTest extends TestCase
         $this->fs->removeDirectory($this->testDir);
     }
 
-    public function testErrorMessages()
+    public function testErrorMessages(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())

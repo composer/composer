@@ -68,7 +68,7 @@ class BitbucketTest extends TestCase
         $this->bitbucket = new Bitbucket($this->io, $this->config, null, $this->httpDownloader, $this->time);
     }
 
-    public function testRequestAccessTokenWithValidOAuthConsumer()
+    public function testRequestAccessTokenWithValidOAuthConsumer(): void
     {
         $this->io->expects($this->once())
             ->method('setAuthentication')
@@ -111,7 +111,7 @@ class BitbucketTest extends TestCase
         );
     }
 
-    public function testRequestAccessTokenWithValidOAuthConsumerAndValidStoredAccessToken()
+    public function testRequestAccessTokenWithValidOAuthConsumerAndValidStoredAccessToken(): \Composer\Util\Bitbucket
     {
         $this->config->expects($this->once())
             ->method('get')
@@ -135,7 +135,7 @@ class BitbucketTest extends TestCase
         return $this->bitbucket;
     }
 
-    public function testRequestAccessTokenWithValidOAuthConsumerAndExpiredAccessToken()
+    public function testRequestAccessTokenWithValidOAuthConsumerAndExpiredAccessToken(): void
     {
         $this->config->expects($this->once())
             ->method('get')
@@ -187,7 +187,7 @@ class BitbucketTest extends TestCase
         );
     }
 
-    public function testRequestAccessTokenWithUsernameAndPassword()
+    public function testRequestAccessTokenWithUsernameAndPassword(): void
     {
         $this->io->expects($this->once())
             ->method('setAuthentication')
@@ -232,7 +232,7 @@ class BitbucketTest extends TestCase
         $this->assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
     }
 
-    public function testRequestAccessTokenWithUsernameAndPasswordWithUnauthorizedResponse()
+    public function testRequestAccessTokenWithUsernameAndPasswordWithUnauthorizedResponse(): void
     {
         $this->config->expects($this->once())
             ->method('get')
@@ -267,7 +267,7 @@ class BitbucketTest extends TestCase
         $this->assertEquals('', $this->bitbucket->requestToken($this->origin, $this->username, $this->password));
     }
 
-    public function testRequestAccessTokenWithUsernameAndPasswordWithNotFoundResponse()
+    public function testRequestAccessTokenWithUsernameAndPasswordWithNotFoundResponse(): void
     {
         self::expectException('Composer\Downloader\TransportException');
         $this->config->expects($this->once())
@@ -297,7 +297,7 @@ class BitbucketTest extends TestCase
         $this->bitbucket->requestToken($this->origin, $this->username, $this->password);
     }
 
-    public function testUsernamePasswordAuthenticationFlow()
+    public function testUsernamePasswordAuthenticationFlow(): void
     {
         $this->io
             ->expects($this->atLeastOnce())
@@ -338,7 +338,7 @@ class BitbucketTest extends TestCase
         $this->assertTrue($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
-    public function testAuthorizeOAuthInteractivelyWithEmptyUsername()
+    public function testAuthorizeOAuthInteractivelyWithEmptyUsername(): void
     {
         $authConfigSourceMock = $this->getMockBuilder('Composer\Config\ConfigSourceInterface')->getMock();
         $this->config->expects($this->atLeastOnce())
@@ -353,7 +353,7 @@ class BitbucketTest extends TestCase
         $this->assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
-    public function testAuthorizeOAuthInteractivelyWithEmptyPassword()
+    public function testAuthorizeOAuthInteractivelyWithEmptyPassword(): void
     {
         $authConfigSourceMock = $this->getMockBuilder('Composer\Config\ConfigSourceInterface')->getMock();
         $this->config->expects($this->atLeastOnce())
@@ -371,7 +371,7 @@ class BitbucketTest extends TestCase
         $this->assertFalse($this->bitbucket->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
-    public function testAuthorizeOAuthInteractivelyWithRequestAccessTokenFailure()
+    public function testAuthorizeOAuthInteractivelyWithRequestAccessTokenFailure(): void
     {
         $authConfigSourceMock = $this->getMockBuilder('Composer\Config\ConfigSourceInterface')->getMock();
         $this->config->expects($this->atLeastOnce())
@@ -411,7 +411,7 @@ class BitbucketTest extends TestCase
      *
      * @return void
      */
-    private function setExpectationsForStoringAccessToken($removeBasicAuth = false)
+    private function setExpectationsForStoringAccessToken($removeBasicAuth = false): void
     {
         $configSourceMock = $this->getMockBuilder('Composer\Config\ConfigSourceInterface')->getMock();
         $this->config->expects($this->once())
@@ -446,7 +446,7 @@ class BitbucketTest extends TestCase
         }
     }
 
-    public function testGetTokenWithoutAccessToken()
+    public function testGetTokenWithoutAccessToken(): void
     {
         $this->assertSame('', $this->bitbucket->getToken());
     }
@@ -456,17 +456,17 @@ class BitbucketTest extends TestCase
      *
      * @param Bitbucket $bitbucket
      */
-    public function testGetTokenWithAccessToken(Bitbucket $bitbucket)
+    public function testGetTokenWithAccessToken(Bitbucket $bitbucket): void
     {
         $this->assertSame($this->token, $bitbucket->getToken());
     }
 
-    public function testAuthorizeOAuthWithWrongOriginUrl()
+    public function testAuthorizeOAuthWithWrongOriginUrl(): void
     {
         $this->assertFalse($this->bitbucket->authorizeOAuth('non-' . $this->origin));
     }
 
-    public function testAuthorizeOAuthWithoutAvailableGitConfigToken()
+    public function testAuthorizeOAuthWithoutAvailableGitConfigToken(): void
     {
         $process = $this->getProcessExecutorMock();
         $process->expects(array(), false, array('return' => -1));
@@ -476,7 +476,7 @@ class BitbucketTest extends TestCase
         $this->assertFalse($bitbucket->authorizeOAuth($this->origin));
     }
 
-    public function testAuthorizeOAuthWithAvailableGitConfigToken()
+    public function testAuthorizeOAuthWithAvailableGitConfigToken(): void
     {
         $process = $this->getProcessExecutorMock();
 

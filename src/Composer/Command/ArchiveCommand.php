@@ -41,7 +41,7 @@ class ArchiveCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('archive')
@@ -168,7 +168,7 @@ EOT
         if (count($packages) > 1) {
             $package = reset($packages);
             $io->writeError('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
-            $io->writeError('Alternatives were '.implode(', ', array_map(function ($p) {
+            $io->writeError('Alternatives were '.implode(', ', array_map(function ($p): string {
                 return $p->getPrettyString();
             }, $packages)).'.');
             $io->writeError('<comment>Please use a more specific constraint to pick a different package.</comment>');

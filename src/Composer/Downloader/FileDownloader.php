@@ -118,7 +118,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             throw new \InvalidArgumentException('The given package is missing url information');
         }
 
-        $cacheKeyGenerator = function (PackageInterface $package, $key) {
+        $cacheKeyGenerator = function (PackageInterface $package, $key): string {
             $cacheKey = sha1($key);
 
             return $package->getName().'/'.$cacheKey.'.'.$package->getDistType();
@@ -195,7 +195,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
                     ->then($accept, $reject);
             }
 
-            return $result->then(function ($result) use ($fileName, $checksum, $url, $package, $eventDispatcher) {
+            return $result->then(function ($result) use ($fileName, $checksum, $url, $package, $eventDispatcher): string {
                 // in case of retry, the first call's Promise chain finally calls this twice at the end,
                 // once with $result being the returned $fileName from $accept, and then once for every
                 // failed request with a null result, which can be skipped.
@@ -221,7 +221,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             });
         };
 
-        $accept = function ($response) use ($cache, $package, $fileName, &$urls) {
+        $accept = function ($response) use ($cache, $package, $fileName, &$urls): string {
             $url = reset($urls);
             $cacheKey = $url['cacheKey'];
             FileDownloader::$downloadMetadata[$package->getName()] = @filesize($fileName) ?: $response->getHeader('Content-Length') ?: '?';
@@ -407,10 +407,13 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $promise = \React\Promise\resolve();
         }
 
-        return $promise->then(function () use ($target, $path) {
+        return $promise->then(function () use ($target, $path): PromiseInterface {
             $promise = $this->install($target, $path, false);
+            if ($promise instanceof PromiseInterface) {
+                return $promise;
+            }
 
-            return $promise;
+            return \React\Promise\resolve();
         });
     }
 
@@ -426,7 +429,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
         $promise = $this->filesystem->removeDirectoryAsync($path);
 
-        return $promise->then(function ($result) use ($path) {
+        return $promise->then(function ($result) use ($path): void {
             if (!$result) {
                 throw new \RuntimeException('Could not completely delete '.$path.', aborting.');
             }

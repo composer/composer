@@ -17,11 +17,11 @@ use Composer\Installer\InstallationManager;
 
 class InstalledFilesystemRepositoryMock extends InstalledFilesystemRepository
 {
-    public function reload()
+    public function reload(): void
     {
     }
 
-    public function write($devMode, InstallationManager $installationManager)
+    public function write($devMode, InstallationManager $installationManager): void
     {
     }
 }

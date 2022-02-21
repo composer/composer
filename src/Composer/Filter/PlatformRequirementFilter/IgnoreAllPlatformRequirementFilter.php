@@ -20,7 +20,7 @@ final class IgnoreAllPlatformRequirementFilter implements PlatformRequirementFil
      * @param string $req
      * @return bool
      */
-    public function isIgnored($req)
+    public function isIgnored($req): bool
     {
         return PlatformRepository::isPlatformPackage($req);
     }

@@ -71,7 +71,7 @@ class PoolOptimizer
     /**
      * @return Pool
      */
-    public function optimize(Request $request, Pool $pool)
+    public function optimize(Request $request, Pool $pool): Pool
     {
         $this->prepare($request, $pool);
 
@@ -99,7 +99,7 @@ class PoolOptimizer
     /**
      * @return void
      */
-    private function prepare(Request $request, Pool $pool)
+    private function prepare(Request $request, Pool $pool): void
     {
         $irremovablePackageConstraintGroups = array();
 
@@ -155,7 +155,7 @@ class PoolOptimizer
     /**
      * @return void
      */
-    private function markPackageIrremovable(BasePackage $package)
+    private function markPackageIrremovable(BasePackage $package): void
     {
         $this->irremovablePackages[$package->id] = true;
         if ($package instanceof AliasPackage) {
@@ -173,7 +173,7 @@ class PoolOptimizer
     /**
      * @return Pool Optimized pool
      */
-    private function applyRemovalsToPool(Pool $pool)
+    private function applyRemovalsToPool(Pool $pool): Pool
     {
         $packages = array();
         $removedVersions = array();
@@ -193,7 +193,7 @@ class PoolOptimizer
     /**
      * @return void
      */
-    private function optimizeByIdenticalDependencies(Request $request, Pool $pool)
+    private function optimizeByIdenticalDependencies(Request $request, Pool $pool): void
     {
         $identicalDefinitionsPerPackage = array();
         $packageIdenticalDefinitionLookup = array();
@@ -278,7 +278,7 @@ class PoolOptimizer
     /**
      * @return string
      */
-    private function calculateDependencyHash(BasePackage $package)
+    private function calculateDependencyHash(BasePackage $package): string
     {
         $hash = '';
 
@@ -322,7 +322,7 @@ class PoolOptimizer
      * @param int $id
      * @return void
      */
-    private function markPackageForRemoval($id)
+    private function markPackageForRemoval($id): void
     {
         // We are not allowed to remove packages if they have been marked as irremovable
         if (isset($this->irremovablePackages[$id])) {
@@ -337,7 +337,7 @@ class PoolOptimizer
      * @param array<int, array<string, array{groupHash: string, dependencyHash: string}>> $packageIdenticalDefinitionLookup
      * @return void
      */
-    private function keepPackage(BasePackage $package, $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup)
+    private function keepPackage(BasePackage $package, $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup): void
     {
         unset($this->packagesToRemove[$package->id]);
 
@@ -389,7 +389,7 @@ class PoolOptimizer
      *
      * @return void
      */
-    private function optimizeImpossiblePackagesAway(Request $request, Pool $pool)
+    private function optimizeImpossiblePackagesAway(Request $request, Pool $pool): void
     {
         if (count($request->getLockedPackages()) === 0) {
             return;

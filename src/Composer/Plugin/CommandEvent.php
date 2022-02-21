@@ -61,7 +61,7 @@ class CommandEvent extends Event
      *
      * @return InputInterface
      */
-    public function getInput()
+    public function getInput(): InputInterface
     {
         return $this->input;
     }
@@ -71,7 +71,7 @@ class CommandEvent extends Event
      *
      * @return OutputInterface
      */
-    public function getOutput()
+    public function getOutput(): OutputInterface
     {
         return $this->output;
     }
@@ -81,7 +81,7 @@ class CommandEvent extends Event
      *
      * @return string
      */
-    public function getCommandName()
+    public function getCommandName(): string
     {
         return $this->commandName;
     }

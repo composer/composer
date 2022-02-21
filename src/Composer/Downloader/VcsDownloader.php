@@ -200,7 +200,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             }
 
             if (trim($logs)) {
-                $logs = implode("\n", array_map(function ($line) {
+                $logs = implode("\n", array_map(function ($line): string {
                     return '      ' . $line;
                 }, explode("\n", $logs)));
 
@@ -346,7 +346,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
      *
      * @return string[]
      */
-    private function prepareUrls(array $urls)
+    private function prepareUrls(array $urls): array
     {
         foreach ($urls as $index => $url) {
             if (Filesystem::isLocalPath($url)) {

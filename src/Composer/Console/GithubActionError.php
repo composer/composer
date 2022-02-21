@@ -34,7 +34,7 @@ final class GithubActionError
      *
      * @return void
      */
-    public function emit($message, $file = null, $line = null)
+    public function emit($message, $file = null, $line = null): void
     {
         if (Platform::getEnv('GITHUB_ACTIONS') && !Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING')) {
             $message = $this->escapeData($message);
@@ -55,7 +55,7 @@ final class GithubActionError
      * @param string $data
      * @return string
      */
-    private function escapeData($data)
+    private function escapeData($data): string
     {
         // see https://github.com/actions/toolkit/blob/4f7fb6513a355689f69f0849edeb369a4dc81729/packages/core/src/command.ts#L80-L85
         $data = str_replace("%", '%25', $data);
@@ -69,7 +69,7 @@ final class GithubActionError
      * @param string $property
      * @return string
      */
-    private function escapeProperty($property)
+    private function escapeProperty($property): string
     {
         // see https://github.com/actions/toolkit/blob/4f7fb6513a355689f69f0849edeb369a4dc81729/packages/core/src/command.ts#L87-L94
         $property = str_replace("%", '%25', $property);

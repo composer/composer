@@ -63,7 +63,7 @@ class CreateProjectCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('create-project')
@@ -187,7 +187,7 @@ EOT
      * @return int
      * @throws \Exception
      */
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName = null, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $noInstall = false, PlatformRequirementFilterInterface $platformRequirementFilter = null, $secureHttp = true, $addRepository = false)
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName = null, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $noInstall = false, PlatformRequirementFilterInterface $platformRequirementFilter = null, $secureHttp = true, $addRepository = false): int
     {
         $oldCwd = getcwd();
 
@@ -350,7 +350,7 @@ EOT
      * @return bool
      * @throws \Exception
      */
-    protected function installRootPackage(IOInterface $io, Config $config, $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, array $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $secureHttp = true)
+    protected function installRootPackage(IOInterface $io, Config $config, $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, array $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $secureHttp = true): bool
     {
         if (!$secureHttp) {
             $config->merge(array('config' => array('secure-http' => false)), Config::SOURCE_COMMAND);
@@ -443,7 +443,7 @@ EOT
             @mkdir($directory, 0777, true);
             if ($realDir = realpath($directory)) {
                 pcntl_async_signals(true);
-                pcntl_signal(SIGINT, function () use ($realDir) {
+                pcntl_signal(SIGINT, function () use ($realDir): void {
                     $fs = new Filesystem();
                     $fs->removeDirectory($realDir);
                     exit(130);
@@ -454,7 +454,7 @@ EOT
         if (function_exists('sapi_windows_set_ctrl_handler') && PHP_SAPI === 'cli') {
             @mkdir($directory, 0777, true);
             if ($realDir = realpath($directory)) {
-                sapi_windows_set_ctrl_handler(function () use ($realDir) {
+                sapi_windows_set_ctrl_handler(function () use ($realDir): void {
                     $fs = new Filesystem();
                     $fs->removeDirectory($realDir);
                     exit(130);

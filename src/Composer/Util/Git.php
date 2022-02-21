@@ -283,7 +283,7 @@ class Git
         // update the repo if it is a valid git repository
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             try {
-                $commandCallable = function ($url) {
+                $commandCallable = function ($url): string {
                     $sanitizedUrl = Preg::replace('{://([^@]+?):(.+?)@}', '://', $url);
 
                     return sprintf('git remote set-url origin -- %s && git remote update --prune origin && git remote set-url origin -- %s && git gc --auto', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
@@ -301,7 +301,7 @@ class Git
         // clean up directory and do a fresh clone into it
         $this->filesystem->removeDirectory($dir);
 
-        $commandCallable = function ($url) use ($dir) {
+        $commandCallable = function ($url) use ($dir): string {
             return sprintf('git clone --mirror -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($dir));
         };
 
@@ -349,7 +349,7 @@ class Git
      *
      * @return bool
      */
-    private function checkRefIsInMirror($dir, $ref)
+    private function checkRefIsInMirror($dir, $ref): bool
     {
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             $escapedRef = ProcessExecutor::escape($ref.'^{commit}');
@@ -368,7 +368,7 @@ class Git
      *
      * @return bool
      */
-    private function isAuthenticationFailure($url, &$match)
+    private function isAuthenticationFailure($url, &$match): bool
     {
         if (!Preg::isMatch('{^(https?://)([^/]+)(.*)$}i', $url, $match)) {
             return false;
@@ -441,7 +441,7 @@ class Git
      *
      * @return never
      */
-    private function throwException($message, $url)
+    private function throwException($message, $url): void
     {
         // git might delete a directory when it fails and php will not know
         clearstatcache();
@@ -476,7 +476,7 @@ class Git
      *
      * @return string
      */
-    private function maskCredentials($error, array $credentials)
+    private function maskCredentials($error, array $credentials): string
     {
         $maskedCredentials = array();
 

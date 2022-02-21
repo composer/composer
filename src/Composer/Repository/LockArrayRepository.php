@@ -21,7 +21,7 @@ namespace Composer\Repository;
  */
 class LockArrayRepository extends ArrayRepository
 {
-    public function getRepoName()
+    public function getRepoName(): string
     {
         return 'lock repo';
     }

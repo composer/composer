@@ -17,28 +17,28 @@ use Composer\Test\TestCase;
 
 class NullIOTest extends TestCase
 {
-    public function testIsInteractive()
+    public function testIsInteractive(): void
     {
         $io = new NullIO();
 
         $this->assertFalse($io->isInteractive());
     }
 
-    public function testhasAuthentication()
+    public function testhasAuthentication(): void
     {
         $io = new NullIO();
 
         $this->assertFalse($io->hasAuthentication('foo'));
     }
 
-    public function testAskAndHideAnswer()
+    public function testAskAndHideAnswer(): void
     {
         $io = new NullIO();
 
         $this->assertNull($io->askAndHideAnswer('foo'));
     }
 
-    public function testgetAuthentications()
+    public function testgetAuthentications(): void
     {
         $io = new NullIO();
 
@@ -47,30 +47,30 @@ class NullIOTest extends TestCase
         $this->assertEquals(array('username' => null, 'password' => null), $io->getAuthentication('foo'));
     }
 
-    public function testAsk()
+    public function testAsk(): void
     {
         $io = new NullIO();
 
         $this->assertEquals('foo', $io->ask('bar', 'foo'));
     }
 
-    public function testAskConfirmation()
+    public function testAskConfirmation(): void
     {
         $io = new NullIO();
 
         $this->assertEquals(false, $io->askConfirmation('bar', false));
     }
 
-    public function testAskAndValidate()
+    public function testAskAndValidate(): void
     {
         $io = new NullIO();
 
-        $this->assertEquals('foo', $io->askAndValidate('question', function ($x) {
+        $this->assertEquals('foo', $io->askAndValidate('question', function ($x): bool {
             return true;
         }, null, 'foo'));
     }
 
-    public function testSelect()
+    public function testSelect(): void
     {
         $io = new NullIO();
 

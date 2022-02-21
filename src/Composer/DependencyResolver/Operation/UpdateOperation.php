@@ -49,7 +49,7 @@ class UpdateOperation extends SolverOperation implements OperationInterface
      *
      * @return PackageInterface
      */
-    public function getInitialPackage()
+    public function getInitialPackage(): PackageInterface
     {
         return $this->initialPackage;
     }
@@ -59,7 +59,7 @@ class UpdateOperation extends SolverOperation implements OperationInterface
      *
      * @return PackageInterface
      */
-    public function getTargetPackage()
+    public function getTargetPackage(): PackageInterface
     {
         return $this->targetPackage;
     }
@@ -67,7 +67,7 @@ class UpdateOperation extends SolverOperation implements OperationInterface
     /**
      * @inheritDoc
      */
-    public function show($lock)
+    public function show($lock): string
     {
         return self::format($this->initialPackage, $this->targetPackage, $lock);
     }
@@ -76,7 +76,7 @@ class UpdateOperation extends SolverOperation implements OperationInterface
      * @param bool $lock
      * @return string
      */
-    public static function format(PackageInterface $initialPackage, PackageInterface $targetPackage, $lock = false)
+    public static function format(PackageInterface $initialPackage, PackageInterface $targetPackage, $lock = false): string
     {
         $fromVersion = $initialPackage->getFullPrettyVersion();
         $toVersion = $targetPackage->getFullPrettyVersion();

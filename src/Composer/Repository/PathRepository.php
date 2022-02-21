@@ -129,12 +129,12 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         parent::__construct();
     }
 
-    public function getRepoName()
+    public function getRepoName(): string
     {
         return 'path repo ('.Url::sanitize($this->repoConfig['url']).')';
     }
 
-    public function getRepoConfig()
+    public function getRepoConfig(): array
     {
         return $this->repoConfig;
     }
@@ -144,7 +144,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      *
      * This method will basically read the folder and add the found package.
      */
-    protected function initialize()
+    protected function initialize(): void
     {
         parent::initialize();
 
@@ -240,7 +240,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      *
      * @return string[]
      */
-    private function getUrlMatches()
+    private function getUrlMatches(): array
     {
         $flags = GLOB_MARK | GLOB_ONLYDIR;
 
@@ -251,7 +251,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
         }
 
         // Ensure environment-specific path separators are normalized to URL separators
-        return array_map(function ($val) {
+        return array_map(function ($val): string {
             return rtrim(str_replace(DIRECTORY_SEPARATOR, '/', $val), '/');
         }, glob($this->url, $flags));
     }

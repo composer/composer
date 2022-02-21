@@ -38,7 +38,7 @@ class HttpDownloaderTest extends TestCase
     /**
      * @group slow
      */
-    public function testCaptureAuthenticationParamsFromUrl()
+    public function testCaptureAuthenticationParamsFromUrl(): void
     {
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $io->expects($this->once())
@@ -53,7 +53,7 @@ class HttpDownloaderTest extends TestCase
         }
     }
 
-    public function testOutputWarnings()
+    public function testOutputWarnings(): void
     {
         $io = new BufferIO();
         HttpDownloader::outputWarnings($io, '$URL', array());

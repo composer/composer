@@ -41,7 +41,7 @@ class DefaultPolicyTest extends TestCase
         $this->policy = new DefaultPolicy;
     }
 
-    public function testSelectSingle()
+    public function testSelectSingle(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repositorySet->addRepository($this->repo);
@@ -56,7 +56,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
-    public function testSelectNewest()
+    public function testSelectNewest(): void
     {
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.0'));
@@ -72,7 +72,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
-    public function testSelectNewestPicksLatest()
+    public function testSelectNewestPicksLatest(): void
     {
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.1-alpha'));
@@ -88,7 +88,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
-    public function testSelectNewestPicksLatestStableWithPreferStable()
+    public function testSelectNewestPicksLatestStableWithPreferStable(): void
     {
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '1.0.0'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.1-alpha'));
@@ -105,7 +105,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
-    public function testSelectNewestWithDevPicksNonDev()
+    public function testSelectNewestWithDevPicksNonDev(): void
     {
         $this->repo->addPackage($packageA1 = $this->getPackage('A', 'dev-foo'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '1.0.0'));
@@ -121,7 +121,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
-    public function testRepositoryOrderingAffectsPriority()
+    public function testRepositoryOrderingAffectsPriority(): void
     {
         $repo1 = new ArrayRepository;
         $repo2 = new ArrayRepository;
@@ -154,7 +154,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
-    public function testSelectLocalReposFirst()
+    public function testSelectLocalReposFirst(): void
     {
         $repoImportant = new ArrayRepository;
 
@@ -185,7 +185,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
-    public function testSelectAllProviders()
+    public function testSelectAllProviders(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
@@ -205,7 +205,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
-    public function testPreferNonReplacingFromSameRepo()
+    public function testPreferNonReplacingFromSameRepo(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
@@ -224,7 +224,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
-    public function testPreferReplacingPackageFromSameVendor()
+    public function testPreferReplacingPackageFromSameVendor(): void
     {
         // test with default order
         $this->repo->addPackage($packageB = $this->getPackage('vendor-b/replacer', '1.0'));
@@ -260,7 +260,7 @@ class DefaultPolicyTest extends TestCase
         $this->assertSame($expected, $selected);
     }
 
-    public function testSelectLowest()
+    public function testSelectLowest(): void
     {
         $policy = new DefaultPolicy(false, true);
 

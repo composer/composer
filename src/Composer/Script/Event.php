@@ -121,7 +121,7 @@ class Event extends BaseEvent
      * @param  BaseEvent $event
      * @return BaseEvent
      */
-    private function calculateOriginatingEvent(BaseEvent $event)
+    private function calculateOriginatingEvent(BaseEvent $event): BaseEvent
     {
         if ($event instanceof Event && $event->getOriginatingEvent()) {
             return $this->calculateOriginatingEvent($event->getOriginatingEvent());

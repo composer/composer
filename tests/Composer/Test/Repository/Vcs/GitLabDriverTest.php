@@ -77,7 +77,7 @@ class GitLabDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    public function provideInitializeUrls()
+    public function provideInitializeUrls(): array
     {
         return array(
             array('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject'),
@@ -92,7 +92,7 @@ class GitLabDriverTest extends TestCase
      * @param string $url
      * @param string $apiUrl
      */
-    public function testInitialize($url, $apiUrl)
+    public function testInitialize($url, $apiUrl): \Composer\Repository\Vcs\GitLabDriver
     {
         // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
         $projectData = <<<JSON
@@ -135,7 +135,7 @@ JSON;
      * @param string $url
      * @param string $apiUrl
      */
-    public function testInitializePublicProject($url, $apiUrl)
+    public function testInitializePublicProject($url, $apiUrl): \Composer\Repository\Vcs\GitLabDriver
     {
         // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
         $projectData = <<<JSON
@@ -176,7 +176,7 @@ JSON;
      * @param string $url
      * @param string $apiUrl
      */
-    public function testInitializePublicProjectAsAnonymous($url, $apiUrl)
+    public function testInitializePublicProjectAsAnonymous($url, $apiUrl): \Composer\Repository\Vcs\GitLabDriver
     {
         // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
         $projectData = <<<JSON
@@ -215,7 +215,7 @@ JSON;
      *
      * @group gitlabHttpPort
      */
-    public function testInitializeWithPortNumber()
+    public function testInitializeWithPortNumber(): void
     {
         $domain = 'gitlab.mycompany.com';
         $port = '5443';
@@ -249,7 +249,7 @@ JSON;
         $this->assertEquals($url, $driver->getUrl());
     }
 
-    public function testGetDist()
+    public function testGetDist(): void
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
@@ -264,7 +264,7 @@ JSON;
         $this->assertEquals($expected, $driver->getDist($reference));
     }
 
-    public function testGetSource()
+    public function testGetSource(): void
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
@@ -278,7 +278,7 @@ JSON;
         $this->assertEquals($expected, $driver->getSource($reference));
     }
 
-    public function testGetSource_GivenPublicProject()
+    public function testGetSource_GivenPublicProject(): void
     {
         $driver = $this->testInitializePublicProject('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
@@ -292,7 +292,7 @@ JSON;
         $this->assertEquals($expected, $driver->getSource($reference));
     }
 
-    public function testGetTags()
+    public function testGetTags(): void
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
@@ -333,7 +333,7 @@ JSON;
         $this->assertEquals($expected, $driver->getTags(), 'Tags are cached');
     }
 
-    public function testGetPaginatedRefs()
+    public function testGetPaginatedRefs(): void
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
@@ -395,7 +395,7 @@ JSON;
         $this->assertEquals($expected, $driver->getBranches(), 'Branches are cached');
     }
 
-    public function testGetBranches()
+    public function testGetBranches(): void
     {
         $driver = $this->testInitialize('https://gitlab.com/mygroup/myproject', 'https://gitlab.com/api/v4/projects/mygroup%2Fmyproject');
 
@@ -444,12 +444,12 @@ JSON;
      * @param string $url
      * @param bool   $expected
      */
-    public function testSupports($url, $expected)
+    public function testSupports($url, $expected): void
     {
         $this->assertSame($expected, GitLabDriver::supports($this->io, $this->config, $url));
     }
 
-    public function dataForTestSupports()
+    public function dataForTestSupports(): array
     {
         return array(
             array('http://gitlab.com/foo/bar', true),
@@ -473,7 +473,7 @@ JSON;
         );
     }
 
-    public function testGitlabSubDirectory()
+    public function testGitlabSubDirectory(): void
     {
         $url = 'https://mycompany.com/gitlab/mygroup/my-pro.ject';
         $apiUrl = 'https://mycompany.com/gitlab/api/v4/projects/mygroup%2Fmy-pro%2Eject';
@@ -505,7 +505,7 @@ JSON;
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
     }
 
-    public function testGitlabSubGroup()
+    public function testGitlabSubGroup(): void
     {
         $url = 'https://gitlab.com/mygroup/mysubgroup/myproject';
         $apiUrl = 'https://gitlab.com/api/v4/projects/mygroup%2Fmysubgroup%2Fmyproject';
@@ -537,7 +537,7 @@ JSON;
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
     }
 
-    public function testGitlabSubDirectorySubGroup()
+    public function testGitlabSubDirectorySubGroup(): void
     {
         $url = 'https://mycompany.com/gitlab/mygroup/mysubgroup/myproject';
         $apiUrl = 'https://mycompany.com/gitlab/api/v4/projects/mygroup%2Fmysubgroup%2Fmyproject';
@@ -569,7 +569,7 @@ JSON;
         $this->assertEquals($apiUrl, $driver->getApiUrl(), 'API URL is derived from the repository URL');
     }
 
-    public function testForwardsOptions()
+    public function testForwardsOptions(): void
     {
         $options = array(
             'ssl' => array(
@@ -607,7 +607,7 @@ JSON;
         $driver->initialize();
     }
 
-    public function testProtocolOverrideRepositoryUrlGeneration()
+    public function testProtocolOverrideRepositoryUrlGeneration(): void
     {
         // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
         $projectData = <<<JSON

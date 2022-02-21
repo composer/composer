@@ -25,7 +25,7 @@ class SilencerTest extends TestCase
     /**
      * Test succeeds when no warnings are emitted externally, and original level is restored.
      */
-    public function testSilencer()
+    public function testSilencer(): void
     {
         $before = error_reporting();
 
@@ -49,12 +49,12 @@ class SilencerTest extends TestCase
     /**
      * Test whether exception from silent callbacks are correctly forwarded.
      */
-    public function testSilencedException()
+    public function testSilencedException(): void
     {
         $verification = microtime();
         self::expectException('RuntimeException');
         self::expectExceptionMessage($verification);
-        Silencer::call(function () use ($verification) {
+        Silencer::call(function () use ($verification): void {
             throw new \RuntimeException($verification);
         });
     }

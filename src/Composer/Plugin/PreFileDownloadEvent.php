@@ -73,7 +73,7 @@ class PreFileDownloadEvent extends Event
     /**
      * @return HttpDownloader
      */
-    public function getHttpDownloader()
+    public function getHttpDownloader(): HttpDownloader
     {
         return $this->httpDownloader;
     }
@@ -83,7 +83,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return string
      */
-    public function getProcessedUrl()
+    public function getProcessedUrl(): string
     {
         return $this->processedUrl;
     }
@@ -95,7 +95,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return void
      */
-    public function setProcessedUrl($processedUrl)
+    public function setProcessedUrl($processedUrl): void
     {
         $this->processedUrl = $processedUrl;
     }
@@ -105,7 +105,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return string|null
      */
-    public function getCustomCacheKey()
+    public function getCustomCacheKey(): ?string
     {
         return $this->customCacheKey;
     }
@@ -117,7 +117,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return void
      */
-    public function setCustomCacheKey($customCacheKey)
+    public function setCustomCacheKey($customCacheKey): void
     {
         $this->customCacheKey = $customCacheKey;
     }
@@ -127,7 +127,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
@@ -152,7 +152,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return mixed[]
      */
-    public function getTransportOptions()
+    public function getTransportOptions(): array
     {
         return $this->transportOptions;
     }
@@ -166,7 +166,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return void
      */
-    public function setTransportOptions(array $options)
+    public function setTransportOptions(array $options): void
     {
         $this->transportOptions = $options;
     }

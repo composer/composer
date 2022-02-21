@@ -86,7 +86,7 @@ class Svn
     /**
      * @return void
      */
-    public static function cleanEnv()
+    public static function cleanEnv(): void
     {
         // clean up env for OSX, see https://github.com/composer/composer/issues/2146#issuecomment-35478940
         Platform::clearEnv('DYLD_LIBRARY_PATH');
@@ -105,7 +105,7 @@ class Svn
      * @throws \RuntimeException
      * @return string
      */
-    public function execute($command, $url, $cwd = null, $path = null, $verbose = false)
+    public function execute($command, $url, $cwd = null, $path = null, $verbose = false): string
     {
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
@@ -125,7 +125,7 @@ class Svn
      * @throws \RuntimeException
      * @return string
      */
-    public function executeLocal($command, $path, $cwd = null, $verbose = false)
+    public function executeLocal($command, $path, $cwd = null, $verbose = false): string
     {
         // A local command has no remote url
         return $this->executeWithAuthRetry($command, $cwd, '', $path, $verbose);
@@ -140,7 +140,7 @@ class Svn
      *
      * @return ?string
      */
-    private function executeWithAuthRetry($svnCommand, $cwd, $url, $path, $verbose)
+    private function executeWithAuthRetry($svnCommand, $cwd, $url, $path, $verbose): ?string
     {
         // Regenerate the command at each try, to use the newly user-provided credentials
         $command = $this->getCommand($svnCommand, $url, $path);
@@ -194,7 +194,7 @@ class Svn
      * @param  bool $cacheCredentials
      * @return void
      */
-    public function setCacheCredentials($cacheCredentials)
+    public function setCacheCredentials($cacheCredentials): void
     {
         $this->cacheCredentials = $cacheCredentials;
     }
@@ -205,7 +205,7 @@ class Svn
      * @throws \RuntimeException
      * @return \Composer\Util\Svn
      */
-    protected function doAuthDance()
+    protected function doAuthDance(): \Composer\Util\Svn
     {
         // cannot ask for credentials in non interactive mode
         if (!$this->io->isInteractive()) {
@@ -236,7 +236,7 @@ class Svn
      *
      * @return string
      */
-    protected function getCommand($cmd, $url, $path = null)
+    protected function getCommand($cmd, $url, $path = null): string
     {
         $cmd = sprintf(
             '%s %s%s -- %s',
@@ -260,7 +260,7 @@ class Svn
      *
      * @return string
      */
-    protected function getCredentialString()
+    protected function getCredentialString(): string
     {
         if (!$this->hasAuth()) {
             return '';
@@ -280,7 +280,7 @@ class Svn
      * @throws \LogicException
      * @return string
      */
-    protected function getPassword()
+    protected function getPassword(): string
     {
         if ($this->credentials === null) {
             throw new \LogicException("No svn auth detected.");
@@ -295,7 +295,7 @@ class Svn
      * @throws \LogicException
      * @return string
      */
-    protected function getUsername()
+    protected function getUsername(): string
     {
         if ($this->credentials === null) {
             throw new \LogicException("No svn auth detected.");
@@ -309,7 +309,7 @@ class Svn
      *
      * @return bool
      */
-    protected function hasAuth()
+    protected function hasAuth(): bool
     {
         if (null !== $this->hasAuth) {
             return $this->hasAuth;
@@ -327,7 +327,7 @@ class Svn
      *
      * @return string
      */
-    protected function getAuthCache()
+    protected function getAuthCache(): string
     {
         return $this->cacheCredentials ? '' : '--no-auth-cache ';
     }
@@ -337,7 +337,7 @@ class Svn
      *
      * @return bool
      */
-    private function createAuthFromConfig()
+    private function createAuthFromConfig(): bool
     {
         if (!$this->config->has('http-basic')) {
             return $this->hasAuth = false;
@@ -363,7 +363,7 @@ class Svn
      *
      * @return bool
      */
-    private function createAuthFromUrl()
+    private function createAuthFromUrl(): bool
     {
         $uri = parse_url($this->url);
         if (empty($uri['user'])) {
@@ -383,7 +383,7 @@ class Svn
      *
      * @return string|null
      */
-    public function binaryVersion()
+    public function binaryVersion(): ?string
     {
         if (!self::$version) {
             if (0 === $this->process->execute('svn --version', $output)) {
