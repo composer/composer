@@ -522,7 +522,7 @@ class Installer
             }
         }
 
-        $sortByName = function ($a, $b) {
+        $sortByName = function ($a, $b): int {
             if ($a instanceof UpdateOperation) {
                 $a = $a->getTargetPackage()->getName();
             } else {

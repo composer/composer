@@ -153,13 +153,13 @@ class ProcessExecutor
             'cwd' => $cwd,
         );
 
-        $resolver = function ($resolve, $reject) use (&$job) {
+        $resolver = function ($resolve, $reject) use (&$job): void {
             $job['status'] = ProcessExecutor::STATUS_QUEUED;
             $job['resolve'] = $resolve;
             $job['reject'] = $reject;
         };
 
-        $canceler = function () use (&$job) {
+        $canceler = function () use (&$job): void {
             if ($job['status'] === ProcessExecutor::STATUS_QUEUED) {
                 $job['status'] = ProcessExecutor::STATUS_ABORTED;
             }
@@ -190,7 +190,7 @@ class ProcessExecutor
             $this->markJobDone();
 
             return $job['process'];
-        }, function ($e) use (&$job) {
+        }, function ($e) use (&$job): void {
             $job['status'] = ProcessExecutor::STATUS_FAILED;
 
             $this->markJobDone();
@@ -407,7 +407,7 @@ class ProcessExecutor
         }
 
         $commandString = is_string($command) ? $command : implode(' ', array_map(self::class.'::escape', $command));
-        $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m) {
+        $safeCommand = Preg::replaceCallback('{://(?P<user>[^:/\s]+):(?P<password>[^@\s/]+)@}i', function ($m): string {
             // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx) we obfuscate that
             if (Preg::isMatch('{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+)$}', $m['user'])) {
                 return '://***:***@';

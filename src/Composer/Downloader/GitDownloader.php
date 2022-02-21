@@ -114,7 +114,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $this->io->writeError($msg);
 
-        $commandCallable = function ($url) use ($path, $command, $cachePath) {
+        $commandCallable = function ($url) use ($path, $command, $cachePath): string {
             return str_replace(
                 array('%url%', '%path%', '%cachePath%', '%sanitizedUrl%'),
                 array(
@@ -172,7 +172,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $this->io->writeError($msg);
 
-        $commandCallable = function ($url) use ($ref, $command, $cachePath) {
+        $commandCallable = function ($url) use ($ref, $command, $cachePath): string {
             return str_replace(
                 array('%url%', '%ref%', '%cachePath%', '%sanitizedUrl%'),
                 array(
@@ -358,7 +358,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             return parent::cleanChanges($package, $path, $update);
         }
 
-        $changes = array_map(function ($elem) {
+        $changes = array_map(function ($elem): string {
             return '    '.$elem;
         }, Preg::split('{\s*\r?\n\s*}', $changes));
         $this->io->writeError('    <error>'.$package->getPrettyName().' has modified files:</error>');

@@ -56,7 +56,7 @@ class ErrorHandler
             self::$io->writeError('<warning>Deprecation Notice: '.$message.' in '.$file.':'.$line.'</warning>');
             if (self::$io->isVerbose()) {
                 self::$io->writeError('<warning>Stack trace:</warning>');
-                self::$io->writeError(array_filter(array_map(function ($a) {
+                self::$io->writeError(array_filter(array_map(function ($a): ?string {
                     if (isset($a['line'], $a['file'])) {
                         return '<warning> '.$a['file'].':'.$a['line'].'</warning>';
                     }

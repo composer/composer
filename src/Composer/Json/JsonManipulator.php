@@ -94,7 +94,7 @@ class JsonManipulator
             // update existing link
             $existingPackage = $packageMatches['package'];
             $packageRegex = str_replace('/', '\\\\?/', preg_quote($existingPackage));
-            $links = Preg::replaceCallback('{'.self::$DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', function ($m) use ($existingPackage, $constraint) {
+            $links = Preg::replaceCallback('{'.self::$DEFINES.'"'.$packageRegex.'"(?P<separator>\s*:\s*)(?&string)}ix', function ($m) use ($existingPackage, $constraint): string {
                 return JsonFile::encode(str_replace('\\/', '/', $existingPackage)) . $m['separator'] . '"' . $constraint . '"';
             }, $links);
         } else {
@@ -135,7 +135,7 @@ class JsonManipulator
      */
     private function sortPackages(array &$packages = array()): void
     {
-        $prefix = function ($requirement) {
+        $prefix = function ($requirement): string {
             if (PlatformRepository::isPlatformPackage($requirement)) {
                 return Preg::replace(
                     array(
@@ -159,7 +159,7 @@ class JsonManipulator
             return '5-'.$requirement;
         };
 
-        uksort($packages, function ($a, $b) use ($prefix) {
+        uksort($packages, function ($a, $b) use ($prefix): int {
             return strnatcmp($prefix($a), $prefix($b));
         });
     }
@@ -297,7 +297,7 @@ class JsonManipulator
         // child exists
         $childRegex = '{'.self::$DEFINES.'(?P<start>"'.preg_quote($name).'"\s*:\s*)(?P<content>(?&json))(?P<end>,?)}x';
         if (Preg::isMatch($childRegex, $children, $matches)) {
-            $children = Preg::replaceCallback($childRegex, function ($matches) use ($subName, $value) {
+            $children = Preg::replaceCallback($childRegex, function ($matches) use ($subName, $value): string {
                 if ($subName !== null) {
                     $curVal = json_decode($matches['content'], true);
                     if (!is_array($curVal)) {
@@ -351,7 +351,7 @@ class JsonManipulator
             }
         }
 
-        $this->contents = Preg::replaceCallback($nodeRegex, function ($m) use ($children) {
+        $this->contents = Preg::replaceCallback($nodeRegex, function ($m) use ($children): string {
             return $m['start'] . $children . $m['end'];
         }, $this->contents);
 
@@ -436,7 +436,7 @@ class JsonManipulator
             $newline = $this->newline;
             $indent = $this->indent;
 
-            $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($indent, $newline) {
+            $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($indent, $newline): string {
                 return $matches['start'] . '{' . $newline . $indent . '}' . $matches['end'];
             }, $this->contents);
 
@@ -450,7 +450,7 @@ class JsonManipulator
             return true;
         }
 
-        $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($name, $subName, $childrenClean) {
+        $this->contents = Preg::replaceCallback($nodeRegex, function ($matches) use ($name, $subName, $childrenClean): string {
             if ($subName !== null) {
                 $curVal = json_decode($matches['content'], true);
                 unset($curVal[$name][$subName]);

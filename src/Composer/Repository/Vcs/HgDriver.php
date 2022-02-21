@@ -71,7 +71,7 @@ class HgDriver extends VcsDriver
                 $fs->removeDirectory($this->repoDir);
 
                 $repoDir = $this->repoDir;
-                $command = function ($url) use ($repoDir) {
+                $command = function ($url) use ($repoDir): string {
                     return sprintf('hg clone --noupdate -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($repoDir));
                 };
 

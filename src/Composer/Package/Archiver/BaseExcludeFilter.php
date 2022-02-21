@@ -95,7 +95,7 @@ abstract class BaseExcludeFilter
                 },
                 $lines
             ),
-            function ($pattern) {
+            function ($pattern): bool {
                 return $pattern !== null;
             }
         );

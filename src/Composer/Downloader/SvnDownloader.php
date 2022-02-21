@@ -144,7 +144,7 @@ class SvnDownloader extends VcsDownloader
             return parent::cleanChanges($package, $path, $update);
         }
 
-        $changes = array_map(function ($elem) {
+        $changes = array_map(function ($elem): string {
             return '    '.$elem;
         }, Preg::split('{\s*\r?\n\s*}', $changes));
         $countChanges = count($changes);

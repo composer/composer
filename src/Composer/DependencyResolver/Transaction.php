@@ -71,7 +71,7 @@ class Transaction
      */
     private function setResultPackageMaps($resultPackages): void
     {
-        $packageSort = function (PackageInterface $a, PackageInterface $b) {
+        $packageSort = function (PackageInterface $a, PackageInterface $b): int {
             // sort alias packages by the same name behind their non alias version
             if ($a->getName() == $b->getName()) {
                 if ($a instanceof AliasPackage != $b instanceof AliasPackage) {
@@ -289,7 +289,7 @@ class Transaction
             // is this a downloads modifying plugin or a dependency of one?
             if ($isDownloadsModifyingPlugin || count(array_intersect($package->getNames(), $dlModifyingPluginRequires))) {
                 // get the package's requires, but filter out any platform requirements
-                $requires = array_filter(array_keys($package->getRequires()), function ($req) {
+                $requires = array_filter(array_keys($package->getRequires()), function ($req): bool {
                     return !PlatformRepository::isPlatformPackage($req);
                 });
 
@@ -314,7 +314,7 @@ class Transaction
             // is this a plugin or a dependency of a plugin?
             if ($isPlugin || count(array_intersect($package->getNames(), $pluginRequires))) {
                 // get the package's requires, but filter out any platform requirements
-                $requires = array_filter(array_keys($package->getRequires()), function ($req) {
+                $requires = array_filter(array_keys($package->getRequires()), function ($req): bool {
                     return !PlatformRepository::isPlatformPackage($req);
                 });
 

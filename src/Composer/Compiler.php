@@ -82,7 +82,7 @@ class Compiler
 
         $phar->startBuffering();
 
-        $finderSort = function ($a, $b) {
+        $finderSort = function ($a, $b): int {
             return strcmp(strtr($a->getRealPath(), '\\', '/'), strtr($b->getRealPath(), '\\', '/'));
         };
 

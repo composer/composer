@@ -318,10 +318,10 @@ EOT
 
         $values = $input->getArgument('setting-value'); // what the user is trying to add/change
 
-        $booleanValidator = function ($val) {
+        $booleanValidator = function ($val): bool {
             return in_array($val, array('true', 'false', '1', '0'), true);
         };
-        $booleanNormalizer = function ($val) {
+        $booleanNormalizer = function ($val): bool {
             return $val !== 'false' && (bool) $val;
         };
 
@@ -331,7 +331,7 @@ EOT
             'use-include-path' => array($booleanValidator, $booleanNormalizer),
             'use-github-api' => array($booleanValidator, $booleanNormalizer),
             'preferred-install' => array(
-                function ($val) {
+                function ($val): bool {
                     return in_array($val, array('auto', 'source', 'dist'), true);
                 },
                 function ($val) {
@@ -339,7 +339,7 @@ EOT
                 },
             ),
             'gitlab-protocol' => array(
-                function ($val) {
+                function ($val): bool {
                     return in_array($val, array('git', 'http', 'https'), true);
                 },
                 function ($val) {
@@ -347,7 +347,7 @@ EOT
                 },
             ),
             'store-auths' => array(
-                function ($val) {
+                function ($val): bool {
                     return in_array($val, array('true', 'false', 'prompt'), true);
                 },
                 function ($val) {
@@ -389,7 +389,7 @@ EOT
             'cache-ttl' => array('is_numeric', 'intval'),
             'cache-files-ttl' => array('is_numeric', 'intval'),
             'cache-files-maxsize' => array(
-                function ($val) {
+                function ($val): bool {
                     return Preg::isMatch('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $val);
                 },
                 function ($val) {
@@ -397,7 +397,7 @@ EOT
                 },
             ),
             'bin-compat' => array(
-                function ($val) {
+                function ($val): bool {
                     return in_array($val, array('auto', 'full', 'symlink'));
                 },
                 function ($val) {
@@ -405,7 +405,7 @@ EOT
                 },
             ),
             'discard-changes' => array(
-                function ($val) {
+                function ($val): bool {
                     return in_array($val, array('stash', 'true', 'false', '1', '0'), true);
                 },
                 function ($val) {
@@ -427,7 +427,7 @@ EOT
             'disable-tls' => array($booleanValidator, $booleanNormalizer),
             'secure-http' => array($booleanValidator, $booleanNormalizer),
             'cafile' => array(
-                function ($val) {
+                function ($val): bool {
                     return file_exists($val) && Filesystem::isReadable($val);
                 },
                 function ($val) {
@@ -435,7 +435,7 @@ EOT
                 },
             ),
             'capath' => array(
-                function ($val) {
+                function ($val): bool {
                     return is_dir($val) && Filesystem::isReadable($val);
                 },
                 function ($val) {
@@ -447,7 +447,7 @@ EOT
             'lock' => array($booleanValidator, $booleanNormalizer),
             'allow-plugins' => array($booleanValidator, $booleanNormalizer),
             'platform-check' => array(
-                function ($val) {
+                function ($val): bool {
                     return in_array($val, array('php-only', 'true', 'false', '1', '0'), true);
                 },
                 function ($val) {
@@ -459,7 +459,7 @@ EOT
                 },
             ),
             'use-parent-dir' => array(
-                function ($val) {
+                function ($val): bool {
                     return in_array($val, array('true', 'false', 'prompt'), true);
                 },
                 function ($val) {
@@ -593,10 +593,10 @@ EOT
                 return $val;
             }),
             'minimum-stability' => array(
-                function ($val) {
+                function ($val): bool {
                     return isset(BasePackage::$stabilities[VersionParser::normalizeStability($val)]);
                 },
-                function ($val) {
+                function ($val): string {
                     return VersionParser::normalizeStability($val);
                 },
             ),

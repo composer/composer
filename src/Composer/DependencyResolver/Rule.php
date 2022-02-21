@@ -281,7 +281,7 @@ abstract class Rule
                     return 'No package found to satisfy root composer.json require '.$packageName.($constraint ? ' '.$constraint->getPrettyString() : '');
                 }
 
-                $packagesNonAlias = array_values(array_filter($packages, function ($p) {
+                $packagesNonAlias = array_values(array_filter($packages, function ($p): bool {
                     return !($p instanceof AliasPackage);
                 }));
                 if (count($packagesNonAlias) === 1) {

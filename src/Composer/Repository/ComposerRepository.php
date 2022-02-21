@@ -350,7 +350,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
              * @param list<string> $results
              * @return list<string>
              */
-            function (array $results) {
+            function (array $results): array {
                 return $results;
             }
         ;
@@ -361,7 +361,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
                  * @param list<string> $results
                  * @return list<string>
                  */
-                function (array $results) use ($packageFilterRegex) {
+                function (array $results) use ($packageFilterRegex): array {
                     /** @var list<string> $results */
                     return Preg::grep($packageFilterRegex, $results);
                 }
@@ -905,7 +905,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             $promises[] = $this->asyncFetchFile($url, $cacheKey, $lastModified)
-                ->then(function ($response) use (&$packages, &$namesFound, $url, $cacheKey, $contents, $realName, $constraint, $acceptableStabilities, $stabilityFlags, $alreadyLoaded) {
+                ->then(function ($response) use (&$packages, &$namesFound, $url, $cacheKey, $contents, $realName, $constraint, $acceptableStabilities, $stabilityFlags, $alreadyLoaded): void {
                     $packagesSource = 'downloaded file ('.Url::sanitize($url).')';
 
                     if (true === $response) {
@@ -1095,7 +1095,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             // Disables lazy-provider behavior as with available-packages, but may allow much more compact expression of packages covered by this repository.
             // Over-specifying covered packages is safe, but may result in increased traffic to your repository.
             if (!empty($data['available-package-patterns'])) {
-                $this->availablePackagePatterns = array_map(function ($pattern) {
+                $this->availablePackagePatterns = array_map(function ($pattern): string {
                     return BasePackage::packageNameToRegexp($pattern);
                 }, $data['available-package-patterns']);
                 $this->hasAvailablePackageList = true;
@@ -1493,6 +1493,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $degradedMode = &$this->degradedMode;
         $eventDispatcher = $this->eventDispatcher;
 
+        /**
+         * @return array<mixed>|true true if the response was a 304 and the cache is fresh
+         */
         $accept = function ($response) use ($io, $url, $filename, $cache, $cacheKey, $eventDispatcher) {
             // package not found is acceptable for a v2 protocol repository
             if ($response->getStatusCode() === 404) {

@@ -56,7 +56,7 @@ class BufferIO extends ConsoleIO
 
         $output = stream_get_contents($this->output->getStream());
 
-        $output = Preg::replaceCallback("{(?<=^|\n|\x08)(.+?)(\x08+)}", function ($matches) {
+        $output = Preg::replaceCallback("{(?<=^|\n|\x08)(.+?)(\x08+)}", function ($matches): string {
             $pre = strip_tags($matches[1]);
 
             if (strlen($pre) === strlen($matches[2])) {

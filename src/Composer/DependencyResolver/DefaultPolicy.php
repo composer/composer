@@ -66,7 +66,7 @@ class DefaultPolicy implements PolicyInterface
         $packages = $this->groupLiteralsByName($pool, $literals);
 
         foreach ($packages as &$nameLiterals) {
-            usort($nameLiterals, function ($a, $b) use ($pool, $requiredPackage) {
+            usort($nameLiterals, function ($a, $b) use ($pool, $requiredPackage): int {
                 return $this->compareByPriority($pool, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage, true);
             });
         }
@@ -79,7 +79,7 @@ class DefaultPolicy implements PolicyInterface
         $selected = \call_user_func_array('array_merge', array_values($packages));
 
         // now sort the result across all packages to respect replaces across packages
-        usort($selected, function ($a, $b) use ($pool, $requiredPackage) {
+        usort($selected, function ($a, $b) use ($pool, $requiredPackage): int {
             return $this->compareByPriority($pool, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage);
         });
 

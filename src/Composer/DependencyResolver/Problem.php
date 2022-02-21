@@ -286,7 +286,7 @@ class Problem
         if ($packages = $repositorySet->findPackages($packageName, $constraint)) {
             $rootReqs = $repositorySet->getRootRequires();
             if (isset($rootReqs[$packageName])) {
-                $filtered = array_filter($packages, function ($p) use ($rootReqs, $packageName) {
+                $filtered = array_filter($packages, function ($p) use ($rootReqs, $packageName): bool {
                     return $rootReqs[$packageName]->matches(new Constraint('==', $p->getVersion()));
                 });
                 if (0 === count($filtered)) {
@@ -296,7 +296,7 @@ class Problem
 
             if ($lockedPackage) {
                 $fixedConstraint = new Constraint('==', $lockedPackage->getVersion());
-                $filtered = array_filter($packages, function ($p) use ($fixedConstraint) {
+                $filtered = array_filter($packages, function ($p) use ($fixedConstraint): bool {
                     return $fixedConstraint->matches(new Constraint('==', $p->getVersion()));
                 });
                 if (0 === count($filtered)) {
@@ -304,7 +304,7 @@ class Problem
                 }
             }
 
-            $nonLockedPackages = array_filter($packages, function ($p) {
+            $nonLockedPackages = array_filter($packages, function ($p): bool {
                 return !$p->getRepository() instanceof LockArrayRepository;
             });
 
@@ -360,7 +360,7 @@ class Problem
 
         if ($providers = $repositorySet->getProviders($packageName)) {
             $maxProviders = 20;
-            $providersStr = implode(array_map(function ($p) {
+            $providersStr = implode(array_map(function ($p): string {
                 $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
 
                 return "      - ${p['name']}".$description."\n";

@@ -62,7 +62,7 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function addRepository($name, $config, $append = true)
     {
-        $this->manipulateJson('addRepository', function (&$config, $repo, $repoConfig) use ($append) {
+        $this->manipulateJson('addRepository', function (&$config, $repo, $repoConfig) use ($append): void {
             // if converting from an array format to hashmap format, and there is a {"packagist.org":false} repo, we have
             // to convert it to "packagist.org": false key on the hashmap otherwise it fails schema validation
             if (isset($config['repositories'])) {
@@ -91,7 +91,7 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function removeRepository($name)
     {
-        $this->manipulateJson('removeRepository', function (&$config, $repo) {
+        $this->manipulateJson('removeRepository', function (&$config, $repo): void {
             unset($config['repositories'][$repo]);
         }, $name);
     }
@@ -102,7 +102,7 @@ class JsonConfigSource implements ConfigSourceInterface
     public function addConfigSetting($name, $value)
     {
         $authConfig = $this->authConfig;
-        $this->manipulateJson('addConfigSetting', function (&$config, $key, $val) use ($authConfig) {
+        $this->manipulateJson('addConfigSetting', function (&$config, $key, $val) use ($authConfig): void {
             if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
                 list($key, $host) = explode('.', $key, 2);
                 if ($authConfig) {
@@ -122,7 +122,7 @@ class JsonConfigSource implements ConfigSourceInterface
     public function removeConfigSetting($name)
     {
         $authConfig = $this->authConfig;
-        $this->manipulateJson('removeConfigSetting', function (&$config, $key) use ($authConfig) {
+        $this->manipulateJson('removeConfigSetting', function (&$config, $key) use ($authConfig): void {
             if (Preg::isMatch('{^(bitbucket-oauth|github-oauth|gitlab-oauth|gitlab-token|bearer|http-basic|platform)\.}', $key)) {
                 list($key, $host) = explode('.', $key, 2);
                 if ($authConfig) {
@@ -141,7 +141,7 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function addProperty($name, $value)
     {
-        $this->manipulateJson('addProperty', function (&$config, $key, $val) {
+        $this->manipulateJson('addProperty', function (&$config, $key, $val): void {
             if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
@@ -164,7 +164,7 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function removeProperty($name)
     {
-        $this->manipulateJson('removeProperty', function (&$config, $key) {
+        $this->manipulateJson('removeProperty', function (&$config, $key): void {
             if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
                 $bits = explode('.', $key);
                 $last = array_pop($bits);
@@ -187,7 +187,7 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function addLink($type, $name, $value)
     {
-        $this->manipulateJson('addLink', function (&$config, $type, $name, $value) {
+        $this->manipulateJson('addLink', function (&$config, $type, $name, $value): void {
             $config[$type][$name] = $value;
         }, $type, $name, $value);
     }
@@ -197,10 +197,10 @@ class JsonConfigSource implements ConfigSourceInterface
      */
     public function removeLink($type, $name)
     {
-        $this->manipulateJson('removeSubNode', function (&$config, $type, $name) {
+        $this->manipulateJson('removeSubNode', function (&$config, $type, $name): void {
             unset($config[$type][$name]);
         }, $type, $name);
-        $this->manipulateJson('removeMainKeyIfEmpty', function (&$config, $type) {
+        $this->manipulateJson('removeMainKeyIfEmpty', function (&$config, $type): void {
             if (0 === count($config[$type])) {
                 unset($config[$type]);
             }

@@ -123,7 +123,7 @@ EOT
                 $installOrder[$op->getPackage()->getName()] = $index;
             }
         }
-        usort($uninstallOperations, function ($a, $b) use ($installOrder) {
+        usort($uninstallOperations, function ($a, $b) use ($installOrder): int {
             return $installOrder[$b->getPackage()->getName()] - $installOrder[$a->getPackage()->getName()];
         });
 

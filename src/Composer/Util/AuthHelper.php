@@ -50,7 +50,7 @@ class AuthHelper
         } elseif ($storeAuth === 'prompt') {
             $answer = $this->io->askAndValidate(
                 'Do you want to store credentials for '.$origin.' in '.$configSource->getName().' ? [Yn] ',
-                function ($value) {
+                function ($value): string {
                     $input = strtolower(substr(trim($value), 0, 1));
                     if (in_array($input, array('y','n'))) {
                         return $input;

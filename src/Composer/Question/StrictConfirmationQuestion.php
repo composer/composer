@@ -86,7 +86,7 @@ class StrictConfirmationQuestion extends Question
      */
     private function getDefaultValidator(): callable
     {
-        return function ($answer) {
+        return function ($answer): bool {
             if (!is_bool($answer)) {
                 throw new InvalidArgumentException('Please answer yes, y, no, or n.');
             }

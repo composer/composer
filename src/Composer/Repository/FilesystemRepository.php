@@ -150,7 +150,7 @@ class FilesystemRepository extends WritableArrayRepository
         }
 
         sort($data['dev-package-names']);
-        usort($data['packages'], function ($a, $b) {
+        usort($data['packages'], function ($a, $b): int {
             return strcmp($a['name'], $b['name']);
         });
 

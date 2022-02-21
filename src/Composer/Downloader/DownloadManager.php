@@ -330,9 +330,14 @@ class DownloadManager
         // if downloader type changed, or update failed and user asks for reinstall,
         // we wipe the dir and do a new install instead of updating it
         $promise = $initialDownloader->remove($initial, $targetDir);
-        if ($promise) {
-            return $promise->then(function ($res) use ($target, $targetDir) {
-                return $this->install($target, $targetDir);
+        if ($promise instanceof PromiseInterface) {
+            return $promise->then(function ($res) use ($target, $targetDir): PromiseInterface {
+                $promise = $this->install($target, $targetDir);
+                if ($promise instanceof PromiseInterface) {
+                    return $promise;
+                }
+                
+                return \React\Promise\resolve();
             });
         }
 
@@ -432,7 +437,7 @@ class DownloadManager
             && !(!$prevPackage->isDev() && $prevPackage->getInstallationSource() === 'dist' && $package->isDev())
         ) {
             $prevSource = $prevPackage->getInstallationSource();
-            usort($sources, function ($a, $b) use ($prevSource) {
+            usort($sources, function ($a, $b) use ($prevSource): int {
                 return $a === $prevSource ? -1 : 1;
             });
 

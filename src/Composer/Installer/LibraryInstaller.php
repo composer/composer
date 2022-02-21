@@ -148,7 +148,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $binaryInstaller = $this->binaryInstaller;
         $installPath = $this->getInstallPath($package);
 
-        return $promise->then(function () use ($binaryInstaller, $installPath, $package, $repo) {
+        return $promise->then(function () use ($binaryInstaller, $installPath, $package, $repo): void {
             $binaryInstaller->installBinaries($package, $installPath);
             if (!$repo->hasPackage($package)) {
                 $repo->addPackage(clone $package);
@@ -176,7 +176,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $binaryInstaller = $this->binaryInstaller;
         $installPath = $this->getInstallPath($target);
 
-        return $promise->then(function () use ($binaryInstaller, $installPath, $target, $initial, $repo) {
+        return $promise->then(function () use ($binaryInstaller, $installPath, $target, $initial, $repo): void {
             $binaryInstaller->installBinaries($target, $installPath);
             $repo->removePackage($initial);
             if (!$repo->hasPackage($target)) {
@@ -203,7 +203,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
         $downloadPath = $this->getPackageBasePath($package);
         $filesystem = $this->filesystem;
 
-        return $promise->then(function () use ($binaryInstaller, $filesystem, $downloadPath, $package, $repo) {
+        return $promise->then(function () use ($binaryInstaller, $filesystem, $downloadPath, $package, $repo): void {
             $binaryInstaller->removeBinaries($package);
             $repo->removePackage($package);
 
@@ -288,8 +288,13 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
                     $promise = \React\Promise\resolve();
                 }
 
-                return $promise->then(function () use ($target) {
-                    return $this->installCode($target);
+                return $promise->then(function () use ($target): PromiseInterface {
+                    $promise = $this->installCode($target);
+                    if ($promise instanceof PromiseInterface) {
+                        return $promise;
+                    }
+
+                    return \React\Promise\resolve();
                 });
             }
 
