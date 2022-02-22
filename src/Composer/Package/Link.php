@@ -150,7 +150,7 @@ class Link
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->source.' '.$this->description.' '.$this->target.' ('.$this->constraint.')';
     }

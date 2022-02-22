@@ -327,8 +327,8 @@ class PlatformRepository extends ArrayRepository
                     }
 
                     // ICU TZData version => 2019c
-                    if (Preg::isMatch('/^ICU TZData version => (?<version>.*)$/im', $info, $zoneinfoMatches)) {
-                        $this->addLibrary('icu-zoneinfo', Version::parseZoneinfoVersion($zoneinfoMatches['version']), 'zoneinfo ("Olson") database for icu');
+                    if (Preg::isMatch('/^ICU TZData version => (?<version>.*)$/im', $info, $zoneinfoMatches) && null !== ($version = Version::parseZoneinfoVersion($zoneinfoMatches['version']))) {
+                        $this->addLibrary('icu-zoneinfo', $version, 'zoneinfo ("Olson") database for icu');
                     }
 
                     // Add a separate version for the CLDR library version

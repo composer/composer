@@ -96,7 +96,7 @@ class MultiConflictRule extends Rule
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         // TODO multi conflict?
         $result = $this->isDisabled() ? 'disabled(multi(' : '(multi(';
