@@ -17,7 +17,7 @@ For usage, see [the documentation](https://getcomposer.org/doc/).
 Packages
 --------
 
-Find packages on [Packagist](https://packagist.org).
+Find public dependencies packages on [Packagist](https://packagist.org).
 
 Community
 ---------
@@ -34,7 +34,7 @@ By participating in this project and its community you agree to abide by those t
 Requirements
 ------------
 
-PHP 5.3.2 or above (at least 5.3.4 recommended to avoid potential bugs)
+PHP 7.2.5 or above.
 
 Authors
 -------
