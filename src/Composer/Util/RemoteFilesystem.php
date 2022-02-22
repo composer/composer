@@ -106,7 +106,7 @@ class RemoteFilesystem
      *
      * @return bool true
      */
-    public function copy(string $originUrl, string $fileUrl, string $fileName, bool $progress = true, array $options = array()): bool
+    public function copy(string $originUrl, string $fileUrl, string $fileName, bool $progress = true, array $options = array())
     {
         return $this->get($originUrl, $fileUrl, $options, $fileName, $progress);
     }
@@ -131,7 +131,7 @@ class RemoteFilesystem
      *
      * @return mixed[] Options
      */
-    public function getOptions(): array
+    public function getOptions()
     {
         return $this->options;
     }
@@ -142,7 +142,7 @@ class RemoteFilesystem
      * @param  mixed[] $options
      * @return void
      */
-    public function setOptions(array $options): void
+    public function setOptions(array $options)
     {
         $this->options = array_replace_recursive($this->options, $options);
     }
@@ -152,7 +152,7 @@ class RemoteFilesystem
      *
      * @return bool
      */
-    public function isTlsDisabled(): bool
+    public function isTlsDisabled()
     {
         return $this->disableTls === true;
     }
@@ -162,7 +162,7 @@ class RemoteFilesystem
      *
      * @return string[]
      */
-    public function getLastHeaders(): array
+    public function getLastHeaders()
     {
         return $this->lastHeaders;
     }
@@ -171,7 +171,7 @@ class RemoteFilesystem
      * @param  string[] $headers array of returned headers like from getLastHeaders()
      * @return int|null
      */
-    public static function findStatusCode(array $headers): ?int
+    public static function findStatusCode(array $headers)
     {
         $value = null;
         foreach ($headers as $header) {
@@ -189,7 +189,7 @@ class RemoteFilesystem
      * @param  string[]    $headers array of returned headers like from getLastHeaders()
      * @return string|null
      */
-    public function findStatusMessage(array $headers): ?string
+    public function findStatusMessage(array $headers)
     {
         $value = null;
         foreach ($headers as $header) {
@@ -554,7 +554,7 @@ class RemoteFilesystem
      *
      * @throws TransportException
      */
-    protected function callbackGet(int $notificationCode, int $severity, ?string $message, int $messageCode, int $bytesTransferred, int $bytesMax): void
+    protected function callbackGet(int $notificationCode, int $severity, ?string $message, int $messageCode, int $bytesTransferred, int $bytesMax)
     {
         switch ($notificationCode) {
             case STREAM_NOTIFY_FAILURE:
@@ -592,7 +592,7 @@ class RemoteFilesystem
      *
      * @return void
      */
-    protected function promptAuthAndRetry($httpStatus, ?string $reason = null, array $headers = array()): void
+    protected function promptAuthAndRetry($httpStatus, ?string $reason = null, array $headers = array())
     {
         $result = $this->authHelper->promptAuthIfNeeded($this->fileUrl, $this->originUrl, $httpStatus, $reason, $headers);
 
@@ -610,7 +610,7 @@ class RemoteFilesystem
      *
      * @return mixed[]
      */
-    protected function getOptionsForUrl(string $originUrl, array $additionalOptions): array
+    protected function getOptionsForUrl(string $originUrl, array $additionalOptions)
     {
         $tlsOptions = array();
         $headers = array();
