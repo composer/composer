@@ -279,7 +279,7 @@ class RemoteFilesystemTest extends TestCase
      * @param string $contents
      * @dataProvider provideBitbucketPublicDownloadUrls
      */
-    public function testBitBucketPublicDownload($url, $contents): void
+    public function testBitBucketPublicDownload(string $url, string $contents): void
     {
         /** @var ConsoleIO $io */
         $io = $this
@@ -302,7 +302,7 @@ class RemoteFilesystemTest extends TestCase
      * @param string $contents
      * @dataProvider provideBitbucketPublicDownloadUrls
      */
-    public function testBitBucketPublicDownloadWithAuthConfigured($url, $contents): void
+    public function testBitBucketPublicDownloadWithAuthConfigured(string $url, string $contents): void
     {
         /** @var MockObject|ConsoleIO $io */
         $io = $this
@@ -343,7 +343,7 @@ class RemoteFilesystemTest extends TestCase
      *
      * @return mixed[]
      */
-    private function callGetOptionsForUrl(IOInterface $io, array $args = array(), array $options = array(), $fileUrl = ''): array
+    private function callGetOptionsForUrl(IOInterface $io, array $args = array(), array $options = array(), string $fileUrl = ''): array
     {
         $fs = new RemoteFilesystem($io, $this->getConfigMock(), $options);
         $ref = new ReflectionMethod($fs, 'getOptionsForUrl');
@@ -385,7 +385,7 @@ class RemoteFilesystemTest extends TestCase
      *
      * @return void
      */
-    private function callCallbackGet(RemoteFilesystem $fs, $notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax): void
+    private function callCallbackGet(RemoteFilesystem $fs, int $notificationCode, int $severity, string $message, int $messageCode, int $bytesTransferred, int $bytesMax): void
     {
         $ref = new ReflectionMethod($fs, 'callbackGet');
         $ref->setAccessible(true);
@@ -399,7 +399,7 @@ class RemoteFilesystemTest extends TestCase
      *
      * @return void
      */
-    private function setAttribute($object, $attribute, $value): void
+    private function setAttribute($object, string $attribute, $value): void
     {
         $attr = new ReflectionProperty($object, $attribute);
         $attr->setAccessible(true);
@@ -413,7 +413,7 @@ class RemoteFilesystemTest extends TestCase
      *
      * @return void
      */
-    private function assertAttributeEqualsCustom($value, $attribute, $object): void
+    private function assertAttributeEqualsCustom($value, string $attribute, $object): void
     {
         $attr = new ReflectionProperty($object, $attribute);
         $attr->setAccessible(true);

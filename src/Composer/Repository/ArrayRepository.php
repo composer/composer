@@ -146,7 +146,7 @@ class ArrayRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function search($query, $mode = 0, $type = null)
+    public function search(string $query, int $mode = 0, ?string $type = null)
     {
         if ($mode === self::SEARCH_FULLTEXT) {
             $regex = '{(?:'.implode('|', Preg::split('{\s+}', preg_quote($query))).')}i';
@@ -266,7 +266,7 @@ class ArrayRepository implements RepositoryInterface
      *
      * @return AliasPackage|CompleteAliasPackage
      */
-    protected function createAliasPackage(BasePackage $package, $alias, $prettyAlias)
+    protected function createAliasPackage(BasePackage $package, string $alias, string $prettyAlias)
     {
         while ($package instanceof AliasPackage) {
             $package = $package->getAliasOf();

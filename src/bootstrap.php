@@ -14,7 +14,7 @@
  * @param string $file
  * @return ?\Composer\Autoload\ClassLoader
  */
-function includeIfExists($file)
+function includeIfExists(string $file)
 {
     return file_exists($file) ? include $file : null;
 }

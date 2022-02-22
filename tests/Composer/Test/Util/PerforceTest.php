@@ -73,7 +73,7 @@ class PerforceTest extends TestCase
      *
      * @return void
      */
-    protected function createNewPerforceWithWindowsFlag($flag): void
+    protected function createNewPerforceWithWindowsFlag(bool $flag): void
     {
         $this->perforce = new Perforce($this->repoConfig, self::TEST_PORT, self::TEST_PATH, $this->processExecutor, $flag, $this->io);
     }
@@ -615,7 +615,7 @@ class PerforceTest extends TestCase
      *
      * @return string[]
      */
-    private function getExpectedClientSpec($withStream): array
+    private function getExpectedClientSpec(bool $withStream): array
     {
         $expectedArray = array(
             'Client: composer_perforce_TEST_depot',

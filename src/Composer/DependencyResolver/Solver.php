@@ -233,7 +233,7 @@ class Solver
      * @param  int       $level
      * @return Rule|null A rule on conflict, otherwise null.
      */
-    protected function propagate($level): ?Rule
+    protected function propagate(int $level): ?Rule
     {
         while ($this->decisions->validOffset($this->propagateIndex)) {
             $decision = $this->decisions->atOffset($this->propagateIndex);
@@ -261,7 +261,7 @@ class Solver
      *
      * @return void
      */
-    private function revert($level): void
+    private function revert(int $level): void
     {
         while (!$this->decisions->isEmpty()) {
             $literal = $this->decisions->lastLiteral();
@@ -302,7 +302,7 @@ class Solver
      * @param  string|int $literal
      * @return int
      */
-    private function setPropagateLearn($level, $literal, Rule $rule): int
+    private function setPropagateLearn(int $level, $literal, Rule $rule): int
     {
         $level++;
 
@@ -351,7 +351,7 @@ class Solver
      * @param  int[] $decisionQueue
      * @return int
      */
-    private function selectAndInstall($level, array $decisionQueue, Rule $rule): int
+    private function selectAndInstall(int $level, array $decisionQueue, Rule $rule): int
     {
         // choose best package to install from decisionQueue
         $literals = $this->policy->selectPreferredPackages($this->pool, $decisionQueue, $rule->getRequiredPackage());
@@ -370,7 +370,7 @@ class Solver
      * @param  int   $level
      * @return array{int, int, GenericRule, int}
      */
-    protected function analyze($level, Rule $rule): array
+    protected function analyze(int $level, Rule $rule): array
     {
         $analyzedRule = $rule;
         $ruleLevel = 1;

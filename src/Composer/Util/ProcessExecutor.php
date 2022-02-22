@@ -65,10 +65,10 @@ class ProcessExecutor
      * @param  string|list<string> $command the command to execute
      * @param  mixed   $output  the output will be written into this var if passed by ref
      *                          if a callable is passed it will be used as output handler
-     * @param  ?string $cwd     the working directory
+     * @param  null|string $cwd     the working directory
      * @return int     statuscode
      */
-    public function execute($command, &$output = null, $cwd = null)
+    public function execute($command, &$output = null, ?string $cwd = null)
     {
         if (func_num_args() > 1) {
             return $this->doExecute($command, $cwd, false, $output);
@@ -81,10 +81,10 @@ class ProcessExecutor
      * runs a process on the commandline in TTY mode
      *
      * @param  string|list<string>  $command the command to execute
-     * @param  ?string $cwd     the working directory
+     * @param  null|string $cwd     the working directory
      * @return int     statuscode
      */
-    public function executeTty($command, $cwd = null)
+    public function executeTty($command, ?string $cwd = null)
     {
         if (Platform::isTty()) {
             return $this->doExecute($command, $cwd, true);
@@ -95,12 +95,12 @@ class ProcessExecutor
 
     /**
      * @param  string|list<string> $command
-     * @param  ?string $cwd
+     * @param  null|string $cwd
      * @param  bool    $tty
      * @param  mixed   $output
      * @return int
      */
-    private function doExecute($command, $cwd, $tty, &$output = null): int
+    private function doExecute($command, ?string $cwd, bool $tty, &$output = null): int
     {
         $this->outputCommandRun($command, $cwd, false);
 
@@ -140,7 +140,7 @@ class ProcessExecutor
      * @param  string              $cwd     the working directory
      * @return PromiseInterface
      */
-    public function executeAsync($command, $cwd = null)
+    public function executeAsync($command, ?string $cwd = null)
     {
         if (!$this->allowAsync) {
             throw new \LogicException('You must use the ProcessExecutor instance which is part of a Composer\Loop instance to be able to run async processes');
@@ -210,7 +210,7 @@ class ProcessExecutor
      * @param  int  $id
      * @return void
      */
-    private function startJob($id): void
+    private function startJob(int $id): void
     {
         $job = &$this->jobs[$id];
         if ($job['status'] !== self::STATUS_QUEUED) {
@@ -321,10 +321,10 @@ class ProcessExecutor
     }
 
     /**
-     * @param  ?string  $output
+     * @param  null|string  $output
      * @return string[]
      */
-    public function splitLines($output)
+    public function splitLines(?string $output)
     {
         $output = trim((string) $output);
 
@@ -349,7 +349,7 @@ class ProcessExecutor
      *
      * @return void
      */
-    public function outputHandler($type, $buffer)
+    public function outputHandler($type, string $buffer)
     {
         if ($this->captureOutput) {
             return;
@@ -380,7 +380,7 @@ class ProcessExecutor
      * @param  int  $timeout the timeout in seconds
      * @return void
      */
-    public static function setTimeout($timeout)
+    public static function setTimeout(int $timeout)
     {
         static::$timeout = $timeout;
     }

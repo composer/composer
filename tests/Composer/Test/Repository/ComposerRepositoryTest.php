@@ -279,7 +279,7 @@ class ComposerRepositoryTest extends TestCase
      * @param string $url
      * @param string $repositoryUrl
      */
-    public function testCanonicalizeUrl($expected, $url, $repositoryUrl): void
+    public function testCanonicalizeUrl(string $expected, string $url, string $repositoryUrl): void
     {
         $repository = new ComposerRepository(
             array('url' => $repositoryUrl),

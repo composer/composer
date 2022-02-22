@@ -93,7 +93,7 @@ class PlatformRepository extends ArrayRepository
      * @param  string  $name
      * @return bool
      */
-    public function isPlatformPackageDisabled($name): bool
+    public function isPlatformPackageDisabled(string $name): bool
     {
         return isset($this->disabledPackages[$name]);
     }
@@ -586,7 +586,7 @@ class PlatformRepository extends ArrayRepository
      *
      * @return CompletePackage
      */
-    private function addOverriddenPackage(array $override, $name = null): CompletePackage
+    private function addOverriddenPackage(array $override, ?string $name = null): CompletePackage
     {
         $version = $this->versionParser->normalize($override['version']);
         $package = new CompletePackage($name ?: $override['name'], $version, $override['version']);
@@ -620,7 +620,7 @@ class PlatformRepository extends ArrayRepository
      *
      * @return void
      */
-    private function addExtension($name, $prettyVersion): void
+    private function addExtension(string $name, ?string $prettyVersion): void
     {
         $extraDescription = null;
 
@@ -653,7 +653,7 @@ class PlatformRepository extends ArrayRepository
      * @param  string $name
      * @return string
      */
-    private function buildPackageName($name): string
+    private function buildPackageName(string $name): string
     {
         return 'ext-' . str_replace(' ', '-', strtolower($name));
     }
@@ -667,7 +667,7 @@ class PlatformRepository extends ArrayRepository
      *
      * @return void
      */
-    private function addLibrary($name, $prettyVersion, $description = null, array $replaces = array(), array $provides = array()): void
+    private function addLibrary(string $name, string $prettyVersion, ?string $description = null, array $replaces = array(), array $provides = array()): void
     {
         try {
             $version = $this->versionParser->normalize($prettyVersion);
@@ -704,7 +704,7 @@ class PlatformRepository extends ArrayRepository
      * @param  string $name
      * @return bool
      */
-    public static function isPlatformPackage($name): bool
+    public static function isPlatformPackage(string $name): bool
     {
         static $cache = array();
 
@@ -730,7 +730,7 @@ class PlatformRepository extends ArrayRepository
         return self::$lastSeenPlatformPhp;
     }
 
-    public function search($query, $mode = 0, $type = null): array
+    public function search(string $query, int $mode = 0, ?string $type = null): array
     {
         // suppress vendor search as there are no vendors to match in platform packages
         if ($mode === self::SEARCH_VENDOR) {

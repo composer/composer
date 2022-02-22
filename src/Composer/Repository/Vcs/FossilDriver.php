@@ -141,7 +141,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getSource($identifier): array
+    public function getSource(string $identifier): array
     {
         return array('type' => 'fossil', 'url' => $this->getUrl(), 'reference' => $identifier);
     }
@@ -149,7 +149,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getDist($identifier): ?array
+    public function getDist(string $identifier): ?array
     {
         return null;
     }
@@ -157,7 +157,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getFileContent($file, $identifier): ?string
+    public function getFileContent(string $file, string $identifier): ?string
     {
         $command = sprintf('fossil cat -r %s -- %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
         $this->process->execute($command, $content, $this->checkoutDir);
@@ -172,7 +172,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getChangeDate($identifier): ?\DateTime
+    public function getChangeDate(string $identifier): ?\DateTime
     {
         $this->process->execute('fossil finfo -b -n 1 composer.json', $output, $this->checkoutDir);
         list(, $date) = explode(' ', trim($output), 3);
@@ -222,7 +222,7 @@ class FossilDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public static function supports(IOInterface $io, Config $config, $url, $deep = false): bool
+    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false): bool
     {
         if (Preg::isMatch('#(^(?:https?|ssh)://(?:[^@]@)?(?:chiselapp\.com|fossil\.))#i', $url)) {
             return true;

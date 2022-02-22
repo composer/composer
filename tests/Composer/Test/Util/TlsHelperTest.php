@@ -24,7 +24,7 @@ class TlsHelperTest extends TestCase
      * @param string   $hostname
      * @param string[] $certNames
      */
-    public function testCheckCertificateHost($expectedResult, $hostname, $certNames): void
+    public function testCheckCertificateHost(bool $expectedResult, string $hostname, array $certNames): void
     {
         $certificate['subject']['commonName'] = $expectedCn = array_shift($certNames);
         $certificate['extensions']['subjectAltName'] = $certNames ? 'DNS:'.implode(',DNS:', $certNames) : '';

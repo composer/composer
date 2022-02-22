@@ -125,7 +125,7 @@ class InstallationManager
      * @throws \InvalidArgumentException if installer for provided type is not registered
      * @return InstallerInterface
      */
-    public function getInstaller($type)
+    public function getInstaller(string $type)
     {
         $type = strtolower($type);
 
@@ -192,7 +192,7 @@ class InstallationManager
      *
      * @return void
      */
-    public function execute(InstalledRepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true)
+    public function execute(InstalledRepositoryInterface $repo, array $operations, bool $devMode = true, bool $runScripts = true)
     {
         /** @var PromiseInterface[] */
         $cleanupPromises = array();
@@ -316,7 +316,7 @@ class InstallationManager
      *
      * @return void
      */
-    private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, $devMode, $runScripts, array $allOperations): void
+    private function downloadAndExecuteBatch(InstalledRepositoryInterface $repo, array $operations, array &$cleanupPromises, bool $devMode, bool $runScripts, array $allOperations): void
     {
         $promises = array();
 
@@ -400,7 +400,7 @@ class InstallationManager
      *
      * @return void
      */
-    private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, $devMode, $runScripts, array $allOperations): void
+    private function executeBatch(InstalledRepositoryInterface $repo, array $operations, array $cleanupPromises, bool $devMode, bool $runScripts, array $allOperations): void
     {
         $promises = array();
         $postExecCallbacks = array();
@@ -553,7 +553,7 @@ class InstallationManager
                 if ($promise instanceof PromiseInterface) {
                     return $promise;
                 }
-                
+
                 return \React\Promise\resolve();
             });
         }
@@ -627,7 +627,7 @@ class InstallationManager
      *
      * @return void
      */
-    public function setOutputProgress($outputProgress)
+    public function setOutputProgress(bool $outputProgress)
     {
         $this->outputProgress = $outputProgress;
     }

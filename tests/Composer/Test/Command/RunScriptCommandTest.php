@@ -24,7 +24,7 @@ class RunScriptCommandTest extends TestCase
      * @param bool $dev
      * @param bool $noDev
      */
-    public function testDetectAndPassDevModeToEventAndToDispatching($dev, $noDev): void
+    public function testDetectAndPassDevModeToEventAndToDispatching(bool $dev, bool $noDev): void
     {
         $scriptName = 'testScript';
 

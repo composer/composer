@@ -40,7 +40,7 @@ class FilterRepositoryTest extends TestCase
      * @param string[]                                                               $expected
      * @param array{only?: array<string>, exclude?: array<string>, canonical?: bool} $config
      */
-    public function testRepoMatching($expected, $config): void
+    public function testRepoMatching(array $expected, $config): void
     {
         $repo = new FilterRepository($this->arrayRepo, $config);
         $packages = $repo->getPackages();

@@ -184,7 +184,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getFileContent($file, $identifier): ?string
+    public function getFileContent(string $file, string $identifier): ?string
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getFileContent($file, $identifier);
@@ -216,7 +216,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getChangeDate($identifier): ?\DateTime
+    public function getChangeDate(string $identifier): ?\DateTime
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getChangeDate($identifier);
@@ -256,7 +256,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getDist($identifier): ?array
+    public function getDist(string $identifier): ?array
     {
         $url = $this->getApiUrl().'/repository/archive.zip?sha='.$identifier;
 
@@ -266,7 +266,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getSource($identifier): array
+    public function getSource(string $identifier): array
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getSource($identifier);
@@ -333,7 +333,7 @@ class GitLabDriver extends VcsDriver
      * @param  string $string
      * @return string
      */
-    private function urlEncodeAll($string): string
+    private function urlEncodeAll(string $string): string
     {
         $encoded = '';
         for ($i = 0; isset($string[$i]); $i++) {
@@ -352,7 +352,7 @@ class GitLabDriver extends VcsDriver
      *
      * @return string[] where keys are named references like tags or branches and the value a sha
      */
-    protected function getReferences($type): array
+    protected function getReferences(string $type): array
     {
         $perPage = 100;
         $resource = $this->getApiUrl().'/repository/'.$type.'?per_page='.$perPage;
@@ -452,7 +452,7 @@ class GitLabDriver extends VcsDriver
      *
      * @return void
      */
-    protected function setupGitDriver($url): void
+    protected function setupGitDriver(string $url): void
     {
         $this->gitDriver = new GitDriver(
             array('url' => $url),
@@ -469,7 +469,7 @@ class GitLabDriver extends VcsDriver
      *
      * @param bool $fetchingRepoData
      */
-    protected function getContents($url, $fetchingRepoData = false): Response
+    protected function getContents(string $url, bool $fetchingRepoData = false): Response
     {
         try {
             $response = parent::getContents($url);
@@ -568,7 +568,7 @@ class GitLabDriver extends VcsDriver
      *
      * @inheritDoc
      */
-    public static function supports(IOInterface $io, Config $config, $url, $deep = false): bool
+    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false): bool
     {
         if (!Preg::isMatch(self::URL_REGEX, $url, $match)) {
             return false;
@@ -616,7 +616,7 @@ class GitLabDriver extends VcsDriver
      *
      * @return string|false
      */
-    private static function determineOrigin(array $configuredDomains, $guessedDomain, array &$urlParts, $portNumber)
+    private static function determineOrigin(array $configuredDomains, string $guessedDomain, array &$urlParts, string $portNumber)
     {
         $guessedDomain = strtolower($guessedDomain);
 

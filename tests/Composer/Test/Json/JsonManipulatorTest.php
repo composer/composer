@@ -25,7 +25,7 @@ class JsonManipulatorTest extends TestCase
      * @param string $constraint
      * @param string $expected
      */
-    public function testAddLink($json, $type, $package, $constraint, $expected): void
+    public function testAddLink(string $json, string $type, string $package, string $constraint, string $expected): void
     {
         $manipulator = new JsonManipulator($json);
         $this->assertTrue($manipulator->addLink($type, $package, $constraint));
@@ -1301,7 +1301,7 @@ class JsonManipulatorTest extends TestCase
      * @param bool $sortPackages
      * @param string $expected
      */
-    public function testAddLinkAndSortPackages($json, $type, $package, $constraint, $sortPackages, $expected): void
+    public function testAddLinkAndSortPackages(string $json, string $type, string $package, string $constraint, bool $sortPackages, string $expected): void
     {
         $manipulator = new JsonManipulator($json);
         $this->assertTrue($manipulator->addLink($type, $package, $constraint, $sortPackages));
@@ -1382,10 +1382,10 @@ class JsonManipulatorTest extends TestCase
      * @dataProvider removeSubNodeProvider
      * @param string $json
      * @param string $name
-     * @param string $expected
-     * @param ?string $expectedContent
+     * @param bool $expected
+     * @param null|string $expectedContent
      */
-    public function testRemoveSubNode($json, $name, $expected, $expectedContent = null): void
+    public function testRemoveSubNode(string $json, string $name, bool $expected, ?string $expectedContent = null): void
     {
         $manipulator = new JsonManipulator($json);
 

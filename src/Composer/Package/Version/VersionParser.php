@@ -76,7 +76,7 @@ class VersionParser extends SemverVersionParser
      *
      * @return bool
      */
-    public static function isUpgrade($normalizedFrom, $normalizedTo)
+    public static function isUpgrade(string $normalizedFrom, string $normalizedTo)
     {
         if ($normalizedFrom === $normalizedTo) {
             return true;

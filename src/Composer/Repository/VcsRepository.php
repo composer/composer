@@ -434,7 +434,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
      *
      * @return array{name: string|null, dist: array{type: string, url: string, reference: string, shasum: string}|null, source: array{type: string, url: string, reference: string}}
      */
-    protected function preProcess(VcsDriverInterface $driver, array $data, $identifier)
+    protected function preProcess(VcsDriverInterface $driver, array $data, string $identifier)
     {
         // keep the name of the main identifier for all packages
         // this ensures that a package can be renamed in one place and that all old tags
@@ -457,7 +457,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
      *
      * @return string|false
      */
-    private function validateBranch($branch)
+    private function validateBranch(string $branch)
     {
         try {
             $normalizedBranch = $this->versionParser->normalizeBranch($branch);
@@ -477,7 +477,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
      *
      * @return string|false
      */
-    private function validateTag($version)
+    private function validateTag(string $version)
     {
         try {
             return $this->versionParser->normalize($version);
@@ -496,7 +496,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
      *
      * @return \Composer\Package\CompletePackage|\Composer\Package\CompleteAliasPackage|null|false null if no cache present, false if the absence of a version was cached
      */
-    private function getCachedPackageVersion($version, $identifier, $isVerbose, $isVeryVerbose, $isDefaultBranch = false)
+    private function getCachedPackageVersion(string $version, string $identifier, bool $isVerbose, bool $isVeryVerbose, bool $isDefaultBranch = false)
     {
         if (!$this->versionCache) {
             return null;

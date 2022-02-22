@@ -158,7 +158,7 @@ interface RootPackageInterface extends CompletePackageInterface
      *
      * @return void
      */
-    public function setMinimumStability($minimumStability);
+    public function setMinimumStability(string $minimumStability);
 
     /**
      * Set the preferStable
@@ -167,7 +167,7 @@ interface RootPackageInterface extends CompletePackageInterface
      *
      * @return void
      */
-    public function setPreferStable($preferStable);
+    public function setPreferStable(bool $preferStable);
 
     /**
      * Set the config

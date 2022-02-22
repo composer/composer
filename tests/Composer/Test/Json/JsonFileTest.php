@@ -351,7 +351,7 @@ class JsonFileTest extends TestCase
      * @param string $json
      * @return void
      */
-    private function expectParseException($text, $json): void
+    private function expectParseException(string $text, string $json): void
     {
         try {
             $result = JsonFile::parseJson($json);
@@ -367,7 +367,7 @@ class JsonFileTest extends TestCase
      * @param int|null $options
      * @return void
      */
-    private function assertJsonFormat($json, $data, $options = null): void
+    private function assertJsonFormat(string $json, $data, ?int $options = null): void
     {
         $file = new JsonFile('composer.json');
 

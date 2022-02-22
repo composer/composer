@@ -12,6 +12,8 @@
 
 namespace Composer\Package\Comparer;
 
+use Composer\Util\Platform;
+
 /**
  * class Comparer
  *
@@ -31,7 +33,7 @@ class Comparer
      *
      * @return void
      */
-    public function setSource($source): void
+    public function setSource(string $source): void
     {
         $this->source = $source;
     }
@@ -41,7 +43,7 @@ class Comparer
      *
      * @return void
      */
-    public function setUpdate($update): void
+    public function setUpdate(string $update): void
     {
         $this->update = $update;
     }
@@ -52,7 +54,7 @@ class Comparer
      *
      * @return array{changed?: string[], removed?: string[], added?: string[]}|string|false false if no change, string only if $toString is true
      */
-    public function getChanged($toString = false, $explicated = false)
+    public function getChanged(bool $toString = false, bool $explicated = false)
     {
         $changed = $this->changed;
         if (!count($changed)) {
@@ -87,7 +89,7 @@ class Comparer
         $source = array();
         $destination = array();
         $this->changed = array();
-        $currentDirectory = getcwd();
+        $currentDirectory = Platform::getCwd();
         chdir($this->source);
         $source = $this->doTree('.', $source);
         if (!is_array($source)) {
@@ -122,11 +124,11 @@ class Comparer
 
     /**
      * @param string $dir
-     * @param mixed $array
+     * @param mixed[] $array
      *
      * @return array<string, array<string, string|false>>|false
      */
-    private function doTree($dir, &$array)
+    private function doTree(string $dir, array &$array)
     {
         if ($dh = opendir($dir)) {
             while ($file = readdir($dh)) {

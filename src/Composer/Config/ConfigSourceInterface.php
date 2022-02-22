@@ -29,7 +29,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function addRepository($name, $config, $append = true);
+    public function addRepository(string $name, $config, bool $append = true);
 
     /**
      * Remove a repository
@@ -38,7 +38,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function removeRepository($name);
+    public function removeRepository(string $name);
 
     /**
      * Add a config setting
@@ -48,7 +48,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function addConfigSetting($name, $value);
+    public function addConfigSetting(string $name, $value);
 
     /**
      * Remove a config setting
@@ -57,7 +57,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function removeConfigSetting($name);
+    public function removeConfigSetting(string $name);
 
     /**
      * Add a property
@@ -67,7 +67,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function addProperty($name, $value);
+    public function addProperty(string $name, $value);
 
     /**
      * Remove a property
@@ -76,7 +76,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function removeProperty($name);
+    public function removeProperty(string $name);
 
     /**
      * Add a package link
@@ -87,7 +87,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function addLink($type, $name, $value);
+    public function addLink(string $type, string $name, string $value);
 
     /**
      * Remove a package link
@@ -97,7 +97,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function removeLink($type, $name);
+    public function removeLink(string $type, string $name);
 
     /**
      * Gives a user-friendly name to this source (file path or so)

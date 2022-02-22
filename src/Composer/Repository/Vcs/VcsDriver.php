@@ -79,7 +79,7 @@ abstract class VcsDriver implements VcsDriverInterface
      * @param  string $identifier
      * @return bool
      */
-    protected function shouldCache($identifier)
+    protected function shouldCache(string $identifier)
     {
         return $this->cache && Preg::isMatch('{^[a-f0-9]{40}$}iD', $identifier);
     }
@@ -87,7 +87,7 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * @inheritDoc
      */
-    public function getComposerInformation($identifier)
+    public function getComposerInformation(string $identifier)
     {
         if (!isset($this->infoCache[$identifier])) {
             if ($this->shouldCache($identifier) && $res = $this->cache->read($identifier)) {
@@ -111,7 +111,7 @@ abstract class VcsDriver implements VcsDriverInterface
      *
      * @return array<string, mixed>|null
      */
-    protected function getBaseComposerInformation($identifier)
+    protected function getBaseComposerInformation(string $identifier)
     {
         $composerFileContent = $this->getFileContent('composer.json', $identifier);
 
@@ -131,7 +131,7 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * @inheritDoc
      */
-    public function hasComposerFile($identifier)
+    public function hasComposerFile(string $identifier)
     {
         try {
             return (bool) $this->getComposerInformation($identifier);
@@ -165,7 +165,7 @@ abstract class VcsDriver implements VcsDriverInterface
      * @return Response
      * @throws TransportException
      */
-    protected function getContents($url)
+    protected function getContents(string $url)
     {
         $options = $this->repoConfig['options'] ?? array();
 

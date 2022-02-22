@@ -27,6 +27,7 @@ use Composer\Plugin\PostFileDownloadEvent;
 use Composer\Plugin\PreFileDownloadEvent;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Composer\Util\HttpDownloader;
 use Composer\Util\Url as UrlUtil;
@@ -112,7 +113,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @param bool $output
      */
-    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
+    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true)
     {
         if (!$package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
@@ -295,7 +296,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @inheritDoc
      */
-    public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null)
     {
         return \React\Promise\resolve();
     }
@@ -303,7 +304,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @inheritDoc
      */
-    public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null)
     {
         $fileName = $this->getFileName($package, $path);
         if (file_exists($fileName)) {
@@ -323,7 +324,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         }
 
         foreach ($dirsToCleanUp as $dir) {
-            if (is_dir($dir) && $this->filesystem->isDirEmpty($dir) && realpath($dir) !== getcwd()) {
+            if (is_dir($dir) && $this->filesystem->isDirEmpty($dir) && realpath($dir) !== Platform::getCwd()) {
                 $this->filesystem->removeDirectoryPhp($dir);
             }
         }
@@ -336,7 +337,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @param bool $output
      */
-    public function install(PackageInterface $package, $path, $output = true)
+    public function install(PackageInterface $package, string $path, bool $output = true)
     {
         if ($output) {
             $this->io->writeError("  - " . InstallOperation::format($package));
@@ -375,7 +376,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @return void
      */
-    protected function addCleanupPath(PackageInterface $package, $path)
+    protected function addCleanupPath(PackageInterface $package, string $path)
     {
         $this->additionalCleanupPaths[$package->getName()][] = $path;
     }
@@ -385,7 +386,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @return void
      */
-    protected function removeCleanupPath(PackageInterface $package, $path)
+    protected function removeCleanupPath(PackageInterface $package, string $path)
     {
         if (isset($this->additionalCleanupPaths[$package->getName()])) {
             $idx = array_search($path, $this->additionalCleanupPaths[$package->getName()]);
@@ -398,7 +399,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @inheritDoc
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $path)
+    public function update(PackageInterface $initial, PackageInterface $target, string $path)
     {
         $this->io->writeError("  - " . UpdateOperation::format($initial, $target) . $this->getInstallOperationAppendix($target, $path));
 
@@ -422,7 +423,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @param bool $output
      */
-    public function remove(PackageInterface $package, $path, $output = true)
+    public function remove(PackageInterface $package, string $path, bool $output = true)
     {
         if ($output) {
             $this->io->writeError("  - " . UninstallOperation::format($package));
@@ -443,7 +444,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @param  string           $path    download path
      * @return string           file name
      */
-    protected function getFileName(PackageInterface $package, $path)
+    protected function getFileName(PackageInterface $package, string $path)
     {
         return rtrim($this->config->get('vendor-dir').'/composer/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
     }
@@ -455,7 +456,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @param  string           $path    download path
      * @return string
      */
-    protected function getInstallOperationAppendix(PackageInterface $package, $path)
+    protected function getInstallOperationAppendix(PackageInterface $package, string $path)
     {
         return '';
     }
@@ -468,7 +469,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @throws \RuntimeException If any problem with the url
      * @return string            url
      */
-    protected function processUrl(PackageInterface $package, $url)
+    protected function processUrl(PackageInterface $package, string $url)
     {
         if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
             throw new \RuntimeException('You must enable the openssl extension to download files via https');
@@ -485,7 +486,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @inheritDoc
      * @throws \RuntimeException
      */
-    public function getLocalChanges(PackageInterface $package, $targetDir)
+    public function getLocalChanges(PackageInterface $package, string $targetDir)
     {
         $prevIO = $this->io;
 

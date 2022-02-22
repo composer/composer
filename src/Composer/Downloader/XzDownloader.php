@@ -24,7 +24,7 @@ use Composer\Util\ProcessExecutor;
  */
 class XzDownloader extends ArchiveDownloader
 {
-    protected function extract(PackageInterface $package, $file, $path): ?PromiseInterface
+    protected function extract(PackageInterface $package, string $file, string $path): ?PromiseInterface
     {
         $command = 'tar -xJf ' . ProcessExecutor::escape($file) . ' -C ' . ProcessExecutor::escape($path);
 

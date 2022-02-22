@@ -106,7 +106,7 @@ class LockTransaction extends Transaction
      * @param bool $updateMirrors
      * @return BasePackage[]
      */
-    public function getNewLockPackages($devMode, $updateMirrors = false): array
+    public function getNewLockPackages(bool $devMode, bool $updateMirrors = false): array
     {
         $packages = array();
         foreach ($this->resultPackages[$devMode ? 'dev' : 'non-dev'] as $package) {
@@ -119,7 +119,7 @@ class LockTransaction extends Transaction
                             if ($presentPackage->getSourceReference() && $presentPackage->getSourceType() === $package->getSourceType()) {
                                 $package->setSourceDistReferences($presentPackage->getSourceReference());
                             }
-                            if ($presentPackage->getReleaseDate() && $package instanceof Package) {
+                            if ($presentPackage->getReleaseDate() !== null && $package instanceof Package) {
                                 $package->setReleaseDate($presentPackage->getReleaseDate());
                             }
                         }
@@ -137,7 +137,7 @@ class LockTransaction extends Transaction
      * @param array<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      * @return array<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
-    public function getAliases($aliases): array
+    public function getAliases(array $aliases): array
     {
         $usedAliases = array();
 

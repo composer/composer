@@ -55,7 +55,7 @@ class PerforceDriver extends VcsDriver
      *
      * @return void
      */
-    private function initPerforce($repoConfig): void
+    private function initPerforce(array $repoConfig): void
     {
         if (!empty($this->perforce)) {
             return;
@@ -72,7 +72,7 @@ class PerforceDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getFileContent($file, $identifier)
+    public function getFileContent(string $file, string $identifier)
     {
         return $this->perforce->getFileContent($file, $identifier);
     }
@@ -80,7 +80,7 @@ class PerforceDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getChangeDate($identifier)
+    public function getChangeDate(string $identifier)
     {
         return null;
     }
@@ -112,7 +112,7 @@ class PerforceDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getDist($identifier)
+    public function getDist(string $identifier)
     {
         return null;
     }
@@ -120,7 +120,7 @@ class PerforceDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getSource($identifier)
+    public function getSource(string $identifier)
     {
         return array(
             'type' => 'perforce',
@@ -141,7 +141,7 @@ class PerforceDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function hasComposerFile($identifier)
+    public function hasComposerFile(string $identifier)
     {
         $composerInfo = $this->perforce->getComposerInformation('//' . $this->depot . '/' . $identifier);
 
@@ -151,7 +151,7 @@ class PerforceDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getContents($url)
+    public function getContents(string $url)
     {
         throw new \BadMethodCallException('Not implemented/used in PerforceDriver');
     }
@@ -159,7 +159,7 @@ class PerforceDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public static function supports(IOInterface $io, Config $config, $url, $deep = false)
+    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false)
     {
         if ($deep || Preg::isMatch('#\b(perforce|p4)\b#i', $url)) {
             return Perforce::checkServerExists($url, new ProcessExecutor($io));

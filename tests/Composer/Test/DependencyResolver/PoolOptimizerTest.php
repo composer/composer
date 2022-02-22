@@ -34,7 +34,7 @@ class PoolOptimizerTest extends TestCase
      * @param BasePackage[] $expectedPackages
      * @param string $message
      */
-    public function testPoolOptimizer(array $requestData, array $packagesBefore, array $expectedPackages, $message): void
+    public function testPoolOptimizer(array $requestData, array $packagesBefore, array $expectedPackages, string $message): void
     {
         $lockedRepo = new LockArrayRepository();
 
@@ -100,7 +100,7 @@ class PoolOptimizerTest extends TestCase
      * @param  string $fixturesDir
      * @return mixed[]
      */
-    protected function readTestFile(\SplFileInfo $file, $fixturesDir): array
+    protected function readTestFile(\SplFileInfo $file, string $fixturesDir): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
 

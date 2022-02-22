@@ -95,7 +95,7 @@ EOT
         // If the CWD was modified, we restore it to what it was initially, as it was
         // most likely modified by the global command, and we want exec to run in the local working directory
         // not the global one
-        if (getcwd() !== $this->getApplication()->getInitialWorkingDirectory()) {
+        if (getcwd() !== $this->getApplication()->getInitialWorkingDirectory() && $this->getApplication()->getInitialWorkingDirectory() !== false) {
             try {
                 chdir($this->getApplication()->getInitialWorkingDirectory());
             } catch (\Exception $e) {

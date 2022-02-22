@@ -135,7 +135,7 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function search($query, $mode = 0, $type = null): array
+    public function search(string $query, int $mode = 0, ?string $type = null): array
     {
         $result = array();
 
@@ -195,7 +195,7 @@ class FilterRepository implements RepositoryInterface
      *
      * @return bool
      */
-    private function isAllowed($name): bool
+    private function isAllowed(string $name): bool
     {
         if (!$this->only && !$this->exclude) {
             return true;

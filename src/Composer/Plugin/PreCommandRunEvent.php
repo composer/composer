@@ -39,7 +39,7 @@ class PreCommandRunEvent extends Event
      * @param InputInterface $input
      * @param string         $command The command about to be executed
      */
-    public function __construct($name, InputInterface $input, $command)
+    public function __construct(string $name, InputInterface $input, string $command)
     {
         parent::__construct($name);
         $this->input = $input;

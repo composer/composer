@@ -108,7 +108,7 @@ class PackageSorterTest extends TestCase
      * @param Package[] $packages
      * @param string[]  $expectedOrderedList
      */
-    public function testSortingOrdersDependenciesHigherThanPackage($packages, $expectedOrderedList): void
+    public function testSortingOrdersDependenciesHigherThanPackage(array $packages, array $expectedOrderedList): void
     {
         $sortedPackages = PackageSorter::sortPackages($packages);
         $sortedPackageNames = array_map(function ($package): string {
@@ -124,7 +124,7 @@ class PackageSorterTest extends TestCase
      *
      * @return Package
      */
-    private function createPackage($name, $requires): Package
+    private function createPackage(string $name, array $requires): Package
     {
         $package = new Package($name, '1.0.0.0', '1.0.0');
 

@@ -41,7 +41,7 @@ class AuthHelper
      *
      * @return void
      */
-    public function storeAuth($origin, $storeAuth): void
+    public function storeAuth(string $origin, $storeAuth): void
     {
         $store = false;
         $configSource = $this->config->getAuthConfigSource();
@@ -83,7 +83,7 @@ class AuthHelper
      *                                retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
      * @phpstan-return ?array{retry: bool, storeAuth: string|bool}
      */
-    public function promptAuthIfNeeded($url, $origin, $statusCode, $reason = null, $headers = array()): ?array
+    public function promptAuthIfNeeded(string $url, string $origin, int $statusCode, ?string $reason = null, array $headers = array()): ?array
     {
         $storeAuth = false;
 
@@ -215,7 +215,7 @@ class AuthHelper
      *
      * @return string[] updated headers array
      */
-    public function addAuthenticationHeader(array $headers, $origin, $url): array
+    public function addAuthenticationHeader(array $headers, string $origin, string $url): array
     {
         if ($this->io->hasAuthentication($origin)) {
             $authenticationDisplayMessage = null;
@@ -272,7 +272,7 @@ class AuthHelper
      *
      * @return bool Whether the given URL is a public BitBucket download which requires no authentication.
      */
-    public function isPublicBitBucketDownload($urlToBitBucketFile): bool
+    public function isPublicBitBucketDownload(string $urlToBitBucketFile): bool
     {
         $domain = parse_url($urlToBitBucketFile, PHP_URL_HOST);
         if (strpos($domain, 'bitbucket.org') === false) {

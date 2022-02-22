@@ -80,7 +80,7 @@ class RuleSetGenerator
      * @param  BasePackage[] $packages   The set of packages to choose from
      * @param  Rule::RULE_*  $reason     A RULE_* constant describing the reason for
      *                                   generating this rule
-     * @param  array         $reasonData Additional data like the root require or fix request info
+     * @param  mixed         $reasonData Additional data like the root require or fix request info
      * @return Rule          The generated rule
      *
      * @phpstan-param ReasonData $reasonData

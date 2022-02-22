@@ -43,7 +43,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $level
      * @return void
      */
-    public function decide($literal, $level, Rule $why): void
+    public function decide(int $literal, int $level, Rule $why): void
     {
         $this->addDecision($literal, $level);
         $this->decisionQueue[] = array(
@@ -56,7 +56,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $literal
      * @return bool
      */
-    public function satisfy($literal): bool
+    public function satisfy(int $literal): bool
     {
         $packageId = abs($literal);
 
@@ -70,7 +70,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $literal
      * @return bool
      */
-    public function conflict($literal): bool
+    public function conflict(int $literal): bool
     {
         $packageId = abs($literal);
 
@@ -84,7 +84,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $literalOrPackageId
      * @return bool
      */
-    public function decided($literalOrPackageId): bool
+    public function decided(int $literalOrPackageId): bool
     {
         return !empty($this->decisionMap[abs($literalOrPackageId)]);
     }
@@ -93,7 +93,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $literalOrPackageId
      * @return bool
      */
-    public function undecided($literalOrPackageId): bool
+    public function undecided(int $literalOrPackageId): bool
     {
         return empty($this->decisionMap[abs($literalOrPackageId)]);
     }
@@ -102,7 +102,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $literalOrPackageId
      * @return bool
      */
-    public function decidedInstall($literalOrPackageId): bool
+    public function decidedInstall(int $literalOrPackageId): bool
     {
         $packageId = abs($literalOrPackageId);
 
@@ -113,7 +113,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $literalOrPackageId
      * @return int
      */
-    public function decisionLevel($literalOrPackageId): int
+    public function decisionLevel(int $literalOrPackageId): int
     {
         $packageId = abs($literalOrPackageId);
         if (isset($this->decisionMap[$packageId])) {
@@ -127,7 +127,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $literalOrPackageId
      * @return Rule|null
      */
-    public function decisionRule($literalOrPackageId): ?Rule
+    public function decisionRule(int $literalOrPackageId): ?Rule
     {
         $packageId = abs($literalOrPackageId);
 
@@ -144,7 +144,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $queueOffset
      * @return array{0: int, 1: Rule} a literal and decision reason
      */
-    public function atOffset($queueOffset): array
+    public function atOffset(int $queueOffset): array
     {
         return $this->decisionQueue[$queueOffset];
     }
@@ -153,7 +153,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $queueOffset
      * @return bool
      */
-    public function validOffset($queueOffset): bool
+    public function validOffset(int $queueOffset): bool
     {
         return $queueOffset >= 0 && $queueOffset < \count($this->decisionQueue);
     }
@@ -188,7 +188,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $offset
      * @return void
      */
-    public function resetToOffset($offset): void
+    public function resetToOffset(int $offset): void
     {
         while (\count($this->decisionQueue) > $offset + 1) {
             $decision = array_pop($this->decisionQueue);
@@ -252,7 +252,7 @@ class Decisions implements \Iterator, \Countable
      * @param int $level
      * @return void
      */
-    protected function addDecision($literal, $level): void
+    protected function addDecision(int $literal, int $level): void
     {
         $packageId = abs($literal);
 

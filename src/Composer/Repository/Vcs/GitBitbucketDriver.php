@@ -131,7 +131,7 @@ class GitBitbucketDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getComposerInformation($identifier)
+    public function getComposerInformation(string $identifier)
     {
         if ($this->fallbackDriver) {
             return $this->fallbackDriver->getComposerInformation($identifier);
@@ -205,7 +205,7 @@ class GitBitbucketDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getFileContent($file, $identifier)
+    public function getFileContent(string $file, string $identifier)
     {
         if ($this->fallbackDriver) {
             return $this->fallbackDriver->getFileContent($file, $identifier);
@@ -232,7 +232,7 @@ class GitBitbucketDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getChangeDate($identifier)
+    public function getChangeDate(string $identifier)
     {
         if ($this->fallbackDriver) {
             return $this->fallbackDriver->getChangeDate($identifier);
@@ -259,7 +259,7 @@ class GitBitbucketDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getSource($identifier)
+    public function getSource(string $identifier)
     {
         if ($this->fallbackDriver) {
             return $this->fallbackDriver->getSource($identifier);
@@ -271,7 +271,7 @@ class GitBitbucketDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getDist($identifier)
+    public function getDist(string $identifier)
     {
         if ($this->fallbackDriver) {
             return $this->fallbackDriver->getDist($identifier);
@@ -383,7 +383,7 @@ class GitBitbucketDriver extends VcsDriver
      *
      * @phpstan-impure
      */
-    protected function fetchWithOAuthCredentials($url, $fetchingRepoData = false)
+    protected function fetchWithOAuthCredentials(string $url, bool $fetchingRepoData = false)
     {
         try {
             return parent::getContents($url);
@@ -445,7 +445,7 @@ class GitBitbucketDriver extends VcsDriver
      * @param  string $url
      * @return void
      */
-    protected function setupFallbackDriver($url)
+    protected function setupFallbackDriver(string $url)
     {
         $this->fallbackDriver = new GitDriver(
             array('url' => $url),
@@ -527,7 +527,7 @@ class GitBitbucketDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public static function supports(IOInterface $io, Config $config, $url, $deep = false)
+    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false)
     {
         if (!Preg::isMatch('#^https?://bitbucket\.org/([^/]+)/([^/]+?)(\.git|/?)?$#i', $url)) {
             return false;

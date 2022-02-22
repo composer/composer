@@ -54,7 +54,7 @@ class InstallerEvent extends Event
      * @param bool        $executeOperations
      * @param Transaction $transaction
      */
-    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, $executeOperations, Transaction $transaction)
+    public function __construct(string $eventName, Composer $composer, IOInterface $io, bool $devMode, bool $executeOperations, Transaction $transaction)
     {
         parent::__construct($eventName);
 

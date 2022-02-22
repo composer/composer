@@ -68,7 +68,7 @@ class ArchiveManager
      *
      * @return $this
      */
-    public function setOverwriteFiles($overwriteFiles)
+    public function setOverwriteFiles(bool $overwriteFiles)
     {
         $this->overwriteFiles = $overwriteFiles;
 
@@ -121,7 +121,7 @@ class ArchiveManager
      * @throws \RuntimeException
      * @return string                    The path of the created archive
      */
-    public function archive(CompletePackageInterface $package, $format, $targetDir, $fileName = null, $ignoreFilters = false): string
+    public function archive(CompletePackageInterface $package, string $format, string $targetDir, ?string $fileName = null, bool $ignoreFilters = false): string
     {
         if (empty($format)) {
             throw new \InvalidArgumentException('Format must be specified');

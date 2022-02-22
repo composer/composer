@@ -327,7 +327,7 @@ class GitHubDriverTest extends TestCase
      * @param bool $expected
      * @param string $repoUrl
      */
-    public function testSupports($expected, $repoUrl): void
+    public function testSupports(bool $expected, string $repoUrl): void
     {
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
@@ -353,7 +353,7 @@ class GitHubDriverTest extends TestCase
      *
      * @return void
      */
-    protected function setAttribute($object, $attribute, $value): void
+    protected function setAttribute($object, string $attribute, $value): void
     {
         $attr = new \ReflectionProperty($object, $attribute);
         $attr->setAccessible(true);

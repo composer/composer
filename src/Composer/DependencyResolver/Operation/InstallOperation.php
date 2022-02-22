@@ -55,7 +55,7 @@ class InstallOperation extends SolverOperation implements OperationInterface
      * @param bool $lock
      * @return string
      */
-    public static function format(PackageInterface $package, $lock = false)
+    public static function format(PackageInterface $package, bool $lock = false)
     {
         return ($lock ? 'Locking ' : 'Installing ').'<info>'.$package->getPrettyName().'</info> (<comment>'.$package->getFullPrettyVersion().'</comment>)';
     }

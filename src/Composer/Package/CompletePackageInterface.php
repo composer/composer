@@ -90,7 +90,7 @@ interface CompletePackageInterface extends PackageInterface
      * @param  string $description
      * @return void
      */
-    public function setDescription($description);
+    public function setDescription(string $description);
 
     /**
      * Returns the package homepage
@@ -105,7 +105,7 @@ interface CompletePackageInterface extends PackageInterface
      * @param  string $homepage
      * @return void
      */
-    public function setHomepage($homepage);
+    public function setHomepage(string $homepage);
 
     /**
      * Returns an array of authors of the package
@@ -189,7 +189,7 @@ interface CompletePackageInterface extends PackageInterface
      * @param  string $name
      * @return void
      */
-    public function setArchiveName($name);
+    public function setArchiveName(string $name);
 
     /**
      * Returns a list of patterns to exclude from package archives

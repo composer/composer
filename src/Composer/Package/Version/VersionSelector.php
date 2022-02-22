@@ -68,7 +68,7 @@ class VersionSelector
      * @param int                                              $repoSetFlags*
      * @return PackageInterface|false
      */
-    public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $platformRequirementFilter = null, $repoSetFlags = 0)
+    public function findBestCandidate(string $packageName, string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0)
     {
         if (!isset(BasePackage::$stabilities[$preferredStability])) {
             // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
@@ -211,7 +211,7 @@ class VersionSelector
      *
      * @return string
      */
-    private function transformVersion($version, $prettyVersion, $stability): string
+    private function transformVersion(string $version, string $prettyVersion, string $stability): string
     {
         // attempt to transform 2.1.1 to 2.1
         // this allows you to upgrade through minor versions

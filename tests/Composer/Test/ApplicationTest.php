@@ -84,7 +84,7 @@ class ApplicationTest extends TestCase
      * @param  string $command
      * @return void
      */
-    public function ensureNoDevWarning($command): void
+    public function ensureNoDevWarning(string $command): void
     {
         $application = new Application;
 

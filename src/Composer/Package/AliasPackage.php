@@ -56,7 +56,7 @@ class AliasPackage extends BasePackage
      * @param string      $version       The version the alias must report
      * @param string      $prettyVersion The alias's non-normalized version
      */
-    public function __construct(BasePackage $aliasOf, $version, $prettyVersion)
+    public function __construct(BasePackage $aliasOf, string $version, string $prettyVersion)
     {
         parent::__construct($aliasOf->getName());
 
@@ -164,7 +164,7 @@ class AliasPackage extends BasePackage
      *
      * @return mixed
      */
-    public function setRootPackageAlias($value)
+    public function setRootPackageAlias(bool $value)
     {
         return $this->rootPackageAlias = $value;
     }
@@ -249,7 +249,7 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getExtra();
     }
 
-    public function setInstallationSource($type): void
+    public function setInstallationSource(?string $type): void
     {
         $this->aliasOf->setInstallationSource($type);
     }
@@ -279,12 +279,12 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getSourceReference();
     }
 
-    public function setSourceReference($reference): void
+    public function setSourceReference(?string $reference): void
     {
         $this->aliasOf->setSourceReference($reference);
     }
 
-    public function setSourceMirrors($mirrors): void
+    public function setSourceMirrors(?array $mirrors): void
     {
         $this->aliasOf->setSourceMirrors($mirrors);
     }
@@ -314,7 +314,7 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getDistReference();
     }
 
-    public function setDistReference($reference): void
+    public function setDistReference(?string $reference): void
     {
         $this->aliasOf->setDistReference($reference);
     }
@@ -334,7 +334,7 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getTransportOptions();
     }
 
-    public function setDistMirrors($mirrors): void
+    public function setDistMirrors(?array $mirrors): void
     {
         $this->aliasOf->setDistMirrors($mirrors);
     }
@@ -359,7 +359,7 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->getIncludePaths();
     }
 
-    public function getReleaseDate(): ?\DateTime
+    public function getReleaseDate(): ?\DateTimeInterface
     {
         return $this->aliasOf->getReleaseDate();
     }
@@ -384,17 +384,17 @@ class AliasPackage extends BasePackage
         return $this->aliasOf->isDefaultBranch();
     }
 
-    public function setDistUrl($url): void
+    public function setDistUrl(?string $url): void
     {
         $this->aliasOf->setDistUrl($url);
     }
 
-    public function setDistType($type): void
+    public function setDistType(?string $type): void
     {
         $this->aliasOf->setDistType($type);
     }
 
-    public function setSourceDistReferences($reference): void
+    public function setSourceDistReferences(string $reference): void
     {
         $this->aliasOf->setSourceDistReferences($reference);
     }

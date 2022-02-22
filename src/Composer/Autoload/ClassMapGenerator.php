@@ -19,6 +19,7 @@
 namespace Composer\Autoload;
 
 use Composer\Pcre\Preg;
+use Composer\Util\Platform;
 use Symfony\Component\Finder\Finder;
 use Composer\IO\IOInterface;
 use Composer\Util\Filesystem;
@@ -35,10 +36,10 @@ class ClassMapGenerator
      * Generate a class map file
      *
      * @param \Traversable<string>|array<string> $dirs Directories or a single path to search in
-     * @param string                     $file The name of the class map file
+     * @param string                             $file The name of the class map file
      * @return void
      */
-    public static function dump($dirs, $file): void
+    public static function dump(iterable $dirs, string $file): void
     {
         $maps = array();
 
@@ -55,13 +56,13 @@ class ClassMapGenerator
      * @param \Traversable<\SplFileInfo>|string|array<string> $path The path to search in or an iterator
      * @param string              $excluded     Regex that matches file paths to be excluded from the classmap
      * @param ?IOInterface        $io           IO object
-     * @param ?string             $namespace    Optional namespace prefix to filter by
-     * @param ?string             $autoloadType psr-0|psr-4 Optional autoload standard to use mapping rules
+     * @param null|string         $namespace    Optional namespace prefix to filter by
+     * @param null|string         $autoloadType psr-0|psr-4 Optional autoload standard to use mapping rules
      * @param array<string, true> $scannedFiles
      * @return array<class-string, string> A class map array
      * @throws \RuntimeException When the path is neither an existing file nor directory
      */
-    public static function createMap($path, $excluded = null, IOInterface $io = null, $namespace = null, $autoloadType = null, &$scannedFiles = array()): array
+    public static function createMap($path, string $excluded = null, IOInterface $io = null, ?string $namespace = null, ?string $autoloadType = null, array &$scannedFiles = array()): array
     {
         $basePath = $path;
         if (is_string($path)) {
@@ -81,7 +82,7 @@ class ClassMapGenerator
 
         $map = array();
         $filesystem = new Filesystem();
-        $cwd = realpath(getcwd());
+        $cwd = realpath(Platform::getCwd());
 
         foreach ($path as $file) {
             $filePath = $file->getPathname();
@@ -157,7 +158,7 @@ class ClassMapGenerator
      * @param  ?IOInterface             $io            IO object
      * @return array<int, class-string> valid classes
      */
-    private static function filterByNamespace($classes, $filePath, $baseNamespace, $namespaceType, $basePath, $io): array
+    private static function filterByNamespace(array $classes, string $filePath, string $baseNamespace, string $namespaceType, string $basePath, ?IOInterface $io): array
     {
         $validClasses = array();
         $rejectedClasses = array();
@@ -198,7 +199,7 @@ class ClassMapGenerator
         if (empty($validClasses)) {
             foreach ($rejectedClasses as $class) {
                 if ($io) {
-                    $io->writeError("<warning>Class $class located in ".Preg::replace('{^'.preg_quote(getcwd()).'}', '.', $filePath, 1)." does not comply with $namespaceType autoloading standard. Skipping.</warning>");
+                    $io->writeError("<warning>Class $class located in ".Preg::replace('{^'.preg_quote(Platform::getCwd()).'}', '.', $filePath, 1)." does not comply with $namespaceType autoloading standard. Skipping.</warning>");
                 }
             }
 
@@ -215,7 +216,7 @@ class ClassMapGenerator
      * @throws \RuntimeException
      * @return array<int, class-string> The found classes
      */
-    private static function findClasses($path): array
+    private static function findClasses(string $path): array
     {
         $extraTypes = self::getExtraTypes();
 

@@ -52,7 +52,7 @@ interface PackageInterface
      *
      * @return string[] An array of strings referring to this package
      */
-    public function getNames($provides = true);
+    public function getNames(bool $provides = true);
 
     /**
      * Allows the solver to set an id for this package to refer to it.
@@ -61,7 +61,7 @@ interface PackageInterface
      *
      * @return void
      */
-    public function setId($id);
+    public function setId(int $id);
 
     /**
      * Retrieves the package's id set through setId
@@ -101,12 +101,12 @@ interface PackageInterface
     /**
      * Sets source from which this package was installed (source/dist).
      *
-     * @param string $type source/dist
+     * @param ?string $type source/dist
      * @phpstan-param 'source'|'dist'|null $type
      *
      * @return void
      */
-    public function setInstallationSource($type);
+    public function setInstallationSource(?string $type);
 
     /**
      * Returns source from which this package was installed (source/dist).
@@ -152,10 +152,10 @@ interface PackageInterface
     public function getSourceMirrors();
 
     /**
-     * @param  ?array<int, array{url: string, preferred: bool}> $mirrors
+     * @param  null|array<int, array{url: string, preferred: bool}> $mirrors
      * @return void
      */
-    public function setSourceMirrors($mirrors);
+    public function setSourceMirrors(?array $mirrors);
 
     /**
      * Returns the type of the distribution archive of this version, e.g. zip, tarball
@@ -200,10 +200,10 @@ interface PackageInterface
     public function getDistMirrors();
 
     /**
-     * @param  ?array<int, array{url: string, preferred: bool}> $mirrors
+     * @param  null|array<int, array{url: string, preferred: bool}> $mirrors
      * @return void
      */
-    public function setDistMirrors($mirrors);
+    public function setDistMirrors(?array $mirrors);
 
     /**
      * Returns the version of this package
@@ -230,12 +230,12 @@ interface PackageInterface
      *
      * @phpstan-param self::DISPLAY_SOURCE_REF_IF_DEV|self::DISPLAY_SOURCE_REF|self::DISPLAY_DIST_REF $displayMode
      */
-    public function getFullPrettyVersion($truncate = true, $displayMode = self::DISPLAY_SOURCE_REF_IF_DEV);
+    public function getFullPrettyVersion(bool $truncate = true, int $displayMode = self::DISPLAY_SOURCE_REF_IF_DEV);
 
     /**
      * Returns the release date of the package
      *
-     * @return ?\DateTime
+     * @return ?\DateTimeInterface
      */
     public function getReleaseDate();
 
@@ -404,39 +404,29 @@ interface PackageInterface
     public function setTransportOptions(array $options);
 
     /**
-     * @param string $reference
-     *
      * @return void
      */
-    public function setSourceReference($reference);
+    public function setSourceReference(?string $reference);
 
     /**
-     * @param string $url
-     *
      * @return void
      */
-    public function setDistUrl($url);
+    public function setDistUrl(?string $url);
 
     /**
-     * @param string $type
-     *
      * @return void
      */
-    public function setDistType($type);
+    public function setDistType(?string $type);
 
     /**
-     * @param string $reference
-     *
      * @return void
      */
-    public function setDistReference($reference);
+    public function setDistReference(?string $reference);
 
     /**
      * Set dist and source references and update dist URL for ones that contain a reference
      *
-     * @param string $reference
-     *
      * @return void
      */
-    public function setSourceDistReferences($reference);
+    public function setSourceDistReferences(string $reference);
 }

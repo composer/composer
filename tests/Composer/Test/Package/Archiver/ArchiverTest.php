@@ -55,7 +55,7 @@ abstract class ArchiverTest extends TestCase
     protected function setupPackage(): CompletePackage
     {
         $package = new CompletePackage('archivertest/archivertest', 'master', 'master');
-        $package->setSourceUrl(realpath($this->testDir));
+        $package->setSourceUrl((string) realpath($this->testDir));
         $package->setSourceReference('master');
         $package->setSourceType('git');
 

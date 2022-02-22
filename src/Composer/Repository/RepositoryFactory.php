@@ -33,7 +33,7 @@ class RepositoryFactory
      * @param  bool        $allowFilesystem
      * @return array|mixed
      */
-    public static function configFromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false)
+    public static function configFromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false)
     {
         if (0 === strpos($repository, 'http')) {
             $repoConfig = array('type' => 'composer', 'url' => $repository);
@@ -64,7 +64,7 @@ class RepositoryFactory
      * @param  bool                $allowFilesystem
      * @return RepositoryInterface
      */
-    public static function fromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false, RepositoryManager $rm = null): RepositoryInterface
+    public static function fromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false, RepositoryManager $rm = null): RepositoryInterface
     {
         $repoConfig = static::configFromString($io, $config, $repository, $allowFilesystem);
 

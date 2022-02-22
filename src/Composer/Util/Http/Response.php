@@ -34,9 +34,9 @@ class Response
      * @param Request  $request
      * @param int      $code
      * @param list<string> $headers
-     * @param ?string  $body
+     * @param null|string  $body
      */
-    public function __construct(array $request, $code, array $headers, $body)
+    public function __construct(array $request, ?int $code, array $headers, ?string $body)
     {
         if (!isset($request['url'])) { // @phpstan-ignore-line
             throw new \LogicException('url key missing from request array');
@@ -84,7 +84,7 @@ class Response
      * @param  string  $name
      * @return ?string
      */
-    public function getHeader($name): ?string
+    public function getHeader(string $name): ?string
     {
         return self::findHeaderValue($this->headers, $name);
     }
@@ -120,7 +120,7 @@ class Response
      * @param  string      $name    header name (case insensitive)
      * @return string|null
      */
-    public static function findHeaderValue(array $headers, $name): ?string
+    public static function findHeaderValue(array $headers, string $name): ?string
     {
         $value = null;
         foreach ($headers as $header) {

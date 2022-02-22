@@ -31,7 +31,7 @@ class Rule2Literals extends Rule
      *
      * @phpstan-param ReasonData $reasonData
      */
-    public function __construct($literal1, $literal2, $reason, $reasonData)
+    public function __construct(int $literal1, int $literal2, $reason, $reasonData)
     {
         parent::__construct($reason, $reasonData);
 

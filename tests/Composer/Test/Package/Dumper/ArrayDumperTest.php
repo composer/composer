@@ -95,7 +95,7 @@ class ArrayDumperTest extends TestCase
      * @param string $method
      * @param mixed  $expectedValue
      */
-    public function testKeys($key, $value, $method = null, $expectedValue = null): void
+    public function testKeys(string $key, $value, string $method = null, $expectedValue = null): void
     {
         $this->package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
 
@@ -248,7 +248,7 @@ class ArrayDumperTest extends TestCase
      * @param string $method
      * @param mixed  $value
      */
-    private function packageExpects($method, $value): \Composer\Test\Package\Dumper\ArrayDumperTest
+    private function packageExpects(string $method, $value): ArrayDumperTest
     {
         $this->package
             ->expects($this->any())

@@ -23,7 +23,7 @@ class ZipArchiverTest extends ArchiverTest
      *
      * @dataProvider provideGitignoreExcludeNegationTestCases
      */
-    public function testGitignoreExcludeNegation($include): void
+    public function testGitignoreExcludeNegation(string $include): void
     {
         $this->testZipArchive(array(
             'docs/README.md' => '# The doc',
@@ -57,7 +57,7 @@ class ZipArchiverTest extends ArchiverTest
             );
 
             if (!Platform::isWindows()) {
-                $files['foo' . getcwd() . '/file.txt'] = null;
+                $files['foo' . Platform::getCwd() . '/file.txt'] = null;
             }
         }
         // Set up repository
@@ -89,7 +89,7 @@ class ZipArchiverTest extends ArchiverTest
      */
     protected function setupDummyRepo(array &$files): void
     {
-        $currentWorkDir = getcwd();
+        $currentWorkDir = Platform::getCwd();
         chdir($this->testDir);
         foreach ($files as $path => $content) {
             if ($files[$path] === null) {
@@ -108,7 +108,7 @@ class ZipArchiverTest extends ArchiverTest
      *
      * @return void
      */
-    protected function writeFile($path, $content, $currentWorkDir): void
+    protected function writeFile(string $path, string $content, string $currentWorkDir): void
     {
         if (!file_exists(dirname($path))) {
             mkdir(dirname($path), 0777, true);

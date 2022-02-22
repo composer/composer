@@ -22,7 +22,7 @@ class Tar
      *
      * @return string|null
      */
-    public static function getComposerJson($pathToArchive): ?string
+    public static function getComposerJson(string $pathToArchive): ?string
     {
         $phar = new \PharData($pathToArchive);
 

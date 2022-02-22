@@ -44,7 +44,7 @@ class Compiler
      *
      * @throws \RuntimeException
      */
-    public function compile($pharFile = 'composer.phar'): void
+    public function compile(string $pharFile = 'composer.phar'): void
     {
         if (file_exists($pharFile)) {
             unlink($pharFile);
@@ -201,7 +201,7 @@ class Compiler
      * @param  \SplFileInfo $file
      * @return string
      */
-    private function getRelativeFilePath($file): string
+    private function getRelativeFilePath(\SplFileInfo $file): string
     {
         $realPath = $file->getRealPath();
         $pathPrefix = dirname(__DIR__, 2).DIRECTORY_SEPARATOR;
@@ -217,7 +217,7 @@ class Compiler
      *
      * @return void
      */
-    private function addFile(\Phar $phar, \SplFileInfo $file, $strip = true): void
+    private function addFile(\Phar $phar, \SplFileInfo $file, bool $strip = true): void
     {
         $path = $this->getRelativeFilePath($file);
         $content = file_get_contents($file);
@@ -258,7 +258,7 @@ class Compiler
      * @param  string $source A PHP string
      * @return string The PHP string with the whitespace removed
      */
-    private function stripWhitespace($source): string
+    private function stripWhitespace(string $source): string
     {
         if (!function_exists('token_get_all')) {
             return $source;

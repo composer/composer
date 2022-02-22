@@ -18,5 +18,5 @@ interface PlatformRequirementFilterInterface
      * @param string $req
      * @return bool
      */
-    public function isIgnored($req): bool;
+    public function isIgnored(string $req): bool;
 }

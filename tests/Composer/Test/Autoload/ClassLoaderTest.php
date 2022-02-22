@@ -27,7 +27,7 @@ class ClassLoaderTest extends TestCase
      *
      * @param string $class The fully-qualified class name to test, without preceding namespace separator.
      */
-    public function testLoadClass($class): void
+    public function testLoadClass(string $class): void
     {
         $loader = new ClassLoader();
         $loader->add('Namespaced\\', __DIR__ . '/Fixtures');

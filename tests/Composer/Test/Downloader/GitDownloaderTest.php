@@ -62,7 +62,7 @@ class GitDownloaderTest extends TestCase
      * @param ?\Composer\Config $config
      * @return \Composer\Config
      */
-    protected function setupConfig($config = null): \Composer\Config
+    protected function setupConfig($config = null): Config
     {
         if (!$config) {
             $config = new Config();
@@ -82,7 +82,7 @@ class GitDownloaderTest extends TestCase
      * @param \Composer\Util\Filesystem $filesystem
      * @return GitDownloader
      */
-    protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null): GitDownloader
+    protected function getDownloaderMock(\Composer\IO\IOInterface $io = null, Config $config = null, \Composer\Test\Mock\ProcessExecutorMock $executor = null, Filesystem $filesystem = null): GitDownloader
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $executor = $executor ?: $this->getProcessExecutorMock();
@@ -238,7 +238,7 @@ class GitDownloaderTest extends TestCase
      * @param string $url
      * @param string $pushUrl
      */
-    public function testDownloadAndSetPushUrlUseCustomVariousProtocolsForGithub($protocols, $url, $pushUrl): void
+    public function testDownloadAndSetPushUrlUseCustomVariousProtocolsForGithub(array $protocols, string $url, string $pushUrl): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -647,11 +647,11 @@ composer https://github.com/old/url (push)
      * @param string $cmd
      * @return string
      */
-    private function winCompat($cmd): string
+    private function winCompat(string $cmd): string
     {
         if (Platform::isWindows()) {
             $cmd = str_replace('cd ', 'cd /D ', $cmd);
-            $cmd = str_replace('composerPath', getcwd().'/composerPath', $cmd);
+            $cmd = str_replace('composerPath', Platform::getCwd().'/composerPath', $cmd);
 
             return $this->getCmd($cmd);
         }

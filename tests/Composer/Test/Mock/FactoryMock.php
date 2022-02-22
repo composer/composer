@@ -14,7 +14,6 @@ namespace Composer\Test\Mock;
 
 use Composer\Installer\InstallationManager;
 use Composer\Package\Loader\RootPackageLoader;
-use Composer\Composer;
 use Composer\Config;
 use Composer\Factory;
 use Composer\PartialComposer;
@@ -22,7 +21,6 @@ use Composer\Repository\RepositoryManager;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\RootPackageInterface;
-use Composer\Installer;
 use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Repository\InstalledArrayRepository;

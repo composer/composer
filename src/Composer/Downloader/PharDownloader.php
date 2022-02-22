@@ -25,7 +25,7 @@ class PharDownloader extends ArchiveDownloader
     /**
      * @inheritDoc
      */
-    protected function extract(PackageInterface $package, $file, $path): ?PromiseInterface
+    protected function extract(PackageInterface $package, string $file, string $path): ?PromiseInterface
     {
         // Can throw an UnexpectedValueException
         $archive = new \Phar($file);

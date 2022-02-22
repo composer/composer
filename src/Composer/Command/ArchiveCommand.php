@@ -25,6 +25,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\Filesystem;
 use Composer\Util\Loop;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -136,7 +137,7 @@ EOT
         $io->writeError('<info>Creating the archive into "'.$dest.'".</info>');
         $packagePath = $archiveManager->archive($package, $format, $dest, $fileName, $ignoreFilters);
         $fs = new Filesystem;
-        $shortPath = $fs->findShortestPath(getcwd(), $packagePath, true);
+        $shortPath = $fs->findShortestPath(Platform::getCwd(), $packagePath, true);
 
         $io->writeError('Created: ', false);
         $io->write(strlen($shortPath) < strlen($packagePath) ? $shortPath : $packagePath);
@@ -150,7 +151,7 @@ EOT
      *
      * @return (BasePackage&CompletePackageInterface)|false
      */
-    protected function selectPackage(IOInterface $io, $packageName, $version = null)
+    protected function selectPackage(IOInterface $io, string $packageName, ?string $version = null)
     {
         $io->writeError('<info>Searching for the specified package.</info>');
 

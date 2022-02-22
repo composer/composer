@@ -87,7 +87,7 @@ class ArrayDumper
             $data['suggest'] = $packages;
         }
 
-        if ($package->getReleaseDate()) {
+        if ($package->getReleaseDate() instanceof \DateTimeInterface) {
             $data['time'] = $package->getReleaseDate()->format(DATE_RFC3339);
         }
 

@@ -24,7 +24,7 @@ use Composer\Util\ProcessExecutor;
  */
 class GzipDownloader extends ArchiveDownloader
 {
-    protected function extract(PackageInterface $package, $file, $path): ?PromiseInterface
+    protected function extract(PackageInterface $package, string $file, string $path): ?PromiseInterface
     {
         $filename = pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_FILENAME);
         $targetFilepath = $path . DIRECTORY_SEPARATOR . $filename;
@@ -60,7 +60,7 @@ class GzipDownloader extends ArchiveDownloader
      *
      * @return void
      */
-    private function extractUsingExt($file, $targetFilepath): void
+    private function extractUsingExt(string $file, string $targetFilepath): void
     {
         $archiveFile = gzopen($file, 'rb');
         $targetFile = fopen($targetFilepath, 'wb');

@@ -16,8 +16,8 @@ $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__.'/tests')
     ->name('*.php')
     ->notPath('Fixtures')
-    ->notPath(__DIR__.'/src/Composer/Autoload/ClassLoader.php')
-    ->notPath(__DIR__.'/src/Composer/InstalledVersions.php')
+    ->notPath('Composer/Autoload/ClassLoader.php')
+    ->notPath('Composer/InstalledVersions.php')
 ;
 
 $config = new PhpCsFixer\Config();
@@ -70,7 +70,11 @@ return $config->setRules([
         'combine_nested_dirname' => true,
         'random_api_migration' => true,
         'ternary_to_null_coalescing' => true,
+        'phpdoc_to_param_type' => true,
         //'declare_strict_types' => true,
+
+        // TODO php 7.4 migration (one day..)
+        // 'phpdoc_to_property_type' => true,
     ])
     ->setUsingCache(true)
     ->setRiskyAllowed(true)

@@ -51,7 +51,7 @@ class PhpFileCleaner
      * @param string[] $types
      * @return void
      */
-    public static function setTypeConfig($types): void
+    public static function setTypeConfig(array $types): void
     {
         foreach ($types as $type) {
             self::$typeConfig[$type[0]] = array(
@@ -68,7 +68,7 @@ class PhpFileCleaner
      * @param string $contents
      * @param int $maxMatches
      */
-    public function __construct($contents, $maxMatches)
+    public function __construct(string $contents, int $maxMatches)
     {
         $this->contents = $contents;
         $this->len = \strlen($this->contents);
@@ -168,7 +168,7 @@ class PhpFileCleaner
      * @param string $delimiter
      * @return void
      */
-    private function skipString($delimiter): void
+    private function skipString(string $delimiter): void
     {
         $this->index += 1;
         while ($this->index < $this->len) {
@@ -217,7 +217,7 @@ class PhpFileCleaner
      * @param string $delimiter
      * @return void
      */
-    private function skipHeredoc($delimiter): void
+    private function skipHeredoc(string $delimiter): void
     {
         $firstDelimiterChar = $delimiter[0];
         $delimiterLength = \strlen($delimiter);
@@ -260,14 +260,14 @@ class PhpFileCleaner
      * @param string $char
      * @return bool
      */
-    private function peek($char): bool
+    private function peek(string $char): bool
     {
         return $this->index + 1 < $this->len && $this->contents[$this->index + 1] === $char;
     }
 
     /**
      * @param non-empty-string $regex
-     * @param ?array<int, string> $match
+     * @param null|array<int, string> $match
      * @return bool
      */
     private function match($regex, array &$match = null): bool

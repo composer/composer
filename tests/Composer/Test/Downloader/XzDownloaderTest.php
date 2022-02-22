@@ -51,33 +51,18 @@ class XzDownloaderTest extends TestCase
 
     public function testErrorMessages(): void
     {
-        $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
-        $packageMock->expects($this->any())
-            ->method('getDistUrl')
-            ->will($this->returnValue($distUrl = 'file://'.__FILE__))
-        ;
-        $packageMock->expects($this->any())
-            ->method('getDistUrls')
-            ->will($this->returnValue(array($distUrl)))
-        ;
-        $packageMock->expects($this->atLeastOnce())
-            ->method('getTransportOptions')
-            ->will($this->returnValue(array()))
-        ;
+        $package = $this->getPackage();
+        $package->setDistUrl($distUrl = 'file://'.__FILE__);
 
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $config = $this->getMockBuilder('Composer\Config')->getMock();
-        $config->expects($this->any())
-            ->method('get')
-            ->with('vendor-dir')
-            ->will($this->returnValue($this->testDir));
-        $downloader = new XzDownloader($io, $config, $httpDownloader = new HttpDownloader($io, $this->getMockBuilder('Composer\Config')->getMock()), null, null, null);
+        $config = $this->getConfig(['vendor-dir' => $this->testDir]);
+        $downloader = new XzDownloader($io, $config, $httpDownloader = new HttpDownloader($io, $config), null, null, null);
 
         try {
             $loop = new Loop($httpDownloader);
-            $promise = $downloader->download($packageMock, $this->testDir.'/install-path');
+            $promise = $downloader->download($package, $this->testDir.'/install-path');
             $loop->wait(array($promise));
-            $downloader->install($packageMock, $this->testDir.'/install-path');
+            $downloader->install($package, $this->testDir.'/install-path');
 
             $this->fail('Download of invalid tarball should throw an exception');
         } catch (\RuntimeException $e) {

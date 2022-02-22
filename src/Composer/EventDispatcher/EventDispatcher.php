@@ -12,7 +12,6 @@
 
 namespace Composer\EventDispatcher;
 
-use Composer\Autoload\AutoloadGenerator;
 use Composer\DependencyResolver\Transaction;
 use Composer\Installer\InstallerEvent;
 use Composer\IO\IOInterface;
@@ -82,7 +81,7 @@ class EventDispatcher
      * @param bool $runScripts
      * @return $this
      */
-    public function setRunScripts($runScripts = true)
+    public function setRunScripts(bool $runScripts = true)
     {
         $this->runScripts = (bool) $runScripts;
 
@@ -97,7 +96,7 @@ class EventDispatcher
      * @return int    return code of the executed script if any, for php scripts a false return
      *                          value is changed to 1, anything else to 0
      */
-    public function dispatch($eventName, Event $event = null)
+    public function dispatch(string $eventName, Event $event = null)
     {
         if (null === $event) {
             $event = new Event($eventName);
@@ -116,7 +115,7 @@ class EventDispatcher
      * @return int                                  return code of the executed script if any, for php scripts a false return
      *                                              value is changed to 1, anything else to 0
      */
-    public function dispatchScript($eventName, $devMode = false, $additionalArgs = array(), $flags = array())
+    public function dispatchScript(string $eventName, bool $devMode = false, array $additionalArgs = array(), array $flags = array())
     {
         assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
 
@@ -135,7 +134,7 @@ class EventDispatcher
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
      */
-    public function dispatchPackageEvent($eventName, $devMode, RepositoryInterface $localRepo, array $operations, OperationInterface $operation)
+    public function dispatchPackageEvent(string $eventName, bool $devMode, RepositoryInterface $localRepo, array $operations, OperationInterface $operation)
     {
         assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
 
@@ -153,7 +152,7 @@ class EventDispatcher
      * @return int return code of the executed script if any, for php scripts a false return
      *             value is changed to 1, anything else to 0
      */
-    public function dispatchInstallerEvent($eventName, $devMode, $executeOperations, Transaction $transaction)
+    public function dispatchInstallerEvent(string $eventName, bool $devMode, bool $executeOperations, Transaction $transaction)
     {
         assert($this->composer instanceof Composer, new \LogicException('This should only be reached with a fully loaded Composer'));
 
@@ -343,7 +342,7 @@ class EventDispatcher
      *
      * @return int
      */
-    protected function executeTty($exec)
+    protected function executeTty(string $exec)
     {
         if ($this->io->isInteractive()) {
             return $this->process->executeTty($exec);
@@ -378,7 +377,7 @@ class EventDispatcher
      *
      * @return mixed
      */
-    protected function executeEventPhpScript($className, $methodName, Event $event)
+    protected function executeEventPhpScript(string $className, string $methodName, Event $event)
     {
         if ($this->io->isVerbose()) {
             $this->io->writeError(sprintf('> %s: %s::%s', $event->getName(), $className, $methodName));
@@ -398,7 +397,7 @@ class EventDispatcher
      *
      * @return void
      */
-    public function addListener($eventName, $listener, $priority = 0)
+    public function addListener(string $eventName, callable $listener, int $priority = 0)
     {
         $this->listeners[$eventName][$priority][] = $listener;
     }
@@ -520,7 +519,7 @@ class EventDispatcher
      * @param  string $callable
      * @return bool
      */
-    protected function isPhpScript($callable)
+    protected function isPhpScript(string $callable)
     {
         return false === strpos($callable, ' ') && false !== strpos($callable, '::');
     }
@@ -531,7 +530,7 @@ class EventDispatcher
      * @param  string $callable
      * @return bool
      */
-    protected function isComposerScript($callable)
+    protected function isComposerScript(string $callable)
     {
         return strpos($callable, '@') === 0 && strpos($callable, '@php ') !== 0 && strpos($callable, '@putenv ') !== 0;
     }

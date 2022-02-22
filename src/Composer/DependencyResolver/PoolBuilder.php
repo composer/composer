@@ -300,7 +300,7 @@ class PoolBuilder
      * @param string $name
      * @return void
      */
-    private function markPackageNameForLoading(Request $request, $name, ConstraintInterface $constraint): void
+    private function markPackageNameForLoading(Request $request, string $name, ConstraintInterface $constraint): void
     {
         // Skip platform requires at this stage
         if (PlatformRepository::isPlatformPackage($name)) {
@@ -396,7 +396,7 @@ class PoolBuilder
      * @param RepositoryInterface[] $repositories
      * @return void
      */
-    private function loadPackage(Request $request, array $repositories, BasePackage $package, $propagateUpdate): void
+    private function loadPackage(Request $request, array $repositories, BasePackage $package, bool $propagateUpdate): void
     {
         $index = $this->indexCounter++;
         $this->packages[$index] = $package;
@@ -501,7 +501,7 @@ class PoolBuilder
      * @param string $name packageName
      * @return bool
      */
-    private function isRootRequire(Request $request, $name): bool
+    private function isRootRequire(Request $request, string $name): bool
     {
         $rootRequires = $request->getRequires();
 
@@ -512,7 +512,7 @@ class PoolBuilder
      * @param  string $name
      * @return string[]
      */
-    private function getSkippedRootRequires(Request $request, $name): array
+    private function getSkippedRootRequires(Request $request, string $name): array
     {
         if (!isset($this->skippedLoad[$name])) {
             return array();
@@ -602,7 +602,7 @@ class PoolBuilder
      * @param string $name
      * @return void
      */
-    private function unlockPackage(Request $request, array $repositories, $name): void
+    private function unlockPackage(Request $request, array $repositories, string $name): void
     {
         foreach ($this->skippedLoad[$name] as $packageOrReplacer) {
             // if we unfixed a replaced package name, we also need to unfix the replacer itself
@@ -668,7 +668,7 @@ class PoolBuilder
      * @param int $index
      * @return void
      */
-    private function removeLoadedPackage(Request $request, array $repositories, BasePackage $package, $index): void
+    private function removeLoadedPackage(Request $request, array $repositories, BasePackage $package, int $index): void
     {
         $repoIndex = array_search($package->getRepository(), $repositories, true);
 

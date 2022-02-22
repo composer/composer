@@ -77,7 +77,7 @@ class ProxyManagerTest extends TestCase
      * @param bool                 $expectedSecure
      * @param string               $expectedMessage
      */
-    public function testGetProxyForRequest($server, $url, $expectedUrl, $expectedOptions, $expectedSecure, $expectedMessage): void
+    public function testGetProxyForRequest(array $server, string $url, string $expectedUrl, array $expectedOptions, bool $expectedSecure, string $expectedMessage): void
     {
         $_SERVER = array_merge($_SERVER, $server);
         $proxyManager = ProxyManager::getInstance();
@@ -136,10 +136,8 @@ class ProxyManagerTest extends TestCase
      * @dataProvider dataStatus
      *
      * @param array<string, mixed> $server
-     * @param bool                 $expectedStatus
-     * @param string               $expectedMessage
      */
-    public function testGetStatus($server, $expectedStatus, $expectedMessage): void
+    public function testGetStatus(array $server, bool $expectedStatus, ?string $expectedMessage): void
     {
         $_SERVER = array_merge($_SERVER, $server);
         $proxyManager = ProxyManager::getInstance();
@@ -148,7 +146,7 @@ class ProxyManagerTest extends TestCase
 
         $this->assertSame($expectedStatus, $status);
 
-        if ($expectedMessage) {
+        if ($expectedMessage !== null) {
             $condition = stripos($message, $expectedMessage) !== false;
         } else {
             $condition = $expectedMessage === $message;

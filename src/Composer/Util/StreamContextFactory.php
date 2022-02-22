@@ -37,7 +37,7 @@ final class StreamContextFactory
      * @throws \RuntimeException if https proxy required and OpenSSL uninstalled
      * @return resource          Default context
      */
-    public static function getContext($url, array $defaultOptions = array(), array $defaultParams = array())
+    public static function getContext(string $url, array $defaultOptions = array(), array $defaultParams = array())
     {
         $options = array('http' => array(
             // specify defaults again to try and work better with curlwrappers enabled
@@ -63,7 +63,7 @@ final class StreamContextFactory
      * @phpstan-return array{http: array{header: string[], proxy?: string, request_fulluri: bool}, ssl?: mixed[]}
      * @return array formatted as a stream context array
      */
-    public static function initOptions($url, array $options, $forCurl = false): array
+    public static function initOptions(string $url, array $options, bool $forCurl = false): array
     {
         // Make sure the headers are in an array form
         if (!isset($options['http']['header'])) {

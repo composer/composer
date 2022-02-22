@@ -21,10 +21,10 @@ class Version
 {
     /**
      * @param  string      $opensslVersion
-     * @param  bool        $isFips
+     * @param  bool        $isFips Set by the method
      * @return string|null
      */
-    public static function parseOpenssl($opensslVersion, &$isFips): ?string
+    public static function parseOpenssl(string $opensslVersion, ?bool &$isFips): ?string
     {
         $isFips = false;
 
@@ -43,7 +43,7 @@ class Version
      * @param  string      $libjpegVersion
      * @return string|null
      */
-    public static function parseLibjpeg($libjpegVersion): ?string
+    public static function parseLibjpeg(string $libjpegVersion): ?string
     {
         if (!Preg::isMatch('/^(?<major>\d+)(?<minor>[a-z]*)$/', $libjpegVersion, $matches)) {
             return null;
@@ -56,7 +56,7 @@ class Version
      * @param  string      $zoneinfoVersion
      * @return string|null
      */
-    public static function parseZoneinfoVersion($zoneinfoVersion): ?string
+    public static function parseZoneinfoVersion(string $zoneinfoVersion): ?string
     {
         if (!Preg::isMatch('/^(?<year>\d{4})(?<revision>[a-z]*)$/', $zoneinfoVersion, $matches)) {
             return null;
@@ -71,7 +71,7 @@ class Version
      * @param  string $alpha
      * @return int
      */
-    private static function convertAlphaVersionToIntVersion($alpha): int
+    private static function convertAlphaVersionToIntVersion(string $alpha): int
     {
         return strlen($alpha) * (-ord('a') + 1) + array_sum(array_map('ord', str_split($alpha)));
     }
@@ -80,7 +80,7 @@ class Version
      * @param  int    $versionId
      * @return string
      */
-    public static function convertLibxpmVersionId($versionId): string
+    public static function convertLibxpmVersionId(int $versionId): string
     {
         return self::convertVersionId($versionId, 100);
     }
@@ -89,7 +89,7 @@ class Version
      * @param  int    $versionId
      * @return string
      */
-    public static function convertOpenldapVersionId($versionId): string
+    public static function convertOpenldapVersionId(int $versionId): string
     {
         return self::convertVersionId($versionId, 100);
     }
@@ -100,7 +100,7 @@ class Version
      *
      * @return string
      */
-    private static function convertVersionId($versionId, $base): string
+    private static function convertVersionId(int $versionId, int $base): string
     {
         return sprintf(
             '%d.%d.%d',

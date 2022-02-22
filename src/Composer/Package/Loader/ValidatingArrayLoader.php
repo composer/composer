@@ -45,7 +45,7 @@ class ValidatingArrayLoader implements LoaderInterface
      * @param true $strictName
      * @param int  $flags
      */
-    public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null, $flags = 0)
+    public function __construct(LoaderInterface $loader, bool $strictName = true, VersionParser $parser = null, int $flags = 0)
     {
         $this->loader = $loader;
         $this->versionParser = $parser ?: new VersionParser();
@@ -450,7 +450,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @return string|null
      */
-    public static function hasPackageNamingError($name, $isLink = false): ?string
+    public static function hasPackageNamingError(string $name, bool $isLink = false): ?string
     {
         if (PlatformRepository::isPlatformPackage($name)) {
             return null;
@@ -494,7 +494,7 @@ class ValidatingArrayLoader implements LoaderInterface
      * @phpstan-param non-empty-string $property
      * @phpstan-param non-empty-string $regex
      */
-    private function validateRegex($property, $regex, $mandatory = false): bool
+    private function validateRegex(string $property, string $regex, bool $mandatory = false): bool
     {
         if (!$this->validateString($property, $mandatory)) {
             return false;
@@ -523,7 +523,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @phpstan-param non-empty-string $property
      */
-    private function validateString($property, $mandatory = false): bool
+    private function validateString(string $property, bool $mandatory = false): bool
     {
         if (isset($this->config[$property]) && !is_string($this->config[$property])) {
             $this->errors[] = $property.' : should be a string, '.gettype($this->config[$property]).' given';
@@ -552,7 +552,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @phpstan-param non-empty-string $property
      */
-    private function validateArray($property, $mandatory = false): bool
+    private function validateArray(string $property, bool $mandatory = false): bool
     {
         if (isset($this->config[$property]) && !is_array($this->config[$property])) {
             $this->errors[] = $property.' : should be an array, '.gettype($this->config[$property]).' given';
@@ -583,7 +583,7 @@ class ValidatingArrayLoader implements LoaderInterface
      * @phpstan-param non-empty-string      $property
      * @phpstan-param non-empty-string|null $regex
      */
-    private function validateFlatArray($property, $regex = null, $mandatory = false): bool
+    private function validateFlatArray(string $property, ?string $regex = null, bool $mandatory = false): bool
     {
         if (!$this->validateArray($property, $mandatory)) {
             return false;
@@ -617,7 +617,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @phpstan-param non-empty-string $property
      */
-    private function validateUrl($property, $mandatory = false): bool
+    private function validateUrl(string $property, bool $mandatory = false): bool
     {
         if (!$this->validateString($property, $mandatory)) {
             return false;

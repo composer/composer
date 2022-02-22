@@ -89,7 +89,7 @@ class AutoloadGenerator
      * @param bool $devMode
      * @return void
      */
-    public function setDevMode($devMode = true)
+    public function setDevMode(bool $devMode = true)
     {
         $this->devMode = (bool) $devMode;
     }
@@ -100,7 +100,7 @@ class AutoloadGenerator
      * @param bool $classMapAuthoritative
      * @return void
      */
-    public function setClassMapAuthoritative($classMapAuthoritative)
+    public function setClassMapAuthoritative(bool $classMapAuthoritative)
     {
         $this->classMapAuthoritative = (bool) $classMapAuthoritative;
     }
@@ -112,7 +112,7 @@ class AutoloadGenerator
      * @param string|null $apcuPrefix
      * @return void
      */
-    public function setApcu($apcu, $apcuPrefix = null)
+    public function setApcu(bool $apcu, ?string $apcuPrefix = null)
     {
         $this->apcu = (bool) $apcu;
         $this->apcuPrefix = $apcuPrefix !== null ? (string) $apcuPrefix : $apcuPrefix;
@@ -124,7 +124,7 @@ class AutoloadGenerator
      * @param bool $runScripts
      * @return void
      */
-    public function setRunScripts($runScripts = true)
+    public function setRunScripts(bool $runScripts = true)
     {
         $this->runScripts = (bool) $runScripts;
     }
@@ -163,7 +163,7 @@ class AutoloadGenerator
      * @return int
      * @throws \Seld\JsonLint\ParsingException
      */
-    public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, $targetDir, $scanPsrPackages = false, $suffix = '')
+    public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, string $targetDir, bool $scanPsrPackages = false, string $suffix = '')
     {
         if ($this->classMapAuthoritative) {
             // Force scanPsrPackages when classmap is authoritative
@@ -200,7 +200,7 @@ class AutoloadGenerator
         // Do not remove double realpath() calls.
         // Fixes failing Windows realpath() implementation.
         // See https://bugs.php.net/bug.php?id=72738
-        $basePath = $filesystem->normalizePath(realpath(realpath(getcwd())));
+        $basePath = $filesystem->normalizePath(realpath(realpath(Platform::getCwd())));
         $vendorPath = $filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))));
         $useGlobalIncludePath = (bool) $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
@@ -433,15 +433,15 @@ EOF;
      * @param string $basePath
      * @param string $vendorPath
      * @param string $dir
-     * @param ?array<int, string> $excluded
-     * @param ?string $namespaceFilter
-     * @param ?string $autoloadType
+     * @param null|array<int, string> $excluded
+     * @param null|string $namespaceFilter
+     * @param null|string $autoloadType
      * @param array<class-string, string> $classMap
      * @param array<class-string, array<int, string>> $ambiguousClasses
      * @param array<string, true> $scannedFiles
      * @return array<class-string, string>
      */
-    private function addClassMapCode(Filesystem $filesystem, $basePath, $vendorPath, $dir, $excluded, $namespaceFilter, $autoloadType, array $classMap, array &$ambiguousClasses, array &$scannedFiles): array
+    private function addClassMapCode(Filesystem $filesystem, string $basePath, string $vendorPath, string $dir, ?array $excluded, ?string $namespaceFilter, ?string $autoloadType, array $classMap, array &$ambiguousClasses, array &$scannedFiles): array
     {
         foreach ($this->generateClassMap($dir, $excluded, $namespaceFilter, $autoloadType, true, $scannedFiles) as $class => $path) {
             $pathCode = $this->getPathCode($filesystem, $basePath, $vendorPath, $path).",\n";
@@ -457,14 +457,14 @@ EOF;
 
     /**
      * @param string $dir
-     * @param ?array<int, string> $excluded
-     * @param ?string $namespaceFilter
-     * @param ?string $autoloadType
+     * @param null|array<int, string> $excluded
+     * @param null|string $namespaceFilter
+     * @param null|string $autoloadType
      * @param bool $showAmbiguousWarning
      * @param array<string, true> $scannedFiles
      * @return array<class-string, string>
      */
-    private function generateClassMap($dir, $excluded, $namespaceFilter, $autoloadType, $showAmbiguousWarning, array &$scannedFiles): array
+    private function generateClassMap(string $dir, ?array $excluded, ?string $namespaceFilter, ?string $autoloadType, bool $showAmbiguousWarning, array &$scannedFiles): array
     {
         if ($excluded) {
             // filter excluded patterns here to only use those matching $dir
@@ -586,10 +586,10 @@ EOF;
      * Registers an autoloader based on an autoload-map returned by parseAutoloads
      *
      * @param array<string, mixed[]> $autoloads see parseAutoloads return value
-     * @param ?string $vendorDir
+     * @param null|string $vendorDir
      * @return ClassLoader
      */
-    public function createLoader(array $autoloads, $vendorDir = null)
+    public function createLoader(array $autoloads, ?string $vendorDir = null)
     {
         $loader = new ClassLoader($vendorDir);
 
@@ -632,7 +632,7 @@ EOF;
      * @param string $appBaseDirCode
      * @return ?string
      */
-    protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)
+    protected function getIncludePathsFile(array $packageMap, Filesystem $filesystem, string $basePath, string $vendorPath, string $vendorPathCode, string $appBaseDirCode)
     {
         $includePaths = array();
 
@@ -680,7 +680,7 @@ EOF;
      * @param string $appBaseDirCode
      * @return ?string
      */
-    protected function getIncludeFilesFile(array $files, Filesystem $filesystem, $basePath, $vendorPath, $vendorPathCode, $appBaseDirCode)
+    protected function getIncludeFilesFile(array $files, Filesystem $filesystem, string $basePath, string $vendorPath, string $vendorPathCode, string $appBaseDirCode)
     {
         $filesCode = '';
         foreach ($files as $fileIdentifier => $functionFile) {
@@ -712,7 +712,7 @@ EOF;
      * @param string $path
      * @return string
      */
-    protected function getPathCode(Filesystem $filesystem, $basePath, $vendorPath, $path)
+    protected function getPathCode(Filesystem $filesystem, string $basePath, string $vendorPath, string $path)
     {
         if (!$filesystem->isAbsolutePath($path)) {
             $path = $basePath . '/' . $path;
@@ -748,7 +748,7 @@ EOF;
      * @param string[] $devPackageNames
      * @return ?string
      */
-    protected function getPlatformCheck(array $packageMap, $checkPlatform, array $devPackageNames)
+    protected function getPlatformCheck(array $packageMap, bool $checkPlatform, array $devPackageNames)
     {
         $lowestPhpVersion = Bound::zero();
         $requiredExtensions = array();
@@ -906,7 +906,7 @@ PLATFORM_CHECK;
      * @param  string $suffix
      * @return string
      */
-    protected function getAutoloadFile($vendorPathToTargetDirCode, $suffix)
+    protected function getAutoloadFile(string $vendorPathToTargetDirCode, string $suffix)
     {
         $lastChar = $vendorPathToTargetDirCode[strlen($vendorPathToTargetDirCode) - 1];
         if ("'" === $lastChar || '"' === $lastChar) {
@@ -930,7 +930,7 @@ AUTOLOAD;
     /**
      * @param bool $useClassMap
      * @param bool $useIncludePath
-     * @param ?string $targetDirLoader
+     * @param null|string $targetDirLoader
      * @param bool $useIncludeFiles
      * @param string $vendorPathCode unused in this method
      * @param string $appBaseDirCode unused in this method
@@ -940,7 +940,7 @@ AUTOLOAD;
      * @param bool $checkPlatform
      * @return string
      */
-    protected function getAutoloadRealFile($useClassMap, $useIncludePath, $targetDirLoader, $useIncludeFiles, $vendorPathCode, $appBaseDirCode, $suffix, $useGlobalIncludePath, $prependAutoloader, $checkPlatform)
+    protected function getAutoloadRealFile(bool $useClassMap, bool $useIncludePath, ?string $targetDirLoader, bool $useIncludeFiles, string $vendorPathCode, string $appBaseDirCode, string $suffix, bool $useGlobalIncludePath, string $prependAutoloader, bool $checkPlatform)
     {
         $file = <<<HEADER
 <?php
@@ -1092,7 +1092,7 @@ FOOTER;
      * @param string $basePath input for findShortestPathCode
      * @return string
      */
-    protected function getStaticFile($suffix, $targetDir, $vendorPath, $basePath)
+    protected function getStaticFile(string $suffix, string $targetDir, string $vendorPath, string $basePath)
     {
         $file = <<<HEADER
 <?php
@@ -1185,7 +1185,7 @@ INITIALIZER;
      * @param string $type one of: 'psr-0'|'psr-4'|'classmap'|'files'
      * @return array<int, string>|array<string, array<string>>|array<string, string>
      */
-    protected function parseAutoloadsType(array $packageMap, $type, RootPackageInterface $rootPackage)
+    protected function parseAutoloadsType(array $packageMap, string $type, RootPackageInterface $rootPackage)
     {
         $autoloads = array();
 
@@ -1240,7 +1240,7 @@ INITIALIZER;
                             $path
                         );
                         if (empty($installPath)) {
-                            $installPath = strtr(getcwd(), '\\', '/');
+                            $installPath = strtr(Platform::getCwd(), '\\', '/');
                         }
 
                         $resolvedPath = realpath($installPath . '/' . $updir);
@@ -1271,7 +1271,7 @@ INITIALIZER;
      * @param string $path
      * @return string
      */
-    protected function getFileIdentifier(PackageInterface $package, $path)
+    protected function getFileIdentifier(PackageInterface $package, string $path)
     {
         return md5($package->getName() . ':' . $path);
     }
@@ -1369,7 +1369,7 @@ INITIALIZER;
  * @param string $file
  * @return void
  */
-function composerRequire($fileIdentifier, $file)
+function composerRequire(string $fileIdentifier, string $file)
 {
     if (empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
         $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;

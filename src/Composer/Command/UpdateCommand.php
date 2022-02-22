@@ -312,7 +312,7 @@ EOT
      * @param string $constraint
      * @return Link
      */
-    private function appendConstraintToLink(Link $link, $constraint): Link
+    private function appendConstraintToLink(Link $link, string $constraint): Link
     {
         $parser = new VersionParser;
         $oldPrettyString = $link->getConstraint()->getPrettyString();

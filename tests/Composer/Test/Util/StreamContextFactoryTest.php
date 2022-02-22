@@ -39,7 +39,7 @@ class StreamContextFactoryTest extends TestCase
      * @param mixed[] $expectedParams
      * @param mixed[] $defaultParams
      */
-    public function testGetContext($expectedOptions, $defaultOptions, $expectedParams, $defaultParams): void
+    public function testGetContext(array $expectedOptions, array $defaultOptions, array $expectedParams, array $defaultParams): void
     {
         $context = StreamContextFactory::getContext('http://example.org', $defaultOptions, $defaultParams);
         $options = stream_context_get_options($context);
@@ -167,7 +167,7 @@ class StreamContextFactoryTest extends TestCase
      * @param string $expected
      * @param string $proxy
      */
-    public function testSSLProxy($expected, $proxy): void
+    public function testSSLProxy(string $expected, string $proxy): void
     {
         $_SERVER['http_proxy'] = $proxy;
 

@@ -127,7 +127,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setDescription($description)
+    public function setDescription(?string $description)
     {
         $this->description = $description;
     }
@@ -143,7 +143,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setHomepage($homepage)
+    public function setHomepage(?string $homepage)
     {
         $this->homepage = $homepage;
     }
@@ -215,7 +215,7 @@ class CompletePackage extends Package implements CompletePackageInterface
     /**
      * @inheritDoc
      */
-    public function setArchiveName($name)
+    public function setArchiveName(?string $name)
     {
         $this->archiveName = $name;
     }

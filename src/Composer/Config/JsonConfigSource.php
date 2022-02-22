@@ -43,7 +43,7 @@ class JsonConfigSource implements ConfigSourceInterface
      * @param JsonFile $file
      * @param bool     $authConfig
      */
-    public function __construct(JsonFile $file, $authConfig = false)
+    public function __construct(JsonFile $file, bool $authConfig = false)
     {
         $this->file = $file;
         $this->authConfig = $authConfig;
@@ -214,7 +214,7 @@ class JsonConfigSource implements ConfigSourceInterface
      *
      * @return void
      */
-    private function manipulateJson($method, $fallback, ...$args): void
+    private function manipulateJson(string $method, callable $fallback, ...$args): void
     {
         if ($this->file->exists()) {
             if (!is_writable($this->file->getPath())) {
@@ -297,7 +297,7 @@ class JsonConfigSource implements ConfigSourceInterface
      * @param  mixed $value
      * @return int
      */
-    private function arrayUnshiftRef(&$array, &$value): int
+    private function arrayUnshiftRef(array &$array, &$value): int
     {
         $return = array_unshift($array, '');
         $array[0] = &$value;

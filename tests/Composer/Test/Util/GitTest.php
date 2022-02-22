@@ -47,7 +47,7 @@ class GitTest extends TestCase
      * @param string $protocol
      * @param string $expectedUrl
      */
-    public function testRunCommandPublicGitHubRepositoryNotInitialClone($protocol, $expectedUrl): void
+    public function testRunCommandPublicGitHubRepositoryNotInitialClone(string $protocol, string $expectedUrl): void
     {
         $commandCallable = function ($url) use ($expectedUrl): string {
             $this->assertSame($expectedUrl, $url);
@@ -99,7 +99,7 @@ class GitTest extends TestCase
      * @param string $expectedUrl
      * @param int    $expectedFailuresBeforeSuccess
      */
-    public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithAuthentication($gitUrl, $protocol, $gitHubToken, $expectedUrl, $expectedFailuresBeforeSuccess): void
+    public function testRunCommandPrivateGitHubRepositoryNotInitialCloneNotInteractiveWithAuthentication(string $gitUrl, string $protocol, string $gitHubToken, string $expectedUrl, int $expectedFailuresBeforeSuccess): void
     {
         $commandCallable = function ($url) use ($expectedUrl): string {
             if ($url !== $expectedUrl) {
@@ -148,7 +148,7 @@ class GitTest extends TestCase
      *
      * @return void
      */
-    private function mockConfig($protocol): void
+    private function mockConfig(string $protocol): void
     {
         $this->config
             ->method('get')

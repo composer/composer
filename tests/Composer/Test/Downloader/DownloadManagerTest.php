@@ -630,13 +630,13 @@ class DownloadManagerTest extends TestCase
 
     /**
      * @dataProvider updatesProvider
-     * @param ?string $prevPkgSource
-     * @param ?bool $prevPkgIsDev
+     * @param null|string $prevPkgSource
+     * @param null|bool $prevPkgIsDev
      * @param string[] $targetAvailable
      * @param bool $targetIsDev
      * @param string[] $expected
      */
-    public function testGetAvailableSourcesUpdateSticksToSameSource($prevPkgSource, $prevPkgIsDev, $targetAvailable, $targetIsDev, $expected): void
+    public function testGetAvailableSourcesUpdateSticksToSameSource(?string $prevPkgSource, ?bool $prevPkgIsDev, array $targetAvailable, bool $targetIsDev, array $expected): void
     {
         $initial = null;
         if ($prevPkgSource) {

@@ -28,7 +28,7 @@ class RootPackageLoaderTest extends TestCase
      *
      * @return RootPackage|RootAliasPackage
      */
-    protected function loadPackage($data): \Composer\Package\PackageInterface
+    protected function loadPackage(array $data): \Composer\Package\PackageInterface
     {
         $manager = $this->getMockBuilder('Composer\\Repository\\RepositoryManager')
             ->disableOriginalConstructor()

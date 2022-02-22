@@ -63,7 +63,7 @@ class SuggestedPackagesReporter
      * @param  string                    $reason Reason the target package to be suggested
      * @return SuggestedPackagesReporter
      */
-    public function addPackage($source, $target, $reason): SuggestedPackagesReporter
+    public function addPackage(string $source, string $target, string $reason): SuggestedPackagesReporter
     {
         $this->suggestedPackages[] = array(
             'source' => $source,
@@ -104,7 +104,7 @@ class SuggestedPackagesReporter
      * @param  PackageInterface|null    $onlyDependentsOf If passed in, only the suggestions from direct dependents of that package, or from the package itself, will be shown
      * @return void
      */
-    public function output($mode, InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null): void
+    public function output(int $mode, InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null): void
     {
         $suggestedPackages = $this->getFilteredSuggestions($installedRepo, $onlyDependentsOf);
 
@@ -220,7 +220,7 @@ class SuggestedPackagesReporter
      * @param  string $string
      * @return string
      */
-    private function escapeOutput($string): string
+    private function escapeOutput(string $string): string
     {
         return OutputFormatter::escape(
             $this->removeControlCharacters($string)
@@ -231,7 +231,7 @@ class SuggestedPackagesReporter
      * @param  string $string
      * @return string
      */
-    private function removeControlCharacters($string): string
+    private function removeControlCharacters(string $string): string
     {
         return Preg::replace(
             '/[[:cntrl:]]/',

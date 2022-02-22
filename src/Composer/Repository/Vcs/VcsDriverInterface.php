@@ -33,7 +33,7 @@ interface VcsDriverInterface
      * @param  string  $identifier Any identifier to a specific branch/tag/commit
      * @return mixed[] containing all infos from the composer.json file
      */
-    public function getComposerInformation($identifier);
+    public function getComposerInformation(string $identifier);
 
     /**
      * Return the content of $file or null if the file does not exist.
@@ -42,7 +42,7 @@ interface VcsDriverInterface
      * @param  string      $identifier
      * @return string|null
      */
-    public function getFileContent($file, $identifier);
+    public function getFileContent(string $file, string $identifier);
 
     /**
      * Get the changedate for $identifier.
@@ -50,7 +50,7 @@ interface VcsDriverInterface
      * @param  string         $identifier
      * @return \DateTime|null
      */
-    public function getChangeDate($identifier);
+    public function getChangeDate(string $identifier);
 
     /**
      * Return the root identifier (trunk, master, default/tip ..)
@@ -78,14 +78,14 @@ interface VcsDriverInterface
      *
      * @return array{type: string, url: string, reference: string, shasum: string}|null
      */
-    public function getDist($identifier);
+    public function getDist(string $identifier);
 
     /**
      * @param string $identifier Any identifier to a specific branch/tag/commit
      *
      * @return array{type: string, url: string, reference: string}
      */
-    public function getSource($identifier);
+    public function getSource(string $identifier);
 
     /**
      * Return the URL of the repository
@@ -101,7 +101,7 @@ interface VcsDriverInterface
      * @param  string $identifier Any identifier to a specific branch/tag/commit
      * @return bool   Whether the repository has a composer file for a given identifier.
      */
-    public function hasComposerFile($identifier);
+    public function hasComposerFile(string $identifier);
 
     /**
      * Performs any cleanup necessary as the driver is not longer needed
@@ -119,5 +119,5 @@ interface VcsDriverInterface
      * @param  bool        $deep   unless true, only shallow checks (url matching typically) should be done
      * @return bool
      */
-    public static function supports(IOInterface $io, Config $config, $url, $deep = false);
+    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false);
 }

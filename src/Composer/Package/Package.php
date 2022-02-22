@@ -54,7 +54,7 @@ class Package extends BasePackage
     protected $version;
     /** @var string */
     protected $prettyVersion;
-    /** @var ?\DateTime */
+    /** @var ?\DateTimeInterface */
     protected $releaseDate;
     /** @var mixed[] */
     protected $extra = array();
@@ -106,7 +106,7 @@ class Package extends BasePackage
      * @param string $version       The package's version
      * @param string $prettyVersion The package's non-normalized version
      */
-    public function __construct($name, $version, $prettyVersion)
+    public function __construct(string $name, string $version, string $prettyVersion)
     {
         parent::__construct($name);
 
@@ -130,7 +130,7 @@ class Package extends BasePackage
      *
      * @return void
      */
-    public function setType($type)
+    public function setType(string $type)
     {
         $this->type = $type;
     }
@@ -152,11 +152,9 @@ class Package extends BasePackage
     }
 
     /**
-     * @param string $targetDir
-     *
      * @return void
      */
-    public function setTargetDir($targetDir)
+    public function setTargetDir(?string $targetDir)
     {
         $this->targetDir = $targetDir;
     }
@@ -214,7 +212,7 @@ class Package extends BasePackage
      *
      * @return void
      */
-    public function setInstallationSource($type)
+    public function setInstallationSource(?string $type)
     {
         $this->installationSource = $type;
     }
@@ -228,11 +226,9 @@ class Package extends BasePackage
     }
 
     /**
-     * @param string $type
-     *
      * @return void
      */
-    public function setSourceType($type)
+    public function setSourceType(?string $type)
     {
         $this->sourceType = $type;
     }
@@ -246,11 +242,9 @@ class Package extends BasePackage
     }
 
     /**
-     * @param string $url
-     *
      * @return void
      */
-    public function setSourceUrl($url)
+    public function setSourceUrl(?string $url)
     {
         $this->sourceUrl = $url;
     }
@@ -264,11 +258,9 @@ class Package extends BasePackage
     }
 
     /**
-     * @param string $reference
-     *
      * @return void
      */
-    public function setSourceReference($reference)
+    public function setSourceReference(?string $reference)
     {
         $this->sourceReference = $reference;
     }
@@ -282,11 +274,9 @@ class Package extends BasePackage
     }
 
     /**
-     * @inheritDoc
-     *
      * @return void
      */
-    public function setSourceMirrors($mirrors)
+    public function setSourceMirrors(?array $mirrors)
     {
         $this->sourceMirrors = $mirrors;
     }
@@ -312,7 +302,7 @@ class Package extends BasePackage
      *
      * @return void
      */
-    public function setDistType($type)
+    public function setDistType(?string $type)
     {
         $this->distType = $type;
     }
@@ -330,7 +320,7 @@ class Package extends BasePackage
      *
      * @return void
      */
-    public function setDistUrl($url)
+    public function setDistUrl(?string $url)
     {
         $this->distUrl = $url;
     }
@@ -348,7 +338,7 @@ class Package extends BasePackage
      *
      * @return void
      */
-    public function setDistReference($reference)
+    public function setDistReference(?string $reference)
     {
         $this->distReference = $reference;
     }
@@ -366,7 +356,7 @@ class Package extends BasePackage
      *
      * @return void
      */
-    public function setDistSha1Checksum($sha1checksum)
+    public function setDistSha1Checksum(?string $sha1checksum)
     {
         $this->distSha1Checksum = $sha1checksum;
     }
@@ -380,11 +370,9 @@ class Package extends BasePackage
     }
 
     /**
-     * @inheritDoc
-     *
      * @return void
      */
-    public function setDistMirrors($mirrors)
+    public function setDistMirrors(?array $mirrors)
     {
         $this->distMirrors = $mirrors;
     }
@@ -438,13 +426,9 @@ class Package extends BasePackage
     }
 
     /**
-     * Set the releaseDate
-     *
-     * @param \DateTime $releaseDate
-     *
      * @return void
      */
-    public function setReleaseDate(\DateTime $releaseDate)
+    public function setReleaseDate(?\DateTimeInterface $releaseDate)
     {
         $this->releaseDate = $releaseDate;
     }
@@ -671,7 +655,7 @@ class Package extends BasePackage
      *
      * @return void
      */
-    public function setNotificationUrl($notificationUrl)
+    public function setNotificationUrl(string $notificationUrl)
     {
         $this->notificationUrl = $notificationUrl;
     }
@@ -689,7 +673,7 @@ class Package extends BasePackage
      *
      * @return void
      */
-    public function setIsDefaultBranch($defaultBranch)
+    public function setIsDefaultBranch(bool $defaultBranch)
     {
         $this->isDefaultBranch = $defaultBranch;
     }
@@ -705,7 +689,7 @@ class Package extends BasePackage
     /**
      * @inheritDoc
      */
-    public function setSourceDistReferences($reference)
+    public function setSourceDistReferences(string $reference)
     {
         $this->setSourceReference($reference);
 
@@ -731,7 +715,7 @@ class Package extends BasePackage
      *
      * @return void
      */
-    public function replaceVersion($version, $prettyVersion)
+    public function replaceVersion(string $version, string $prettyVersion)
     {
         $this->version = $version;
         $this->prettyVersion = $prettyVersion;
@@ -751,7 +735,7 @@ class Package extends BasePackage
      *
      * @phpstan-param list<array{url: string, preferred: bool}>|null $mirrors
      */
-    protected function getUrls($url, $mirrors, $ref, $type, $urlType)
+    protected function getUrls(?string $url, ?array $mirrors, ?string $ref, ?string $type, string $urlType)
     {
         if (!$url) {
             return array();
@@ -788,7 +772,7 @@ class Package extends BasePackage
      * @param  string $source
      * @return array<string, Link>
      */
-    private function convertLinksToMap(array $links, $source): array
+    private function convertLinksToMap(array $links, string $source): array
     {
         trigger_error('Package::'.$source.' must be called with a map of lowercased package name => Link object, got a indexed array, this is deprecated and you should fix your usage.');
         $newLinks = array();

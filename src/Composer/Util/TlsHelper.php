@@ -30,7 +30,7 @@ final class TlsHelper
      *
      * @return bool
      */
-    public static function checkCertificateHost($certificate, $hostname, &$cn = null): bool
+    public static function checkCertificateHost($certificate, string $hostname, string &$cn = null): bool
     {
         $names = self::getCertificateNames($certificate);
 
@@ -136,7 +136,7 @@ final class TlsHelper
      * @param string $certificate
      * @return string
      */
-    public static function getCertificateFingerprint($certificate): string
+    public static function getCertificateFingerprint(string $certificate): string
     {
         $pubkey = openssl_get_publickey($certificate);
         if ($pubkey === false) {
@@ -173,7 +173,7 @@ final class TlsHelper
      *
      * @return callable|null
      */
-    private static function certNameMatcher($certName): ?callable
+    private static function certNameMatcher(string $certName): ?callable
     {
         $wildcards = substr_count($certName, '*');
 

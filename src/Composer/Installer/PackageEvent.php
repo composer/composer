@@ -66,7 +66,7 @@ class PackageEvent extends Event
      * @param OperationInterface[] $operations
      * @param OperationInterface   $operation
      */
-    public function __construct($eventName, Composer $composer, IOInterface $io, $devMode, RepositoryInterface $localRepo, array $operations, OperationInterface $operation)
+    public function __construct(string $eventName, Composer $composer, IOInterface $io, bool $devMode, RepositoryInterface $localRepo, array $operations, OperationInterface $operation)
     {
         parent::__construct($eventName);
 

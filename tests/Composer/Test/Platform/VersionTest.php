@@ -79,7 +79,7 @@ class VersionTest extends TestCase
      * @param bool        $fipsExpected
      * @param string|null $normalizedVersion
      */
-    public function testParseOpensslVersions($input, $parsedVersion, $fipsExpected = false, $normalizedVersion = null): void
+    public function testParseOpensslVersions(string $input, string $parsedVersion, bool $fipsExpected = false, ?string $normalizedVersion = null): void
     {
         self::assertSame($parsedVersion, Version::parseOpenssl($input, $isFips));
         self::assertSame($fipsExpected, $isFips);
@@ -104,7 +104,7 @@ class VersionTest extends TestCase
      * @param string $input
      * @param string $parsedVersion
      */
-    public function testParseLibjpegVersion($input, $parsedVersion): void
+    public function testParseLibjpegVersion(string $input, string $parsedVersion): void
     {
         self::assertSame($parsedVersion, Version::parseLibjpeg($input));
     }
@@ -124,7 +124,7 @@ class VersionTest extends TestCase
      * @param string $input
      * @param string $parsedVersion
      */
-    public function testParseZoneinfoVersion($input, $parsedVersion): void
+    public function testParseZoneinfoVersion(string $input, string $parsedVersion): void
     {
         self::assertSame($parsedVersion, Version::parseZoneinfoVersion($input));
     }

@@ -36,7 +36,7 @@ interface DownloaderInterface
      * @param  string $path download path
      * @return PromiseInterface|null
      */
-    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null);
+    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null);
 
     /**
      * Do anything that needs to be done between all downloads have been completed and the actual operation is executed
@@ -52,7 +52,7 @@ interface DownloaderInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
      */
-    public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null);
+    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null);
 
     /**
      * Installs specific package into specific folder.
@@ -61,7 +61,7 @@ interface DownloaderInterface
      * @param  string                $path    download path
      * @return PromiseInterface|null
      */
-    public function install(PackageInterface $package, $path);
+    public function install(PackageInterface $package, string $path);
 
     /**
      * Updates specific package in specific folder from initial to target version.
@@ -71,7 +71,7 @@ interface DownloaderInterface
      * @param  string                $path    download path
      * @return PromiseInterface|null
      */
-    public function update(PackageInterface $initial, PackageInterface $target, $path);
+    public function update(PackageInterface $initial, PackageInterface $target, string $path);
 
     /**
      * Removes specific package from specific folder.
@@ -80,7 +80,7 @@ interface DownloaderInterface
      * @param  string                $path    download path
      * @return PromiseInterface|null
      */
-    public function remove(PackageInterface $package, $path);
+    public function remove(PackageInterface $package, string $path);
 
     /**
      * Do anything to cleanup changes applied in the prepare or install/update/uninstall steps
@@ -95,5 +95,5 @@ interface DownloaderInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
      */
-    public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null);
+    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null);
 }

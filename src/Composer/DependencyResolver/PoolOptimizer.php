@@ -322,7 +322,7 @@ class PoolOptimizer
      * @param int $id
      * @return void
      */
-    private function markPackageForRemoval($id): void
+    private function markPackageForRemoval(int $id): void
     {
         // We are not allowed to remove packages if they have been marked as irremovable
         if (isset($this->irremovablePackages[$id])) {
@@ -337,7 +337,7 @@ class PoolOptimizer
      * @param array<int, array<string, array{groupHash: string, dependencyHash: string}>> $packageIdenticalDefinitionLookup
      * @return void
      */
-    private function keepPackage(BasePackage $package, $identicalDefinitionsPerPackage, $packageIdenticalDefinitionLookup): void
+    private function keepPackage(BasePackage $package, array $identicalDefinitionsPerPackage, array $packageIdenticalDefinitionLookup): void
     {
         unset($this->packagesToRemove[$package->id]);
 

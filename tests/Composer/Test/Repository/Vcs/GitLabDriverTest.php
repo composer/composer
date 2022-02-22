@@ -92,7 +92,7 @@ class GitLabDriverTest extends TestCase
      * @param string $url
      * @param string $apiUrl
      */
-    public function testInitialize($url, $apiUrl): \Composer\Repository\Vcs\GitLabDriver
+    public function testInitialize(string $url, string $apiUrl): GitLabDriver
     {
         // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
         $projectData = <<<JSON
@@ -135,7 +135,7 @@ JSON;
      * @param string $url
      * @param string $apiUrl
      */
-    public function testInitializePublicProject($url, $apiUrl): \Composer\Repository\Vcs\GitLabDriver
+    public function testInitializePublicProject(string $url, string $apiUrl): GitLabDriver
     {
         // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
         $projectData = <<<JSON
@@ -176,7 +176,7 @@ JSON;
      * @param string $url
      * @param string $apiUrl
      */
-    public function testInitializePublicProjectAsAnonymous($url, $apiUrl): \Composer\Repository\Vcs\GitLabDriver
+    public function testInitializePublicProjectAsAnonymous(string $url, string $apiUrl): GitLabDriver
     {
         // @link http://doc.gitlab.com/ce/api/projects.html#get-single-project
         $projectData = <<<JSON
@@ -444,7 +444,7 @@ JSON;
      * @param string $url
      * @param bool   $expected
      */
-    public function testSupports($url, $expected): void
+    public function testSupports(string $url, bool $expected): void
     {
         $this->assertSame($expected, GitLabDriver::supports($this->io, $this->config, $url));
     }

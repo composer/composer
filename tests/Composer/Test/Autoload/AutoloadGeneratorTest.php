@@ -122,7 +122,7 @@ class AutoloadGeneratorTest extends TestCase
                 return $ret;
             }));
 
-        $this->origDir = getcwd();
+        $this->origDir = Platform::getCwd();
         chdir($this->workingDir);
 
         $this->im = $this->getMockBuilder('Composer\Installer\InstallationManager')
@@ -1705,11 +1705,11 @@ EOF;
      * @param string|null          $expectedFixture
      * @param array<string, Link>  $provides
      * @param array<string, Link>  $replaces
-     * @param bool                 $ignorePlatformReqs
+     * @param bool|array<string>   $ignorePlatformReqs
      *
      * @dataProvider platformCheckProvider
      */
-    public function testGeneratesPlatformCheck(array $requires, $expectedFixture, array $provides = array(), array $replaces = array(), $ignorePlatformReqs = false): void
+    public function testGeneratesPlatformCheck(array $requires, ?string $expectedFixture, array $provides = array(), array $replaces = array(), $ignorePlatformReqs = false): void
     {
         $package = new RootPackage('root/a', '1.0', '1.0');
         $package->setRequires($requires);
@@ -1850,7 +1850,7 @@ EOF;
      *
      * @return void
      */
-    private function assertAutoloadFiles($name, $dir, $type = 'namespaces'): void
+    private function assertAutoloadFiles(string $name, string $dir, string $type = 'namespaces'): void
     {
         $a = __DIR__.'/Fixtures/autoload_'.$name.'.php';
         $b = $dir.'/autoload_'.$type.'.php';

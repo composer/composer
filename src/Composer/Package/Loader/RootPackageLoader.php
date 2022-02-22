@@ -69,7 +69,7 @@ class RootPackageLoader extends ArrayLoader
      *
      * @phpstan-param class-string<PackageClass> $class
      */
-    public function load(array $config, $class = 'Composer\Package\RootPackage', $cwd = null)
+    public function load(array $config, $class = 'Composer\Package\RootPackage', ?string $cwd = null)
     {
         if ($class !== 'Composer\Package\RootPackage') {
             trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
@@ -88,7 +88,7 @@ class RootPackageLoader extends ArrayLoader
             if (Platform::getEnv('COMPOSER_ROOT_VERSION')) {
                 $config['version'] = Platform::getEnv('COMPOSER_ROOT_VERSION');
             } else {
-                $versionData = $this->versionGuesser->guessVersion($config, $cwd ?: getcwd());
+                $versionData = $this->versionGuesser->guessVersion($config, $cwd ?? Platform::getCwd(true));
                 if ($versionData) {
                     $config['version'] = $versionData['pretty_version'];
                     $config['version_normalized'] = $versionData['version'];
@@ -224,7 +224,7 @@ class RootPackageLoader extends ArrayLoader
      * @phpstan-param array<string, BasePackage::STABILITY_*> $stabilityFlags
      * @phpstan-return array<string, BasePackage::STABILITY_*>
      */
-    public static function extractStabilityFlags(array $requires, $minimumStability, array $stabilityFlags): array
+    public static function extractStabilityFlags(array $requires, string $minimumStability, array $stabilityFlags): array
     {
         $stabilities = BasePackage::$stabilities;
         /** @var int $minimumStability */

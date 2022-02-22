@@ -93,7 +93,7 @@ class RepositorySet
      * @param ConstraintInterface[] $rootRequires an array of package name => constraint from the root package
      * @phpstan-param array<string, ConstraintInterface> $rootRequires
      */
-    public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
+    public function __construct(string $minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
     {
         $this->rootAliases = self::getRootAliasesPerPackage($rootAliases);
         $this->rootReferences = $rootReferences;
@@ -118,7 +118,7 @@ class RepositorySet
      *
      * @return void
      */
-    public function allowInstalledRepositories($allow = true): void
+    public function allowInstalledRepositories(bool $allow = true): void
     {
         $this->allowInstalledRepositories = $allow;
     }
@@ -169,7 +169,7 @@ class RepositorySet
      * @param  int                      $flags      any of the ALLOW_* constants from this class to tweak what is returned
      * @return BasePackage[]
      */
-    public function findPackages($name, ConstraintInterface $constraint = null, $flags = 0): array
+    public function findPackages(string $name, ConstraintInterface $constraint = null, int $flags = 0): array
     {
         $ignoreStability = ($flags & self::ALLOW_UNACCEPTABLE_STABILITIES) !== 0;
         $loadFromAllRepos = ($flags & self::ALLOW_SHADOWED_REPOSITORIES) !== 0;
@@ -216,7 +216,7 @@ class RepositorySet
      * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...')
      * @phpstan-return array<string, array{name: string, description: string, type: string}>
      */
-    public function getProviders($packageName): array
+    public function getProviders(string $packageName): array
     {
         $providers = array();
         foreach ($this->repositories as $repository) {
@@ -235,7 +235,7 @@ class RepositorySet
      * @param  string   $stability one of 'stable', 'RC', 'beta', 'alpha' or 'dev'
      * @return bool
      */
-    public function isPackageAcceptable($names, $stability): bool
+    public function isPackageAcceptable(array $names, string $stability): bool
     {
         return StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $names, $stability);
     }
@@ -304,7 +304,7 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPoolForPackage($packageName, LockArrayRepository $lockedRepo = null): Pool
+    public function createPoolForPackage(string $packageName, LockArrayRepository $lockedRepo = null): Pool
     {
         // TODO unify this with above in some simpler version without "request"?
         return $this->createPoolForPackages(array($packageName), $lockedRepo);
@@ -315,7 +315,7 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPoolForPackages($packageNames, LockArrayRepository $lockedRepo = null): Pool
+    public function createPoolForPackages(array $packageNames, LockArrayRepository $lockedRepo = null): Pool
     {
         $request = new Request($lockedRepo);
 

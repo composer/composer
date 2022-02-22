@@ -111,7 +111,7 @@ class BitbucketTest extends TestCase
         );
     }
 
-    public function testRequestAccessTokenWithValidOAuthConsumerAndValidStoredAccessToken(): \Composer\Util\Bitbucket
+    public function testRequestAccessTokenWithValidOAuthConsumerAndValidStoredAccessToken(): Bitbucket
     {
         $this->config->expects($this->once())
             ->method('get')
@@ -411,7 +411,7 @@ class BitbucketTest extends TestCase
      *
      * @return void
      */
-    private function setExpectationsForStoringAccessToken($removeBasicAuth = false): void
+    private function setExpectationsForStoringAccessToken(bool $removeBasicAuth = false): void
     {
         $configSourceMock = $this->getMockBuilder('Composer\Config\ConfigSourceInterface')->getMock();
         $this->config->expects($this->once())

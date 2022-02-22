@@ -27,12 +27,38 @@ class Platform
     private static $isWindowsSubsystemForLinux = null;
 
     /**
+     * getcwd() equivalent which always returns a string
+     *
+     * @throws \RuntimeException
+     */
+    public static function getCwd(bool $allowEmpty = false): string
+    {
+        $cwd = getcwd();
+
+        // fallback to realpath('') just in case this works but odds are it would break as well if we are in a case where getcwd fails
+        if (false === $cwd) {
+            $cwd = realpath('');
+        }
+
+        // crappy state, assume '' and hopefully relative paths allow things to continue
+        if (false === $cwd) {
+            if ($allowEmpty) {
+                return '';
+            }
+
+            throw new \RuntimeException('Could not determine the current working directory');
+        }
+
+        return $cwd;
+    }
+
+    /**
      * getenv() equivalent but reads from the runtime global variables first
      *
      * @param  string $name
      * @return string|false
      */
-    public static function getEnv($name)
+    public static function getEnv(string $name)
     {
         if (array_key_exists($name, $_SERVER)) {
             return (string) $_SERVER[$name];
@@ -51,7 +77,7 @@ class Platform
      * @param  string $value
      * @return void
      */
-    public static function putEnv($name, $value): void
+    public static function putEnv(string $name, string $value): void
     {
         $value = (string) $value;
         putenv($name . '=' . $value);
@@ -64,7 +90,7 @@ class Platform
      * @param  string $name
      * @return void
      */
-    public static function clearEnv($name): void
+    public static function clearEnv(string $name): void
     {
         putenv($name);
         unset($_SERVER[$name], $_ENV[$name]);
@@ -76,7 +102,7 @@ class Platform
      * @param  string $path
      * @return string
      */
-    public static function expandPath($path): string
+    public static function expandPath(string $path): string
     {
         if (Preg::isMatch('#^~[\\/]#', $path)) {
             return self::getUserDirectory() . substr($path, 1);
@@ -153,7 +179,7 @@ class Platform
      * @param  string $str
      * @return int    return a guaranteed binary length of the string, regardless of silly mbstring configs
      */
-    public static function strlen($str): int
+    public static function strlen(string $str): int
     {
         static $useMbString = null;
         if (null === $useMbString) {

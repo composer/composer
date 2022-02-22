@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Composer\Util\Platform;
 use Symfony\Component\Finder\Finder;
 use React\Promise\PromiseInterface;
 use Composer\DependencyResolver\Operation\InstallOperation;
@@ -34,7 +35,7 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * @return PromiseInterface|null
      */
-    public function prepare($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null)
     {
         unset($this->cleanupExecuted[$package->getName()]);
 
@@ -44,7 +45,7 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * @return PromiseInterface|null
      */
-    public function cleanup($type, PackageInterface $package, $path, PackageInterface $prevPackage = null)
+    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null)
     {
         $this->cleanupExecuted[$package->getName()] = true;
 
@@ -61,7 +62,7 @@ abstract class ArchiveDownloader extends FileDownloader
      * @throws \RuntimeException
      * @throws \UnexpectedValueException
      */
-    public function install(PackageInterface $package, $path, $output = true)
+    public function install(PackageInterface $package, string $path, bool $output = true)
     {
         if ($output) {
             $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));
@@ -83,7 +84,7 @@ abstract class ArchiveDownloader extends FileDownloader
         $this->addCleanupPath($package, $temporaryDir);
         // avoid cleaning up $path if installing in "." for eg create-project as we can not
         // delete the directory we are currently in on windows
-        if (!is_dir($path) || realpath($path) !== getcwd()) {
+        if (!is_dir($path) || realpath($path) !== Platform::getCwd()) {
             $this->addCleanupPath($package, $path);
         }
 
@@ -98,7 +99,7 @@ abstract class ArchiveDownloader extends FileDownloader
 
             // clean up
             $filesystem->removeDirectory($temporaryDir);
-            if (is_dir($path) && realpath($path) !== getcwd()) {
+            if (is_dir($path) && realpath($path) !== Platform::getCwd()) {
                 $filesystem->removeDirectory($path);
             }
             $this->removeCleanupPath($package, $temporaryDir);
@@ -214,7 +215,7 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * @inheritDoc
      */
-    protected function getInstallOperationAppendix(PackageInterface $package, $path)
+    protected function getInstallOperationAppendix(PackageInterface $package, string $path)
     {
         return ': Extracting archive';
     }
@@ -228,5 +229,5 @@ abstract class ArchiveDownloader extends FileDownloader
      * @throws \UnexpectedValueException If can not extract downloaded file to path
      * @return PromiseInterface|null
      */
-    abstract protected function extract(PackageInterface $package, $file, $path);
+    abstract protected function extract(PackageInterface $package, string $file, string $path);
 }

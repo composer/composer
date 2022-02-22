@@ -50,7 +50,7 @@ class BaseDependencyCommand extends BaseCommand
      * @param  bool            $inverted Whether to invert matching process (why-not vs why behaviour)
      * @return int             Exit code of the operation.
      */
-    protected function doExecute(InputInterface $input, OutputInterface $output, $inverted = false): int
+    protected function doExecute(InputInterface $input, OutputInterface $output, bool $inverted = false): int
     {
         // Emit command event on startup
         $composer = $this->requireComposer();
@@ -197,7 +197,7 @@ class BaseDependencyCommand extends BaseCommand
      *
      * @return void
      */
-    protected function printTree($results, $prefix = '', $level = 1): void
+    protected function printTree(array $results, string $prefix = '', int $level = 1): void
     {
         $count = count($results);
         $idx = 0;
@@ -223,7 +223,7 @@ class BaseDependencyCommand extends BaseCommand
      *
      * @return void
      */
-    private function writeTreeLine($line): void
+    private function writeTreeLine(string $line): void
     {
         $io = $this->getIO();
         if (!$io->isDecorated()) {

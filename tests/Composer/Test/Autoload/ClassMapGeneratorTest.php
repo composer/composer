@@ -30,7 +30,7 @@ class ClassMapGeneratorTest extends TestCase
      * @param string $directory
      * @param array<string, string> $expected
      */
-    public function testCreateMap($directory, $expected): void
+    public function testCreateMap(string $directory, array $expected): void
     {
         $this->assertEqualsNormalized($expected, ClassMapGenerator::createMap($directory));
     }
@@ -274,7 +274,7 @@ class ClassMapGeneratorTest extends TestCase
      * @param string $message
      * @return  void
      */
-    protected function assertEqualsNormalized($expected, $actual, $message = ''): void
+    protected function assertEqualsNormalized(array $expected, array $actual, string $message = ''): void
     {
         foreach ($expected as $ns => $path) {
             $expected[$ns] = strtr($path, '\\', '/');

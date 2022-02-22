@@ -27,7 +27,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
      * @param string          $version       The version the alias must report
      * @param string          $prettyVersion The alias's non-normalized version
      */
-    public function __construct(CompletePackage $aliasOf, $version, $prettyVersion)
+    public function __construct(CompletePackage $aliasOf, string $version, string $prettyVersion)
     {
         parent::__construct($aliasOf, $version, $prettyVersion);
     }
@@ -85,7 +85,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getDescription();
     }
 
-    public function setDescription($description): void
+    public function setDescription(?string $description): void
     {
         $this->aliasOf->setDescription($description);
     }
@@ -95,7 +95,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getHomepage();
     }
 
-    public function setHomepage($homepage): void
+    public function setHomepage(?string $homepage): void
     {
         $this->aliasOf->setHomepage($homepage);
     }
@@ -150,7 +150,7 @@ class CompleteAliasPackage extends AliasPackage implements CompletePackageInterf
         return $this->aliasOf->getArchiveName();
     }
 
-    public function setArchiveName($name): void
+    public function setArchiveName(?string $name): void
     {
         $this->aliasOf->setArchiveName($name);
     }

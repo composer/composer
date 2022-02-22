@@ -29,7 +29,7 @@ class JsonConfigSourceTest extends TestCase
      *
      * @return string
      */
-    protected function fixturePath($name): string
+    protected function fixturePath(string $name): string
     {
         return __DIR__.'/Fixtures/'.$name;
     }
@@ -117,7 +117,7 @@ class JsonConfigSourceTest extends TestCase
      *
      * @dataProvider provideAddLinkData
      */
-    public function testAddLink($sourceFile, $type, $name, $value, $compareAgainst): void
+    public function testAddLink(string $sourceFile, string $type, string $name, string $value, string $compareAgainst): void
     {
         $composerJson = $this->workingDir.'/composer.json';
         copy($sourceFile, $composerJson);
@@ -138,7 +138,7 @@ class JsonConfigSourceTest extends TestCase
      *
      * @dataProvider provideRemoveLinkData
      */
-    public function testRemoveLink($sourceFile, $type, $name, $compareAgainst): void
+    public function testRemoveLink(string $sourceFile, string $type, string $name, string $compareAgainst): void
     {
         $composerJson = $this->workingDir.'/composer.json';
         copy($sourceFile, $composerJson);
@@ -160,7 +160,7 @@ class JsonConfigSourceTest extends TestCase
      *
      * @phpstan-return array{string, string, string, string, string}
      */
-    protected function addLinkDataArguments($type, $name, $value, $fixtureBasename, $before): array
+    protected function addLinkDataArguments(string $type, string $name, string $value, string $fixtureBasename, string $before): array
     {
         return array(
             $before,
@@ -217,7 +217,7 @@ class JsonConfigSourceTest extends TestCase
      *
      * @phpstan-return array{string, string, string, string}
      */
-    protected function removeLinkDataArguments($type, $name, $fixtureBasename, $after = null): array
+    protected function removeLinkDataArguments(string $type, string $name, string $fixtureBasename, ?string $after = null): array
     {
         return array(
             $this->fixturePath('removeLink/'.$fixtureBasename.'.json'),

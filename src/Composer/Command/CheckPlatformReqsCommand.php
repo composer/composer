@@ -174,7 +174,7 @@ EOT
      *
      * @return void
      */
-    protected function printTable(OutputInterface $output, $results): void
+    protected function printTable(OutputInterface $output, array $results): void
     {
         $rows = array();
         foreach ($results as $result) {

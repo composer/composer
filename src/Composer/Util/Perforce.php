@@ -66,7 +66,7 @@ class Perforce
      * @param bool               $isWindows
      * @param IOInterface        $io
      */
-    public function __construct($repoConfig, $port, $path, ProcessExecutor $process, $isWindows, IOInterface $io)
+    public function __construct($repoConfig, string $port, string $path, ProcessExecutor $process, bool $isWindows, IOInterface $io)
     {
         $this->windowsFlag = $isWindows;
         $this->p4Port = $port;
@@ -85,7 +85,7 @@ class Perforce
      *
      * @return self
      */
-    public static function create($repoConfig, $port, $path, ProcessExecutor $process, IOInterface $io)
+    public static function create($repoConfig, string $port, string $path, ProcessExecutor $process, IOInterface $io)
     {
         return new Perforce($repoConfig, $port, $path, $process, Platform::isWindows(), $io);
     }
@@ -96,7 +96,7 @@ class Perforce
      *
      * @return bool
      */
-    public static function checkServerExists($url, ProcessExecutor $processExecutor)
+    public static function checkServerExists(string $url, ProcessExecutor $processExecutor)
     {
         return 0 === $processExecutor->execute('p4 -p ' . ProcessExecutor::escape($url) . ' info -s', $ignoredOutput);
     }
@@ -138,7 +138,7 @@ class Perforce
      *
      * @return void
      */
-    public function initializeDepotAndBranch($depot, $branch)
+    public function initializeDepotAndBranch(?string $depot, ?string $branch)
     {
         if (isset($depot)) {
             $this->p4Depot = $depot;
@@ -209,7 +209,7 @@ class Perforce
      *
      * @return void
      */
-    public function initializePath($path)
+    public function initializePath(string $path)
     {
         $this->path = $path;
         $fs = $this->getFilesystem();
@@ -229,7 +229,7 @@ class Perforce
      *
      * @return void
      */
-    public function setStream($stream)
+    public function setStream(string $stream)
     {
         $this->p4Stream = $stream;
         $index = strrpos($stream, '/');
@@ -268,7 +268,7 @@ class Perforce
      *
      * @return string
      */
-    public function getStreamWithoutLabel($stream)
+    public function getStreamWithoutLabel(string $stream)
     {
         $index = strpos($stream, '@');
         if ($index === false) {
@@ -299,7 +299,7 @@ class Perforce
      *
      * @return void
      */
-    public function setUser($user)
+    public function setUser(?string $user)
     {
         $this->p4User = $user;
     }
@@ -330,7 +330,7 @@ class Perforce
      * @param  string  $name
      * @return ?string
      */
-    protected function getP4variable($name)
+    protected function getP4variable(string $name)
     {
         if ($this->windowsFlag) {
             $command = 'p4 set';
@@ -385,7 +385,7 @@ class Perforce
      *
      * @return non-empty-string
      */
-    public function generateP4Command($command, $useClient = true)
+    public function generateP4Command(string $command, bool $useClient = true)
     {
         $p4Command = 'p4 ';
         $p4Command .= '-u ' . $this->getUser() . ' ';
@@ -436,9 +436,9 @@ class Perforce
      *
      * @return void
      */
-    public function syncCodeBase($sourceReference)
+    public function syncCodeBase(?string $sourceReference)
     {
-        $prevDir = getcwd();
+        $prevDir = Platform::getCwd();
         chdir($this->path);
         $p4SyncCommand = $this->generateP4Command('sync -f ');
         if (null !== $sourceReference) {
@@ -514,7 +514,7 @@ class Perforce
      *
      * @return int
      */
-    public function windowsLogin($password)
+    public function windowsLogin(?string $password)
     {
         $command = $this->generateP4Command(' login -a');
 
@@ -548,7 +548,7 @@ class Perforce
      *
      * @return mixed|void
      */
-    public function getComposerInformation($identifier)
+    public function getComposerInformation(string $identifier)
     {
         $composerFileContent = $this->getFileContent('composer.json', $identifier);
 
@@ -565,7 +565,7 @@ class Perforce
      *
      * @return string|null
      */
-    public function getFileContent($file, $identifier)
+    public function getFileContent(string $file, string $identifier)
     {
         $path = $this->getFilePath($file, $identifier);
 
@@ -586,7 +586,7 @@ class Perforce
      *
      * @return string|null
      */
-    public function getFilePath($file, $identifier)
+    public function getFilePath(string $file, string $identifier)
     {
         $index = strpos($identifier, '@');
         if ($index === false) {
@@ -690,7 +690,7 @@ class Perforce
      * @param  string     $reference
      * @return mixed|null
      */
-    protected function getChangeList($reference)
+    protected function getChangeList(string $reference)
     {
         $index = strpos($reference, '@');
         if ($index === false) {
@@ -713,7 +713,7 @@ class Perforce
      * @param  string     $toReference
      * @return mixed|null
      */
-    public function getCommitLogs($fromReference, $toReference)
+    public function getCommitLogs(string $fromReference, string $toReference)
     {
         $fromChangeList = $this->getChangeList($fromReference);
         if ($fromChangeList === null) {

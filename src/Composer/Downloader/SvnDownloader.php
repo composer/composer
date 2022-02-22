@@ -31,7 +31,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
+    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null)
     {
         SvnUtil::cleanEnv();
         $util = new SvnUtil($url, $this->io, $this->config, $this->process);
@@ -45,7 +45,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doInstall(PackageInterface $package, $path, $url)
+    protected function doInstall(PackageInterface $package, string $path, string $url)
     {
         SvnUtil::cleanEnv();
         $ref = $package->getSourceReference();
@@ -67,7 +67,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
+    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url)
     {
         SvnUtil::cleanEnv();
         $ref = $target->getSourceReference();
@@ -91,7 +91,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    public function getLocalChanges(PackageInterface $package, $path)
+    public function getLocalChanges(PackageInterface $package, string $path)
     {
         if (!$this->hasMetadataRepository($path)) {
             return null;
@@ -114,7 +114,7 @@ class SvnDownloader extends VcsDownloader
      * @throws \RuntimeException
      * @return string
      */
-    protected function execute(PackageInterface $package, $baseUrl, $command, $url, $cwd = null, $path = null)
+    protected function execute(PackageInterface $package, string $baseUrl, string $command, string $url, string $cwd = null, string $path = null)
     {
         $util = new SvnUtil($baseUrl, $this->io, $this->config, $this->process);
         $util->setCacheCredentials($this->cacheCredentials);
@@ -130,7 +130,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function cleanChanges(PackageInterface $package, $path, $update)
+    protected function cleanChanges(PackageInterface $package, string $path, bool $update)
     {
         if (!$changes = $this->getLocalChanges($package, $path)) {
             return \React\Promise\resolve();
@@ -191,7 +191,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function getCommitLogs($fromReference, $toReference, $path)
+    protected function getCommitLogs(string $fromReference, string $toReference, string $path)
     {
         if (Preg::isMatch('{@(\d+)$}', $fromReference) && Preg::isMatch('{@(\d+)$}', $toReference)) {
             // retrieve the svn base url from the checkout folder
@@ -236,7 +236,7 @@ class SvnDownloader extends VcsDownloader
      *
      * @return PromiseInterface
      */
-    protected function discardChanges($path)
+    protected function discardChanges(string $path)
     {
         if (0 !== $this->process->execute('svn revert -R .', $output, $path)) {
             throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
@@ -248,7 +248,7 @@ class SvnDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function hasMetadataRepository($path)
+    protected function hasMetadataRepository(string $path)
     {
         return is_dir($path.'/.svn');
     }

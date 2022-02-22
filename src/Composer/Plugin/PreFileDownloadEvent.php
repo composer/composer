@@ -61,7 +61,7 @@ class PreFileDownloadEvent extends Event
      * @param string         $type
      * @param mixed          $context
      */
-    public function __construct($name, HttpDownloader $httpDownloader, $processedUrl, $type, $context = null)
+    public function __construct(string $name, HttpDownloader $httpDownloader, string $processedUrl, string $type, $context = null)
     {
         parent::__construct($name);
         $this->httpDownloader = $httpDownloader;
@@ -95,7 +95,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return void
      */
-    public function setProcessedUrl($processedUrl): void
+    public function setProcessedUrl(string $processedUrl): void
     {
         $this->processedUrl = $processedUrl;
     }
@@ -117,7 +117,7 @@ class PreFileDownloadEvent extends Event
      *
      * @return void
      */
-    public function setCustomCacheKey($customCacheKey): void
+    public function setCustomCacheKey(?string $customCacheKey): void
     {
         $this->customCacheKey = $customCacheKey;
     }

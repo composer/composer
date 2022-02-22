@@ -100,7 +100,7 @@ class SvnDriverTest extends TestCase
      * @param string $url
      * @param bool   $assertion
      */
-    public function testSupport($url, $assertion): void
+    public function testSupport(string $url, bool $assertion): void
     {
         $config = new Config();
         $result = SvnDriver::supports($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $config, $url);

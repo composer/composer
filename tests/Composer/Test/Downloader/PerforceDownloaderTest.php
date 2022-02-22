@@ -53,16 +53,9 @@ class PerforceDownloaderTest extends TestCase
         $this->downloader = new PerforceDownloader($this->io, $this->config, $this->processExecutor);
     }
 
-    /**
-     * @return \Composer\Config
-     */
-    protected function getConfig(): \Composer\Config
+    protected function getConfig(array $configOptions = [], bool $useEnvironment = false): Config
     {
-        $config = new Config();
-        $settings = array('config' => array('home' => $this->testPath));
-        $config->merge($settings);
-
-        return $config;
+        return parent::getConfig(array_merge(['home' => $this->testPath], $configOptions), $useEnvironment);
     }
 
     /**

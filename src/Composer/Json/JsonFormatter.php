@@ -38,7 +38,7 @@ class JsonFormatter
      * @param  bool   $unescapeSlashes Un escape slashes
      * @return string
      */
-    public static function format($json, $unescapeUnicode, $unescapeSlashes): string
+    public static function format(string $json, bool $unescapeUnicode, bool $unescapeSlashes): string
     {
         $result = '';
         $pos = 0;

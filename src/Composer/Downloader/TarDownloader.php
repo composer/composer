@@ -24,7 +24,7 @@ class TarDownloader extends ArchiveDownloader
     /**
      * @inheritDoc
      */
-    protected function extract(PackageInterface $package, $file, $path)
+    protected function extract(PackageInterface $package, string $file, string $path)
     {
         // Can throw an UnexpectedValueException
         $archive = new \PharData($file);

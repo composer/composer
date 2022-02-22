@@ -62,7 +62,7 @@ class RepositoryManager
      *
      * @return PackageInterface|null
      */
-    public function findPackage($name, $constraint)
+    public function findPackage(string $name, $constraint)
     {
         foreach ($this->repositories as $repository) {
             /** @var RepositoryInterface $repository */
@@ -82,7 +82,7 @@ class RepositoryManager
      *
      * @return PackageInterface[]
      */
-    public function findPackages($name, $constraint)
+    public function findPackages(string $name, $constraint)
     {
         $packages = array();
 
@@ -128,7 +128,7 @@ class RepositoryManager
      * @throws \InvalidArgumentException if repository for provided type is not registered
      * @return RepositoryInterface
      */
-    public function createRepository($type, $config, $name = null)
+    public function createRepository(string $type, array $config, string $name = null)
     {
         if (!isset($this->repositoryClasses[$type])) {
             throw new \InvalidArgumentException('Repository type is not registered: '.$type);
@@ -162,7 +162,7 @@ class RepositoryManager
      *
      * @return void
      */
-    public function setRepositoryClass($type, $class)
+    public function setRepositoryClass(string $type, $class)
     {
         $this->repositoryClasses[$type] = $class;
     }

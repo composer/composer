@@ -61,7 +61,7 @@ class PoolTest extends TestCase
      * @param array<\Composer\Package\BasePackage>|null $packages
      * @return \Composer\DependencyResolver\Pool
      */
-    protected function createPool($packages = array()): \Composer\DependencyResolver\Pool
+    protected function createPool(?array $packages = array()): Pool
     {
         return new Pool($packages);
     }

@@ -57,7 +57,7 @@ class ZipDownloaderTest extends TestCase
      * @param ?\Composer\Test\Downloader\MockedZipDownloader $obj
      * @return void
      */
-    public function setPrivateProperty($name, $value, $obj = null): void
+    public function setPrivateProperty(string $name, $value, $obj = null): void
     {
         $reflectionClass = new \ReflectionClass('Composer\Downloader\ZipDownloader');
         $reflectedProperty = $reflectionClass->getProperty($name);

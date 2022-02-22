@@ -56,7 +56,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
      * @param Filesystem      $filesystem
      * @param BinaryInstaller $binaryInstaller
      */
-    public function __construct(IOInterface $io, PartialComposer $composer, $type = 'library', Filesystem $filesystem = null, BinaryInstaller $binaryInstaller = null)
+    public function __construct(IOInterface $io, PartialComposer $composer, ?string $type = 'library', Filesystem $filesystem = null, BinaryInstaller $binaryInstaller = null)
     {
         $this->composer = $composer;
         $this->downloadManager = $composer instanceof Composer ? $composer->getDownloadManager() : null;

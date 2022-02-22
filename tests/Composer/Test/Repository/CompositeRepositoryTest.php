@@ -132,7 +132,7 @@ class CompositeRepositoryTest extends TestCase
      * @param string $method
      * @param mixed[] $args
      */
-    public function testNoRepositories($method, $args): void
+    public function testNoRepositories(string $method, array $args): void
     {
         $repo = new CompositeRepository(array());
         $this->assertEquals(array(), call_user_func_array(array($repo, $method), $args));

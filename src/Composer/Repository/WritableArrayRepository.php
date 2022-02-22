@@ -12,7 +12,6 @@
 
 namespace Composer\Repository;
 
-use Composer\Package\PackageInterface;
 use Composer\Package\AliasPackage;
 use Composer\Installer\InstallationManager;
 

@@ -28,7 +28,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null): ?PromiseInterface
+    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): ?PromiseInterface
     {
         return \React\Promise\resolve();
     }
@@ -36,7 +36,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    public function doInstall(PackageInterface $package, $path, $url): ?PromiseInterface
+    public function doInstall(PackageInterface $package, string $path, string $url): ?PromiseInterface
     {
         $ref = $package->getSourceReference();
         $label = $this->getLabelFromSourceReference((string) $ref);
@@ -58,7 +58,7 @@ class PerforceDownloader extends VcsDownloader
      *
      * @return string|null
      */
-    private function getLabelFromSourceReference($ref): ?string
+    private function getLabelFromSourceReference(string $ref): ?string
     {
         $pos = strpos($ref, '@');
         if (false !== $pos) {
@@ -74,7 +74,7 @@ class PerforceDownloader extends VcsDownloader
      *
      * @return void
      */
-    public function initPerforce(PackageInterface $package, $path, $url): void
+    public function initPerforce(PackageInterface $package, string $path, string $url): void
     {
         if (!empty($this->perforce)) {
             $this->perforce->initializePath($path);
@@ -101,7 +101,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url): ?PromiseInterface
+    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): ?PromiseInterface
     {
         return $this->doInstall($target, $path, $url);
     }
@@ -109,7 +109,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    public function getLocalChanges(PackageInterface $package, $path): ?string
+    public function getLocalChanges(PackageInterface $package, string $path): ?string
     {
         $this->io->writeError('Perforce driver does not check for local changes before overriding');
 
@@ -119,7 +119,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function getCommitLogs($fromReference, $toReference, $path): string
+    protected function getCommitLogs(string $fromReference, string $toReference, string $path): string
     {
         return $this->perforce->getCommitLogs($fromReference, $toReference);
     }
@@ -135,7 +135,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function hasMetadataRepository($path): bool
+    protected function hasMetadataRepository(string $path): bool
     {
         return true;
     }

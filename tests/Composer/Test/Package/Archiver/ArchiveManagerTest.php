@@ -18,6 +18,7 @@ use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\CompletePackage;
 use Composer\Util\Loop;
 use Composer\Test\Mock\FactoryMock;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 
 class ArchiveManagerTest extends ArchiverTest
@@ -104,7 +105,7 @@ class ArchiveManagerTest extends ArchiverTest
      *
      * @return string
      */
-    protected function getTargetName(CompletePackage $package, $format, $fileName = null): string
+    protected function getTargetName(CompletePackage $package, string $format, ?string $fileName = null): string
     {
         if (null === $fileName) {
             $packageName = $this->manager->getPackageFilename($package);
@@ -122,7 +123,7 @@ class ArchiveManagerTest extends ArchiverTest
      */
     protected function setupGitRepo(): void
     {
-        $currentWorkDir = getcwd();
+        $currentWorkDir = Platform::getCwd();
         chdir($this->testDir);
 
         $output = null;

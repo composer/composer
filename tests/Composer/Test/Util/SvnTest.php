@@ -27,7 +27,7 @@ class SvnTest extends TestCase
      *
      * @dataProvider urlProvider
      */
-    public function testCredentials($url, $expect): void
+    public function testCredentials(string $url, string $expect): void
     {
         $svn = new Svn($url, new NullIO, new Config());
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');

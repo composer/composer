@@ -28,5 +28,5 @@ interface VcsCapableDownloaderInterface
      * @param  string           $path    package directory
      * @return string|null      reference or null
      */
-    public function getVcsReference(PackageInterface $package, $path);
+    public function getVcsReference(PackageInterface $package, string $path);
 }

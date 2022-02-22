@@ -76,7 +76,7 @@ class PrePoolCreateEvent extends Event
      * @phpstan-param array<string, array<string, array{alias: string, alias_normalized: string}>> $rootAliases
      * @phpstan-param array<string, string> $rootReferences
      */
-    public function __construct($name, array $repositories, Request $request, array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, array $packages, array $unacceptableFixedPackages)
+    public function __construct(string $name, array $repositories, Request $request, array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, array $packages, array $unacceptableFixedPackages)
     {
         parent::__construct($name);
 

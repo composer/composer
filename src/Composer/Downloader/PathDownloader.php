@@ -39,7 +39,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true): ?PromiseInterface
+    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): ?PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
@@ -75,7 +75,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function install(PackageInterface $package, $path, $output = true): ?PromiseInterface
+    public function install(PackageInterface $package, string $path, bool $output = true): ?PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
@@ -113,7 +113,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 } else {
                     $absolutePath = $path;
                     if (!$this->filesystem->isAbsolutePath($absolutePath)) {
-                        $absolutePath = getcwd() . DIRECTORY_SEPARATOR . $path;
+                        $absolutePath = Platform::getCwd() . DIRECTORY_SEPARATOR . $path;
                     }
                     $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
                     $path = rtrim($path, "/");
@@ -161,7 +161,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function remove(PackageInterface $package, $path, $output = true): ?PromiseInterface
+    public function remove(PackageInterface $package, string $path, bool $output = true): ?PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         /**
@@ -190,8 +190,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         // not using realpath here as we do not want to resolve the symlink to the original dist url
         // it points to
         $fs = new Filesystem;
-        $absPath = $fs->isAbsolutePath($path) ? $path : getcwd() . '/' . $path;
-        $absDistUrl = $fs->isAbsolutePath($package->getDistUrl()) ? $package->getDistUrl() : getcwd() . '/' . $package->getDistUrl();
+        $absPath = $fs->isAbsolutePath($path) ? $path : Platform::getCwd() . '/' . $path;
+        $absDistUrl = $fs->isAbsolutePath($package->getDistUrl()) ? $package->getDistUrl() : Platform::getCwd() . '/' . $package->getDistUrl();
         if ($fs->normalizePath($absPath) === $fs->normalizePath($absDistUrl)) {
             if ($output) {
                 $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
@@ -206,7 +206,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function getVcsReference(PackageInterface $package, $path): ?string
+    public function getVcsReference(PackageInterface $package, string $path): ?string
     {
         $path = Filesystem::trimTrailingSlash($path);
         $parser = new VersionParser;
@@ -224,7 +224,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    protected function getInstallOperationAppendix(PackageInterface $package, $path): string
+    protected function getInstallOperationAppendix(PackageInterface $package, string $path): string
     {
         $realUrl = realpath($package->getDistUrl());
 

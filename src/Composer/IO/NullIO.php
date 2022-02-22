@@ -62,28 +62,28 @@ class NullIO extends BaseIO
     /**
      * @inheritDoc
      */
-    public function write($messages, $newline = true, $verbosity = self::NORMAL): void
+    public function write($messages, bool $newline = true, int $verbosity = self::NORMAL): void
     {
     }
 
     /**
      * @inheritDoc
      */
-    public function writeError($messages, $newline = true, $verbosity = self::NORMAL): void
+    public function writeError($messages, bool $newline = true, int $verbosity = self::NORMAL): void
     {
     }
 
     /**
      * @inheritDoc
      */
-    public function overwrite($messages, $newline = true, $size = 80, $verbosity = self::NORMAL): void
+    public function overwrite($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL): void
     {
     }
 
     /**
      * @inheritDoc
      */
-    public function overwriteError($messages, $newline = true, $size = 80, $verbosity = self::NORMAL): void
+    public function overwriteError($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL): void
     {
     }
 

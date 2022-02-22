@@ -60,7 +60,7 @@ class Locker
      * @param InstallationManager $installationManager  installation manager instance
      * @param string              $composerFileContents The contents of the composer file
      */
-    public function __construct(IOInterface $io, JsonFile $lockFile, InstallationManager $installationManager, $composerFileContents, ProcessExecutor $process = null)
+    public function __construct(IOInterface $io, JsonFile $lockFile, InstallationManager $installationManager, string $composerFileContents, ProcessExecutor $process = null)
     {
         $this->lockFile = $lockFile;
         $this->installationManager = $installationManager;
@@ -78,7 +78,7 @@ class Locker
      *
      * @return string
      */
-    public static function getContentHash($composerFileContents): string
+    public static function getContentHash(string $composerFileContents): string
     {
         $content = JsonFile::parseJson($composerFileContents, 'composer.json');
 
@@ -156,7 +156,7 @@ class Locker
      * @throws \RuntimeException
      * @return \Composer\Repository\LockArrayRepository
      */
-    public function getLockedRepository($withDevReqs = false): \Composer\Repository\LockArrayRepository
+    public function getLockedRepository(bool $withDevReqs = false): LockArrayRepository
     {
         $lockData = $this->getLockData();
         $packages = new LockArrayRepository();
@@ -224,7 +224,7 @@ class Locker
      * @param  bool                     $withDevReqs if true, the platform requirements from the require-dev block are also returned
      * @return \Composer\Package\Link[]
      */
-    public function getPlatformRequirements($withDevReqs = false): array
+    public function getPlatformRequirements(bool $withDevReqs = false): array
     {
         $lockData = $this->getLockData();
         $requirements = array();
@@ -353,7 +353,7 @@ class Locker
      *
      * @phpstan-param list<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      */
-    public function setLockData(array $packages, $devPackages, array $platformReqs, $platformDevReqs, array $aliases, $minimumStability, array $stabilityFlags, $preferStable, $preferLowest, array $platformOverrides, $write = true): bool
+    public function setLockData(array $packages, ?array $devPackages, array $platformReqs, array $platformDevReqs, array $aliases, string $minimumStability, array $stabilityFlags, bool $preferStable, bool $preferLowest, array $platformOverrides, bool $write = true): bool
     {
         // keep old default branch names normalized to DEFAULT_BRANCH_ALIAS for BC as that is how Composer 1 outputs the lock file
         // when loading the lock file the version is anyway ignored in Composer 2, so it has no adverse effect

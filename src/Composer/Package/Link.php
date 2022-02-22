@@ -89,11 +89,11 @@ class Link
      * @param string|null         $prettyConstraint
      */
     public function __construct(
-        $source,
-        $target,
+        string $source,
+        string $target,
         ConstraintInterface $constraint,
         $description = self::TYPE_UNKNOWN,
-        $prettyConstraint = null
+        ?string $prettyConstraint = null
     ) {
         $this->source = strtolower($source);
         $this->target = strtolower($target);

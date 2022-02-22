@@ -56,7 +56,7 @@ class EventDispatcherTest extends TestCase
      *
      * @param string $command
      */
-    public function testDispatcherCanExecuteSingleCommandLineScript($command): void
+    public function testDispatcherCanExecuteSingleCommandLineScript(string $command): void
     {
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
@@ -85,7 +85,7 @@ class EventDispatcherTest extends TestCase
      *
      * @param bool $devMode
      */
-    public function testDispatcherPassDevModeToAutoloadGeneratorForScriptEvents($devMode): void
+    public function testDispatcherPassDevModeToAutoloadGeneratorForScriptEvents(bool $devMode): void
     {
         $composer = $this->createComposerInstance();
 
@@ -288,7 +288,7 @@ class EventDispatcherTest extends TestCase
 
     public function testDispatcherAppendsDirBinOnPathForEveryListener(): void
     {
-        $currentDirectoryBkp = getcwd();
+        $currentDirectoryBkp = Platform::getCwd();
         $composerBinDirBkp = Platform::getEnv('COMPOSER_BIN_DIR');
         chdir(__DIR__);
         Platform::putEnv('COMPOSER_BIN_DIR', __DIR__ . '/vendor/bin');
@@ -483,7 +483,7 @@ class EventDispatcherTest extends TestCase
      *
      * @return \PHPUnit\Framework\MockObject\MockObject&\Composer\EventDispatcher\EventDispatcher
      */
-    private function getDispatcherStubForListenersTest($listeners, IOInterface $io)
+    private function getDispatcherStubForListenersTest(array $listeners, IOInterface $io)
     {
         $dispatcher = $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')
             ->setConstructorArgs(array(

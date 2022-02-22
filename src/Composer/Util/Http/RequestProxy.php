@@ -34,7 +34,7 @@ class RequestProxy
      * @param mixed[] $contextOptions
      * @param string  $formattedUrl
      */
-    public function __construct($url, array $contextOptions, $formattedUrl)
+    public function __construct(string $url, array $contextOptions, string $formattedUrl)
     {
         $this->url = $url;
         $this->contextOptions = $contextOptions;
@@ -58,7 +58,7 @@ class RequestProxy
      * @param  string|null $format Output format specifier
      * @return string      Safe proxy, no proxy or empty
      */
-    public function getFormattedUrl($format = ''): string
+    public function getFormattedUrl(?string $format = ''): string
     {
         $result = '';
         if ($this->formattedUrl) {

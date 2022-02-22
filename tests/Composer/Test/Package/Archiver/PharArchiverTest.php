@@ -13,6 +13,7 @@
 namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\PharArchiver;
+use Composer\Util\Platform;
 
 class PharArchiverTest extends ArchiverTest
 {
@@ -53,7 +54,7 @@ class PharArchiverTest extends ArchiverTest
      */
     protected function setupDummyRepo(): void
     {
-        $currentWorkDir = getcwd();
+        $currentWorkDir = Platform::getCwd();
         chdir($this->testDir);
 
         $this->writeFile('file.txt', 'content', $currentWorkDir);
@@ -72,7 +73,7 @@ class PharArchiverTest extends ArchiverTest
      *
      * @return void
      */
-    protected function writeFile($path, $content, $currentWorkDir): void
+    protected function writeFile(string $path, string $content, string $currentWorkDir): void
     {
         if (!file_exists(dirname($path))) {
             mkdir(dirname($path), 0777, true);

@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository;
 
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 use Symfony\Component\Process\ExecutableFinder;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Repository\VcsRepository;
@@ -51,7 +52,7 @@ class VcsRepositoryTest extends TestCase
             return;
         }
 
-        $oldCwd = getcwd();
+        $oldCwd = Platform::getCwd();
         self::$composerHome = $this->getUniqueTmpDirectory();
         self::$gitRepo = $this->getUniqueTmpDirectory();
 
@@ -64,7 +65,7 @@ class VcsRepositoryTest extends TestCase
         // init
         $process = new ProcessExecutor;
         $exec = function ($command) use ($process): void {
-            $cwd = getcwd();
+            $cwd = Platform::getCwd();
             if ($process->execute($command, $output, $cwd) !== 0) {
                 throw new \RuntimeException('Failed to execute '.$command.': '.$process->getErrorOutput());
             }

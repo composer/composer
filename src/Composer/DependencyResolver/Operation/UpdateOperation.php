@@ -76,7 +76,7 @@ class UpdateOperation extends SolverOperation implements OperationInterface
      * @param bool $lock
      * @return string
      */
-    public static function format(PackageInterface $initialPackage, PackageInterface $targetPackage, $lock = false): string
+    public static function format(PackageInterface $initialPackage, PackageInterface $targetPackage, bool $lock = false): string
     {
         $fromVersion = $initialPackage->getFullPrettyVersion();
         $toVersion = $targetPackage->getFullPrettyVersion();

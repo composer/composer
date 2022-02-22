@@ -50,7 +50,7 @@ class Transaction
      * @param PackageInterface[] $presentPackages
      * @param PackageInterface[] $resultPackages
      */
-    public function __construct($presentPackages, $resultPackages)
+    public function __construct(array $presentPackages, array $resultPackages)
     {
         $this->presentPackages = $presentPackages;
         $this->setResultPackageMaps($resultPackages);
@@ -69,7 +69,7 @@ class Transaction
      * @param PackageInterface[] $resultPackages
      * @return void
      */
-    private function setResultPackageMaps($resultPackages): void
+    private function setResultPackageMaps(array $resultPackages): void
     {
         $packageSort = function (PackageInterface $a, PackageInterface $b): int {
             // sort alias packages by the same name behind their non alias version

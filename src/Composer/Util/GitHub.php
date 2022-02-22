@@ -54,7 +54,7 @@ class GitHub
      * @param  string $originUrl The host this GitHub instance is located at
      * @return bool   true on success
      */
-    public function authorizeOAuth($originUrl): bool
+    public function authorizeOAuth(string $originUrl): bool
     {
         if (!in_array($originUrl, $this->config->get('github-domains'))) {
             return false;
@@ -79,7 +79,7 @@ class GitHub
      * @throws TransportException|\Exception
      * @return bool                          true on success
      */
-    public function authorizeOAuthInteractively($originUrl, $message = null): bool
+    public function authorizeOAuthInteractively(string $originUrl, string $message = null): bool
     {
         if ($message) {
             $this->io->writeError($message);
