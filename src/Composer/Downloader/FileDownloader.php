@@ -66,11 +66,9 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     public static $downloadMetadata = array();
 
     /**
-     * @private this is only public for php 5.3 support in closures
-     *
      * @var array<string, string> Map of package name to cache key
      */
-    public $lastCacheWrites = array();
+    private $lastCacheWrites = array();
     /** @var array<string, string[]> Map of package name to list of paths */
     private $additionalCleanupPaths = array();
 
@@ -103,7 +101,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @inheritDoc
      */
-    public function getInstallationSource()
+    public function getInstallationSource(): string
     {
         return 'dist';
     }
@@ -113,7 +111,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @param bool $output
      */
-    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true)
+    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
     {
         if (!$package->getDistUrl()) {
             throw new \InvalidArgumentException('The given package is missing url information');
@@ -296,7 +294,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @inheritDoc
      */
-    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null)
+    public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
     {
         return \React\Promise\resolve();
     }
@@ -304,7 +302,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @inheritDoc
      */
-    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null)
+    public function cleanup(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
     {
         $fileName = $this->getFileName($package, $path);
         if (file_exists($fileName)) {
@@ -337,7 +335,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @param bool $output
      */
-    public function install(PackageInterface $package, string $path, bool $output = true)
+    public function install(PackageInterface $package, string $path, bool $output = true): PromiseInterface
     {
         if ($output) {
             $this->io->writeError("  - " . InstallOperation::format($package));
@@ -363,7 +361,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @return void
      */
-    protected function clearLastCacheWrite(PackageInterface $package)
+    protected function clearLastCacheWrite(PackageInterface $package): void
     {
         if ($this->cache && isset($this->lastCacheWrites[$package->getName()])) {
             $this->cache->remove($this->lastCacheWrites[$package->getName()]);
@@ -376,7 +374,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @return void
      */
-    protected function addCleanupPath(PackageInterface $package, string $path)
+    protected function addCleanupPath(PackageInterface $package, string $path): void
     {
         $this->additionalCleanupPaths[$package->getName()][] = $path;
     }
@@ -386,7 +384,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @return void
      */
-    protected function removeCleanupPath(PackageInterface $package, string $path)
+    protected function removeCleanupPath(PackageInterface $package, string $path): void
     {
         if (isset($this->additionalCleanupPaths[$package->getName()])) {
             $idx = array_search($path, $this->additionalCleanupPaths[$package->getName()]);
@@ -399,22 +397,14 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
     /**
      * @inheritDoc
      */
-    public function update(PackageInterface $initial, PackageInterface $target, string $path)
+    public function update(PackageInterface $initial, PackageInterface $target, string $path): PromiseInterface
     {
         $this->io->writeError("  - " . UpdateOperation::format($initial, $target) . $this->getInstallOperationAppendix($target, $path));
 
         $promise = $this->remove($initial, $path, false);
-        if (!$promise instanceof PromiseInterface) {
-            $promise = \React\Promise\resolve();
-        }
 
         return $promise->then(function () use ($target, $path): PromiseInterface {
-            $promise = $this->install($target, $path, false);
-            if ($promise instanceof PromiseInterface) {
-                return $promise;
-            }
-
-            return \React\Promise\resolve();
+            return $this->install($target, $path, false);
         });
     }
 
@@ -423,7 +413,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      *
      * @param bool $output
      */
-    public function remove(PackageInterface $package, string $path, bool $output = true)
+    public function remove(PackageInterface $package, string $path, bool $output = true): PromiseInterface
     {
         if ($output) {
             $this->io->writeError("  - " . UninstallOperation::format($package));
@@ -444,7 +434,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @param  string           $path    download path
      * @return string           file name
      */
-    protected function getFileName(PackageInterface $package, string $path)
+    protected function getFileName(PackageInterface $package, string $path): string
     {
         return rtrim($this->config->get('vendor-dir').'/composer/tmp-'.md5($package.spl_object_hash($package)).'.'.pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_EXTENSION), '.');
     }
@@ -456,7 +446,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @param  string           $path    download path
      * @return string
      */
-    protected function getInstallOperationAppendix(PackageInterface $package, string $path)
+    protected function getInstallOperationAppendix(PackageInterface $package, string $path): string
     {
         return '';
     }
@@ -469,7 +459,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @throws \RuntimeException If any problem with the url
      * @return string            url
      */
-    protected function processUrl(PackageInterface $package, string $url)
+    protected function processUrl(PackageInterface $package, string $url): string
     {
         if (!extension_loaded('openssl') && 0 === strpos($url, 'https:')) {
             throw new \RuntimeException('You must enable the openssl extension to download files via https');
@@ -486,7 +476,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      * @inheritDoc
      * @throws \RuntimeException
      */
-    public function getLocalChanges(PackageInterface $package, string $targetDir)
+    public function getLocalChanges(PackageInterface $package, string $targetDir): ?string
     {
         $prevIO = $this->io;
 

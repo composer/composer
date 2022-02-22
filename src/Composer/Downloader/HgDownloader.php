@@ -25,7 +25,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): ?PromiseInterface
+    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
     {
         if (null === HgUtils::getVersion($this->process)) {
             throw new \RuntimeException('hg was not found in your PATH, skipping source download');
@@ -37,7 +37,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doInstall(PackageInterface $package, string $path, string $url): ?PromiseInterface
+    protected function doInstall(PackageInterface $package, string $path, string $url): PromiseInterface
     {
         $hgUtils = new HgUtils($this->io, $this->config, $this->process);
 
@@ -59,7 +59,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): ?PromiseInterface
+    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): PromiseInterface
     {
         $hgUtils = new HgUtils($this->io, $this->config, $this->process);
 

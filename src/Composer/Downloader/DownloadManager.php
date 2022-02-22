@@ -59,7 +59,7 @@ class DownloadManager
      * @param  bool            $preferSource prefer downloading from source
      * @return DownloadManager
      */
-    public function setPreferSource(bool $preferSource): DownloadManager
+    public function setPreferSource(bool $preferSource): self
     {
         $this->preferSource = $preferSource;
 
@@ -72,7 +72,7 @@ class DownloadManager
      * @param  bool            $preferDist prefer downloading from dist
      * @return DownloadManager
      */
-    public function setPreferDist(bool $preferDist): DownloadManager
+    public function setPreferDist(bool $preferDist): self
     {
         $this->preferDist = $preferDist;
 
@@ -86,7 +86,7 @@ class DownloadManager
      *
      * @return DownloadManager
      */
-    public function setPreferences(array $preferences): DownloadManager
+    public function setPreferences(array $preferences): self
     {
         $this->packagePreferences = $preferences;
 
@@ -100,7 +100,7 @@ class DownloadManager
      * @param  DownloaderInterface $downloader downloader instance
      * @return DownloadManager
      */
-    public function setDownloader(string $type, DownloaderInterface $downloader): DownloadManager
+    public function setDownloader(string $type, DownloaderInterface $downloader): self
     {
         $type = strtolower($type);
         $this->downloaders[$type] = $downloader;
@@ -229,9 +229,6 @@ class DownloadManager
             } catch (\Exception $e) {
                 return $handleError($e);
             }
-            if (!$result instanceof PromiseInterface) {
-                return \React\Promise\resolve($result);
-            }
 
             $res = $result->then(function ($res) {
                 return $res;
@@ -251,9 +248,9 @@ class DownloadManager
      * @param string                $targetDir   target dir
      * @param PackageInterface|null $prevPackage previous package instance in case of updates
      *
-     * @return PromiseInterface|null
+     * @return PromiseInterface
      */
-    public function prepare(string $type, PackageInterface $package, string $targetDir, PackageInterface $prevPackage = null): ?PromiseInterface
+    public function prepare(string $type, PackageInterface $package, string $targetDir, PackageInterface $prevPackage = null): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
@@ -272,9 +269,9 @@ class DownloadManager
      *
      * @throws \InvalidArgumentException if package have no urls to download from
      * @throws \RuntimeException
-     * @return PromiseInterface|null
+     * @return PromiseInterface
      */
-    public function install(PackageInterface $package, string $targetDir): ?PromiseInterface
+    public function install(PackageInterface $package, string $targetDir): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
@@ -293,9 +290,9 @@ class DownloadManager
      * @param string           $targetDir target dir
      *
      * @throws \InvalidArgumentException if initial package is not installed
-     * @return PromiseInterface|null
+     * @return PromiseInterface
      */
-    public function update(PackageInterface $initial, PackageInterface $target, string $targetDir): ?PromiseInterface
+    public function update(PackageInterface $initial, PackageInterface $target, string $targetDir): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($target);
@@ -330,18 +327,10 @@ class DownloadManager
         // if downloader type changed, or update failed and user asks for reinstall,
         // we wipe the dir and do a new install instead of updating it
         $promise = $initialDownloader->remove($initial, $targetDir);
-        if ($promise instanceof PromiseInterface) {
-            return $promise->then(function ($res) use ($target, $targetDir): PromiseInterface {
-                $promise = $this->install($target, $targetDir);
-                if ($promise instanceof PromiseInterface) {
-                    return $promise;
-                }
 
-                return \React\Promise\resolve();
-            });
-        }
-
-        return $this->install($target, $targetDir);
+        return $promise->then(function ($res) use ($target, $targetDir): PromiseInterface {
+            return $this->install($target, $targetDir);
+        });
     }
 
     /**
@@ -350,9 +339,9 @@ class DownloadManager
      * @param PackageInterface $package   package instance
      * @param string           $targetDir target dir
      *
-     * @return PromiseInterface|null
+     * @return PromiseInterface
      */
-    public function remove(PackageInterface $package, string $targetDir): ?PromiseInterface
+    public function remove(PackageInterface $package, string $targetDir): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);
@@ -371,9 +360,9 @@ class DownloadManager
      * @param string                $targetDir   target dir
      * @param PackageInterface|null $prevPackage previous package instance in case of updates
      *
-     * @return PromiseInterface|null
+     * @return PromiseInterface
      */
-    public function cleanup(string $type, PackageInterface $package, string $targetDir, PackageInterface $prevPackage = null): ?PromiseInterface
+    public function cleanup(string $type, PackageInterface $package, string $targetDir, PackageInterface $prevPackage = null): PromiseInterface
     {
         $targetDir = $this->normalizeTargetDir($targetDir);
         $downloader = $this->getDownloaderForPackage($package);

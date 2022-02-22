@@ -25,7 +25,7 @@ class FossilDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): ?PromiseInterface
+    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
     {
         return \React\Promise\resolve();
     }
@@ -33,7 +33,7 @@ class FossilDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doInstall(PackageInterface $package, string $path, string $url): ?PromiseInterface
+    protected function doInstall(PackageInterface $package, string $path, string $url): PromiseInterface
     {
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
@@ -61,7 +61,7 @@ class FossilDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): ?PromiseInterface
+    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): PromiseInterface
     {
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);

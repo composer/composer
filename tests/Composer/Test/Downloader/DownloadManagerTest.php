@@ -223,7 +223,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -273,7 +274,8 @@ class DownloadManagerTest extends TestCase
         $downloaderSuccess
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -330,7 +332,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -366,7 +369,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -432,7 +436,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -469,7 +474,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -506,7 +512,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -567,7 +574,8 @@ class DownloadManagerTest extends TestCase
         $zipDownloader
             ->expects($this->once())
             ->method('update')
-            ->with($initial, $target, 'vendor/bundles/FOS/UserBundle');
+            ->with($initial, $target, 'vendor/bundles/FOS/UserBundle')
+            ->will($this->returnValue(\React\Promise\resolve()));
         $zipDownloader
             ->expects($this->any())
             ->method('getInstallationSource')
@@ -605,7 +613,8 @@ class DownloadManagerTest extends TestCase
         $xzDownloader
             ->expects($this->once())
             ->method('remove')
-            ->with($initial, 'vendor/bundles/FOS/UserBundle');
+            ->with($initial, 'vendor/bundles/FOS/UserBundle')
+            ->will($this->returnValue(\React\Promise\resolve()));
         $xzDownloader
             ->expects($this->any())
             ->method('getInstallationSource')
@@ -615,7 +624,8 @@ class DownloadManagerTest extends TestCase
         $zipDownloader
             ->expects($this->once())
             ->method('install')
-            ->with($target, 'vendor/bundles/FOS/UserBundle');
+            ->with($target, 'vendor/bundles/FOS/UserBundle')
+            ->will($this->returnValue(\React\Promise\resolve()));
         $zipDownloader
             ->expects($this->any())
             ->method('getInstallationSource')
@@ -775,7 +785,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -818,7 +829,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -864,7 +876,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -911,7 +924,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -958,7 +972,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -1005,7 +1020,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -1048,7 +1064,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))
@@ -1091,7 +1108,8 @@ class DownloadManagerTest extends TestCase
         $downloader
             ->expects($this->once())
             ->method('download')
-            ->with($package, 'target_dir');
+            ->with($package, 'target_dir')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $manager = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->setConstructorArgs(array($this->io, false, $this->filesystem))

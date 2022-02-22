@@ -83,6 +83,15 @@ class PluginInstallerTest extends TestCase
         $dm = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->disableOriginalConstructor()
             ->getMock();
+        $dm->expects($this->any())
+            ->method('install')
+            ->will($this->returnValue(\React\Promise\resolve()));
+        $dm->expects($this->any())
+            ->method('update')
+            ->will($this->returnValue(\React\Promise\resolve()));
+        $dm->expects($this->any())
+            ->method('remove')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
 

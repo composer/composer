@@ -69,7 +69,7 @@ class JsonFile
     /**
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -79,7 +79,7 @@ class JsonFile
      *
      * @return bool
      */
-    public function exists()
+    public function exists(): bool
     {
         return is_file($this->path);
     }
@@ -188,7 +188,7 @@ class JsonFile
      * @throws ParsingException
      * @return bool                    true on success
      */
-    public function validateSchema(int $schema = self::STRICT_SCHEMA, ?string $schemaFile = null)
+    public function validateSchema(int $schema = self::STRICT_SCHEMA, ?string $schemaFile = null): bool
     {
         $content = file_get_contents($this->path);
         $data = json_decode($content);
@@ -309,7 +309,7 @@ class JsonFile
      * @throws ParsingException
      * @return bool                      true on success
      */
-    protected static function validateSyntax(string $json, string $file = null)
+    protected static function validateSyntax(string $json, string $file = null): bool
     {
         $parser = new JsonParser();
         $result = $parser->lint($json);

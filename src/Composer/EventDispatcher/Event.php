@@ -58,7 +58,7 @@ class Event
      *
      * @return string The event name
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -68,7 +68,7 @@ class Event
      *
      * @return string[] The event arguments
      */
-    public function getArguments()
+    public function getArguments(): array
     {
         return $this->args;
     }
@@ -78,7 +78,7 @@ class Event
      *
      * @return mixed[] The event flags
      */
-    public function getFlags()
+    public function getFlags(): array
     {
         return $this->flags;
     }
@@ -88,7 +88,7 @@ class Event
      *
      * @return bool Whether propagation has been stopped
      */
-    public function isPropagationStopped()
+    public function isPropagationStopped(): bool
     {
         return $this->propagationStopped;
     }
@@ -98,7 +98,7 @@ class Event
      *
      * @return void
      */
-    public function stopPropagation()
+    public function stopPropagation(): void
     {
         $this->propagationStopped = true;
     }

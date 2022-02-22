@@ -28,7 +28,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): ?PromiseInterface
+    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
     {
         return \React\Promise\resolve();
     }
@@ -36,7 +36,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    public function doInstall(PackageInterface $package, string $path, string $url): ?PromiseInterface
+    public function doInstall(PackageInterface $package, string $path, string $url): PromiseInterface
     {
         $ref = $package->getSourceReference();
         $label = $this->getLabelFromSourceReference((string) $ref);
@@ -101,7 +101,7 @@ class PerforceDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): ?PromiseInterface
+    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): PromiseInterface
     {
         return $this->doInstall($target, $path, $url);
     }

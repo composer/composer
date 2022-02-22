@@ -121,7 +121,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     /**
      * @return void
      */
-    public function setLoader(LoaderInterface $loader)
+    public function setLoader(LoaderInterface $loader): void
     {
         $this->loader = $loader;
     }
@@ -129,7 +129,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     /**
      * @return VcsDriverInterface|null
      */
-    public function getDriver()
+    public function getDriver(): ?VcsDriverInterface
     {
         if ($this->driver) {
             return $this->driver;
@@ -167,7 +167,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     /**
      * @return bool
      */
-    public function hadInvalidBranches()
+    public function hadInvalidBranches(): bool
     {
         return $this->branchErrorOccurred;
     }
@@ -175,7 +175,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     /**
      * @return string[]
      */
-    public function getEmptyReferences()
+    public function getEmptyReferences(): array
     {
         return $this->emptyReferences;
     }
@@ -183,7 +183,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     /**
      * @return array<'tags'|'branches', array<string, TransportException>>
      */
-    public function getVersionTransportExceptions()
+    public function getVersionTransportExceptions(): array
     {
         return $this->versionTransportExceptions;
     }
@@ -254,7 +254,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             }
 
             try {
-                if (!$data = $driver->getComposerInformation($identifier)) {
+                $data = $driver->getComposerInformation($identifier);
+                if (null === $data) {
                     if ($isVeryVerbose) {
                         $this->io->writeError('<warning>Skipped tag '.$tag.', no composer file</warning>');
                     }
@@ -367,7 +368,8 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             }
 
             try {
-                if (!$data = $driver->getComposerInformation($identifier)) {
+                $data = $driver->getComposerInformation($identifier);
+                if (null === $data) {
                     if ($isVeryVerbose) {
                         $this->io->writeError('<warning>Skipped branch '.$branch.', no composer file</warning>');
                     }

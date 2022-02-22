@@ -336,15 +336,6 @@ EOT
     }
 
     /**
-     * @private
-     * @return void
-     */
-    public function markSolverComplete()
-    {
-        $this->dependencyResolutionCompleted = true;
-    }
-
-    /**
      * @param array<string, string> $requirements
      * @param string $requireKey
      * @param string $removeKey
@@ -358,7 +349,9 @@ EOT
         $composer = $this->requireComposer();
 
         $this->dependencyResolutionCompleted = false;
-        $composer->getEventDispatcher()->addListener(InstallerEvents::PRE_OPERATIONS_EXEC, array($this, 'markSolverComplete'), 10000);
+        $composer->getEventDispatcher()->addListener(InstallerEvents::PRE_OPERATIONS_EXEC, function (): void {
+            $this->dependencyResolutionCompleted = true;
+        }, 10000);
 
         if ($input->getOption('dry-run')) {
             $rootPackage = $composer->getPackage();
@@ -480,7 +473,7 @@ EOT
      * @param bool $hardExit
      * @return void
      */
-    public function revertComposerFile(bool $hardExit = true)
+    public function revertComposerFile(bool $hardExit = true): void
     {
         $io = $this->getIO();
 

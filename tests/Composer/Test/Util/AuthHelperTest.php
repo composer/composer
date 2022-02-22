@@ -377,8 +377,7 @@ class AuthHelperTest extends TestCase
 
         $configSource->expects($this->once())
             ->method('addConfigSetting')
-            ->with('http-basic.'.$origin, $auth)
-            ->willReturn($configSource);
+            ->with('http-basic.'.$origin, $auth);
 
         $this->authHelper->storeAuth($origin, $storeAuth);
     }
@@ -429,8 +428,7 @@ class AuthHelperTest extends TestCase
 
         $configSource->expects($this->once())
             ->method('addConfigSetting')
-            ->with('http-basic.'.$origin, $auth)
-            ->willReturn($configSource);
+            ->with('http-basic.'.$origin, $auth);
 
         $this->authHelper->storeAuth($origin, $storeAuth);
     }

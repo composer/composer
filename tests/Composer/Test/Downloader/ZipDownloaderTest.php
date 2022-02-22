@@ -335,7 +335,7 @@ class ZipDownloaderTest extends TestCase
 
 class MockedZipDownloader extends ZipDownloader
 {
-    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true): ?PromiseInterface
+    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true): PromiseInterface
     {
         return \React\Promise\resolve();
     }
@@ -345,7 +345,7 @@ class MockedZipDownloader extends ZipDownloader
         return \React\Promise\resolve();
     }
 
-    public function extract(PackageInterface $package, $file, $path): ?PromiseInterface
+    public function extract(PackageInterface $package, $file, $path): PromiseInterface
     {
         return parent::extract($package, $file, $path);
     }

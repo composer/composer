@@ -67,7 +67,7 @@ class Event extends BaseEvent
      *
      * @return Composer
      */
-    public function getComposer()
+    public function getComposer(): Composer
     {
         return $this->composer;
     }
@@ -77,7 +77,7 @@ class Event extends BaseEvent
      *
      * @return IOInterface
      */
-    public function getIO()
+    public function getIO(): IOInterface
     {
         return $this->io;
     }
@@ -87,7 +87,7 @@ class Event extends BaseEvent
      *
      * @return bool
      */
-    public function isDevMode()
+    public function isDevMode(): bool
     {
         return $this->devMode;
     }

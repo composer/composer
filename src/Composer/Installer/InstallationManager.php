@@ -63,7 +63,7 @@ class InstallationManager
     /**
      * @return void
      */
-    public function reset()
+    public function reset(): void
     {
         $this->notifiablePackages = array();
         FileDownloader::$downloadMetadata = array();
@@ -76,7 +76,7 @@ class InstallationManager
      *
      * @return void
      */
-    public function addInstaller(InstallerInterface $installer)
+    public function addInstaller(InstallerInterface $installer): void
     {
         array_unshift($this->installers, $installer);
         $this->cache = array();
@@ -89,7 +89,7 @@ class InstallationManager
      *
      * @return void
      */
-    public function removeInstaller(InstallerInterface $installer)
+    public function removeInstaller(InstallerInterface $installer): void
     {
         if (false !== ($key = array_search($installer, $this->installers, true))) {
             array_splice($this->installers, $key, 1);
@@ -106,7 +106,7 @@ class InstallationManager
      *
      * @return void
      */
-    public function disablePlugins()
+    public function disablePlugins(): void
     {
         foreach ($this->installers as $i => $installer) {
             if (!$installer instanceof PluginInstaller) {
@@ -125,7 +125,7 @@ class InstallationManager
      * @throws \InvalidArgumentException if installer for provided type is not registered
      * @return InstallerInterface
      */
-    public function getInstaller(string $type)
+    public function getInstaller(string $type): InstallerInterface
     {
         $type = strtolower($type);
 
@@ -150,7 +150,7 @@ class InstallationManager
      *
      * @return bool
      */
-    public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package): bool
     {
         if ($package instanceof AliasPackage) {
             return $repo->hasPackage($package) && $this->isPackageInstalled($repo, $package->getAliasOf());
@@ -167,7 +167,7 @@ class InstallationManager
      *
      * @return void
      */
-    public function ensureBinariesPresence(PackageInterface $package)
+    public function ensureBinariesPresence(PackageInterface $package): void
     {
         try {
             $installer = $this->getInstaller($package->getType());
@@ -192,7 +192,7 @@ class InstallationManager
      *
      * @return void
      */
-    public function execute(InstalledRepositoryInterface $repo, array $operations, bool $devMode = true, bool $runScripts = true)
+    public function execute(InstalledRepositoryInterface $repo, array $operations, bool $devMode = true, bool $runScripts = true): void
     {
         /** @var PromiseInterface[] */
         $cleanupPromises = array();
@@ -511,7 +511,7 @@ class InstallationManager
      *
      * @return PromiseInterface|null
      */
-    public function install(InstalledRepositoryInterface $repo, InstallOperation $operation)
+    public function install(InstalledRepositoryInterface $repo, InstallOperation $operation): ?PromiseInterface
     {
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
@@ -529,7 +529,7 @@ class InstallationManager
      *
      * @return PromiseInterface|null
      */
-    public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation)
+    public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation): ?PromiseInterface
     {
         $initial = $operation->getInitialPackage();
         $target = $operation->getTargetPackage();
@@ -569,7 +569,7 @@ class InstallationManager
      *
      * @return PromiseInterface|null
      */
-    public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation)
+    public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation): ?PromiseInterface
     {
         $package = $operation->getPackage();
         $installer = $this->getInstaller($package->getType());
@@ -585,7 +585,7 @@ class InstallationManager
      *
      * @return void
      */
-    public function markAliasInstalled(InstalledRepositoryInterface $repo, MarkAliasInstalledOperation $operation)
+    public function markAliasInstalled(InstalledRepositoryInterface $repo, MarkAliasInstalledOperation $operation): void
     {
         $package = $operation->getPackage();
 
@@ -602,7 +602,7 @@ class InstallationManager
      *
      * @return void
      */
-    public function markAliasUninstalled(InstalledRepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
+    public function markAliasUninstalled(InstalledRepositoryInterface $repo, MarkAliasUninstalledOperation $operation): void
     {
         $package = $operation->getPackage();
 
@@ -615,7 +615,7 @@ class InstallationManager
      * @param  PackageInterface $package
      * @return string           path
      */
-    public function getInstallPath(PackageInterface $package)
+    public function getInstallPath(PackageInterface $package): string
     {
         $installer = $this->getInstaller($package->getType());
 
@@ -627,7 +627,7 @@ class InstallationManager
      *
      * @return void
      */
-    public function setOutputProgress(bool $outputProgress)
+    public function setOutputProgress(bool $outputProgress): void
     {
         $this->outputProgress = $outputProgress;
     }
@@ -635,7 +635,7 @@ class InstallationManager
     /**
      * @return void
      */
-    public function notifyInstalls(IOInterface $io)
+    public function notifyInstalls(IOInterface $io): void
     {
         $promises = array();
 

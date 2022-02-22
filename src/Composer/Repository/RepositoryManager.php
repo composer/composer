@@ -62,7 +62,7 @@ class RepositoryManager
      *
      * @return PackageInterface|null
      */
-    public function findPackage(string $name, $constraint)
+    public function findPackage(string $name, $constraint): ?PackageInterface
     {
         foreach ($this->repositories as $repository) {
             /** @var RepositoryInterface $repository */
@@ -82,7 +82,7 @@ class RepositoryManager
      *
      * @return PackageInterface[]
      */
-    public function findPackages(string $name, $constraint)
+    public function findPackages(string $name, $constraint): array
     {
         $packages = array();
 
@@ -100,7 +100,7 @@ class RepositoryManager
      *
      * @return void
      */
-    public function addRepository(RepositoryInterface $repository)
+    public function addRepository(RepositoryInterface $repository): void
     {
         $this->repositories[] = $repository;
     }
@@ -114,7 +114,7 @@ class RepositoryManager
      *
      * @return void
      */
-    public function prependRepository(RepositoryInterface $repository)
+    public function prependRepository(RepositoryInterface $repository): void
     {
         array_unshift($this->repositories, $repository);
     }
@@ -128,7 +128,7 @@ class RepositoryManager
      * @throws \InvalidArgumentException if repository for provided type is not registered
      * @return RepositoryInterface
      */
-    public function createRepository(string $type, array $config, string $name = null)
+    public function createRepository(string $type, array $config, string $name = null): RepositoryInterface
     {
         if (!isset($this->repositoryClasses[$type])) {
             throw new \InvalidArgumentException('Repository type is not registered: '.$type);
@@ -162,7 +162,7 @@ class RepositoryManager
      *
      * @return void
      */
-    public function setRepositoryClass(string $type, $class)
+    public function setRepositoryClass(string $type, $class): void
     {
         $this->repositoryClasses[$type] = $class;
     }
@@ -172,7 +172,7 @@ class RepositoryManager
      *
      * @return RepositoryInterface[]
      */
-    public function getRepositories()
+    public function getRepositories(): array
     {
         return $this->repositories;
     }
@@ -184,7 +184,7 @@ class RepositoryManager
      *
      * @return void
      */
-    public function setLocalRepository(InstalledRepositoryInterface $repository)
+    public function setLocalRepository(InstalledRepositoryInterface $repository): void
     {
         $this->localRepository = $repository;
     }
@@ -194,7 +194,7 @@ class RepositoryManager
      *
      * @return InstalledRepositoryInterface
      */
-    public function getLocalRepository()
+    public function getLocalRepository(): InstalledRepositoryInterface
     {
         return $this->localRepository;
     }

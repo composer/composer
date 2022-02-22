@@ -28,7 +28,7 @@ use RarArchive;
  */
 class RarDownloader extends ArchiveDownloader
 {
-    protected function extract(PackageInterface $package, string $file, string $path): ?PromiseInterface
+    protected function extract(PackageInterface $package, string $file, string $path): PromiseInterface
     {
         $processError = null;
 

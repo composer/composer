@@ -159,14 +159,10 @@ class AliasPackage extends BasePackage
      * Stores whether this is an alias created by an aliasing in the requirements of the root package or not
      *
      * Use by the policy for sorting manually aliased packages first, see #576
-     *
-     * @param bool $value
-     *
-     * @return mixed
      */
-    public function setRootPackageAlias(bool $value)
+    public function setRootPackageAlias(bool $value): void
     {
-        return $this->rootPackageAlias = $value;
+        $this->rootPackageAlias = $value;
     }
 
     /**
@@ -225,7 +221,7 @@ class AliasPackage extends BasePackage
         return $this->hasSelfVersionRequires;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return parent::__toString().' ('.($this->rootPackageAlias ? 'root ' : ''). 'alias of '.$this->aliasOf->getVersion().')';
     }

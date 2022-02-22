@@ -28,7 +28,7 @@ class VersionParser extends SemverVersionParser
     /**
      * @inheritDoc
      */
-    public function parseConstraints($constraints)
+    public function parseConstraints($constraints): ConstraintInterface
     {
         if (!isset(self::$constraints[$constraints])) {
             self::$constraints[$constraints] = parent::parseConstraints($constraints);
@@ -47,7 +47,7 @@ class VersionParser extends SemverVersionParser
      *
      * @return list<array{name: string, version?: string}>
      */
-    public function parseNameVersionPairs(array $pairs)
+    public function parseNameVersionPairs(array $pairs): array
     {
         $pairs = array_values($pairs);
         $result = array();
@@ -76,7 +76,7 @@ class VersionParser extends SemverVersionParser
      *
      * @return bool
      */
-    public static function isUpgrade(string $normalizedFrom, string $normalizedTo)
+    public static function isUpgrade(string $normalizedFrom, string $normalizedTo): bool
     {
         if ($normalizedFrom === $normalizedTo) {
             return true;

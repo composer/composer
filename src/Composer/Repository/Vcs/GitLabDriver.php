@@ -144,7 +144,7 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getComposerInformation($identifier): array
+    public function getComposerInformation(string $identifier): ?array
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getComposerInformation($identifier);
@@ -161,7 +161,7 @@ class GitLabDriver extends VcsDriver
                 }
             }
 
-            if ($composer) {
+            if (null !== $composer) {
                 // specials for gitlab (this data is only available if authentication is provided)
                 if (!isset($composer['support']['source']) && isset($this->project['web_url'])) {
                     $label = array_search($identifier, $this->getTags(), true) ?: array_search($identifier, $this->getBranches(), true) ?: $identifier;
@@ -216,17 +216,17 @@ class GitLabDriver extends VcsDriver
     /**
      * @inheritDoc
      */
-    public function getChangeDate(string $identifier): ?\DateTime
+    public function getChangeDate(string $identifier): ?\DateTimeImmutable
     {
         if ($this->gitDriver) {
             return $this->gitDriver->getChangeDate($identifier);
         }
 
         if (isset($this->commits[$identifier])) {
-            return new \DateTime($this->commits[$identifier]['committed_date']);
+            return new \DateTimeImmutable($this->commits[$identifier]['committed_date']);
         }
 
-        return new \DateTime();
+        return null;
     }
 
     /**

@@ -81,7 +81,7 @@ class PackageEvent extends Event
     /**
      * @return Composer
      */
-    public function getComposer()
+    public function getComposer(): Composer
     {
         return $this->composer;
     }
@@ -89,7 +89,7 @@ class PackageEvent extends Event
     /**
      * @return IOInterface
      */
-    public function getIO()
+    public function getIO(): IOInterface
     {
         return $this->io;
     }
@@ -97,7 +97,7 @@ class PackageEvent extends Event
     /**
      * @return bool
      */
-    public function isDevMode()
+    public function isDevMode(): bool
     {
         return $this->devMode;
     }
@@ -105,7 +105,7 @@ class PackageEvent extends Event
     /**
      * @return RepositoryInterface
      */
-    public function getLocalRepo()
+    public function getLocalRepo(): RepositoryInterface
     {
         return $this->localRepo;
     }
@@ -113,7 +113,7 @@ class PackageEvent extends Event
     /**
      * @return OperationInterface[]
      */
-    public function getOperations()
+    public function getOperations(): array
     {
         return $this->operations;
     }
@@ -123,7 +123,7 @@ class PackageEvent extends Event
      *
      * @return OperationInterface
      */
-    public function getOperation()
+    public function getOperation(): OperationInterface
     {
         return $this->operation;
     }

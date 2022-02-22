@@ -49,7 +49,7 @@ class Git
      *
      * @return void
      */
-    public function runCommand(callable $commandCallable, string $url, ?string $cwd, bool $initialClone = false)
+    public function runCommand(callable $commandCallable, string $url, ?string $cwd, bool $initialClone = false): void
     {
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
@@ -272,7 +272,7 @@ class Git
      *
      * @return bool
      */
-    public function syncMirror(string $url, string $dir)
+    public function syncMirror(string $url, string $dir): bool
     {
         if (Platform::getEnv('COMPOSER_DISABLE_NETWORK') && Platform::getEnv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
             $this->io->writeError('<warning>Aborting git mirror sync of '.$url.' as network is disabled</warning>');
@@ -317,7 +317,7 @@ class Git
      *
      * @return bool
      */
-    public function fetchRefOrSyncMirror(string $url, string $dir, string $ref)
+    public function fetchRefOrSyncMirror(string $url, string $dir, string $ref): bool
     {
         if ($this->checkRefIsInMirror($dir, $ref)) {
             return true;
@@ -333,7 +333,7 @@ class Git
     /**
      * @return string
      */
-    public static function getNoShowSignatureFlag(ProcessExecutor $process)
+    public static function getNoShowSignatureFlag(ProcessExecutor $process): string
     {
         $gitVersion = self::getVersion($process);
         if ($gitVersion && version_compare($gitVersion, '2.10.0-rc0', '>=')) {
@@ -395,7 +395,7 @@ class Git
     /**
      * @return void
      */
-    public static function cleanEnv()
+    public static function cleanEnv(): void
     {
         // added in git 1.7.1, prevents prompting the user for username/password
         if (Platform::getEnv('GIT_ASKPASS') !== 'echo') {
@@ -458,7 +458,7 @@ class Git
      *
      * @return string|null The git version number, if present.
      */
-    public static function getVersion(ProcessExecutor $process)
+    public static function getVersion(ProcessExecutor $process): ?string
     {
         if (false === self::$version) {
             self::$version = null;

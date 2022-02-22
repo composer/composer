@@ -39,7 +39,7 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true)
+    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
     {
         if (null === self::$unzipCommands) {
             self::$unzipCommands = array();
@@ -206,9 +206,9 @@ class ZipDownloader extends ArchiveDownloader
      *
      * @param  string                $file File to extract
      * @param  string                $path Path where to extract file
-     * @return PromiseInterface|null
+     * @return PromiseInterface
      */
-    protected function extract(PackageInterface $package, string $file, string $path)
+    protected function extract(PackageInterface $package, string $file, string $path): PromiseInterface
     {
         return $this->extractWithSystemUnzip($package, $file, $path);
     }

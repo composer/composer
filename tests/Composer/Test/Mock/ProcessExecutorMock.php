@@ -135,7 +135,9 @@ class ProcessExecutorMock extends ProcessExecutor
         $this->captureOutput = func_num_args() > 3;
         $this->errorOutput = '';
 
-        $callback = is_callable($output) ? $output : array($this, 'outputHandler');
+        $callback = is_callable($output) ? $output : function (string $type, string $buffer): void {
+            $this->outputHandler($type, $buffer);
+        };
 
         $commandString = is_array($command) ? implode(' ', $command) : $command;
         $this->log[] = $commandString;

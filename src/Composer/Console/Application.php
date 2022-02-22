@@ -423,9 +423,9 @@ class Application extends BaseApplication
      * @param  bool|null               $disableScripts
      * @throws JsonValidationException
      * @throws \InvalidArgumentException
-     * @return ?\Composer\Composer If $required is true then the return value is guaranteed
+     * @return ?Composer If $required is true then the return value is guaranteed
      */
-    public function getComposer(bool $required = true, ?bool $disablePlugins = null, ?bool $disableScripts = null)
+    public function getComposer(bool $required = true, ?bool $disablePlugins = null, ?bool $disableScripts = null): ?Composer
     {
         if (null === $disablePlugins) {
             $disablePlugins = $this->disablePluginsByDefault;
@@ -460,7 +460,7 @@ class Application extends BaseApplication
      *
      * @return void
      */
-    public function resetComposer()
+    public function resetComposer(): void
     {
         $this->composer = null;
         if (method_exists($this->getIO(), 'resetAuthentications')) {
@@ -471,7 +471,7 @@ class Application extends BaseApplication
     /**
      * @return IOInterface
      */
-    public function getIO()
+    public function getIO(): IOInterface
     {
         return $this->io;
     }

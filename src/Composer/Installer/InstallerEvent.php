@@ -68,7 +68,7 @@ class InstallerEvent extends Event
     /**
      * @return Composer
      */
-    public function getComposer()
+    public function getComposer(): Composer
     {
         return $this->composer;
     }
@@ -76,7 +76,7 @@ class InstallerEvent extends Event
     /**
      * @return IOInterface
      */
-    public function getIO()
+    public function getIO(): IOInterface
     {
         return $this->io;
     }
@@ -84,7 +84,7 @@ class InstallerEvent extends Event
     /**
      * @return bool
      */
-    public function isDevMode()
+    public function isDevMode(): bool
     {
         return $this->devMode;
     }
@@ -92,7 +92,7 @@ class InstallerEvent extends Event
     /**
      * @return bool
      */
-    public function isExecutingOperations()
+    public function isExecutingOperations(): bool
     {
         return $this->executeOperations;
     }
@@ -100,7 +100,7 @@ class InstallerEvent extends Event
     /**
      * @return Transaction|null
      */
-    public function getTransaction()
+    public function getTransaction(): ?Transaction
     {
         return $this->transaction;
     }

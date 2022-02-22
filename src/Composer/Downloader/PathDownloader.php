@@ -39,7 +39,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): ?PromiseInterface
+    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
@@ -75,7 +75,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function install(PackageInterface $package, string $path, bool $output = true): ?PromiseInterface
+    public function install(PackageInterface $package, string $path, bool $output = true): PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
@@ -161,7 +161,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function remove(PackageInterface $package, string $path, bool $output = true): ?PromiseInterface
+    public function remove(PackageInterface $package, string $path, bool $output = true): PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         /**
@@ -250,7 +250,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      *
      * @phpstan-return array{self::STRATEGY_*, non-empty-list<self::STRATEGY_*>}
      */
-    private function computeAllowedStrategies(array $transportOptions)
+    private function computeAllowedStrategies(array $transportOptions): array
     {
         // When symlink transport option is null, both symlink and mirror are allowed
         $currentStrategy = self::STRATEGY_SYMLINK;
