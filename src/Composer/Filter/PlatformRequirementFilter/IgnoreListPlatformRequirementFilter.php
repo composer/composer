@@ -55,7 +55,7 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
      * @param string $req
      * @return bool
      */
-    public function isIgnored($req): bool
+    public function isIgnored(string $req): bool
     {
         if (!PlatformRepository::isPlatformPackage($req)) {
             return false;
@@ -68,7 +68,7 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
      * @param string $req
      * @return ConstraintInterface
      */
-    public function filterConstraint($req, ConstraintInterface $constraint): ConstraintInterface
+    public function filterConstraint(string $req, ConstraintInterface $constraint): ConstraintInterface
     {
         if (!PlatformRepository::isPlatformPackage($req)) {
             return $constraint;

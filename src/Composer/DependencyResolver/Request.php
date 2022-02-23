@@ -64,7 +64,7 @@ class Request
      * @param string $packageName
      * @return void
      */
-    public function requireName($packageName, ConstraintInterface $constraint = null): void
+    public function requireName(string $packageName, ConstraintInterface $constraint = null): void
     {
         $packageName = strtolower($packageName);
 
@@ -135,7 +135,7 @@ class Request
      * @param false|self::UPDATE_* $updateAllowTransitiveDependencies
      * @return void
      */
-    public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies): void
+    public function setUpdateAllowList(array $updateAllowList, $updateAllowTransitiveDependencies): void
     {
         $this->updateAllowList = $updateAllowList;
         $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;
@@ -222,7 +222,7 @@ class Request
      *       Some locked packages may not be in the pool,
      *       so they have a package->id of -1
      */
-    public function getPresentMap($packageIds = false): array
+    public function getPresentMap(bool $packageIds = false): array
     {
         $presentMap = array();
 

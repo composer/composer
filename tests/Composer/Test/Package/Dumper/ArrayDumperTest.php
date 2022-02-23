@@ -23,32 +23,21 @@ class ArrayDumperTest extends TestCase
      * @var ArrayDumper
      */
     private $dumper;
-    /**
-     * @var \Composer\Package\CompletePackageInterface|\PHPUnit\Framework\MockObject\MockObject
-     */
-    private $package;
 
     public function setUp(): void
     {
         $this->dumper = new ArrayDumper();
-        $this->package = $this->getMockBuilder('Composer\Package\CompletePackageInterface')->getMock();
-        $this->packageExpects('getTransportOptions', array());
     }
 
     public function testRequiredInformation(): void
     {
-        $this
-            ->packageExpects('getPrettyName', 'foo')
-            ->packageExpects('getPrettyVersion', '1.0')
-            ->packageExpects('getVersion', '1.0.0.0')
-        ;
-
-        $config = $this->dumper->dump($this->package);
+        $config = $this->dumper->dump($this->getPackage());
         $this->assertEquals(
             array(
-                'name' => 'foo',
-                'version' => '1.0',
+                'name' => 'dummy/pkg',
+                'version' => '1.0.0',
                 'version_normalized' => '1.0.0.0',
+                'type' => 'library',
             ),
             $config
         );
@@ -56,33 +45,27 @@ class ArrayDumperTest extends TestCase
 
     public function testRootPackage(): void
     {
-        $this->package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
+        $package = $this->getRootPackage();
+        $package->setMinimumStability('dev');
 
-        $this
-            ->packageExpects('getMinimumStability', 'dev')
-            ->packageExpects('getTransportOptions', array())
-        ;
-
-        $config = $this->dumper->dump($this->package);
+        $config = $this->dumper->dump($package);
         $this->assertSame('dev', $config['minimum-stability']);
     }
 
     public function testDumpAbandoned(): void
     {
-        $this->packageExpects('isAbandoned', true);
-        $this->packageExpects('getReplacementPackage', true);
-
-        $config = $this->dumper->dump($this->package);
+        $package = $this->getPackage();
+        $package->setAbandoned(true);
+        $config = $this->dumper->dump($package);
 
         $this->assertTrue($config['abandoned']);
     }
 
     public function testDumpAbandonedReplacement(): void
     {
-        $this->packageExpects('isAbandoned', true);
-        $this->packageExpects('getReplacementPackage', 'foo/bar');
-
-        $config = $this->dumper->dump($this->package);
+        $package = $this->getPackage();
+        $package->setAbandoned('foo/bar');
+        $config = $this->dumper->dump($package);
 
         $this->assertSame('foo/bar', $config['abandoned']);
     }
@@ -95,18 +78,14 @@ class ArrayDumperTest extends TestCase
      * @param string $method
      * @param mixed  $expectedValue
      */
-    public function testKeys($key, $value, $method = null, $expectedValue = null): void
+    public function testKeys(string $key, $value, string $method = null, $expectedValue = null): void
     {
-        $this->package = $this->getMockBuilder('Composer\Package\RootPackageInterface')->getMock();
+        $package = $this->getRootPackage();
 
-        $this->packageExpects('get'.ucfirst($method ?: $key), $value);
-        $this->packageExpects('isAbandoned', $value);
+        // @phpstan-ignore-next-line
+        $package->{'set'.ucfirst($method ?: $key)}($value);
 
-        if ($method !== 'transportOptions') {
-            $this->packageExpects('getTransportOptions', array());
-        }
-
-        $config = $this->dumper->dump($this->package);
+        $config = $this->dumper->dump($package);
 
         $this->assertSame($expectedValue ?: $value, $config[$key]);
     }
@@ -177,13 +156,13 @@ class ArrayDumperTest extends TestCase
             ),
             array(
                 'require',
-                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0')),
+                array('foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0')),
                 'requires',
                 array('foo/bar' => '1.0.0'),
             ),
             array(
                 'require-dev',
-                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_DEV_REQUIRE, '1.0.0')),
+                array('foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_DEV_REQUIRE, '1.0.0')),
                 'devRequires',
                 array('foo/bar' => '1.0.0'),
             ),
@@ -202,13 +181,19 @@ class ArrayDumperTest extends TestCase
             ),
             array(
                 'require',
-                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0')),
+                array(
+                    'foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
+                    'bar/baz' => new Link('dummy/pkg', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
+                ),
                 'requires',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
             ),
             array(
                 'require-dev',
-                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0')),
+                array(
+                    'foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
+                    'bar/baz' => new Link('dummy/pkg', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
+                ),
                 'devRequires',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
             ),
@@ -220,19 +205,28 @@ class ArrayDumperTest extends TestCase
             ),
             array(
                 'provide',
-                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0')),
+                array(
+                    'foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
+                    'bar/baz' => new Link('dummy/pkg', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
+                ),
                 'provides',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
             ),
             array(
                 'replace',
-                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0')),
+                array(
+                    'foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
+                    'bar/baz' => new Link('dummy/pkg', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
+                ),
                 'replaces',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
             ),
             array(
                 'conflict',
-                array(new Link('foo', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'), new Link('bar', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0')),
+                array(
+                    'foo/bar' => new Link('dummy/pkg', 'foo/bar', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
+                    'bar/baz' => new Link('dummy/pkg', 'bar/baz', new Constraint('=', '1.0.0.0'), Link::TYPE_REQUIRE, '1.0.0'),
+                ),
                 'conflicts',
                 array('bar/baz' => '1.0.0', 'foo/bar' => '1.0.0'),
             ),
@@ -242,19 +236,5 @@ class ArrayDumperTest extends TestCase
                 'transportOptions',
             ),
         );
-    }
-
-    /**
-     * @param string $method
-     * @param mixed  $value
-     */
-    private function packageExpects($method, $value): \Composer\Test\Package\Dumper\ArrayDumperTest
-    {
-        $this->package
-            ->expects($this->any())
-            ->method($method)
-            ->will($this->returnValue($value));
-
-        return $this;
     }
 }

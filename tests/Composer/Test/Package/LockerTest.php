@@ -93,41 +93,8 @@ class LockerTest extends TestCase
         $jsonContent = $this->getJsonContent() . '  ';
         $locker = new Locker(new NullIO, $json, $inst, $jsonContent);
 
-        $package1 = $this->createPackageMock();
-        $package2 = $this->createPackageMock();
-
-        $package1
-            ->expects($this->atLeastOnce())
-            ->method('getPrettyName')
-            ->will($this->returnValue('pkg1'));
-        $package1
-            ->expects($this->atLeastOnce())
-            ->method('getPrettyVersion')
-            ->will($this->returnValue('1.0.0-beta'));
-        $package1
-            ->expects($this->atLeastOnce())
-            ->method('getVersion')
-            ->will($this->returnValue('1.0.0.0-beta'));
-
-        $package2
-            ->expects($this->atLeastOnce())
-            ->method('getPrettyName')
-            ->will($this->returnValue('pkg2'));
-        $package2
-            ->expects($this->atLeastOnce())
-            ->method('getPrettyVersion')
-            ->will($this->returnValue('0.1.10'));
-        $package2
-            ->expects($this->atLeastOnce())
-            ->method('getVersion')
-            ->will($this->returnValue('0.1.10.0'));
-
-        foreach (array($package1, $package2) as $package) {
-            $package
-                ->expects($this->atLeastOnce())
-                ->method('getTransportOptions')
-                ->will($this->returnValue(array()));
-        }
+        $package1 = $this->getPackage('pkg1', '1.0.0-beta');
+        $package2 = $this->getPackage('pkg2', '0.1.10');
 
         $contentHash = md5(trim($jsonContent));
 
@@ -140,8 +107,8 @@ class LockerTest extends TestCase
                                    'This file is @gener'.'ated automatically', ),
                 'content-hash' => $contentHash,
                 'packages' => array(
-                    array('name' => 'pkg1', 'version' => '1.0.0-beta'),
-                    array('name' => 'pkg2', 'version' => '0.1.10'),
+                    array('name' => 'pkg1', 'version' => '1.0.0-beta', 'type' => 'library'),
+                    array('name' => 'pkg2', 'version' => '0.1.10', 'type' => 'library'),
                 ),
                 'packages-dev' => array(),
                 'aliases' => array(),

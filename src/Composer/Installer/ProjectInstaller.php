@@ -36,7 +36,7 @@ class ProjectInstaller implements InstallerInterface
     /**
      * @param string $installPath
      */
-    public function __construct($installPath, DownloadManager $dm, Filesystem $fs)
+    public function __construct(string $installPath, DownloadManager $dm, Filesystem $fs)
     {
         $this->installPath = rtrim(strtr($installPath, '\\', '/'), '/').'/';
         $this->downloadManager = $dm;
@@ -49,7 +49,7 @@ class ProjectInstaller implements InstallerInterface
      * @param  string $packageType
      * @return bool
      */
-    public function supports($packageType): bool
+    public function supports(string $packageType): bool
     {
         return true;
     }

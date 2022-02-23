@@ -74,7 +74,7 @@ class InstalledVersionsTest extends TestCase
      * @param string $name
      * @param bool $includeDevRequirements
      */
-    public function testIsInstalled($expected, $name, $includeDevRequirements = true): void
+    public function testIsInstalled(bool $expected, string $name, bool $includeDevRequirements = true): void
     {
         $this->assertSame($expected, InstalledVersions::isInstalled($name, $includeDevRequirements));
     }
@@ -99,7 +99,7 @@ class InstalledVersionsTest extends TestCase
      * @param string $name
      * @param string $constraint
      */
-    public function testSatisfies($expected, $name, $constraint): void
+    public function testSatisfies(bool $expected, string $name, string $constraint): void
     {
         $this->assertSame($expected, InstalledVersions::satisfies(new VersionParser, $name, $constraint));
     }
@@ -139,7 +139,7 @@ class InstalledVersionsTest extends TestCase
      * @param string $expected
      * @param string $name
      */
-    public function testGetVersionRanges($expected, $name): void
+    public function testGetVersionRanges(string $expected, string $name): void
     {
         $this->assertSame($expected, InstalledVersions::getVersionRanges($name));
     }
@@ -160,10 +160,10 @@ class InstalledVersionsTest extends TestCase
 
     /**
      * @dataProvider getVersionProvider
-     * @param ?string $expected
+     * @param null|string $expected
      * @param string $name
      */
-    public function testGetVersion($expected, $name): void
+    public function testGetVersion(?string $expected, string $name): void
     {
         $this->assertSame($expected, InstalledVersions::getVersion($name));
     }
@@ -184,10 +184,10 @@ class InstalledVersionsTest extends TestCase
 
     /**
      * @dataProvider getPrettyVersionProvider
-     * @param ?string $expected
+     * @param null|string $expected
      * @param string $name
      */
-    public function testGetPrettyVersion($expected, $name): void
+    public function testGetPrettyVersion(?string $expected, string $name): void
     {
         $this->assertSame($expected, InstalledVersions::getPrettyVersion($name));
     }
@@ -239,10 +239,10 @@ class InstalledVersionsTest extends TestCase
 
     /**
      * @dataProvider getReferenceProvider
-     * @param ?string $expected
+     * @param null|string $expected
      * @param string $name
      */
-    public function testGetReference($expected, $name): void
+    public function testGetReference(?string $expected, string $name): void
     {
         $this->assertSame($expected, InstalledVersions::getReference($name));
     }

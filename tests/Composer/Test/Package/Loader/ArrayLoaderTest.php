@@ -139,7 +139,7 @@ class ArrayLoaderTest extends TestCase
      *
      * @return array<string, mixed>
      */
-    protected function fixConfigWhenLoadConfigIsFalse($config): array
+    protected function fixConfigWhenLoadConfigIsFalse(array $config): array
     {
         $expectedConfig = $config;
         unset($expectedConfig['transport-options']);
@@ -155,7 +155,7 @@ class ArrayLoaderTest extends TestCase
      *
      * @param array<string, mixed> $config
      */
-    public function testParseDumpDefaultLoadConfig($config): void
+    public function testParseDumpDefaultLoadConfig(array $config): void
     {
         $package = $this->loader->load($config);
         $dumper = new ArrayDumper;
@@ -168,7 +168,7 @@ class ArrayLoaderTest extends TestCase
      *
      * @param array<string, mixed> $config
      */
-    public function testParseDumpTrueLoadConfig($config): void
+    public function testParseDumpTrueLoadConfig(array $config): void
     {
         $loader = new ArrayLoader(null, true);
         $package = $loader->load($config);
@@ -182,7 +182,7 @@ class ArrayLoaderTest extends TestCase
      *
      * @param array<string, mixed> $config
      */
-    public function testParseDumpFalseLoadConfig($config): void
+    public function testParseDumpFalseLoadConfig(array $config): void
     {
         $loader = new ArrayLoader(null, false);
         $package = $loader->load($config);
@@ -299,7 +299,7 @@ class ArrayLoaderTest extends TestCase
      *
      * @param string $apiVersion
      */
-    public function testPluginApiVersionAreKeptAsDeclared($apiVersion): void
+    public function testPluginApiVersionAreKeptAsDeclared(string $apiVersion): void
     {
         $links = $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, array('composer-plugin-api' => $apiVersion));
 

@@ -73,7 +73,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
      *
      * @return void
      */
-    private function scanDirectory($path): void
+    private function scanDirectory(string $path): void
     {
         $io = $this->io;
 

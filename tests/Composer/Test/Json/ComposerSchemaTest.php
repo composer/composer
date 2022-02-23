@@ -94,7 +94,7 @@ class ComposerSchemaTest extends TestCase
      * @param string $json
      * @return mixed
      */
-    private function check($json)
+    private function check(string $json)
     {
         $validator = new Validator();
         $validator->check(json_decode($json), (object) array('$ref' => 'file://' . __DIR__ . '/../../../../res/composer-schema.json'));

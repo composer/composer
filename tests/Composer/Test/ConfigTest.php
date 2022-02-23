@@ -21,9 +21,9 @@ class ConfigTest extends TestCase
      * @dataProvider dataAddPackagistRepository
      * @param mixed[] $expected
      * @param mixed[] $localConfig
-     * @param ?mixed[] $systemConfig
+     * @param ?array<mixed> $systemConfig
      */
-    public function testAddPackagistRepository($expected, $localConfig, $systemConfig = null): void
+    public function testAddPackagistRepository(array $expected, array $localConfig, ?array $systemConfig = null): void
     {
         $config = new Config(false);
         if ($systemConfig) {
@@ -247,7 +247,7 @@ class ConfigTest extends TestCase
      *
      * @param string $url
      */
-    public function testAllowedUrlsPass($url): void
+    public function testAllowedUrlsPass(string $url): void
     {
         $config = new Config(false);
         $config->prohibitUrlByConfig($url);
@@ -258,7 +258,7 @@ class ConfigTest extends TestCase
      *
      * @param string $url
      */
-    public function testProhibitedUrlsThrowException($url): void
+    public function testProhibitedUrlsThrowException(string $url): void
     {
         self::expectException('Composer\Downloader\TransportException');
         self::expectExceptionMessage('Your configuration does not allow connections to ' . $url);

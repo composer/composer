@@ -49,7 +49,7 @@ class ProxyHelperTest extends TestCase
      *
      * @param string $url
      */
-    public function testThrowsOnMalformedUrl($url): void
+    public function testThrowsOnMalformedUrl(string $url): void
     {
         $_SERVER['http_proxy'] = $url;
 
@@ -71,7 +71,7 @@ class ProxyHelperTest extends TestCase
      * @param string $url
      * @param string $expected
      */
-    public function testUrlFormatting($url, $expected): void
+    public function testUrlFormatting(string $url, string $expected): void
     {
         $_SERVER['http_proxy'] = $url;
 
@@ -96,7 +96,7 @@ class ProxyHelperTest extends TestCase
      * @param string               $expected
      * @param int                  $index
      */
-    public function testLowercaseOverridesUppercase(array $server, $expected, $index): void
+    public function testLowercaseOverridesUppercase(array $server, string $expected, int $index): void
     {
         $_SERVER = array_merge($_SERVER, $server);
 
@@ -121,7 +121,7 @@ class ProxyHelperTest extends TestCase
      * @param string               $expected
      * @param int                  $index
      */
-    public function testCGIUpperCaseOverridesHttp(array $server, $expected, $index): void
+    public function testCGIUpperCaseOverridesHttp(array $server, string $expected, int $index): void
     {
         $_SERVER = array_merge($_SERVER, $server);
 
@@ -162,7 +162,7 @@ class ProxyHelperTest extends TestCase
      *
      * @phpstan-param array{http: array{proxy: string, header?: string}} $expected
      */
-    public function testGetContextOptions($url, $expected): void
+    public function testGetContextOptions(string $url, array $expected): void
     {
         $this->assertEquals($expected, ProxyHelper::getContextOptions($url));
     }
@@ -190,7 +190,7 @@ class ProxyHelperTest extends TestCase
      * @param string  $requestUrl
      * @param mixed[] $expected
      */
-    public function testSetRequestFullUri($requestUrl, $expected): void
+    public function testSetRequestFullUri(string $requestUrl, array $expected): void
     {
         $options = array();
         ProxyHelper::setRequestFullUri($requestUrl, $options);

@@ -40,7 +40,7 @@ class ArchivableFilesFinder extends \FilterIterator
      * @param string[] $excludes Composer's own exclude rules from composer.json
      * @param bool $ignoreFilters Ignore filters when looking for files
      */
-    public function __construct($sources, array $excludes, $ignoreFilters = false)
+    public function __construct(string $sources, array $excludes, bool $ignoreFilters = false)
     {
         $fs = new Filesystem();
 

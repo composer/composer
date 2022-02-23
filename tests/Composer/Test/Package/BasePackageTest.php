@@ -49,7 +49,7 @@ class BasePackageTest extends TestCase
      * @param bool   $truncate
      * @param string $expected
      */
-    public function testFormatVersionForDevPackage(BasePackage $package, $truncate, $expected): void
+    public function testFormatVersionForDevPackage(BasePackage $package, bool $truncate, string $expected): void
     {
         $this->assertSame($expected, $package->getFullPrettyVersion($truncate));
     }
@@ -99,7 +99,7 @@ class BasePackageTest extends TestCase
      *
      * @dataProvider dataPackageNamesToRegexp
      */
-    public function testPackageNamesToRegexp(array $packageNames, $wrap, $expectedRegexp): void
+    public function testPackageNamesToRegexp(array $packageNames, $wrap, string $expectedRegexp): void
     {
         $regexp = BasePackage::packageNamesToRegexp($packageNames, $wrap);
 

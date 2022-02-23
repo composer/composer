@@ -112,7 +112,7 @@ class RuleSet implements \IteratorAggregate, \Countable
      * @param int $id
      * @return Rule
      */
-    public function ruleById($id): Rule
+    public function ruleById(int $id): Rule
     {
         return $this->ruleById[$id];
     }
@@ -181,7 +181,7 @@ class RuleSet implements \IteratorAggregate, \Countable
      * @param bool $isVerbose
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null, $isVerbose = false): string
+    public function getPrettyString(RepositorySet $repositorySet = null, Request $request = null, Pool $pool = null, bool $isVerbose = false): string
     {
         $string = "\n";
         foreach ($this->rules as $type => $rules) {
@@ -195,7 +195,7 @@ class RuleSet implements \IteratorAggregate, \Countable
         return $string;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getPrettyString();
     }

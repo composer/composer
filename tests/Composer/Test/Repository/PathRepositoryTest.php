@@ -14,6 +14,7 @@ namespace Composer\Test\Repository;
 
 use Composer\Repository\PathRepository;
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 
 class PathRepositoryTest extends TestCase
 {
@@ -140,7 +141,7 @@ class PathRepositoryTest extends TestCase
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(realpath(realpath(__DIR__)), 'Fixtures', 'path', 'with-version'));
         // getcwd() not necessarily match __DIR__
         // PHP Bug https://bugs.php.net/bug.php?id=73797
-        $relativeUrl = ltrim(substr($repositoryUrl, strlen(realpath(realpath(getcwd())))), DIRECTORY_SEPARATOR);
+        $relativeUrl = ltrim(substr($repositoryUrl, strlen(realpath(realpath(Platform::getCwd())))), DIRECTORY_SEPARATOR);
 
         $repository = new PathRepository(array('url' => $relativeUrl), $ioInterface, $config);
         $packages = $repository->getPackages();

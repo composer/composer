@@ -65,10 +65,10 @@ class ProcessExecutor
      * @param  string|list<string> $command the command to execute
      * @param  mixed   $output  the output will be written into this var if passed by ref
      *                          if a callable is passed it will be used as output handler
-     * @param  ?string $cwd     the working directory
+     * @param  null|string $cwd     the working directory
      * @return int     statuscode
      */
-    public function execute($command, &$output = null, $cwd = null)
+    public function execute($command, &$output = null, ?string $cwd = null): int
     {
         if (func_num_args() > 1) {
             return $this->doExecute($command, $cwd, false, $output);
@@ -81,10 +81,10 @@ class ProcessExecutor
      * runs a process on the commandline in TTY mode
      *
      * @param  string|list<string>  $command the command to execute
-     * @param  ?string $cwd     the working directory
+     * @param  null|string $cwd     the working directory
      * @return int     statuscode
      */
-    public function executeTty($command, $cwd = null)
+    public function executeTty($command, ?string $cwd = null): int
     {
         if (Platform::isTty()) {
             return $this->doExecute($command, $cwd, true);
@@ -95,12 +95,12 @@ class ProcessExecutor
 
     /**
      * @param  string|list<string> $command
-     * @param  ?string $cwd
+     * @param  null|string $cwd
      * @param  bool    $tty
      * @param  mixed   $output
      * @return int
      */
-    private function doExecute($command, $cwd, $tty, &$output = null): int
+    private function doExecute($command, ?string $cwd, bool $tty, &$output = null): int
     {
         $this->outputCommandRun($command, $cwd, false);
 
@@ -121,7 +121,10 @@ class ProcessExecutor
             }
         }
 
-        $callback = is_callable($output) ? $output : array($this, 'outputHandler');
+        $callback = is_callable($output) ? $output : function (string $type, string $buffer): void {
+            $this->outputHandler($type, $buffer);
+        };
+
         $process->run($callback);
 
         if ($this->captureOutput && !is_callable($output)) {
@@ -140,7 +143,7 @@ class ProcessExecutor
      * @param  string              $cwd     the working directory
      * @return PromiseInterface
      */
-    public function executeAsync($command, $cwd = null)
+    public function executeAsync($command, ?string $cwd = null): PromiseInterface
     {
         if (!$this->allowAsync) {
             throw new \LogicException('You must use the ProcessExecutor instance which is part of a Composer\Loop instance to be able to run async processes');
@@ -206,11 +209,30 @@ class ProcessExecutor
         return $promise;
     }
 
+    protected function outputHandler(string $type, string $buffer): void
+    {
+        if ($this->captureOutput) {
+            return;
+        }
+
+        if (null === $this->io) {
+            echo $buffer;
+
+            return;
+        }
+
+        if (Process::ERR === $type) {
+            $this->io->writeErrorRaw($buffer, false);
+        } else {
+            $this->io->writeRaw($buffer, false);
+        }
+    }
+
     /**
      * @param  int  $id
      * @return void
      */
-    private function startJob($id): void
+    private function startJob(int $id): void
     {
         $job = &$this->jobs[$id];
         if ($job['status'] !== self::STATUS_QUEUED) {
@@ -253,7 +275,7 @@ class ProcessExecutor
      * @param  ?int $index job id
      * @return void
      */
-    public function wait($index = null)
+    public function wait($index = null): void
     {
         while (true) {
             if (!$this->countActiveJobs($index)) {
@@ -321,10 +343,10 @@ class ProcessExecutor
     }
 
     /**
-     * @param  ?string  $output
+     * @param  null|string  $output
      * @return string[]
      */
-    public function splitLines($output)
+    public function splitLines(?string $output): array
     {
         $output = trim((string) $output);
 
@@ -336,42 +358,15 @@ class ProcessExecutor
      *
      * @return string
      */
-    public function getErrorOutput()
+    public function getErrorOutput(): string
     {
         return $this->errorOutput;
     }
 
     /**
-     * @private
-     *
-     * @param Process::ERR|Process::OUT $type
-     * @param string                    $buffer
-     *
-     * @return void
-     */
-    public function outputHandler($type, $buffer)
-    {
-        if ($this->captureOutput) {
-            return;
-        }
-
-        if (null === $this->io) {
-            echo $buffer;
-
-            return;
-        }
-
-        if (Process::ERR === $type) {
-            $this->io->writeErrorRaw($buffer, false);
-        } else {
-            $this->io->writeRaw($buffer, false);
-        }
-    }
-
-    /**
      * @return int the timeout in seconds
      */
-    public static function getTimeout()
+    public static function getTimeout(): int
     {
         return static::$timeout;
     }
@@ -380,7 +375,7 @@ class ProcessExecutor
      * @param  int  $timeout the timeout in seconds
      * @return void
      */
-    public static function setTimeout($timeout)
+    public static function setTimeout(int $timeout): void
     {
         static::$timeout = $timeout;
     }
@@ -392,7 +387,7 @@ class ProcessExecutor
      *
      * @return string The escaped argument
      */
-    public static function escape($argument)
+    public static function escape($argument): string
     {
         return self::escapeArgument($argument);
     }

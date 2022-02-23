@@ -397,7 +397,7 @@ TAGSPUBKEY
      * @return int
      * @throws FilesystemException
      */
-    protected function rollback(OutputInterface $output, $rollbackDir, $localFilename): int
+    protected function rollback(OutputInterface $output, string $rollbackDir, string $localFilename): int
     {
         $rollbackVersion = $this->getLastBackupVersion($rollbackDir);
         if (!$rollbackVersion) {
@@ -431,7 +431,7 @@ TAGSPUBKEY
      * @throws FilesystemException If the file cannot be moved
      * @return bool                Whether the phar is valid and has been moved
      */
-    protected function setLocalPhar($localFilename, $newFilename, $backupTarget = null): bool
+    protected function setLocalPhar(string $localFilename, string $newFilename, string $backupTarget = null): bool
     {
         $io = $this->getIO();
         @chmod($newFilename, fileperms($localFilename));
@@ -483,7 +483,7 @@ TAGSPUBKEY
      *
      * @return void
      */
-    protected function cleanBackups($rollbackDir, $except = null): void
+    protected function cleanBackups(string $rollbackDir, ?string $except = null): void
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
         $io = $this->getIO();
@@ -503,7 +503,7 @@ TAGSPUBKEY
      * @param string $rollbackDir
      * @return string|false
      */
-    protected function getLastBackupVersion($rollbackDir)
+    protected function getLastBackupVersion(string $rollbackDir)
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
         $finder->sortByName();
@@ -520,7 +520,7 @@ TAGSPUBKEY
      * @param string $rollbackDir
      * @return Finder
      */
-    protected function getOldInstallationFinder($rollbackDir): Finder
+    protected function getOldInstallationFinder(string $rollbackDir): Finder
     {
         return Finder::create()
             ->depth(0)
@@ -541,7 +541,7 @@ TAGSPUBKEY
      * @throws \Exception
      * @return bool       If the operation succeeded
      */
-    protected function validatePhar($pharFile, &$error): bool
+    protected function validatePhar(string $pharFile, ?string &$error): bool
     {
         if (ini_get('phar.readonly')) {
             return true;
@@ -590,7 +590,7 @@ TAGSPUBKEY
      * @param  string $newFilename   The downloaded or backup phar
      * @return bool   Whether composer.phar has been updated
      */
-    protected function tryAsWindowsAdmin($localFilename, $newFilename): bool
+    protected function tryAsWindowsAdmin(string $localFilename, string $newFilename): bool
     {
         $io = $this->getIO();
 

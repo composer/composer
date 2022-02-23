@@ -20,7 +20,7 @@ class SolverBugException extends \RuntimeException
     /**
      * @param string $message
      */
-    public function __construct($message)
+    public function __construct(string $message)
     {
         parent::__construct(
             $message."\nThis exception was most likely caused by a bug in Composer.\n".

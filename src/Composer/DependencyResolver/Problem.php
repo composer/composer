@@ -77,7 +77,7 @@ class Problem
      * @param array<Rule[]> $learnedPool
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
     {
         // TODO doesn't this entirely defeat the purpose of the problem sections? what's the point of sections?
         $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
@@ -117,7 +117,7 @@ class Problem
      * @return string
      * @internal
      */
-    public static function formatDeduplicatedRules($rules, $indent, RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
+    public static function formatDeduplicatedRules(array $rules, string $indent, RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
     {
         $messages = array();
         $templates = array();
@@ -185,7 +185,7 @@ class Problem
      * @param Rule   $reason The reason descriptor
      * @return void
      */
-    protected function addReason($id, Rule $reason): void
+    protected function addReason(string $id, Rule $reason): void
     {
         // TODO: if a rule is part of a problem description in two sections, isn't this going to remove a message
         // that is important to understand the issue?
@@ -210,7 +210,7 @@ class Problem
      * @param string $packageName
      * @return array{0: string, 1: string}
      */
-    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, ConstraintInterface $constraint = null): array
+    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, string $packageName, ConstraintInterface $constraint = null): array
     {
         if (PlatformRepository::isPlatformPackage($packageName)) {
             // handle php/php-*/hhvm
@@ -382,7 +382,7 @@ class Problem
      * @param bool $useRemovedVersionGroup
      * @return string
      */
-    public static function getPackageList(array $packages, $isVerbose, Pool $pool = null, ConstraintInterface $constraint = null, $useRemovedVersionGroup = false): string
+    public static function getPackageList(array $packages, bool $isVerbose, Pool $pool = null, ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
     {
         $prepared = array();
         $hasDefaultBranch = array();
@@ -427,7 +427,7 @@ class Problem
      * @param  string $version the effective runtime version of the platform package
      * @return ?string a version string or null if it appears the package was artificially disabled
      */
-    private static function getPlatformPackageVersion(Pool $pool, $packageName, $version): ?string
+    private static function getPlatformPackageVersion(Pool $pool, string $packageName, string $version): ?string
     {
         $available = $pool->whatProvides($packageName);
 
@@ -471,7 +471,7 @@ class Problem
      * @param int $maxDev
      * @return list<string> a list of pretty versions and '...' where versions were removed
      */
-    private static function condenseVersionList(array $versions, $max, $maxDev = 16): array
+    private static function condenseVersionList(array $versions, int $max, int $maxDev = 16): array
     {
         if (count($versions) <= $max) {
             return $versions;
@@ -527,7 +527,7 @@ class Problem
      * @param string $reason
      * @return array{0: string, 1: string}
      */
-    private static function computeCheckForLowerPrioRepo(Pool $pool, $isVerbose, $packageName, array $higherRepoPackages, array $allReposPackages, $reason, ConstraintInterface $constraint = null): array
+    private static function computeCheckForLowerPrioRepo(Pool $pool, bool $isVerbose, string $packageName, array $higherRepoPackages, array $allReposPackages, string $reason, ConstraintInterface $constraint = null): array
     {
         $nextRepoPackages = array();
         $nextRepo = null;

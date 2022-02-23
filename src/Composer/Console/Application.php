@@ -74,7 +74,7 @@ class Application extends BaseApplication
     private $disableScriptsByDefault = false;
 
     /**
-     * @var string Store the initial working directory at startup time
+     * @var string|false Store the initial working directory at startup time
      */
     private $initialWorkingDirectory;
 
@@ -151,10 +151,11 @@ class Application extends BaseApplication
 
         // switch working dir
         if ($newWorkDir = $this->getNewWorkingDir($input)) {
-            $oldWorkingDir = getcwd();
+            $oldWorkingDir = Platform::getCwd(true);
             chdir($newWorkDir);
             $this->initialWorkingDirectory = $newWorkDir;
-            $io->writeError('Changed CWD to ' . getcwd(), true, IOInterface::DEBUG);
+            $cwd = Platform::getCwd(true);
+            $io->writeError('Changed CWD to ' . ($cwd !== '' ? $cwd : $newWorkDir), true, IOInterface::DEBUG);
         }
 
         // determine command name to be executed without including plugin commands
@@ -171,7 +172,7 @@ class Application extends BaseApplication
 
         // prompt user for dir change if no composer.json is present in current dir
         if ($io->isInteractive() && !$newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'), true) && !file_exists(Factory::getComposerFile()) && ($useParentDirIfNoJsonAvailable = $this->getUseParentDirConfigValue()) !== false) {
-            $dir = dirname(getcwd());
+            $dir = dirname(Platform::getCwd(true));
             $home = realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
 
             // abort when we reach the home dir or top of the filesystem
@@ -183,7 +184,7 @@ class Application extends BaseApplication
                         } else {
                             $io->writeError('<info>Always want to use the parent dir? Use "composer config --global use-parent-dir true" to change the default.</info>');
                         }
-                        $oldWorkingDir = getcwd();
+                        $oldWorkingDir = Platform::getCwd(true);
                         chdir($dir);
                     }
                     break;
@@ -330,7 +331,7 @@ class Application extends BaseApplication
             $result = parent::doRun($input, $output);
 
             // chdir back to $oldWorkingDir if set
-            if (isset($oldWorkingDir)) {
+            if (isset($oldWorkingDir) && '' !== $oldWorkingDir) {
                 Silencer::call('chdir', $oldWorkingDir);
             }
 
@@ -422,9 +423,9 @@ class Application extends BaseApplication
      * @param  bool|null               $disableScripts
      * @throws JsonValidationException
      * @throws \InvalidArgumentException
-     * @return ?\Composer\Composer If $required is true then the return value is guaranteed
+     * @return ?Composer If $required is true then the return value is guaranteed
      */
-    public function getComposer($required = true, $disablePlugins = null, $disableScripts = null)
+    public function getComposer(bool $required = true, ?bool $disablePlugins = null, ?bool $disableScripts = null): ?Composer
     {
         if (null === $disablePlugins) {
             $disablePlugins = $this->disablePluginsByDefault;
@@ -459,7 +460,7 @@ class Application extends BaseApplication
      *
      * @return void
      */
-    public function resetComposer()
+    public function resetComposer(): void
     {
         $this->composer = null;
         if (method_exists($this->getIO(), 'resetAuthentications')) {
@@ -470,7 +471,7 @@ class Application extends BaseApplication
     /**
      * @return IOInterface
      */
-    public function getIO()
+    public function getIO(): IOInterface
     {
         return $this->io;
     }
@@ -585,7 +586,7 @@ class Application extends BaseApplication
     /**
      * Get the working directory at startup time
      *
-     * @return string
+     * @return string|false
      */
     public function getInitialWorkingDirectory()
     {

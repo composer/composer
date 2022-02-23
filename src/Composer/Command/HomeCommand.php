@@ -101,7 +101,7 @@ EOT
      * @param bool $showOnly
      * @return bool
      */
-    private function handlePackage(CompletePackageInterface $package, $showHomepage, $showOnly): bool
+    private function handlePackage(CompletePackageInterface $package, bool $showHomepage, bool $showOnly): bool
     {
         $support = $package->getSupport();
         $url = $support['source'] ?? $package->getSourceUrl();
@@ -128,7 +128,7 @@ EOT
      * @param string $url
      * @return void
      */
-    private function openBrowser($url): void
+    private function openBrowser(string $url): void
     {
         $url = ProcessExecutor::escape($url);
 

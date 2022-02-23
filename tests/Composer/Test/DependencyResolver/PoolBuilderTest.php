@@ -30,6 +30,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 
 class PoolBuilderTest extends TestCase
 {
@@ -44,7 +45,7 @@ class PoolBuilderTest extends TestCase
      * @param mixed[] $packageRepos
      * @param mixed[] $fixed
      */
-    public function testPoolBuilder($file, $message, $expect, $expectOptimized, $root, $requestData, $packageRepos, $fixed): void
+    public function testPoolBuilder(string $file, string $message, array $expect, array $expectOptimized, array $root, array $requestData, array $packageRepos, array $fixed): void
     {
         $rootAliases = !empty($root['aliases']) ? $root['aliases'] : array();
         $minimumStability = !empty($root['minimum-stability']) ? $root['minimum-stability'] : 'stable';
@@ -82,7 +83,7 @@ class PoolBuilderTest extends TestCase
             return $pkg;
         };
 
-        $oldCwd = getcwd();
+        $oldCwd = Platform::getCwd();
         chdir(__DIR__.'/Fixtures/poolbuilder/');
 
         $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $rootReferences);
@@ -149,7 +150,7 @@ class PoolBuilderTest extends TestCase
      * @param array<int, BasePackage> $packageIds
      * @return string[]
      */
-    private function getPackageResultSet(Pool $pool, $packageIds): array
+    private function getPackageResultSet(Pool $pool, array $packageIds): array
     {
         $result = array();
         for ($i = 1, $count = count($pool); $i <= $count; $i++) {
@@ -223,7 +224,7 @@ class PoolBuilderTest extends TestCase
      * @param string $fixturesDir
      * @return array<string, string>
      */
-    protected function readTestFile(\SplFileInfo $file, $fixturesDir): array
+    protected function readTestFile(\SplFileInfo $file, string $fixturesDir): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
 

@@ -66,7 +66,7 @@ class VersionGuesser
      * @return array|null
      * @phpstan-return Version|null
      */
-    public function guessVersion(array $packageConfig, $path): ?array
+    public function guessVersion(array $packageConfig, string $path): ?array
     {
         if (!function_exists('proc_open')) {
             return null;
@@ -126,7 +126,7 @@ class VersionGuesser
      *
      * @return array{version: string|null, commit: string|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}
      */
-    private function guessGitVersion(array $packageConfig, $path): array
+    private function guessGitVersion(array $packageConfig, string $path): array
     {
         GitUtil::cleanEnv();
         $commit = null;
@@ -211,7 +211,7 @@ class VersionGuesser
      *
      * @return array{version: string, pretty_version: string}|null
      */
-    private function versionFromGitTags($path): ?array
+    private function versionFromGitTags(string $path): ?array
     {
         // try to fetch current version from git tags
         if (0 === $this->process->execute('git describe --exact-match --tags', $output, $path)) {
@@ -232,7 +232,7 @@ class VersionGuesser
      *
      * @return array{version: string|null, commit: ''|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}|null
      */
-    private function guessHgVersion(array $packageConfig, $path): ?array
+    private function guessHgVersion(array $packageConfig, string $path): ?array
     {
         // try to fetch current version from hg branch
         if (0 === $this->process->execute('hg branch', $output, $path)) {
@@ -276,7 +276,7 @@ class VersionGuesser
      *
      * @return array{version: string|null, pretty_version: string|null}
      */
-    private function guessFeatureVersion(array $packageConfig, $version, array $branches, $scmCmdline, $path): array
+    private function guessFeatureVersion(array $packageConfig, ?string $version, array $branches, string $scmCmdline, string $path): array
     {
         $prettyVersion = $version;
 
@@ -340,7 +340,7 @@ class VersionGuesser
      *
      * @return bool
      */
-    private function isFeatureBranch(array $packageConfig, $branchName): bool
+    private function isFeatureBranch(array $packageConfig, ?string $branchName): bool
     {
         $nonFeatureBranches = '';
         if (!empty($packageConfig['non-feature-branches'])) {
@@ -355,7 +355,7 @@ class VersionGuesser
      *
      * @return array{version: string|null, commit: '', pretty_version: string|null}
      */
-    private function guessFossilVersion($path): array
+    private function guessFossilVersion(string $path): array
     {
         $version = null;
         $prettyVersion = null;
@@ -385,7 +385,7 @@ class VersionGuesser
      *
      * @return array{version: string, commit: '', pretty_version: string}|null
      */
-    private function guessSvnVersion(array $packageConfig, $path): ?array
+    private function guessSvnVersion(array $packageConfig, string $path): ?array
     {
         SvnUtil::cleanEnv();
 

@@ -25,7 +25,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null): ?PromiseInterface
+    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
     {
         if (null === HgUtils::getVersion($this->process)) {
             throw new \RuntimeException('hg was not found in your PATH, skipping source download');
@@ -37,11 +37,11 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doInstall(PackageInterface $package, $path, $url): ?PromiseInterface
+    protected function doInstall(PackageInterface $package, string $path, string $url): PromiseInterface
     {
         $hgUtils = new HgUtils($this->io, $this->config, $this->process);
 
-        $cloneCommand = function ($url) use ($path): string {
+        $cloneCommand = function (string $url) use ($path): string {
             return sprintf('hg clone -- %s %s', ProcessExecutor::escape($url), ProcessExecutor::escape($path));
         };
 
@@ -59,7 +59,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url): ?PromiseInterface
+    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): PromiseInterface
     {
         $hgUtils = new HgUtils($this->io, $this->config, $this->process);
 
@@ -82,7 +82,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    public function getLocalChanges(PackageInterface $package, $path): ?string
+    public function getLocalChanges(PackageInterface $package, string $path): ?string
     {
         if (!is_dir($path.'/.hg')) {
             return null;
@@ -96,7 +96,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function getCommitLogs($fromReference, $toReference, $path): string
+    protected function getCommitLogs(string $fromReference, string $toReference, string $path): string
     {
         $command = sprintf('hg log -r %s:%s --style compact', ProcessExecutor::escape($fromReference), ProcessExecutor::escape($toReference));
 
@@ -110,7 +110,7 @@ class HgDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function hasMetadataRepository($path): bool
+    protected function hasMetadataRepository(string $path): bool
     {
         return is_dir($path . '/.hg');
     }

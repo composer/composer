@@ -17,6 +17,8 @@ use Composer\Repository\RepositoryInterface;
 /**
  * Defines the essential information a package has that is used during solving/installation
  *
+ * PackageInterface & derivatives are considered internal, you may use them in type hints but extending/implementing them is not recommended and not supported. Things may change without notice.
+ *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  *
  * @phpstan-type AutoloadRules    array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>, exclude-from-classmap?: list<string>}
@@ -33,14 +35,14 @@ interface PackageInterface
      *
      * @return string package name
      */
-    public function getName();
+    public function getName(): string;
 
     /**
      * Returns the package's pretty (i.e. with proper case) name
      *
      * @return string package name
      */
-    public function getPrettyName();
+    public function getPrettyName(): string;
 
     /**
      * Returns a set of names that could refer to this package
@@ -52,7 +54,7 @@ interface PackageInterface
      *
      * @return string[] An array of strings referring to this package
      */
-    public function getNames($provides = true);
+    public function getNames(bool $provides = true): array;
 
     /**
      * Allows the solver to set an id for this package to refer to it.
@@ -61,52 +63,52 @@ interface PackageInterface
      *
      * @return void
      */
-    public function setId($id);
+    public function setId(int $id): void;
 
     /**
      * Retrieves the package's id set through setId
      *
      * @return int The previously set package id
      */
-    public function getId();
+    public function getId(): int;
 
     /**
      * Returns whether the package is a development virtual package or a concrete one
      *
      * @return bool
      */
-    public function isDev();
+    public function isDev(): bool;
 
     /**
      * Returns the package type, e.g. library
      *
      * @return string The package type
      */
-    public function getType();
+    public function getType(): string;
 
     /**
      * Returns the package targetDir property
      *
      * @return ?string The package targetDir
      */
-    public function getTargetDir();
+    public function getTargetDir(): ?string;
 
     /**
      * Returns the package extra data
      *
      * @return mixed[] The package extra data
      */
-    public function getExtra();
+    public function getExtra(): array;
 
     /**
      * Sets source from which this package was installed (source/dist).
      *
-     * @param string $type source/dist
+     * @param ?string $type source/dist
      * @phpstan-param 'source'|'dist'|null $type
      *
      * @return void
      */
-    public function setInstallationSource($type);
+    public function setInstallationSource(?string $type): void;
 
     /**
      * Returns source from which this package was installed (source/dist).
@@ -114,110 +116,110 @@ interface PackageInterface
      * @return ?string source/dist
      * @phpstan-return 'source'|'dist'|null
      */
-    public function getInstallationSource();
+    public function getInstallationSource(): ?string;
 
     /**
      * Returns the repository type of this package, e.g. git, svn
      *
      * @return ?string The repository type
      */
-    public function getSourceType();
+    public function getSourceType(): ?string;
 
     /**
      * Returns the repository url of this package, e.g. git://github.com/naderman/composer.git
      *
      * @return ?string The repository url
      */
-    public function getSourceUrl();
+    public function getSourceUrl(): ?string;
 
     /**
      * Returns the repository urls of this package including mirrors, e.g. git://github.com/naderman/composer.git
      *
      * @return string[]
      */
-    public function getSourceUrls();
+    public function getSourceUrls(): array;
 
     /**
      * Returns the repository reference of this package, e.g. master, 1.0.0 or a commit hash for git
      *
      * @return ?string The repository reference
      */
-    public function getSourceReference();
+    public function getSourceReference(): ?string;
 
     /**
      * Returns the source mirrors of this package
      *
      * @return ?array<int, array{url: string, preferred: bool}>
      */
-    public function getSourceMirrors();
+    public function getSourceMirrors(): ?array;
 
     /**
-     * @param  ?array<int, array{url: string, preferred: bool}> $mirrors
+     * @param  null|array<int, array{url: string, preferred: bool}> $mirrors
      * @return void
      */
-    public function setSourceMirrors($mirrors);
+    public function setSourceMirrors(?array $mirrors): void;
 
     /**
      * Returns the type of the distribution archive of this version, e.g. zip, tarball
      *
      * @return ?string The repository type
      */
-    public function getDistType();
+    public function getDistType(): ?string;
 
     /**
      * Returns the url of the distribution archive of this version
      *
      * @return ?string
      */
-    public function getDistUrl();
+    public function getDistUrl(): ?string;
 
     /**
      * Returns the urls of the distribution archive of this version, including mirrors
      *
      * @return string[]
      */
-    public function getDistUrls();
+    public function getDistUrls(): array;
 
     /**
      * Returns the reference of the distribution archive of this version, e.g. master, 1.0.0 or a commit hash for git
      *
      * @return ?string
      */
-    public function getDistReference();
+    public function getDistReference(): ?string;
 
     /**
      * Returns the sha1 checksum for the distribution archive of this version
      *
      * @return ?string
      */
-    public function getDistSha1Checksum();
+    public function getDistSha1Checksum(): ?string;
 
     /**
      * Returns the dist mirrors of this package
      *
      * @return ?array<int, array{url: string, preferred: bool}>
      */
-    public function getDistMirrors();
+    public function getDistMirrors(): ?array;
 
     /**
-     * @param  ?array<int, array{url: string, preferred: bool}> $mirrors
+     * @param  null|array<int, array{url: string, preferred: bool}> $mirrors
      * @return void
      */
-    public function setDistMirrors($mirrors);
+    public function setDistMirrors(?array $mirrors): void;
 
     /**
      * Returns the version of this package
      *
      * @return string version
      */
-    public function getVersion();
+    public function getVersion(): string;
 
     /**
      * Returns the pretty (i.e. non-normalized) version string of this package
      *
      * @return string version
      */
-    public function getPrettyVersion();
+    public function getPrettyVersion(): string;
 
     /**
      * Returns the pretty version string plus a git or hg commit hash of this package
@@ -230,14 +232,14 @@ interface PackageInterface
      *
      * @phpstan-param self::DISPLAY_SOURCE_REF_IF_DEV|self::DISPLAY_SOURCE_REF|self::DISPLAY_DIST_REF $displayMode
      */
-    public function getFullPrettyVersion($truncate = true, $displayMode = self::DISPLAY_SOURCE_REF_IF_DEV);
+    public function getFullPrettyVersion(bool $truncate = true, int $displayMode = self::DISPLAY_SOURCE_REF_IF_DEV): string;
 
     /**
      * Returns the release date of the package
      *
-     * @return ?\DateTime
+     * @return ?\DateTimeInterface
      */
-    public function getReleaseDate();
+    public function getReleaseDate(): ?\DateTimeInterface;
 
     /**
      * Returns the stability of this package: one of (dev, alpha, beta, RC, stable)
@@ -246,7 +248,7 @@ interface PackageInterface
      *
      * @phpstan-return 'stable'|'RC'|'beta'|'alpha'|'dev'
      */
-    public function getStability();
+    public function getStability(): string;
 
     /**
      * Returns a set of links to packages which need to be installed before
@@ -254,7 +256,7 @@ interface PackageInterface
      *
      * @return array<string, Link> A map of package links defining required packages, indexed by the require package's name
      */
-    public function getRequires();
+    public function getRequires(): array;
 
     /**
      * Returns a set of links to packages which must not be installed at the
@@ -262,7 +264,7 @@ interface PackageInterface
      *
      * @return Link[] An array of package links defining conflicting packages
      */
-    public function getConflicts();
+    public function getConflicts(): array;
 
     /**
      * Returns a set of links to virtual packages that are provided through
@@ -270,7 +272,7 @@ interface PackageInterface
      *
      * @return Link[] An array of package links defining provided packages
      */
-    public function getProvides();
+    public function getProvides(): array;
 
     /**
      * Returns a set of links to packages which can alternatively be
@@ -278,7 +280,7 @@ interface PackageInterface
      *
      * @return Link[] An array of package links defining replaced packages
      */
-    public function getReplaces();
+    public function getReplaces(): array;
 
     /**
      * Returns a set of links to packages which are required to develop
@@ -286,7 +288,7 @@ interface PackageInterface
      *
      * @return array<string, Link> A map of package links defining packages required for development, indexed by the require package's name
      */
-    public function getDevRequires();
+    public function getDevRequires(): array;
 
     /**
      * Returns a set of package names and reasons why they are useful in
@@ -295,7 +297,7 @@ interface PackageInterface
      * @return array An array of package suggestions with descriptions
      * @phpstan-return array<string, string>
      */
-    public function getSuggests();
+    public function getSuggests(): array;
 
     /**
      * Returns an associative array of autoloading rules
@@ -308,7 +310,7 @@ interface PackageInterface
      * @return array Mapping of autoloading rules
      * @phpstan-return AutoloadRules
      */
-    public function getAutoload();
+    public function getAutoload(): array;
 
     /**
      * Returns an associative array of dev autoloading rules
@@ -321,7 +323,7 @@ interface PackageInterface
      * @return array Mapping of dev autoloading rules
      * @phpstan-return DevAutoloadRules
      */
-    public function getDevAutoload();
+    public function getDevAutoload(): array;
 
     /**
      * Returns a list of directories which should get added to PHP's
@@ -329,7 +331,7 @@ interface PackageInterface
      *
      * @return string[]
      */
-    public function getIncludePaths();
+    public function getIncludePaths(): array;
 
     /**
      * Stores a reference to the repository that owns the package
@@ -338,61 +340,61 @@ interface PackageInterface
      *
      * @return void
      */
-    public function setRepository(RepositoryInterface $repository);
+    public function setRepository(RepositoryInterface $repository): void;
 
     /**
      * Returns a reference to the repository that owns the package
      *
      * @return ?RepositoryInterface
      */
-    public function getRepository();
+    public function getRepository(): ?RepositoryInterface;
 
     /**
      * Returns the package binaries
      *
      * @return string[]
      */
-    public function getBinaries();
+    public function getBinaries(): array;
 
     /**
      * Returns package unique name, constructed from name and version.
      *
      * @return string
      */
-    public function getUniqueName();
+    public function getUniqueName(): string;
 
     /**
      * Returns the package notification url
      *
      * @return ?string
      */
-    public function getNotificationUrl();
+    public function getNotificationUrl(): ?string;
 
     /**
      * Converts the package into a readable and unique string
      *
      * @return string
      */
-    public function __toString();
+    public function __toString(): string;
 
     /**
      * Converts the package into a pretty readable string
      *
      * @return string
      */
-    public function getPrettyString();
+    public function getPrettyString(): string;
 
     /**
      * @return bool
      */
-    public function isDefaultBranch();
+    public function isDefaultBranch(): bool;
 
     /**
      * Returns a list of options to download package dist files
      *
      * @return mixed[]
      */
-    public function getTransportOptions();
+    public function getTransportOptions(): array;
 
     /**
      * Configures the list of options to download package dist files
@@ -401,42 +403,32 @@ interface PackageInterface
      *
      * @return void
      */
-    public function setTransportOptions(array $options);
+    public function setTransportOptions(array $options): void;
 
     /**
-     * @param string $reference
-     *
      * @return void
      */
-    public function setSourceReference($reference);
+    public function setSourceReference(?string $reference): void;
 
     /**
-     * @param string $url
-     *
      * @return void
      */
-    public function setDistUrl($url);
+    public function setDistUrl(?string $url): void;
 
     /**
-     * @param string $type
-     *
      * @return void
      */
-    public function setDistType($type);
+    public function setDistType(?string $type): void;
 
     /**
-     * @param string $reference
-     *
      * @return void
      */
-    public function setDistReference($reference);
+    public function setDistReference(?string $reference): void;
 
     /**
      * Set dist and source references and update dist URL for ones that contain a reference
      *
-     * @param string $reference
-     *
      * @return void
      */
-    public function setSourceDistReferences($reference);
+    public function setSourceDistReferences(string $reference): void;
 }

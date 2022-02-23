@@ -75,7 +75,7 @@ class Svn
      * @param Config                   $config
      * @param ProcessExecutor          $process
      */
-    public function __construct($url, IOInterface $io, Config $config, ProcessExecutor $process = null)
+    public function __construct(string $url, IOInterface $io, Config $config, ProcessExecutor $process = null)
     {
         $this->url = $url;
         $this->io = $io;
@@ -96,16 +96,16 @@ class Svn
      * Execute an SVN remote command and try to fix up the process with credentials
      * if necessary.
      *
-     * @param string $command SVN command to run
-     * @param string $url     SVN url
-     * @param string $cwd     Working directory
-     * @param string $path    Target for a checkout
-     * @param bool   $verbose Output all output to the user
+     * @param string  $command SVN command to run
+     * @param string  $url     SVN url
+     * @param ?string $cwd     Working directory
+     * @param ?string $path    Target for a checkout
+     * @param bool    $verbose Output all output to the user
      *
      * @throws \RuntimeException
      * @return string
      */
-    public function execute($command, $url, $cwd = null, $path = null, $verbose = false): string
+    public function execute(string $command, string $url, ?string $cwd = null, ?string $path = null, bool $verbose = false): string
     {
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
@@ -125,22 +125,13 @@ class Svn
      * @throws \RuntimeException
      * @return string
      */
-    public function executeLocal($command, $path, $cwd = null, $verbose = false): string
+    public function executeLocal(string $command, string $path, string $cwd = null, bool $verbose = false): string
     {
         // A local command has no remote url
         return $this->executeWithAuthRetry($command, $cwd, '', $path, $verbose);
     }
 
-    /**
-     * @param  string $svnCommand
-     * @param  string $cwd
-     * @param  string $url
-     * @param  string $path
-     * @param  bool   $verbose
-     *
-     * @return ?string
-     */
-    private function executeWithAuthRetry($svnCommand, $cwd, $url, $path, $verbose): ?string
+    private function executeWithAuthRetry(string $svnCommand, ?string $cwd, string $url, ?string $path, bool $verbose): ?string
     {
         // Regenerate the command at each try, to use the newly user-provided credentials
         $command = $this->getCommand($svnCommand, $url, $path);
@@ -194,7 +185,7 @@ class Svn
      * @param  bool $cacheCredentials
      * @return void
      */
-    public function setCacheCredentials($cacheCredentials): void
+    public function setCacheCredentials(bool $cacheCredentials): void
     {
         $this->cacheCredentials = $cacheCredentials;
     }
@@ -205,7 +196,7 @@ class Svn
      * @throws \RuntimeException
      * @return \Composer\Util\Svn
      */
-    protected function doAuthDance(): \Composer\Util\Svn
+    protected function doAuthDance(): Svn
     {
         // cannot ask for credentials in non interactive mode
         if (!$this->io->isInteractive()) {
@@ -236,7 +227,7 @@ class Svn
      *
      * @return string
      */
-    protected function getCommand($cmd, $url, $path = null): string
+    protected function getCommand(string $cmd, string $url, ?string $path = null): string
     {
         $cmd = sprintf(
             '%s %s%s -- %s',

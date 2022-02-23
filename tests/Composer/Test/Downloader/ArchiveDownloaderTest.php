@@ -93,7 +93,7 @@ class ArchiveDownloaderTest extends TestCase
      * @dataProvider provideUrls
      * @param string $url
      */
-    public function testProcessUrlRewriteDist($url): void
+    public function testProcessUrlRewriteDist(string $url): void
     {
         if (!extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
@@ -132,7 +132,7 @@ class ArchiveDownloaderTest extends TestCase
      * @param string $url
      * @param string $extension
      */
-    public function testProcessUrlRewriteBitbucketDist($url, $extension): void
+    public function testProcessUrlRewriteBitbucketDist(string $url, string $extension): void
     {
         if (!extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');

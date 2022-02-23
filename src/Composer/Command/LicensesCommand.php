@@ -163,7 +163,7 @@ EOT
      * @param  array<string, PackageInterface> $bucket
      * @return array<string, PackageInterface>
      */
-    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, $bucket = array()): array
+    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = array()): array
     {
         $requires = array_keys($package->getRequires());
 

@@ -83,6 +83,15 @@ class PluginInstallerTest extends TestCase
         $dm = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->disableOriginalConstructor()
             ->getMock();
+        $dm->expects($this->any())
+            ->method('install')
+            ->will($this->returnValue(\React\Promise\resolve()));
+        $dm->expects($this->any())
+            ->method('update')
+            ->will($this->returnValue(\React\Promise\resolve()));
+        $dm->expects($this->any())
+            ->method('remove')
+            ->will($this->returnValue(\React\Promise\resolve()));
 
         $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
 
@@ -280,7 +289,7 @@ class PluginInstallerTest extends TestCase
      *
      * @return void
      */
-    private function setPluginApiVersionWithPlugins($newPluginApiVersion, array $plugins = array()): void
+    private function setPluginApiVersionWithPlugins(string $newPluginApiVersion, array $plugins = array()): void
     {
         // reset the plugin manager's installed plugins
         $this->pm = $this->getMockBuilder('Composer\Plugin\PluginManager')
@@ -421,23 +430,12 @@ class PluginInstallerTest extends TestCase
         );
     }
 
-    /** @return mixed[] */
-    public function nonExistingOrInvalidImplementationClassTypes(): array
-    {
-        return array(
-            array('\stdClass'),
-            array('NonExistentClassLikeMiddleClass'),
-        );
-    }
-
     /**
      * @dataProvider invalidImplementationClassNames
-     * @param callable $invalidImplementationClassNames
+     * @param mixed $invalidImplementationClassNames
      * @param class-string<\Throwable> $expect
-     *
-     * @return void
      */
-    public function testQueryingWithInvalidCapabilityClassNameThrows($invalidImplementationClassNames, $expect = 'UnexpectedValueException'): void
+    public function testQueryingWithInvalidCapabilityClassNameThrows($invalidImplementationClassNames, string $expect = 'UnexpectedValueException'): void
     {
         self::expectException($expect);
 
@@ -455,7 +453,6 @@ class PluginInstallerTest extends TestCase
         $this->pm->getPluginCapability($plugin, $capabilityApi);
     }
 
-    /** @return void */
     public function testQueryingNonProvidedCapabilityReturnsNullSafely(): void
     {
         $capabilityApi = 'Composer\Plugin\Capability\MadeUpCapability';
@@ -472,13 +469,19 @@ class PluginInstallerTest extends TestCase
         $this->assertNull($this->pm->getPluginCapability($plugin, $capabilityApi));
     }
 
+    /** @return mixed[] */
+    public function nonExistingOrInvalidImplementationClassTypes(): array
+    {
+        return array(
+            array('\stdClass'),
+            array('NonExistentClassLikeMiddleClass'),
+        );
+    }
+
     /**
      * @dataProvider nonExistingOrInvalidImplementationClassTypes
-     * @param callable $wrongImplementationClassTypes
-     *
-     * @return void
      */
-    public function testQueryingWithNonExistingOrWrongCapabilityClassTypesThrows($wrongImplementationClassTypes): void
+    public function testQueryingWithNonExistingOrWrongCapabilityClassTypesThrows(string $wrongImplementationClassTypes): void
     {
         $this->testQueryingWithInvalidCapabilityClassNameThrows($wrongImplementationClassTypes, 'RuntimeException');
     }

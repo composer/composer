@@ -193,6 +193,7 @@ class GitHubDriverTest extends TestCase
 
         $data = $gitHubDriver->getComposerInformation($identifier);
 
+        $this->assertIsArray($data);
         $this->assertArrayNotHasKey('abandoned', $data);
     }
 
@@ -230,6 +231,7 @@ class GitHubDriverTest extends TestCase
 
         $data = $gitHubDriver->getComposerInformation($sha);
 
+        $this->assertIsArray($data);
         $this->assertTrue($data['abandoned']);
     }
 
@@ -327,7 +329,7 @@ class GitHubDriverTest extends TestCase
      * @param bool $expected
      * @param string $repoUrl
      */
-    public function testSupports($expected, $repoUrl): void
+    public function testSupports(bool $expected, string $repoUrl): void
     {
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
@@ -353,7 +355,7 @@ class GitHubDriverTest extends TestCase
      *
      * @return void
      */
-    protected function setAttribute($object, $attribute, $value): void
+    protected function setAttribute($object, string $attribute, $value): void
     {
         $attr = new \ReflectionProperty($object, $attribute);
         $attr->setAccessible(true);

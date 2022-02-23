@@ -31,7 +31,7 @@ class TransportException extends \RuntimeException
      *
      * @return void
      */
-    public function setHeaders($headers): void
+    public function setHeaders(array $headers): void
     {
         $this->headers = $headers;
     }
@@ -45,11 +45,11 @@ class TransportException extends \RuntimeException
     }
 
     /**
-     * @param ?string $response
+     * @param null|string $response
      *
      * @return void
      */
-    public function setResponse($response): void
+    public function setResponse(?string $response): void
     {
         $this->response = $response;
     }

@@ -158,7 +158,7 @@ class AuthHelperTest extends TestCase
      *
      * @param string $password
      */
-    public function testAddAuthenticationHeaderWithGitlabPrivateToken($password): void
+    public function testAddAuthenticationHeaderWithGitlabPrivateToken(string $password): void
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -235,7 +235,7 @@ class AuthHelperTest extends TestCase
      *
      * @param string $url
      */
-    public function testAddAuthenticationHeaderWithBitbucketPublicUrl($url): void
+    public function testAddAuthenticationHeaderWithBitbucketPublicUrl(string $url): void
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -299,7 +299,7 @@ class AuthHelperTest extends TestCase
      *
      * @phpstan-param array{username: string|null, password: string|null} $auth
      */
-    public function testAddAuthenticationHeaderWithBasicHttpAuthentication($url, $origin, $auth): void
+    public function testAddAuthenticationHeaderWithBasicHttpAuthentication(string $url, string $origin, array $auth): void
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -337,7 +337,7 @@ class AuthHelperTest extends TestCase
      *
      * @param string $url
      */
-    public function testIsPublicBitBucketDownloadWithBitbucketPublicUrl($url): void
+    public function testIsPublicBitBucketDownloadWithBitbucketPublicUrl(string $url): void
     {
         $this->assertTrue($this->authHelper->isPublicBitBucketDownload($url));
     }
@@ -377,8 +377,7 @@ class AuthHelperTest extends TestCase
 
         $configSource->expects($this->once())
             ->method('addConfigSetting')
-            ->with('http-basic.'.$origin, $auth)
-            ->willReturn($configSource);
+            ->with('http-basic.'.$origin, $auth);
 
         $this->authHelper->storeAuth($origin, $storeAuth);
     }
@@ -429,8 +428,7 @@ class AuthHelperTest extends TestCase
 
         $configSource->expects($this->once())
             ->method('addConfigSetting')
-            ->with('http-basic.'.$origin, $auth)
-            ->willReturn($configSource);
+            ->with('http-basic.'.$origin, $auth);
 
         $this->authHelper->storeAuth($origin, $storeAuth);
     }
@@ -521,7 +519,7 @@ class AuthHelperTest extends TestCase
      *
      * @phpstan-param array{username: string|null, password: string|null} $auth
      */
-    private function expectsAuthentication($origin, $auth): void
+    private function expectsAuthentication(string $origin, array $auth): void
     {
         $this->io->expects($this->once())
             ->method('hasAuthentication')

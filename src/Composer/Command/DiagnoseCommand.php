@@ -52,7 +52,7 @@ class DiagnoseCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('diagnose')
@@ -245,7 +245,7 @@ EOT
      *
      * @return string|string[]|true
      */
-    private function checkHttp($proto, Config $config)
+    private function checkHttp(string $proto, Config $config)
     {
         $result = $this->checkConnectivity();
         if ($result !== true) {
@@ -315,7 +315,7 @@ EOT
      *
      * @return string|true|\Exception
      */
-    private function checkGithubOauth($domain, $token)
+    private function checkGithubOauth(string $domain, string $token)
     {
         $result = $this->checkConnectivity();
         if ($result !== true) {
@@ -346,7 +346,7 @@ EOT
      * @throws TransportException
      * @return mixed|string
      */
-    private function getGithubRateLimit($domain, $token = null)
+    private function getGithubRateLimit(string $domain, string $token = null)
     {
         $result = $this->checkConnectivity();
         if ($result !== true) {

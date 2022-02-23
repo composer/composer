@@ -32,7 +32,7 @@ class DefaultPolicy implements PolicyInterface
      * @param bool $preferStable
      * @param bool $preferLowest
      */
-    public function __construct($preferStable = false, $preferLowest = false)
+    public function __construct(bool $preferStable = false, bool $preferLowest = false)
     {
         $this->preferStable = $preferStable;
         $this->preferLowest = $preferLowest;
@@ -44,7 +44,7 @@ class DefaultPolicy implements PolicyInterface
      *
      * @phpstan-param Constraint::STR_OP_* $operator
      */
-    public function versionCompare(PackageInterface $a, PackageInterface $b, $operator): bool
+    public function versionCompare(PackageInterface $a, PackageInterface $b, string $operator): bool
     {
         if ($this->preferStable && ($stabA = $a->getStability()) !== ($stabB = $b->getStability())) {
             return BasePackage::$stabilities[$stabA] < BasePackage::$stabilities[$stabB];
@@ -61,7 +61,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  string $requiredPackage
      * @return int[]
      */
-    public function selectPreferredPackages(Pool $pool, array $literals, $requiredPackage = null): array
+    public function selectPreferredPackages(Pool $pool, array $literals, string $requiredPackage = null): array
     {
         $packages = $this->groupLiteralsByName($pool, $literals);
 
@@ -90,7 +90,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  int[] $literals
      * @return array<string, int[]>
      */
-    protected function groupLiteralsByName(Pool $pool, $literals): array
+    protected function groupLiteralsByName(Pool $pool, array $literals): array
     {
         $packages = array();
         foreach ($literals as $literal) {
@@ -107,11 +107,11 @@ class DefaultPolicy implements PolicyInterface
 
     /**
      * @protected
-     * @param ?string $requiredPackage
+     * @param null|string $requiredPackage
      * @param bool $ignoreReplace
      * @return int
      */
-    public function compareByPriority(Pool $pool, BasePackage $a, BasePackage $b, $requiredPackage = null, $ignoreReplace = false): int
+    public function compareByPriority(Pool $pool, BasePackage $a, BasePackage $b, ?string $requiredPackage = null, bool $ignoreReplace = false): int
     {
         // prefer aliases to the original package
         if ($a->getName() === $b->getName()) {
@@ -182,7 +182,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  int[] $literals
      * @return int[]
      */
-    protected function pruneToBestVersion(Pool $pool, $literals): array
+    protected function pruneToBestVersion(Pool $pool, array $literals): array
     {
         $operator = $this->preferLowest ? '<' : '>';
         $bestLiterals = array($literals[0]);

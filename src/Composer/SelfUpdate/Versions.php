@@ -63,7 +63,7 @@ class Versions
      *
      * @return void
      */
-    public function setChannel($channel): void
+    public function setChannel(string $channel): void
     {
         if (!in_array($channel, self::$channels, true)) {
             throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: ' . implode(', ', self::$channels));
@@ -79,7 +79,7 @@ class Versions
      *
      * @return array{path: string, version: string, min-php: int}
      */
-    public function getLatest($channel = null): array
+    public function getLatest(?string $channel = null): array
     {
         $versions = $this->getVersionsData();
 

@@ -32,7 +32,7 @@ interface OperationInterface
      * @param  bool   $lock Whether this is an operation on the lock file
      * @return string
      */
-    public function show($lock);
+    public function show(bool $lock);
 
     /**
      * Serializes the operation in a human readable format

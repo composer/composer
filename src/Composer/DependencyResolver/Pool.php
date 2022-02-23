@@ -60,7 +60,7 @@ class Pool implements \Countable
      * @param  string $name
      * @return array<string, string>
      */
-    public function getRemovedVersions($name, ConstraintInterface $constraint): array
+    public function getRemovedVersions(string $name, ConstraintInterface $constraint): array
     {
         if (!isset($this->removedVersions[$name])) {
             return array();
@@ -80,7 +80,7 @@ class Pool implements \Countable
      * @param  string $objectHash
      * @return array<string, string>
      */
-    public function getRemovedVersionsByPackage($objectHash): array
+    public function getRemovedVersionsByPackage(string $objectHash): array
     {
         if (!isset($this->removedVersionsByPackage[$objectHash])) {
             return array();
@@ -122,7 +122,7 @@ class Pool implements \Countable
      * @param  int         $id
      * @return BasePackage
      */
-    public function packageById($id): BasePackage
+    public function packageById(int $id): BasePackage
     {
         return $this->packages[$id - 1];
     }
@@ -143,7 +143,7 @@ class Pool implements \Countable
      *                                         packages must match or null to return all
      * @return BasePackage[] A set of packages
      */
-    public function whatProvides($name, ConstraintInterface $constraint = null): array
+    public function whatProvides(string $name, ConstraintInterface $constraint = null): array
     {
         $key = (string) $constraint;
         if (isset($this->providerCache[$name][$key])) {
@@ -159,7 +159,7 @@ class Pool implements \Countable
      *                                          packages must match or null to return all
      * @return BasePackage[]
      */
-    private function computeWhatProvides($name, ConstraintInterface $constraint = null): array
+    private function computeWhatProvides(string $name, ConstraintInterface $constraint = null): array
     {
         if (!isset($this->packageByName[$name])) {
             return array();
@@ -180,7 +180,7 @@ class Pool implements \Countable
      * @param int $literal
      * @return BasePackage
      */
-    public function literalToPackage($literal): BasePackage
+    public function literalToPackage(int $literal): BasePackage
     {
         $packageId = abs($literal);
 
@@ -192,7 +192,7 @@ class Pool implements \Countable
      * @param array<int, BasePackage> $installedMap
      * @return string
      */
-    public function literalToPrettyString($literal, $installedMap): string
+    public function literalToPrettyString(int $literal, array $installedMap): string
     {
         $package = $this->literalToPackage($literal);
 
@@ -212,7 +212,7 @@ class Pool implements \Countable
      * @param  string              $name       Name of the package to be matched
      * @return bool
      */
-    public function match(BasePackage $candidate, $name, ConstraintInterface $constraint = null): bool
+    public function match(BasePackage $candidate, string $name, ConstraintInterface $constraint = null): bool
     {
         $candidateName = $candidate->getName();
         $candidateVersion = $candidate->getVersion();
@@ -268,7 +268,7 @@ class Pool implements \Countable
         return $this->unacceptableFixedOrLockedPackages;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         $str = "Pool:\n";
 

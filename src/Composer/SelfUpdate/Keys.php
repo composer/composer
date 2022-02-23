@@ -24,7 +24,7 @@ class Keys
      *
      * @return string
      */
-    public static function fingerprint($path): string
+    public static function fingerprint(string $path): string
     {
         $hash = strtoupper(hash('sha256', Preg::replace('{\s}', '', file_get_contents($path))));
 

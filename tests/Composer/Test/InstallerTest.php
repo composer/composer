@@ -21,7 +21,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Composer\IO\BufferIO;
-use Composer\Config;
 use Composer\Json\JsonFile;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Util\Filesystem;
@@ -52,7 +51,7 @@ class InstallerTest extends TestCase
 
     public function setUp(): void
     {
-        $this->prevCwd = getcwd();
+        $this->prevCwd = Platform::getCwd();
         chdir(__DIR__);
     }
 
@@ -74,7 +73,7 @@ class InstallerTest extends TestCase
      * @param RepositoryInterface[] $repositories
      * @param mixed[] $options
      */
-    public function testInstaller(RootPackageInterface $rootPackage, $repositories, array $options): void
+    public function testInstaller(RootPackageInterface $rootPackage, array $repositories, array $options): void
     {
         $io = new BufferIO('', OutputInterface::VERBOSITY_NORMAL, new OutputFormatter(false));
 
@@ -160,7 +159,7 @@ class InstallerTest extends TestCase
      * @param  PackageInterface[] $packages
      * @return mixed[]
      */
-    protected function makePackagesComparable($packages): array
+    protected function makePackagesComparable(array $packages): array
     {
         $dumper = new ArrayDumper();
 
@@ -190,7 +189,7 @@ class InstallerTest extends TestCase
 
         $cases[] = array(
             $a,
-            new ArrayRepository(array($b)),
+            [new ArrayRepository(array($b))],
             array(
                 'install' => array($b),
             ),
@@ -210,7 +209,7 @@ class InstallerTest extends TestCase
 
         $cases[] = array(
             $a,
-            new ArrayRepository(array($a, $b)),
+            [new ArrayRepository(array($a, $b))],
             array(
                 'install' => array($b),
             ),
@@ -225,19 +224,19 @@ class InstallerTest extends TestCase
      * @dataProvider provideSlowIntegrationTests
      * @param string $file
      * @param string $message
-     * @param ?string $condition
-     * @param Config $composerConfig
-     * @param ?mixed[] $lock
-     * @param ?mixed[] $installed
+     * @param null|string $condition
+     * @param mixed[] $composerConfig
+     * @param ?array<mixed> $lock
+     * @param ?array<mixed> $installed
      * @param string $run
      * @param mixed[]|false $expectLock
-     * @param ?mixed[] $expectInstalled
-     * @param ?string $expectOutput
-     * @param ?string $expectOutputOptimized
+     * @param ?array<mixed> $expectInstalled
+     * @param null|string $expectOutput
+     * @param null|string $expectOutputOptimized
      * @param string $expect
      * @param int|class-string<\Throwable> $expectResult
      */
-    public function testSlowIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult): void
+    public function testSlowIntegration(string $file, string $message, ?string $condition, array $composerConfig, ?array $lock, ?array $installed, string $run, $expectLock, ?array $expectInstalled, ?string $expectOutput, ?string $expectOutputOptimized, string $expect, $expectResult): void
     {
         Platform::putEnv('COMPOSER_POOL_OPTIMIZER', '0');
 
@@ -248,19 +247,19 @@ class InstallerTest extends TestCase
      * @dataProvider provideIntegrationTests
      * @param string $file
      * @param string $message
-     * @param ?string $condition
-     * @param Config $composerConfig
-     * @param ?mixed[] $lock
-     * @param ?mixed[] $installed
+     * @param null|string $condition
+     * @param mixed[] $composerConfig
+     * @param ?array<mixed> $lock
+     * @param ?array<mixed> $installed
      * @param string $run
      * @param mixed[]|false $expectLock
-     * @param ?mixed[] $expectInstalled
-     * @param ?string $expectOutput
-     * @param ?string $expectOutputOptimized
+     * @param ?array<mixed> $expectInstalled
+     * @param null|string $expectOutput
+     * @param null|string $expectOutputOptimized
      * @param string $expect
      * @param int|class-string<\Throwable> $expectResult
      */
-    public function testIntegrationWithPoolOptimizer($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult): void
+    public function testIntegrationWithPoolOptimizer(string $file, string $message, ?string $condition, array $composerConfig, ?array $lock, ?array $installed, string $run, $expectLock, ?array $expectInstalled, ?string $expectOutput, ?string $expectOutputOptimized, string $expect, $expectResult): void
     {
         Platform::putEnv('COMPOSER_POOL_OPTIMIZER', '1');
 
@@ -271,19 +270,19 @@ class InstallerTest extends TestCase
      * @dataProvider provideIntegrationTests
      * @param string $file
      * @param string $message
-     * @param ?string $condition
-     * @param Config $composerConfig
-     * @param ?mixed[] $lock
-     * @param ?mixed[] $installed
+     * @param null|string $condition
+     * @param mixed[] $composerConfig
+     * @param ?array<mixed> $lock
+     * @param ?array<mixed> $installed
      * @param string $run
      * @param mixed[]|false $expectLock
-     * @param ?mixed[] $expectInstalled
-     * @param ?string $expectOutput
-     * @param ?string $expectOutputOptimized
+     * @param ?array<mixed> $expectInstalled
+     * @param null|string $expectOutput
+     * @param null|string $expectOutputOptimized
      * @param string $expect
      * @param int|class-string<\Throwable> $expectResult
      */
-    public function testIntegrationWithRawPool($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expectOutputOptimized, $expect, $expectResult): void
+    public function testIntegrationWithRawPool(string $file, string $message, ?string $condition, array $composerConfig, ?array $lock, ?array $installed, string $run, $expectLock, ?array $expectInstalled, ?string $expectOutput, ?string $expectOutputOptimized, string $expect, $expectResult): void
     {
         Platform::putEnv('COMPOSER_POOL_OPTIMIZER', '0');
 
@@ -293,19 +292,19 @@ class InstallerTest extends TestCase
     /**
      * @param string $file
      * @param string $message
-     * @param ?string $condition
-     * @param Config $composerConfig
-     * @param ?mixed[] $lock
-     * @param ?mixed[] $installed
+     * @param null|string $condition
+     * @param mixed[] $composerConfig
+     * @param ?array<mixed> $lock
+     * @param ?array<mixed> $installed
      * @param string $run
      * @param mixed[]|false $expectLock
-     * @param ?mixed[] $expectInstalled
-     * @param ?string $expectOutput
+     * @param ?array<mixed> $expectInstalled
+     * @param null|string $expectOutput
      * @param string $expect
      * @param int|class-string<\Throwable> $expectResult
      * @return void
      */
-    private function doTestIntegration($file, $message, $condition, $composerConfig, $lock, $installed, $run, $expectLock, $expectInstalled, $expectOutput, $expect, $expectResult): void
+    private function doTestIntegration(string $file, string $message, ?string $condition, array $composerConfig, ?array $lock, ?array $installed, string $run, $expectLock, ?array $expectInstalled, ?string $expectOutput, string $expect, $expectResult): void
     {
         if ($condition) {
             eval('$res = '.$condition.';');
@@ -516,7 +515,7 @@ class InstallerTest extends TestCase
      * @param  string $path
      * @return mixed[]
      */
-    public function loadIntegrationTests($path): array
+    public function loadIntegrationTests(string $path): array
     {
         $fixturesDir = realpath(__DIR__.'/Fixtures/'.$path);
         $tests = array();
@@ -602,7 +601,7 @@ class InstallerTest extends TestCase
      * @param  string $fixturesDir
      * @return mixed[]
      */
-    protected function readTestFile(\SplFileInfo $file, $fixturesDir): array
+    protected function readTestFile(\SplFileInfo $file, string $fixturesDir): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
 

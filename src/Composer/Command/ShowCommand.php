@@ -223,7 +223,7 @@ EOT
 
             if ($input->getOption('no-dev')) {
                 $packages = $this->filterRequiredPackages($installedRepo, $rootPkg);
-                $repos = $installedRepo = new InstalledRepository(array(new InstalledArrayRepository(array_map(function ($pkg): \Composer\Package\PackageInterface {
+                $repos = $installedRepo = new InstalledRepository(array(new InstalledArrayRepository(array_map(function ($pkg): PackageInterface {
                     return clone $pkg;
                 }, $packages))));
             }
@@ -294,7 +294,7 @@ EOT
             if (
                 $input->getOption('outdated')
                 && $input->getOption('strict')
-                && $latestPackage
+                && null !== $latestPackage
                 && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion()
                 && (!$latestPackage instanceof CompletePackageInterface || !$latestPackage->isAbandoned())
             ) {
@@ -415,7 +415,7 @@ EOT
                     foreach ($packages[$type] as $package) {
                         if (is_object($package)) {
                             $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMinorOnly, $platformReqFilter);
-                            if ($latestPackage === false) {
+                            if ($latestPackage === null) {
                                 continue;
                             }
 
@@ -602,7 +602,7 @@ EOT
     /**
      * @return string[]
      */
-    protected function getRootRequires()
+    protected function getRootRequires(): array
     {
         $rootPackage = $this->requireComposer()->getPackage();
 
@@ -628,7 +628,7 @@ EOT
      * @throws \InvalidArgumentException
      * @return array{CompletePackageInterface|null, array<string, string>}
      */
-    protected function getPackage(InstalledRepository $installedRepo, RepositoryInterface $repos, $name, $version = null)
+    protected function getPackage(InstalledRepository $installedRepo, RepositoryInterface $repos, string $name, $version = null): array
     {
         $name = strtolower($name);
         $constraint = is_string($version) ? $this->versionParser->parseConstraints($version) : $version;
@@ -677,7 +677,7 @@ EOT
      *
      * @return void
      */
-    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null)
+    protected function printPackageInfo(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null): void
     {
         $io = $this->getIO();
 
@@ -705,7 +705,7 @@ EOT
      *
      * @return void
      */
-    protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null)
+    protected function printMeta(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null): void
     {
         $io = $this->getIO();
         $io->write('<info>name</info>     : ' . $package->getPrettyName());
@@ -773,7 +773,7 @@ EOT
      *
      * @return void
      */
-    protected function printVersions(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo)
+    protected function printVersions(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo): void
     {
         $versions = array_keys($versions);
         $versions = Semver::rsort($versions);
@@ -802,7 +802,7 @@ EOT
      *
      * @return void
      */
-    protected function printLinks(CompletePackageInterface $package, $linkType, $title = null)
+    protected function printLinks(CompletePackageInterface $package, string $linkType, string $title = null): void
     {
         $title = $title ?: $linkType;
         $io = $this->getIO();
@@ -820,7 +820,7 @@ EOT
      *
      * @return void
      */
-    protected function printLicenses(CompletePackageInterface $package)
+    protected function printLicenses(CompletePackageInterface $package): void
     {
         $spdxLicenses = new SpdxLicenses();
 
@@ -852,7 +852,7 @@ EOT
      *
      * @return void
      */
-    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null)
+    protected function printPackageInfoAsJson(CompletePackageInterface $package, array $versions, InstalledRepository $installedRepo, PackageInterface $latestPackage = null): void
     {
         $json = array(
             'name' => $package->getPrettyName(),
@@ -923,7 +923,7 @@ EOT
      * @param array<string, string> $versions
      * @return array<string, string|string[]|null>
      */
-    private function appendVersions($json, array $versions): array
+    private function appendVersions(array $json, array $versions): array
     {
         uasort($versions, 'version_compare');
         $versions = array_keys(array_reverse($versions));
@@ -936,7 +936,7 @@ EOT
      * @param array<string, string|string[]|null> $json
      * @return array<string, string|string[]|null>
      */
-    private function appendLicenses($json, CompletePackageInterface $package): array
+    private function appendLicenses(array $json, CompletePackageInterface $package): array
     {
         if ($licenses = $package->getLicense()) {
             $spdxLicenses = new SpdxLicenses();
@@ -963,7 +963,7 @@ EOT
      * @param array<string, string|string[]|null> $json
      * @return array<string, string|string[]|null>
      */
-    private function appendAutoload($json, CompletePackageInterface $package): array
+    private function appendAutoload(array $json, CompletePackageInterface $package): array
     {
         if ($package->getAutoload()) {
             $autoload = array();
@@ -996,7 +996,7 @@ EOT
      * @param array<string, string|string[]|null> $json
      * @return array<string, string|string[]|null>
      */
-    private function appendLinks($json, CompletePackageInterface $package): array
+    private function appendLinks(array $json, CompletePackageInterface $package): array
     {
         foreach (Link::$TYPES as $linkType) {
             $json = $this->appendLink($json, $package, $linkType);
@@ -1010,7 +1010,7 @@ EOT
      * @param string $linkType
      * @return array<string, string|string[]|null>
      */
-    private function appendLink($json, CompletePackageInterface $package, $linkType): array
+    private function appendLink(array $json, CompletePackageInterface $package, string $linkType): array
     {
         $links = $package->{'get' . ucfirst($linkType)}();
 
@@ -1030,7 +1030,7 @@ EOT
      *
      * @return void
      */
-    protected function initStyles(OutputInterface $output)
+    protected function initStyles(OutputInterface $output): void
     {
         $this->colors = array(
             'green',
@@ -1052,7 +1052,7 @@ EOT
      * @param array<int, array<string, string|mixed[]>> $arrayTree
      * @return void
      */
-    protected function displayPackageTree(array $arrayTree)
+    protected function displayPackageTree(array $arrayTree): void
     {
         $io = $this->getIO();
         foreach ($arrayTree as $package) {
@@ -1101,7 +1101,7 @@ EOT
         PackageInterface $package,
         InstalledRepository $installedRepo,
         RepositoryInterface $remoteRepos
-    ) {
+    ): array {
         $requires = $package->getRequires();
         ksort($requires);
         $children = array();
@@ -1147,9 +1147,9 @@ EOT
     protected function displayTree(
         $package,
         array $packagesInTree,
-        $previousTreeBar = '├',
-        $level = 1
-    ) {
+        string $previousTreeBar = '├',
+        int $level = 1
+    ): void {
         $previousTreeBar = str_replace('├', '│', $previousTreeBar);
         if (is_array($package) && isset($package['requires'])) {
             $requires = $package['requires'];
@@ -1197,12 +1197,12 @@ EOT
      * @return array<int, array<string, array<int, array<string, string>>|string>>
      */
     protected function addTree(
-        $name,
+        string $name,
         Link $link,
         InstalledRepository $installedRepo,
         RepositoryInterface $remoteRepos,
         array $packagesInTree
-    ) {
+    ): array {
         $children = array();
         list($package) = $this->getPackage(
             $installedRepo,
@@ -1240,7 +1240,7 @@ EOT
      * @param string $updateStatus
      * @return string
      */
-    private function updateStatusToVersionStyle($updateStatus): string
+    private function updateStatusToVersionStyle(string $updateStatus): string
     {
         // 'up-to-date' is printed green
         // 'semver-safe-update' is printed red
@@ -1275,7 +1275,7 @@ EOT
      *
      * @return void
      */
-    private function writeTreeLine($line): void
+    private function writeTreeLine(string $line): void
     {
         $io = $this->getIO();
         if (!$io->isDecorated()) {
@@ -1287,10 +1287,8 @@ EOT
 
     /**
      * Given a package, this finds the latest package matching it
-     *
-     * @return PackageInterface|false
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $minorOnly, PlatformRequirementFilterInterface $platformReqFilter)
+    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $minorOnly, PlatformRequirementFilterInterface $platformReqFilter): ?PackageInterface
     {
         // find the latest version allowed in this repo set
         $name = $package->getName();
@@ -1320,7 +1318,7 @@ EOT
             $candidate = $candidate->getAliasOf();
         }
 
-        return $candidate;
+        return $candidate !== false ? $candidate : null;
     }
 
     /**
@@ -1342,7 +1340,7 @@ EOT
      * @param  array<PackageInterface> $bucket
      * @return array<PackageInterface>
      */
-    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, $bucket = array()): array
+    private function filterRequiredPackages(RepositoryInterface $repo, PackageInterface $package, array $bucket = array()): array
     {
         $requires = $package->getRequires();
 

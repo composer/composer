@@ -16,6 +16,7 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\Factory;
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Input\ArrayInput;
 
 class ArchiveCommandTest extends TestCase
@@ -42,7 +43,7 @@ class ArchiveCommandTest extends TestCase
             ->getMock();
 
         $manager->expects($this->once())->method('archive')
-            ->with($package, 'zip', '.', null, false)->willReturn(getcwd());
+            ->with($package, 'zip', '.', null, false)->willReturn(Platform::getCwd());
 
         $composer->setArchiveManager($manager);
         $composer->setEventDispatcher($ed);

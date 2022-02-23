@@ -38,7 +38,7 @@ class StrictConfirmationQuestion extends Question
      * @param non-empty-string $trueAnswerRegex  A regex to match the "yes" answer
      * @param non-empty-string $falseAnswerRegex A regex to match the "no" answer
      */
-    public function __construct($question, $default = true, $trueAnswerRegex = '/^y(?:es)?$/i', $falseAnswerRegex = '/^no?$/i')
+    public function __construct(string $question, bool $default = true, string $trueAnswerRegex = '/^y(?:es)?$/i', string $falseAnswerRegex = '/^no?$/i')
     {
         parent::__construct($question, (bool) $default);
 

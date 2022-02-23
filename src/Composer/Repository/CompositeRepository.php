@@ -125,7 +125,7 @@ class CompositeRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function search($query, $mode = 0, $type = null): array
+    public function search(string $query, int $mode = 0, ?string $type = null): array
     {
         $matches = array();
         foreach ($this->repositories as $repository) {

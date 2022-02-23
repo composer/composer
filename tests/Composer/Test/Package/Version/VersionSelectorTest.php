@@ -299,7 +299,7 @@ class VersionSelectorTest extends TestCase
      * @param string|null $branchAlias
      * @param string      $packageName
      */
-    public function testFindRecommendedRequireVersion($prettyVersion, $expectedVersion, $branchAlias = null, $packageName = 'foo/bar'): void
+    public function testFindRecommendedRequireVersion(string $prettyVersion, string $expectedVersion, ?string $branchAlias = null, string $packageName = 'foo/bar'): void
     {
         $repositorySet = $this->createMockRepositorySet();
         $versionSelector = new VersionSelector($repositorySet);
@@ -362,7 +362,7 @@ class VersionSelectorTest extends TestCase
      *
      * @return Package
      */
-    private function createPackage($version): Package
+    private function createPackage(string $version): Package
     {
         $parser = new VersionParser();
 

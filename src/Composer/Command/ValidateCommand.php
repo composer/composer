@@ -169,7 +169,7 @@ EOT
      *
      * @return void
      */
-    private function outputResult(IOInterface $io, $name, &$errors, &$warnings, $checkPublish = false, $publishErrors = array(), $checkLock = false, $lockErrors = array(), $printSchemaUrl = false): void
+    private function outputResult(IOInterface $io, string $name, array &$errors, array &$warnings, bool $checkPublish = false, array $publishErrors = array(), bool $checkLock = false, array $lockErrors = array(), bool $printSchemaUrl = false): void
     {
         $doPrintSchemaUrl = false;
 

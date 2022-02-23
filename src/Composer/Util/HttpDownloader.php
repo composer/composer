@@ -67,7 +67,7 @@ class HttpDownloader
      * @param mixed[]     $options    The options
      * @param bool        $disableTls
      */
-    public function __construct(IOInterface $io, Config $config, array $options = array(), $disableTls = false)
+    public function __construct(IOInterface $io, Config $config, array $options = array(), bool $disableTls = false)
     {
         $this->io = $io;
 
@@ -103,7 +103,7 @@ class HttpDownloader
      * @throws TransportException
      * @return Response
      */
-    public function get($url, $options = array())
+    public function get(string $url, array $options = array())
     {
         list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null), true);
         $this->wait($job['id']);
@@ -122,7 +122,7 @@ class HttpDownloader
      * @throws TransportException
      * @return PromiseInterface
      */
-    public function add($url, $options = array())
+    public function add(string $url, array $options = array())
     {
         list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => null));
 
@@ -139,7 +139,7 @@ class HttpDownloader
      * @throws TransportException
      * @return Response
      */
-    public function copy($url, $to, $options = array())
+    public function copy(string $url, string $to, array $options = array())
     {
         list($job) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to), true);
         $this->wait($job['id']);
@@ -157,7 +157,7 @@ class HttpDownloader
      * @throws TransportException
      * @return PromiseInterface
      */
-    public function addCopy($url, $to, $options = array())
+    public function addCopy(string $url, string $to, array $options = array())
     {
         list(, $promise) = $this->addJob(array('url' => $url, 'options' => $options, 'copyTo' => $to));
 
@@ -186,12 +186,10 @@ class HttpDownloader
     }
 
     /**
-     * @param Request $request
-     * @param bool    $sync
-     *
+     * @phpstan-param Request $request
      * @return array{Job, PromiseInterface}
      */
-    private function addJob($request, $sync = false): array
+    private function addJob(array $request, bool $sync = false): array
     {
         $request['options'] = array_replace_recursive($this->options, $request['options']);
 
@@ -291,7 +289,7 @@ class HttpDownloader
      * @param  int  $id
      * @return void
      */
-    private function startJob($id): void
+    private function startJob(int $id): void
     {
         $job = &$this->jobs[$id];
         if ($job['status'] !== self::STATUS_QUEUED) {
@@ -343,7 +341,7 @@ class HttpDownloader
      *
      * @return void
      */
-    public function wait($index = null)
+    public function wait(?int $index = null)
     {
         do {
             $jobCount = $this->countActiveJobs($index);
@@ -366,7 +364,7 @@ class HttpDownloader
      * @param  int|null $index For internal use only, the job id
      * @return int      number of active (queued or started) jobs
      */
-    public function countActiveJobs($index = null): int
+    public function countActiveJobs(?int $index = null): int
     {
         if ($this->runningJobs < $this->maxJobs) {
             foreach ($this->jobs as $job) {
@@ -400,7 +398,7 @@ class HttpDownloader
      * @param  int $index Job id
      * @return Response
      */
-    private function getResponse($index): Response
+    private function getResponse(int $index): Response
     {
         if (!isset($this->jobs[$index])) {
             throw new \LogicException('Invalid request id');
@@ -428,7 +426,7 @@ class HttpDownloader
      * @param  array{warning?: string, info?: string, warning-versions?: string, info-versions?: string, warnings?: array<array{versions: string, message: string}>, infos?: array<array{versions: string, message: string}>} $data
      * @return void
      */
-    public static function outputWarnings(IOInterface $io, $url, $data): void
+    public static function outputWarnings(IOInterface $io, string $url, $data): void
     {
         // legacy warning/info keys
         foreach (array('warning', 'info') as $type) {

@@ -78,7 +78,7 @@ abstract class Rule
      */
     abstract public function getHash();
 
-    abstract public function __toString();
+    abstract public function __toString(): string;
 
     /**
      * @param Rule $rule
@@ -267,7 +267,7 @@ abstract class Rule
      * @param array<Rule[]> $learnedPool
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
     {
         $literals = $this->getLiterals();
 
@@ -484,7 +484,7 @@ abstract class Rule
      * @param bool $useRemovedVersionGroup
      * @return string
      */
-    protected function formatPackagesUnique(Pool $pool, array $packages, $isVerbose, ConstraintInterface $constraint = null, $useRemovedVersionGroup = false): string
+    protected function formatPackagesUnique(Pool $pool, array $packages, bool $isVerbose, ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
     {
         foreach ($packages as $index => $package) {
             if (!\is_object($package)) {

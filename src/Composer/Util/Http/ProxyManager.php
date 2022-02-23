@@ -83,7 +83,7 @@ class ProxyManager
      * @param  string       $requestUrl
      * @return RequestProxy
      */
-    public function getProxyForRequest($requestUrl): RequestProxy
+    public function getProxyForRequest(string $requestUrl): RequestProxy
     {
         if ($this->error) {
             throw new TransportException('Unable to use a proxy: '.$this->error);
@@ -184,7 +184,7 @@ class ProxyManager
      * @param  string $requestUrl
      * @return bool
      */
-    private function noProxy($requestUrl): bool
+    private function noProxy(string $requestUrl): bool
     {
         return $this->noProxyHandler && $this->noProxyHandler->test($requestUrl);
     }

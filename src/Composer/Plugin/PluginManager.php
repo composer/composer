@@ -13,7 +13,6 @@
 namespace Composer\Plugin;
 
 use Composer\Composer;
-use Composer\Autoload\AutoloadGenerator;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\Installer\InstallerInterface;
 use Composer\IO\IOInterface;
@@ -150,7 +149,7 @@ class PluginManager
      *
      * @throws \UnexpectedValueException
      */
-    public function registerPackage(PackageInterface $package, $failOnMissingClasses = false, $isGlobalPlugin = false): void
+    public function registerPackage(PackageInterface $package, bool $failOnMissingClasses = false, bool $isGlobalPlugin = false): void
     {
         if ($this->disablePlugins) {
             return;
@@ -383,7 +382,7 @@ class PluginManager
      *
      * @return void
      */
-    public function addPlugin(PluginInterface $plugin, $isGlobalPlugin = false, PackageInterface $sourcePackage = null): void
+    public function addPlugin(PluginInterface $plugin, bool $isGlobalPlugin = false, PackageInterface $sourcePackage = null): void
     {
         if ($sourcePackage === null) {
             trigger_error('Calling PluginManager::addPlugin without $sourcePackage is deprecated, if you are using this please get in touch with us to explain the use case', E_USER_DEPRECATED);
@@ -467,7 +466,7 @@ class PluginManager
      *
      * @throws \RuntimeException
      */
-    private function loadRepository(RepositoryInterface $repo, $isGlobalRepo): void
+    private function loadRepository(RepositoryInterface $repo, bool $isGlobalRepo): void
     {
         $packages = $repo->getPackages();
         $sortedPackages = PackageSorter::sortPackages($packages);
@@ -494,7 +493,7 @@ class PluginManager
      *
      * @return void
      */
-    private function deactivateRepository(RepositoryInterface $repo, $isGlobalRepo): void
+    private function deactivateRepository(RepositoryInterface $repo, bool $isGlobalRepo): void
     {
         $packages = $repo->getPackages();
         $sortedPackages = array_reverse(PackageSorter::sortPackages($packages));
@@ -543,13 +542,14 @@ class PluginManager
      *
      * @return string Install path
      */
-    private function getInstallPath(PackageInterface $package, $global = false): string
+    private function getInstallPath(PackageInterface $package, bool $global = false): string
     {
         if (!$global) {
             return $this->composer->getInstallationManager()->getInstallPath($package);
         }
 
         assert(null !== $this->globalComposer);
+
         return $this->globalComposer->getInstallationManager()->getInstallPath($package);
     }
 
@@ -559,7 +559,7 @@ class PluginManager
      * @throws \RuntimeException On empty or non-string implementation class name value
      * @return null|string       The fully qualified class of the implementation or null if Plugin is not of Capable type or does not provide it
      */
-    protected function getCapabilityImplementationClassName(PluginInterface $plugin, $capability): ?string
+    protected function getCapabilityImplementationClassName(PluginInterface $plugin, string $capability): ?string
     {
         if (!($plugin instanceof Capable)) {
             return null;
@@ -666,7 +666,7 @@ class PluginManager
      * @param bool $isGlobalPlugin
      * @return bool
      */
-    private function isPluginAllowed($package, $isGlobalPlugin): bool
+    private function isPluginAllowed(string $package, bool $isGlobalPlugin): bool
     {
         static $warned = array();
         $rules = $isGlobalPlugin ? $this->allowGlobalPluginRules : $this->allowPluginRules;

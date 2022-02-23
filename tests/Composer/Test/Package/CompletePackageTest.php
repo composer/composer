@@ -40,7 +40,7 @@ class CompletePackageTest extends TestCase
      * @param string $name
      * @param string $version
      */
-    public function testPackageHasExpectedNamingSemantics($name, $version): void
+    public function testPackageHasExpectedNamingSemantics(string $name, string $version): void
     {
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);
@@ -54,7 +54,7 @@ class CompletePackageTest extends TestCase
      * @param string $name
      * @param string $version
      */
-    public function testPackageHasExpectedVersioningSemantics($name, $version): void
+    public function testPackageHasExpectedVersioningSemantics(string $name, string $version): void
     {
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);
@@ -69,7 +69,7 @@ class CompletePackageTest extends TestCase
      * @param string $name
      * @param string $version
      */
-    public function testPackageHasExpectedMarshallingSemantics($name, $version): void
+    public function testPackageHasExpectedMarshallingSemantics(string $name, string $version): void
     {
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);

@@ -27,7 +27,7 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
      * @param string      $version       The version the alias must report
      * @param string      $prettyVersion The alias's non-normalized version
      */
-    public function __construct(RootPackage $aliasOf, $version, $prettyVersion)
+    public function __construct(RootPackage $aliasOf, string $version, string $prettyVersion)
     {
         parent::__construct($aliasOf, $version, $prettyVersion);
     }

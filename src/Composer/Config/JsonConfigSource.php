@@ -43,7 +43,7 @@ class JsonConfigSource implements ConfigSourceInterface
      * @param JsonFile $file
      * @param bool     $authConfig
      */
-    public function __construct(JsonFile $file, $authConfig = false)
+    public function __construct(JsonFile $file, bool $authConfig = false)
     {
         $this->file = $file;
         $this->authConfig = $authConfig;
@@ -52,7 +52,7 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * @inheritDoc
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->file->getPath();
     }
@@ -60,7 +60,7 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * @inheritDoc
      */
-    public function addRepository($name, $config, $append = true)
+    public function addRepository(string $name, $config, bool $append = true): void
     {
         $this->manipulateJson('addRepository', function (&$config, $repo, $repoConfig) use ($append): void {
             // if converting from an array format to hashmap format, and there is a {"packagist.org":false} repo, we have
@@ -89,7 +89,7 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * @inheritDoc
      */
-    public function removeRepository($name)
+    public function removeRepository(string $name): void
     {
         $this->manipulateJson('removeRepository', function (&$config, $repo): void {
             unset($config['repositories'][$repo]);
@@ -99,7 +99,7 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * @inheritDoc
      */
-    public function addConfigSetting($name, $value)
+    public function addConfigSetting(string $name, $value): void
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('addConfigSetting', function (&$config, $key, $val) use ($authConfig): void {
@@ -119,7 +119,7 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * @inheritDoc
      */
-    public function removeConfigSetting($name)
+    public function removeConfigSetting(string $name): void
     {
         $authConfig = $this->authConfig;
         $this->manipulateJson('removeConfigSetting', function (&$config, $key) use ($authConfig): void {
@@ -139,7 +139,7 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * @inheritDoc
      */
-    public function addProperty($name, $value)
+    public function addProperty(string $name, $value): void
     {
         $this->manipulateJson('addProperty', function (&$config, $key, $val): void {
             if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
@@ -162,7 +162,7 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * @inheritDoc
      */
-    public function removeProperty($name)
+    public function removeProperty(string $name): void
     {
         $this->manipulateJson('removeProperty', function (&$config, $key): void {
             if (strpos($key, 'extra.') === 0 || strpos($key, 'scripts.') === 0) {
@@ -185,7 +185,7 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * @inheritDoc
      */
-    public function addLink($type, $name, $value)
+    public function addLink(string $type, string $name, string $value): void
     {
         $this->manipulateJson('addLink', function (&$config, $type, $name, $value): void {
             $config[$type][$name] = $value;
@@ -195,7 +195,7 @@ class JsonConfigSource implements ConfigSourceInterface
     /**
      * @inheritDoc
      */
-    public function removeLink($type, $name)
+    public function removeLink(string $type, string $name): void
     {
         $this->manipulateJson('removeSubNode', function (&$config, $type, $name): void {
             unset($config[$type][$name]);
@@ -214,7 +214,7 @@ class JsonConfigSource implements ConfigSourceInterface
      *
      * @return void
      */
-    private function manipulateJson($method, $fallback, ...$args): void
+    private function manipulateJson(string $method, callable $fallback, ...$args): void
     {
         if ($this->file->exists()) {
             if (!is_writable($this->file->getPath())) {
@@ -297,7 +297,7 @@ class JsonConfigSource implements ConfigSourceInterface
      * @param  mixed $value
      * @return int
      */
-    private function arrayUnshiftRef(&$array, &$value): int
+    private function arrayUnshiftRef(array &$array, &$value): int
     {
         $return = array_unshift($array, '');
         $array[0] = &$value;

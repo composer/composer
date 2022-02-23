@@ -49,7 +49,7 @@ class Git
      *
      * @return void
      */
-    public function runCommand($commandCallable, $url, $cwd, $initialClone = false)
+    public function runCommand(callable $commandCallable, string $url, ?string $cwd, bool $initialClone = false): void
     {
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
@@ -272,7 +272,7 @@ class Git
      *
      * @return bool
      */
-    public function syncMirror($url, $dir)
+    public function syncMirror(string $url, string $dir): bool
     {
         if (Platform::getEnv('COMPOSER_DISABLE_NETWORK') && Platform::getEnv('COMPOSER_DISABLE_NETWORK') !== 'prime') {
             $this->io->writeError('<warning>Aborting git mirror sync of '.$url.' as network is disabled</warning>');
@@ -317,7 +317,7 @@ class Git
      *
      * @return bool
      */
-    public function fetchRefOrSyncMirror($url, $dir, $ref)
+    public function fetchRefOrSyncMirror(string $url, string $dir, string $ref): bool
     {
         if ($this->checkRefIsInMirror($dir, $ref)) {
             return true;
@@ -333,7 +333,7 @@ class Git
     /**
      * @return string
      */
-    public static function getNoShowSignatureFlag(ProcessExecutor $process)
+    public static function getNoShowSignatureFlag(ProcessExecutor $process): string
     {
         $gitVersion = self::getVersion($process);
         if ($gitVersion && version_compare($gitVersion, '2.10.0-rc0', '>=')) {
@@ -349,7 +349,7 @@ class Git
      *
      * @return bool
      */
-    private function checkRefIsInMirror($dir, $ref): bool
+    private function checkRefIsInMirror(string $dir, string $ref): bool
     {
         if (is_dir($dir) && 0 === $this->process->execute('git rev-parse --git-dir', $output, $dir) && trim($output) === '.') {
             $escapedRef = ProcessExecutor::escape($ref.'^{commit}');
@@ -368,7 +368,7 @@ class Git
      *
      * @return bool
      */
-    private function isAuthenticationFailure($url, &$match): bool
+    private function isAuthenticationFailure(string $url, array &$match): bool
     {
         if (!Preg::isMatch('{^(https?://)([^/]+)(.*)$}i', $url, $match)) {
             return false;
@@ -395,7 +395,7 @@ class Git
     /**
      * @return void
      */
-    public static function cleanEnv()
+    public static function cleanEnv(): void
     {
         // added in git 1.7.1, prevents prompting the user for username/password
         if (Platform::getEnv('GIT_ASKPASS') !== 'echo') {
@@ -422,7 +422,7 @@ class Git
     /**
      * @return non-empty-string
      */
-    public static function getGitHubDomainsRegex(Config $config)
+    public static function getGitHubDomainsRegex(Config $config): string
     {
         return '(' . implode('|', array_map('preg_quote', $config->get('github-domains'))) . ')';
     }
@@ -430,7 +430,7 @@ class Git
     /**
      * @return non-empty-string
      */
-    public static function getGitLabDomainsRegex(Config $config)
+    public static function getGitLabDomainsRegex(Config $config): string
     {
         return '(' . implode('|', array_map('preg_quote', $config->get('gitlab-domains'))) . ')';
     }
@@ -441,7 +441,7 @@ class Git
      *
      * @return never
      */
-    private function throwException($message, $url): void
+    private function throwException($message, string $url): void
     {
         // git might delete a directory when it fails and php will not know
         clearstatcache();
@@ -458,7 +458,7 @@ class Git
      *
      * @return string|null The git version number, if present.
      */
-    public static function getVersion(ProcessExecutor $process)
+    public static function getVersion(ProcessExecutor $process): ?string
     {
         if (false === self::$version) {
             self::$version = null;
@@ -476,7 +476,7 @@ class Git
      *
      * @return string
      */
-    private function maskCredentials($error, array $credentials): string
+    private function maskCredentials(string $error, array $credentials): string
     {
         $maskedCredentials = array();
 

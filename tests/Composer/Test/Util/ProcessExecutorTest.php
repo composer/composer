@@ -73,7 +73,7 @@ class ProcessExecutorTest extends TestCase
      * @param string $command
      * @param string $expectedCommandOutput
      */
-    public function testHidePasswords($command, $expectedCommandOutput): void
+    public function testHidePasswords(string $command, string $expectedCommandOutput): void
     {
         $process = new ProcessExecutor($buffer = new BufferIO('', StreamOutput::VERBOSITY_DEBUG));
         $process->execute($command, $output);
@@ -141,7 +141,7 @@ class ProcessExecutorTest extends TestCase
      * @param string            $win
      * @param string            $unix
      */
-    public function testEscapeArgument($argument, $win, $unix): void
+    public function testEscapeArgument($argument, string $win, string $unix): void
     {
         $expected = defined('PHP_WINDOWS_VERSION_BUILD') ? $win : $unix;
         $this->assertSame($expected, ProcessExecutor::escape($argument));

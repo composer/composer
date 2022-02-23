@@ -45,7 +45,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @param string $answer
      */
-    public function testAskConfirmationBadAnswer($answer): void
+    public function testAskConfirmationBadAnswer(string $answer): void
     {
         list($input, $dialog) = $this->createInput($answer."\n");
 
@@ -64,7 +64,7 @@ class StrictConfirmationQuestionTest extends TestCase
      * @param bool   $expected
      * @param bool   $default
      */
-    public function testAskConfirmation($question, $expected, $default = true): void
+    public function testAskConfirmation(string $question, bool $expected, bool $default = true): void
     {
         list($input, $dialog) = $this->createInput($question."\n");
 
@@ -105,7 +105,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @return resource
      */
-    protected function getInputStream($input)
+    protected function getInputStream(string $input)
     {
         $stream = fopen('php://memory', 'r+', false);
         $this->assertNotFalse($stream);
@@ -131,7 +131,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @phpstan-return array{ArrayInput, QuestionHelper}
      */
-    protected function createInput($entry): array
+    protected function createInput(string $entry): array
     {
         $input = new ArrayInput(array('--no-interaction'));
         $input->setStream($this->getInputStream($entry));

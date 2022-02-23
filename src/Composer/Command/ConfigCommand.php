@@ -175,7 +175,7 @@ EOT
         if (
             ($configFile === 'composer.json' || $configFile === './composer.json')
             && !file_exists($configFile)
-            && realpath(getcwd()) === realpath($this->config->get('home'))
+            && realpath(Platform::getCwd()) === realpath($this->config->get('home'))
         ) {
             file_put_contents($configFile, "{\n}\n");
         }
@@ -810,7 +810,7 @@ EOT
      *
      * @return void
      */
-    protected function handleSingleValue($key, array $callbacks, array $values, $method): void
+    protected function handleSingleValue(string $key, array $callbacks, array $values, string $method): void
     {
         list($validator, $normalizer) = $callbacks;
         if (1 !== count($values)) {
@@ -845,7 +845,7 @@ EOT
      *
      * @return void
      */
-    protected function handleMultiValue($key, array $callbacks, array $values, $method): void
+    protected function handleMultiValue(string $key, array $callbacks, array $values, string $method): void
     {
         list($validator, $normalizer) = $callbacks;
         if (true !== $validation = $validator($values)) {
@@ -868,7 +868,7 @@ EOT
      *
      * @return void
      */
-    protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, $k = null, $showSource = false): void
+    protected function listConfiguration(array $contents, array $rawContents, OutputInterface $output, ?string $k = null, bool $showSource = false): void
     {
         $origK = $k;
         $io = $this->getIO();

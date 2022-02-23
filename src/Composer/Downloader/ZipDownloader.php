@@ -17,6 +17,7 @@ use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Process\ExecutableFinder;
+use Symfony\Component\Process\Process;
 use React\Promise\PromiseInterface;
 use ZipArchive;
 
@@ -38,7 +39,7 @@ class ZipDownloader extends ArchiveDownloader
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
+    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
     {
         if (null === self::$unzipCommands) {
             self::$unzipCommands = array();
@@ -105,7 +106,7 @@ class ZipDownloader extends ArchiveDownloader
      * @param  string           $path Path where to extract file
      * @return PromiseInterface
      */
-    private function extractWithSystemUnzip(PackageInterface $package, $file, $path): PromiseInterface
+    private function extractWithSystemUnzip(PackageInterface $package, string $file, string $path): PromiseInterface
     {
         // Force Exception throwing if the other alternative extraction method is not available
         $isLastChance = !self::$hasZipArchive;
@@ -127,7 +128,7 @@ class ZipDownloader extends ArchiveDownloader
         $executable = $commandSpec[0];
 
         $io = $this->io;
-        $tryFallback = function ($processError) use ($isLastChance, $io, $file, $path, $package, $executable): \React\Promise\PromiseInterface {
+        $tryFallback = function (\Throwable $processError) use ($isLastChance, $io, $file, $path, $package, $executable): \React\Promise\PromiseInterface {
             if ($isLastChance) {
                 throw $processError;
             }
@@ -148,7 +149,7 @@ class ZipDownloader extends ArchiveDownloader
         try {
             $promise = $this->process->executeAsync($command);
 
-            return $promise->then(function ($process) use ($tryFallback, $command, $package, $file) {
+            return $promise->then(function (Process $process) use ($tryFallback, $command, $package, $file) {
                 if (!$process->isSuccessful()) {
                     if (isset($this->cleanupExecuted[$package->getName()])) {
                         throw new \RuntimeException('Failed to extract '.$package->getName().' as the installation was aborted by another package operation.');
@@ -172,7 +173,7 @@ class ZipDownloader extends ArchiveDownloader
      * @param  string           $path Path where to extract file
      * @return PromiseInterface
      */
-    private function extractWithZipArchive(PackageInterface $package, $file, $path): PromiseInterface
+    private function extractWithZipArchive(PackageInterface $package, string $file, string $path): PromiseInterface
     {
         $processError = null;
         $zipArchive = $this->zipArchiveObject ?: new ZipArchive();
@@ -205,9 +206,9 @@ class ZipDownloader extends ArchiveDownloader
      *
      * @param  string                $file File to extract
      * @param  string                $path Path where to extract file
-     * @return PromiseInterface|null
+     * @return PromiseInterface
      */
-    protected function extract(PackageInterface $package, $file, $path)
+    protected function extract(PackageInterface $package, string $file, string $path): PromiseInterface
     {
         return $this->extractWithSystemUnzip($package, $file, $path);
     }
@@ -219,7 +220,7 @@ class ZipDownloader extends ArchiveDownloader
      * @param  string $file
      * @return string
      */
-    protected function getErrorMessage($retval, $file)
+    protected function getErrorMessage(int $retval, string $file): string
     {
         switch ($retval) {
             case ZipArchive::ER_EXISTS:

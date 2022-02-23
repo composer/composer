@@ -1085,7 +1085,7 @@ Linked Version => 1.2.11',
      */
     public function testLibraryInformation(
         $extensions,
-        $info,
+        ?string $info,
         array $expectations,
         array $functions = array(),
         array $constants = array(),
@@ -1199,7 +1199,7 @@ Linked Version => 1.2.11',
      *
      * @return void
      */
-    private function assertPackageLinks($context, array $expectedLinks, PackageInterface $sourcePackage, array $links): void
+    private function assertPackageLinks(string $context, array $expectedLinks, PackageInterface $sourcePackage, array $links): void
     {
         self::assertCount(count($expectedLinks), $links, sprintf('%s: expected package count to match', $context));
 
@@ -1263,7 +1263,7 @@ Linked Version => 1.2.11',
      * @param bool $expectation
      * @dataProvider providePlatformPackages
      */
-    public function testValidPlatformPackages($packageName, $expectation): void
+    public function testValidPlatformPackages(string $packageName, bool $expectation): void
     {
         self::assertSame($expectation, PlatformRepository::isPlatformPackage($packageName));
     }
@@ -1280,7 +1280,7 @@ class ResourceBundleStub
      *
      * @return ResourceBundleStub
      */
-    public static function create($locale, $bundleName, $fallback): ResourceBundleStub
+    public static function create(string $locale, string $bundleName, bool $fallback): ResourceBundleStub
     {
         Assert::assertSame(3, func_num_args());
         Assert::assertSame('root', $locale);
@@ -1314,7 +1314,7 @@ class ImagickStub
     /**
      * @param string $versionString
      */
-    public function __construct($versionString)
+    public function __construct(string $versionString)
     {
         $this->versionString = $versionString;
     }

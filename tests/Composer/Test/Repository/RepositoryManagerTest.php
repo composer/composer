@@ -15,6 +15,7 @@ namespace Composer\Test\Repository;
 use Composer\Repository\RepositoryManager;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Config;
 
 class RepositoryManagerTest extends TestCase
 {
@@ -39,7 +40,7 @@ class RepositoryManagerTest extends TestCase
     {
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            $this->getMockBuilder('Composer\Config')->getMock(),
+            new Config,
             $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
             $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
@@ -59,7 +60,7 @@ class RepositoryManagerTest extends TestCase
      * @param array<string, mixed> $options
      * @param class-string<\Throwable>|null $exception
      */
-    public function testRepoCreation($type, $options, ?string $exception = null): void
+    public function testRepoCreation(string $type, array $options, ?string $exception = null): void
     {
         if ($exception !== null) {
             self::expectException($exception);
@@ -67,19 +68,13 @@ class RepositoryManagerTest extends TestCase
 
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            $config = $this->getMockBuilder('Composer\Config')->onlyMethods(array('get'))->getMock(),
+            $config = new Config,
             $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
             $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
 
         $tmpdir = $this->tmpdir;
-        $config
-            ->expects($this->any())
-            ->method('get')
-            ->will($this->returnCallback(function ($arg) use ($tmpdir): ?string {
-                return 'cache-repo-dir' === $arg ? $tmpdir : null;
-            }))
-        ;
+        $config->merge(['config' => ['cache-repo-dir' => $tmpdir]]);
 
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');

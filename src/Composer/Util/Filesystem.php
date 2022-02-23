@@ -38,7 +38,7 @@ class Filesystem
      *
      * @return bool
      */
-    public function remove($file)
+    public function remove(string $file)
     {
         if (is_dir($file)) {
             return $this->removeDirectory($file);
@@ -57,7 +57,7 @@ class Filesystem
      * @param  string $dir
      * @return bool
      */
-    public function isDirEmpty($dir)
+    public function isDirEmpty(string $dir)
     {
         $finder = Finder::create()
             ->ignoreVCS(false)
@@ -74,7 +74,7 @@ class Filesystem
      *
      * @return void
      */
-    public function emptyDirectory($dir, $ensureDirectoryExists = true)
+    public function emptyDirectory(string $dir, bool $ensureDirectoryExists = true)
     {
         if (is_link($dir) && file_exists($dir)) {
             $this->unlink($dir);
@@ -107,7 +107,7 @@ class Filesystem
      * @throws \RuntimeException
      * @return bool
      */
-    public function removeDirectory($directory)
+    public function removeDirectory(string $directory)
     {
         $edgeCaseResult = $this->removeEdgeCases($directory);
         if ($edgeCaseResult !== null) {
@@ -142,7 +142,7 @@ class Filesystem
      * @throws \RuntimeException
      * @return PromiseInterface
      */
-    public function removeDirectoryAsync($directory)
+    public function removeDirectoryAsync(string $directory)
     {
         $edgeCaseResult = $this->removeEdgeCases($directory);
         if ($edgeCaseResult !== null) {
@@ -177,7 +177,7 @@ class Filesystem
      *
      * @return bool|null Returns null, when no edge case was hit. Otherwise a bool whether removal was successful
      */
-    private function removeEdgeCases($directory, $fallbackToPhp = true): ?bool
+    private function removeEdgeCases(string $directory, bool $fallbackToPhp = true): ?bool
     {
         if ($this->isSymlinkedDirectory($directory)) {
             return $this->unlinkSymlinkedDirectory($directory);
@@ -216,7 +216,7 @@ class Filesystem
      * @param  string $directory
      * @return bool
      */
-    public function removeDirectoryPhp($directory)
+    public function removeDirectoryPhp(string $directory)
     {
         $edgeCaseResult = $this->removeEdgeCases($directory, false);
         if ($edgeCaseResult !== null) {
@@ -256,7 +256,7 @@ class Filesystem
      *
      * @return void
      */
-    public function ensureDirectoryExists($directory)
+    public function ensureDirectoryExists(string $directory)
     {
         if (!is_dir($directory)) {
             if (file_exists($directory)) {
@@ -279,7 +279,7 @@ class Filesystem
      * @throws \RuntimeException
      * @return bool
      */
-    public function unlink($path)
+    public function unlink(string $path)
     {
         $unlinked = @$this->unlinkImplementation($path);
         if (!$unlinked) {
@@ -310,7 +310,7 @@ class Filesystem
      * @throws \RuntimeException
      * @return bool
      */
-    public function rmdir($path)
+    public function rmdir(string $path)
     {
         $deleted = @rmdir($path);
         if (!$deleted) {
@@ -345,7 +345,7 @@ class Filesystem
      *
      * @return void
      */
-    public function copyThenRemove($source, $target)
+    public function copyThenRemove(string $source, string $target)
     {
         $this->copy($source, $target);
         if (!is_dir($source)) {
@@ -364,7 +364,7 @@ class Filesystem
      * @param  string $target
      * @return bool
      */
-    public function copy($source, $target)
+    public function copy(string $source, string $target)
     {
         if (!is_dir($source)) {
             return copy($source, $target);
@@ -394,7 +394,7 @@ class Filesystem
      *
      * @return void
      */
-    public function rename($source, $target)
+    public function rename(string $source, string $target)
     {
         if (true === @rename($source, $target)) {
             return;
@@ -445,7 +445,7 @@ class Filesystem
      * @throws \InvalidArgumentException
      * @return string
      */
-    public function findShortestPath($from, $to, $directories = false)
+    public function findShortestPath(string $from, string $to, bool $directories = false)
     {
         if (!$this->isAbsolutePath($from) || !$this->isAbsolutePath($to)) {
             throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
@@ -488,7 +488,7 @@ class Filesystem
      * @throws \InvalidArgumentException
      * @return string
      */
-    public function findShortestPathCode($from, $to, $directories = false, $staticCode = false)
+    public function findShortestPathCode(string $from, string $to, bool $directories = false, bool $staticCode = false)
     {
         if (!$this->isAbsolutePath($from) || !$this->isAbsolutePath($to)) {
             throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
@@ -531,7 +531,7 @@ class Filesystem
      * @param  string $path
      * @return bool
      */
-    public function isAbsolutePath($path)
+    public function isAbsolutePath(string $path)
     {
         return strpos($path, '/') === 0 || substr($path, 1, 1) === ':' || strpos($path, '\\\\') === 0;
     }
@@ -544,7 +544,7 @@ class Filesystem
      * @throws \RuntimeException
      * @return int
      */
-    public function size($path)
+    public function size(string $path)
     {
         if (!file_exists($path)) {
             throw new \RuntimeException("$path does not exist.");
@@ -563,7 +563,7 @@ class Filesystem
      * @param  string $path Path to the file or directory
      * @return string
      */
-    public function normalizePath($path)
+    public function normalizePath(string $path)
     {
         $parts = array();
         $path = strtr($path, '\\', '/');
@@ -609,7 +609,7 @@ class Filesystem
      * @param  string $path
      * @return string
      */
-    public static function trimTrailingSlash($path)
+    public static function trimTrailingSlash(string $path)
     {
         if (!Preg::isMatch('{^[/\\\\]+$}', $path)) {
             $path = rtrim($path, '/\\');
@@ -624,7 +624,7 @@ class Filesystem
      * @param  string $path
      * @return bool
      */
-    public static function isLocalPath($path)
+    public static function isLocalPath(string $path)
     {
         return Preg::isMatch('{^(file://(?!//)|/(?!/)|/?[a-z]:[\\\\/]|\.\.[\\\\/]|[a-z0-9_.-]+[\\\\/])}i', $path);
     }
@@ -634,7 +634,7 @@ class Filesystem
      *
      * @return string
      */
-    public static function getPlatformPath($path)
+    public static function getPlatformPath(string $path)
     {
         if (Platform::isWindows()) {
             $path = Preg::replace('{^(?:file:///([a-z]):?/)}i', 'file://$1:/', $path);
@@ -652,7 +652,7 @@ class Filesystem
      * @param  string $path
      * @return bool
      */
-    public static function isReadable($path)
+    public static function isReadable(string $path)
     {
         if (is_readable($path)) {
             return true;
@@ -675,7 +675,7 @@ class Filesystem
      *
      * @return int
      */
-    protected function directorySize($directory)
+    protected function directorySize(string $directory)
     {
         $it = new RecursiveDirectoryIterator($directory, RecursiveDirectoryIterator::SKIP_DOTS);
         $ri = new RecursiveIteratorIterator($it, RecursiveIteratorIterator::CHILD_FIRST);
@@ -711,7 +711,7 @@ class Filesystem
      *
      * @return bool
      */
-    private function unlinkImplementation($path): bool
+    private function unlinkImplementation(string $path): bool
     {
         if (Platform::isWindows() && is_dir($path) && is_link($path)) {
             return rmdir($path);
@@ -727,13 +727,13 @@ class Filesystem
      * @param  string $link   The path where the symlink should be created
      * @return bool
      */
-    public function relativeSymlink($target, $link)
+    public function relativeSymlink(string $target, string $link)
     {
         if (!function_exists('symlink')) {
             return false;
         }
 
-        $cwd = getcwd();
+        $cwd = Platform::getCwd();
 
         $relativePath = $this->findShortestPath($link, $target);
         chdir(\dirname($link));
@@ -751,7 +751,7 @@ class Filesystem
      *
      * @return bool
      */
-    public function isSymlinkedDirectory($directory)
+    public function isSymlinkedDirectory(string $directory)
     {
         if (!is_dir($directory)) {
             return false;
@@ -767,7 +767,7 @@ class Filesystem
      *
      * @return bool
      */
-    private function unlinkSymlinkedDirectory($directory): bool
+    private function unlinkSymlinkedDirectory(string $directory): bool
     {
         $resolved = $this->resolveSymlinkedDirectorySymlink($directory);
 
@@ -781,7 +781,7 @@ class Filesystem
      *
      * @return string resolved path to symbolic link or original pathname (unresolved)
      */
-    private function resolveSymlinkedDirectorySymlink($pathname): string
+    private function resolveSymlinkedDirectorySymlink(string $pathname): string
     {
         if (!is_dir($pathname)) {
             return $pathname;
@@ -804,7 +804,7 @@ class Filesystem
      *
      * @return void
      */
-    public function junction($target, $junction)
+    public function junction(string $target, string $junction)
     {
         if (!Platform::isWindows()) {
             throw new \LogicException(sprintf('Function %s is not available on non-Windows platform', __CLASS__));
@@ -843,7 +843,7 @@ class Filesystem
      * @param  string $junction Path to check.
      * @return bool
      */
-    public function isJunction($junction)
+    public function isJunction(string $junction)
     {
         if (!Platform::isWindows()) {
             return false;
@@ -868,7 +868,7 @@ class Filesystem
      * @param  string $junction
      * @return bool
      */
-    public function removeJunction($junction)
+    public function removeJunction(string $junction)
     {
         if (!Platform::isWindows()) {
             return false;
@@ -887,7 +887,7 @@ class Filesystem
      *
      * @return int|false
      */
-    public function filePutContentsIfModified($path, $content)
+    public function filePutContentsIfModified(string $path, string $content)
     {
         $currentContent = @file_get_contents($path);
         if (!$currentContent || ($currentContent != $content)) {
@@ -905,7 +905,7 @@ class Filesystem
      *
      * @return void
      */
-    public function safeCopy($source, $target)
+    public function safeCopy(string $source, string $target)
     {
         if (!file_exists($target) || !file_exists($source) || !$this->filesAreEqual($source, $target)) {
             $source = fopen($source, 'r');
@@ -926,7 +926,7 @@ class Filesystem
      *
      * @return bool
      */
-    private function filesAreEqual($a, $b): bool
+    private function filesAreEqual(string $a, string $b): bool
     {
         // Check if filesize is different
         if (filesize($a) !== filesize($b)) {

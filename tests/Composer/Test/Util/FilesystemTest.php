@@ -59,7 +59,7 @@ class FilesystemTest extends TestCase
      * @param string $expected
      * @param bool   $static
      */
-    public function testFindShortestPathCode($a, $b, $directory, $expected, $static = false): void
+    public function testFindShortestPathCode(string $a, string $b, bool $directory, string $expected, bool $static = false): void
     {
         $fs = new Filesystem;
         $this->assertEquals($expected, $fs->findShortestPathCode($a, $b, $directory, $static));
@@ -122,7 +122,7 @@ class FilesystemTest extends TestCase
      * @param string $expected
      * @param bool   $directory
      */
-    public function testFindShortestPath($a, $b, $expected, $directory = false): void
+    public function testFindShortestPath(string $a, string $b, string $expected, bool $directory = false): void
     {
         $fs = new Filesystem;
         $this->assertEquals($expected, $fs->findShortestPath($a, $b, $directory));
@@ -207,7 +207,7 @@ class FilesystemTest extends TestCase
      * @param string $expected
      * @param string $actual
      */
-    public function testNormalizePath($expected, $actual): void
+    public function testNormalizePath(string $expected, string $actual): void
     {
         $fs = new Filesystem;
         $this->assertEquals($expected, $fs->normalizePath($actual));

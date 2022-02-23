@@ -88,7 +88,7 @@ class RuleWatchGraph
      *                                   register decisions resulting from propagation
      * @return Rule|null If a conflict is found the conflicting rule is returned
      */
-    public function propagateLiteral($decidedLiteral, $level, Decisions $decisions): ?Rule
+    public function propagateLiteral(int $decidedLiteral, int $level, Decisions $decisions): ?Rule
     {
         // we invert the decided literal here, example:
         // A was decided => (-A|B) now requires B to be true, so we look for
@@ -156,7 +156,7 @@ class RuleWatchGraph
      * @param RuleWatchNode $node        The rule node to be moved
      * @return void
      */
-    protected function moveWatch($fromLiteral, $toLiteral, RuleWatchNode $node): void
+    protected function moveWatch(int $fromLiteral, int $toLiteral, RuleWatchNode $node): void
     {
         if (!isset($this->watchChains[$toLiteral])) {
             $this->watchChains[$toLiteral] = new RuleWatchChain;

@@ -187,9 +187,9 @@ EOT
      * @return int
      * @throws \Exception
      */
-    public function installProject(IOInterface $io, Config $config, InputInterface $input, $packageName = null, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $noInstall = false, PlatformRequirementFilterInterface $platformRequirementFilter = null, $secureHttp = true, $addRepository = false): int
+    public function installProject(IOInterface $io, Config $config, InputInterface $input, ?string $packageName = null, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $noInstall = false, PlatformRequirementFilterInterface $platformRequirementFilter = null, bool $secureHttp = true, bool $addRepository = false): int
     {
-        $oldCwd = getcwd();
+        $oldCwd = Platform::getCwd();
 
         if ($repositories !== null && !is_array($repositories)) {
             $repositories = (array) $repositories;
@@ -284,7 +284,7 @@ EOT
             )
         ) {
             $finder = new Finder();
-            $finder->depth(0)->directories()->in(getcwd())->ignoreVCS(false)->ignoreDotFiles(false);
+            $finder->depth(0)->directories()->in(Platform::getCwd())->ignoreVCS(false)->ignoreDotFiles(false);
             foreach (array('.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg', '.fslckout', '_FOSSIL_') as $vcsName) {
                 $finder->name($vcsName);
             }
@@ -350,7 +350,7 @@ EOT
      * @return bool
      * @throws \Exception
      */
-    protected function installRootPackage(IOInterface $io, Config $config, $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, $directory = null, $packageVersion = null, $stability = 'stable', $preferSource = false, $preferDist = false, $installDevPackages = false, array $repositories = null, $disablePlugins = false, $disableScripts = false, $noProgress = false, $secureHttp = true): bool
+    protected function installRootPackage(IOInterface $io, Config $config, string $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, array $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $secureHttp = true): bool
     {
         if (!$secureHttp) {
             $config->merge(array('config' => array('secure-http' => false)), Config::SOURCE_COMMAND);
@@ -366,16 +366,16 @@ EOT
         // if no directory was specified, use the 2nd part of the package name
         if (null === $directory) {
             $parts = explode("/", $name, 2);
-            $directory = getcwd() . DIRECTORY_SEPARATOR . array_pop($parts);
+            $directory = Platform::getCwd() . DIRECTORY_SEPARATOR . array_pop($parts);
         }
 
         $process = new ProcessExecutor($io);
         $fs = new Filesystem($process);
         if (!$fs->isAbsolutePath($directory)) {
-            $directory = getcwd() . DIRECTORY_SEPARATOR . $directory;
+            $directory = Platform::getCwd() . DIRECTORY_SEPARATOR . $directory;
         }
 
-        $io->writeError('<info>Creating a "' . $packageName . '" project at "' . $fs->findShortestPath(getcwd(), $directory, true) . '"</info>');
+        $io->writeError('<info>Creating a "' . $packageName . '" project at "' . $fs->findShortestPath(Platform::getCwd(), $directory, true) . '"</info>');
 
         if (file_exists($directory)) {
             if (!is_dir($directory)) {

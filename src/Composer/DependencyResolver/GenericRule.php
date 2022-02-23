@@ -77,7 +77,7 @@ class GenericRule extends Rule
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         $result = $this->isDisabled() ? 'disabled(' : '(';
 
