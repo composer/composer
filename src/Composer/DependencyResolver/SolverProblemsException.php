@@ -22,7 +22,7 @@ use Composer\Repository\RepositorySet;
  */
 class SolverProblemsException extends \RuntimeException
 {
-    const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
+    public const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
 
     /** @var Problem[] */
     protected $problems;

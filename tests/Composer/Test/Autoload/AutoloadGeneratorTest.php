@@ -82,12 +82,9 @@ class AutoloadGeneratorTest extends TestCase
      * Map of setting name => return value configuration for the stub Config
      * object.
      *
-     * Note: must be public for compatibility with PHP 5.3 runtimes where
-     * closures cannot access private members of the classes they are created
-     * in.
      * @var array<string, callable|boolean>
      */
-    public $configValueMap;
+    private $configValueMap;
 
     protected function setUp(): void
     {

@@ -21,9 +21,9 @@ use Composer\Repository\RepositorySet;
 class RuleSet implements \IteratorAggregate, \Countable
 {
     // highest priority => lowest number
-    const TYPE_PACKAGE = 0;
-    const TYPE_REQUEST = 1;
-    const TYPE_LEARNED = 4;
+    public const TYPE_PACKAGE = 0;
+    public const TYPE_REQUEST = 1;
+    public const TYPE_LEARNED = 4;
 
     /**
      * READ-ONLY: Lookup table for rule id to rule object

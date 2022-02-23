@@ -22,7 +22,7 @@ use Composer\Pcre\Preg;
  */
 class Svn
 {
-    const MAX_QTY_AUTH_TRIES = 5;
+    private const MAX_QTY_AUTH_TRIES = 5;
 
     /**
      * @var ?array{username: string, password: string}

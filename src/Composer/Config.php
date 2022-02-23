@@ -24,11 +24,11 @@ use Composer\Util\ProcessExecutor;
  */
 class Config
 {
-    const SOURCE_DEFAULT = 'default';
-    const SOURCE_COMMAND = 'command';
-    const SOURCE_UNKNOWN = 'unknown';
+    public const SOURCE_DEFAULT = 'default';
+    public const SOURCE_COMMAND = 'command';
+    public const SOURCE_UNKNOWN = 'unknown';
 
-    const RELATIVE_PATHS = 1;
+    public const RELATIVE_PATHS = 1;
 
     /** @var array<string, mixed> */
     public static $defaultConfig = array(

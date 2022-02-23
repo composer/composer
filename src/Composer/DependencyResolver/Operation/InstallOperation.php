@@ -21,7 +21,7 @@ use Composer\Package\PackageInterface;
  */
 class InstallOperation extends SolverOperation implements OperationInterface
 {
-    const TYPE = 'install';
+    protected const TYPE = 'install';
 
     /**
      * @var PackageInterface

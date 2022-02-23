@@ -33,8 +33,8 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
  */
 class PathDownloader extends FileDownloader implements VcsCapableDownloaderInterface
 {
-    const STRATEGY_SYMLINK = 10;
-    const STRATEGY_MIRROR = 20;
+    private const STRATEGY_SYMLINK = 10;
+    private const STRATEGY_MIRROR = 20;
 
     /**
      * @inheritDoc
