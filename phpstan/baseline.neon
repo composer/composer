@@ -1576,11 +1576,6 @@ parameters:
 			path: ../src/Composer/Console/Application.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
-			count: 1
-			path: ../src/Composer/Console/Application.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, string\\|false given\\.$#"
 			count: 2
 			path: ../src/Composer/Console/Application.php
@@ -1592,11 +1587,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, int given\\.$#"
-			count: 1
-			path: ../src/Composer/Console/Application.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, string given\\.$#"
 			count: 1
 			path: ../src/Composer/Console/Application.php
 
@@ -2296,11 +2286,6 @@ parameters:
 			path: ../src/Composer/Downloader/FileDownloader.php
 
 		-
-			message: "#^Parameter \\#1 \\$url of function parse_url expects string, string\\|null given\\.$#"
-			count: 2
-			path: ../src/Composer/Downloader/FileDownloader.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 4
 			path: ../src/Composer/Downloader/FileDownloader.php
@@ -2392,11 +2377,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$path of function pathinfo expects string, string\\|false\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/GzipDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$url of function parse_url expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/GzipDownloader.php
 
@@ -3516,11 +3496,6 @@ parameters:
 			path: ../src/Composer/Package/Loader/ArrayLoader.php
 
 		-
-			message: "#^Instanceof between Composer\\\\Package\\\\CompletePackage and Composer\\\\Package\\\\CompletePackage will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Loader/ArrayLoader.php
-
-		-
 			message: "#^Instanceof between Composer\\\\Package\\\\CompletePackage and Composer\\\\Package\\\\CompletePackageInterface will always evaluate to true\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Loader/ArrayLoader.php
@@ -3554,11 +3529,6 @@ parameters:
 			message: "#^Variable method call on Composer\\\\Package\\\\PackageInterface\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Loader/ArrayLoader.php
-
-		-
-			message: "#^Call to function is_string\\(\\) with string will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Loader/JsonLoader.php
 
 		-
 			message: "#^Parameter \\#1 \\$json of static method Composer\\\\Json\\\\JsonFile\\:\\:parseJson\\(\\) expects string\\|null, string\\|false given\\.$#"
@@ -4306,16 +4276,6 @@ parameters:
 			path: ../src/Composer/Repository/FilesystemRepository.php
 
 		-
-			message: "#^Call to function is_array\\(\\) with array\\<string\\> will always evaluate to true\\.$#"
-			count: 2
-			path: ../src/Composer/Repository/FilterRepository.php
-
-		-
-			message: "#^Call to function is_bool\\(\\) with bool will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/FilterRepository.php
-
-		-
 			message: "#^Only booleans are allowed in &&, string\\|null given on the left side\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/FilterRepository.php
@@ -4500,11 +4460,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$str of function strtr expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/RepositoryFactory.php
-
-		-
-			message: "#^Parameter \\#3 \\$name of method Composer\\\\Repository\\\\RepositoryManager\\:\\:createRepository\\(\\) expects string\\|null, int\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/RepositoryFactory.php
 
@@ -4794,17 +4749,7 @@ parameters:
 			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
 
 		-
-			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, string\\|false given\\.$#"
-			count: 2
-			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
-
-		-
 			message: "#^Parameter \\#2 \\$str of function explode expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
-
-		-
-			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\VcsDriver\\:\\:\\$originUrl \\(string\\) does not accept string\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
 
@@ -5184,93 +5129,8 @@ parameters:
 			path: ../src/Composer/Util/ErrorHandler.php
 
 		-
-			message: "#^Cannot call method getPathname\\(\\) on SplFileInfo\\|string\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Cannot call method isDir\\(\\) on SplFileInfo\\|string\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
 			message: "#^Casting to string something that's already string\\.$#"
-			count: 2
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Method Composer\\\\Util\\\\Filesystem\\:\\:size\\(\\) should return int but returns int\\<0, max\\>\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Offset 'message' does not exist on array\\{type\\: int, message\\: string, file\\: string, line\\: int\\}\\|null\\.$#"
-			count: 2
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, Composer\\\\Util\\\\ProcessExecutor\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, int\\<0, max\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, array\\<int\\|string, int\\>\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Only booleans are allowed in a ternary operator condition, int\\<0, max\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Only numeric types are allowed in \\+, bool given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Parameter \\#1 \\$fp of function fclose expects resource, resource\\|false given\\.$#"
 			count: 4
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Parameter \\#1 \\$fp of function feof expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Parameter \\#1 \\$fp of function fread expects resource, resource\\|false given\\.$#"
-			count: 2
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Parameter \\#1 \\$source of function stream_copy_to_stream expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Parameter \\#2 \\$dest of function stream_copy_to_stream expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
 			path: ../src/Composer/Util/Filesystem.php
 
 		-
@@ -5385,7 +5245,7 @@ parameters:
 
 		-
 			message: "#^Call to function is_resource\\(\\) with resource will always evaluate to true\\.$#"
-			count: 4
+			count: 3
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
@@ -6284,11 +6144,6 @@ parameters:
 			path: ../tests/Composer/Test/AllFunctionalTest.php
 
 		-
-			message: "#^Method Composer\\\\Test\\\\AllFunctionalTest\\:\\:getTestFiles\\(\\) should return array\\<string, array\\<string\\>\\> but returns array\\<string, array\\<int, string\\|false\\>\\>\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/AllFunctionalTest.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/AllFunctionalTest.php
@@ -6439,11 +6294,6 @@ parameters:
 			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$filename of function file_get_contents expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
-
-		-
 			message: "#^Parameter \\#2 \\$fixturesDir of method Composer\\\\Test\\\\DependencyResolver\\\\PoolBuilderTest\\:\\:readTestFile\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
@@ -6456,11 +6306,6 @@ parameters:
 		-
 			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:split\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
-			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
-
-		-
-			message: "#^Parameter \\#2 \\.\\.\\.\\$values of function sprintf expects bool\\|float\\|int\\|string\\|null, array\\|string given\\.$#"
-			count: 2
 			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
 
 		-
@@ -6479,11 +6324,6 @@ parameters:
 			path: ../tests/Composer/Test/DependencyResolver/PoolOptimizerTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$filename of function file_get_contents expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/DependencyResolver/PoolOptimizerTest.php
-
-		-
 			message: "#^Parameter \\#2 \\$fixturesDir of method Composer\\\\Test\\\\DependencyResolver\\\\PoolOptimizerTest\\:\\:readTestFile\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/DependencyResolver/PoolOptimizerTest.php
@@ -6491,11 +6331,6 @@ parameters:
 		-
 			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:split\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
-			path: ../tests/Composer/Test/DependencyResolver/PoolOptimizerTest.php
-
-		-
-			message: "#^Parameter \\#2 \\.\\.\\.\\$values of function sprintf expects bool\\|float\\|int\\|string\\|null, array\\|string given\\.$#"
-			count: 2
 			path: ../tests/Composer/Test/DependencyResolver/PoolOptimizerTest.php
 
 		-
@@ -6697,11 +6532,6 @@ parameters:
 			path: ../tests/Composer/Test/InstallerTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$filename of function file_get_contents expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/InstallerTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false\\|null given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/InstallerTest.php
@@ -6724,11 +6554,6 @@ parameters:
 		-
 			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:split\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
-			path: ../tests/Composer/Test/InstallerTest.php
-
-		-
-			message: "#^Parameter \\#2 \\.\\.\\.\\$values of function sprintf expects bool\\|float\\|int\\|string\\|null, array\\|string given\\.$#"
-			count: 2
 			path: ../tests/Composer/Test/InstallerTest.php
 
 		-
@@ -6788,11 +6613,6 @@ parameters:
 
 		-
 			message: "#^Offset 'return' does not exist on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\}\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
-
-		-
-			message: "#^Offset 'return' on array\\{return\\: int, stdout\\?\\: string, stderr\\?\\: string\\} on left side of \\?\\? always exists and is not nullable\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
 

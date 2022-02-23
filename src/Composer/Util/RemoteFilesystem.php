@@ -219,7 +219,7 @@ class RemoteFilesystem
      */
     protected function get(string $originUrl, string $fileUrl, array $additionalOptions = array(), string $fileName = null, bool $progress = true)
     {
-        $this->scheme = parse_url($fileUrl, PHP_URL_SCHEME);
+        $this->scheme = parse_url(strtr($fileUrl, '\\', '/'), PHP_URL_SCHEME);
         $this->bytesMax = 0;
         $this->originUrl = $originUrl;
         $this->fileUrl = $fileUrl;

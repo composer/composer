@@ -142,7 +142,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             $repoConfig['url'] = (extension_loaded('openssl') ? 'https' : 'http') . substr($repoConfig['url'], 6);
         }
 
-        $urlBits = parse_url($repoConfig['url']);
+        $urlBits = parse_url(strtr($repoConfig['url'], '\\', '/'));
         if ($urlBits === false || empty($urlBits['scheme'])) {
             throw new \UnexpectedValueException('Invalid url given for Composer repository: '.$repoConfig['url']);
         }
@@ -998,7 +998,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
      */
     private function getPackagesJsonUrl(): string
     {
-        $jsonUrlParts = parse_url($this->url);
+        $jsonUrlParts = parse_url(strtr($this->url, '\\', '/'));
 
         if (isset($jsonUrlParts['path']) && false !== strpos($jsonUrlParts['path'], '.json')) {
             return $this->url;

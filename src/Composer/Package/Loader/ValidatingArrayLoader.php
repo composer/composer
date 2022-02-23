@@ -286,7 +286,7 @@ class ValidatingArrayLoader implements LoaderInterface
                             // check requires for exact constraints
                             ($this->flags & self::CHECK_STRICT_CONSTRAINTS)
                             && 'require' === $linkType
-                            && $linkConstraint instanceof Constraint && $linkConstraint->getOperator() === Constraint::STR_OP_EQ
+                            && $linkConstraint instanceof Constraint && in_array($linkConstraint->getOperator(), ['==', '='], true)
                             && (new Constraint('>=', '1.0.0.0-dev'))->matches($linkConstraint)
                         ) {
                             $this->warnings[] = $linkType.'.'.$package.' : exact version constraints ('.$constraint.') should be avoided if the package follows semantic versioning';

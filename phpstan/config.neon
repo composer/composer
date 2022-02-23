@@ -17,6 +17,7 @@ parameters:
        - '../tests/Composer/Test/PolyfillTestCase.php'
 
     reportUnmatchedIgnoredErrors: false
+    treatPhpDocTypesAsCertain: false
 
     ignoreErrors:
         # unused parameters

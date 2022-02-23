@@ -26,7 +26,7 @@ class GzipDownloader extends ArchiveDownloader
 {
     protected function extract(PackageInterface $package, string $file, string $path): PromiseInterface
     {
-        $filename = pathinfo(parse_url($package->getDistUrl(), PHP_URL_PATH), PATHINFO_FILENAME);
+        $filename = pathinfo(parse_url(strtr((string) $package->getDistUrl(), '\\', '/'), PHP_URL_PATH), PATHINFO_FILENAME);
         $targetFilepath = $path . DIRECTORY_SEPARATOR . $filename;
 
         // Try to use gunzip on *nix
