@@ -29,6 +29,8 @@ class Composer extends PartialComposer
     /*
      * Examples of the following constants in the various configurations they can be in
      *
+     * You are probably better off using Composer::getVersion() though as that will always return something usable
+     *
      * releases (phar):
      * const VERSION = '1.8.2';
      * const BRANCH_ALIAS_VERSION = '';
@@ -46,11 +48,13 @@ class Composer extends PartialComposer
      * const BRANCH_ALIAS_VERSION = '@package_branch_alias_version@';
      * const RELEASE_DATE = '@release_date@';
      * const SOURCE_VERSION = '1.8-dev+source';
+     *
+     * @see getVersion()
      */
-    const VERSION = '@package_version@';
-    const BRANCH_ALIAS_VERSION = '@package_branch_alias_version@';
-    const RELEASE_DATE = '@release_date@';
-    const SOURCE_VERSION = '2.3.999-dev+source';
+    public const VERSION = '@package_version@';
+    public const BRANCH_ALIAS_VERSION = '@package_branch_alias_version@';
+    public const RELEASE_DATE = '@release_date@';
+    public const SOURCE_VERSION = '2.3.999-dev+source';
 
     /**
      * Version number of the internal composer-runtime-api package
@@ -61,7 +65,7 @@ class Composer extends PartialComposer
      *
      * @var string
      */
-    const RUNTIME_API_VERSION = '2.2.2';
+    public const RUNTIME_API_VERSION = '2.2.2';
 
     /**
      * @return string

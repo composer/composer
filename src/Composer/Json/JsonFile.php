@@ -28,8 +28,8 @@ use Composer\Downloader\TransportException;
  */
 class JsonFile
 {
-    const LAX_SCHEMA = 1;
-    const STRICT_SCHEMA = 2;
+    public const LAX_SCHEMA = 1;
+    public const STRICT_SCHEMA = 2;
 
     /** @deprecated Use \JSON_UNESCAPED_SLASHES */
     public const JSON_UNESCAPED_SLASHES = 64;
@@ -38,7 +38,7 @@ class JsonFile
     /** @deprecated Use \JSON_UNESCAPED_UNICODE */
     public const JSON_UNESCAPED_UNICODE = 256;
 
-    const COMPOSER_SCHEMA_PATH = '/../../../res/composer-schema.json';
+    public const COMPOSER_SCHEMA_PATH = __DIR__ . '/../../../res/composer-schema.json';
 
     /** @var string */
     private $path;
@@ -200,7 +200,7 @@ class JsonFile
         $isComposerSchemaFile = false;
         if (null === $schemaFile) {
             $isComposerSchemaFile = true;
-            $schemaFile = __DIR__ . self::COMPOSER_SCHEMA_PATH;
+            $schemaFile = self::COMPOSER_SCHEMA_PATH;
         }
 
         // Prepend with file:// only when not using a special schema already (e.g. in the phar)

@@ -36,8 +36,8 @@ use Symfony\Component\Finder\Finder;
  */
 class SelfUpdateCommand extends BaseCommand
 {
-    const HOMEPAGE = 'getcomposer.org';
-    const OLD_INSTALL_EXT = '-old.phar';
+    private const HOMEPAGE = 'getcomposer.org';
+    private const OLD_INSTALL_EXT = '-old.phar';
 
     /**
      * @return void

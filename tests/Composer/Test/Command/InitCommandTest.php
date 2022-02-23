@@ -66,7 +66,8 @@ class InitCommandTest extends TestCase
     public function testParseValidAlias1AuthorString(): void
     {
         $command = new InitCommand;
-        $author = $this->callParseAuthorString($command,
+        $author = $this->callParseAuthorString(
+            $command,
             'Johnathon "Johnny" Smith <john@example.com>'
         );
         $this->assertEquals('Johnathon "Johnny" Smith', $author['name']);
@@ -80,7 +81,8 @@ class InitCommandTest extends TestCase
     public function testParseValidAlias2AuthorString(): void
     {
         $command = new InitCommand;
-        $author = $this->callParseAuthorString($command,
+        $author = $this->callParseAuthorString(
+            $command,
             'Johnathon (Johnny) Smith <john@example.com>'
         );
         $this->assertEquals('Johnathon (Johnny) Smith', $author['name']);

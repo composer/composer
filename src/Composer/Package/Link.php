@@ -32,10 +32,7 @@ class Link
      * @internal
      */
     public const TYPE_DOES_NOT_REQUIRE = 'does not require';
-    /**
-     * TODO should be marked private once 5.3 is dropped
-     * @private
-     */
+
     private const TYPE_UNKNOWN = 'relates to';
 
     /**

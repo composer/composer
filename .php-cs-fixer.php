@@ -65,7 +65,7 @@ return $config->setRules([
         // TODO later once 2.2 is more stable
         // 'array_syntax' => true,
         // 'list_syntax' => true,
-        'visibility_required' => ['elements' => ['property', 'method', /* TODO 'const' but need to review them all */]],
+        'visibility_required' => ['elements' => ['property', 'method', 'const']],
         'non_printable_character' => true,
         'combine_nested_dirname' => true,
         'random_api_migration' => true,

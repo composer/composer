@@ -1271,7 +1271,7 @@ Linked Version => 1.2.11',
 
 class ResourceBundleStub
 {
-    const STUB_VERSION = '32.0.1';
+    public const STUB_VERSION = '32.0.1';
 
     /**
      * @param string $locale

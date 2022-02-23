@@ -12,7 +12,6 @@
 
 namespace Composer\Package\Loader;
 
-use Composer\Package\CompletePackageInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\RootAliasPackage;

@@ -32,12 +32,12 @@ class PerforceTest extends TestCase
     /** @var \PHPUnit\Framework\MockObject\MockObject&\Composer\IO\IOInterface */
     protected $io;
 
-    const TEST_DEPOT = 'depot';
-    const TEST_BRANCH = 'branch';
-    const TEST_P4USER = 'user';
-    const TEST_CLIENT_NAME = 'TEST';
-    const TEST_PORT = 'port';
-    const TEST_PATH = 'path';
+    private const TEST_DEPOT = 'depot';
+    private const TEST_BRANCH = 'branch';
+    private const TEST_P4USER = 'user';
+    private const TEST_CLIENT_NAME = 'TEST';
+    private const TEST_PORT = 'port';
+    private const TEST_PATH = 'path';
 
     protected function setUp(): void
     {

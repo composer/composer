@@ -34,11 +34,11 @@ class RepositorySet
     /**
      * Packages are returned even though their stability does not match the required stability
      */
-    const ALLOW_UNACCEPTABLE_STABILITIES = 1;
+    public const ALLOW_UNACCEPTABLE_STABILITIES = 1;
     /**
      * Packages will be looked up in all repositories, even after they have been found in a higher prio one
      */
-    const ALLOW_SHADOWED_REPOSITORIES = 2;
+    public const ALLOW_SHADOWED_REPOSITORIES = 2;
 
     /**
      * @var array[]

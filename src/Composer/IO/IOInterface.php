@@ -22,11 +22,11 @@ use Psr\Log\LoggerInterface;
  */
 interface IOInterface extends LoggerInterface
 {
-    const QUIET = 1;
-    const NORMAL = 2;
-    const VERBOSE = 4;
-    const VERY_VERBOSE = 8;
-    const DEBUG = 16;
+    public const QUIET = 1;
+    public const NORMAL = 2;
+    public const VERBOSE = 4;
+    public const VERY_VERBOSE = 8;
+    public const DEBUG = 16;
 
     /**
      * Is this input means interactive?

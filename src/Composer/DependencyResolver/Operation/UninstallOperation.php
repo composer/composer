@@ -21,7 +21,7 @@ use Composer\Package\PackageInterface;
  */
 class UninstallOperation extends SolverOperation implements OperationInterface
 {
-    const TYPE = 'uninstall';
+    protected const TYPE = 'uninstall';
 
     /**
      * @var PackageInterface

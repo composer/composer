@@ -57,9 +57,9 @@ class PerforceDriverTest extends TestCase
      */
     protected $perforce;
 
-    const TEST_URL = 'TEST_PERFORCE_URL';
-    const TEST_DEPOT = 'TEST_DEPOT_CONFIG';
-    const TEST_BRANCH = 'TEST_BRANCH_CONFIG';
+    private const TEST_URL = 'TEST_PERFORCE_URL';
+    private const TEST_DEPOT = 'TEST_DEPOT_CONFIG';
+    private const TEST_BRANCH = 'TEST_BRANCH_CONFIG';
 
     protected function setUp(): void
     {

@@ -20,7 +20,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 
 class VersionParser extends SemverVersionParser
 {
-    const DEFAULT_BRANCH_ALIAS = '9999999-dev';
+    public const DEFAULT_BRANCH_ALIAS = '9999999-dev';
 
     /** @var array<string, ConstraintInterface> Constraint parsing cache */
     private static $constraints = array();

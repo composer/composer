@@ -10,7 +10,9 @@
  * file that was distributed with this source code.
  */
 
-function includeIfExists(string $file): ?\Composer\Autoload\ClassLoader
+use Composer\Autoload\ClassLoader;
+
+function includeIfExists(string $file): ?ClassLoader
 {
     return file_exists($file) ? include $file : null;
 }

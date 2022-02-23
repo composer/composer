@@ -70,12 +70,12 @@ use Composer\Util\Platform;
  */
 class Installer
 {
-    const ERROR_NONE = 0; // no error/success state
-    const ERROR_GENERIC_FAILURE = 1;
-    const ERROR_NO_LOCK_FILE_FOR_PARTIAL_UPDATE = 3;
-    const ERROR_LOCK_FILE_INVALID = 4;
+    public const ERROR_NONE = 0; // no error/success state
+    public const ERROR_GENERIC_FAILURE = 1;
+    public const ERROR_NO_LOCK_FILE_FOR_PARTIAL_UPDATE = 3;
+    public const ERROR_LOCK_FILE_INVALID = 4;
     // used/declared in SolverProblemsException, carried over here for completeness
-    const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
+    public const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
 
     /**
      * @var IOInterface

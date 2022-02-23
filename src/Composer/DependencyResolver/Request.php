@@ -26,19 +26,19 @@ class Request
     /**
      * Identifies a partial update for listed packages only, all dependencies will remain at locked versions
      */
-    const UPDATE_ONLY_LISTED = 0;
+    public const UPDATE_ONLY_LISTED = 0;
 
     /**
      * Identifies a partial update for listed packages and recursively all their dependencies, however dependencies
      * also directly required by the root composer.json and their dependencies will remain at the locked version.
      */
-    const UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE = 1;
+    public const UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE = 1;
 
     /**
      * Identifies a partial update for listed packages and recursively all their dependencies, even dependencies
      * also directly required by the root composer.json will be updated.
      */
-    const UPDATE_LISTED_WITH_TRANSITIVE_DEPS = 2;
+    public const UPDATE_LISTED_WITH_TRANSITIVE_DEPS = 2;
 
     /** @var ?LockArrayRepository */
     protected $lockedRepository;

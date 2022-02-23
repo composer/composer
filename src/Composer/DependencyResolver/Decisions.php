@@ -20,8 +20,8 @@ namespace Composer\DependencyResolver;
  */
 class Decisions implements \Iterator, \Countable
 {
-    const DECISION_LITERAL = 0;
-    const DECISION_REASON = 1;
+    public const DECISION_LITERAL = 0;
+    public const DECISION_REASON = 1;
 
     /** @var Pool */
     protected $pool;
