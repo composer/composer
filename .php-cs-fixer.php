@@ -71,7 +71,7 @@ return $config->setRules([
         'random_api_migration' => true,
         'ternary_to_null_coalescing' => true,
         'phpdoc_to_param_type' => true,
-        //'declare_strict_types' => true,
+        'declare_strict_types' => true,
 
         // TODO php 7.4 migration (one day..)
         // 'phpdoc_to_property_type' => true,
