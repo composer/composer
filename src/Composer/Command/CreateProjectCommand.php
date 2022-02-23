@@ -293,7 +293,7 @@ EOT
                 $dirs = iterator_to_array($finder);
                 unset($finder);
                 foreach ($dirs as $dir) {
-                    if (!$fs->removeDirectory($dir)) {
+                    if (!$fs->removeDirectory((string) $dir)) {
                         throw new \RuntimeException('Could not remove '.$dir);
                     }
                 }

@@ -105,7 +105,11 @@ class GitLabDriver extends VcsDriver
             ? $match['scheme']
             : (isset($this->repoConfig['secure-http']) && $this->repoConfig['secure-http'] === false ? 'http' : 'https')
         ;
-        $this->originUrl = self::determineOrigin($configuredDomains, $guessedDomain, $urlParts, $match['port']);
+        $origin = self::determineOrigin($configuredDomains, $guessedDomain, $urlParts, $match['port']);
+        if (false === $origin) {
+            throw new \LogicException('It should not be possible to create a gitlab driver with an unparseable origin URL ('.$this->url.')');
+        }
+        $this->originUrl = $origin;
 
         if ($protocol = $this->config->get('gitlab-protocol')) {
             // https treated as a synonym for http.

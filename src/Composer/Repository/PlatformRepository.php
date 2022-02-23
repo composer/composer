@@ -306,7 +306,7 @@ class PlatformRepository extends ArrayRepository
                     }
 
                     if (Preg::isMatch('/^libXpm Version => (?<versionId>\d+)$/im', $info, $libxpmMatches)) {
-                        $this->addLibrary($name.'-libxpm', Version::convertLibxpmVersionId($libxpmMatches['versionId']), 'libxpm version for gd');
+                        $this->addLibrary($name.'-libxpm', Version::convertLibxpmVersionId((int) $libxpmMatches['versionId']), 'libxpm version for gd');
                     }
 
                     break;
@@ -363,7 +363,7 @@ class PlatformRepository extends ArrayRepository
                     $info = $this->runtime->getExtensionInfo($name);
 
                     if (Preg::isMatch('/^Vendor Version => (?<versionId>\d+)$/im', $info, $matches) && Preg::isMatch('/^Vendor Name => (?<vendor>.+)$/im', $info, $vendorMatches)) {
-                        $this->addLibrary($name.'-'.strtolower($vendorMatches['vendor']), Version::convertOpenldapVersionId($matches['versionId']), $vendorMatches['vendor'].' version of ldap');
+                        $this->addLibrary($name.'-'.strtolower($vendorMatches['vendor']), Version::convertOpenldapVersionId((int) $matches['versionId']), $vendorMatches['vendor'].' version of ldap');
                     }
                     break;
 

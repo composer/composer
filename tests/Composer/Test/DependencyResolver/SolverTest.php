@@ -24,6 +24,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
+use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
@@ -1059,7 +1060,7 @@ class SolverTest extends TestCase
     }
 
     /**
-     * @param array<array<string, string>> $expected
+     * @param array<array{job: string, package?: PackageInterface, from?: PackageInterface, to?: PackageInterface}> $expected
      * @return void
      */
     protected function checkSolverResult(array $expected): void

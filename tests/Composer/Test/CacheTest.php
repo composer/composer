@@ -17,7 +17,7 @@ use Composer\Util\Filesystem;
 
 class CacheTest extends TestCase
 {
-    /** @var string[] */
+    /** @var array<\SplFileInfo> */
     private $files;
     /** @var string */
     private $root;

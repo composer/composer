@@ -521,6 +521,8 @@ class InstallerTest extends TestCase
         $tests = array();
 
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($fixturesDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
+            $file = (string) $file;
+
             if (!Preg::isMatch('/\.test$/', $file)) {
                 continue;
             }
@@ -598,12 +600,11 @@ class InstallerTest extends TestCase
     }
 
     /**
-     * @param  string $fixturesDir
      * @return mixed[]
      */
-    protected function readTestFile(\SplFileInfo $file, string $fixturesDir): array
+    protected function readTestFile(string $file, string $fixturesDir): array
     {
-        $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
 
         $sectionInfo = array(
             'TEST' => true,

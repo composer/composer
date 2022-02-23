@@ -77,12 +77,12 @@ class HgDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
-            $this->getCmd('hg clone -- \'https://mercurial.dev/l3l0/composer\' \'composerPath\''),
+            $this->getCmd('hg clone -- \'https://mercurial.dev/l3l0/composer\' \''.$this->workingDir.'\''),
             $this->getCmd('hg up -- \'ref\''),
         ), true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
-        $downloader->install($packageMock, 'composerPath');
+        $downloader->install($packageMock, $this->workingDir);
     }
 
     public function testUpdateforPackageWithoutSourceReference(): void
