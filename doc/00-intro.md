@@ -33,9 +33,11 @@ dependencies.
 
 ## System Requirements
 
-Composer requires PHP 5.3.2+ to run. A few sensitive php settings and compile
-flags are also required, but when using the installer you will be warned about
-any incompatibilities.
+Composer in its latest version requires PHP 7.2.5 to run. A long-term-support
+version (2.2.x) still offers support for PHP 5.3.2+ in case you are stuck with
+a legacy PHP version. A few sensitive php settings and compile flags are also
+required, but when using the installer you will be warned about any
+incompatibilities.
 
 To install packages from sources instead of plain zip archives, you will need
 git, svn, fossil or hg depending on how the package is version-controlled.
