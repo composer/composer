@@ -97,7 +97,7 @@ class ArrayRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function findPackage($name, $constraint)
+    public function findPackage(string $name, $constraint)
     {
         $name = strtolower($name);
 
@@ -121,7 +121,7 @@ class ArrayRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function findPackages($name, $constraint = null)
+    public function findPackages(string $name, $constraint = null)
     {
         // normalize name
         $name = strtolower($name);
@@ -237,7 +237,7 @@ class ArrayRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function getProviders($packageName)
+    public function getProviders(string $packageName)
     {
         $result = array();
 

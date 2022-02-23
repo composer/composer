@@ -195,7 +195,7 @@ class RuleSet implements \IteratorAggregate, \Countable
         return $string;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getPrettyString();
     }

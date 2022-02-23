@@ -151,7 +151,7 @@ class Perforce
     /**
      * @return non-empty-string
      */
-    public function generateUniquePerforceClientName()
+    public function generateUniquePerforceClientName(): string
     {
         return gethostname() . "_" . time();
     }
@@ -281,7 +281,7 @@ class Perforce
     /**
      * @return non-empty-string
      */
-    public function getP4ClientSpec()
+    public function getP4ClientSpec(): string
     {
         return $this->path . '/' . $this->getClient() . '.p4.spec';
     }
@@ -330,7 +330,7 @@ class Perforce
      * @param  string  $name
      * @return ?string
      */
-    protected function getP4variable(string $name)
+    protected function getP4variable(string $name): ?string
     {
         if ($this->windowsFlag) {
             $command = 'p4 set';
@@ -385,7 +385,7 @@ class Perforce
      *
      * @return non-empty-string
      */
-    public function generateP4Command(string $command, bool $useClient = true)
+    public function generateP4Command(string $command, bool $useClient = true): string
     {
         $p4Command = 'p4 ';
         $p4Command .= '-u ' . $this->getUser() . ' ';
@@ -614,7 +614,7 @@ class Perforce
     /**
      * @return array{master: string}
      */
-    public function getBranches()
+    public function getBranches(): array
     {
         $possibleBranches = array();
         if (!$this->isStream()) {

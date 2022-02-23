@@ -294,7 +294,7 @@ EOT
             if (
                 $input->getOption('outdated')
                 && $input->getOption('strict')
-                && $latestPackage
+                && null !== $latestPackage
                 && $latestPackage->getFullPrettyVersion() !== $package->getFullPrettyVersion()
                 && (!$latestPackage instanceof CompletePackageInterface || !$latestPackage->isAbandoned())
             ) {
@@ -415,7 +415,7 @@ EOT
                     foreach ($packages[$type] as $package) {
                         if (is_object($package)) {
                             $latestPackage = $this->findLatestPackage($package, $composer, $platformRepo, $showMinorOnly, $platformReqFilter);
-                            if ($latestPackage === false) {
+                            if ($latestPackage === null) {
                                 continue;
                             }
 
@@ -628,7 +628,7 @@ EOT
      * @throws \InvalidArgumentException
      * @return array{CompletePackageInterface|null, array<string, string>}
      */
-    protected function getPackage(InstalledRepository $installedRepo, RepositoryInterface $repos, string $name, $version = null)
+    protected function getPackage(InstalledRepository $installedRepo, RepositoryInterface $repos, string $name, $version = null): array
     {
         $name = strtolower($name);
         $constraint = is_string($version) ? $this->versionParser->parseConstraints($version) : $version;
@@ -1287,10 +1287,8 @@ EOT
 
     /**
      * Given a package, this finds the latest package matching it
-     *
-     * @return PackageInterface|false
      */
-    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $minorOnly, PlatformRequirementFilterInterface $platformReqFilter)
+    private function findLatestPackage(PackageInterface $package, Composer $composer, PlatformRepository $platformRepo, bool $minorOnly, PlatformRequirementFilterInterface $platformReqFilter): ?PackageInterface
     {
         // find the latest version allowed in this repo set
         $name = $package->getName();
@@ -1320,7 +1318,7 @@ EOT
             $candidate = $candidate->getAliasOf();
         }
 
-        return $candidate;
+        return $candidate !== false ? $candidate : null;
     }
 
     /**

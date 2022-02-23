@@ -1364,12 +1364,7 @@ INITIALIZER;
     }
 }
 
-/**
- * @param string $fileIdentifier
- * @param string $file
- * @return void
- */
-function composerRequire(string $fileIdentifier, string $file)
+function composerRequire(string $fileIdentifier, string $file): void
 {
     if (empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
         $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;

@@ -268,7 +268,7 @@ class Pool implements \Countable
         return $this->unacceptableFixedOrLockedPackages;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         $str = "Pool:\n";
 

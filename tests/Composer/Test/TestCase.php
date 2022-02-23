@@ -113,7 +113,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @template PackageClass of PackageInterface
+     * @template PackageClass of CompletePackage|CompleteAliasPackage
      *
      * @param  string $class  FQCN to be instantiated
      * @param  string $name
@@ -124,7 +124,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @phpstan-param class-string<PackageClass> $class
      * @phpstan-return PackageClass
      */
-    protected function getPackage(string $name = 'dummy/pkg', string $version = '1.0.0', string $class = 'Composer\Package\CompletePackage')
+    protected function getPackage(string $name = 'dummy/pkg', string $version = '1.0.0', string $class = 'Composer\Package\CompletePackage'): BasePackage
     {
         $normVersion = self::getVersionParser()->normalize($version);
 

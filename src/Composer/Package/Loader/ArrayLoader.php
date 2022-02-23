@@ -49,7 +49,7 @@ class ArrayLoader implements LoaderInterface
     /**
      * @inheritDoc
      */
-    public function load(array $config, $class = 'Composer\Package\CompletePackage')
+    public function load(array $config, string $class = 'Composer\Package\CompletePackage'): BasePackage
     {
         if ($class !== 'Composer\Package\CompletePackage' && $class !== 'Composer\Package\RootPackage') {
             trigger_error('The $class arg is deprecated, please reach out to Composer maintainers ASAP if you still need this.', E_USER_DEPRECATED);
@@ -81,7 +81,7 @@ class ArrayLoader implements LoaderInterface
      *
      * @return list<CompletePackage|CompleteAliasPackage>
      */
-    public function loadPackages(array $versions)
+    public function loadPackages(array $versions): array
     {
         $packages = array();
         $linkCache = array();
@@ -99,7 +99,7 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @template PackageClass of CompletePackageInterface
+     * @template PackageClass of CompletePackage
      *
      * @param mixed[] $config package data
      * @param string  $class  FQCN to be instantiated
@@ -108,7 +108,7 @@ class ArrayLoader implements LoaderInterface
      *
      * @phpstan-param class-string<PackageClass> $class
      */
-    private function createObject(array $config, string $class)
+    private function createObject(array $config, string $class): CompletePackage
     {
         if (!isset($config['name'])) {
             throw new \UnexpectedValueException('Unknown package has no name defined ('.json_encode($config).').');
@@ -141,7 +141,7 @@ class ArrayLoader implements LoaderInterface
      *
      * @return RootPackage|RootAliasPackage|CompletePackage|CompleteAliasPackage
      */
-    private function configureObject(PackageInterface $package, array $config): PackageInterface
+    private function configureObject(PackageInterface $package, array $config): BasePackage
     {
         if (!$package instanceof CompletePackage) {
             throw new \LogicException('ArrayLoader expects instances of the Composer\Package\CompletePackage class to function correctly');

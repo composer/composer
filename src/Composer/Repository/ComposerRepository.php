@@ -187,7 +187,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * @inheritDoc
      */
-    public function findPackage($name, $constraint)
+    public function findPackage(string $name, $constraint)
     {
         // this call initializes loadRootServerFile which is needed for the rest below to work
         $hasProviders = $this->hasProviders();
@@ -227,7 +227,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     /**
      * @inheritDoc
      */
-    public function findPackages($name, $constraint = null)
+    public function findPackages(string $name, $constraint = null)
     {
         // this call initializes loadRootServerFile which is needed for the rest below to work
         $hasProviders = $this->hasProviders();
@@ -598,7 +598,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         return parent::search($query, $mode);
     }
 
-    public function getProviders($packageName)
+    public function getProviders(string $packageName)
     {
         $this->loadRootServerFile();
         $result = array();

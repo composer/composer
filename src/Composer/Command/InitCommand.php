@@ -459,7 +459,7 @@ EOT
      * @param  string $author
      * @return array{name: string, email: string|null}
      */
-    private function parseAuthorString(string $author)
+    private function parseAuthorString(string $author): array
     {
         if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+)(?:\s+<(?P<email>.+?)>)?$/u', $author, $match)) {
             $hasEmail = isset($match['email']) && '' !== $match['email'];

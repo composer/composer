@@ -57,7 +57,7 @@ class WritableArrayRepository extends ArrayRepository implements WritableReposit
     /**
      * @inheritDoc
      */
-    public function write($devMode, InstallationManager $installationManager)
+    public function write(bool $devMode, InstallationManager $installationManager)
     {
         $this->devMode = $devMode;
     }

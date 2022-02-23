@@ -81,7 +81,7 @@ class EventDispatcher
      * @param bool $runScripts
      * @return $this
      */
-    public function setRunScripts(bool $runScripts = true)
+    public function setRunScripts(bool $runScripts = true): self
     {
         $this->runScripts = (bool) $runScripts;
 

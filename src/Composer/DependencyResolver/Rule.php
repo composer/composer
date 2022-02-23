@@ -78,7 +78,7 @@ abstract class Rule
      */
     abstract public function getHash();
 
-    abstract public function __toString();
+    abstract public function __toString(): string;
 
     /**
      * @param Rule $rule

@@ -436,7 +436,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
      *
      * @return array{name: string|null, dist: array{type: string, url: string, reference: string, shasum: string}|null, source: array{type: string, url: string, reference: string}}
      */
-    protected function preProcess(VcsDriverInterface $driver, array $data, string $identifier)
+    protected function preProcess(VcsDriverInterface $driver, array $data, string $identifier): array
     {
         // keep the name of the main identifier for all packages
         // this ensures that a package can be renamed in one place and that all old tags

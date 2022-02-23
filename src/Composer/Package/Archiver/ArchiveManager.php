@@ -68,7 +68,7 @@ class ArchiveManager
      *
      * @return $this
      */
-    public function setOverwriteFiles(bool $overwriteFiles)
+    public function setOverwriteFiles(bool $overwriteFiles): self
     {
         $this->overwriteFiles = $overwriteFiles;
 

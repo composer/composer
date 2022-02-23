@@ -10,11 +10,7 @@
  * file that was distributed with this source code.
  */
 
-/**
- * @param string $file
- * @return ?\Composer\Autoload\ClassLoader
- */
-function includeIfExists(string $file)
+function includeIfExists(string $file): ?\Composer\Autoload\ClassLoader
 {
     return file_exists($file) ? include $file : null;
 }

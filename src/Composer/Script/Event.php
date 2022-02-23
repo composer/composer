@@ -40,7 +40,7 @@ class Event extends BaseEvent
     private $devMode;
 
     /**
-     * @var BaseEvent
+     * @var BaseEvent|null
      */
     private $originatingEvent;
 
@@ -97,7 +97,7 @@ class Event extends BaseEvent
      *
      * @return ?BaseEvent
      */
-    public function getOriginatingEvent()
+    public function getOriginatingEvent(): ?BaseEvent
     {
         return $this->originatingEvent;
     }
@@ -108,7 +108,7 @@ class Event extends BaseEvent
      * @param  BaseEvent $event
      * @return $this
      */
-    public function setOriginatingEvent(BaseEvent $event)
+    public function setOriginatingEvent(BaseEvent $event): self
     {
         $this->originatingEvent = $this->calculateOriginatingEvent($event);
 
