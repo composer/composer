@@ -49,12 +49,11 @@ class Comparer
     }
 
     /**
-     * @param bool $toString
      * @param bool $explicated
      *
-     * @return array{changed?: string[], removed?: string[], added?: string[]}|string|false false if no change, string only if $toString is true
+     * @return array{changed?: string[], removed?: string[], added?: string[]}|false false if no change
      */
-    public function getChanged(bool $toString = false, bool $explicated = false)
+    public function getChanged(bool $explicated = false)
     {
         $changed = $this->changed;
         if (!count($changed)) {
@@ -68,17 +67,29 @@ class Comparer
             }
         }
 
-        if ($toString) {
-            $strings = array();
-            foreach ($changed as $sectionKey => $itemSection) {
-                foreach ($itemSection as $itemKey => $item) {
-                    $strings[] = $item."\r\n";
-                }
-            }
-            $changed = implode("\r\n", $strings);
+        return $changed;
+    }
+
+    /**
+     * @param bool $explicated
+     *
+     * @return string empty string if no changes
+     */
+    public function getChangedAsString(bool $toString = false, bool $explicated = false): string
+    {
+        $changed = $this->getChanged($explicated);
+        if (false === $changed) {
+            return '';
         }
 
-        return $changed;
+        $strings = array();
+        foreach ($changed as $sectionKey => $itemSection) {
+            foreach ($itemSection as $itemKey => $item) {
+                $strings[] = $item."\r\n";
+            }
+        }
+
+        return trim(implode("\r\n", $strings));
     }
 
     /**

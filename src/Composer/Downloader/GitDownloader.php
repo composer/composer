@@ -225,7 +225,9 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
-        return trim($output) ?: null;
+        $output = trim($output);
+
+        return strlen($output) > 0 ? $output : null;
     }
 
     /**
@@ -338,7 +340,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             throw new \RuntimeException('Source directory ' . $path . ' has unpushed changes on the current branch: '."\n".$unpushed);
         }
 
-        if (!$changes = $this->getLocalChanges($package, $path)) {
+        if (null === ($changes = $this->getLocalChanges($package, $path))) {
             return \React\Promise\resolve();
         }
 

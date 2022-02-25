@@ -132,7 +132,7 @@ class SvnDownloader extends VcsDownloader
      */
     protected function cleanChanges(PackageInterface $package, string $path, bool $update): PromiseInterface
     {
-        if (!$changes = $this->getLocalChanges($package, $path)) {
+        if (null === ($changes = $this->getLocalChanges($package, $path))) {
             return \React\Promise\resolve();
         }
 

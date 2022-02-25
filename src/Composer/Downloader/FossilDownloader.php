@@ -92,7 +92,9 @@ class FossilDownloader extends VcsDownloader
 
         $this->process->execute('fossil changes', $output, realpath($path));
 
-        return trim($output) ?: null;
+        $output = trim($output);
+
+        return strlen($output) > 0 ? $output : null;
     }
 
     /**
