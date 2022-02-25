@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -184,7 +184,7 @@ class AllFunctionalTest extends TestCase
     {
         $tests = array();
         foreach (Finder::create()->in(__DIR__.'/Fixtures/functional')->name('*.test')->files() as $file) {
-            $tests[basename($file)] = array($file->getRealPath());
+            $tests[$file->getFilename()] = array((string) $file);
         }
 
         return $tests;

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -55,8 +55,8 @@ class ApplicationTest extends TestCase
 
         $inputMock->expects($this->once())
             ->method('getParameterOption')
-            ->with($this->equalTo(array('--working-dir', '-d')))
-            ->will($this->returnValue(false));
+            ->with($this->equalTo(array('--working-dir', '-d')), $this->equalTo(null))
+            ->will($this->returnValue(null));
 
         $inputMock->expects($this->any())
             ->method('getFirstArgument')
@@ -116,8 +116,8 @@ class ApplicationTest extends TestCase
 
         $inputMock->expects($this->once())
             ->method('getParameterOption')
-            ->with($this->equalTo(array('--working-dir', '-d')))
-            ->will($this->returnValue(false));
+            ->with($this->equalTo(array('--working-dir', '-d')), $this->equalTo(null))
+            ->will($this->returnValue(null));
 
         $inputMock->expects($this->any())
             ->method('getFirstArgument')

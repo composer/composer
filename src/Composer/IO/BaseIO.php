@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -201,6 +201,8 @@ abstract class BaseIO implements IOInterface
 
     public function log($level, $message, array $context = array()): void
     {
+        $message = (string) $message;
+
         if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
             $this->writeError('<error>'.$message.'</error>');
         } elseif ($level === LogLevel::WARNING) {

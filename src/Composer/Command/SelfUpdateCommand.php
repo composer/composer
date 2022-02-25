@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -510,7 +510,7 @@ TAGSPUBKEY
         $files = iterator_to_array($finder);
 
         if (count($files)) {
-            return basename(end($files), self::OLD_INSTALL_EXT);
+            return end($files)->getBasename(self::OLD_INSTALL_EXT);
         }
 
         return false;

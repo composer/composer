@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -62,7 +62,7 @@ class FossilDownloaderTest extends TestCase
         self::expectException('InvalidArgumentException');
 
         $downloader = $this->getDownloaderMock();
-        $downloader->install($packageMock, '/path');
+        $downloader->install($packageMock, $this->workingDir . '/path');
     }
 
     public function testInstall(): void
@@ -77,13 +77,13 @@ class FossilDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
-            $this->getCmd('fossil clone -- \'http://fossil.kd2.org/kd2fw/\' \'repo.fossil\''),
-            $this->getCmd('fossil open --nested -- \'repo.fossil\''),
+            $this->getCmd('fossil clone -- \'http://fossil.kd2.org/kd2fw/\' \''.$this->workingDir.'.fossil\''),
+            $this->getCmd('fossil open --nested -- \''.$this->workingDir.'.fossil\''),
             $this->getCmd('fossil update -- \'trunk\''),
         ), true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
-        $downloader->install($packageMock, 'repo');
+        $downloader->install($packageMock, $this->workingDir);
     }
 
     public function testUpdateforPackageWithoutSourceReference(): void

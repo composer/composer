@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -103,7 +103,7 @@ class ProcessExecutorMock extends ProcessExecutor
         Assert::assertTrue(true); // @phpstan-ignore-line
     }
 
-    public function execute($command, &$output = null, $cwd = null): int
+    public function execute($command, &$output = null, ?string $cwd = null): int
     {
         $cwd = $cwd ?? Platform::getCwd();
         if (func_num_args() > 1) {
@@ -113,7 +113,7 @@ class ProcessExecutorMock extends ProcessExecutor
         return $this->doExecute($command, $cwd, false);
     }
 
-    public function executeTty($command, $cwd = null): int
+    public function executeTty($command, ?string $cwd = null): int
     {
         $cwd = $cwd ?? Platform::getCwd();
         if (Platform::isTty()) {

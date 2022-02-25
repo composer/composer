@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -147,13 +147,13 @@ class Compiler
         $unexpectedFiles = array();
 
         foreach ($finder as $file) {
-            if (in_array(realpath($file), $extraFiles, true)) {
-                unset($extraFiles[array_search(realpath($file), $extraFiles, true)]);
-            } elseif (!Preg::isMatch('{([/\\\\]LICENSE|\.php)$}', $file)) {
+            if (false !== ($index = array_search($file->getRealPath(), $extraFiles, true))) {
+                unset($extraFiles[$index]);
+            } elseif (!Preg::isMatch('{(^LICENSE$|\.php$)}', $file->getFilename())) {
                 $unexpectedFiles[] = (string) $file;
             }
 
-            if (Preg::isMatch('{\.php[\d.]*$}', $file)) {
+            if (Preg::isMatch('{\.php[\d.]*$}', $file->getFilename())) {
                 $this->addFile($phar, $file);
             } else {
                 $this->addFile($phar, $file, false);
@@ -220,10 +220,10 @@ class Compiler
     private function addFile(\Phar $phar, \SplFileInfo $file, bool $strip = true): void
     {
         $path = $this->getRelativeFilePath($file);
-        $content = file_get_contents($file);
+        $content = file_get_contents((string) $file);
         if ($strip) {
             $content = $this->stripWhitespace($content);
-        } elseif ('LICENSE' === basename($file)) {
+        } elseif ('LICENSE' === $file->getFilename()) {
             $content = "\n".$content."\n";
         }
 

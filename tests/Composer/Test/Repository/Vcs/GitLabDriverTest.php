@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -52,18 +52,16 @@ class GitLabDriverTest extends TestCase
     public function setUp(): void
     {
         $this->home = $this->getUniqueTmpDirectory();
-        $this->config = new Config();
-        $this->config->merge(array(
-            'config' => array(
-                'home' => $this->home,
-                'gitlab-domains' => array(
-                    'mycompany.com/gitlab',
-                    'gitlab.mycompany.com',
-                    'othercompany.com/nested/gitlab',
-                    'gitlab.com',
-                ),
+        $this->config = $this->getConfig([
+            'home' => $this->home,
+            'gitlab-domains' => array(
+                'mycompany.com/gitlab',
+                'gitlab.mycompany.com',
+                'othercompany.com/nested/gitlab',
+                'gitlab.com',
+                'gitlab.mycompany.local',
             ),
-        ));
+        ]);
 
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->disableOriginalConstructor()->getMock();
         $this->process = $this->getMockBuilder('Composer\Util\ProcessExecutor')->getMock();
@@ -593,7 +591,7 @@ JSON;
 JSON;
 
         $this->httpDownloader->expects(
-            [['url' => 'https:///api/v4/projects/%2Fmyproject', 'body' => $projectData]],
+            [['url' => 'https://gitlab.mycompany.local/api/v4/projects/mygroup%2Fmyproject', 'body' => $projectData]],
             true
         );
 

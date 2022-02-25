@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -17,7 +17,7 @@ use Composer\Util\Filesystem;
 
 class CacheTest extends TestCase
 {
-    /** @var string[] */
+    /** @var array<\SplFileInfo> */
     private $files;
     /** @var string */
     private $root;

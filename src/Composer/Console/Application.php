@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -150,7 +150,8 @@ class Application extends BaseApplication
         }
 
         // switch working dir
-        if ($newWorkDir = $this->getNewWorkingDir($input)) {
+        $newWorkDir = $this->getNewWorkingDir($input);
+        if (null !== $newWorkDir) {
             $oldWorkingDir = Platform::getCwd(true);
             chdir($newWorkDir);
             $this->initialWorkingDirectory = $newWorkDir;
@@ -171,7 +172,7 @@ class Application extends BaseApplication
         }
 
         // prompt user for dir change if no composer.json is present in current dir
-        if ($io->isInteractive() && !$newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'), true) && !file_exists(Factory::getComposerFile()) && ($useParentDirIfNoJsonAvailable = $this->getUseParentDirConfigValue()) !== false) {
+        if ($io->isInteractive() && null === $newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'), true) && !file_exists(Factory::getComposerFile()) && ($useParentDirIfNoJsonAvailable = $this->getUseParentDirConfigValue()) !== false) {
             $dir = dirname(Platform::getCwd(true));
             $home = realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
 
@@ -357,12 +358,13 @@ class Application extends BaseApplication
     /**
      * @param  InputInterface    $input
      * @throws \RuntimeException
-     * @return string
+     * @return ?string
      */
-    private function getNewWorkingDir(InputInterface $input): string
+    private function getNewWorkingDir(InputInterface $input): ?string
     {
-        $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
-        if (false !== $workingDir && !is_dir($workingDir)) {
+        /** @var string|null $workingDir */
+        $workingDir = $input->getParameterOption(array('--working-dir', '-d'), null, true);
+        if (null !== $workingDir && !is_dir($workingDir)) {
             throw new \RuntimeException('Invalid working directory specified, '.$workingDir.' does not exist.');
         }
 

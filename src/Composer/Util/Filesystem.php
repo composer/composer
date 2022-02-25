@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -291,7 +291,7 @@ class Filesystem
 
             if (!$unlinked) {
                 $error = error_get_last();
-                $message = 'Could not delete '.$path.': ' . @$error['message'];
+                $message = 'Could not delete '.$path.': ' . ($error['message'] ?? '');
                 if (Platform::isWindows()) {
                     $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
                 }
@@ -322,7 +322,7 @@ class Filesystem
 
             if (!$deleted) {
                 $error = error_get_last();
-                $message = 'Could not delete '.$path.': ' . @$error['message'];
+                $message = 'Could not delete '.$path.': ' . ($error['message'] ?? '');
                 if (Platform::isWindows()) {
                     $message .= "\nThis can be due to an antivirus or the Windows Search Indexer locking the file while they are analyzed";
                 }
@@ -375,7 +375,6 @@ class Filesystem
         $this->ensureDirectoryExists($target);
 
         $result = true;
-        /** @var RecursiveDirectoryIterator $ri */
         foreach ($ri as $file) {
             $targetPath = $target . DIRECTORY_SEPARATOR . $ri->getSubPathname();
             if ($file->isDir()) {
@@ -451,8 +450,8 @@ class Filesystem
             throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
         }
 
-        $from = lcfirst($this->normalizePath($from));
-        $to = lcfirst($this->normalizePath($to));
+        $from = $this->normalizePath($from);
+        $to = $this->normalizePath($to);
 
         if ($directories) {
             $from = rtrim($from, '/') . '/dummy_file';
@@ -463,7 +462,7 @@ class Filesystem
         }
 
         $commonPath = $to;
-        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !Preg::isMatch('{^[a-z]:/?$}i', $commonPath)) {
+        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !Preg::isMatch('{^[A-Z]:/?$}i', $commonPath)) {
             $commonPath = strtr(\dirname($commonPath), '\\', '/');
         }
 
@@ -472,10 +471,15 @@ class Filesystem
         }
 
         $commonPath = rtrim($commonPath, '/') . '/';
-        $sourcePathDepth = substr_count(substr($from, \strlen($commonPath)), '/');
+        $sourcePathDepth = substr_count((string) substr($from, \strlen($commonPath)), '/');
         $commonPathCode = str_repeat('../', $sourcePathDepth);
 
-        return ($commonPathCode . substr($to, \strlen($commonPath))) ?: './';
+        $result = $commonPathCode . substr($to, \strlen($commonPath));
+        if (\strlen($result) === 0) {
+            return './';
+        }
+
+        return $result;
     }
 
     /**
@@ -494,15 +498,15 @@ class Filesystem
             throw new \InvalidArgumentException(sprintf('$from (%s) and $to (%s) must be absolute paths.', $from, $to));
         }
 
-        $from = lcfirst($this->normalizePath($from));
-        $to = lcfirst($this->normalizePath($to));
+        $from = $this->normalizePath($from);
+        $to = $this->normalizePath($to);
 
         if ($from === $to) {
             return $directories ? '__DIR__' : '__FILE__';
         }
 
         $commonPath = $to;
-        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !Preg::isMatch('{^[a-z]:/?$}i', $commonPath) && '.' !== $commonPath) {
+        while (strpos($from.'/', $commonPath.'/') !== 0 && '/' !== $commonPath && !Preg::isMatch('{^[A-Z]:/?$}i', $commonPath) && '.' !== $commonPath) {
             $commonPath = strtr(\dirname($commonPath), '\\', '/');
         }
 
@@ -512,17 +516,17 @@ class Filesystem
 
         $commonPath = rtrim($commonPath, '/') . '/';
         if (strpos($to, $from.'/') === 0) {
-            return '__DIR__ . '.var_export(substr($to, \strlen($from)), true);
+            return '__DIR__ . '.var_export((string) substr($to, \strlen($from)), true);
         }
-        $sourcePathDepth = substr_count(substr($from, \strlen($commonPath)), '/') + $directories;
+        $sourcePathDepth = substr_count((string) substr($from, \strlen($commonPath)), '/') + (int) $directories;
         if ($staticCode) {
             $commonPathCode = "__DIR__ . '".str_repeat('/..', $sourcePathDepth)."'";
         } else {
             $commonPathCode = str_repeat('dirname(', $sourcePathDepth).'__DIR__'.str_repeat(')', $sourcePathDepth);
         }
-        $relTarget = substr($to, \strlen($commonPath));
+        $relTarget = (string) substr($to, \strlen($commonPath));
 
-        return $commonPathCode . (\strlen($relTarget) ? '.' . var_export('/' . $relTarget, true) : '');
+        return $commonPathCode . (\strlen($relTarget) > 0 ? '.' . var_export('/' . $relTarget, true) : '');
     }
 
     /**
@@ -553,7 +557,7 @@ class Filesystem
             return $this->directorySize($path);
         }
 
-        return filesize($path);
+        return (int) filesize($path);
     }
 
     /**
@@ -589,16 +593,19 @@ class Filesystem
 
         $up = false;
         foreach (explode('/', $path) as $chunk) {
-            if ('..' === $chunk && ($absolute !== '' || $up)) {
+            if ('..' === $chunk && (\strlen($absolute) > 0 || $up)) {
                 array_pop($parts);
-                $up = !(empty($parts) || '..' === end($parts));
+                $up = !(\count($parts) === 0 || '..' === end($parts));
             } elseif ('.' !== $chunk && '' !== $chunk) {
                 $parts[] = $chunk;
                 $up = '..' !== $chunk;
             }
         }
 
-        return $prefix.((string) $absolute).implode('/', $parts);
+        // ensure c: is normalized to C:
+        $prefix = Preg::replaceCallback('{(^|://)[a-z]:$}i', function (array $m) { return strtoupper($m[0]); }, $prefix);
+
+        return $prefix.$absolute.implode('/', $parts);
     }
 
     /**
@@ -640,7 +647,7 @@ class Filesystem
             $path = Preg::replace('{^(?:file:///([a-z]):?/)}i', 'file://$1:/', $path);
         }
 
-        return (string) Preg::replace('{^file://}i', '', $path);
+        return Preg::replace('{^file://}i', '', $path);
     }
 
     /**
@@ -695,7 +702,7 @@ class Filesystem
      */
     protected function getProcess()
     {
-        if (!$this->processExecutor) {
+        if (null === $this->processExecutor) {
             $this->processExecutor = new ProcessExecutor();
         }
 
@@ -789,7 +796,7 @@ class Filesystem
 
         $resolved = rtrim($pathname, '/');
 
-        if (!\strlen($resolved)) {
+        if (0 === \strlen($resolved)) {
             return $pathname;
         }
 
@@ -859,7 +866,7 @@ class Filesystem
         $stat = lstat($junction);
 
         // S_ISDIR test (S_IFDIR is 0x4000, S_IFMT is 0xF000 bitmask)
-        return $stat ? 0x4000 !== ($stat['mode'] & 0xF000) : false;
+        return is_array($stat) ? 0x4000 !== ($stat['mode'] & 0xF000) : false;
     }
 
     /**
@@ -889,8 +896,8 @@ class Filesystem
      */
     public function filePutContentsIfModified(string $path, string $content)
     {
-        $currentContent = @file_get_contents($path);
-        if (!$currentContent || ($currentContent != $content)) {
+        $currentContent = Silencer::call('file_get_contents', $path);
+        if (false === $currentContent || $currentContent !== $content) {
             return file_put_contents($path, $content);
         }
 
@@ -908,23 +915,20 @@ class Filesystem
     public function safeCopy(string $source, string $target)
     {
         if (!file_exists($target) || !file_exists($source) || !$this->filesAreEqual($source, $target)) {
-            $source = fopen($source, 'r');
-            $target = fopen($target, 'w+');
+            $sourceHandle = fopen($source, 'r');
+            assert($sourceHandle !== false, 'Could not open "'.$source.'" for reading.');
+            $targetHandle = fopen($target, 'w+');
+            assert($targetHandle !== false, 'Could not open "'.$target.'" for writing.');
 
-            stream_copy_to_stream($source, $target);
-            fclose($source);
-            fclose($target);
+            stream_copy_to_stream($sourceHandle, $targetHandle);
+            fclose($sourceHandle);
+            fclose($targetHandle);
         }
     }
 
     /**
      * compare 2 files
      * https://stackoverflow.com/questions/3060125/can-i-use-file-get-contents-to-compare-two-files
-     *
-     * @param string $a
-     * @param string $b
-     *
-     * @return bool
      */
     private function filesAreEqual(string $a, string $b): bool
     {
@@ -934,19 +938,21 @@ class Filesystem
         }
 
         // Check if content is different
-        $ah = fopen($a, 'rb');
-        $bh = fopen($b, 'rb');
+        $aHandle = fopen($a, 'rb');
+        assert($aHandle !== false, 'Could not open "'.$a.'" for reading.');
+        $bHandle = fopen($b, 'rb');
+        assert($bHandle !== false, 'Could not open "'.$b.'" for reading.');
 
         $result = true;
-        while (!feof($ah)) {
-            if (fread($ah, 8192) != fread($bh, 8192)) {
+        while (!feof($aHandle)) {
+            if (fread($aHandle, 8192) !== fread($bHandle, 8192)) {
                 $result = false;
                 break;
             }
         }
 
-        fclose($ah);
-        fclose($bh);
+        fclose($aHandle);
+        fclose($bHandle);
 
         return $result;
     }

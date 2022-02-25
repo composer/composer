@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -744,11 +744,11 @@ EOF;
 
     /**
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
-     * @param bool $checkPlatform
+     * @param bool|'php-only' $checkPlatform
      * @param string[] $devPackageNames
      * @return ?string
      */
-    protected function getPlatformCheck(array $packageMap, bool $checkPlatform, array $devPackageNames)
+    protected function getPlatformCheck(array $packageMap, $checkPlatform, array $devPackageNames)
     {
         $lowestPhpVersion = Bound::zero();
         $requiredExtensions = array();

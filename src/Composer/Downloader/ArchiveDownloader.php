@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -175,7 +175,7 @@ abstract class ArchiveDownloader extends FileDownloader
             }
 
             $contentDir = $getFolderContent($temporaryDir);
-            $singleDirAtTopLevel = 1 === count($contentDir) && is_dir(reset($contentDir));
+            $singleDirAtTopLevel = 1 === count($contentDir) && is_dir((string) reset($contentDir));
 
             if ($renameAsOne) {
                 // if the target $path is clear, we can rename the whole package in one go instead of looping over the contents

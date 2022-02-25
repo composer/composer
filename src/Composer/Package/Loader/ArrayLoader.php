@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -408,6 +408,13 @@ class ArrayLoader implements LoaderInterface
      */
     public function getBranchAlias(array $config): ?string
     {
+        if (!isset($config['version']) || !is_scalar($config['version'])) {
+            throw new \UnexpectedValueException('no/invalid version defined');
+        }
+        if (!is_string($config['version'])) {
+            $config['version'] = (string) $config['version'];
+        }
+
         if (strpos($config['version'], 'dev-') !== 0 && '-dev' !== substr($config['version'], -4)) {
             return null;
         }
