@@ -339,6 +339,11 @@ class PoolOptimizer
      */
     private function keepPackage(BasePackage $package, array $identicalDefinitionsPerPackage, array $packageIdenticalDefinitionLookup): void
     {
+        // Already marked to keep
+        if (!isset($this->packagesToRemove[$package->id])) {
+            return;
+        }
+
         unset($this->packagesToRemove[$package->id]);
 
         if ($package instanceof AliasPackage) {
