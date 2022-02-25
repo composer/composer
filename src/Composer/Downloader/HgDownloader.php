@@ -90,7 +90,9 @@ class HgDownloader extends VcsDownloader
 
         $this->process->execute('hg st', $output, realpath($path));
 
-        return trim($output) ?: null;
+        $output = trim($output);
+
+        return strlen($output) > 0 ? $output : null;
     }
 
     /**
