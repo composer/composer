@@ -511,6 +511,8 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             throw $e;
         }
 
+        $output = false === $output ? '' : is_array($output) ? implode(' ', $output) : $output;
+
         return trim($output);
     }
 }
