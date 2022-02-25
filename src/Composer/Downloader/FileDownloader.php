@@ -500,7 +500,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             $comparer->setSource($targetDir.'_compare');
             $comparer->setUpdate($targetDir);
             $comparer->doCompare();
-            $output = $comparer->getChanged(true, true);
+            $output = (string) $comparer->getChanged(true, true);
             $this->filesystem->removeDirectory($targetDir.'_compare');
         } catch (\Exception $e) {
         }
@@ -510,8 +510,6 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         if ($e) {
             throw $e;
         }
-
-        $output = false === $output ? '' : is_array($output) ? implode(' ', $output) : $output;
 
         return trim($output);
     }
