@@ -136,7 +136,7 @@ class Compiler
         $finder = new Finder();
         $finder->files()
             ->ignoreVCS(true)
-            ->notPath('/\/(composer\.(json|lock)|[A-Z]+\.md|\.gitignore|appveyor.yml|phpunit\.xml\.dist|phpstan\.neon\.dist|phpstan-config\.neon)$/')
+            ->notPath('/\/(composer\.(json|lock)|[A-Z]+\.md|\.gitignore|appveyor.yml|phpunit\.xml\.dist|phpstan\.neon\.dist|phpstan-config\.neon|phpstan-baseline\.neon)$/')
             ->notPath('/bin\/(jsonlint|validate-json|simple-phpunit)(\.bat)?$/')
             ->notPath('symfony/debug/Resources/ext/')
             ->notPath('justinrainbow/json-schema/demo/')
