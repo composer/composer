@@ -431,6 +431,7 @@ class JsonManipulator
         }
 
         // no child data left, $name was the only key in
+        unset($match);
         Preg::match('#^{ \s*? (?P<content>\S+.*?)? (?P<trailingspace>\s*) }$#sx', $childrenClean, $match);
         if (empty($match['content'])) {
             $newline = $this->newline;

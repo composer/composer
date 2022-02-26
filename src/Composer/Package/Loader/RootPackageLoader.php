@@ -240,7 +240,7 @@ class RootPackageLoader extends ArrayLoader
             }
 
             // parse explicit stability flags to the most unstable
-            $match = false;
+            $matched = false;
             foreach ($constraints as $constraint) {
                 if (Preg::isMatch('{^[^@]*?@('.implode('|', array_keys($stabilities)).')$}i', $constraint, $match)) {
                     $name = strtolower($reqName);
@@ -250,11 +250,11 @@ class RootPackageLoader extends ArrayLoader
                         continue;
                     }
                     $stabilityFlags[$name] = $stability;
-                    $match = true;
+                    $matched = true;
                 }
             }
 
-            if ($match) {
+            if ($matched) {
                 continue;
             }
 

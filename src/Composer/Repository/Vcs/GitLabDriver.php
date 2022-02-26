@@ -620,26 +620,26 @@ class GitLabDriver extends VcsDriver
      *
      * @return string|false
      */
-    private static function determineOrigin(array $configuredDomains, string $guessedDomain, array &$urlParts, string $portNumber)
+    private static function determineOrigin(array $configuredDomains, string $guessedDomain, array &$urlParts, ?string $portNumber)
     {
         $guessedDomain = strtolower($guessedDomain);
 
-        if (in_array($guessedDomain, $configuredDomains) || ($portNumber && in_array($guessedDomain.':'.$portNumber, $configuredDomains))) {
-            if ($portNumber) {
+        if (in_array($guessedDomain, $configuredDomains) || (null !== $portNumber && in_array($guessedDomain.':'.$portNumber, $configuredDomains))) {
+            if (null !== $portNumber) {
                 return $guessedDomain.':'.$portNumber;
             }
 
             return $guessedDomain;
         }
 
-        if ($portNumber) {
+        if (null !== $portNumber) {
             $guessedDomain .= ':'.$portNumber;
         }
 
         while (null !== ($part = array_shift($urlParts))) {
             $guessedDomain .= '/' . $part;
 
-            if (in_array($guessedDomain, $configuredDomains) || ($portNumber && in_array(Preg::replace('{:\d+}', '', $guessedDomain), $configuredDomains))) {
+            if (in_array($guessedDomain, $configuredDomains) || (null !== $portNumber && in_array(Preg::replace('{:\d+}', '', $guessedDomain), $configuredDomains))) {
                 return $guessedDomain;
             }
         }

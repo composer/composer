@@ -263,7 +263,7 @@ class ClassMapGenerator
 
         for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
             if (!empty($matches['ns'][$i])) {
-                $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', $matches['nsname'][$i]) . '\\';
+                $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', (string) $matches['nsname'][$i]) . '\\';
             } else {
                 $name = $matches['name'][$i];
                 // skip anon classes extending/implementing
