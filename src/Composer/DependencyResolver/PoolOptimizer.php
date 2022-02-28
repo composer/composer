@@ -110,21 +110,18 @@ class PoolOptimizer
 
         // Extract requested package requirements
         foreach ($request->getRequires() as $require => $constraint) {
-            $constraint = Intervals::compactConstraint($constraint);
-            $this->requireConstraintsPerPackage[$require][(string) $constraint] = $constraint;
+            $this->extractRequireConstraintsPerPackage($require, $constraint);
         }
 
         // First pass over all packages to extract information and mark package constraints irremovable
         foreach ($pool->getPackages() as $package) {
             // Extract package requirements
             foreach ($package->getRequires() as $link) {
-                $constraint = Intervals::compactConstraint($link->getConstraint());
-                $this->requireConstraintsPerPackage[$link->getTarget()][(string) $constraint] = $constraint;
+                $this->extractRequireConstraintsPerPackage($link->getTarget(), $link->getConstraint());
             }
             // Extract package conflicts
             foreach ($package->getConflicts() as $link) {
-                $constraint = Intervals::compactConstraint($link->getConstraint());
-                $this->conflictConstraintsPerPackage[$link->getTarget()][(string) $constraint] = $constraint;
+                $this->extractConflictConstraintsPerPackage($link->getTarget(), $link->getConstraint());
             }
 
             // Keep track of alias packages for every package so if either the alias or aliased is kept
@@ -452,5 +449,49 @@ class PoolOptimizer
                 }
             }
         }
+    }
+
+    /**
+     * @param string $package
+     * @param ConstraintInterface $constraint
+     */
+    private function extractRequireConstraintsPerPackage($package, ConstraintInterface $constraint)
+    {
+        foreach ($this->flattenMultiConstraints($constraint) as $flattened) {
+            $this->requireConstraintsPerPackage[$package][(string) $flattened] = $flattened;
+        }
+    }
+
+    /**
+     * @param string $package
+     * @param ConstraintInterface $constraint
+     */
+    private function extractConflictConstraintsPerPackage($package, ConstraintInterface $constraint)
+    {
+        foreach ($this->flattenMultiConstraints($constraint) as $flattened) {
+            $this->conflictConstraintsPerPackage[$package][(string) $flattened] = $flattened;
+        }
+    }
+
+    /**
+     * @param ConstraintInterface $constraint
+     * @return array
+     */
+    private function flattenMultiConstraints(ConstraintInterface $constraint)
+    {
+        $flattened = array();
+        $constraint = Intervals::compactConstraint($constraint);
+
+        if ($constraint instanceof MultiConstraint) {
+            foreach ($constraint->getConstraints() as $sub) {
+                $flattened = array_merge($flattened, $this->flattenMultiConstraints($sub));
+            }
+
+            return $flattened;
+        }
+
+        $flattened[] = $constraint;
+
+        return $flattened;
     }
 }
