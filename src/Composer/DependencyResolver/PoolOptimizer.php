@@ -452,46 +452,58 @@ class PoolOptimizer
     }
 
     /**
+     * Disjunctive require constraints need to be considered in their own group. E.g. "^2.14 || ^3.3" needs to generate
+     * two require constraint groups in order for us to keep the best matching package for "^2.14" AND "^3.3" as otherwise, we'd
+     * only keep either one which can cause trouble (e.g. when using --prefer-lowest).
+     *
      * @param string $package
      * @param ConstraintInterface $constraint
+     * @return void
      */
     private function extractRequireConstraintsPerPackage($package, ConstraintInterface $constraint)
     {
-        foreach ($this->flattenMultiConstraints($constraint) as $flattened) {
-            $this->requireConstraintsPerPackage[$package][(string) $flattened] = $flattened;
+        foreach ($this->expandDisjunctiveMultiConstraints($constraint) as $expanded) {
+            $this->requireConstraintsPerPackage[$package][(string) $expanded] = $expanded;
         }
     }
 
     /**
+     * Disjunctive conflict constraints need to be considered in their own group. E.g. "^2.14 || ^3.3" needs to generate
+     * two conflict constraint groups in order for us to keep the best matching package for "^2.14" AND "^3.3" as otherwise, we'd
+     * only keep either one which can cause trouble (e.g. when using --prefer-lowest).
+     *
      * @param string $package
      * @param ConstraintInterface $constraint
+     * @return void
      */
     private function extractConflictConstraintsPerPackage($package, ConstraintInterface $constraint)
     {
-        foreach ($this->flattenMultiConstraints($constraint) as $flattened) {
-            $this->conflictConstraintsPerPackage[$package][(string) $flattened] = $flattened;
+        foreach ($this->expandDisjunctiveMultiConstraints($constraint) as $expanded) {
+            $this->conflictConstraintsPerPackage[$package][(string) $expanded] = $expanded;
         }
     }
 
     /**
+     *
      * @param ConstraintInterface $constraint
-     * @return array
+     * @return ConstraintInterface[]
      */
-    private function flattenMultiConstraints(ConstraintInterface $constraint)
+    private function expandDisjunctiveMultiConstraints(ConstraintInterface $constraint)
     {
-        $flattened = array();
+        $expanded = array();
         $constraint = Intervals::compactConstraint($constraint);
 
-        if ($constraint instanceof MultiConstraint) {
+        if ($constraint instanceof MultiConstraint && $constraint->isDisjunctive()) {
             foreach ($constraint->getConstraints() as $sub) {
-                $flattened = array_merge($flattened, $this->flattenMultiConstraints($sub));
+                $expanded = array_merge($expanded, $this->expandDisjunctiveMultiConstraints($sub));
             }
 
-            return $flattened;
+            return $expanded;
         }
 
-        $flattened[] = $constraint;
+        // Regular constraints and conjunctive MultiConstraints
+        $expanded[] = $constraint;
 
-        return $flattened;
+        return $expanded;
     }
 }
