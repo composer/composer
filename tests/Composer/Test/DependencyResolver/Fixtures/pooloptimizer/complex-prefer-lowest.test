@@ -1,0 +1,55 @@
+--TEST--
+Test keeps package "package/b" in version 2.2.0 because for prefer-lowest either one might be relevant
+
+--REQUEST--
+{
+    "require": {
+        "package/a": "^1.0"
+    },
+    "preferLowest": true
+}
+
+
+--POOL-BEFORE--
+[
+        {
+            "name": "package/a",
+            "version": "1.0.0",
+            "require": {
+                "package/b": "^1.0 || ^2.2"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.0"
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.1"
+        },
+        {
+            "name": "package/b",
+            "version": "2.2.0"
+        }
+]
+
+
+--POOL-AFTER--
+[
+        {
+            "name": "package/a",
+            "version": "1.0.0",
+            "require": {
+                "package/b": "^1.0"
+            }
+        },
+        {
+            "name": "package/b",
+            "version": "1.0.0"
+        },
+        {
+            "name": "package/b",
+            "version": "2.2.0"
+        }
+]
+
