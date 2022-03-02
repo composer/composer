@@ -15,7 +15,7 @@ Test filters irrelevant package "package/b" in version 1.0.0
             "name": "package/a",
             "version": "1.0.0",
             "require": {
-                "package/b": "^1.0"
+                "package/b": ">=1.0 <1.1 || ^1.2"
             }
         },
         {
@@ -25,6 +25,10 @@ Test filters irrelevant package "package/b" in version 1.0.0
         {
             "name": "package/b",
             "version": "1.0.1"
+        },
+        {
+            "name": "package/b",
+            "version": "1.2.0"
         }
 ]
 
@@ -41,6 +45,10 @@ Test filters irrelevant package "package/b" in version 1.0.0
         {
             "name": "package/b",
             "version": "1.0.1"
+        },
+        {
+            "name": "package/b",
+            "version": "1.2.0"
         }
 ]
 
