@@ -21,6 +21,7 @@ use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
 use Composer\Package\Link;
 use Composer\Package\Loader\ArrayLoader;
+use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
 use Composer\Repository\LockArrayRepository;
@@ -33,7 +34,8 @@ class PoolOptimizerTest extends TestCase
 {
     public function testNestedDisjunctiveMultiConstraints()
     {
-        $requirer = $this->loadPackage(array('name' => 'package/a', 'version' => '1.0.0'));
+        $requirer = new RootPackage('package/a', '1.0.0', '1.0.0');
+
         $requirer->setRequires(array(
             'package/b' => new Link('package/a', 'package/b', new MultiConstraint( // Not possible with the version parser but this represents (^2.5 || (~1.2.3 || ^4.0))
                 array(
