@@ -495,11 +495,8 @@ class PoolOptimizer
 
         if ($constraint instanceof MultiConstraint && $constraint->isDisjunctive()) {
             foreach ($constraint->getConstraints() as $sub) {
-                // TODO: Do we need to call ourselves recursively? Is it even possible?
-                // Tried to write a testcase in PoolOptimizerTest::testNestedDisjunctiveMultiConstraints() but
-                // couldn't find an example where Intervals::compactConstraint() leaves a nested disjunctive MultiConstraint
-                // untouched.
-               // $expanded = array_merge($expanded, $this->expandDisjunctiveMultiConstraints($sub));
+                // No need to call ourselves recursively here because Intervals::compactConstraint() ensures that there
+                // are no nested disjunctive MultiConstraint instances possible
                 $expanded[] = $sub;
             }
 

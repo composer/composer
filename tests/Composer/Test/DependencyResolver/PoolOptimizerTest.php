@@ -19,92 +19,14 @@ use Composer\DependencyResolver\Request;
 use Composer\Json\JsonFile;
 use Composer\Package\AliasPackage;
 use Composer\Package\BasePackage;
-use Composer\Package\Link;
 use Composer\Package\Loader\ArrayLoader;
-use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
 use Composer\Repository\LockArrayRepository;
-use Composer\Semver\Constraint\Constraint;
-use Composer\Semver\Constraint\MatchAllConstraint;
-use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Test\TestCase;
 
 class PoolOptimizerTest extends TestCase
 {
-    public function testNestedDisjunctiveMultiConstraints()
-    {
-        $requirer = new RootPackage('package/a', '1.0.0.0', '1.0.0');
-
-        $requirer->setRequires(array(
-            'package/b' => new Link('package/a', 'package/b', new MultiConstraint( // Not possible with the version parser but this represents (^2.5 || (~1.2.3 || ^4.0))
-                array(
-                    new MultiConstraint( // ^2.5
-                        array(
-                            new Constraint('>=', '2.5.0.0-dev'),
-                            new Constraint('<', '3.0.0.0-dev'),
-                        ),
-                        true // conjunctive
-                    ),
-                    new MultiConstraint( // ~1.2.3 || ^4.0
-                        array(
-                            new MultiConstraint( // ~1.2.3
-                                array(
-                                    new Constraint('>=', '1.2.3.0-dev'),
-                                    new Constraint('<', '1.3.0.0-dev'),
-                                ),
-                                true // conjunctive
-                            ),
-                            new MultiConstraint( // ^4.0
-                                array(
-                                    new Constraint('>=', '4.0.0.0-dev'),
-                                    new Constraint('<', '5.0.0.0-dev'),
-                                ),
-                                true // conjunctive
-                            ),
-                        ),
-                        false // disjunctive
-                    ),
-                ),
-                false // disjunctive
-                )
-            )
-        ));
-
-
-        $packagesBefore = array(
-            $requirer,
-            $this->loadPackage(array('name' => 'package/b', 'version' => '1.2.3')),
-            $this->loadPackage(array('name' => 'package/b', 'version' => '1.2.4')),
-            $this->loadPackage(array('name' => 'package/b', 'version' => '2.5.0')),
-            $this->loadPackage(array('name' => 'package/b', 'version' => '2.5.1')),
-            $this->loadPackage(array('name' => 'package/b', 'version' => '4.0.0')),
-            $this->loadPackage(array('name' => 'package/b', 'version' => '4.0.1')),
-        );
-
-        $request = new Request(new LockArrayRepository());
-        $request->requireName('package/a');
-
-        $pool = new Pool($packagesBefore);
-        $poolOptimizer = new PoolOptimizer(new DefaultPolicy(true, true)); // --prefer-lowest
-        $optimizedPool = $poolOptimizer->optimize($request, $pool);
-
-        $this->assertSame(array(
-            'package/a@1.0.0.0',
-            'package/b@1.2.3.0',
-            'package/b@2.5.0.0',
-            'package/b@4.0.0.0',
-        ), $this->reducePackagesInfoForComparison($optimizedPool->getPackages()));
-
-
-        $this->assertSame(array(
-            '1.2.4.0' => '1.2.4',
-            '2.5.1.0' => '2.5.1',
-            '4.0.1.0' => '4.0.1',
-        ), $optimizedPool->getRemovedVersions('package/b', new MatchAllConstraint()));
-    }
-
-
     /**
      * @dataProvider provideIntegrationTests
      * @param mixed[] $requestData
