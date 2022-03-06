@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -27,7 +27,7 @@ class VersionSelectorTest extends TestCase
     // B) targetPackageVersion will pass to repo set
     // C) No results, throw exception
 
-    public function testLatestVersionIsReturned()
+    public function testLatestVersionIsReturned(): void
     {
         $packageName = 'foobar';
 
@@ -49,7 +49,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be 1.2.2');
     }
 
-    public function testLatestVersionIsReturnedThatMatchesPhpRequirements()
+    public function testLatestVersionIsReturnedThatMatchesPhpRequirements(): void
     {
         $packageName = 'foobar';
 
@@ -75,7 +75,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
     }
 
-    public function testLatestVersionIsReturnedThatMatchesExtRequirements()
+    public function testLatestVersionIsReturnedThatMatchesExtRequirements(): void
     {
         $packageName = 'foobar';
 
@@ -101,7 +101,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
     }
 
-    public function testLatestVersionIsReturnedThatMatchesPlatformExt()
+    public function testLatestVersionIsReturnedThatMatchesPlatformExt(): void
     {
         $packageName = 'foobar';
 
@@ -126,7 +126,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (2.0.0)');
     }
 
-    public function testLatestVersionIsReturnedThatMatchesComposerRequirements()
+    public function testLatestVersionIsReturnedThatMatchesComposerRequirements(): void
     {
         $packageName = 'foobar';
 
@@ -152,7 +152,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be returned when ignoring platform reqs (1.1.0)');
     }
 
-    public function testMostStableVersionIsReturned()
+    public function testMostStableVersionIsReturned(): void
     {
         $packageName = 'foobar';
 
@@ -172,7 +172,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package1, $best, 'Latest most stable version should be returned (1.0.0)');
     }
 
-    public function testMostStableVersionIsReturnedRegardlessOfOrder()
+    public function testMostStableVersionIsReturnedRegardlessOfOrder(): void
     {
         $packageName = 'foobar';
 
@@ -197,7 +197,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Expecting 2.0.0-beta3, cause beta is more stable than dev');
     }
 
-    public function testHighestVersionIsReturned()
+    public function testHighestVersionIsReturned(): void
     {
         $packageName = 'foobar';
 
@@ -217,7 +217,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }
 
-    public function testHighestVersionMatchingStabilityIsReturned()
+    public function testHighestVersionMatchingStabilityIsReturned(): void
     {
         $packageName = 'foobar';
 
@@ -238,7 +238,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }
 
-    public function testMostStableUnstableVersionIsReturned()
+    public function testMostStableUnstableVersionIsReturned(): void
     {
         $packageName = 'foobar';
 
@@ -258,7 +258,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be returned (1.1.0-beta)');
     }
 
-    public function testDefaultBranchAliasIsNeverReturned()
+    public function testDefaultBranchAliasIsNeverReturned(): void
     {
         $packageName = 'foobar';
 
@@ -279,7 +279,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($package2, $best, 'Latest version should be returned (dev-main)');
     }
 
-    public function testFalseReturnedOnNoPackages()
+    public function testFalseReturnedOnNoPackages(): void
     {
         $repositorySet = $this->createMockRepositorySet();
         $repositorySet->expects($this->once())
@@ -299,7 +299,7 @@ class VersionSelectorTest extends TestCase
      * @param string|null $branchAlias
      * @param string      $packageName
      */
-    public function testFindRecommendedRequireVersion($prettyVersion, $expectedVersion, $branchAlias = null, $packageName = 'foo/bar')
+    public function testFindRecommendedRequireVersion(string $prettyVersion, string $expectedVersion, ?string $branchAlias = null, string $packageName = 'foo/bar'): void
     {
         $repositorySet = $this->createMockRepositorySet();
         $versionSelector = new VersionSelector($repositorySet);
@@ -317,7 +317,7 @@ class VersionSelectorTest extends TestCase
         $this->assertSame($expectedVersion, $recommended);
     }
 
-    public function provideRecommendedRequireVersionPackages()
+    public function provideRecommendedRequireVersionPackages(): array
     {
         return array(
             // real version, expected recommendation, [branch-alias], [pkg name]
@@ -362,7 +362,7 @@ class VersionSelectorTest extends TestCase
      *
      * @return Package
      */
-    private function createPackage($version)
+    private function createPackage(string $version): Package
     {
         $parser = new VersionParser();
 

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -47,7 +47,7 @@ class RunScriptCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('run-script')
@@ -112,7 +112,7 @@ EOT
     /**
      * @return int
      */
-    protected function listScripts(OutputInterface $output)
+    protected function listScripts(OutputInterface $output): int
     {
         $scripts = $this->requireComposer()->getPackage()->getScripts();
 

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -34,7 +34,7 @@ class ErrorHandlerTest extends TestCase
     /**
      * Test ErrorHandler handles notices
      */
-    public function testErrorHandlerCaptureNotice()
+    public function testErrorHandlerCaptureNotice(): void
     {
         if (PHP_VERSION_ID >= 80000) {
             self::expectException('\ErrorException');
@@ -52,7 +52,7 @@ class ErrorHandlerTest extends TestCase
     /**
      * Test ErrorHandler handles warnings
      */
-    public function testErrorHandlerCaptureWarning()
+    public function testErrorHandlerCaptureWarning(): void
     {
         if (PHP_VERSION_ID >= 80000) {
             self::expectException('TypeError');
@@ -70,7 +70,7 @@ class ErrorHandlerTest extends TestCase
      * Test ErrorHandler handles warnings
      * @doesNotPerformAssertions
      */
-    public function testErrorHandlerRespectsAtOperator()
+    public function testErrorHandlerRespectsAtOperator(): void
     {
         @trigger_error('test', E_USER_NOTICE);
     }

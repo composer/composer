@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -33,7 +33,7 @@ class HomeCommand extends BaseCommand
      *
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('browse')
@@ -101,7 +101,7 @@ EOT
      * @param bool $showOnly
      * @return bool
      */
-    private function handlePackage(CompletePackageInterface $package, $showHomepage, $showOnly)
+    private function handlePackage(CompletePackageInterface $package, bool $showHomepage, bool $showOnly): bool
     {
         $support = $package->getSupport();
         $url = $support['source'] ?? $package->getSourceUrl();
@@ -128,7 +128,7 @@ EOT
      * @param string $url
      * @return void
      */
-    private function openBrowser($url)
+    private function openBrowser(string $url): void
     {
         $url = ProcessExecutor::escape($url);
 
@@ -158,7 +158,7 @@ EOT
      *
      * @return RepositoryInterface[]
      */
-    private function initializeRepos()
+    private function initializeRepos(): array
     {
         $composer = $this->tryComposer();
 

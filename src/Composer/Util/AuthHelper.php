@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -41,7 +41,7 @@ class AuthHelper
      *
      * @return void
      */
-    public function storeAuth($origin, $storeAuth)
+    public function storeAuth(string $origin, $storeAuth): void
     {
         $store = false;
         $configSource = $this->config->getAuthConfigSource();
@@ -50,7 +50,7 @@ class AuthHelper
         } elseif ($storeAuth === 'prompt') {
             $answer = $this->io->askAndValidate(
                 'Do you want to store credentials for '.$origin.' in '.$configSource->getName().' ? [Yn] ',
-                function ($value) {
+                function ($value): string {
                     $input = strtolower(substr(trim($value), 0, 1));
                     if (in_array($input, array('y','n'))) {
                         return $input;
@@ -83,7 +83,7 @@ class AuthHelper
      *                                retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
      * @phpstan-return ?array{retry: bool, storeAuth: string|bool}
      */
-    public function promptAuthIfNeeded($url, $origin, $statusCode, $reason = null, $headers = array())
+    public function promptAuthIfNeeded(string $url, string $origin, int $statusCode, ?string $reason = null, array $headers = array()): ?array
     {
         $storeAuth = false;
 
@@ -215,7 +215,7 @@ class AuthHelper
      *
      * @return string[] updated headers array
      */
-    public function addAuthenticationHeader(array $headers, $origin, $url)
+    public function addAuthenticationHeader(array $headers, string $origin, string $url): array
     {
         if ($this->io->hasAuthentication($origin)) {
             $authenticationDisplayMessage = null;
@@ -272,7 +272,7 @@ class AuthHelper
      *
      * @return bool Whether the given URL is a public BitBucket download which requires no authentication.
      */
-    public function isPublicBitBucketDownload($urlToBitBucketFile)
+    public function isPublicBitBucketDownload(string $urlToBitBucketFile): bool
     {
         $domain = parse_url($urlToBitBucketFile, PHP_URL_HOST);
         if (strpos($domain, 'bitbucket.org') === false) {

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -30,7 +30,7 @@ class ClassMapGeneratorTest extends TestCase
      * @param string $directory
      * @param array<string, string> $expected
      */
-    public function testCreateMap($directory, $expected)
+    public function testCreateMap(string $directory, array $expected): void
     {
         $this->assertEqualsNormalized($expected, ClassMapGenerator::createMap($directory));
     }
@@ -38,7 +38,7 @@ class ClassMapGeneratorTest extends TestCase
     /**
      * @return array<array<string|array<string>>>
      */
-    public function getTestCreateMapTests()
+    public function getTestCreateMapTests(): array
     {
         $classmap = array(
             'Foo\\Bar\\A' => realpath(__DIR__) . '/Fixtures/classmap/sameNsMultipleClasses.php',
@@ -120,7 +120,7 @@ class ClassMapGeneratorTest extends TestCase
         return $data;
     }
 
-    public function testCreateMapFinderSupport()
+    public function testCreateMapFinderSupport(): void
     {
         $this->checkIfFinderIsAvailable();
 
@@ -133,7 +133,7 @@ class ClassMapGeneratorTest extends TestCase
         ), ClassMapGenerator::createMap($finder));
     }
 
-    public function testFindClassesThrowsWhenFileDoesNotExist()
+    public function testFindClassesThrowsWhenFileDoesNotExist(): void
     {
         $r = new \ReflectionClass('Composer\\Autoload\\ClassMapGenerator');
         $find = $r->getMethod('findClasses');
@@ -144,7 +144,7 @@ class ClassMapGeneratorTest extends TestCase
         $find->invoke(null, __DIR__ . '/no-file');
     }
 
-    public function testAmbiguousReference()
+    public function testAmbiguousReference(): void
     {
         $this->checkIfFinderIsAvailable();
 
@@ -167,7 +167,7 @@ class ClassMapGeneratorTest extends TestCase
 
         $io->expects($this->once())
             ->method('writeError')
-            ->will($this->returnCallback(function ($text) use (&$msg) {
+            ->will($this->returnCallback(function ($text) use (&$msg): void {
                 $msg = $text;
             }));
 
@@ -188,7 +188,7 @@ class ClassMapGeneratorTest extends TestCase
      * If one file has a class or interface defined more than once,
      * an ambiguous reference warning should not be produced
      */
-    public function testUnambiguousReference()
+    public function testUnambiguousReference(): void
     {
         $tempDir = $this->getUniqueTmpDirectory();
 
@@ -224,14 +224,14 @@ class ClassMapGeneratorTest extends TestCase
         $fs->removeDirectory($tempDir);
     }
 
-    public function testCreateMapThrowsWhenDirectoryDoesNotExist()
+    public function testCreateMapThrowsWhenDirectoryDoesNotExist(): void
     {
         self::expectException('RuntimeException');
         self::expectExceptionMessage('Could not scan for classes inside');
         ClassMapGenerator::createMap(__DIR__ . '/no-file.no-foler');
     }
 
-    public function testDump()
+    public function testDump(): void
     {
         $tempDir = self::getUniqueTmpDirectory();
 
@@ -249,7 +249,7 @@ class ClassMapGeneratorTest extends TestCase
         $fs->removeDirectory($tempDir);
     }
 
-    public function testCreateMapDoesNotHitRegexBacktraceLimit()
+    public function testCreateMapDoesNotHitRegexBacktraceLimit(): void
     {
         $expected = array(
             'Foo\\StripNoise' => realpath(__DIR__) . '/Fixtures/pcrebacktracelimit/StripNoise.php',
@@ -274,7 +274,7 @@ class ClassMapGeneratorTest extends TestCase
      * @param string $message
      * @return  void
      */
-    protected function assertEqualsNormalized($expected, $actual, $message = '')
+    protected function assertEqualsNormalized(array $expected, array $actual, string $message = ''): void
     {
         foreach ($expected as $ns => $path) {
             $expected[$ns] = strtr($path, '\\', '/');
@@ -286,7 +286,7 @@ class ClassMapGeneratorTest extends TestCase
     }
 
     /** @return void */
-    private function checkIfFinderIsAvailable()
+    private function checkIfFinderIsAvailable(): void
     {
         if (!class_exists('Symfony\\Component\\Finder\\Finder')) {
             $this->markTestSkipped('Finder component is not available');

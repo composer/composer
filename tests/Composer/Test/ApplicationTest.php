@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -25,7 +25,7 @@ class ApplicationTest extends TestCase
         putenv('COMPOSER_NO_INTERACTION');
     }
 
-    public function testDevWarning()
+    public function testDevWarning(): void
     {
         $application = new Application;
 
@@ -55,8 +55,8 @@ class ApplicationTest extends TestCase
 
         $inputMock->expects($this->once())
             ->method('getParameterOption')
-            ->with($this->equalTo(array('--working-dir', '-d')))
-            ->will($this->returnValue(false));
+            ->with($this->equalTo(array('--working-dir', '-d')), $this->equalTo(null))
+            ->will($this->returnValue(null));
 
         $inputMock->expects($this->any())
             ->method('getFirstArgument')
@@ -84,7 +84,7 @@ class ApplicationTest extends TestCase
      * @param  string $command
      * @return void
      */
-    public function ensureNoDevWarning($command)
+    public function ensureNoDevWarning(string $command): void
     {
         $application = new Application;
 
@@ -116,8 +116,8 @@ class ApplicationTest extends TestCase
 
         $inputMock->expects($this->once())
             ->method('getParameterOption')
-            ->with($this->equalTo(array('--working-dir', '-d')))
-            ->will($this->returnValue(false));
+            ->with($this->equalTo(array('--working-dir', '-d')), $this->equalTo(null))
+            ->will($this->returnValue(null));
 
         $inputMock->expects($this->any())
             ->method('getFirstArgument')
@@ -133,12 +133,12 @@ class ApplicationTest extends TestCase
         $application->doRun($inputMock, $outputMock);
     }
 
-    public function testDevWarningPrevented()
+    public function testDevWarningPrevented(): void
     {
         $this->ensureNoDevWarning('self-update');
     }
 
-    public function testDevWarningPreventedAlias()
+    public function testDevWarningPreventedAlias(): void
     {
         $this->ensureNoDevWarning('self-up');
     }

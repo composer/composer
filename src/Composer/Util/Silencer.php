@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -30,7 +30,7 @@ class Silencer
      * @param  int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
      * @return int      The old error reporting level.
      */
-    public static function suppress($mask = null)
+    public static function suppress(?int $mask = null): int
     {
         if (!isset($mask)) {
             $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT;
@@ -47,7 +47,7 @@ class Silencer
      *
      * @return void
      */
-    public static function restore()
+    public static function restore(): void
     {
         if (!empty(self::$stack)) {
             error_reporting(array_pop(self::$stack));
@@ -57,17 +57,16 @@ class Silencer
     /**
      * Calls a specified function while silencing warnings and below.
      *
-     * Future improvement: when PHP requirements are raised add Callable type hint (5.4) and variadic parameters (5.6)
-     *
      * @param  callable   $callable Function to execute.
+     * @param  mixed      $parameters Function to execute.
      * @throws \Exception Any exceptions from the callback are rethrown.
      * @return mixed      Return value of the callback.
      */
-    public static function call($callable /*, ...$parameters */)
+    public static function call(callable $callable, ...$parameters)
     {
         try {
             self::suppress();
-            $result = call_user_func_array($callable, array_slice(func_get_args(), 1));
+            $result = $callable(...$parameters);
             self::restore();
 
             return $result;

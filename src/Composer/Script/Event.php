@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -40,7 +40,7 @@ class Event extends BaseEvent
     private $devMode;
 
     /**
-     * @var BaseEvent
+     * @var BaseEvent|null
      */
     private $originatingEvent;
 
@@ -54,7 +54,7 @@ class Event extends BaseEvent
      * @param array<string|int|float|bool|null> $args Arguments passed by the user
      * @param mixed[] $flags Optional flags to pass data not as argument
      */
-    public function __construct($name, Composer $composer, IOInterface $io, $devMode = false, array $args = array(), array $flags = array())
+    public function __construct(string $name, Composer $composer, IOInterface $io, bool $devMode = false, array $args = array(), array $flags = array())
     {
         parent::__construct($name, $args, $flags);
         $this->composer = $composer;
@@ -67,7 +67,7 @@ class Event extends BaseEvent
      *
      * @return Composer
      */
-    public function getComposer()
+    public function getComposer(): Composer
     {
         return $this->composer;
     }
@@ -77,7 +77,7 @@ class Event extends BaseEvent
      *
      * @return IOInterface
      */
-    public function getIO()
+    public function getIO(): IOInterface
     {
         return $this->io;
     }
@@ -87,7 +87,7 @@ class Event extends BaseEvent
      *
      * @return bool
      */
-    public function isDevMode()
+    public function isDevMode(): bool
     {
         return $this->devMode;
     }
@@ -97,7 +97,7 @@ class Event extends BaseEvent
      *
      * @return ?BaseEvent
      */
-    public function getOriginatingEvent()
+    public function getOriginatingEvent(): ?BaseEvent
     {
         return $this->originatingEvent;
     }
@@ -108,7 +108,7 @@ class Event extends BaseEvent
      * @param  BaseEvent $event
      * @return $this
      */
-    public function setOriginatingEvent(BaseEvent $event)
+    public function setOriginatingEvent(BaseEvent $event): self
     {
         $this->originatingEvent = $this->calculateOriginatingEvent($event);
 
@@ -121,7 +121,7 @@ class Event extends BaseEvent
      * @param  BaseEvent $event
      * @return BaseEvent
      */
-    private function calculateOriginatingEvent(BaseEvent $event)
+    private function calculateOriginatingEvent(BaseEvent $event): BaseEvent
     {
         if ($event instanceof Event && $event->getOriginatingEvent()) {
             return $this->calculateOriginatingEvent($event->getOriginatingEvent());

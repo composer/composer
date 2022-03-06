@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -32,7 +32,7 @@ class DefaultPolicy implements PolicyInterface
      * @param bool $preferStable
      * @param bool $preferLowest
      */
-    public function __construct($preferStable = false, $preferLowest = false)
+    public function __construct(bool $preferStable = false, bool $preferLowest = false)
     {
         $this->preferStable = $preferStable;
         $this->preferLowest = $preferLowest;
@@ -44,7 +44,7 @@ class DefaultPolicy implements PolicyInterface
      *
      * @phpstan-param Constraint::STR_OP_* $operator
      */
-    public function versionCompare(PackageInterface $a, PackageInterface $b, $operator)
+    public function versionCompare(PackageInterface $a, PackageInterface $b, string $operator): bool
     {
         if ($this->preferStable && ($stabA = $a->getStability()) !== ($stabB = $b->getStability())) {
             return BasePackage::$stabilities[$stabA] < BasePackage::$stabilities[$stabB];
@@ -61,12 +61,12 @@ class DefaultPolicy implements PolicyInterface
      * @param  string $requiredPackage
      * @return int[]
      */
-    public function selectPreferredPackages(Pool $pool, array $literals, $requiredPackage = null)
+    public function selectPreferredPackages(Pool $pool, array $literals, string $requiredPackage = null): array
     {
         $packages = $this->groupLiteralsByName($pool, $literals);
 
         foreach ($packages as &$nameLiterals) {
-            usort($nameLiterals, function ($a, $b) use ($pool, $requiredPackage) {
+            usort($nameLiterals, function ($a, $b) use ($pool, $requiredPackage): int {
                 return $this->compareByPriority($pool, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage, true);
             });
         }
@@ -79,7 +79,7 @@ class DefaultPolicy implements PolicyInterface
         $selected = \call_user_func_array('array_merge', array_values($packages));
 
         // now sort the result across all packages to respect replaces across packages
-        usort($selected, function ($a, $b) use ($pool, $requiredPackage) {
+        usort($selected, function ($a, $b) use ($pool, $requiredPackage): int {
             return $this->compareByPriority($pool, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage);
         });
 
@@ -90,7 +90,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  int[] $literals
      * @return array<string, int[]>
      */
-    protected function groupLiteralsByName(Pool $pool, $literals)
+    protected function groupLiteralsByName(Pool $pool, array $literals): array
     {
         $packages = array();
         foreach ($literals as $literal) {
@@ -107,11 +107,11 @@ class DefaultPolicy implements PolicyInterface
 
     /**
      * @protected
-     * @param ?string $requiredPackage
+     * @param null|string $requiredPackage
      * @param bool $ignoreReplace
      * @return int
      */
-    public function compareByPriority(Pool $pool, BasePackage $a, BasePackage $b, $requiredPackage = null, $ignoreReplace = false)
+    public function compareByPriority(Pool $pool, BasePackage $a, BasePackage $b, ?string $requiredPackage = null, bool $ignoreReplace = false): int
     {
         // prefer aliases to the original package
         if ($a->getName() === $b->getName()) {
@@ -164,7 +164,7 @@ class DefaultPolicy implements PolicyInterface
      *
      * @return bool
      */
-    protected function replaces(BasePackage $source, BasePackage $target)
+    protected function replaces(BasePackage $source, BasePackage $target): bool
     {
         foreach ($source->getReplaces() as $link) {
             if ($link->getTarget() === $target->getName()
@@ -182,7 +182,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  int[] $literals
      * @return int[]
      */
-    protected function pruneToBestVersion(Pool $pool, $literals)
+    protected function pruneToBestVersion(Pool $pool, array $literals): array
     {
         $operator = $this->preferLowest ? '<' : '>';
         $bestLiterals = array($literals[0]);
@@ -213,7 +213,7 @@ class DefaultPolicy implements PolicyInterface
      * @param  int[] $literals
      * @return int[]
      */
-    protected function pruneRemoteAliases(Pool $pool, array $literals)
+    protected function pruneRemoteAliases(Pool $pool, array $literals): array
     {
         $hasLocalAlias = false;
 

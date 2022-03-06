@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -20,7 +20,7 @@ use Composer\Semver\Constraint\MatchAllConstraint;
 
 class PackageSorterTest extends TestCase
 {
-    public function testSortingDoesNothingWithNoDependencies()
+    public function testSortingDoesNothingWithNoDependencies(): void
     {
         $packages[] = $this->createPackage('foo/bar1', array());
         $packages[] = $this->createPackage('foo/bar2', array());
@@ -32,7 +32,7 @@ class PackageSorterTest extends TestCase
         self::assertSame($packages, $sortedPackages);
     }
 
-    public function sortingOrdersDependenciesHigherThanPackageDataProvider()
+    public function sortingOrdersDependenciesHigherThanPackageDataProvider(): array
     {
         return array(
             'one package is dep' => array(
@@ -108,10 +108,10 @@ class PackageSorterTest extends TestCase
      * @param Package[] $packages
      * @param string[]  $expectedOrderedList
      */
-    public function testSortingOrdersDependenciesHigherThanPackage($packages, $expectedOrderedList)
+    public function testSortingOrdersDependenciesHigherThanPackage(array $packages, array $expectedOrderedList): void
     {
         $sortedPackages = PackageSorter::sortPackages($packages);
-        $sortedPackageNames = array_map(function ($package) {
+        $sortedPackageNames = array_map(function ($package): string {
             return $package->getName();
         }, $sortedPackages);
 
@@ -124,7 +124,7 @@ class PackageSorterTest extends TestCase
      *
      * @return Package
      */
-    private function createPackage($name, $requires)
+    private function createPackage(string $name, array $requires): Package
     {
         $package = new Package($name, '1.0.0.0', '1.0.0');
 

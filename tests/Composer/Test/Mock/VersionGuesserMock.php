@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -20,7 +20,7 @@ class VersionGuesserMock extends VersionGuesser
     {
     }
 
-    public function guessVersion(array $packageConfig, $path)
+    public function guessVersion(array $packageConfig, $path): ?array
     {
         return null;
     }

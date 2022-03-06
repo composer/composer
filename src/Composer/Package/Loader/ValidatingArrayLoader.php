@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -24,9 +24,9 @@ use Composer\Spdx\SpdxLicenses;
  */
 class ValidatingArrayLoader implements LoaderInterface
 {
-    const CHECK_ALL = 3;
-    const CHECK_UNBOUND_CONSTRAINTS = 1;
-    const CHECK_STRICT_CONSTRAINTS = 2;
+    public const CHECK_ALL = 3;
+    public const CHECK_UNBOUND_CONSTRAINTS = 1;
+    public const CHECK_STRICT_CONSTRAINTS = 2;
 
     /** @var LoaderInterface */
     private $loader;
@@ -45,7 +45,7 @@ class ValidatingArrayLoader implements LoaderInterface
      * @param true $strictName
      * @param int  $flags
      */
-    public function __construct(LoaderInterface $loader, $strictName = true, VersionParser $parser = null, $flags = 0)
+    public function __construct(LoaderInterface $loader, bool $strictName = true, VersionParser $parser = null, int $flags = 0)
     {
         $this->loader = $loader;
         $this->versionParser = $parser ?: new VersionParser();
@@ -59,7 +59,7 @@ class ValidatingArrayLoader implements LoaderInterface
     /**
      * @inheritDoc
      */
-    public function load(array $config, $class = 'Composer\Package\CompletePackage')
+    public function load(array $config, string $class = 'Composer\Package\CompletePackage'): BasePackage
     {
         $this->errors = array();
         $this->warnings = array();
@@ -286,8 +286,8 @@ class ValidatingArrayLoader implements LoaderInterface
                             // check requires for exact constraints
                             ($this->flags & self::CHECK_STRICT_CONSTRAINTS)
                             && 'require' === $linkType
-                            && strpos($linkConstraint, '=') === 0
-                            && $stableConstraint->versionCompare($stableConstraint, $linkConstraint, '<=')
+                            && $linkConstraint instanceof Constraint && in_array($linkConstraint->getOperator(), ['==', '='], true)
+                            && (new Constraint('>=', '1.0.0.0-dev'))->matches($linkConstraint)
                         ) {
                             $this->warnings[] = $linkType.'.'.$package.' : exact version constraints ('.$constraint.') should be avoided if the package follows semantic versioning';
                         }
@@ -431,7 +431,7 @@ class ValidatingArrayLoader implements LoaderInterface
     /**
      * @return string[]
      */
-    public function getWarnings()
+    public function getWarnings(): array
     {
         return $this->warnings;
     }
@@ -439,7 +439,7 @@ class ValidatingArrayLoader implements LoaderInterface
     /**
      * @return string[]
      */
-    public function getErrors()
+    public function getErrors(): array
     {
         return $this->errors;
     }
@@ -450,7 +450,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @return string|null
      */
-    public static function hasPackageNamingError($name, $isLink = false)
+    public static function hasPackageNamingError(string $name, bool $isLink = false): ?string
     {
         if (PlatformRepository::isPlatformPackage($name)) {
             return null;
@@ -494,7 +494,7 @@ class ValidatingArrayLoader implements LoaderInterface
      * @phpstan-param non-empty-string $property
      * @phpstan-param non-empty-string $regex
      */
-    private function validateRegex($property, $regex, $mandatory = false)
+    private function validateRegex(string $property, string $regex, bool $mandatory = false): bool
     {
         if (!$this->validateString($property, $mandatory)) {
             return false;
@@ -523,7 +523,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @phpstan-param non-empty-string $property
      */
-    private function validateString($property, $mandatory = false)
+    private function validateString(string $property, bool $mandatory = false): bool
     {
         if (isset($this->config[$property]) && !is_string($this->config[$property])) {
             $this->errors[] = $property.' : should be a string, '.gettype($this->config[$property]).' given';
@@ -552,7 +552,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @phpstan-param non-empty-string $property
      */
-    private function validateArray($property, $mandatory = false)
+    private function validateArray(string $property, bool $mandatory = false): bool
     {
         if (isset($this->config[$property]) && !is_array($this->config[$property])) {
             $this->errors[] = $property.' : should be an array, '.gettype($this->config[$property]).' given';
@@ -583,7 +583,7 @@ class ValidatingArrayLoader implements LoaderInterface
      * @phpstan-param non-empty-string      $property
      * @phpstan-param non-empty-string|null $regex
      */
-    private function validateFlatArray($property, $regex = null, $mandatory = false)
+    private function validateFlatArray(string $property, ?string $regex = null, bool $mandatory = false): bool
     {
         if (!$this->validateArray($property, $mandatory)) {
             return false;
@@ -617,7 +617,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @phpstan-param non-empty-string $property
      */
-    private function validateUrl($property, $mandatory = false)
+    private function validateUrl(string $property, bool $mandatory = false): bool
     {
         if (!$this->validateString($property, $mandatory)) {
             return false;
@@ -639,7 +639,7 @@ class ValidatingArrayLoader implements LoaderInterface
      *
      * @return bool
      */
-    private function filterUrl($value, array $schemes = array('http', 'https'))
+    private function filterUrl($value, array $schemes = array('http', 'https')): bool
     {
         if ($value === '') {
             return true;

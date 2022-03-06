@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -22,7 +22,7 @@ final class IgnoreNothingPlatformRequirementFilterTest extends TestCase
      *
      * @param string $req
      */
-    public function testIsIgnored($req)
+    public function testIsIgnored(string $req): void
     {
         $platformRequirementFilter = new IgnoreNothingPlatformRequirementFilter();
 
@@ -32,7 +32,7 @@ final class IgnoreNothingPlatformRequirementFilterTest extends TestCase
     /**
      * @return array<string, mixed[]>
      */
-    public function dataIsIgnored()
+    public function dataIsIgnored(): array
     {
         return array(
             'php is not ignored' => array('php'),

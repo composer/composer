@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -18,7 +18,7 @@ use Composer\Test\TestCase;
 
 class ArrayRepositoryTest extends TestCase
 {
-    public function testAddPackage()
+    public function testAddPackage(): void
     {
         $repo = new ArrayRepository;
         $repo->addPackage($this->getPackage('foo', '1'));
@@ -26,7 +26,7 @@ class ArrayRepositoryTest extends TestCase
         $this->assertCount(1, $repo);
     }
 
-    public function testRemovePackage()
+    public function testRemovePackage(): void
     {
         $package = $this->getPackage('bar', '2');
 
@@ -42,7 +42,7 @@ class ArrayRepositoryTest extends TestCase
         $this->assertEquals(array($package), $repo->getPackages());
     }
 
-    public function testHasPackage()
+    public function testHasPackage(): void
     {
         $repo = new ArrayRepository;
         $repo->addPackage($this->getPackage('foo', '1'));
@@ -52,7 +52,7 @@ class ArrayRepositoryTest extends TestCase
         $this->assertFalse($repo->hasPackage($this->getPackage('bar', '1')));
     }
 
-    public function testFindPackages()
+    public function testFindPackages(): void
     {
         $repo = new ArrayRepository();
         $repo->addPackage($this->getPackage('foo', '1'));
@@ -68,7 +68,7 @@ class ArrayRepositoryTest extends TestCase
         $this->assertEquals('bar', $bar[0]->getName());
     }
 
-    public function testAutomaticallyAddAliasedPackageButNotRemove()
+    public function testAutomaticallyAddAliasedPackageButNotRemove(): void
     {
         $repo = new ArrayRepository();
 
@@ -86,7 +86,7 @@ class ArrayRepositoryTest extends TestCase
         $this->assertCount(1, $repo);
     }
 
-    public function testSearch()
+    public function testSearch(): void
     {
         $repo = new ArrayRepository();
 
@@ -108,7 +108,7 @@ class ArrayRepositoryTest extends TestCase
         );
     }
 
-    public function testSearchWithPackageType()
+    public function testSearchWithPackageType(): void
     {
         $repo = new ArrayRepository();
 
@@ -132,7 +132,7 @@ class ArrayRepositoryTest extends TestCase
         );
     }
 
-    public function testSearchWithAbandonedPackages()
+    public function testSearchWithAbandonedPackages(): void
     {
         $repo = new ArrayRepository();
 

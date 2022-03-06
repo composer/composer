@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -28,7 +28,7 @@ class RootPackageRepository extends ArrayRepository
         parent::__construct(array($package));
     }
 
-    public function getRepoName()
+    public function getRepoName(): string
     {
         return 'root package repo';
     }

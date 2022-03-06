@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
 use Composer\Util\ProcessExecutor;
 
@@ -23,7 +24,7 @@ use Composer\Util\ProcessExecutor;
  */
 class XzDownloader extends ArchiveDownloader
 {
-    protected function extract(PackageInterface $package, $file, $path)
+    protected function extract(PackageInterface $package, string $file, string $path): PromiseInterface
     {
         $command = 'tar -xJf ' . ProcessExecutor::escape($file) . ' -C ' . ProcessExecutor::escape($path);
 

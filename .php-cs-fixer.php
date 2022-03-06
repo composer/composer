@@ -16,8 +16,8 @@ $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__.'/tests')
     ->name('*.php')
     ->notPath('Fixtures')
-    ->notPath(__DIR__.'/src/Composer/Autoload/ClassLoader.php')
-    ->notPath(__DIR__.'/src/Composer/InstalledVersions.php')
+    ->notPath('Composer/Autoload/ClassLoader.php')
+    ->notPath('Composer/InstalledVersions.php')
 ;
 
 $config = new PhpCsFixer\Config();
@@ -65,13 +65,16 @@ return $config->setRules([
         // TODO later once 2.2 is more stable
         // 'array_syntax' => true,
         // 'list_syntax' => true,
-        'visibility_required' => ['elements' => ['property', 'method', /* TODO 'const' but need to review them all */]],
+        'visibility_required' => ['elements' => ['property', 'method', 'const']],
         'non_printable_character' => true,
         'combine_nested_dirname' => true,
         'random_api_migration' => true,
         'ternary_to_null_coalescing' => true,
-        //'declare_strict_types' => true,
-        //'void_return' => true,
+        'phpdoc_to_param_type' => true,
+        'declare_strict_types' => true,
+
+        // TODO php 7.4 migration (one day..)
+        // 'phpdoc_to_property_type' => true,
     ])
     ->setUsingCache(true)
     ->setRiskyAllowed(true)

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -22,5 +22,5 @@ class InstallerEvents
      *
      * @var string
      */
-    const PRE_OPERATIONS_EXEC = 'pre-operations-exec';
+    public const PRE_OPERATIONS_EXEC = 'pre-operations-exec';
 }

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -23,7 +23,7 @@ class ZipArchiverTest extends ArchiverTest
      *
      * @dataProvider provideGitignoreExcludeNegationTestCases
      */
-    public function testGitignoreExcludeNegation($include)
+    public function testGitignoreExcludeNegation(string $include): void
     {
         $this->testZipArchive(array(
             'docs/README.md' => '# The doc',
@@ -31,7 +31,7 @@ class ZipArchiverTest extends ArchiverTest
         ));
     }
 
-    public function provideGitignoreExcludeNegationTestCases()
+    public function provideGitignoreExcludeNegationTestCases(): array
     {
         return array(
             array('!/docs'),
@@ -42,7 +42,7 @@ class ZipArchiverTest extends ArchiverTest
     /**
      * @param array<string, string> $files
      */
-    public function testZipArchive(array $files = array())
+    public function testZipArchive(array $files = array()): void
     {
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('Cannot run ZipArchiverTest, missing class "ZipArchive".');
@@ -57,7 +57,7 @@ class ZipArchiverTest extends ArchiverTest
             );
 
             if (!Platform::isWindows()) {
-                $files['foo' . getcwd() . '/file.txt'] = null;
+                $files['foo' . Platform::getCwd() . '/file.txt'] = null;
             }
         }
         // Set up repository
@@ -87,9 +87,9 @@ class ZipArchiverTest extends ArchiverTest
      *
      * @return void
      */
-    protected function setupDummyRepo(array &$files)
+    protected function setupDummyRepo(array &$files): void
     {
-        $currentWorkDir = getcwd();
+        $currentWorkDir = Platform::getCwd();
         chdir($this->testDir);
         foreach ($files as $path => $content) {
             if ($files[$path] === null) {
@@ -108,7 +108,7 @@ class ZipArchiverTest extends ArchiverTest
      *
      * @return void
      */
-    protected function writeFile($path, $content, $currentWorkDir)
+    protected function writeFile(string $path, string $content, string $currentWorkDir): void
     {
         if (!file_exists(dirname($path))) {
             mkdir(dirname($path), 0777, true);

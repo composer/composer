@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -29,7 +29,7 @@ class ArrayLoaderTest extends TestCase
         $this->loader = new ArrayLoader(null);
     }
 
-    public function testSelfVersion()
+    public function testSelfVersion(): void
     {
         $config = array(
             'name' => 'A',
@@ -44,7 +44,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertEquals('== 1.2.3.4', (string) $replaces['foo']->getConstraint());
     }
 
-    public function testTypeDefault()
+    public function testTypeDefault(): void
     {
         $config = array(
             'name' => 'A',
@@ -64,7 +64,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertEquals('foo', $package->getType());
     }
 
-    public function testNormalizedVersionOptimization()
+    public function testNormalizedVersionOptimization(): void
     {
         $config = array(
             'name' => 'A',
@@ -84,7 +84,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertEquals('1.2.3.4', $package->getVersion());
     }
 
-    public function parseDumpProvider()
+    public function parseDumpProvider(): array
     {
         $validConfig = array(
             'name' => 'A/B',
@@ -139,7 +139,7 @@ class ArrayLoaderTest extends TestCase
      *
      * @return array<string, mixed>
      */
-    protected function fixConfigWhenLoadConfigIsFalse($config)
+    protected function fixConfigWhenLoadConfigIsFalse(array $config): array
     {
         $expectedConfig = $config;
         unset($expectedConfig['transport-options']);
@@ -155,7 +155,7 @@ class ArrayLoaderTest extends TestCase
      *
      * @param array<string, mixed> $config
      */
-    public function testParseDumpDefaultLoadConfig($config)
+    public function testParseDumpDefaultLoadConfig(array $config): void
     {
         $package = $this->loader->load($config);
         $dumper = new ArrayDumper;
@@ -168,7 +168,7 @@ class ArrayLoaderTest extends TestCase
      *
      * @param array<string, mixed> $config
      */
-    public function testParseDumpTrueLoadConfig($config)
+    public function testParseDumpTrueLoadConfig(array $config): void
     {
         $loader = new ArrayLoader(null, true);
         $package = $loader->load($config);
@@ -182,7 +182,7 @@ class ArrayLoaderTest extends TestCase
      *
      * @param array<string, mixed> $config
      */
-    public function testParseDumpFalseLoadConfig($config)
+    public function testParseDumpFalseLoadConfig(array $config): void
     {
         $loader = new ArrayLoader(null, false);
         $package = $loader->load($config);
@@ -191,7 +191,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertEquals($expectedConfig, $dumper->dump($package));
     }
 
-    public function testPackageWithBranchAlias()
+    public function testPackageWithBranchAlias(): void
     {
         $config = array(
             'name' => 'A',
@@ -249,7 +249,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertEquals('4.x-dev', $package->getPrettyVersion());
     }
 
-    public function testAbandoned()
+    public function testAbandoned(): void
     {
         $config = array(
             'name' => 'A',
@@ -262,7 +262,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertEquals('foo/bar', $package->getReplacementPackage());
     }
 
-    public function testNotAbandoned()
+    public function testNotAbandoned(): void
     {
         $config = array(
             'name' => 'A',
@@ -273,7 +273,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertFalse($package->isAbandoned());
     }
 
-    public function providePluginApiVersions()
+    public function providePluginApiVersions(): array
     {
         return array(
             array('1.0'),
@@ -299,7 +299,7 @@ class ArrayLoaderTest extends TestCase
      *
      * @param string $apiVersion
      */
-    public function testPluginApiVersionAreKeptAsDeclared($apiVersion)
+    public function testPluginApiVersionAreKeptAsDeclared(string $apiVersion): void
     {
         $links = $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, array('composer-plugin-api' => $apiVersion));
 
@@ -307,7 +307,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertSame($apiVersion, $links['composer-plugin-api']->getConstraint()->getPrettyString());
     }
 
-    public function testPluginApiVersionDoesSupportSelfVersion()
+    public function testPluginApiVersionDoesSupportSelfVersion(): void
     {
         $links = $this->loader->parseLinks('Plugin', '6.6.6', Link::TYPE_REQUIRE, array('composer-plugin-api' => 'self.version'));
 
@@ -315,7 +315,7 @@ class ArrayLoaderTest extends TestCase
         $this->assertSame('6.6.6', $links['composer-plugin-api']->getConstraint()->getPrettyString());
     }
 
-    public function testNoneStringVersion()
+    public function testNoneStringVersion(): void
     {
         $config = array(
             'name' => 'acme/package',

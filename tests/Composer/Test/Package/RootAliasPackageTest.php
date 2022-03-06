@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -21,7 +21,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 class RootAliasPackageTest extends TestCase
 {
-    public function testUpdateRequires()
+    public function testUpdateRequires(): void
     {
         $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_REQUIRE, 'self.version'));
 
@@ -36,7 +36,7 @@ class RootAliasPackageTest extends TestCase
         $this->assertNotEmpty($alias->getRequires());
     }
 
-    public function testUpdateDevRequires()
+    public function testUpdateDevRequires(): void
     {
         $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_DEV_REQUIRE, 'self.version'));
 
@@ -51,7 +51,7 @@ class RootAliasPackageTest extends TestCase
         $this->assertNotEmpty($alias->getDevRequires());
     }
 
-    public function testUpdateConflicts()
+    public function testUpdateConflicts(): void
     {
         $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_CONFLICT, 'self.version'));
 
@@ -66,7 +66,7 @@ class RootAliasPackageTest extends TestCase
         $this->assertNotEmpty($alias->getConflicts());
     }
 
-    public function testUpdateProvides()
+    public function testUpdateProvides(): void
     {
         $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_PROVIDE, 'self.version'));
 
@@ -81,7 +81,7 @@ class RootAliasPackageTest extends TestCase
         $this->assertNotEmpty($alias->getProvides());
     }
 
-    public function testUpdateReplaces()
+    public function testUpdateReplaces(): void
     {
         $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_REPLACE, 'self.version'));
 

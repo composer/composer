@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -31,7 +31,7 @@ class Rule2Literals extends Rule
      *
      * @phpstan-param ReasonData $reasonData
      */
-    public function __construct($literal1, $literal2, $reason, $reasonData)
+    public function __construct(int $literal1, int $literal2, $reason, $reasonData)
     {
         parent::__construct($reason, $reasonData);
 
@@ -45,7 +45,7 @@ class Rule2Literals extends Rule
     }
 
     /** @return int[] */
-    public function getLiterals()
+    public function getLiterals(): array
     {
         return array($this->literal1, $this->literal2);
     }
@@ -66,7 +66,7 @@ class Rule2Literals extends Rule
      * @param  Rule $rule The rule to check against
      * @return bool Whether the rules are equal
      */
-    public function equals(Rule $rule)
+    public function equals(Rule $rule): bool
     {
         // specialized fast-case
         if ($rule instanceof self) {
@@ -98,7 +98,7 @@ class Rule2Literals extends Rule
     }
 
     /** @return false */
-    public function isAssertion()
+    public function isAssertion(): bool
     {
         return false;
     }
@@ -108,7 +108,7 @@ class Rule2Literals extends Rule
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         $result = $this->isDisabled() ? 'disabled(' : '(';
 

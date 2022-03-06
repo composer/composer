@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -18,7 +18,7 @@ use Composer\Test\TestCase;
 
 class CompositeRepositoryTest extends TestCase
 {
-    public function testHasPackage()
+    public function testHasPackage(): void
     {
         $arrayRepoOne = new ArrayRepository;
         $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
@@ -35,7 +35,7 @@ class CompositeRepositoryTest extends TestCase
         $this->assertFalse($repo->hasPackage($this->getPackage('bar', '2')), "Should not have package 'bar/2'");
     }
 
-    public function testFindPackage()
+    public function testFindPackage(): void
     {
         $arrayRepoOne = new ArrayRepository;
         $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
@@ -52,7 +52,7 @@ class CompositeRepositoryTest extends TestCase
         $this->assertNull($repo->findPackage('foo', '2'), "Should not find package 'foo/2'");
     }
 
-    public function testFindPackages()
+    public function testFindPackages(): void
     {
         $arrayRepoOne = new ArrayRepository;
         $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
@@ -79,7 +79,7 @@ class CompositeRepositoryTest extends TestCase
         $this->assertEquals('foo', $foos[0]->getName(), "Should find packages named 'foo'");
     }
 
-    public function testGetPackages()
+    public function testGetPackages(): void
     {
         $arrayRepoOne = new ArrayRepository;
         $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
@@ -97,7 +97,7 @@ class CompositeRepositoryTest extends TestCase
         $this->assertEquals("1", $packages[1]->getPrettyVersion(), "Second package should have pretty version of '1'");
     }
 
-    public function testAddRepository()
+    public function testAddRepository(): void
     {
         $arrayRepoOne = new ArrayRepository;
         $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
@@ -113,7 +113,7 @@ class CompositeRepositoryTest extends TestCase
         $this->assertCount(4, $repo, "Composite repository should have four packages after addRepository() is called");
     }
 
-    public function testCount()
+    public function testCount(): void
     {
         $arrayRepoOne = new ArrayRepository;
         $arrayRepoOne->addPackage($this->getPackage('foo', '1'));
@@ -132,13 +132,13 @@ class CompositeRepositoryTest extends TestCase
      * @param string $method
      * @param mixed[] $args
      */
-    public function testNoRepositories($method, $args)
+    public function testNoRepositories(string $method, array $args): void
     {
         $repo = new CompositeRepository(array());
         $this->assertEquals(array(), call_user_func_array(array($repo, $method), $args));
     }
 
-    public function provideMethodCalls()
+    public function provideMethodCalls(): array
     {
         return array(
             array('findPackages', array('foo')),

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -26,7 +26,7 @@ class OutdatedCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('outdated')
@@ -109,7 +109,7 @@ EOT
     /**
      * @inheritDoc
      */
-    public function isProxyCommand()
+    public function isProxyCommand(): bool
     {
         return true;
     }

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -14,10 +14,11 @@ namespace Composer\Test\Repository;
 
 use Composer\Repository\PathRepository;
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 
 class PathRepositoryTest extends TestCase
 {
-    public function testLoadPackageFromFileSystemWithIncorrectPath()
+    public function testLoadPackageFromFileSystemWithIncorrectPath(): void
     {
         self::expectException('RuntimeException');
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
@@ -30,7 +31,7 @@ class PathRepositoryTest extends TestCase
         $repository->getPackages();
     }
 
-    public function testLoadPackageFromFileSystemWithVersion()
+    public function testLoadPackageFromFileSystemWithVersion(): void
     {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();
@@ -46,7 +47,7 @@ class PathRepositoryTest extends TestCase
         $this->assertTrue($repository->hasPackage($this->getPackage('test/path-versioned', '0.0.2')));
     }
 
-    public function testLoadPackageFromFileSystemWithoutVersion()
+    public function testLoadPackageFromFileSystemWithoutVersion(): void
     {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();
@@ -67,7 +68,7 @@ class PathRepositoryTest extends TestCase
         $this->assertNotEmpty($packageVersion);
     }
 
-    public function testLoadPackageFromFileSystemWithWildcard()
+    public function testLoadPackageFromFileSystemWithWildcard(): void
     {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();
@@ -92,7 +93,7 @@ class PathRepositoryTest extends TestCase
         $this->assertEquals(array('test/path-unversioned', 'test/path-versioned'), $names);
     }
 
-    public function testLoadPackageWithExplicitVersions()
+    public function testLoadPackageWithExplicitVersions(): void
     {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();
@@ -127,7 +128,7 @@ class PathRepositoryTest extends TestCase
     /**
      * Verify relative repository URLs remain relative, see #4439
      */
-    public function testUrlRemainsRelative()
+    public function testUrlRemainsRelative(): void
     {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();
@@ -140,7 +141,7 @@ class PathRepositoryTest extends TestCase
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(realpath(realpath(__DIR__)), 'Fixtures', 'path', 'with-version'));
         // getcwd() not necessarily match __DIR__
         // PHP Bug https://bugs.php.net/bug.php?id=73797
-        $relativeUrl = ltrim(substr($repositoryUrl, strlen(realpath(realpath(getcwd())))), DIRECTORY_SEPARATOR);
+        $relativeUrl = ltrim(substr($repositoryUrl, strlen(realpath(realpath(Platform::getCwd())))), DIRECTORY_SEPARATOR);
 
         $repository = new PathRepository(array('url' => $relativeUrl), $ioInterface, $config);
         $packages = $repository->getPackages();
@@ -155,7 +156,7 @@ class PathRepositoryTest extends TestCase
         $this->assertSame($relativeUrl, $package->getDistUrl());
     }
 
-    public function testReferenceNone()
+    public function testReferenceNone(): void
     {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();
@@ -176,7 +177,7 @@ class PathRepositoryTest extends TestCase
         }
     }
 
-    public function testReferenceConfig()
+    public function testReferenceConfig(): void
     {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
             ->getMock();

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -21,7 +21,7 @@ use PHPUnit\Framework\Assert;
 
 class PlatformRepositoryTest extends TestCase
 {
-    public function testHhvmPackage()
+    public function testHhvmPackage(): void
     {
         $hhvmDetector = $this->getMockBuilder('Composer\Platform\HhvmDetector')->getMock();
         $platformRepository = new PlatformRepository(array(), array(), null, $hhvmDetector);
@@ -36,7 +36,7 @@ class PlatformRepositoryTest extends TestCase
         self::assertSame('2.1.0', $hhvm->getPrettyVersion());
     }
 
-    public function providePhpFlavorTestCases()
+    public function providePhpFlavorTestCases(): array
     {
         return array(
             array(
@@ -120,7 +120,7 @@ class PlatformRepositoryTest extends TestCase
      * @param array<string, string> $packages
      * @param list<array{string, list<string>, string|bool}>  $functions
      */
-    public function testPhpVersion(array $constants, array $packages, array $functions = array())
+    public function testPhpVersion(array $constants, array $packages, array $functions = array()): void
     {
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
         $runtime
@@ -128,18 +128,14 @@ class PlatformRepositoryTest extends TestCase
             ->willReturn(array());
         $runtime
             ->method('hasConstant')
-            ->willReturnMap(
-                array_map(function ($constant) {
-                    return array($constant, null, true);
-                }, array_keys($constants))
-            );
+            ->willReturnCallback(function ($constant, $class = null) use ($constants): bool {
+                return isset($constants[ltrim($class.'::'.$constant, ':')]);
+            });
         $runtime
             ->method('getConstant')
-            ->willReturnMap(
-                array_map(function ($constant, $value) {
-                    return array($constant, null, $value);
-                }, array_keys($constants), array_values($constants))
-            );
+            ->willReturnCallback(function ($constant, $class = null) use ($constants) {
+                return $constants[ltrim($class.'::'.$constant, ':')] ?? null;
+            });
         $runtime
             ->method('invoke')
             ->willReturnMap($functions);
@@ -152,7 +148,7 @@ class PlatformRepositoryTest extends TestCase
         }
     }
 
-    public function testInetPtonRegression()
+    public function testInetPtonRegression(): void
     {
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
 
@@ -163,29 +159,26 @@ class PlatformRepositoryTest extends TestCase
             ->willReturn(false);
         $runtime
             ->method('hasConstant')
-            ->willReturnMap(
-                array(
-                    array('PHP_ZTS', false),
-                    array('AF_INET6', false),
-                )
-            );
+            ->willReturn(false); // suppressing PHP_ZTS & AF_INET6
+
+        $constants = [
+            'PHP_VERSION' => '7.0.0',
+            'PHP_DEBUG' => false,
+        ];
+        $runtime
+            ->method('getConstant')
+            ->willReturnCallback(function ($constant, $class = null) use ($constants) {
+                return $constants[ltrim($class.'::'.$constant, ':')] ?? null;
+            });
         $runtime
             ->method('getExtensions')
             ->willReturn(array());
-        $runtime
-            ->method('getConstant')
-            ->willReturnMap(
-                array(
-                    array('PHP_VERSION', null, '7.0.0'),
-                    array('PHP_DEBUG', null, false),
-                )
-            );
         $repository = new PlatformRepository(array(), array(), $runtime);
         $package = $repository->findPackage('php-ipv6', '*');
         self::assertNull($package);
     }
 
-    public static function provideLibraryTestCases()
+    public static function provideLibraryTestCases(): array
     {
         return array(
             'amqp' => array(
@@ -1092,12 +1085,12 @@ Linked Version => 1.2.11',
      */
     public function testLibraryInformation(
         $extensions,
-        $info,
+        ?string $info,
         array $expectations,
         array $functions = array(),
         array $constants = array(),
         array $classDefinitions = array()
-    ) {
+    ): void {
         $extensions = (array) $extensions;
 
         $extensionVersion = '100.200.300';
@@ -1110,7 +1103,7 @@ Linked Version => 1.2.11',
         $runtime
             ->method('getExtensionVersion')
             ->willReturnMap(
-                array_map(function ($extension) use ($extensionVersion) {
+                array_map(function ($extension) use ($extensionVersion): array {
                     return array($extension, $extensionVersion);
                 }, $extensions)
             );
@@ -1118,7 +1111,7 @@ Linked Version => 1.2.11',
         $runtime
             ->method('getExtensionInfo')
             ->willReturnMap(
-                array_map(function ($extension) use ($info) {
+                array_map(function ($extension) use ($info): array {
                     return array($extension, $info);
                 }, $extensions)
             );
@@ -1130,55 +1123,57 @@ Linked Version => 1.2.11',
         $constants[] = array('PHP_VERSION', null, '7.1.0');
         $runtime
             ->method('hasConstant')
-            ->willReturnMap(
-                array_map(
-                    function ($constantDefintion) {
-                        return array($constantDefintion[0], $constantDefintion[1], true);
-                    },
-                    $constants
-                )
-            );
+            ->willReturnCallback(function ($constant, $class = null) use ($constants): bool {
+                foreach ($constants as $definition) {
+                    if ($definition[0] === $constant && $definition[1] === $class) {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
         $runtime
             ->method('getConstant')
             ->willReturnMap($constants);
 
         $runtime
             ->method('hasClass')
-            ->willReturnMap(
-                array_map(
-                    function ($classDefinition) {
-                        return array($classDefinition[0], true);
-                    },
-                    $classDefinitions
-                )
-            );
+            ->willReturnCallback(function ($class) use ($classDefinitions): bool {
+                foreach ($classDefinitions as $definition) {
+                    if ($definition[0] === $class) {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
         $runtime
             ->method('construct')
             ->willReturnMap($classDefinitions);
 
         $platformRepository = new PlatformRepository(array(), array(), $runtime);
 
-        $expectations = array_map(function ($expectation) {
+        $expectations = array_map(function ($expectation): array {
             return array_replace(array(null, array(), array()), (array) $expectation);
         }, $expectations);
 
         $libraries = array_map(
-            function ($package) {
+            function ($package): string {
                 return $package['name'];
             },
             array_filter(
                 $platformRepository->search('lib', PlatformRepository::SEARCH_NAME),
-                function ($package) {
+                function ($package): bool {
                     return strpos($package['name'], 'lib-') === 0;
                 }
             )
         );
-        $expectedLibraries = array_merge(array_keys(array_filter($expectations, function ($expectation) {
+        $expectedLibraries = array_merge(array_keys(array_filter($expectations, function ($expectation): bool {
             return $expectation[0] !== false;
         })));
         self::assertCount(count(array_filter($expectedLibraries)), $libraries, sprintf('Expected: %s, got %s', var_export($expectedLibraries, true), var_export($libraries, true)));
 
-        $expectations = array_merge($expectations, array_combine(array_map(function ($extension) {
+        $expectations = array_merge($expectations, array_combine(array_map(function ($extension): string {
             return 'ext-'.$extension;
         }, $extensions), array_fill(0, count($extensions), array($extensionVersion, array(), array()))));
 
@@ -1204,7 +1199,7 @@ Linked Version => 1.2.11',
      *
      * @return void
      */
-    private function assertPackageLinks($context, array $expectedLinks, PackageInterface $sourcePackage, array $links)
+    private function assertPackageLinks(string $context, array $expectedLinks, PackageInterface $sourcePackage, array $links): void
     {
         self::assertCount(count($expectedLinks), $links, sprintf('%s: expected package count to match', $context));
 
@@ -1215,7 +1210,7 @@ Linked Version => 1.2.11',
         }
     }
 
-    public function testComposerPlatformVersion()
+    public function testComposerPlatformVersion(): void
     {
         $runtime = $this->getMockBuilder('Composer\Platform\Runtime')->getMock();
         $runtime
@@ -1236,7 +1231,7 @@ Linked Version => 1.2.11',
         self::assertNotNull($package, 'Composer package exists');
     }
 
-    public static function providePlatformPackages()
+    public static function providePlatformPackages(): array
     {
         return array(
             array('php', true),
@@ -1268,7 +1263,7 @@ Linked Version => 1.2.11',
      * @param bool $expectation
      * @dataProvider providePlatformPackages
      */
-    public function testValidPlatformPackages($packageName, $expectation)
+    public function testValidPlatformPackages(string $packageName, bool $expectation): void
     {
         self::assertSame($expectation, PlatformRepository::isPlatformPackage($packageName));
     }
@@ -1276,7 +1271,7 @@ Linked Version => 1.2.11',
 
 class ResourceBundleStub
 {
-    const STUB_VERSION = '32.0.1';
+    public const STUB_VERSION = '32.0.1';
 
     /**
      * @param string $locale
@@ -1285,7 +1280,7 @@ class ResourceBundleStub
      *
      * @return ResourceBundleStub
      */
-    public static function create($locale, $bundleName, $fallback)
+    public static function create(string $locale, string $bundleName, bool $fallback): ResourceBundleStub
     {
         Assert::assertSame(3, func_num_args());
         Assert::assertSame('root', $locale);
@@ -1300,7 +1295,7 @@ class ResourceBundleStub
      *
      * @return string
      */
-    public function get($field)
+    public function get($field): string
     {
         Assert::assertSame(1, func_num_args());
         Assert::assertSame('Version', $field);
@@ -1319,7 +1314,7 @@ class ImagickStub
     /**
      * @param string $versionString
      */
-    public function __construct($versionString)
+    public function __construct(string $versionString)
     {
         $this->versionString = $versionString;
     }
@@ -1328,7 +1323,7 @@ class ImagickStub
      * @return array<string, string>
      * @phpstan-return array{versionString: string}
      */
-    public function getVersion()
+    public function getVersion(): array
     {
         Assert::assertSame(0, func_num_args());
 

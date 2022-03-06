@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -13,8 +13,11 @@
 namespace Composer\Package\Loader;
 
 use Composer\Json\JsonFile;
+use Composer\Package\BasePackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\CompleteAliasPackage;
+use Composer\Package\RootPackage;
+use Composer\Package\RootAliasPackage;
 
 /**
  * @author Konstantin Kudryashiv <ever.zet@gmail.com>
@@ -31,9 +34,9 @@ class JsonLoader
 
     /**
      * @param  string|JsonFile                      $json A filename, json string or JsonFile instance to load the package from
-     * @return CompletePackage|CompleteAliasPackage
+     * @return CompletePackage|CompleteAliasPackage|RootPackage|RootAliasPackage
      */
-    public function load($json)
+    public function load($json): BasePackage
     {
         if ($json instanceof JsonFile) {
             $config = $json->read();

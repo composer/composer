@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -27,7 +27,7 @@ class GitHubTest extends TestCase
     /** @var string */
     private $origin = 'github.com';
 
-    public function testUsernamePasswordAuthenticationFlow()
+    public function testUsernamePasswordAuthenticationFlow(): void
     {
         $io = $this->getIOMock();
         $io
@@ -65,7 +65,7 @@ class GitHubTest extends TestCase
         $this->assertTrue($github->authorizeOAuthInteractively($this->origin, $this->message));
     }
 
-    public function testUsernamePasswordFailure()
+    public function testUsernamePasswordFailure(): void
     {
         $io = $this->getIOMock();
         $io

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Mock;
 
+use React\Promise\PromiseInterface;
 use Composer\Installer\InstallationManager;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Package\PackageInterface;
@@ -45,7 +46,7 @@ class InstallationManagerMock extends InstallationManager
     {
     }
 
-    public function execute(InstalledRepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true)
+    public function execute(InstalledRepositoryInterface $repo, array $operations, $devMode = true, $runScripts = true): void
     {
         foreach ($operations as $operation) {
             $method = $operation->getOperationType();
@@ -54,12 +55,12 @@ class InstallationManagerMock extends InstallationManager
         }
     }
 
-    public function getInstallPath(PackageInterface $package)
+    public function getInstallPath(PackageInterface $package): string
     {
         return '';
     }
 
-    public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function isPackageInstalled(InstalledRepositoryInterface $repo, PackageInterface $package): bool
     {
         return $repo->hasPackage($package);
     }
@@ -67,7 +68,7 @@ class InstallationManagerMock extends InstallationManager
     /**
      * @inheritDoc
      */
-    public function install(InstalledRepositoryInterface $repo, InstallOperation $operation)
+    public function install(InstalledRepositoryInterface $repo, InstallOperation $operation): ?PromiseInterface
     {
         $this->installed[] = $operation->getPackage();
         $this->trace[] = strip_tags((string) $operation);
@@ -79,7 +80,7 @@ class InstallationManagerMock extends InstallationManager
     /**
      * @inheritDoc
      */
-    public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation)
+    public function update(InstalledRepositoryInterface $repo, UpdateOperation $operation): ?PromiseInterface
     {
         $this->updated[] = array($operation->getInitialPackage(), $operation->getTargetPackage());
         $this->trace[] = strip_tags((string) $operation);
@@ -94,7 +95,7 @@ class InstallationManagerMock extends InstallationManager
     /**
      * @inheritDoc
      */
-    public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation)
+    public function uninstall(InstalledRepositoryInterface $repo, UninstallOperation $operation): ?PromiseInterface
     {
         $this->uninstalled[] = $operation->getPackage();
         $this->trace[] = strip_tags((string) $operation);
@@ -103,7 +104,7 @@ class InstallationManagerMock extends InstallationManager
         return null;
     }
 
-    public function markAliasInstalled(InstalledRepositoryInterface $repo, MarkAliasInstalledOperation $operation)
+    public function markAliasInstalled(InstalledRepositoryInterface $repo, MarkAliasInstalledOperation $operation): void
     {
         $package = $operation->getPackage();
 
@@ -113,7 +114,7 @@ class InstallationManagerMock extends InstallationManager
         parent::markAliasInstalled($repo, $operation);
     }
 
-    public function markAliasUninstalled(InstalledRepositoryInterface $repo, MarkAliasUninstalledOperation $operation)
+    public function markAliasUninstalled(InstalledRepositoryInterface $repo, MarkAliasUninstalledOperation $operation): void
     {
         $this->uninstalled[] = $operation->getPackage();
         $this->trace[] = strip_tags((string) $operation);
@@ -122,36 +123,36 @@ class InstallationManagerMock extends InstallationManager
     }
 
     /** @return string[] */
-    public function getTrace()
+    public function getTrace(): array
     {
         return $this->trace;
     }
 
     /** @return PackageInterface[] */
-    public function getInstalledPackages()
+    public function getInstalledPackages(): array
     {
         return $this->installed;
     }
 
     /** @return PackageInterface[][] */
-    public function getUpdatedPackages()
+    public function getUpdatedPackages(): array
     {
         return $this->updated;
     }
 
     /** @return PackageInterface[] */
-    public function getUninstalledPackages()
+    public function getUninstalledPackages(): array
     {
         return $this->uninstalled;
     }
 
-    public function notifyInstalls(IOInterface $io)
+    public function notifyInstalls(IOInterface $io): void
     {
         // noop
     }
 
     /** @return PackageInterface[] */
-    public function getInstalledPackagesByType()
+    public function getInstalledPackagesByType(): array
     {
         return $this->installed;
     }

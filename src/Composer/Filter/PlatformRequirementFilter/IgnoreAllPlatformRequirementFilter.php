@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -20,7 +20,7 @@ final class IgnoreAllPlatformRequirementFilter implements PlatformRequirementFil
      * @param string $req
      * @return bool
      */
-    public function isIgnored($req)
+    public function isIgnored(string $req): bool
     {
         return PlatformRepository::isPlatformPackage($req);
     }

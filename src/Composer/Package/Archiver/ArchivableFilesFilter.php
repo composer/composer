@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -40,7 +40,7 @@ class ArchivableFilesFilter extends FilterIterator
      *
      * @return void
      */
-    public function addEmptyDir(PharData $phar, $sources)
+    public function addEmptyDir(PharData $phar, string $sources): void
     {
         foreach ($this->dirs as $filepath) {
             $localname = str_replace($sources . "/", '', $filepath);

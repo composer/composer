@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -26,7 +26,7 @@ class PackageEvents
      *
      * @var string
      */
-    const PRE_PACKAGE_INSTALL = 'pre-package-install';
+    public const PRE_PACKAGE_INSTALL = 'pre-package-install';
 
     /**
      * The POST_PACKAGE_INSTALL event occurs after a package is installed.
@@ -35,7 +35,7 @@ class PackageEvents
      *
      * @var string
      */
-    const POST_PACKAGE_INSTALL = 'post-package-install';
+    public const POST_PACKAGE_INSTALL = 'post-package-install';
 
     /**
      * The PRE_PACKAGE_UPDATE event occurs before a package is updated.
@@ -44,7 +44,7 @@ class PackageEvents
      *
      * @var string
      */
-    const PRE_PACKAGE_UPDATE = 'pre-package-update';
+    public const PRE_PACKAGE_UPDATE = 'pre-package-update';
 
     /**
      * The POST_PACKAGE_UPDATE event occurs after a package is updated.
@@ -53,7 +53,7 @@ class PackageEvents
      *
      * @var string
      */
-    const POST_PACKAGE_UPDATE = 'post-package-update';
+    public const POST_PACKAGE_UPDATE = 'post-package-update';
 
     /**
      * The PRE_PACKAGE_UNINSTALL event occurs before a package has been uninstalled.
@@ -62,7 +62,7 @@ class PackageEvents
      *
      * @var string
      */
-    const PRE_PACKAGE_UNINSTALL = 'pre-package-uninstall';
+    public const PRE_PACKAGE_UNINSTALL = 'pre-package-uninstall';
 
     /**
      * The POST_PACKAGE_UNINSTALL event occurs after a package has been uninstalled.
@@ -71,5 +71,5 @@ class PackageEvents
      *
      * @var string
      */
-    const POST_PACKAGE_UNINSTALL = 'post-package-uninstall';
+    public const POST_PACKAGE_UNINSTALL = 'post-package-uninstall';
 }

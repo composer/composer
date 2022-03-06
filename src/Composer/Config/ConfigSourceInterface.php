@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -29,7 +29,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function addRepository($name, $config, $append = true);
+    public function addRepository(string $name, $config, bool $append = true): void;
 
     /**
      * Remove a repository
@@ -38,7 +38,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function removeRepository($name);
+    public function removeRepository(string $name): void;
 
     /**
      * Add a config setting
@@ -48,7 +48,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function addConfigSetting($name, $value);
+    public function addConfigSetting(string $name, $value): void;
 
     /**
      * Remove a config setting
@@ -57,7 +57,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function removeConfigSetting($name);
+    public function removeConfigSetting(string $name): void;
 
     /**
      * Add a property
@@ -67,7 +67,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function addProperty($name, $value);
+    public function addProperty(string $name, $value): void;
 
     /**
      * Remove a property
@@ -76,7 +76,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function removeProperty($name);
+    public function removeProperty(string $name): void;
 
     /**
      * Add a package link
@@ -87,7 +87,7 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function addLink($type, $name, $value);
+    public function addLink(string $type, string $name, string $value): void;
 
     /**
      * Remove a package link
@@ -97,12 +97,12 @@ interface ConfigSourceInterface
      *
      * @return void
      */
-    public function removeLink($type, $name);
+    public function removeLink(string $type, string $name): void;
 
     /**
      * Gives a user-friendly name to this source (file path or so)
      *
      * @return string
      */
-    public function getName();
+    public function getName(): string;
 }

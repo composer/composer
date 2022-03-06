@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -53,16 +53,9 @@ class PerforceDownloaderTest extends TestCase
         $this->downloader = new PerforceDownloader($this->io, $this->config, $this->processExecutor);
     }
 
-    /**
-     * @return \Composer\Config
-     */
-    protected function getConfig()
+    protected function getConfig(array $configOptions = [], bool $useEnvironment = false): Config
     {
-        $config = new Config();
-        $settings = array('config' => array('home' => $this->testPath));
-        $config->merge($settings);
-
-        return $config;
+        return parent::getConfig(array_merge(['home' => $this->testPath], $configOptions), $useEnvironment);
     }
 
     /**
@@ -87,7 +80,7 @@ class PerforceDownloaderTest extends TestCase
     /**
      * @return string[]
      */
-    protected function getRepoConfig()
+    protected function getRepoConfig(): array
     {
         return array('url' => 'TEST_URL', 'p4user' => 'TEST_USER');
     }
@@ -112,12 +105,12 @@ class PerforceDownloaderTest extends TestCase
     /**
      * @doesNotPerformAssertions
      */
-    public function testInitPerforceInstantiatesANewPerforceObject()
+    public function testInitPerforceInstantiatesANewPerforceObject(): void
     {
         $this->downloader->initPerforce($this->package, $this->testPath, 'SOURCE_REF');
     }
 
-    public function testInitPerforceDoesNothingIfPerforceAlreadySet()
+    public function testInitPerforceDoesNothingIfPerforceAlreadySet(): void
     {
         $perforce = $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
         $this->downloader->setPerforce($perforce);
@@ -129,7 +122,7 @@ class PerforceDownloaderTest extends TestCase
      * @depends testInitPerforceInstantiatesANewPerforceObject
      * @depends testInitPerforceDoesNothingIfPerforceAlreadySet
      */
-    public function testDoInstallWithTag()
+    public function testDoInstallWithTag(): void
     {
         //I really don't like this test but the logic of each Perforce method is tested in the Perforce class.  Really I am just enforcing workflow.
         $ref = 'SOURCE_REF@123';
@@ -153,7 +146,7 @@ class PerforceDownloaderTest extends TestCase
      * @depends testInitPerforceInstantiatesANewPerforceObject
      * @depends testInitPerforceDoesNothingIfPerforceAlreadySet
      */
-    public function testDoInstallWithNoTag()
+    public function testDoInstallWithNoTag(): void
     {
         $ref = 'SOURCE_REF';
         $label = null;

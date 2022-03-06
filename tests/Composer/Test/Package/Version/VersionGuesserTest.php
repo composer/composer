@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -28,7 +28,7 @@ class VersionGuesserTest extends TestCase
         }
     }
 
-    public function testHgGuessVersionReturnsData()
+    public function testHgGuessVersionReturnsData(): void
     {
         $branch = 'default';
 
@@ -54,7 +54,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEmpty($versionArray['commit']);
     }
 
-    public function testGuessVersionReturnsData()
+    public function testGuessVersionReturnsData(): void
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
         $anotherCommitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
@@ -79,7 +79,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals($commitHash, $versionArray['commit']);
     }
 
-    public function testGuessVersionDoesNotSeeCustomDefaultBranchAsNonFeatureBranch()
+    public function testGuessVersionDoesNotSeeCustomDefaultBranchAsNonFeatureBranch(): void
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
         $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
@@ -102,7 +102,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals($anotherCommitHash, $versionArray['commit']);
     }
 
-    public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNaming()
+    public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNaming(): void
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
         $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
@@ -130,7 +130,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals("dev-feature", $versionArray['feature_pretty_version']);
     }
 
-    public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNamingRegex()
+    public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNamingRegex(): void
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
         $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
@@ -158,7 +158,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals("dev-feature", $versionArray['feature_pretty_version']);
     }
 
-    public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNamingWhenOnNonFeatureBranch()
+    public function testGuessVersionReadsAndRespectsNonFeatureBranchesConfigurationForArbitraryNamingWhenOnNonFeatureBranch(): void
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
         $anotherCommitHash = '13a15d220da53c52eddd5f32ffca64a7b3801bea';
@@ -182,7 +182,7 @@ class VersionGuesserTest extends TestCase
         $this->assertArrayNotHasKey('feature_pretty_version', $versionArray);
     }
 
-    public function testDetachedHeadBecomesDevHash()
+    public function testDetachedHeadBecomesDevHash(): void
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
 
@@ -203,7 +203,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals("dev-$commitHash", $versionData['version']);
     }
 
-    public function testDetachedFetchHeadBecomesDevHashGit2()
+    public function testDetachedFetchHeadBecomesDevHashGit2(): void
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
 
@@ -224,7 +224,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals("dev-$commitHash", $versionData['version']);
     }
 
-    public function testDetachedCommitHeadBecomesDevHashGit2()
+    public function testDetachedCommitHeadBecomesDevHashGit2(): void
     {
         $commitHash = '03a15d220da53c52eddd5f32ffca64a7b3801bea';
 
@@ -245,7 +245,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals("dev-$commitHash", $versionData['version']);
     }
 
-    public function testTagBecomesVersion()
+    public function testTagBecomesVersion(): void
     {
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
@@ -267,7 +267,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals("2.0.5.0-alpha2", $versionData['version']);
     }
 
-    public function testTagBecomesPrettyVersion()
+    public function testTagBecomesPrettyVersion(): void
     {
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
@@ -290,7 +290,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals('1.0.0', $versionData['pretty_version']);
     }
 
-    public function testInvalidTagBecomesVersion()
+    public function testInvalidTagBecomesVersion(): void
     {
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
@@ -308,7 +308,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals("dev-foo", $versionData['version']);
     }
 
-    public function testNumericBranchesShowNicely()
+    public function testNumericBranchesShowNicely(): void
     {
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
@@ -327,7 +327,7 @@ class VersionGuesserTest extends TestCase
         $this->assertEquals("1.5.9999999.9999999-dev", $versionData['version']);
     }
 
-    public function testRemoteBranchesAreSelected()
+    public function testRemoteBranchesAreSelected(): void
     {
         $process = $this->getProcessExecutorMock();
         $process->expects(array(

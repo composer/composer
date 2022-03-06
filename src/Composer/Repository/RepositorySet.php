@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -34,11 +34,11 @@ class RepositorySet
     /**
      * Packages are returned even though their stability does not match the required stability
      */
-    const ALLOW_UNACCEPTABLE_STABILITIES = 1;
+    public const ALLOW_UNACCEPTABLE_STABILITIES = 1;
     /**
      * Packages will be looked up in all repositories, even after they have been found in a higher prio one
      */
-    const ALLOW_SHADOWED_REPOSITORIES = 2;
+    public const ALLOW_SHADOWED_REPOSITORIES = 2;
 
     /**
      * @var array[]
@@ -93,7 +93,7 @@ class RepositorySet
      * @param ConstraintInterface[] $rootRequires an array of package name => constraint from the root package
      * @phpstan-param array<string, ConstraintInterface> $rootRequires
      */
-    public function __construct($minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
+    public function __construct(string $minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
     {
         $this->rootAliases = self::getRootAliasesPerPackage($rootAliases);
         $this->rootReferences = $rootReferences;
@@ -118,7 +118,7 @@ class RepositorySet
      *
      * @return void
      */
-    public function allowInstalledRepositories($allow = true)
+    public function allowInstalledRepositories(bool $allow = true): void
     {
         $this->allowInstalledRepositories = $allow;
     }
@@ -127,7 +127,7 @@ class RepositorySet
      * @return ConstraintInterface[] an array of package name => constraint from the root package, platform requirements excluded
      * @phpstan-return array<string, ConstraintInterface>
      */
-    public function getRootRequires()
+    public function getRootRequires(): array
     {
         return $this->rootRequires;
     }
@@ -142,7 +142,7 @@ class RepositorySet
      *
      * @return void
      */
-    public function addRepository(RepositoryInterface $repo)
+    public function addRepository(RepositoryInterface $repo): void
     {
         if ($this->locked) {
             throw new \RuntimeException("Pool has already been created from this repository set, it cannot be modified anymore.");
@@ -169,7 +169,7 @@ class RepositorySet
      * @param  int                      $flags      any of the ALLOW_* constants from this class to tweak what is returned
      * @return BasePackage[]
      */
-    public function findPackages($name, ConstraintInterface $constraint = null, $flags = 0)
+    public function findPackages(string $name, ConstraintInterface $constraint = null, int $flags = 0): array
     {
         $ignoreStability = ($flags & self::ALLOW_UNACCEPTABLE_STABILITIES) !== 0;
         $loadFromAllRepos = ($flags & self::ALLOW_SHADOWED_REPOSITORIES) !== 0;
@@ -216,7 +216,7 @@ class RepositorySet
      * @return array[] an array with the provider name as key and value of array('name' => '...', 'description' => '...', 'type' => '...')
      * @phpstan-return array<string, array{name: string, description: string, type: string}>
      */
-    public function getProviders($packageName)
+    public function getProviders(string $packageName): array
     {
         $providers = array();
         foreach ($this->repositories as $repository) {
@@ -235,7 +235,7 @@ class RepositorySet
      * @param  string   $stability one of 'stable', 'RC', 'beta', 'alpha' or 'dev'
      * @return bool
      */
-    public function isPackageAcceptable($names, $stability)
+    public function isPackageAcceptable(array $names, string $stability): bool
     {
         return StabilityFilter::isPackageAcceptable($this->acceptableStabilities, $this->stabilityFlags, $names, $stability);
     }
@@ -245,7 +245,7 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPool(Request $request, IOInterface $io, EventDispatcher $eventDispatcher = null, PoolOptimizer $poolOptimizer = null)
+    public function createPool(Request $request, IOInterface $io, EventDispatcher $eventDispatcher = null, PoolOptimizer $poolOptimizer = null): Pool
     {
         $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer);
 
@@ -265,7 +265,7 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPoolWithAllPackages()
+    public function createPoolWithAllPackages(): Pool
     {
         foreach ($this->repositories as $repo) {
             if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
@@ -304,7 +304,7 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPoolForPackage($packageName, LockArrayRepository $lockedRepo = null)
+    public function createPoolForPackage(string $packageName, LockArrayRepository $lockedRepo = null): Pool
     {
         // TODO unify this with above in some simpler version without "request"?
         return $this->createPoolForPackages(array($packageName), $lockedRepo);
@@ -315,7 +315,7 @@ class RepositorySet
      *
      * @return Pool
      */
-    public function createPoolForPackages($packageNames, LockArrayRepository $lockedRepo = null)
+    public function createPoolForPackages(array $packageNames, LockArrayRepository $lockedRepo = null): Pool
     {
         $request = new Request($lockedRepo);
 
@@ -336,7 +336,7 @@ class RepositorySet
      *
      * @return array<string, array<string, array{alias: string, alias_normalized: string}>>
      */
-    private static function getRootAliasesPerPackage(array $aliases)
+    private static function getRootAliasesPerPackage(array $aliases): array
     {
         $normalizedAliases = array();
 

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -74,7 +74,7 @@ class Application extends BaseApplication
     private $disableScriptsByDefault = false;
 
     /**
-     * @var string Store the initial working directory at startup time
+     * @var string|false Store the initial working directory at startup time
      */
     private $initialWorkingDirectory;
 
@@ -94,14 +94,14 @@ class Application extends BaseApplication
         if (!$shutdownRegistered) {
             if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
                 pcntl_async_signals(true);
-                pcntl_signal(SIGINT, function ($sig) {
+                pcntl_signal(SIGINT, function ($sig): void {
                     exit(130);
                 });
             }
 
             $shutdownRegistered = true;
 
-            register_shutdown_function(function () {
+            register_shutdown_function(function (): void {
                 $lastError = error_get_last();
 
                 if ($lastError && $lastError['message'] &&
@@ -150,11 +150,13 @@ class Application extends BaseApplication
         }
 
         // switch working dir
-        if ($newWorkDir = $this->getNewWorkingDir($input)) {
-            $oldWorkingDir = getcwd();
+        $newWorkDir = $this->getNewWorkingDir($input);
+        if (null !== $newWorkDir) {
+            $oldWorkingDir = Platform::getCwd(true);
             chdir($newWorkDir);
             $this->initialWorkingDirectory = $newWorkDir;
-            $io->writeError('Changed CWD to ' . getcwd(), true, IOInterface::DEBUG);
+            $cwd = Platform::getCwd(true);
+            $io->writeError('Changed CWD to ' . ($cwd !== '' ? $cwd : $newWorkDir), true, IOInterface::DEBUG);
         }
 
         // determine command name to be executed without including plugin commands
@@ -170,8 +172,8 @@ class Application extends BaseApplication
         }
 
         // prompt user for dir change if no composer.json is present in current dir
-        if ($io->isInteractive() && !$newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'), true) && !file_exists(Factory::getComposerFile()) && ($useParentDirIfNoJsonAvailable = $this->getUseParentDirConfigValue()) !== false) {
-            $dir = dirname(getcwd());
+        if ($io->isInteractive() && null === $newWorkDir && !in_array($commandName, array('', 'list', 'init', 'about', 'help', 'diagnose', 'self-update', 'global', 'create-project', 'outdated'), true) && !file_exists(Factory::getComposerFile()) && ($useParentDirIfNoJsonAvailable = $this->getUseParentDirConfigValue()) !== false) {
+            $dir = dirname(Platform::getCwd(true));
             $home = realpath(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE') ?: '/');
 
             // abort when we reach the home dir or top of the filesystem
@@ -183,7 +185,7 @@ class Application extends BaseApplication
                         } else {
                             $io->writeError('<info>Always want to use the parent dir? Use "composer config --global use-parent-dir true" to change the default.</info>');
                         }
-                        $oldWorkingDir = getcwd();
+                        $oldWorkingDir = Platform::getCwd(true);
                         chdir($dir);
                     }
                     break;
@@ -291,7 +293,7 @@ class Application extends BaseApplication
             }
 
             // Check system temp folder for usability as it can cause weird runtime issues otherwise
-            Silencer::call(function () use ($io) {
+            Silencer::call(function () use ($io): void {
                 $tempfile = sys_get_temp_dir() . '/temp-' . md5(microtime());
                 if (!(file_put_contents($tempfile, __FILE__) && (file_get_contents($tempfile) == __FILE__) && unlink($tempfile) && !file_exists($tempfile))) {
                     $io->writeError(sprintf('<error>PHP temp directory (%s) does not exist or is not writable to Composer. Set sys_temp_dir in your php.ini</error>', sys_get_temp_dir()));
@@ -330,7 +332,7 @@ class Application extends BaseApplication
             $result = parent::doRun($input, $output);
 
             // chdir back to $oldWorkingDir if set
-            if (isset($oldWorkingDir)) {
+            if (isset($oldWorkingDir) && '' !== $oldWorkingDir) {
                 Silencer::call('chdir', $oldWorkingDir);
             }
 
@@ -356,12 +358,13 @@ class Application extends BaseApplication
     /**
      * @param  InputInterface    $input
      * @throws \RuntimeException
-     * @return string
+     * @return ?string
      */
-    private function getNewWorkingDir(InputInterface $input)
+    private function getNewWorkingDir(InputInterface $input): ?string
     {
-        $workingDir = $input->getParameterOption(array('--working-dir', '-d'));
-        if (false !== $workingDir && !is_dir($workingDir)) {
+        /** @var string|null $workingDir */
+        $workingDir = $input->getParameterOption(array('--working-dir', '-d'), null, true);
+        if (null !== $workingDir && !is_dir($workingDir)) {
             throw new \RuntimeException('Invalid working directory specified, '.$workingDir.' does not exist.');
         }
 
@@ -371,7 +374,7 @@ class Application extends BaseApplication
     /**
      * @return void
      */
-    private function hintCommonErrors(\Exception $exception)
+    private function hintCommonErrors(\Exception $exception): void
     {
         $io = $this->getIO();
 
@@ -408,7 +411,8 @@ class Application extends BaseApplication
             $io->writeError('<error>Check https://getcomposer.org/doc/06-config.md#process-timeout for details</error>', true, IOInterface::QUIET);
         }
 
-        if ($hints = HttpDownloader::getExceptionHints($exception)) {
+        $hints = HttpDownloader::getExceptionHints($exception);
+        if (null !== $hints && count($hints) > 0) {
             foreach ($hints as $hint) {
                 $io->writeError($hint, true, IOInterface::QUIET);
             }
@@ -421,9 +425,9 @@ class Application extends BaseApplication
      * @param  bool|null               $disableScripts
      * @throws JsonValidationException
      * @throws \InvalidArgumentException
-     * @return ?\Composer\Composer If $required is true then the return value is guaranteed
+     * @return ?Composer If $required is true then the return value is guaranteed
      */
-    public function getComposer($required = true, $disablePlugins = null, $disableScripts = null)
+    public function getComposer(bool $required = true, ?bool $disablePlugins = null, ?bool $disableScripts = null): ?Composer
     {
         if (null === $disablePlugins) {
             $disablePlugins = $this->disablePluginsByDefault;
@@ -458,7 +462,7 @@ class Application extends BaseApplication
      *
      * @return void
      */
-    public function resetComposer()
+    public function resetComposer(): void
     {
         $this->composer = null;
         if (method_exists($this->getIO(), 'resetAuthentications')) {
@@ -469,7 +473,7 @@ class Application extends BaseApplication
     /**
      * @return IOInterface
      */
-    public function getIO()
+    public function getIO(): IOInterface
     {
         return $this->io;
     }
@@ -553,13 +557,13 @@ class Application extends BaseApplication
     /**
      * @return Command\BaseCommand[]
      */
-    private function getPluginCommands()
+    private function getPluginCommands(): array
     {
         $commands = array();
 
         $composer = $this->getComposer(false, false);
         if (null === $composer) {
-            $composer = Factory::createGlobal($this->io);
+            $composer = Factory::createGlobal($this->io, $this->disablePluginsByDefault, $this->disableScriptsByDefault);
         }
 
         if (null !== $composer) {
@@ -584,7 +588,7 @@ class Application extends BaseApplication
     /**
      * Get the working directory at startup time
      *
-     * @return string
+     * @return string|false
      */
     public function getInitialWorkingDirectory()
     {

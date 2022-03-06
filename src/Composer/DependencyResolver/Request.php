@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -26,19 +26,19 @@ class Request
     /**
      * Identifies a partial update for listed packages only, all dependencies will remain at locked versions
      */
-    const UPDATE_ONLY_LISTED = 0;
+    public const UPDATE_ONLY_LISTED = 0;
 
     /**
      * Identifies a partial update for listed packages and recursively all their dependencies, however dependencies
      * also directly required by the root composer.json and their dependencies will remain at the locked version.
      */
-    const UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE = 1;
+    public const UPDATE_LISTED_WITH_TRANSITIVE_DEPS_NO_ROOT_REQUIRE = 1;
 
     /**
      * Identifies a partial update for listed packages and recursively all their dependencies, even dependencies
      * also directly required by the root composer.json will be updated.
      */
-    const UPDATE_LISTED_WITH_TRANSITIVE_DEPS = 2;
+    public const UPDATE_LISTED_WITH_TRANSITIVE_DEPS = 2;
 
     /** @var ?LockArrayRepository */
     protected $lockedRepository;
@@ -64,7 +64,7 @@ class Request
      * @param string $packageName
      * @return void
      */
-    public function requireName($packageName, ConstraintInterface $constraint = null)
+    public function requireName(string $packageName, ConstraintInterface $constraint = null): void
     {
         $packageName = strtolower($packageName);
 
@@ -85,7 +85,7 @@ class Request
      *
      * @return void
      */
-    public function fixPackage(BasePackage $package)
+    public function fixPackage(BasePackage $package): void
     {
         $this->fixedPackages[spl_object_hash($package)] = $package;
     }
@@ -102,7 +102,7 @@ class Request
      *
      * @return void
      */
-    public function lockPackage(BasePackage $package)
+    public function lockPackage(BasePackage $package): void
     {
         $this->lockedPackages[spl_object_hash($package)] = $package;
     }
@@ -116,7 +116,7 @@ class Request
      *
      * @return void
      */
-    public function fixLockedPackage(BasePackage $package)
+    public function fixLockedPackage(BasePackage $package): void
     {
         $this->fixedPackages[spl_object_hash($package)] = $package;
         $this->fixedLockedPackages[spl_object_hash($package)] = $package;
@@ -125,7 +125,7 @@ class Request
     /**
      * @return void
      */
-    public function unlockPackage(BasePackage $package)
+    public function unlockPackage(BasePackage $package): void
     {
         unset($this->lockedPackages[spl_object_hash($package)]);
     }
@@ -135,7 +135,7 @@ class Request
      * @param false|self::UPDATE_* $updateAllowTransitiveDependencies
      * @return void
      */
-    public function setUpdateAllowList($updateAllowList, $updateAllowTransitiveDependencies)
+    public function setUpdateAllowList(array $updateAllowList, $updateAllowTransitiveDependencies): void
     {
         $this->updateAllowList = $updateAllowList;
         $this->updateAllowTransitiveDependencies = $updateAllowTransitiveDependencies;
@@ -144,7 +144,7 @@ class Request
     /**
      * @return string[]
      */
-    public function getUpdateAllowList()
+    public function getUpdateAllowList(): array
     {
         return $this->updateAllowList;
     }
@@ -152,7 +152,7 @@ class Request
     /**
      * @return bool
      */
-    public function getUpdateAllowTransitiveDependencies()
+    public function getUpdateAllowTransitiveDependencies(): bool
     {
         return $this->updateAllowTransitiveDependencies !== self::UPDATE_ONLY_LISTED;
     }
@@ -160,7 +160,7 @@ class Request
     /**
      * @return bool
      */
-    public function getUpdateAllowTransitiveRootDependencies()
+    public function getUpdateAllowTransitiveRootDependencies(): bool
     {
         return $this->updateAllowTransitiveDependencies === self::UPDATE_LISTED_WITH_TRANSITIVE_DEPS;
     }
@@ -168,7 +168,7 @@ class Request
     /**
      * @return array<string, ConstraintInterface>
      */
-    public function getRequires()
+    public function getRequires(): array
     {
         return $this->requires;
     }
@@ -176,7 +176,7 @@ class Request
     /**
      * @return array<string, BasePackage>
      */
-    public function getFixedPackages()
+    public function getFixedPackages(): array
     {
         return $this->fixedPackages;
     }
@@ -184,7 +184,7 @@ class Request
     /**
      * @return bool
      */
-    public function isFixedPackage(BasePackage $package)
+    public function isFixedPackage(BasePackage $package): bool
     {
         return isset($this->fixedPackages[spl_object_hash($package)]);
     }
@@ -192,7 +192,7 @@ class Request
     /**
      * @return array<string, BasePackage>
      */
-    public function getLockedPackages()
+    public function getLockedPackages(): array
     {
         return $this->lockedPackages;
     }
@@ -200,7 +200,7 @@ class Request
     /**
      * @return bool
      */
-    public function isLockedPackage(PackageInterface $package)
+    public function isLockedPackage(PackageInterface $package): bool
     {
         return isset($this->lockedPackages[spl_object_hash($package)]) || isset($this->fixedLockedPackages[spl_object_hash($package)]);
     }
@@ -208,7 +208,7 @@ class Request
     /**
      * @return array<string, BasePackage>
      */
-    public function getFixedOrLockedPackages()
+    public function getFixedOrLockedPackages(): array
     {
         return array_merge($this->fixedPackages, $this->lockedPackages);
     }
@@ -222,7 +222,7 @@ class Request
      *       Some locked packages may not be in the pool,
      *       so they have a package->id of -1
      */
-    public function getPresentMap($packageIds = false)
+    public function getPresentMap(bool $packageIds = false): array
     {
         $presentMap = array();
 
@@ -242,7 +242,7 @@ class Request
     /**
      * @return BasePackage[]
      */
-    public function getFixedPackagesMap()
+    public function getFixedPackagesMap(): array
     {
         $fixedPackagesMap = array();
 
@@ -256,7 +256,7 @@ class Request
     /**
      * @return ?LockArrayRepository
      */
-    public function getLockedRepository()
+    public function getLockedRepository(): ?LockArrayRepository
     {
         return $this->lockedRepository;
     }

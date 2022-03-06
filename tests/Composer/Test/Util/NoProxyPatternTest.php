@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -24,14 +24,14 @@ class NoProxyPatternTest extends TestCase
      * @param string $url
      * @param bool   $expected
      */
-    public function testHostName($noproxy, $url, $expected)
+    public function testHostName(string $noproxy, string $url, bool $expected): void
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);
         $this->assertEquals($expected, $matcher->test($url));
     }
 
-    public function dataHostName()
+    public function dataHostName(): array
     {
         $noproxy = 'foobar.com, .barbaz.net';
 
@@ -55,14 +55,14 @@ class NoProxyPatternTest extends TestCase
      * @param string $url
      * @param bool   $expected
      */
-    public function testIpAddress($noproxy, $url, $expected)
+    public function testIpAddress(string $noproxy, string $url, bool $expected): void
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);
         $this->assertEquals($expected, $matcher->test($url));
     }
 
-    public function dataIpAddress()
+    public function dataIpAddress(): array
     {
         $noproxy = '192.168.1.1, 2001:db8::52:0:1';
 
@@ -84,14 +84,14 @@ class NoProxyPatternTest extends TestCase
      * @param string $url
      * @param bool   $expected
      */
-    public function testIpRange($noproxy, $url, $expected)
+    public function testIpRange(string $noproxy, string $url, bool $expected): void
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);
         $this->assertEquals($expected, $matcher->test($url));
     }
 
-    public function dataIpRange()
+    public function dataIpRange(): array
     {
         $noproxy = '10.0.0.0/30, 2002:db8:a::45/121';
 
@@ -113,14 +113,14 @@ class NoProxyPatternTest extends TestCase
      * @param string $url
      * @param bool   $expected
      */
-    public function testPort($noproxy, $url, $expected)
+    public function testPort(string $noproxy, string $url, bool $expected): void
     {
         $matcher = new NoProxyPattern($noproxy);
         $url = $this->getUrl($url);
         $this->assertEquals($expected, $matcher->test($url));
     }
 
-    public function dataPort()
+    public function dataPort(): array
     {
         $noproxy = '192.168.1.2:81, 192.168.1.3:80, [2001:db8::52:0:2]:443, [2001:db8::52:0:3]:80';
 
@@ -140,7 +140,7 @@ class NoProxyPatternTest extends TestCase
      *
      * @return string
      */
-    private function getUrl($url)
+    private function getUrl(string $url): string
     {
         if (parse_url($url, PHP_URL_SCHEME)) {
             return $url;

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -56,7 +56,7 @@ class ArchiveManager
      *
      * @return void
      */
-    public function addArchiver(ArchiverInterface $archiver)
+    public function addArchiver(ArchiverInterface $archiver): void
     {
         $this->archivers[] = $archiver;
     }
@@ -68,7 +68,7 @@ class ArchiveManager
      *
      * @return $this
      */
-    public function setOverwriteFiles($overwriteFiles)
+    public function setOverwriteFiles(bool $overwriteFiles): self
     {
         $this->overwriteFiles = $overwriteFiles;
 
@@ -82,7 +82,7 @@ class ArchiveManager
      *
      * @return string A filename without an extension
      */
-    public function getPackageFilename(CompletePackageInterface $package)
+    public function getPackageFilename(CompletePackageInterface $package): string
     {
         if ($package->getArchiveName()) {
             $baseName = $package->getArchiveName();
@@ -101,7 +101,7 @@ class ArchiveManager
             $nameParts[] = substr(sha1($package->getSourceReference()), 0, 6);
         }
 
-        $name = implode('-', array_filter($nameParts, function ($p) {
+        $name = implode('-', array_filter($nameParts, function ($p): bool {
             return !empty($p);
         }));
 
@@ -121,7 +121,7 @@ class ArchiveManager
      * @throws \RuntimeException
      * @return string                    The path of the created archive
      */
-    public function archive(CompletePackageInterface $package, $format, $targetDir, $fileName = null, $ignoreFilters = false)
+    public function archive(CompletePackageInterface $package, string $format, string $targetDir, ?string $fileName = null, bool $ignoreFilters = false): string
     {
         if (empty($format)) {
             throw new \InvalidArgumentException('Format must be specified');

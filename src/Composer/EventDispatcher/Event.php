@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -46,7 +46,7 @@ class Event
      * @param string[] $args  Arguments passed by the user
      * @param mixed[]  $flags Optional flags to pass data not as argument
      */
-    public function __construct($name, array $args = array(), array $flags = array())
+    public function __construct(string $name, array $args = array(), array $flags = array())
     {
         $this->name = $name;
         $this->args = $args;
@@ -58,7 +58,7 @@ class Event
      *
      * @return string The event name
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -68,7 +68,7 @@ class Event
      *
      * @return string[] The event arguments
      */
-    public function getArguments()
+    public function getArguments(): array
     {
         return $this->args;
     }
@@ -78,7 +78,7 @@ class Event
      *
      * @return mixed[] The event flags
      */
-    public function getFlags()
+    public function getFlags(): array
     {
         return $this->flags;
     }
@@ -88,7 +88,7 @@ class Event
      *
      * @return bool Whether propagation has been stopped
      */
-    public function isPropagationStopped()
+    public function isPropagationStopped(): bool
     {
         return $this->propagationStopped;
     }
@@ -98,7 +98,7 @@ class Event
      *
      * @return void
      */
-    public function stopPropagation()
+    public function stopPropagation(): void
     {
         $this->propagationStopped = true;
     }

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -24,7 +24,7 @@ class Zip
      *
      * @return string|null
      */
-    public static function getComposerJson($pathToZip)
+    public static function getComposerJson(string $pathToZip): ?string
     {
         if (!extension_loaded('zip')) {
             throw new \RuntimeException('The Zip Util requires PHP\'s zip extension');
@@ -65,7 +65,7 @@ class Zip
      *
      * @return int
      */
-    private static function locateFile(\ZipArchive $zip, $filename)
+    private static function locateFile(\ZipArchive $zip, string $filename): int
     {
         // return root composer.json if it is there and is a file
         if (false !== ($index = $zip->locateName($filename)) && $zip->getFromIndex($index) !== false) {

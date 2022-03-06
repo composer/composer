@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -20,7 +20,7 @@ class BasePackageTest extends TestCase
     /**
      * @doesNotPerformAssertions
      */
-    public function testSetSameRepository()
+    public function testSetSameRepository(): void
     {
         $package = $this->getMockForAbstractClass('Composer\Package\BasePackage', array('foo'));
         $repository = $this->getMockBuilder('Composer\Repository\RepositoryInterface')->getMock();
@@ -33,7 +33,7 @@ class BasePackageTest extends TestCase
         }
     }
 
-    public function testSetAnotherRepository()
+    public function testSetAnotherRepository(): void
     {
         self::expectException('LogicException');
 
@@ -49,12 +49,12 @@ class BasePackageTest extends TestCase
      * @param bool   $truncate
      * @param string $expected
      */
-    public function testFormatVersionForDevPackage(BasePackage $package, $truncate, $expected)
+    public function testFormatVersionForDevPackage(BasePackage $package, bool $truncate, string $expected): void
     {
         $this->assertSame($expected, $package->getFullPrettyVersion($truncate));
     }
 
-    public function provideFormattedVersions()
+    public function provideFormattedVersions(): array
     {
         $data = array(
             array(
@@ -79,7 +79,7 @@ class BasePackageTest extends TestCase
             ),
         );
 
-        $createPackage = function ($arr) {
+        $createPackage = function ($arr): array {
             $package = $this->getMockForAbstractClass('\Composer\Package\BasePackage', array(), '', false);
             $package->expects($this->once())->method('isDev')->will($this->returnValue(true));
             $package->expects($this->any())->method('getSourceType')->will($this->returnValue('git'));
@@ -99,7 +99,7 @@ class BasePackageTest extends TestCase
      *
      * @dataProvider dataPackageNamesToRegexp
      */
-    public function testPackageNamesToRegexp(array $packageNames, $wrap, $expectedRegexp)
+    public function testPackageNamesToRegexp(array $packageNames, $wrap, string $expectedRegexp): void
     {
         $regexp = BasePackage::packageNamesToRegexp($packageNames, $wrap);
 
@@ -109,7 +109,7 @@ class BasePackageTest extends TestCase
     /**
      * @return mixed[][]
      */
-    public function dataPackageNamesToRegexp()
+    public function dataPackageNamesToRegexp(): array
     {
         return array(
             array(

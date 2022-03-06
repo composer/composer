@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -32,7 +32,7 @@ interface PluginInterface
      *
      * @var string
      */
-    const PLUGIN_API_VERSION = '2.3.0';
+    public const PLUGIN_API_VERSION = '2.3.0';
 
     /**
      * Apply plugin modifications to Composer

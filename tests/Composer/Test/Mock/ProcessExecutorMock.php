@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Mock;
 
+use React\Promise\PromiseInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Platform;
 use PHPUnit\Framework\Assert;
@@ -48,11 +49,11 @@ class ProcessExecutorMock extends ProcessExecutor
      *
      * @return void
      */
-    public function expects(array $expectations, $strict = false, array $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => ''))
+    public function expects(array $expectations, bool $strict = false, array $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => '')): void
     {
         /** @var array{cmd: string|list<string>, return?: int, stdout?: string, stderr?: string, callback?: callable} $default */
         $default = array('cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null);
-        $this->expectations = array_map(function ($expect) use ($default) {
+        $this->expectations = array_map(function ($expect) use ($default): array {
             if (is_string($expect)) {
                 $command = $expect;
                 $expect = $default;
@@ -88,7 +89,7 @@ class ProcessExecutorMock extends ProcessExecutor
         }
 
         if (count($this->expectations) > 0) {
-            $expectations = array_map(function ($expect) {
+            $expectations = array_map(function ($expect): string {
                 return is_array($expect['cmd']) ? implode(' ', $expect['cmd']) : $expect['cmd'];
             }, $this->expectations);
             throw new AssertionFailedError(
@@ -102,8 +103,9 @@ class ProcessExecutorMock extends ProcessExecutor
         Assert::assertTrue(true); // @phpstan-ignore-line
     }
 
-    public function execute($command, &$output = null, $cwd = null)
+    public function execute($command, &$output = null, ?string $cwd = null): int
     {
+        $cwd = $cwd ?? Platform::getCwd();
         if (func_num_args() > 1) {
             return $this->doExecute($command, $cwd, false, $output);
         }
@@ -111,8 +113,9 @@ class ProcessExecutorMock extends ProcessExecutor
         return $this->doExecute($command, $cwd, false);
     }
 
-    public function executeTty($command, $cwd = null)
+    public function executeTty($command, ?string $cwd = null): int
     {
+        $cwd = $cwd ?? Platform::getCwd();
         if (Platform::isTty()) {
             return $this->doExecute($command, $cwd, true);
         }
@@ -124,15 +127,17 @@ class ProcessExecutorMock extends ProcessExecutor
      * @param string|list<string> $command
      * @param string $cwd
      * @param bool $tty
-     * @param callable $output
+     * @param callable|string|null $output
      * @return mixed
      */
-    private function doExecute($command, $cwd, $tty, &$output = null)
+    private function doExecute($command, string $cwd, bool $tty, &$output = null)
     {
         $this->captureOutput = func_num_args() > 3;
         $this->errorOutput = '';
 
-        $callback = is_callable($output) ? $output : array($this, 'outputHandler');
+        $callback = is_callable($output) ? $output : function (string $type, string $buffer): void {
+            $this->outputHandler($type, $buffer);
+        };
 
         $commandString = is_array($command) ? implode(' ', $command) : $command;
         $this->log[] = $commandString;
@@ -173,21 +178,21 @@ class ProcessExecutorMock extends ProcessExecutor
         return $return;
     }
 
-    public function executeAsync($command, $cwd = null)
+    public function executeAsync($command, ?string $cwd = null): PromiseInterface
     {
-        $resolver = function ($resolve, $reject) {
+        $resolver = function ($resolve, $reject): void {
             // TODO strictly speaking this should resolve with a mock Process instance here
             $resolve();
         };
 
-        $canceler = function () {
+        $canceler = function (): void {
             throw new \RuntimeException('Aborted process');
         };
 
         return new Promise($resolver, $canceler);
     }
 
-    public function getErrorOutput()
+    public function getErrorOutput(): string
     {
         return $this->errorOutput;
     }

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -46,7 +46,7 @@ class ProxyManagerTest extends TestCase
         ProxyManager::reset();
     }
 
-    public function testInstantiation()
+    public function testInstantiation(): void
     {
         $originalInstance = ProxyManager::getInstance();
         $this->assertInstanceOf('Composer\Util\Http\ProxyManager', $originalInstance);
@@ -59,7 +59,7 @@ class ProxyManagerTest extends TestCase
         $this->assertFalse($sameInstance === $newInstance);
     }
 
-    public function testGetProxyForRequestThrowsOnBadProxyUrl()
+    public function testGetProxyForRequestThrowsOnBadProxyUrl(): void
     {
         $_SERVER['http_proxy'] = 'localhost';
         $proxyManager = ProxyManager::getInstance();
@@ -77,7 +77,7 @@ class ProxyManagerTest extends TestCase
      * @param bool                 $expectedSecure
      * @param string               $expectedMessage
      */
-    public function testGetProxyForRequest($server, $url, $expectedUrl, $expectedOptions, $expectedSecure, $expectedMessage)
+    public function testGetProxyForRequest(array $server, string $url, string $expectedUrl, array $expectedOptions, bool $expectedSecure, string $expectedMessage): void
     {
         $_SERVER = array_merge($_SERVER, $server);
         $proxyManager = ProxyManager::getInstance();
@@ -100,7 +100,7 @@ class ProxyManagerTest extends TestCase
         $this->assertTrue($condition, 'lastProxy check');
     }
 
-    public function dataRequest()
+    public function dataRequest(): array
     {
         $server = array(
             'http_proxy' => 'http://user:p%40ss@proxy.com',
@@ -136,10 +136,8 @@ class ProxyManagerTest extends TestCase
      * @dataProvider dataStatus
      *
      * @param array<string, mixed> $server
-     * @param bool                 $expectedStatus
-     * @param string               $expectedMessage
      */
-    public function testGetStatus($server, $expectedStatus, $expectedMessage)
+    public function testGetStatus(array $server, bool $expectedStatus, ?string $expectedMessage): void
     {
         $_SERVER = array_merge($_SERVER, $server);
         $proxyManager = ProxyManager::getInstance();
@@ -148,7 +146,7 @@ class ProxyManagerTest extends TestCase
 
         $this->assertSame($expectedStatus, $status);
 
-        if ($expectedMessage) {
+        if ($expectedMessage !== null) {
             $condition = stripos($message, $expectedMessage) !== false;
         } else {
             $condition = $expectedMessage === $message;
@@ -156,7 +154,7 @@ class ProxyManagerTest extends TestCase
         $this->assertTrue($condition, 'message check');
     }
 
-    public function dataStatus()
+    public function dataStatus(): array
     {
         // server, expectedStatus, expectedMessage
         return array(

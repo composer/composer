@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -19,6 +19,7 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
 use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Transaction;
 use Composer\Package\Link;
+use Composer\Package\PackageInterface;
 use Composer\Test\TestCase;
 
 class TransactionTest extends TestCase
@@ -27,7 +28,7 @@ class TransactionTest extends TestCase
     {
     }
 
-    public function testTransactionGenerationAndSorting()
+    public function testTransactionGenerationAndSorting(): void
     {
         $presentPackages = array(
             $packageA = $this->getPackage('a/a', 'dev-master'),
@@ -100,10 +101,10 @@ class TransactionTest extends TestCase
 
     /**
      * @param \Composer\DependencyResolver\Transaction $transaction
-     * @param array<array<string, string>> $expected
+     * @param array<array{job: string, package?: PackageInterface, from?: PackageInterface, to?: PackageInterface}> $expected
      * @return void
      */
-    protected function checkTransactionOperations(Transaction $transaction, array $expected)
+    protected function checkTransactionOperations(Transaction $transaction, array $expected): void
     {
         $result = array();
         foreach ($transaction->getOperations() as $operation) {

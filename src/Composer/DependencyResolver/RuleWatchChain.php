@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -29,7 +29,7 @@ class RuleWatchChain extends \SplDoublyLinkedList
      * @param int $offset The offset to seek to.
      * @return void
      */
-    public function seek($offset)
+    public function seek(int $offset): void
     {
         $this->rewind();
         for ($i = 0; $i < $offset; $i++, $this->next());
@@ -45,7 +45,7 @@ class RuleWatchChain extends \SplDoublyLinkedList
      *
      * @return void
      */
-    public function remove()
+    public function remove(): void
     {
         $offset = $this->key();
         $this->offsetUnset($offset);

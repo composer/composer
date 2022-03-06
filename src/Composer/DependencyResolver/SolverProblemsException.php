@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -22,7 +22,7 @@ use Composer\Repository\RepositorySet;
  */
 class SolverProblemsException extends \RuntimeException
 {
-    const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
+    public const ERROR_DEPENDENCY_RESOLUTION_FAILED = 2;
 
     /** @var Problem[] */
     protected $problems;
@@ -46,7 +46,7 @@ class SolverProblemsException extends \RuntimeException
      * @param bool $isDevExtraction
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $isDevExtraction = false)
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, bool $isDevExtraction = false): string
     {
         $installedMap = $request->getPresentMap(true);
         $missingExtensions = array();
@@ -100,7 +100,7 @@ class SolverProblemsException extends \RuntimeException
     /**
      * @return Problem[]
      */
-    public function getProblems()
+    public function getProblems(): array
     {
         return $this->problems;
     }
@@ -109,7 +109,7 @@ class SolverProblemsException extends \RuntimeException
      * @param string[] $missingExtensions
      * @return string
      */
-    private function createExtensionHint(array $missingExtensions)
+    private function createExtensionHint(array $missingExtensions): string
     {
         $paths = IniHelper::getAll();
 
@@ -133,7 +133,7 @@ class SolverProblemsException extends \RuntimeException
      * @param Rule[][] $reasonSets
      * @return string[]
      */
-    private function getExtensionProblems(array $reasonSets)
+    private function getExtensionProblems(array $reasonSets): array
     {
         $missingExtensions = array();
         foreach ($reasonSets as $reasonSet) {

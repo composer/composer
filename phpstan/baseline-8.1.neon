@@ -131,11 +131,6 @@ parameters:
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
-			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Factory.php
-
-		-
 			message: "#^Parameter \\#1 \\$stream of function fwrite expects resource, resource\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/IO/BufferIO.php
@@ -214,31 +209,6 @@ parameters:
 			message: "#^Parameter \\#2 \\$string of function explode expects string, string\\|false\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/AuthHelper.php
-
-		-
-			message: "#^Parameter \\#1 \\$from of function stream_copy_to_stream expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of function fclose expects resource, resource\\|false given\\.$#"
-			count: 4
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of function feof expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Parameter \\#1 \\$stream of function fread expects resource, resource\\|false given\\.$#"
-			count: 2
-			path: ../src/Composer/Util/Filesystem.php
-
-		-
-			message: "#^Parameter \\#2 \\$to of function stream_copy_to_stream expects resource, resource\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Filesystem.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"

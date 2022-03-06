@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -43,7 +43,7 @@ class AuthHelperTest extends TestCase
         $this->authHelper = new AuthHelper($this->io, $this->config);
     }
 
-    public function testAddAuthenticationHeaderWithoutAuthCredentials()
+    public function testAddAuthenticationHeaderWithoutAuthCredentials(): void
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -63,7 +63,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function testAddAuthenticationHeaderWithBearerPassword()
+    public function testAddAuthenticationHeaderWithBearerPassword(): void
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -86,7 +86,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function testAddAuthenticationHeaderWithGithubToken()
+    public function testAddAuthenticationHeaderWithGithubToken(): void
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -113,7 +113,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function testAddAuthenticationHeaderWithGitlabOathToken()
+    public function testAddAuthenticationHeaderWithGitlabOathToken(): void
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -145,7 +145,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function gitlabPrivateTokenProvider()
+    public function gitlabPrivateTokenProvider(): array
     {
         return array(
           array('private-token'),
@@ -158,7 +158,7 @@ class AuthHelperTest extends TestCase
      *
      * @param string $password
      */
-    public function testAddAuthenticationHeaderWithGitlabPrivateToken($password)
+    public function testAddAuthenticationHeaderWithGitlabPrivateToken(string $password): void
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -190,7 +190,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function testAddAuthenticationHeaderWithBitbucketOathToken()
+    public function testAddAuthenticationHeaderWithBitbucketOathToken(): void
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -222,7 +222,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function bitbucketPublicUrlProvider()
+    public function bitbucketPublicUrlProvider(): array
     {
         return array(
             array('https://bitbucket.org/user/repo/downloads/whatever'),
@@ -235,7 +235,7 @@ class AuthHelperTest extends TestCase
      *
      * @param string $url
      */
-    public function testAddAuthenticationHeaderWithBitbucketPublicUrl($url)
+    public function testAddAuthenticationHeaderWithBitbucketPublicUrl(string $url): void
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -260,7 +260,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function basicHttpAuthenticationProvider()
+    public function basicHttpAuthenticationProvider(): array
     {
         return array(
             array(
@@ -299,7 +299,7 @@ class AuthHelperTest extends TestCase
      *
      * @phpstan-param array{username: string|null, password: string|null} $auth
      */
-    public function testAddAuthenticationHeaderWithBasicHttpAuthentication($url, $origin, $auth)
+    public function testAddAuthenticationHeaderWithBasicHttpAuthentication(string $url, string $origin, array $auth): void
     {
         $headers = array(
             'Accept-Encoding: gzip',
@@ -337,12 +337,12 @@ class AuthHelperTest extends TestCase
      *
      * @param string $url
      */
-    public function testIsPublicBitBucketDownloadWithBitbucketPublicUrl($url)
+    public function testIsPublicBitBucketDownloadWithBitbucketPublicUrl(string $url): void
     {
         $this->assertTrue($this->authHelper->isPublicBitBucketDownload($url));
     }
 
-    public function testIsPublicBitBucketDownloadWithNonBitbucketPublicUrl()
+    public function testIsPublicBitBucketDownloadWithNonBitbucketPublicUrl(): void
     {
         $this->assertFalse(
             $this->authHelper->isPublicBitBucketDownload(
@@ -351,7 +351,7 @@ class AuthHelperTest extends TestCase
         );
     }
 
-    public function testStoreAuthAutomatically()
+    public function testStoreAuthAutomatically(): void
     {
         $origin = 'github.com';
         $storeAuth = true;
@@ -377,13 +377,12 @@ class AuthHelperTest extends TestCase
 
         $configSource->expects($this->once())
             ->method('addConfigSetting')
-            ->with('http-basic.'.$origin, $auth)
-            ->willReturn($configSource);
+            ->with('http-basic.'.$origin, $auth);
 
         $this->authHelper->storeAuth($origin, $storeAuth);
     }
 
-    public function testStoreAuthWithPromptYesAnswer()
+    public function testStoreAuthWithPromptYesAnswer(): void
     {
         $origin = 'github.com';
         $storeAuth = 'prompt';
@@ -416,7 +415,7 @@ class AuthHelperTest extends TestCase
                 null,
                 'y'
             )
-            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
+            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer): string {
                 $validator($answer);
 
                 return $answer;
@@ -429,13 +428,12 @@ class AuthHelperTest extends TestCase
 
         $configSource->expects($this->once())
             ->method('addConfigSetting')
-            ->with('http-basic.'.$origin, $auth)
-            ->willReturn($configSource);
+            ->with('http-basic.'.$origin, $auth);
 
         $this->authHelper->storeAuth($origin, $storeAuth);
     }
 
-    public function testStoreAuthWithPromptNoAnswer()
+    public function testStoreAuthWithPromptNoAnswer(): void
     {
         $origin = 'github.com';
         $storeAuth = 'prompt';
@@ -464,7 +462,7 @@ class AuthHelperTest extends TestCase
                 null,
                 'y'
             )
-            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
+            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer): string {
                 $validator($answer);
 
                 return $answer;
@@ -473,7 +471,7 @@ class AuthHelperTest extends TestCase
         $this->authHelper->storeAuth($origin, $storeAuth);
     }
 
-    public function testStoreAuthWithPromptInvalidAnswer()
+    public function testStoreAuthWithPromptInvalidAnswer(): void
     {
         self::expectException('RuntimeException');
 
@@ -504,7 +502,7 @@ class AuthHelperTest extends TestCase
                 null,
                 'y'
             )
-            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer) {
+            ->willReturnCallback(function ($question, $validator, $attempts, $default) use ($answer): string {
                 $validator($answer);
 
                 return $answer;
@@ -521,7 +519,7 @@ class AuthHelperTest extends TestCase
      *
      * @phpstan-param array{username: string|null, password: string|null} $auth
      */
-    private function expectsAuthentication($origin, $auth)
+    private function expectsAuthentication(string $origin, array $auth): void
     {
         $this->io->expects($this->once())
             ->method('hasAuthentication')

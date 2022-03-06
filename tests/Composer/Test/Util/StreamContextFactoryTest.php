@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -39,7 +39,7 @@ class StreamContextFactoryTest extends TestCase
      * @param mixed[] $expectedParams
      * @param mixed[] $defaultParams
      */
-    public function testGetContext($expectedOptions, $defaultOptions, $expectedParams, $defaultParams)
+    public function testGetContext(array $expectedOptions, array $defaultOptions, array $expectedParams, array $defaultParams): void
     {
         $context = StreamContextFactory::getContext('http://example.org', $defaultOptions, $defaultParams);
         $options = stream_context_get_options($context);
@@ -49,7 +49,7 @@ class StreamContextFactoryTest extends TestCase
         $this->assertEquals($expectedParams, $params);
     }
 
-    public function dataGetContext()
+    public function dataGetContext(): array
     {
         return array(
             array(
@@ -58,13 +58,13 @@ class StreamContextFactoryTest extends TestCase
             ),
             array(
                 $a = array('http' => array('method' => 'GET', 'max_redirects' => 20, 'follow_location' => 1, 'header' => array('User-Agent: foo'))), array('http' => array('method' => 'GET', 'header' => 'User-Agent: foo')),
-                array('options' => $a, 'notification' => $f = function () {
+                array('options' => $a, 'notification' => $f = function (): void {
                 }), array('notification' => $f),
             ),
         );
     }
 
-    public function testHttpProxy()
+    public function testHttpProxy(): void
     {
         $_SERVER['http_proxy'] = 'http://username:p%40ssword@proxyserver.net:3128/';
         $_SERVER['HTTP_PROXY'] = 'http://proxyserver/';
@@ -82,7 +82,7 @@ class StreamContextFactoryTest extends TestCase
         )), $options);
     }
 
-    public function testHttpProxyWithNoProxy()
+    public function testHttpProxyWithNoProxy(): void
     {
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
         $_SERVER['no_proxy'] = 'foo,example.org';
@@ -98,7 +98,7 @@ class StreamContextFactoryTest extends TestCase
         )), $options);
     }
 
-    public function testHttpProxyWithNoProxyWildcard()
+    public function testHttpProxyWithNoProxyWildcard(): void
     {
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
         $_SERVER['no_proxy'] = '*';
@@ -114,7 +114,7 @@ class StreamContextFactoryTest extends TestCase
         )), $options);
     }
 
-    public function testOptionsArePreserved()
+    public function testOptionsArePreserved(): void
     {
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
 
@@ -131,7 +131,7 @@ class StreamContextFactoryTest extends TestCase
         )), $options);
     }
 
-    public function testHttpProxyWithoutPort()
+    public function testHttpProxyWithoutPort(): void
     {
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net';
 
@@ -147,7 +147,7 @@ class StreamContextFactoryTest extends TestCase
         )), $options);
     }
 
-    public function testHttpsProxyOverride()
+    public function testHttpsProxyOverride(): void
     {
         if (!extension_loaded('openssl')) {
             $this->markTestSkipped('Requires openssl');
@@ -167,7 +167,7 @@ class StreamContextFactoryTest extends TestCase
      * @param string $expected
      * @param string $proxy
      */
-    public function testSSLProxy($expected, $proxy)
+    public function testSSLProxy(string $expected, string $proxy): void
     {
         $_SERVER['http_proxy'] = $proxy;
 
@@ -192,7 +192,7 @@ class StreamContextFactoryTest extends TestCase
         }
     }
 
-    public function dataSSLProxy()
+    public function dataSSLProxy(): array
     {
         return array(
             array('ssl://proxyserver:443', 'https://proxyserver/'),
@@ -200,7 +200,7 @@ class StreamContextFactoryTest extends TestCase
         );
     }
 
-    public function testEnsureThatfixHttpHeaderFieldMovesContentTypeToEndOfOptions()
+    public function testEnsureThatfixHttpHeaderFieldMovesContentTypeToEndOfOptions(): void
     {
         $options = array(
             'http' => array(
@@ -222,7 +222,7 @@ class StreamContextFactoryTest extends TestCase
         $this->assertEquals(end($expectedOptions['http']['header']), end($ctxoptions['http']['header']));
     }
 
-    public function testInitOptionsDoesIncludeProxyAuthHeaders()
+    public function testInitOptionsDoesIncludeProxyAuthHeaders(): void
     {
         $_SERVER['http_proxy'] = 'http://username:password@proxyserver.net:3128/';
 
@@ -233,7 +233,7 @@ class StreamContextFactoryTest extends TestCase
         $this->assertTrue(false !== stripos($headers, 'Proxy-Authorization'));
     }
 
-    public function testInitOptionsForCurlDoesNotIncludeProxyAuthHeaders()
+    public function testInitOptionsForCurlDoesNotIncludeProxyAuthHeaders(): void
     {
         if (!extension_loaded('curl')) {
             $this->markTestSkipped('The curl is not available.');

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -23,14 +23,14 @@ class GitExcludeFilterTest extends TestCase
      * @param string  $ignore
      * @param mixed[] $expected
      */
-    public function testPatternEscape($ignore, $expected)
+    public function testPatternEscape(string $ignore, array $expected): void
     {
         $filter = new GitExcludeFilter('/');
 
         $this->assertEquals($expected, $filter->parseGitAttributesLine($ignore));
     }
 
-    public function providePatterns()
+    public function providePatterns(): array
     {
         return array(
             array('app/config/parameters.yml export-ignore', array('{(?=[^\.])app/(?=[^\.])config/(?=[^\.])parameters\.yml(?=$|/)}', false, false)),

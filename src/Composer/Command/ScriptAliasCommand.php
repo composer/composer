@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -27,14 +27,10 @@ class ScriptAliasCommand extends BaseCommand
     /** @var string */
     private $description;
 
-    /**
-     * @param string $script
-     * @param string $description
-     */
-    public function __construct($script, $description)
+    public function __construct(string $script, ?string $description)
     {
         $this->script = $script;
-        $this->description = empty($description) ? 'Runs the '.$script.' script as defined in composer.json.' : $description;
+        $this->description = $description ?? 'Runs the '.$script.' script as defined in composer.json.';
 
         parent::__construct();
     }
@@ -42,7 +38,7 @@ class ScriptAliasCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName($this->script)

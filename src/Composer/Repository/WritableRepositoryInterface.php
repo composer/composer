@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -28,7 +28,7 @@ interface WritableRepositoryInterface extends RepositoryInterface
      * @param bool $devMode Whether dev requirements were included or not in this installation
      * @return void
      */
-    public function write($devMode, InstallationManager $installationManager);
+    public function write(bool $devMode, InstallationManager $installationManager);
 
     /**
      * Adds package to the repository.

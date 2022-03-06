@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -39,7 +39,7 @@ class PreCommandRunEvent extends Event
      * @param InputInterface $input
      * @param string         $command The command about to be executed
      */
-    public function __construct($name, InputInterface $input, $command)
+    public function __construct(string $name, InputInterface $input, string $command)
     {
         parent::__construct($name);
         $this->input = $input;
@@ -51,7 +51,7 @@ class PreCommandRunEvent extends Event
      *
      * @return InputInterface
      */
-    public function getInput()
+    public function getInput(): InputInterface
     {
         return $this->input;
     }
@@ -61,7 +61,7 @@ class PreCommandRunEvent extends Event
      *
      * @return string
      */
-    public function getCommand()
+    public function getCommand(): string
     {
         return $this->command;
     }

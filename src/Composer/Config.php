@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -24,11 +24,11 @@ use Composer\Util\ProcessExecutor;
  */
 class Config
 {
-    const SOURCE_DEFAULT = 'default';
-    const SOURCE_COMMAND = 'command';
-    const SOURCE_UNKNOWN = 'unknown';
+    public const SOURCE_DEFAULT = 'default';
+    public const SOURCE_COMMAND = 'command';
+    public const SOURCE_UNKNOWN = 'unknown';
 
-    const RELATIVE_PATHS = 1;
+    public const RELATIVE_PATHS = 1;
 
     /** @var array<string, mixed> */
     public static $defaultConfig = array(
@@ -111,10 +111,10 @@ class Config
     private $sourceOfConfigValue = array();
 
     /**
-     * @param bool   $useEnvironment Use COMPOSER_ environment variables to replace config settings
-     * @param string $baseDir        Optional base directory of the config
+     * @param bool    $useEnvironment Use COMPOSER_ environment variables to replace config settings
+     * @param ?string $baseDir        Optional base directory of the config
      */
-    public function __construct($useEnvironment = true, $baseDir = null)
+    public function __construct(bool $useEnvironment = true, ?string $baseDir = null)
     {
         // load defaults
         $this->config = static::$defaultConfig;
@@ -126,7 +126,7 @@ class Config
 
         $this->repositories = static::$defaultRepositories;
         $this->useEnvironment = (bool) $useEnvironment;
-        $this->baseDir = $baseDir;
+        $this->baseDir = is_string($baseDir) && '' !== $baseDir ? $baseDir : null;
 
         foreach ($this->config as $configKey => $configValue) {
             $this->setSourceOfConfigValue($configValue, $configKey, self::SOURCE_DEFAULT);
@@ -140,7 +140,7 @@ class Config
     /**
      * @return void
      */
-    public function setConfigSource(ConfigSourceInterface $source)
+    public function setConfigSource(ConfigSourceInterface $source): void
     {
         $this->configSource = $source;
     }
@@ -148,7 +148,7 @@ class Config
     /**
      * @return ConfigSourceInterface
      */
-    public function getConfigSource()
+    public function getConfigSource(): ConfigSourceInterface
     {
         return $this->configSource;
     }
@@ -156,7 +156,7 @@ class Config
     /**
      * @return void
      */
-    public function setAuthConfigSource(ConfigSourceInterface $source)
+    public function setAuthConfigSource(ConfigSourceInterface $source): void
     {
         $this->authConfigSource = $source;
     }
@@ -164,7 +164,7 @@ class Config
     /**
      * @return ConfigSourceInterface
      */
-    public function getAuthConfigSource()
+    public function getAuthConfigSource(): ConfigSourceInterface
     {
         return $this->authConfigSource;
     }
@@ -177,7 +177,7 @@ class Config
      *
      * @return void
      */
-    public function merge($config, $source = self::SOURCE_UNKNOWN)
+    public function merge(array $config, string $source = self::SOURCE_UNKNOWN): void
     {
         // override defaults with given config
         if (!empty($config['config']) && is_array($config['config'])) {
@@ -263,7 +263,7 @@ class Config
     /**
      * @return array<int|string, mixed>
      */
-    public function getRepositories()
+    public function getRepositories(): array
     {
         return $this->repositories;
     }
@@ -277,7 +277,7 @@ class Config
      *
      * @return mixed
      */
-    public function get($key, $flags = 0)
+    public function get(string $key, int $flags = 0)
     {
         switch ($key) {
             // strings/paths with env var and {$refs} support
@@ -441,7 +441,7 @@ class Config
      *
      * @return array<string, mixed[]>
      */
-    public function all($flags = 0)
+    public function all(int $flags = 0): array
     {
         $all = array(
             'repositories' => $this->getRepositories(),
@@ -457,7 +457,7 @@ class Config
      * @param string $key
      * @return string
      */
-    public function getSourceOfValue($key)
+    public function getSourceOfValue(string $key): string
     {
         $this->get($key);
 
@@ -471,7 +471,7 @@ class Config
      *
      * @return void
      */
-    private function setSourceOfConfigValue($configValue, $path, $source)
+    private function setSourceOfConfigValue($configValue, string $path, string $source): void
     {
         $this->sourceOfConfigValue[$path] = $source;
 
@@ -485,7 +485,7 @@ class Config
     /**
      * @return array<string, mixed[]>
      */
-    public function raw()
+    public function raw(): array
     {
         return array(
             'repositories' => $this->getRepositories(),
@@ -499,7 +499,7 @@ class Config
      * @param  string $key
      * @return bool
      */
-    public function has($key)
+    public function has(string $key): bool
     {
         return array_key_exists($key, $this->config);
     }
@@ -512,7 +512,7 @@ class Config
      *
      * @return string|int|null
      */
-    private function process($value, $flags)
+    private function process($value, int $flags)
     {
         if (!is_string($value)) {
             return $value;
@@ -531,9 +531,9 @@ class Config
      * @param  string $path
      * @return string
      */
-    private function realpath($path)
+    private function realpath(string $path): string
     {
-        if (Preg::isMatch('{^(?:/|[a-z]:|[a-z0-9.]+://)}i', $path)) {
+        if (Preg::isMatch('{^(?:/|[a-z]:|[a-z0-9.]+://|\\\\\\\\)}i', $path)) {
             return $path;
         }
 
@@ -549,7 +549,7 @@ class Config
      * @param  string      $var
      * @return string|bool
      */
-    private function getComposerEnv($var)
+    private function getComposerEnv(string $var)
     {
         if ($this->useEnvironment) {
             return Platform::getEnv($var);
@@ -563,7 +563,7 @@ class Config
      *
      * @return void
      */
-    private function disableRepoByName($name)
+    private function disableRepoByName(string $name): void
     {
         if (isset($this->repositories[$name])) {
             unset($this->repositories[$name]);
@@ -580,7 +580,7 @@ class Config
      *
      * @return void
      */
-    public function prohibitUrlByConfig($url, IOInterface $io = null)
+    public function prohibitUrlByConfig(string $url, IOInterface $io = null): void
     {
         // Return right away if the URL is malformed or custom (see issue #5173)
         if (false === filter_var($url, FILTER_VALIDATE_URL)) {
@@ -626,7 +626,7 @@ class Config
      *
      * @return void
      */
-    public static function disableProcessTimeout()
+    public static function disableProcessTimeout(): void
     {
         // Override global timeout set earlier by environment or config
         ProcessExecutor::setTimeout(0);

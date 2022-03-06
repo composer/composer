@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -28,8 +28,8 @@ use Composer\Downloader\TransportException;
  */
 class JsonFile
 {
-    const LAX_SCHEMA = 1;
-    const STRICT_SCHEMA = 2;
+    public const LAX_SCHEMA = 1;
+    public const STRICT_SCHEMA = 2;
 
     /** @deprecated Use \JSON_UNESCAPED_SLASHES */
     public const JSON_UNESCAPED_SLASHES = 64;
@@ -38,7 +38,7 @@ class JsonFile
     /** @deprecated Use \JSON_UNESCAPED_UNICODE */
     public const JSON_UNESCAPED_UNICODE = 256;
 
-    const COMPOSER_SCHEMA_PATH = '/../../../res/composer-schema.json';
+    public const COMPOSER_SCHEMA_PATH = __DIR__ . '/../../../res/composer-schema.json';
 
     /** @var string */
     private $path;
@@ -55,7 +55,7 @@ class JsonFile
      * @param  ?IOInterface              $io
      * @throws \InvalidArgumentException
      */
-    public function __construct($path, HttpDownloader $httpDownloader = null, IOInterface $io = null)
+    public function __construct(string $path, HttpDownloader $httpDownloader = null, IOInterface $io = null)
     {
         $this->path = $path;
 
@@ -69,7 +69,7 @@ class JsonFile
     /**
      * @return string
      */
-    public function getPath()
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -79,7 +79,7 @@ class JsonFile
      *
      * @return bool
      */
-    public function exists()
+    public function exists(): bool
     {
         return is_file($this->path);
     }
@@ -124,7 +124,7 @@ class JsonFile
      * @throws \UnexpectedValueException|\Exception
      * @return void
      */
-    public function write(array $hash, $options = JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+    public function write(array $hash, int $options = JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
     {
         if ($this->path === 'php://memory') {
             file_put_contents($this->path, static::encode($hash, $options));
@@ -169,7 +169,7 @@ class JsonFile
      * @param string $content
      * @return int|false
      */
-    private function filePutContentsIfModified($path, $content)
+    private function filePutContentsIfModified(string $path, string $content)
     {
         $currentContent = @file_get_contents($path);
         if (!$currentContent || ($currentContent != $content)) {
@@ -188,7 +188,7 @@ class JsonFile
      * @throws ParsingException
      * @return bool                    true on success
      */
-    public function validateSchema($schema = self::STRICT_SCHEMA, $schemaFile = null)
+    public function validateSchema(int $schema = self::STRICT_SCHEMA, ?string $schemaFile = null): bool
     {
         $content = file_get_contents($this->path);
         $data = json_decode($content);
@@ -200,7 +200,7 @@ class JsonFile
         $isComposerSchemaFile = false;
         if (null === $schemaFile) {
             $isComposerSchemaFile = true;
-            $schemaFile = __DIR__ . self::COMPOSER_SCHEMA_PATH;
+            $schemaFile = self::COMPOSER_SCHEMA_PATH;
         }
 
         // Prepend with file:// only when not using a special schema already (e.g. in the phar)
@@ -239,7 +239,7 @@ class JsonFile
      * @param  int    $options json_encode options (defaults to JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
      * @return string Encoded json
      */
-    public static function encode($data, $options = 448)
+    public static function encode($data, int $options = 448)
     {
         $json = json_encode($data, $options);
         if (false === $json) {
@@ -256,7 +256,7 @@ class JsonFile
      * @throws \RuntimeException
      * @return void
      */
-    private static function throwEncodeError($code)
+    private static function throwEncodeError(int $code): void
     {
         switch ($code) {
             case JSON_ERROR_DEPTH:
@@ -281,13 +281,13 @@ class JsonFile
     /**
      * Parses json string and returns hash.
      *
-     * @param ?string $json json string
+     * @param null|string $json json string
      * @param string $file the json file
      *
      * @throws ParsingException
      * @return mixed
      */
-    public static function parseJson($json, $file = null)
+    public static function parseJson(?string $json, string $file = null)
     {
         if (null === $json) {
             return null;
@@ -309,7 +309,7 @@ class JsonFile
      * @throws ParsingException
      * @return bool                      true on success
      */
-    protected static function validateSyntax($json, $file = null)
+    protected static function validateSyntax(string $json, string $file = null): bool
     {
         $parser = new JsonParser();
         $result = $parser->lint($json);

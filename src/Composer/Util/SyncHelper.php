@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -31,7 +31,7 @@ class SyncHelper
      *
      * @return void
      */
-    public static function downloadAndInstallPackageSync(Loop $loop, DownloaderInterface $downloader, $path, PackageInterface $package, PackageInterface $prevPackage = null)
+    public static function downloadAndInstallPackageSync(Loop $loop, DownloaderInterface $downloader, string $path, PackageInterface $package, PackageInterface $prevPackage = null): void
     {
         $type = $prevPackage ? 'update' : 'install';
 
@@ -61,7 +61,7 @@ class SyncHelper
      *
      * @return void
      */
-    public static function await(Loop $loop, PromiseInterface $promise = null)
+    public static function await(Loop $loop, PromiseInterface $promise = null): void
     {
         if ($promise) {
             $loop->wait(array($promise));

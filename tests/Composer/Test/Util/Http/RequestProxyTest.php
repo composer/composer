@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -23,14 +23,14 @@ class RequestProxyTest extends TestCase
      * @param string $url
      * @param bool   $expectedSecure
      */
-    public function testIsSecure($url, $expectedSecure)
+    public function testIsSecure(string $url, bool $expectedSecure): void
     {
         $proxy = new RequestProxy($url, array(), '');
 
         $this->assertSame($expectedSecure, $proxy->isSecure());
     }
 
-    public function dataSecure()
+    public function dataSecure(): array
     {
         // url, secure
         return array(
@@ -47,7 +47,7 @@ class RequestProxyTest extends TestCase
      * @param string $format
      * @param string $expected
      */
-    public function testGetFormattedUrlFormat($url, $format, $expected)
+    public function testGetFormattedUrlFormat(string $url, string $format, string $expected): void
     {
         $proxy = new RequestProxy($url, array(), $url);
 
@@ -55,7 +55,7 @@ class RequestProxyTest extends TestCase
         $this->assertSame($expected, $message);
     }
 
-    public function dataProxyUrl()
+    public function dataProxyUrl(): array
     {
         $format = 'proxy (%s)';
 

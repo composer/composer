@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -29,7 +29,7 @@ use Composer\Spdx\SpdxLicenses;
  */
 class ConfigValidator
 {
-    const CHECK_VERSION = 1;
+    public const CHECK_VERSION = 1;
 
     /** @var IOInterface */
     private $io;
@@ -48,7 +48,7 @@ class ConfigValidator
      *
      * @return array{list<string>, list<string>, list<string>} a triple containing the errors, publishable errors, and warnings
      */
-    public function validate($file, $arrayLoaderValidationFlags = ValidatingArrayLoader::CHECK_ALL, $flags = self::CHECK_VERSION)
+    public function validate(string $file, int $arrayLoaderValidationFlags = ValidatingArrayLoader::CHECK_ALL, int $flags = self::CHECK_VERSION): array
     {
         $errors = array();
         $publishErrors = array();

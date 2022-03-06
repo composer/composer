@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -67,7 +67,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @return string
      */
-    public static function getUniqueTmpDirectory()
+    public static function getUniqueTmpDirectory(): string
     {
         $attempts = 5;
         $root = sys_get_temp_dir();
@@ -86,7 +86,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @return VersionParser
      */
-    protected static function getVersionParser()
+    protected static function getVersionParser(): VersionParser
     {
         if (!self::$parser) {
             self::$parser = new VersionParser();
@@ -100,7 +100,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param string $version
      * @return Constraint
      */
-    protected function getVersionConstraint($operator, $version)
+    protected function getVersionConstraint($operator, string $version): Constraint
     {
         $constraint = new Constraint(
             $operator,
@@ -113,7 +113,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * @template PackageClass of PackageInterface
+     * @template PackageClass of CompletePackage|CompleteAliasPackage
      *
      * @param  string $class  FQCN to be instantiated
      * @param  string $name
@@ -122,19 +122,27 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @return CompletePackage|CompleteAliasPackage|RootPackage|RootAliasPackage
      *
      * @phpstan-param class-string<PackageClass> $class
+     * @phpstan-return PackageClass
      */
-    protected function getPackage($name, $version, $class = 'Composer\Package\CompletePackage')
+    protected function getPackage(string $name = 'dummy/pkg', string $version = '1.0.0', string $class = 'Composer\Package\CompletePackage'): BasePackage
     {
         $normVersion = self::getVersionParser()->normalize($version);
 
         return new $class($name, $normVersion, $version);
     }
 
+    protected function getRootPackage(string $name = '__root__', string $version = '1.0.0'): RootPackage
+    {
+        $normVersion = self::getVersionParser()->normalize($version);
+
+        return new RootPackage($name, $normVersion, $version);
+    }
+
     /**
      * @param string $version
      * @return AliasPackage|RootAliasPackage|CompleteAliasPackage
      */
-    protected function getAliasPackage(Package $package, $version)
+    protected function getAliasPackage(Package $package, string $version): AliasPackage
     {
         $normVersion = self::getVersionParser()->normalize($version);
 
@@ -152,7 +160,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @param array<string, array<string, string>> $config
      * @return void
      */
-    protected function configureLinks(PackageInterface $package, array $config)
+    protected function configureLinks(PackageInterface $package, array $config): void
     {
         $arrayLoader = new ArrayLoader();
 
@@ -172,10 +180,21 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * @param array<mixed> $configOptions
+     */
+    protected function getConfig(array $configOptions = [], bool $useEnvironment = false): Config
+    {
+        $config = new Config($useEnvironment);
+        $config->merge(['config' => $configOptions], 'test');
+
+        return $config;
+    }
+
+    /**
      * @param  string $directory
      * @return void
      */
-    protected static function ensureDirectoryExistsAndClear($directory)
+    protected static function ensureDirectoryExistsAndClear(string $directory): void
     {
         $fs = new Filesystem();
 
@@ -195,7 +214,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      *
      * @throws \PHPUnit\Framework\SkippedTestError
      */
-    protected function skipIfNotExecutable($executableName)
+    protected function skipIfNotExecutable(string $executableName): void
     {
         if (!isset(self::$executableCache[$executableName])) {
             $finder = new ExecutableFinder();
@@ -214,7 +233,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      *
      * @return string The transformed command
      */
-    protected function getCmd($cmd)
+    protected function getCmd(string $cmd): string
     {
         if (Platform::isWindows()) {
             $cmd = Preg::replaceCallback("/('[^']*')/", function ($m) {

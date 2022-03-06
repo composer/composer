@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -42,17 +42,17 @@ class FossilDownloaderTest extends TestCase
      * @param \Composer\Util\Filesystem $filesystem
      * @return FossilDownloader
      */
-    protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
+    protected function getDownloaderMock(\Composer\IO\IOInterface $io = null, \Composer\Config $config = null, \Composer\Test\Mock\ProcessExecutorMock $executor = null, Filesystem $filesystem = null): FossilDownloader
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
-        $config = $config ?: $this->getMockBuilder('Composer\Config')->getMock();
+        $config = $config ?: $this->getConfig(['secure-http' => false]);
         $executor = $executor ?: $this->getProcessExecutorMock();
         $filesystem = $filesystem ?: $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
 
         return new FossilDownloader($io, $config, $executor, $filesystem);
     }
 
-    public function testInstallForPackageWithoutSourceReference()
+    public function testInstallForPackageWithoutSourceReference(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
@@ -62,10 +62,10 @@ class FossilDownloaderTest extends TestCase
         self::expectException('InvalidArgumentException');
 
         $downloader = $this->getDownloaderMock();
-        $downloader->install($packageMock, '/path');
+        $downloader->install($packageMock, $this->workingDir . '/path');
     }
 
-    public function testInstall()
+    public function testInstall(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -77,16 +77,16 @@ class FossilDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
-            $this->getCmd('fossil clone -- \'http://fossil.kd2.org/kd2fw/\' \'repo.fossil\''),
-            $this->getCmd('fossil open --nested -- \'repo.fossil\''),
+            $this->getCmd('fossil clone -- \'http://fossil.kd2.org/kd2fw/\' \''.$this->workingDir.'.fossil\''),
+            $this->getCmd('fossil open --nested -- \''.$this->workingDir.'.fossil\''),
             $this->getCmd('fossil update -- \'trunk\''),
         ), true);
 
         $downloader = $this->getDownloaderMock(null, null, $process);
-        $downloader->install($packageMock, 'repo');
+        $downloader->install($packageMock, $this->workingDir);
     }
 
-    public function testUpdateforPackageWithoutSourceReference()
+    public function testUpdateforPackageWithoutSourceReference(): void
     {
         $initialPackageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $sourcePackageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -102,7 +102,7 @@ class FossilDownloaderTest extends TestCase
         $downloader->cleanup('update', $sourcePackageMock, '/path', $initialPackageMock);
     }
 
-    public function testUpdate()
+    public function testUpdate(): void
     {
         // Ensure file exists
         $file = $this->workingDir . '/.fslckout';
@@ -134,7 +134,7 @@ class FossilDownloaderTest extends TestCase
         $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
     }
 
-    public function testRemove()
+    public function testRemove(): void
     {
         // Ensure file exists
         $file = $this->workingDir . '/.fslckout';
@@ -159,7 +159,7 @@ class FossilDownloaderTest extends TestCase
         $downloader->cleanup('uninstall', $packageMock, $this->workingDir);
     }
 
-    public function testGetInstallationSource()
+    public function testGetInstallationSource(): void
     {
         $downloader = $this->getDownloaderMock(null);
 

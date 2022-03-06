@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -17,6 +17,7 @@ use Composer\IO\IOInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
+ * @internal
  */
 interface VcsDriverInterface
 {
@@ -25,15 +26,15 @@ interface VcsDriverInterface
      *
      * @return void
      */
-    public function initialize();
+    public function initialize(): void;
 
     /**
      * Return the composer.json file information
      *
      * @param  string  $identifier Any identifier to a specific branch/tag/commit
-     * @return mixed[] containing all infos from the composer.json file
+     * @return mixed[]|null containing all infos from the composer.json file
      */
-    public function getComposerInformation($identifier);
+    public function getComposerInformation(string $identifier): ?array;
 
     /**
      * Return the content of $file or null if the file does not exist.
@@ -42,57 +43,56 @@ interface VcsDriverInterface
      * @param  string      $identifier
      * @return string|null
      */
-    public function getFileContent($file, $identifier);
+    public function getFileContent(string $file, string $identifier): ?string;
 
     /**
      * Get the changedate for $identifier.
      *
      * @param  string         $identifier
-     * @return \DateTime|null
      */
-    public function getChangeDate($identifier);
+    public function getChangeDate(string $identifier): ?\DateTimeImmutable;
 
     /**
      * Return the root identifier (trunk, master, default/tip ..)
      *
      * @return string Identifier
      */
-    public function getRootIdentifier();
+    public function getRootIdentifier(): string;
 
     /**
      * Return list of branches in the repository
      *
      * @return array<int|string, string> Branch names as keys, identifiers as values
      */
-    public function getBranches();
+    public function getBranches(): array;
 
     /**
      * Return list of tags in the repository
      *
      * @return array<int|string, string> Tag names as keys, identifiers as values
      */
-    public function getTags();
+    public function getTags(): array;
 
     /**
      * @param string $identifier Any identifier to a specific branch/tag/commit
      *
      * @return array{type: string, url: string, reference: string, shasum: string}|null
      */
-    public function getDist($identifier);
+    public function getDist(string $identifier): ?array;
 
     /**
      * @param string $identifier Any identifier to a specific branch/tag/commit
      *
      * @return array{type: string, url: string, reference: string}
      */
-    public function getSource($identifier);
+    public function getSource(string $identifier): array;
 
     /**
      * Return the URL of the repository
      *
      * @return string
      */
-    public function getUrl();
+    public function getUrl(): string;
 
     /**
      * Return true if the repository has a composer file for a given identifier,
@@ -101,14 +101,14 @@ interface VcsDriverInterface
      * @param  string $identifier Any identifier to a specific branch/tag/commit
      * @return bool   Whether the repository has a composer file for a given identifier.
      */
-    public function hasComposerFile($identifier);
+    public function hasComposerFile(string $identifier): bool;
 
     /**
      * Performs any cleanup necessary as the driver is not longer needed
      *
      * @return void
      */
-    public function cleanup();
+    public function cleanup(): void;
 
     /**
      * Checks if this driver can handle a given url
@@ -119,5 +119,5 @@ interface VcsDriverInterface
      * @param  bool        $deep   unless true, only shallow checks (url matching typically) should be done
      * @return bool
      */
-    public static function supports(IOInterface $io, Config $config, $url, $deep = false);
+    public static function supports(IOInterface $io, Config $config, string $url, bool $deep = false): bool;
 }

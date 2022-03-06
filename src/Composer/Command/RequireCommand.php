@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -296,7 +296,7 @@ EOT
      * @param string $requireKey
      * @return string[]
      */
-    private function getInconsistentRequireKeys(array $newRequirements, $requireKey)
+    private function getInconsistentRequireKeys(array $newRequirements, string $requireKey): array
     {
         $requireKeys = $this->getPackagesByRequireKey();
         $inconsistentRequirements = array();
@@ -315,7 +315,7 @@ EOT
     /**
      * @return array<string, string>
      */
-    private function getPackagesByRequireKey()
+    private function getPackagesByRequireKey(): array
     {
         $composerDefinition = $this->json->read();
         $require = array();
@@ -336,29 +336,22 @@ EOT
     }
 
     /**
-     * @private
-     * @return void
-     */
-    public function markSolverComplete()
-    {
-        $this->dependencyResolutionCompleted = true;
-    }
-
-    /**
      * @param array<string, string> $requirements
      * @param string $requireKey
      * @param string $removeKey
      * @return int
      * @throws \Exception
      */
-    private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, $requireKey, $removeKey)
+    private function doUpdate(InputInterface $input, OutputInterface $output, IOInterface $io, array $requirements, string $requireKey, string $removeKey): int
     {
         // Update packages
         $this->resetComposer();
         $composer = $this->requireComposer();
 
         $this->dependencyResolutionCompleted = false;
-        $composer->getEventDispatcher()->addListener(InstallerEvents::PRE_OPERATIONS_EXEC, array($this, 'markSolverComplete'), 10000);
+        $composer->getEventDispatcher()->addListener(InstallerEvents::PRE_OPERATIONS_EXEC, function (): void {
+            $this->dependencyResolutionCompleted = true;
+        }, 10000);
 
         if ($input->getOption('dry-run')) {
             $rootPackage = $composer->getPackage();
@@ -449,7 +442,7 @@ EOT
      * @param bool $sortPackages
      * @return bool
      */
-    private function updateFileCleanly(JsonFile $json, array $new, $requireKey, $removeKey, $sortPackages)
+    private function updateFileCleanly(JsonFile $json, array $new, string $requireKey, string $removeKey, bool $sortPackages): bool
     {
         $contents = file_get_contents($json->getPath());
 
@@ -480,7 +473,7 @@ EOT
      * @param bool $hardExit
      * @return void
      */
-    public function revertComposerFile($hardExit = true)
+    public function revertComposerFile(bool $hardExit = true): void
     {
         $io = $this->getIO();
 

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -30,7 +30,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @phpstan-return list<array{non-empty-string}>
      */
-    public function getAskConfirmationBadData()
+    public function getAskConfirmationBadData(): array
     {
         return array(
             array('not correct'),
@@ -45,7 +45,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @param string $answer
      */
-    public function testAskConfirmationBadAnswer($answer)
+    public function testAskConfirmationBadAnswer(string $answer): void
     {
         list($input, $dialog) = $this->createInput($answer."\n");
 
@@ -64,7 +64,7 @@ class StrictConfirmationQuestionTest extends TestCase
      * @param bool   $expected
      * @param bool   $default
      */
-    public function testAskConfirmation($question, $expected, $default = true)
+    public function testAskConfirmation(string $question, bool $expected, bool $default = true): void
     {
         list($input, $dialog) = $this->createInput($question."\n");
 
@@ -77,7 +77,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @phpstan-return list<array{string, bool}>|list<array{string, bool, bool}>
      */
-    public function getAskConfirmationData()
+    public function getAskConfirmationData(): array
     {
         return array(
             array('', true),
@@ -89,7 +89,7 @@ class StrictConfirmationQuestionTest extends TestCase
         );
     }
 
-    public function testAskConfirmationWithCustomTrueAndFalseAnswer()
+    public function testAskConfirmationWithCustomTrueAndFalseAnswer(): void
     {
         $question = new StrictConfirmationQuestion('Do you like French fries?', false, '/^ja$/i', '/^nein$/i');
 
@@ -105,7 +105,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @return resource
      */
-    protected function getInputStream($input)
+    protected function getInputStream(string $input)
     {
         $stream = fopen('php://memory', 'r+', false);
         $this->assertNotFalse($stream);
@@ -119,7 +119,7 @@ class StrictConfirmationQuestionTest extends TestCase
     /**
      * @return StreamOutput
      */
-    protected function createOutputInterface()
+    protected function createOutputInterface(): StreamOutput
     {
         return new StreamOutput(fopen('php://memory', 'r+', false));
     }
@@ -131,7 +131,7 @@ class StrictConfirmationQuestionTest extends TestCase
      *
      * @phpstan-return array{ArrayInput, QuestionHelper}
      */
-    protected function createInput($entry)
+    protected function createInput(string $entry): array
     {
         $input = new ArrayInput(array('--no-interaction'));
         $input->setStream($this->getInputStream($entry));

@@ -2,6 +2,7 @@
 <?php
 
 $cwd = getcwd();
+assert(is_string($cwd));
 chdir(__DIR__.'/../');
 $ts = rtrim(shell_exec('git log -n1 --pretty=%ct HEAD'));
 if (!is_numeric($ts)) {

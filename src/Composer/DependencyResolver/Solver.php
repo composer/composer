@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -23,8 +23,8 @@ use Composer\Package\BasePackage;
  */
 class Solver
 {
-    const BRANCH_LITERALS = 0;
-    const BRANCH_LEVEL = 1;
+    private const BRANCH_LITERALS = 0;
+    private const BRANCH_LEVEL = 1;
 
     /** @var PolicyInterface */
     protected $policy;
@@ -68,7 +68,7 @@ class Solver
     /**
      * @return int
      */
-    public function getRuleSetSize()
+    public function getRuleSetSize(): int
     {
         return \count($this->rules);
     }
@@ -76,7 +76,7 @@ class Solver
     /**
      * @return Pool
      */
-    public function getPool()
+    public function getPool(): Pool
     {
         return $this->pool;
     }
@@ -86,7 +86,7 @@ class Solver
     /**
      * @return void
      */
-    private function makeAssertionRuleDecisions()
+    private function makeAssertionRuleDecisions(): void
     {
         $decisionStart = \count($this->decisions) - 1;
 
@@ -159,7 +159,7 @@ class Solver
     /**
      * @return void
      */
-    protected function setupFixedMap(Request $request)
+    protected function setupFixedMap(Request $request): void
     {
         $this->fixedMap = array();
         foreach ($request->getFixedPackages() as $package) {
@@ -170,7 +170,7 @@ class Solver
     /**
      * @return void
      */
-    protected function checkForRootRequireProblems(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter)
+    protected function checkForRootRequireProblems(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter): void
     {
         foreach ($request->getRequires() as $packageName => $constraint) {
             if ($platformRequirementFilter->isIgnored($packageName)) {
@@ -190,7 +190,7 @@ class Solver
     /**
      * @return LockTransaction
      */
-    public function solve(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null)
+    public function solve(Request $request, PlatformRequirementFilterInterface $platformRequirementFilter = null): LockTransaction
     {
         $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
 
@@ -233,7 +233,7 @@ class Solver
      * @param  int       $level
      * @return Rule|null A rule on conflict, otherwise null.
      */
-    protected function propagate($level)
+    protected function propagate(int $level): ?Rule
     {
         while ($this->decisions->validOffset($this->propagateIndex)) {
             $decision = $this->decisions->atOffset($this->propagateIndex);
@@ -261,7 +261,7 @@ class Solver
      *
      * @return void
      */
-    private function revert($level)
+    private function revert(int $level): void
     {
         while (!$this->decisions->isEmpty()) {
             $literal = $this->decisions->lastLiteral();
@@ -302,7 +302,7 @@ class Solver
      * @param  string|int $literal
      * @return int
      */
-    private function setPropagateLearn($level, $literal, Rule $rule)
+    private function setPropagateLearn(int $level, $literal, Rule $rule): int
     {
         $level++;
 
@@ -351,7 +351,7 @@ class Solver
      * @param  int[] $decisionQueue
      * @return int
      */
-    private function selectAndInstall($level, array $decisionQueue, Rule $rule)
+    private function selectAndInstall(int $level, array $decisionQueue, Rule $rule): int
     {
         // choose best package to install from decisionQueue
         $literals = $this->policy->selectPreferredPackages($this->pool, $decisionQueue, $rule->getRequiredPackage());
@@ -370,7 +370,7 @@ class Solver
      * @param  int   $level
      * @return array{int, int, GenericRule, int}
      */
-    protected function analyze($level, Rule $rule)
+    protected function analyze(int $level, Rule $rule): array
     {
         $analyzedRule = $rule;
         $ruleLevel = 1;
@@ -518,7 +518,7 @@ class Solver
      * @param array<string, true> $ruleSeen
      * @return void
      */
-    private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen)
+    private function analyzeUnsolvableRule(Problem $problem, Rule $conflictRule, array &$ruleSeen): void
     {
         $why = spl_object_hash($conflictRule);
         $ruleSeen[$why] = true;
@@ -548,7 +548,7 @@ class Solver
     /**
      * @return int
      */
-    private function analyzeUnsolvable(Rule $conflictRule)
+    private function analyzeUnsolvable(Rule $conflictRule): int
     {
         $problem = new Problem();
         $problem->addRule($conflictRule);
@@ -606,7 +606,7 @@ class Solver
      *
      * @return void
      */
-    private function enableDisableLearnedRules()
+    private function enableDisableLearnedRules(): void
     {
         foreach ($this->rules->getIteratorFor(RuleSet::TYPE_LEARNED) as $rule) {
             $why = $this->learnedWhy[spl_object_hash($rule)];
@@ -631,7 +631,7 @@ class Solver
     /**
      * @return void
      */
-    private function runSat()
+    private function runSat(): void
     {
         $this->propagateIndex = 0;
 

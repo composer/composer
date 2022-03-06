@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -33,7 +33,7 @@ class FundCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('fund')
             ->setDescription('Discover how to help fund the maintenance of your dependencies.')
@@ -134,7 +134,7 @@ class FundCommand extends BaseCommand
      * @param mixed[] $fundings
      * @return mixed[]
      */
-    private function insertFundingData(array $fundings, CompletePackageInterface $package)
+    private function insertFundingData(array $fundings, CompletePackageInterface $package): array
     {
         foreach ($package->getFunding() as $fundingOption) {
             list($vendor, $packageName) = explode('/', $package->getPrettyName());

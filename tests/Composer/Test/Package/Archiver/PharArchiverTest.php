@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -13,10 +13,11 @@
 namespace Composer\Test\Package\Archiver;
 
 use Composer\Package\Archiver\PharArchiver;
+use Composer\Util\Platform;
 
 class PharArchiverTest extends ArchiverTest
 {
-    public function testTarArchive()
+    public function testTarArchive(): void
     {
         // Set up repository
         $this->setupDummyRepo();
@@ -31,7 +32,7 @@ class PharArchiverTest extends ArchiverTest
         $this->filesystem->removeDirectory(dirname($target));
     }
 
-    public function testZipArchive()
+    public function testZipArchive(): void
     {
         // Set up repository
         $this->setupDummyRepo();
@@ -51,9 +52,9 @@ class PharArchiverTest extends ArchiverTest
      *
      * @return void
      */
-    protected function setupDummyRepo()
+    protected function setupDummyRepo(): void
     {
-        $currentWorkDir = getcwd();
+        $currentWorkDir = Platform::getCwd();
         chdir($this->testDir);
 
         $this->writeFile('file.txt', 'content', $currentWorkDir);
@@ -72,7 +73,7 @@ class PharArchiverTest extends ArchiverTest
      *
      * @return void
      */
-    protected function writeFile($path, $content, $currentWorkDir)
+    protected function writeFile(string $path, string $content, string $currentWorkDir): void
     {
         if (!file_exists(dirname($path))) {
             mkdir(dirname($path), 0777, true);

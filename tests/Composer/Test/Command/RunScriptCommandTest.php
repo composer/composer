@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -24,7 +24,7 @@ class RunScriptCommandTest extends TestCase
      * @param bool $dev
      * @param bool $noDev
      */
-    public function testDetectAndPassDevModeToEventAndToDispatching($dev, $noDev)
+    public function testDetectAndPassDevModeToEventAndToDispatching(bool $dev, bool $noDev): void
     {
         $scriptName = 'testScript';
 
@@ -61,7 +61,7 @@ class RunScriptCommandTest extends TestCase
 
         $ed->expects($this->once())
             ->method('hasEventListeners')
-            ->with($this->callback(function (ScriptEvent $event) use ($scriptName, $expectedDevMode) {
+            ->with($this->callback(function (ScriptEvent $event) use ($scriptName, $expectedDevMode): bool {
                 return $event->getName() === $scriptName
                 && $event->isDevMode() === $expectedDevMode;
             }))
@@ -89,7 +89,7 @@ class RunScriptCommandTest extends TestCase
     }
 
     /** @return bool[][] **/
-    public function getDevOptions()
+    public function getDevOptions(): array
     {
         return array(
             array(true, true),
@@ -100,7 +100,7 @@ class RunScriptCommandTest extends TestCase
     }
 
     /** @return Composer **/
-    private function createComposerInstance()
+    private function createComposerInstance(): Composer
     {
         $composer = new Composer;
         $config = new Config;

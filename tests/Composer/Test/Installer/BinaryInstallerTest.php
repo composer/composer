@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -68,7 +68,7 @@ class BinaryInstallerTest extends TestCase
      * @dataProvider executableBinaryProvider
      * @param string $contents
      */
-    public function testInstallAndExecBinaryWithFullCompat($contents)
+    public function testInstallAndExecBinaryWithFullCompat(string $contents): void
     {
         $package = $this->createPackageMock();
         $package->expects($this->any())
@@ -87,7 +87,7 @@ class BinaryInstallerTest extends TestCase
         $this->assertEquals('success arg', $output);
     }
 
-    public function executableBinaryProvider()
+    public function executableBinaryProvider(): array
     {
         return array(
             'simple php file' => array(<<<'EOL'

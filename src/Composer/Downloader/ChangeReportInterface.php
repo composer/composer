@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -28,5 +28,5 @@ interface ChangeReportInterface
      * @param  string           $path    package directory
      * @return string|null      changes or null
      */
-    public function getLocalChanges(PackageInterface $package, $path);
+    public function getLocalChanges(PackageInterface $package, string $path): ?string;
 }

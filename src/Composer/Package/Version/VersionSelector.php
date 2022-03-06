@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -68,7 +68,7 @@ class VersionSelector
      * @param int                                              $repoSetFlags*
      * @return PackageInterface|false
      */
-    public function findBestCandidate($packageName, $targetPackageVersion = null, $preferredStability = 'stable', $platformRequirementFilter = null, $repoSetFlags = 0)
+    public function findBestCandidate(string $packageName, string $targetPackageVersion = null, string $preferredStability = 'stable', $platformRequirementFilter = null, int $repoSetFlags = 0)
     {
         if (!isset(BasePackage::$stabilities[$preferredStability])) {
             // If you get this, maybe you are still relying on the Composer 1.x signature where the 3rd arg was the php version
@@ -87,7 +87,7 @@ class VersionSelector
 
         if ($this->platformConstraints && !($platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter)) {
             $platformConstraints = $this->platformConstraints;
-            $candidates = array_filter($candidates, function ($pkg) use ($platformConstraints, $platformRequirementFilter) {
+            $candidates = array_filter($candidates, function ($pkg) use ($platformConstraints, $platformRequirementFilter): bool {
                 $reqs = $pkg->getRequires();
 
                 foreach ($reqs as $name => $link) {
@@ -172,7 +172,7 @@ class VersionSelector
      * @param  PackageInterface $package
      * @return string
      */
-    public function findRecommendedRequireVersion(PackageInterface $package)
+    public function findRecommendedRequireVersion(PackageInterface $package): string
     {
         // Extensions which are versioned in sync with PHP should rather be required as "*" to simplify
         // the requires and have only one required version to change when bumping the php requirement
@@ -211,7 +211,7 @@ class VersionSelector
      *
      * @return string
      */
-    private function transformVersion($version, $prettyVersion, $stability)
+    private function transformVersion(string $version, string $prettyVersion, string $stability): string
     {
         // attempt to transform 2.1.1 to 2.1
         // this allows you to upgrade through minor versions
@@ -242,7 +242,7 @@ class VersionSelector
     /**
      * @return VersionParser
      */
-    private function getParser()
+    private function getParser(): VersionParser
     {
         if ($this->parser === null) {
             $this->parser = new VersionParser();

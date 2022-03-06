@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -25,6 +25,7 @@ use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\Filesystem;
 use Composer\Util\Loop;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -41,7 +42,7 @@ class ArchiveCommand extends BaseCommand
     /**
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('archive')
@@ -61,7 +62,7 @@ The <info>archive</info> command creates an archive of the specified format
 containing the files and directories of the Composer project or the specified
 package in the specified version and writes it to the specified directory.
 
-<info>php composer.phar archive [--format=zip] [--dir=/foo] [package [version]]</info>
+<info>php composer.phar archive [--format=zip] [--dir=/foo] [--file=filename] [package [version]]</info>
 
 Read more at https://getcomposer.org/doc/03-cli.md#archive
 EOT
@@ -136,7 +137,7 @@ EOT
         $io->writeError('<info>Creating the archive into "'.$dest.'".</info>');
         $packagePath = $archiveManager->archive($package, $format, $dest, $fileName, $ignoreFilters);
         $fs = new Filesystem;
-        $shortPath = $fs->findShortestPath(getcwd(), $packagePath, true);
+        $shortPath = $fs->findShortestPath(Platform::getCwd(), $packagePath, true);
 
         $io->writeError('Created: ', false);
         $io->write(strlen($shortPath) < strlen($packagePath) ? $shortPath : $packagePath);
@@ -150,7 +151,7 @@ EOT
      *
      * @return (BasePackage&CompletePackageInterface)|false
      */
-    protected function selectPackage(IOInterface $io, $packageName, $version = null)
+    protected function selectPackage(IOInterface $io, string $packageName, ?string $version = null)
     {
         $io->writeError('<info>Searching for the specified package.</info>');
 
@@ -168,7 +169,7 @@ EOT
         if (count($packages) > 1) {
             $package = reset($packages);
             $io->writeError('<info>Found multiple matches, selected '.$package->getPrettyString().'.</info>');
-            $io->writeError('Alternatives were '.implode(', ', array_map(function ($p) {
+            $io->writeError('Alternatives were '.implode(', ', array_map(function ($p): string {
                 return $p->getPrettyString();
             }, $packages)).'.');
             $io->writeError('<comment>Please use a more specific constraint to pick a different package.</comment>');

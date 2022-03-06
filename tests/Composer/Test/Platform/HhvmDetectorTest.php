@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -31,7 +31,7 @@ class HhvmDetectorTest extends TestCase
         $this->hhvmDetector->reset();
     }
 
-    public function testHHVMVersionWhenExecutingInHHVM()
+    public function testHHVMVersionWhenExecutingInHHVM(): void
     {
         if (!defined('HHVM_VERSION_ID')) {
             self::markTestSkipped('Not running with HHVM');
@@ -40,7 +40,7 @@ class HhvmDetectorTest extends TestCase
         self::assertSame(self::versionIdToVersion(), $version);
     }
 
-    public function testHHVMVersionWhenExecutingInPHP()
+    public function testHHVMVersionWhenExecutingInPHP(): void
     {
         if (defined('HHVM_VERSION_ID')) {
             self::markTestSkipped('Running with HHVM');
@@ -71,7 +71,7 @@ class HhvmDetectorTest extends TestCase
     /**
      * @return ?string
      */
-    private static function versionIdToVersion()
+    private static function versionIdToVersion(): ?string
     {
         if (!defined('HHVM_VERSION_ID')) {
             return null;

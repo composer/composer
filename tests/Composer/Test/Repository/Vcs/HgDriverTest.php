@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -50,14 +50,14 @@ class HgDriverTest extends TestCase
      *
      * @param string $repositoryUrl
      */
-    public function testSupports($repositoryUrl)
+    public function testSupports(string $repositoryUrl): void
     {
         $this->assertTrue(
             HgDriver::supports($this->io, $this->config, $repositoryUrl)
         );
     }
 
-    public function supportsDataProvider()
+    public function supportsDataProvider(): array
     {
         return array(
             array('ssh://bitbucket.org/user/repo'),

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -33,7 +33,7 @@ class RepositoryFactory
      * @param  bool        $allowFilesystem
      * @return array|mixed
      */
-    public static function configFromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false)
+    public static function configFromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false)
     {
         if (0 === strpos($repository, 'http')) {
             $repoConfig = array('type' => 'composer', 'url' => $repository);
@@ -64,7 +64,7 @@ class RepositoryFactory
      * @param  bool                $allowFilesystem
      * @return RepositoryInterface
      */
-    public static function fromString(IOInterface $io, Config $config, $repository, $allowFilesystem = false, RepositoryManager $rm = null)
+    public static function fromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false, RepositoryManager $rm = null): RepositoryInterface
     {
         $repoConfig = static::configFromString($io, $config, $repository, $allowFilesystem);
 
@@ -77,7 +77,7 @@ class RepositoryFactory
      * @param  array<string, mixed> $repoConfig
      * @return RepositoryInterface
      */
-    public static function createRepo(IOInterface $io, Config $config, array $repoConfig, RepositoryManager $rm = null)
+    public static function createRepo(IOInterface $io, Config $config, array $repoConfig, RepositoryManager $rm = null): RepositoryInterface
     {
         if (!$rm) {
             $rm = static::manager($io, $config, Factory::createHttpDownloader($io, $config));
@@ -93,7 +93,7 @@ class RepositoryFactory
      * @param  RepositoryManager|null $rm
      * @return RepositoryInterface[]
      */
-    public static function defaultRepos(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null)
+    public static function defaultRepos(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null): array
     {
         if (!$config) {
             $config = Factory::createConfig($io);
@@ -118,7 +118,7 @@ class RepositoryFactory
      * @param  HttpDownloader    $httpDownloader
      * @return RepositoryManager
      */
-    public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, ProcessExecutor $process = null)
+    public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, ProcessExecutor $process = null): RepositoryManager
     {
         $rm = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher, $process);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
@@ -145,7 +145,7 @@ class RepositoryFactory
      *
      * @return RepositoryInterface[]
      */
-    private static function createRepos(RepositoryManager $rm, array $repoConfigs)
+    private static function createRepos(RepositoryManager $rm, array $repoConfigs): array
     {
         $repos = array();
 
@@ -164,7 +164,7 @@ class RepositoryFactory
             if ($repo['type'] === 'filesystem') {
                 $repos[$name] = new FilesystemRepository($repo['json']);
             } else {
-                $repos[$name] = $rm->createRepository($repo['type'], $repo, $index);
+                $repos[$name] = $rm->createRepository($repo['type'], $repo, (string) $index);
             }
         }
 
@@ -178,9 +178,9 @@ class RepositoryFactory
      *
      * @return string
      */
-    public static function generateRepositoryName($index, array $repo, array $existingRepos)
+    public static function generateRepositoryName($index, array $repo, array $existingRepos): string
     {
-        $name = is_int($index) && isset($repo['url']) ? Preg::replace('{^https?://}i', '', $repo['url']) : $index;
+        $name = is_int($index) && isset($repo['url']) ? Preg::replace('{^https?://}i', '', $repo['url']) : (string) $index;
         while (isset($existingRepos[$name])) {
             $name .= '2';
         }

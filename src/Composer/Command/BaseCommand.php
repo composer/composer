@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -70,7 +70,7 @@ abstract class BaseCommand extends Command
      * @return Composer|null
      * @deprecated since Composer 2.3.0 use requireComposer or tryComposer depending on whether you have $required set to true or false
      */
-    public function getComposer($required = true, $disablePlugins = null, $disableScripts = null)
+    public function getComposer(bool $required = true, ?bool $disablePlugins = null, ?bool $disableScripts = null)
     {
         if ($required) {
             return $this->requireComposer($disablePlugins, $disableScripts);
@@ -226,7 +226,7 @@ abstract class BaseCommand extends Command
      *
      * @return bool[] An array composed of the preferSource and preferDist values
      */
-    protected function getPreferredInstallOptions(Config $config, InputInterface $input, $keepVcsRequiresPreferSource = false)
+    protected function getPreferredInstallOptions(Config $config, InputInterface $input, bool $keepVcsRequiresPreferSource = false)
     {
         $preferSource = false;
         $preferDist = false;

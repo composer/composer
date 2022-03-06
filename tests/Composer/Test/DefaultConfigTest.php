@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -19,7 +19,7 @@ class DefaultConfigTest extends TestCase
     /**
      * @group TLS
      */
-    public function testDefaultValuesAreAsExpected()
+    public function testDefaultValuesAreAsExpected(): void
     {
         $config = new Config;
         $this->assertFalse($config->get('disable-tls'));

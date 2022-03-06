@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -23,7 +23,7 @@ class CompletePackageTest extends TestCase
      *
      * demonstrates several versioning schemes
      */
-    public function providerVersioningSchemes()
+    public function providerVersioningSchemes(): array
     {
         $provider[] = array('foo',              '1-beta');
         $provider[] = array('node',             '0.5.6');
@@ -40,7 +40,7 @@ class CompletePackageTest extends TestCase
      * @param string $name
      * @param string $version
      */
-    public function testPackageHasExpectedNamingSemantics($name, $version)
+    public function testPackageHasExpectedNamingSemantics(string $name, string $version): void
     {
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);
@@ -54,7 +54,7 @@ class CompletePackageTest extends TestCase
      * @param string $name
      * @param string $version
      */
-    public function testPackageHasExpectedVersioningSemantics($name, $version)
+    public function testPackageHasExpectedVersioningSemantics(string $name, string $version): void
     {
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);
@@ -69,7 +69,7 @@ class CompletePackageTest extends TestCase
      * @param string $name
      * @param string $version
      */
-    public function testPackageHasExpectedMarshallingSemantics($name, $version)
+    public function testPackageHasExpectedMarshallingSemantics(string $name, string $version): void
     {
         $versionParser = new VersionParser();
         $normVersion = $versionParser->normalize($version);
@@ -77,7 +77,7 @@ class CompletePackageTest extends TestCase
         $this->assertEquals(strtolower($name).'-'.$normVersion, (string) $package);
     }
 
-    public function testGetTargetDir()
+    public function testGetTargetDir(): void
     {
         $package = new Package('a', '1.0.0.0', '1.0');
 

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use React\Promise\PromiseInterface;
 use Composer\Package\Archiver\ArchivableFilesFinder;
 use Composer\Package\Dumper\ArrayDumper;
 use Composer\Package\PackageInterface;
@@ -32,13 +33,13 @@ use Composer\DependencyResolver\Operation\UninstallOperation;
  */
 class PathDownloader extends FileDownloader implements VcsCapableDownloaderInterface
 {
-    const STRATEGY_SYMLINK = 10;
-    const STRATEGY_MIRROR = 20;
+    private const STRATEGY_SYMLINK = 10;
+    private const STRATEGY_MIRROR = 20;
 
     /**
      * @inheritDoc
      */
-    public function download(PackageInterface $package, $path, PackageInterface $prevPackage = null, $output = true)
+    public function download(PackageInterface $package, string $path, PackageInterface $prevPackage = null, bool $output = true): PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
@@ -74,7 +75,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function install(PackageInterface $package, $path, $output = true)
+    public function install(PackageInterface $package, string $path, bool $output = true): PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         $url = $package->getDistUrl();
@@ -112,7 +113,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 } else {
                     $absolutePath = $path;
                     if (!$this->filesystem->isAbsolutePath($absolutePath)) {
-                        $absolutePath = getcwd() . DIRECTORY_SEPARATOR . $path;
+                        $absolutePath = Platform::getCwd() . DIRECTORY_SEPARATOR . $path;
                     }
                     $shortestPath = $this->filesystem->findShortestPath($absolutePath, $realUrl);
                     $path = rtrim($path, "/");
@@ -160,7 +161,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function remove(PackageInterface $package, $path, $output = true)
+    public function remove(PackageInterface $package, string $path, bool $output = true): PromiseInterface
     {
         $path = Filesystem::trimTrailingSlash($path);
         /**
@@ -189,8 +190,8 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         // not using realpath here as we do not want to resolve the symlink to the original dist url
         // it points to
         $fs = new Filesystem;
-        $absPath = $fs->isAbsolutePath($path) ? $path : getcwd() . '/' . $path;
-        $absDistUrl = $fs->isAbsolutePath($package->getDistUrl()) ? $package->getDistUrl() : getcwd() . '/' . $package->getDistUrl();
+        $absPath = $fs->isAbsolutePath($path) ? $path : Platform::getCwd() . '/' . $path;
+        $absDistUrl = $fs->isAbsolutePath($package->getDistUrl()) ? $package->getDistUrl() : Platform::getCwd() . '/' . $package->getDistUrl();
         if ($fs->normalizePath($absPath) === $fs->normalizePath($absDistUrl)) {
             if ($output) {
                 $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
@@ -205,7 +206,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    public function getVcsReference(PackageInterface $package, $path)
+    public function getVcsReference(PackageInterface $package, string $path): ?string
     {
         $path = Filesystem::trimTrailingSlash($path);
         $parser = new VersionParser;
@@ -223,7 +224,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
     /**
      * @inheritDoc
      */
-    protected function getInstallOperationAppendix(PackageInterface $package, $path)
+    protected function getInstallOperationAppendix(PackageInterface $package, string $path): string
     {
         $realUrl = realpath($package->getDistUrl());
 
@@ -249,7 +250,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      *
      * @phpstan-return array{self::STRATEGY_*, non-empty-list<self::STRATEGY_*>}
      */
-    private function computeAllowedStrategies(array $transportOptions)
+    private function computeAllowedStrategies(array $transportOptions): array
     {
         // When symlink transport option is null, both symlink and mirror are allowed
         $currentStrategy = self::STRATEGY_SYMLINK;
@@ -295,7 +296,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
      *
      * @return bool
      */
-    private function safeJunctions()
+    private function safeJunctions(): bool
     {
         // We need to call mklink, and rmdir on Windows 7 (version 6.1)
         return function_exists('proc_open') &&

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -28,7 +28,7 @@ class ComposerRepositoryTest extends TestCase
      * @param mixed[]              $expected
      * @param array<string, mixed> $repoPackages
      */
-    public function testLoadData(array $expected, array $repoPackages)
+    public function testLoadData(array $expected, array $repoPackages): void
     {
         $repoConfig = array(
             'url' => 'http://example.org',
@@ -61,7 +61,7 @@ class ComposerRepositoryTest extends TestCase
         }
     }
 
-    public function loadDataProvider()
+    public function loadDataProvider(): array
     {
         return array(
             // Old repository format
@@ -92,7 +92,7 @@ class ComposerRepositoryTest extends TestCase
         );
     }
 
-    public function testWhatProvides()
+    public function testWhatProvides(): void
     {
         $repo = $this->getMockBuilder('Composer\Repository\ComposerRepository')
             ->setConstructorArgs(array(
@@ -156,7 +156,7 @@ class ComposerRepositoryTest extends TestCase
         $this->assertSame($packages['2'], $packages['2-alias']->getAliasOf());
     }
 
-    public function testSearchWithType()
+    public function testSearchWithType(): void
     {
         $repoConfig = array(
             'url' => 'http://example.org',
@@ -198,7 +198,7 @@ class ComposerRepositoryTest extends TestCase
         );
     }
 
-    public function testSearchWithSpecialChars()
+    public function testSearchWithSpecialChars(): void
     {
         $repoConfig = array(
             'url' => 'http://example.org',
@@ -225,7 +225,7 @@ class ComposerRepositoryTest extends TestCase
         );
     }
 
-    public function testSearchWithAbandonedPackages()
+    public function testSearchWithAbandonedPackages(): void
     {
         $repoConfig = array(
             'url' => 'http://example.org',
@@ -279,7 +279,7 @@ class ComposerRepositoryTest extends TestCase
      * @param string $url
      * @param string $repositoryUrl
      */
-    public function testCanonicalizeUrl($expected, $url, $repositoryUrl)
+    public function testCanonicalizeUrl(string $expected, string $url, string $repositoryUrl): void
     {
         $repository = new ComposerRepository(
             array('url' => $repositoryUrl),
@@ -303,7 +303,7 @@ class ComposerRepositoryTest extends TestCase
         $this->assertSame($expected, $method->invoke($repository, $url));
     }
 
-    public function provideCanonicalizeUrlTestCases()
+    public function provideCanonicalizeUrlTestCases(): array
     {
         return array(
             array(
@@ -341,7 +341,7 @@ class ComposerRepositoryTest extends TestCase
         );
     }
 
-    public function testGetProviderNamesWillReturnPartialPackageNames()
+    public function testGetProviderNamesWillReturnPartialPackageNames(): void
     {
         $httpDownloader = $this->getHttpDownloaderMock();
         $httpDownloader->expects(

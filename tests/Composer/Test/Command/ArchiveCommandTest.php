@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -16,11 +16,12 @@ use Composer\Composer;
 use Composer\Config;
 use Composer\Factory;
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 use Symfony\Component\Console\Input\ArrayInput;
 
 class ArchiveCommandTest extends TestCase
 {
-    public function testUsesConfigFromComposerObject()
+    public function testUsesConfigFromComposerObject(): void
     {
         $input = new ArrayInput(array());
 
@@ -42,7 +43,7 @@ class ArchiveCommandTest extends TestCase
             ->getMock();
 
         $manager->expects($this->once())->method('archive')
-            ->with($package, 'zip', '.', null, false)->willReturn(getcwd());
+            ->with($package, 'zip', '.', null, false)->willReturn(Platform::getCwd());
 
         $composer->setArchiveManager($manager);
         $composer->setEventDispatcher($ed);
@@ -64,7 +65,7 @@ class ArchiveCommandTest extends TestCase
         $command->run($input, $output);
     }
 
-    public function testUsesConfigFromFactoryWhenComposerIsNotDefined()
+    public function testUsesConfigFromFactoryWhenComposerIsNotDefined(): void
     {
         $input = new ArrayInput(array());
 

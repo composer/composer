@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -24,7 +24,7 @@ class Keys
      *
      * @return string
      */
-    public static function fingerprint($path)
+    public static function fingerprint(string $path): string
     {
         $hash = strtoupper(hash('sha256', Preg::replace('{\s}', '', file_get_contents($path))));
 

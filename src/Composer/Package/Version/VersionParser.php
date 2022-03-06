@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -20,7 +20,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 
 class VersionParser extends SemverVersionParser
 {
-    const DEFAULT_BRANCH_ALIAS = '9999999-dev';
+    public const DEFAULT_BRANCH_ALIAS = '9999999-dev';
 
     /** @var array<string, ConstraintInterface> Constraint parsing cache */
     private static $constraints = array();
@@ -28,7 +28,7 @@ class VersionParser extends SemverVersionParser
     /**
      * @inheritDoc
      */
-    public function parseConstraints($constraints)
+    public function parseConstraints($constraints): ConstraintInterface
     {
         if (!isset(self::$constraints[$constraints])) {
             self::$constraints[$constraints] = parent::parseConstraints($constraints);
@@ -47,7 +47,7 @@ class VersionParser extends SemverVersionParser
      *
      * @return list<array{name: string, version?: string}>
      */
-    public function parseNameVersionPairs(array $pairs)
+    public function parseNameVersionPairs(array $pairs): array
     {
         $pairs = array_values($pairs);
         $result = array();
@@ -76,7 +76,7 @@ class VersionParser extends SemverVersionParser
      *
      * @return bool
      */
-    public static function isUpgrade($normalizedFrom, $normalizedTo)
+    public static function isUpgrade(string $normalizedFrom, string $normalizedTo): bool
     {
         if ($normalizedFrom === $normalizedTo) {
             return true;

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -42,7 +42,7 @@ trait PackageDiscoveryTrait
     /**
      * @return CompositeRepository
      */
-    protected function getRepos()
+    protected function getRepos(): CompositeRepository
     {
         if (null === $this->repos) {
             $this->repos = new CompositeRepository(array_merge(

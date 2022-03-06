@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -26,7 +26,7 @@ class Url
      * @param  string $ref
      * @return string the updated URL
      */
-    public static function updateDistReference(Config $config, $url, $ref)
+    public static function updateDistReference(Config $config, string $url, string $ref): string
     {
         $host = parse_url($url, PHP_URL_HOST);
 
@@ -64,7 +64,7 @@ class Url
      * @param  string $url
      * @return string
      */
-    public static function getOrigin(Config $config, $url)
+    public static function getOrigin(Config $config, string $url): string
     {
         if (0 === strpos($url, 'file://')) {
             return $url;
@@ -108,13 +108,13 @@ class Url
      * @param  string $url
      * @return string
      */
-    public static function sanitize($url)
+    public static function sanitize(string $url): string
     {
         // GitHub repository rename result in redirect locations containing the access_token as GET parameter
         // e.g. https://api.github.com/repositories/9999999999?access_token=github_token
         $url = Preg::replace('{([&?]access_token=)[^&]+}', '$1***', $url);
 
-        $url = Preg::replaceCallback('{^(?P<prefix>[a-z0-9]+://)?(?P<user>[^:/\s@]+):(?P<password>[^@\s/]+)@}i', function ($m) {
+        $url = Preg::replaceCallback('{^(?P<prefix>[a-z0-9]+://)?(?P<user>[^:/\s@]+):(?P<password>[^@\s/]+)@}i', function ($m): string {
             // if the username looks like a long (12char+) hex string, or a modern github token (e.g. ghp_xxx) we obfuscate that
             if (Preg::isMatch('{^([a-f0-9]{12,}|gh[a-z]_[a-zA-Z0-9_]+)$}', $m['user'])) {
                 return $m['prefix'].'***:***@';

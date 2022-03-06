@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -28,7 +28,7 @@ class GitExcludeFilter extends BaseExcludeFilter
      *
      * @param string $sourcePath
      */
-    public function __construct($sourcePath)
+    public function __construct(string $sourcePath)
     {
         parent::__construct($sourcePath);
 
@@ -50,7 +50,7 @@ class GitExcludeFilter extends BaseExcludeFilter
      *
      * @return array{0: string, 1: bool, 2: bool}|null An exclude pattern for filter()
      */
-    public function parseGitAttributesLine($line)
+    public function parseGitAttributesLine(string $line): ?array
     {
         $parts = Preg::split('#\s+#', $line);
 

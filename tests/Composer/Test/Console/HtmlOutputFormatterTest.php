@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
 class HtmlOutputFormatterTest extends TestCase
 {
-    public function testFormatting()
+    public function testFormatting(): void
     {
         $formatter = new HtmlOutputFormatter(array(
             'warning' => new OutputFormatterStyle('black', 'yellow'),

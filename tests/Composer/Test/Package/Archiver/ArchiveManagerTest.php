@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -18,6 +18,7 @@ use Composer\Package\Archiver\ArchiveManager;
 use Composer\Package\CompletePackage;
 use Composer\Util\Loop;
 use Composer\Test\Mock\FactoryMock;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 
 class ArchiveManagerTest extends ArchiverTest
@@ -48,7 +49,7 @@ class ArchiveManagerTest extends ArchiverTest
         $this->targetDir = $this->testDir.'/composer_archiver_tests';
     }
 
-    public function testUnknownFormat()
+    public function testUnknownFormat(): void
     {
         self::expectException('RuntimeException');
 
@@ -57,7 +58,7 @@ class ArchiveManagerTest extends ArchiverTest
         $this->manager->archive($package, '__unknown_format__', $this->targetDir);
     }
 
-    public function testArchiveTar()
+    public function testArchiveTar(): void
     {
         $this->skipIfNotExecutable('git');
 
@@ -76,7 +77,7 @@ class ArchiveManagerTest extends ArchiverTest
         unlink($target);
     }
 
-    public function testArchiveCustomFileName()
+    public function testArchiveCustomFileName(): void
     {
         $this->skipIfNotExecutable('git');
 
@@ -104,7 +105,7 @@ class ArchiveManagerTest extends ArchiverTest
      *
      * @return string
      */
-    protected function getTargetName(CompletePackage $package, $format, $fileName = null)
+    protected function getTargetName(CompletePackage $package, string $format, ?string $fileName = null): string
     {
         if (null === $fileName) {
             $packageName = $this->manager->getPackageFilename($package);
@@ -120,9 +121,9 @@ class ArchiveManagerTest extends ArchiverTest
      *
      * @return void
      */
-    protected function setupGitRepo()
+    protected function setupGitRepo(): void
     {
-        $currentWorkDir = getcwd();
+        $currentWorkDir = Platform::getCwd();
         chdir($this->testDir);
 
         $output = null;

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use React\Promise\PromiseInterface;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
@@ -27,7 +28,7 @@ use RarArchive;
  */
 class RarDownloader extends ArchiveDownloader
 {
-    protected function extract(PackageInterface $package, $file, $path)
+    protected function extract(PackageInterface $package, string $file, string $path): PromiseInterface
     {
         $processError = null;
 

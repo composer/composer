@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -22,7 +22,7 @@ use Composer\Test\TestCase;
  */
 class PlatformTest extends TestCase
 {
-    public function testExpandPath()
+    public function testExpandPath(): void
     {
         putenv('TESTENV=/home/test');
         $this->assertEquals('/home/test/myPath', Platform::expandPath('%TESTENV%/myPath'));
@@ -30,7 +30,7 @@ class PlatformTest extends TestCase
         $this->assertEquals((getenv('HOME') ?: getenv('USERPROFILE')) . '/test', Platform::expandPath('~/test'));
     }
 
-    public function testIsWindows()
+    public function testIsWindows(): void
     {
         // Compare 2 common tests for Windows to the built-in Windows test
         $this->assertEquals(('\\' === DIRECTORY_SEPARATOR), Platform::isWindows());

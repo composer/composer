@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -102,7 +102,7 @@ class ArchivableFilesFinderTest extends TestCase
         $fs->removeDirectory($this->sources);
     }
 
-    public function testManualExcludes()
+    public function testManualExcludes(): void
     {
         $excludes = array(
             'prefixB.foo',
@@ -154,7 +154,7 @@ class ArchivableFilesFinderTest extends TestCase
         ));
     }
 
-    public function testGitExcludes()
+    public function testGitExcludes(): void
     {
         $this->skipIfNotExecutable('git');
 
@@ -202,7 +202,7 @@ class ArchivableFilesFinderTest extends TestCase
         ));
     }
 
-    public function testSkipExcludes()
+    public function testSkipExcludes(): void
     {
         $excludes = array(
             'prefixB.foo',
@@ -260,7 +260,7 @@ class ArchivableFilesFinderTest extends TestCase
     /**
      * @return string[]
      */
-    protected function getArchivableFiles()
+    protected function getArchivableFiles(): array
     {
         $files = array();
         foreach ($this->finder as $file) {
@@ -279,7 +279,7 @@ class ArchivableFilesFinderTest extends TestCase
      *
      * @return string[]
      */
-    protected function getArchivedFiles($command)
+    protected function getArchivedFiles(string $command): array
     {
         $process = Process::fromShellCommandline($command, $this->sources);
         $process->run();
@@ -289,7 +289,7 @@ class ArchivableFilesFinderTest extends TestCase
 
         $files = array();
         foreach ($iterator as $file) {
-            $files[] = Preg::replace('#^phar://'.preg_quote($this->sources, '#').'/archive\.zip/archive#', '', $this->fs->normalizePath($file));
+            $files[] = Preg::replace('#^phar://'.preg_quote($this->sources, '#').'/archive\.zip/archive#', '', $this->fs->normalizePath((string) $file));
         }
 
         unset($archive, $iterator, $file);
@@ -303,7 +303,7 @@ class ArchivableFilesFinderTest extends TestCase
      *
      * @return void
      */
-    protected function assertArchivableFiles($expectedFiles)
+    protected function assertArchivableFiles(array $expectedFiles): void
     {
         $actualFiles = $this->getArchivableFiles();
 

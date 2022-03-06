@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -30,7 +30,7 @@ final class TlsHelper
      *
      * @return bool
      */
-    public static function checkCertificateHost($certificate, $hostname, &$cn = null)
+    public static function checkCertificateHost($certificate, string $hostname, string &$cn = null): bool
     {
         $names = self::getCertificateNames($certificate);
 
@@ -61,7 +61,7 @@ final class TlsHelper
      *
      * @return array{cn: string, san: string[]}|null
      */
-    public static function getCertificateNames($certificate)
+    public static function getCertificateNames($certificate): ?array
     {
         if (is_array($certificate)) {
             $info = $certificate;
@@ -78,7 +78,7 @@ final class TlsHelper
 
         if (isset($info['extensions']['subjectAltName'])) {
             $subjectAltNames = Preg::split('{\s*,\s*}', $info['extensions']['subjectAltName']);
-            $subjectAltNames = array_filter(array_map(function ($name) {
+            $subjectAltNames = array_filter(array_map(function ($name): ?string {
                 if (0 === strpos($name, 'DNS:')) {
                     return strtolower(ltrim(substr($name, 4)));
                 }
@@ -136,7 +136,7 @@ final class TlsHelper
      * @param string $certificate
      * @return string
      */
-    public static function getCertificateFingerprint($certificate)
+    public static function getCertificateFingerprint(string $certificate): string
     {
         $pubkey = openssl_get_publickey($certificate);
         if ($pubkey === false) {
@@ -161,7 +161,7 @@ final class TlsHelper
      *
      * @return bool
      */
-    public static function isOpensslParseSafe()
+    public static function isOpensslParseSafe(): bool
     {
         return CaBundle::isOpensslParseSafe();
     }
@@ -173,13 +173,13 @@ final class TlsHelper
      *
      * @return callable|null
      */
-    private static function certNameMatcher($certName)
+    private static function certNameMatcher(string $certName): ?callable
     {
         $wildcards = substr_count($certName, '*');
 
         if (0 === $wildcards) {
             // Literal match.
-            return function ($hostname) use ($certName) {
+            return function ($hostname) use ($certName): bool {
                 return $hostname === $certName;
             };
         }
@@ -203,7 +203,7 @@ final class TlsHelper
             $wildcardRegex = str_replace('\\*', '[a-z0-9-]+', $wildcardRegex);
             $wildcardRegex = "{^{$wildcardRegex}$}";
 
-            return function ($hostname) use ($wildcardRegex) {
+            return function ($hostname) use ($wildcardRegex): bool {
                 return Preg::isMatch($wildcardRegex, $hostname);
             };
         }

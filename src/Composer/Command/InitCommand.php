@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -456,11 +456,10 @@ EOT
     }
 
     /**
-     * @private
      * @param  string $author
      * @return array{name: string, email: string|null}
      */
-    public function parseAuthorString($author)
+    private function parseAuthorString(string $author): array
     {
         if (Preg::isMatch('/^(?P<name>[- .,\p{L}\p{N}\p{Mn}\'’"()]+)(?:\s+<(?P<email>.+?)>)?$/u', $author, $match)) {
             $hasEmail = isset($match['email']) && '' !== $match['email'];
@@ -485,7 +484,7 @@ EOT
      *
      * @return array<int, array{name: string, email?: string}>
      */
-    protected function formatAuthors($author)
+    protected function formatAuthors(string $author): array
     {
         $author = $this->parseAuthorString($author);
         if (null === $author['email']) {
@@ -504,14 +503,14 @@ EOT
      *
      * @return string|null
      */
-    public function namespaceFromPackageName($packageName)
+    public function namespaceFromPackageName(string $packageName): ?string
     {
         if (!$packageName || strpos($packageName, '/') === false) {
             return null;
         }
 
         $namespace = array_map(
-            function ($part) {
+            function ($part): string {
                 $part = Preg::replace('/[^a-z0-9]/i', ' ', $part);
                 $part = ucwords($part);
 
@@ -526,7 +525,7 @@ EOT
     /**
      * @return array<string, string>
      */
-    protected function getGitConfig()
+    protected function getGitConfig(): array
     {
         if (null !== $this->gitConfig) {
             return $this->gitConfig;
@@ -567,7 +566,7 @@ EOT
      *
      * @return bool
      */
-    protected function hasVendorIgnore($ignoreFile, $vendor = 'vendor')
+    protected function hasVendorIgnore(string $ignoreFile, string $vendor = 'vendor'): bool
     {
         if (!file_exists($ignoreFile)) {
             return false;
@@ -591,7 +590,7 @@ EOT
      *
      * @return void
      */
-    protected function addVendorIgnore($ignoreFile, $vendor = '/vendor/')
+    protected function addVendorIgnore(string $ignoreFile, string $vendor = '/vendor/'): void
     {
         $contents = "";
         if (file_exists($ignoreFile)) {
@@ -610,7 +609,7 @@ EOT
      *
      * @return bool
      */
-    protected function isValidEmail($email)
+    protected function isValidEmail(string $email): bool
     {
         // assume it's valid if we can't validate it
         if (!function_exists('filter_var')) {
@@ -623,7 +622,7 @@ EOT
     /**
      * @return void
      */
-    private function updateDependencies(OutputInterface $output)
+    private function updateDependencies(OutputInterface $output): void
     {
         try {
             $updateCommand = $this->getApplication()->find('update');
@@ -637,7 +636,7 @@ EOT
     /**
      * @return void
      */
-    private function runDumpAutoloadCommand(OutputInterface $output)
+    private function runDumpAutoloadCommand(OutputInterface $output): void
     {
         try {
             $command = $this->getApplication()->find('dump-autoload');
@@ -652,7 +651,7 @@ EOT
      * @param array<string, string|array<string>> $options
      * @return bool
      */
-    private function hasDependencies($options)
+    private function hasDependencies(array $options): bool
     {
         $requires = (array) $options['require'];
         $devRequires = isset($options['require-dev']) ? (array) $options['require-dev'] : array();

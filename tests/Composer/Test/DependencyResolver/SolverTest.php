@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -24,6 +24,7 @@ use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\DependencyResolver\Request;
 use Composer\DependencyResolver\Solver;
 use Composer\DependencyResolver\SolverProblemsException;
+use Composer\Package\PackageInterface;
 use Composer\Package\Link;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
@@ -58,7 +59,7 @@ class SolverTest extends TestCase
         $this->policy = new DefaultPolicy;
     }
 
-    public function testSolverInstallSingle()
+    public function testSolverInstallSingle(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->reposComplete();
@@ -70,7 +71,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverRemoveIfNotRequested()
+    public function testSolverRemoveIfNotRequested(): void
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->reposComplete();
@@ -80,7 +81,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testInstallNonExistingPackageFails()
+    public function testInstallNonExistingPackageFails(): void
     {
         $this->repo->addPackage($this->getPackage('A', '1.0'));
         $this->reposComplete();
@@ -99,7 +100,7 @@ class SolverTest extends TestCase
         }
     }
 
-    public function testSolverInstallSamePackageFromDifferentRepositories()
+    public function testSolverInstallSamePackageFromDifferentRepositories(): void
     {
         $repo1 = new ArrayRepository;
         $repo2 = new ArrayRepository;
@@ -117,7 +118,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverInstallWithDeps()
+    public function testSolverInstallWithDeps(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -135,7 +136,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverInstallHonoursNotEqualOperator()
+    public function testSolverInstallHonoursNotEqualOperator(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -161,7 +162,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverInstallWithDepsInOrder()
+    public function testSolverInstallWithDepsInOrder(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -207,7 +208,7 @@ class SolverTest extends TestCase
      *
      * CAUTION: IF THIS TEST EVER FAILS, SOLVER BEHAVIOR HAS CHANGED AND MAY BREAK DOWNSTREAM USERS
      */
-    public function testSolverMultiPackageNameVersionResolutionDependsOnRequireOrder()
+    public function testSolverMultiPackageNameVersionResolutionDependsOnRequireOrder(): void
     {
         $this->repo->addPackage($php74 = $this->getPackage('ourcustom/PHP', '7.4.23'));
         $this->repo->addPackage($php80 = $this->getPackage('ourcustom/PHP', '8.0.10'));
@@ -256,7 +257,7 @@ class SolverTest extends TestCase
      *
      * CAUTION: IF THIS TEST EVER FAILS, SOLVER BEHAVIOR HAS CHANGED AND MAY BREAK DOWNSTREAM USERS
      */
-    public function testSolverMultiPackageNameVersionResolutionIsIndependentOfRequireOrderIfOrderedDescendingByRequirement()
+    public function testSolverMultiPackageNameVersionResolutionIsIndependentOfRequireOrderIfOrderedDescendingByRequirement(): void
     {
         $this->repo->addPackage($php74 = $this->getPackage('ourcustom/PHP', '7.4'));
         $this->repo->addPackage($php80 = $this->getPackage('ourcustom/PHP', '8.0'));
@@ -297,7 +298,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverFixLocked()
+    public function testSolverFixLocked(): void
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->reposComplete();
@@ -307,7 +308,7 @@ class SolverTest extends TestCase
         $this->checkSolverResult(array());
     }
 
-    public function testSolverFixLockedWithAlternative()
+    public function testSolverFixLockedWithAlternative(): void
     {
         $this->repo->addPackage($this->getPackage('A', '1.0'));
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
@@ -318,7 +319,7 @@ class SolverTest extends TestCase
         $this->checkSolverResult(array());
     }
 
-    public function testSolverUpdateDoesOnlyUpdate()
+    public function testSolverUpdateDoesOnlyUpdate(): void
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repoLocked->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -335,7 +336,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverUpdateSingle()
+    public function testSolverUpdateSingle(): void
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.1'));
@@ -348,7 +349,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverUpdateAll()
+    public function testSolverUpdateAll(): void
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repoLocked->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -368,7 +369,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverUpdateCurrent()
+    public function testSolverUpdateCurrent(): void
     {
         $this->repoLocked->addPackage($this->getPackage('A', '1.0'));
         $this->repo->addPackage($this->getPackage('A', '1.0'));
@@ -379,7 +380,7 @@ class SolverTest extends TestCase
         $this->checkSolverResult(array());
     }
 
-    public function testSolverUpdateOnlyUpdatesSelectedPackage()
+    public function testSolverUpdateOnlyUpdatesSelectedPackage(): void
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repoLocked->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -396,7 +397,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverUpdateConstrained()
+    public function testSolverUpdateConstrained(): void
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.2'));
@@ -412,7 +413,7 @@ class SolverTest extends TestCase
         )));
     }
 
-    public function testSolverUpdateFullyConstrained()
+    public function testSolverUpdateFullyConstrained(): void
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($newPackageA = $this->getPackage('A', '1.2'));
@@ -428,7 +429,7 @@ class SolverTest extends TestCase
         )));
     }
 
-    public function testSolverUpdateFullyConstrainedPrunesInstalledPackages()
+    public function testSolverUpdateFullyConstrainedPrunesInstalledPackages(): void
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repoLocked->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -451,7 +452,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverAllJobs()
+    public function testSolverAllJobs(): void
     {
         $this->repoLocked->addPackage($packageD = $this->getPackage('D', '1.0'));
         $this->repoLocked->addPackage($oldPackageC = $this->getPackage('C', '1.0'));
@@ -476,7 +477,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverThreeAlternativeRequireAndConflict()
+    public function testSolverThreeAlternativeRequireAndConflict(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '2.0'));
         $this->repo->addPackage($middlePackageB = $this->getPackage('B', '1.0'));
@@ -495,7 +496,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testSolverObsolete()
+    public function testSolverObsolete(): void
     {
         $this->repoLocked->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -511,7 +512,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testInstallOneOfTwoAlternatives()
+    public function testInstallOneOfTwoAlternatives(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('A', '1.0'));
@@ -525,7 +526,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testInstallProvider()
+    public function testInstallProvider(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
@@ -542,7 +543,7 @@ class SolverTest extends TestCase
         $this->solver->solve($this->request);
     }
 
-    public function testSkipReplacerOfExistingPackage()
+    public function testSkipReplacerOfExistingPackage(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
@@ -560,7 +561,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testNoInstallReplacerOfMissingPackage()
+    public function testNoInstallReplacerOfMissingPackage(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
@@ -576,7 +577,7 @@ class SolverTest extends TestCase
         $this->solver->solve($this->request);
     }
 
-    public function testSkipReplacedPackageIfReplacerIsSelected()
+    public function testSkipReplacedPackageIfReplacerIsSelected(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageQ = $this->getPackage('Q', '1.0'));
@@ -595,7 +596,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testPickOlderIfNewerConflicts()
+    public function testPickOlderIfNewerConflicts(): void
     {
         $this->repo->addPackage($packageX = $this->getPackage('X', '1.0'));
         $packageX->setRequires(array(
@@ -633,7 +634,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testInstallCircularRequire()
+    public function testInstallCircularRequire(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB1 = $this->getPackage('B', '0.9'));
@@ -651,7 +652,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testInstallAlternativeWithCircularRequire()
+    public function testInstallAlternativeWithCircularRequire(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -681,7 +682,7 @@ class SolverTest extends TestCase
      * If a replacer D replaces B and C with C not otherwise available,
      * D must be installed instead of the original B.
      */
-    public function testUseReplacerIfNecessary()
+    public function testUseReplacerIfNecessary(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -714,7 +715,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testIssue265()
+    public function testIssue265(): void
     {
         $this->repo->addPackage($packageA1 = $this->getPackage('A', '2.0.999999-dev'));
         $this->repo->addPackage($packageA2 = $this->getPackage('A', '2.1-dev'));
@@ -749,7 +750,7 @@ class SolverTest extends TestCase
         $this->solver->solve($this->request);
     }
 
-    public function testConflictResultEmpty()
+    public function testConflictResultEmpty(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -782,7 +783,7 @@ class SolverTest extends TestCase
         }
     }
 
-    public function testUnsatisfiableRequires()
+    public function testUnsatisfiableRequires(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -812,7 +813,7 @@ class SolverTest extends TestCase
         }
     }
 
-    public function testRequireMismatchException()
+    public function testRequireMismatchException(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -860,7 +861,7 @@ class SolverTest extends TestCase
         }
     }
 
-    public function testLearnLiteralsWithSortedRuleLiterals()
+    public function testLearnLiteralsWithSortedRuleLiterals(): void
     {
         $this->repo->addPackage($packageTwig2 = $this->getPackage('twig/twig', '2.0'));
         $this->repo->addPackage($packageTwig16 = $this->getPackage('twig/twig', '1.6'));
@@ -887,7 +888,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testInstallRecursiveAliasDependencies()
+    public function testInstallRecursiveAliasDependencies(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '2.0'));
@@ -913,7 +914,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testInstallDevAlias()
+    public function testInstallDevAlias(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '2.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -936,7 +937,7 @@ class SolverTest extends TestCase
         ));
     }
 
-    public function testInstallRootAliasesIfAliasOfIsInstalled()
+    public function testInstallRootAliasesIfAliasOfIsInstalled(): void
     {
         // root aliased, required
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
@@ -975,7 +976,7 @@ class SolverTest extends TestCase
      * In particular in this case the goal is to first have the solver decide X 2.0 should not be installed to later
      * decide to learn that X 2.0 must be installed and revert decisions to retry solving with this new assumption.
      */
-    public function testLearnPositiveLiteral()
+    public function testLearnPositiveLiteral(): void
     {
         $this->repo->addPackage($packageA = $this->getPackage('A', '1.0'));
         $this->repo->addPackage($packageB = $this->getPackage('B', '1.0'));
@@ -1042,7 +1043,7 @@ class SolverTest extends TestCase
     /**
      * @return void
      */
-    protected function reposComplete()
+    protected function reposComplete(): void
     {
         $this->repoSet->addRepository($this->repo);
         $this->repoSet->addRepository($this->repoLocked);
@@ -1051,7 +1052,7 @@ class SolverTest extends TestCase
     /**
      * @return void
      */
-    protected function createSolver()
+    protected function createSolver(): void
     {
         $io = new NullIO();
         $this->pool = $this->repoSet->createPool($this->request, $io);
@@ -1059,10 +1060,10 @@ class SolverTest extends TestCase
     }
 
     /**
-     * @param array<array<string, string>> $expected
+     * @param array<array{job: string, package?: PackageInterface, from?: PackageInterface, to?: PackageInterface}> $expected
      * @return void
      */
-    protected function checkSolverResult(array $expected)
+    protected function checkSolverResult(array $expected): void
     {
         $this->createSolver();
         $transaction = $this->solver->solve($this->request);

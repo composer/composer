@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -20,7 +20,7 @@ use Composer\Test\TestCase;
  */
 class ComposerSchemaTest extends TestCase
 {
-    public function testNamePattern()
+    public function testNamePattern(): void
     {
         $expectedError = array(
             array(
@@ -37,13 +37,13 @@ class ComposerSchemaTest extends TestCase
         $this->assertEquals($expectedError, $this->check($json));
     }
 
-    public function testOptionalAbandonedProperty()
+    public function testOptionalAbandonedProperty(): void
     {
         $json = '{"name": "vendor/package", "description": "description", "abandoned": true}';
         $this->assertTrue($this->check($json));
     }
 
-    public function testRequireTypes()
+    public function testRequireTypes(): void
     {
         $json = '{"name": "vendor/package", "description": "description", "require": {"a": ["b"]} }';
         $this->assertEquals(array(
@@ -51,7 +51,7 @@ class ComposerSchemaTest extends TestCase
         ), $this->check($json));
     }
 
-    public function testMinimumStabilityValues()
+    public function testMinimumStabilityValues(): void
     {
         $expectedError = array(
             array(
@@ -94,7 +94,7 @@ class ComposerSchemaTest extends TestCase
      * @param string $json
      * @return mixed
      */
-    private function check($json)
+    private function check(string $json)
     {
         $validator = new Validator();
         $validator->check(json_decode($json), (object) array('$ref' => 'file://' . __DIR__ . '/../../../../res/composer-schema.json'));

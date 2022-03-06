@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -50,7 +50,7 @@ class GitDownloaderTest extends TestCase
      * @param string|bool $version
      * @return void
      */
-    private function initGitVersion($version)
+    private function initGitVersion($version): void
     {
         // reset the static version cache
         $refl = new \ReflectionProperty('Composer\Util\Git', 'version');
@@ -62,7 +62,7 @@ class GitDownloaderTest extends TestCase
      * @param ?\Composer\Config $config
      * @return \Composer\Config
      */
-    protected function setupConfig($config = null)
+    protected function setupConfig($config = null): Config
     {
         if (!$config) {
             $config = new Config();
@@ -82,7 +82,7 @@ class GitDownloaderTest extends TestCase
      * @param \Composer\Util\Filesystem $filesystem
      * @return GitDownloader
      */
-    protected function getDownloaderMock($io = null, $config = null, $executor = null, $filesystem = null)
+    protected function getDownloaderMock(\Composer\IO\IOInterface $io = null, Config $config = null, \Composer\Test\Mock\ProcessExecutorMock $executor = null, Filesystem $filesystem = null): GitDownloader
     {
         $io = $io ?: $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $executor = $executor ?: $this->getProcessExecutorMock();
@@ -92,7 +92,7 @@ class GitDownloaderTest extends TestCase
         return new GitDownloader($io, $config, $executor, $filesystem);
     }
 
-    public function testDownloadForPackageWithoutSourceReference()
+    public function testDownloadForPackageWithoutSourceReference(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->once())
@@ -108,7 +108,7 @@ class GitDownloaderTest extends TestCase
         $downloader->cleanup('install', $packageMock, '/path');
     }
 
-    public function testDownload()
+    public function testDownload(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -138,7 +138,7 @@ class GitDownloaderTest extends TestCase
         $downloader->cleanup('install', $packageMock, 'composerPath');
     }
 
-    public function testDownloadWithCache()
+    public function testDownloadWithCache(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -165,7 +165,7 @@ class GitDownloaderTest extends TestCase
 
         $process = $this->getProcessExecutorMock();
         $process->expects(array(
-            array('cmd' => $this->winCompat(sprintf("git clone --mirror -- 'https://example.com/composer/composer' '%s'", $cachePath)), 'callback' => function () use ($cachePath) {
+            array('cmd' => $this->winCompat(sprintf("git clone --mirror -- 'https://example.com/composer/composer' '%s'", $cachePath)), 'callback' => function () use ($cachePath): void {
                 @mkdir($cachePath, 0777, true);
             }),
             array('cmd' => 'git rev-parse --git-dir', 'stdout' => '.'),
@@ -183,7 +183,7 @@ class GitDownloaderTest extends TestCase
         @rmdir($cachePath);
     }
 
-    public function testDownloadUsesVariousProtocolsAndSetsPushUrlForGithub()
+    public function testDownloadUsesVariousProtocolsAndSetsPushUrlForGithub(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -220,7 +220,7 @@ class GitDownloaderTest extends TestCase
         $downloader->cleanup('install', $packageMock, 'composerPath');
     }
 
-    public function pushUrlProvider()
+    public function pushUrlProvider(): array
     {
         return array(
             // ssh proto should use git@ all along
@@ -238,7 +238,7 @@ class GitDownloaderTest extends TestCase
      * @param string $url
      * @param string $pushUrl
      */
-    public function testDownloadAndSetPushUrlUseCustomVariousProtocolsForGithub($protocols, $url, $pushUrl)
+    public function testDownloadAndSetPushUrlUseCustomVariousProtocolsForGithub(array $protocols, string $url, string $pushUrl): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -272,7 +272,7 @@ class GitDownloaderTest extends TestCase
         $downloader->cleanup('install', $packageMock, 'composerPath');
     }
 
-    public function testDownloadThrowsRuntimeExceptionIfGitCommandFails()
+    public function testDownloadThrowsRuntimeExceptionIfGitCommandFails(): void
     {
         $packageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $packageMock->expects($this->any())
@@ -313,7 +313,7 @@ class GitDownloaderTest extends TestCase
         }
     }
 
-    public function testUpdateforPackageWithoutSourceReference()
+    public function testUpdateforPackageWithoutSourceReference(): void
     {
         $initialPackageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $sourcePackageMock = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
@@ -330,7 +330,7 @@ class GitDownloaderTest extends TestCase
         $downloader->cleanup('update', $sourcePackageMock, '/path', $initialPackageMock);
     }
 
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $expectedGitUpdateCommand = $this->winCompat("(git remote set-url composer -- 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- 'https://github.com/composer/composer'");
 
@@ -367,7 +367,7 @@ class GitDownloaderTest extends TestCase
         $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
     }
 
-    public function testUpdateWithNewRepoUrl()
+    public function testUpdateWithNewRepoUrl(): void
     {
         $expectedGitUpdateCommand = $this->winCompat("(git remote set-url composer -- 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- 'https://github.com/composer/composer'");
 
@@ -419,7 +419,7 @@ composer https://github.com/old/url (push)
     /**
      * @group failing
      */
-    public function testUpdateThrowsRuntimeExceptionIfGitCommandFails()
+    public function testUpdateThrowsRuntimeExceptionIfGitCommandFails(): void
     {
         $expectedGitUpdateCommand = $this->winCompat("(git remote set-url composer -- 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- 'https://github.com/composer/composer'");
         $expectedGitUpdateCommand2 = $this->winCompat("(git remote set-url composer -- 'git@github.com:composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- 'git@github.com:composer/composer'");
@@ -470,7 +470,7 @@ composer https://github.com/old/url (push)
         }
     }
 
-    public function testUpdateDoesntThrowsRuntimeExceptionIfGitCommandFailsAtFirstButIsAbleToRecover()
+    public function testUpdateDoesntThrowsRuntimeExceptionIfGitCommandFailsAtFirstButIsAbleToRecover(): void
     {
         $expectedFirstGitUpdateCommand = $this->winCompat("(git remote set-url composer -- '".(Platform::isWindows() ? 'C:\\' : '/')."' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- '".(Platform::isWindows() ? 'C:\\' : '/')."'");
         $expectedSecondGitUpdateCommand = $this->winCompat("(git remote set-url composer -- 'https://github.com/composer/composer' && git rev-parse --quiet --verify 'ref^{commit}' || (git fetch composer && git fetch --tags composer)) && git remote set-url composer -- 'https://github.com/composer/composer'");
@@ -517,7 +517,7 @@ composer https://github.com/old/url (push)
         $downloader->cleanup('update', $packageMock, $this->workingDir, $packageMock);
     }
 
-    public function testDowngradeShowsAppropriateMessage()
+    public function testDowngradeShowsAppropriateMessage(): void
     {
         $oldPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $oldPackage->expects($this->any())
@@ -567,7 +567,7 @@ composer https://github.com/old/url (push)
         $downloader->cleanup('update', $newPackage, $this->workingDir, $oldPackage);
     }
 
-    public function testNotUsingDowngradingWithReferences()
+    public function testNotUsingDowngradingWithReferences(): void
     {
         $oldPackage = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
         $oldPackage->expects($this->any())
@@ -611,7 +611,7 @@ composer https://github.com/old/url (push)
         $downloader->cleanup('update', $newPackage, $this->workingDir, $oldPackage);
     }
 
-    public function testRemove()
+    public function testRemove(): void
     {
         $expectedGitResetCommand = $this->winCompat("git status --porcelain --untracked-files=no");
 
@@ -636,7 +636,7 @@ composer https://github.com/old/url (push)
         $downloader->cleanup('uninstall', $packageMock, $this->workingDir);
     }
 
-    public function testGetInstallationSource()
+    public function testGetInstallationSource(): void
     {
         $downloader = $this->getDownloaderMock();
 
@@ -647,11 +647,11 @@ composer https://github.com/old/url (push)
      * @param string $cmd
      * @return string
      */
-    private function winCompat($cmd)
+    private function winCompat(string $cmd): string
     {
         if (Platform::isWindows()) {
             $cmd = str_replace('cd ', 'cd /D ', $cmd);
-            $cmd = str_replace('composerPath', getcwd().'/composerPath', $cmd);
+            $cmd = str_replace('composerPath', Platform::getCwd().'/composerPath', $cmd);
 
             return $this->getCmd($cmd);
         }

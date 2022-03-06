@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -21,9 +21,9 @@ class ConfigTest extends TestCase
      * @dataProvider dataAddPackagistRepository
      * @param mixed[] $expected
      * @param mixed[] $localConfig
-     * @param ?mixed[] $systemConfig
+     * @param ?array<mixed> $systemConfig
      */
-    public function testAddPackagistRepository($expected, $localConfig, $systemConfig = null)
+    public function testAddPackagistRepository(array $expected, array $localConfig, ?array $systemConfig = null): void
     {
         $config = new Config(false);
         if ($systemConfig) {
@@ -34,7 +34,7 @@ class ConfigTest extends TestCase
         $this->assertEquals($expected, $config->getRepositories());
     }
 
-    public function dataAddPackagistRepository()
+    public function dataAddPackagistRepository(): array
     {
         $data = array();
         $data['local config inherits system defaults'] = array(
@@ -141,7 +141,7 @@ class ConfigTest extends TestCase
         return $data;
     }
 
-    public function testPreferredInstallAsString()
+    public function testPreferredInstallAsString(): void
     {
         $config = new Config(false);
         $config->merge(array('config' => array('preferred-install' => 'source')));
@@ -150,7 +150,7 @@ class ConfigTest extends TestCase
         $this->assertEquals('dist', $config->get('preferred-install'));
     }
 
-    public function testMergePreferredInstall()
+    public function testMergePreferredInstall(): void
     {
         $config = new Config(false);
         $config->merge(array('config' => array('preferred-install' => 'dist')));
@@ -162,7 +162,7 @@ class ConfigTest extends TestCase
         $this->assertEquals(array('foo/*' => 'source', '*' => 'dist'), $config->get('preferred-install'));
     }
 
-    public function testMergeGithubOauth()
+    public function testMergeGithubOauth(): void
     {
         $config = new Config(false);
         $config->merge(array('config' => array('github-oauth' => array('foo' => 'bar'))));
@@ -171,7 +171,7 @@ class ConfigTest extends TestCase
         $this->assertEquals(array('foo' => 'bar', 'bar' => 'baz'), $config->get('github-oauth'));
     }
 
-    public function testVarReplacement()
+    public function testVarReplacement(): void
     {
         $config = new Config(false);
         $config->merge(array('config' => array('a' => 'b', 'c' => '{$a}')));
@@ -183,7 +183,7 @@ class ConfigTest extends TestCase
         $this->assertEquals($home.'/foo', $config->get('cache-dir'));
     }
 
-    public function testRealpathReplacement()
+    public function testRealpathReplacement(): void
     {
         $config = new Config(false, '/foo/bar');
         $config->merge(array('config' => array(
@@ -198,7 +198,7 @@ class ConfigTest extends TestCase
         $this->assertEquals('/baz', $config->get('cache-dir'));
     }
 
-    public function testStreamWrapperDirs()
+    public function testStreamWrapperDirs(): void
     {
         $config = new Config(false, '/foo/bar');
         $config->merge(array('config' => array(
@@ -208,7 +208,7 @@ class ConfigTest extends TestCase
         $this->assertEquals('s3://baz', $config->get('cache-dir'));
     }
 
-    public function testFetchingRelativePaths()
+    public function testFetchingRelativePaths(): void
     {
         $config = new Config(false, '/foo/bar');
         $config->merge(array('config' => array(
@@ -222,7 +222,7 @@ class ConfigTest extends TestCase
         $this->assertEquals('vendor/foo', $config->get('bin-dir', Config::RELATIVE_PATHS));
     }
 
-    public function testOverrideGithubProtocols()
+    public function testOverrideGithubProtocols(): void
     {
         $config = new Config(false);
         $config->merge(array('config' => array('github-protocols' => array('https', 'ssh'))));
@@ -231,7 +231,7 @@ class ConfigTest extends TestCase
         $this->assertEquals(array('https'), $config->get('github-protocols'));
     }
 
-    public function testGitDisabledByDefaultInGithubProtocols()
+    public function testGitDisabledByDefaultInGithubProtocols(): void
     {
         $config = new Config(false);
         $config->merge(array('config' => array('github-protocols' => array('https', 'git'))));
@@ -247,7 +247,7 @@ class ConfigTest extends TestCase
      *
      * @param string $url
      */
-    public function testAllowedUrlsPass($url)
+    public function testAllowedUrlsPass(string $url): void
     {
         $config = new Config(false);
         $config->prohibitUrlByConfig($url);
@@ -258,7 +258,7 @@ class ConfigTest extends TestCase
      *
      * @param string $url
      */
-    public function testProhibitedUrlsThrowException($url)
+    public function testProhibitedUrlsThrowException(string $url): void
     {
         self::expectException('Composer\Downloader\TransportException');
         self::expectExceptionMessage('Your configuration does not allow connections to ' . $url);
@@ -269,7 +269,7 @@ class ConfigTest extends TestCase
     /**
      * @return string[][] List of test URLs that should pass strict security
      */
-    public function allowedUrlProvider()
+    public function allowedUrlProvider(): array
     {
         $urls = array(
             'https://packagist.org',
@@ -282,7 +282,7 @@ class ConfigTest extends TestCase
             'ssh://[user@]host.xz[:port]/path/to/repo.git/',
         );
 
-        return array_combine($urls, array_map(function ($e) {
+        return array_combine($urls, array_map(function ($e): array {
             return array($e);
         }, $urls));
     }
@@ -290,7 +290,7 @@ class ConfigTest extends TestCase
     /**
      * @return string[][] List of test URLs that should not pass strict security
      */
-    public function prohibitedUrlProvider()
+    public function prohibitedUrlProvider(): array
     {
         $urls = array(
             'http://packagist.org',
@@ -303,7 +303,7 @@ class ConfigTest extends TestCase
             'git://5.6.7.8/git.git',
         );
 
-        return array_combine($urls, array_map(function ($e) {
+        return array_combine($urls, array_map(function ($e): array {
             return array($e);
         }, $urls));
     }
@@ -311,7 +311,7 @@ class ConfigTest extends TestCase
     /**
      * @group TLS
      */
-    public function testDisableTlsCanBeOverridden()
+    public function testDisableTlsCanBeOverridden(): void
     {
         $config = new Config;
         $config->merge(
@@ -324,7 +324,7 @@ class ConfigTest extends TestCase
         $this->assertTrue($config->get('disable-tls'));
     }
 
-    public function testProcessTimeout()
+    public function testProcessTimeout(): void
     {
         Platform::putEnv('COMPOSER_PROCESS_TIMEOUT', '0');
         $config = new Config(true);
@@ -334,7 +334,7 @@ class ConfigTest extends TestCase
         $this->assertEquals(0, $result);
     }
 
-    public function testHtaccessProtect()
+    public function testHtaccessProtect(): void
     {
         Platform::putEnv('COMPOSER_HTACCESS_PROTECT', '0');
         $config = new Config(true);
@@ -344,7 +344,7 @@ class ConfigTest extends TestCase
         $this->assertEquals(0, $result);
     }
 
-    public function testGetSourceOfValue()
+    public function testGetSourceOfValue(): void
     {
         Platform::clearEnv('COMPOSER_PROCESS_TIMEOUT');
 
@@ -360,7 +360,7 @@ class ConfigTest extends TestCase
         $this->assertSame('phpunit-test', $config->getSourceOfValue('process-timeout'));
     }
 
-    public function testGetSourceOfValueEnvVariables()
+    public function testGetSourceOfValueEnvVariables(): void
     {
         Platform::putEnv('COMPOSER_HTACCESS_PROTECT', '0');
         $config = new Config;

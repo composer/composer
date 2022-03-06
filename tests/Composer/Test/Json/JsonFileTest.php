@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -19,7 +19,7 @@ use Composer\Test\TestCase;
 
 class JsonFileTest extends TestCase
 {
-    public function testParseErrorDetectExtraComma()
+    public function testParseErrorDetectExtraComma(): void
     {
         $json = '{
         "foo": "bar",
@@ -27,7 +27,7 @@ class JsonFileTest extends TestCase
         $this->expectParseException('Parse error on line 2', $json);
     }
 
-    public function testParseErrorDetectExtraCommaInArray()
+    public function testParseErrorDetectExtraCommaInArray(): void
     {
         $json = '{
         "foo": [
@@ -37,7 +37,7 @@ class JsonFileTest extends TestCase
         $this->expectParseException('Parse error on line 3', $json);
     }
 
-    public function testParseErrorDetectUnescapedBackslash()
+    public function testParseErrorDetectUnescapedBackslash(): void
     {
         $json = '{
         "fo\o": "bar"
@@ -45,7 +45,7 @@ class JsonFileTest extends TestCase
         $this->expectParseException('Parse error on line 1', $json);
     }
 
-    public function testParseErrorSkipsEscapedBackslash()
+    public function testParseErrorSkipsEscapedBackslash(): void
     {
         $json = '{
         "fo\\\\o": "bar"
@@ -54,7 +54,7 @@ class JsonFileTest extends TestCase
         $this->expectParseException('Parse error on line 2', $json);
     }
 
-    public function testParseErrorDetectSingleQuotes()
+    public function testParseErrorDetectSingleQuotes(): void
     {
         if (defined('JSON_PARSER_NOTSTRICT') && version_compare(phpversion('json'), '1.3.9', '<')) {
             $this->markTestSkipped('jsonc issue, see https://github.com/remicollet/pecl-json-c/issues/23');
@@ -65,7 +65,7 @@ class JsonFileTest extends TestCase
         $this->expectParseException('Parse error on line 1', $json);
     }
 
-    public function testParseErrorDetectMissingQuotes()
+    public function testParseErrorDetectMissingQuotes(): void
     {
         $json = '{
         foo: "bar"
@@ -73,7 +73,7 @@ class JsonFileTest extends TestCase
         $this->expectParseException('Parse error on line 1', $json);
     }
 
-    public function testParseErrorDetectArrayAsHash()
+    public function testParseErrorDetectArrayAsHash(): void
     {
         $json = '{
         "foo": ["bar": "baz"]
@@ -81,7 +81,7 @@ class JsonFileTest extends TestCase
         $this->expectParseException('Parse error on line 2', $json);
     }
 
-    public function testParseErrorDetectMissingComma()
+    public function testParseErrorDetectMissingComma(): void
     {
         $json = '{
         "foo": "bar"
@@ -90,14 +90,14 @@ class JsonFileTest extends TestCase
         $this->expectParseException('Parse error on line 2', $json);
     }
 
-    public function testSchemaValidation()
+    public function testSchemaValidation(): void
     {
         $json = new JsonFile(__DIR__.'/Fixtures/composer.json');
         $this->assertTrue($json->validateSchema());
         $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
     }
 
-    public function testSchemaValidationError()
+    public function testSchemaValidationError(): void
     {
         $file = $this->createTempFile();
         file_put_contents($file, '{ "name": null }');
@@ -121,7 +121,7 @@ class JsonFileTest extends TestCase
         unlink($file);
     }
 
-    public function testSchemaValidationLaxAdditionalProperties()
+    public function testSchemaValidationLaxAdditionalProperties(): void
     {
         $file = $this->createTempFile();
         file_put_contents($file, '{ "name": "vendor/package", "description": "generic description", "foo": "bar" }');
@@ -137,7 +137,7 @@ class JsonFileTest extends TestCase
         unlink($file);
     }
 
-    public function testSchemaValidationLaxRequired()
+    public function testSchemaValidationLaxRequired(): void
     {
         $file = $this->createTempFile();
         $json = new JsonFile($file);
@@ -207,7 +207,7 @@ class JsonFileTest extends TestCase
         unlink($file);
     }
 
-    public function testCustomSchemaValidationLax()
+    public function testCustomSchemaValidationLax(): void
     {
         $file = $this->createTempFile();
         file_put_contents($file, '{ "custom": "property", "another custom": "property" }');
@@ -223,7 +223,7 @@ class JsonFileTest extends TestCase
         unlink($schema);
     }
 
-    public function testCustomSchemaValidationStrict()
+    public function testCustomSchemaValidationStrict(): void
     {
         $file = $this->createTempFile();
         file_put_contents($file, '{ "custom": "property" }');
@@ -239,7 +239,7 @@ class JsonFileTest extends TestCase
         unlink($schema);
     }
 
-    public function testParseErrorDetectMissingCommaMultiline()
+    public function testParseErrorDetectMissingCommaMultiline(): void
     {
         $json = '{
         "foo": "barbar"
@@ -249,7 +249,7 @@ class JsonFileTest extends TestCase
         $this->expectParseException('Parse error on line 2', $json);
     }
 
-    public function testParseErrorDetectMissingColon()
+    public function testParseErrorDetectMissingColon(): void
     {
         $json = '{
         "foo": "bar",
@@ -258,7 +258,7 @@ class JsonFileTest extends TestCase
         $this->expectParseException('Parse error on line 3', $json);
     }
 
-    public function testSimpleJsonString()
+    public function testSimpleJsonString(): void
     {
         $data = array('name' => 'composer/composer');
         $json = '{
@@ -267,7 +267,7 @@ class JsonFileTest extends TestCase
         $this->assertJsonFormat($json, $data);
     }
 
-    public function testTrailingBackslash()
+    public function testTrailingBackslash(): void
     {
         $data = array('Metadata\\' => 'src/');
         $json = '{
@@ -276,7 +276,7 @@ class JsonFileTest extends TestCase
         $this->assertJsonFormat($json, $data);
     }
 
-    public function testFormatEmptyArray()
+    public function testFormatEmptyArray(): void
     {
         $data = array('test' => array(), 'test2' => new \stdClass);
         $json = '{
@@ -286,7 +286,7 @@ class JsonFileTest extends TestCase
         $this->assertJsonFormat($json, $data);
     }
 
-    public function testEscape()
+    public function testEscape(): void
     {
         $data = array("Metadata\\\"" => 'src/');
         $json = '{
@@ -296,7 +296,7 @@ class JsonFileTest extends TestCase
         $this->assertJsonFormat($json, $data);
     }
 
-    public function testUnicode()
+    public function testUnicode(): void
     {
         $data = array("Žluťoučký \" kůň" => "úpěl ďábelské ódy za €");
         $json = '{
@@ -306,35 +306,35 @@ class JsonFileTest extends TestCase
         $this->assertJsonFormat($json, $data);
     }
 
-    public function testOnlyUnicode()
+    public function testOnlyUnicode(): void
     {
         $data = "\\/ƌ";
 
         $this->assertJsonFormat('"\\\\\\/ƌ"', $data, JSON_UNESCAPED_UNICODE);
     }
 
-    public function testEscapedSlashes()
+    public function testEscapedSlashes(): void
     {
         $data = "\\/foo";
 
         $this->assertJsonFormat('"\\\\\\/foo"', $data, 0);
     }
 
-    public function testEscapedBackslashes()
+    public function testEscapedBackslashes(): void
     {
         $data = "a\\b";
 
         $this->assertJsonFormat('"a\\\\b"', $data, 0);
     }
 
-    public function testEscapedUnicode()
+    public function testEscapedUnicode(): void
     {
         $data = "ƌ";
 
         $this->assertJsonFormat('"\\u018c"', $data, 0);
     }
 
-    public function testDoubleEscapedUnicode()
+    public function testDoubleEscapedUnicode(): void
     {
         $jsonFile = new JsonFile('composer.json');
         $data = array("Zdjęcia","hjkjhl\\u0119kkjk");
@@ -351,7 +351,7 @@ class JsonFileTest extends TestCase
      * @param string $json
      * @return void
      */
-    private function expectParseException($text, $json)
+    private function expectParseException(string $text, string $json): void
     {
         try {
             $result = JsonFile::parseJson($json);
@@ -367,7 +367,7 @@ class JsonFileTest extends TestCase
      * @param int|null $options
      * @return void
      */
-    private function assertJsonFormat($json, $data, $options = null)
+    private function assertJsonFormat(string $json, $data, ?int $options = null): void
     {
         $file = new JsonFile('composer.json');
 

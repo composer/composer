@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -30,6 +30,7 @@ use Composer\Package\Version\VersionParser;
 use Composer\Repository\RepositoryFactory;
 use Composer\Repository\RepositorySet;
 use Composer\Test\TestCase;
+use Composer\Util\Platform;
 
 class PoolBuilderTest extends TestCase
 {
@@ -44,13 +45,13 @@ class PoolBuilderTest extends TestCase
      * @param mixed[] $packageRepos
      * @param mixed[] $fixed
      */
-    public function testPoolBuilder($file, $message, $expect, $expectOptimized, $root, $requestData, $packageRepos, $fixed)
+    public function testPoolBuilder(string $file, string $message, array $expect, array $expectOptimized, array $root, array $requestData, array $packageRepos, array $fixed): void
     {
         $rootAliases = !empty($root['aliases']) ? $root['aliases'] : array();
         $minimumStability = !empty($root['minimum-stability']) ? $root['minimum-stability'] : 'stable';
         $stabilityFlags = !empty($root['stability-flags']) ? $root['stability-flags'] : array();
         $rootReferences = !empty($root['references']) ? $root['references'] : array();
-        $stabilityFlags = array_map(function ($stability) {
+        $stabilityFlags = array_map(function ($stability): int {
             return BasePackage::$stabilities[$stability];
         }, $stabilityFlags);
 
@@ -62,7 +63,7 @@ class PoolBuilderTest extends TestCase
 
         $loader = new ArrayLoader(null, true);
         $packageIds = array();
-        $loadPackage = function ($data) use ($loader, &$packageIds) {
+        $loadPackage = function ($data) use ($loader, &$packageIds): \Composer\Package\PackageInterface {
             /** @var ?int $id */
             $id = null;
             if (!empty($data['id'])) {
@@ -82,7 +83,7 @@ class PoolBuilderTest extends TestCase
             return $pkg;
         };
 
-        $oldCwd = getcwd();
+        $oldCwd = Platform::getCwd();
         chdir(__DIR__.'/Fixtures/poolbuilder/');
 
         $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $rootReferences);
@@ -149,7 +150,7 @@ class PoolBuilderTest extends TestCase
      * @param array<int, BasePackage> $packageIds
      * @return string[]
      */
-    private function getPackageResultSet(Pool $pool, $packageIds)
+    private function getPackageResultSet(Pool $pool, array $packageIds): array
     {
         $result = array();
         for ($i = 1, $count = count($pool); $i <= $count; $i++) {
@@ -184,11 +185,13 @@ class PoolBuilderTest extends TestCase
     /**
      * @return array<string, array<string>>
      */
-    public function getIntegrationTests()
+    public function getIntegrationTests(): array
     {
         $fixturesDir = realpath(__DIR__.'/Fixtures/poolbuilder/');
         $tests = array();
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($fixturesDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
+            $file = (string) $file;
+
             if (!Preg::isMatch('/\.test$/', $file)) {
                 continue;
             }
@@ -219,13 +222,11 @@ class PoolBuilderTest extends TestCase
     }
 
     /**
-     * @param \SplFileInfo $file
-     * @param string $fixturesDir
      * @return array<string, string>
      */
-    protected function readTestFile(\SplFileInfo $file, $fixturesDir)
+    protected function readTestFile(string $file, string $fixturesDir): array
     {
-        $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file->getRealPath()), -1, PREG_SPLIT_DELIM_CAPTURE);
+        $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
 
         $sectionInfo = array(
             'TEST' => true,

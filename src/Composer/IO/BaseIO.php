@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -69,7 +69,7 @@ abstract class BaseIO implements IOInterface
     /**
      * @inheritDoc
      */
-    public function writeRaw($messages, $newline = true, $verbosity = self::NORMAL)
+    public function writeRaw($messages, bool $newline = true, int $verbosity = self::NORMAL)
     {
         $this->write($messages, $newline, $verbosity);
     }
@@ -77,7 +77,7 @@ abstract class BaseIO implements IOInterface
     /**
      * @inheritDoc
      */
-    public function writeErrorRaw($messages, $newline = true, $verbosity = self::NORMAL)
+    public function writeErrorRaw($messages, bool $newline = true, int $verbosity = self::NORMAL)
     {
         $this->writeError($messages, $newline, $verbosity);
     }
@@ -91,7 +91,7 @@ abstract class BaseIO implements IOInterface
      *
      * @return void
      */
-    protected function checkAndSetAuthentication($repositoryName, $username, $password = null)
+    protected function checkAndSetAuthentication(string $repositoryName, string $username, string $password = null)
     {
         if ($this->hasAuthentication($repositoryName)) {
             $auth = $this->getAuthentication($repositoryName);
@@ -201,6 +201,8 @@ abstract class BaseIO implements IOInterface
 
     public function log($level, $message, array $context = array()): void
     {
+        $message = (string) $message;
+
         if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
             $this->writeError('<error>'.$message.'</error>');
         } elseif ($level === LogLevel::WARNING) {

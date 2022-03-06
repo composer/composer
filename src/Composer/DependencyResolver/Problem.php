@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -54,7 +54,7 @@ class Problem
      * @param Rule $rule A rule which is a reason for this problem
      * @return void
      */
-    public function addRule(Rule $rule)
+    public function addRule(Rule $rule): void
     {
         $this->addReason(spl_object_hash($rule), $rule);
     }
@@ -64,7 +64,7 @@ class Problem
      *
      * @return array<int, array<int, Rule>> The problem's reasons
      */
-    public function getReasons()
+    public function getReasons(): array
     {
         return $this->reasons;
     }
@@ -77,7 +77,7 @@ class Problem
      * @param array<Rule[]> $learnedPool
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
     {
         // TODO doesn't this entirely defeat the purpose of the problem sections? what's the point of sections?
         $reasons = call_user_func_array('array_merge', array_reverse($this->reasons));
@@ -117,7 +117,7 @@ class Problem
      * @return string
      * @internal
      */
-    public static function formatDeduplicatedRules($rules, $indent, RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
+    public static function formatDeduplicatedRules(array $rules, string $indent, RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
     {
         $messages = array();
         $templates = array();
@@ -165,7 +165,7 @@ class Problem
     /**
      * @return bool
      */
-    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
+    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool): bool
     {
         foreach ($this->reasons as $sectionRules) {
             foreach ($sectionRules as $rule) {
@@ -185,7 +185,7 @@ class Problem
      * @param Rule   $reason The reason descriptor
      * @return void
      */
-    protected function addReason($id, Rule $reason)
+    protected function addReason(string $id, Rule $reason): void
     {
         // TODO: if a rule is part of a problem description in two sections, isn't this going to remove a message
         // that is important to understand the issue?
@@ -199,7 +199,7 @@ class Problem
     /**
      * @return void
      */
-    public function nextSection()
+    public function nextSection(): void
     {
         $this->section++;
     }
@@ -210,7 +210,7 @@ class Problem
      * @param string $packageName
      * @return array{0: string, 1: string}
      */
-    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, $packageName, ConstraintInterface $constraint = null)
+    public static function getMissingPackageReason(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, string $packageName, ConstraintInterface $constraint = null): array
     {
         if (PlatformRepository::isPlatformPackage($packageName)) {
             // handle php/php-*/hhvm
@@ -286,7 +286,7 @@ class Problem
         if ($packages = $repositorySet->findPackages($packageName, $constraint)) {
             $rootReqs = $repositorySet->getRootRequires();
             if (isset($rootReqs[$packageName])) {
-                $filtered = array_filter($packages, function ($p) use ($rootReqs, $packageName) {
+                $filtered = array_filter($packages, function ($p) use ($rootReqs, $packageName): bool {
                     return $rootReqs[$packageName]->matches(new Constraint('==', $p->getVersion()));
                 });
                 if (0 === count($filtered)) {
@@ -296,7 +296,7 @@ class Problem
 
             if ($lockedPackage) {
                 $fixedConstraint = new Constraint('==', $lockedPackage->getVersion());
-                $filtered = array_filter($packages, function ($p) use ($fixedConstraint) {
+                $filtered = array_filter($packages, function ($p) use ($fixedConstraint): bool {
                     return $fixedConstraint->matches(new Constraint('==', $p->getVersion()));
                 });
                 if (0 === count($filtered)) {
@@ -304,7 +304,7 @@ class Problem
                 }
             }
 
-            $nonLockedPackages = array_filter($packages, function ($p) {
+            $nonLockedPackages = array_filter($packages, function ($p): bool {
                 return !$p->getRepository() instanceof LockArrayRepository;
             });
 
@@ -360,7 +360,7 @@ class Problem
 
         if ($providers = $repositorySet->getProviders($packageName)) {
             $maxProviders = 20;
-            $providersStr = implode(array_map(function ($p) {
+            $providersStr = implode(array_map(function ($p): string {
                 $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
 
                 return "      - ${p['name']}".$description."\n";
@@ -382,7 +382,7 @@ class Problem
      * @param bool $useRemovedVersionGroup
      * @return string
      */
-    public static function getPackageList(array $packages, $isVerbose, Pool $pool = null, ConstraintInterface $constraint = null, $useRemovedVersionGroup = false)
+    public static function getPackageList(array $packages, bool $isVerbose, Pool $pool = null, ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
     {
         $prepared = array();
         $hasDefaultBranch = array();
@@ -427,7 +427,7 @@ class Problem
      * @param  string $version the effective runtime version of the platform package
      * @return ?string a version string or null if it appears the package was artificially disabled
      */
-    private static function getPlatformPackageVersion(Pool $pool, $packageName, $version)
+    private static function getPlatformPackageVersion(Pool $pool, string $packageName, string $version): ?string
     {
         $available = $pool->whatProvides($packageName);
 
@@ -471,7 +471,7 @@ class Problem
      * @param int $maxDev
      * @return list<string> a list of pretty versions and '...' where versions were removed
      */
-    private static function condenseVersionList(array $versions, $max, $maxDev = 16)
+    private static function condenseVersionList(array $versions, int $max, int $maxDev = 16): array
     {
         if (count($versions) <= $max) {
             return $versions;
@@ -505,7 +505,7 @@ class Problem
      * @param PackageInterface[] $packages
      * @return bool
      */
-    private static function hasMultipleNames(array $packages)
+    private static function hasMultipleNames(array $packages): bool
     {
         $name = null;
         foreach ($packages as $package) {
@@ -527,7 +527,7 @@ class Problem
      * @param string $reason
      * @return array{0: string, 1: string}
      */
-    private static function computeCheckForLowerPrioRepo(Pool $pool, $isVerbose, $packageName, array $higherRepoPackages, array $allReposPackages, $reason, ConstraintInterface $constraint = null)
+    private static function computeCheckForLowerPrioRepo(Pool $pool, bool $isVerbose, string $packageName, array $higherRepoPackages, array $allReposPackages, string $reason, ConstraintInterface $constraint = null): array
     {
         $nextRepoPackages = array();
         $nextRepo = null;
@@ -576,7 +576,7 @@ class Problem
      *
      * @return string
      */
-    protected static function constraintToText(ConstraintInterface $constraint = null)
+    protected static function constraintToText(ConstraintInterface $constraint = null): string
     {
         return $constraint ? ' '.$constraint->getPrettyString() : '';
     }

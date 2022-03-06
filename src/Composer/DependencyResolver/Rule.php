@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -29,19 +29,19 @@ use Composer\Semver\Constraint\ConstraintInterface;
 abstract class Rule
 {
     // reason constants and // their reason data contents
-    const RULE_ROOT_REQUIRE = 2; // array{packageName: string, constraint: ConstraintInterface}
-    const RULE_FIXED = 3; // array{package: BasePackage}
-    const RULE_PACKAGE_CONFLICT = 6; // Link
-    const RULE_PACKAGE_REQUIRES = 7; // Link
-    const RULE_PACKAGE_SAME_NAME = 10; // string (package name)
-    const RULE_LEARNED = 12; // int (rule id)
-    const RULE_PACKAGE_ALIAS = 13; // BasePackage
-    const RULE_PACKAGE_INVERSE_ALIAS = 14; // BasePackage
+    public const RULE_ROOT_REQUIRE = 2; // array{packageName: string, constraint: ConstraintInterface}
+    public const RULE_FIXED = 3; // array{package: BasePackage}
+    public const RULE_PACKAGE_CONFLICT = 6; // Link
+    public const RULE_PACKAGE_REQUIRES = 7; // Link
+    public const RULE_PACKAGE_SAME_NAME = 10; // string (package name)
+    public const RULE_LEARNED = 12; // int (rule id)
+    public const RULE_PACKAGE_ALIAS = 13; // BasePackage
+    public const RULE_PACKAGE_INVERSE_ALIAS = 14; // BasePackage
 
     // bitfield defs
-    const BITFIELD_TYPE = 0;
-    const BITFIELD_REASON = 8;
-    const BITFIELD_DISABLED = 16;
+    private const BITFIELD_TYPE = 0;
+    private const BITFIELD_REASON = 8;
+    private const BITFIELD_DISABLED = 16;
 
     /** @var int */
     protected $bitfield;
@@ -71,25 +71,25 @@ abstract class Rule
     /**
      * @return int[]
      */
-    abstract public function getLiterals();
+    abstract public function getLiterals(): array;
 
     /**
      * @return int|string
      */
     abstract public function getHash();
 
-    abstract public function __toString();
+    abstract public function __toString(): string;
 
     /**
      * @param Rule $rule
      * @return bool
      */
-    abstract public function equals(Rule $rule);
+    abstract public function equals(Rule $rule): bool;
 
     /**
      * @return int
      */
-    public function getReason()
+    public function getReason(): int
     {
         return ($this->bitfield & (255 << self::BITFIELD_REASON)) >> self::BITFIELD_REASON;
     }
@@ -105,7 +105,7 @@ abstract class Rule
     /**
      * @return string|null
      */
-    public function getRequiredPackage()
+    public function getRequiredPackage(): ?string
     {
         $reason = $this->getReason();
 
@@ -128,7 +128,7 @@ abstract class Rule
      * @param RuleSet::TYPE_* $type
      * @return void
      */
-    public function setType($type)
+    public function setType($type): void
     {
         $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_TYPE)) | ((255 & $type) << self::BITFIELD_TYPE);
     }
@@ -136,7 +136,7 @@ abstract class Rule
     /**
      * @return int
      */
-    public function getType()
+    public function getType(): int
     {
         return ($this->bitfield & (255 << self::BITFIELD_TYPE)) >> self::BITFIELD_TYPE;
     }
@@ -144,7 +144,7 @@ abstract class Rule
     /**
      * @return void
      */
-    public function disable()
+    public function disable(): void
     {
         $this->bitfield = ($this->bitfield & ~(255 << self::BITFIELD_DISABLED)) | (1 << self::BITFIELD_DISABLED);
     }
@@ -152,7 +152,7 @@ abstract class Rule
     /**
      * @return void
      */
-    public function enable()
+    public function enable(): void
     {
         $this->bitfield &= ~(255 << self::BITFIELD_DISABLED);
     }
@@ -160,7 +160,7 @@ abstract class Rule
     /**
      * @return bool
      */
-    public function isDisabled()
+    public function isDisabled(): bool
     {
         return (bool) (($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
@@ -168,7 +168,7 @@ abstract class Rule
     /**
      * @return bool
      */
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return !(($this->bitfield & (255 << self::BITFIELD_DISABLED)) >> self::BITFIELD_DISABLED);
     }
@@ -176,12 +176,12 @@ abstract class Rule
     /**
      * @return bool
      */
-    abstract public function isAssertion();
+    abstract public function isAssertion(): bool;
 
     /**
      * @return bool
      */
-    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool)
+    public function isCausedByLock(RepositorySet $repositorySet, Request $request, Pool $pool): bool
     {
         if ($this->getReason() === self::RULE_PACKAGE_REQUIRES) {
             if (PlatformRepository::isPlatformPackage($this->reasonData->getTarget())) {
@@ -232,7 +232,7 @@ abstract class Rule
      * @internal
      * @return BasePackage
      */
-    public function getSourcePackage(Pool $pool)
+    public function getSourcePackage(Pool $pool): BasePackage
     {
         $literals = $this->getLiterals();
 
@@ -267,7 +267,7 @@ abstract class Rule
      * @param array<Rule[]> $learnedPool
      * @return string
      */
-    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, $isVerbose, array $installedMap = array(), array $learnedPool = array())
+    public function getPrettyString(RepositorySet $repositorySet, Request $request, Pool $pool, bool $isVerbose, array $installedMap = array(), array $learnedPool = array()): string
     {
         $literals = $this->getLiterals();
 
@@ -281,7 +281,7 @@ abstract class Rule
                     return 'No package found to satisfy root composer.json require '.$packageName.($constraint ? ' '.$constraint->getPrettyString() : '');
                 }
 
-                $packagesNonAlias = array_values(array_filter($packages, function ($p) {
+                $packagesNonAlias = array_values(array_filter($packages, function ($p): bool {
                     return !($p instanceof AliasPackage);
                 }));
                 if (count($packagesNonAlias) === 1) {
@@ -484,7 +484,7 @@ abstract class Rule
      * @param bool $useRemovedVersionGroup
      * @return string
      */
-    protected function formatPackagesUnique(Pool $pool, array $packages, $isVerbose, ConstraintInterface $constraint = null, $useRemovedVersionGroup = false)
+    protected function formatPackagesUnique(Pool $pool, array $packages, bool $isVerbose, ConstraintInterface $constraint = null, bool $useRemovedVersionGroup = false): string
     {
         foreach ($packages as $index => $package) {
             if (!\is_object($package)) {
@@ -498,7 +498,7 @@ abstract class Rule
     /**
      * @return BasePackage
      */
-    private function deduplicateDefaultBranchAlias(BasePackage $package)
+    private function deduplicateDefaultBranchAlias(BasePackage $package): BasePackage
     {
         if ($package instanceof AliasPackage && $package->getPrettyVersion() === VersionParser::DEFAULT_BRANCH_ALIAS) {
             $package = $package->getAliasOf();

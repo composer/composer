@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -26,7 +26,7 @@ class ArrayDumper
     /**
      * @return array<string, mixed>
      */
-    public function dump(PackageInterface $package)
+    public function dump(PackageInterface $package): array
     {
         $keys = array(
             'binaries' => 'bin',
@@ -87,7 +87,7 @@ class ArrayDumper
             $data['suggest'] = $packages;
         }
 
-        if ($package->getReleaseDate()) {
+        if ($package->getReleaseDate() instanceof \DateTimeInterface) {
             $data['time'] = $package->getReleaseDate()->format(DATE_RFC3339);
         }
 
@@ -148,7 +148,7 @@ class ArrayDumper
      *
      * @return array<string, mixed>
      */
-    private function dumpValues(PackageInterface $package, array $keys, array $data)
+    private function dumpValues(PackageInterface $package, array $keys, array $data): array
     {
         foreach ($keys as $method => $key) {
             if (is_numeric($method)) {

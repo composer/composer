@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -35,7 +35,7 @@ class BufferIO extends ConsoleIO
      * @param int                           $verbosity
      * @param OutputFormatterInterface|null $formatter
      */
-    public function __construct($input = '', $verbosity = StreamOutput::VERBOSITY_NORMAL, OutputFormatterInterface $formatter = null)
+    public function __construct(string $input = '', int $verbosity = StreamOutput::VERBOSITY_NORMAL, OutputFormatterInterface $formatter = null)
     {
         $input = new StringInput($input);
         $input->setInteractive(false);
@@ -50,13 +50,13 @@ class BufferIO extends ConsoleIO
     /**
      * @return string output
      */
-    public function getOutput()
+    public function getOutput(): string
     {
         fseek($this->output->getStream(), 0);
 
         $output = stream_get_contents($this->output->getStream());
 
-        $output = Preg::replaceCallback("{(?<=^|\n|\x08)(.+?)(\x08+)}", function ($matches) {
+        $output = Preg::replaceCallback("{(?<=^|\n|\x08)(.+?)(\x08+)}", function ($matches): string {
             $pre = strip_tags($matches[1]);
 
             if (strlen($pre) === strlen($matches[2])) {
@@ -77,7 +77,7 @@ class BufferIO extends ConsoleIO
      *
      * @return void
      */
-    public function setUserInputs(array $inputs)
+    public function setUserInputs(array $inputs): void
     {
         if (!$this->input instanceof StreamableInputInterface) {
             throw new \RuntimeException('Setting the user inputs requires at least the version 3.2 of the symfony/console component.');

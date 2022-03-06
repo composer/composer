@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -38,7 +38,7 @@ class NoProxyPattern
     /**
      * @param string $pattern NO_PROXY pattern
      */
-    public function __construct($pattern)
+    public function __construct(string $pattern)
     {
         $this->hostNames = Preg::split('{[\s,]+}', $pattern, -1, PREG_SPLIT_NO_EMPTY);
         $this->noproxy = empty($this->hostNames) || '*' === $this->hostNames[0];
@@ -51,7 +51,7 @@ class NoProxyPattern
      *
      * @return bool
      */
-    public function test($url)
+    public function test(string $url): bool
     {
         if ($this->noproxy) {
             return true;
@@ -77,7 +77,7 @@ class NoProxyPattern
      *
      * @return bool|stdClass
      */
-    protected function getUrlData($url)
+    protected function getUrlData(string $url)
     {
         if (!$host = parse_url($url, PHP_URL_HOST)) {
             return false;
@@ -115,7 +115,7 @@ class NoProxyPattern
      *
      * @return bool
      */
-    protected function match($index, $hostName, $url)
+    protected function match(int $index, string $hostName, stdClass $url): bool
     {
         if (!$rule = $this->getRule($index, $hostName)) {
             // Data must have been misformatted
@@ -154,7 +154,7 @@ class NoProxyPattern
      *
      * @return bool
      */
-    protected function matchRange(stdClass $network, stdClass $target)
+    protected function matchRange(stdClass $network, stdClass $target): bool
     {
         $net = unpack('C*', $network->ip);
         $mask = unpack('C*', $network->netmask);
@@ -186,7 +186,7 @@ class NoProxyPattern
      *
      * @return null|stdClass Null if the hostname is invalid
      */
-    private function getRule($index, $hostName)
+    private function getRule(int $index, string $hostName): ?stdClass
     {
         if (array_key_exists($index, $this->rules)) {
             return $this->rules[$index];
@@ -213,7 +213,7 @@ class NoProxyPattern
      *
      * @return bool False if the host contains invalid data
      */
-    private function ipCheckData($host, &$ipdata, $allowPrefix = false)
+    private function ipCheckData(string $host, ?stdClass &$ipdata, bool $allowPrefix = false): bool
     {
         $ipdata = null;
         $netmask = null;
@@ -262,7 +262,7 @@ class NoProxyPattern
      *
      * @return mixed[] in_addr, size
      */
-    private function ipGetAddr($host)
+    private function ipGetAddr(string $host): array
     {
         $ip = inet_pton($host);
         $size = strlen($ip);
@@ -279,7 +279,7 @@ class NoProxyPattern
      *
      * @return string
      */
-    private function ipGetMask($prefix, $size)
+    private function ipGetMask(int $prefix, int $size): string
     {
         $mask = '';
 
@@ -305,7 +305,7 @@ class NoProxyPattern
      *
      * @return string[] network in_addr, binary mask
      */
-    private function ipGetNetwork($rangeIp, $size, $prefix)
+    private function ipGetNetwork(string $rangeIp, int $size, int $prefix): array
     {
         $netmask = $this->ipGetMask($prefix, $size);
 
@@ -335,7 +335,7 @@ class NoProxyPattern
      *
      * @return string Mapped or existing in_addr
      */
-    private function ipMapTo6($binary, $size)
+    private function ipMapTo6(string $binary, int $size): string
     {
         if ($size === 4) {
             $prefix = str_repeat(chr(0), 10) . str_repeat(chr(255), 2);
@@ -354,7 +354,7 @@ class NoProxyPattern
      *
      * @return stdClass
      */
-    private function makeData($host, $port, $ipdata)
+    private function makeData(string $host, int $port, ?stdClass $ipdata): stdClass
     {
         return (object) array(
             'host' => $host,
@@ -373,7 +373,7 @@ class NoProxyPattern
      *
      * @return stdClass
      */
-    private function makeIpData($ip, $size, $netmask)
+    private function makeIpData(string $ip, int $size, ?string $netmask): stdClass
     {
         return (object) array(
             'ip' => $ip,
@@ -389,7 +389,7 @@ class NoProxyPattern
      *
      * @return mixed[] host, port, if there was error
      */
-    private function splitHostPort($hostName)
+    private function splitHostPort(string $hostName): array
     {
         // host, port, err
         $error = array('', '', true);
@@ -439,7 +439,7 @@ class NoProxyPattern
      *
      * @return bool
      */
-    private function validateInt($int, $min, $max)
+    private function validateInt(string $int, int $min, int $max): bool
     {
         $options = array(
             'options' => array(

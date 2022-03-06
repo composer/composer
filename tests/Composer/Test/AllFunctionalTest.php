@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -14,6 +14,7 @@ namespace Composer\Test;
 
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
+use Composer\Util\Platform;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 
@@ -33,7 +34,7 @@ class AllFunctionalTest extends TestCase
 
     public function setUp(): void
     {
-        $this->oldcwd = getcwd();
+        $this->oldcwd = Platform::getCwd();
 
         chdir(__DIR__.'/Fixtures/functional');
     }
@@ -63,7 +64,7 @@ class AllFunctionalTest extends TestCase
         $fs->removeDirectory(dirname(self::$pharPath));
     }
 
-    public function testBuildPhar()
+    public function testBuildPhar(): void
     {
         if (defined('HHVM_VERSION')) {
             $this->markTestSkipped('Building the phar does not work on HHVM.');
@@ -100,7 +101,7 @@ class AllFunctionalTest extends TestCase
      * @depends testBuildPhar
      * @param string $testFile
      */
-    public function testIntegration($testFile)
+    public function testIntegration(string $testFile): void
     {
         $testData = $this->parseTestFile($testFile);
         $this->testDir = self::getUniqueTmpDirectory();
@@ -121,7 +122,7 @@ class AllFunctionalTest extends TestCase
         $proc = Process::fromShellCommandline(escapeshellcmd(PHP_BINARY).' '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'], $this->testDir, $env, null, 300);
         $output = '';
 
-        $exitCode = $proc->run(function ($type, $buffer) use (&$output) {
+        $exitCode = $proc->run(function ($type, $buffer) use (&$output): void {
             $output .= $buffer;
         });
 
@@ -179,11 +180,11 @@ class AllFunctionalTest extends TestCase
     /**
      * @return array<string, array<string>>
      */
-    public function getTestFiles()
+    public function getTestFiles(): array
     {
         $tests = array();
         foreach (Finder::create()->in(__DIR__.'/Fixtures/functional')->name('*.test')->files() as $file) {
-            $tests[basename($file)] = array($file->getRealPath());
+            $tests[$file->getFilename()] = array((string) $file);
         }
 
         return $tests;
@@ -193,7 +194,7 @@ class AllFunctionalTest extends TestCase
      * @param string $file
      * @return array{RUN: string, EXPECT?: string, EXPECT-EXIT-CODE?: int, EXPECT-REGEX?: string, EXPECT-REGEXES?: string, TEST?: string}
      */
-    private function parseTestFile($file)
+    private function parseTestFile(string $file): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
         $data = array();
@@ -255,7 +256,7 @@ class AllFunctionalTest extends TestCase
      * @param string $output
      * @return string
      */
-    private function cleanOutput($output)
+    private function cleanOutput(string $output): string
     {
         $processed = '';
 

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -129,7 +129,7 @@ EOT
 
         // extract --with shorthands from the allowlist
         if (count($packages) > 0) {
-            $allowlistPackagesWithRequirements = array_filter($packages, function ($pkg) {
+            $allowlistPackagesWithRequirements = array_filter($packages, function ($pkg): bool {
                 return Preg::isMatch('{\S+[ =:]\S+}', $pkg);
             });
             foreach ($this->formatRequirements($allowlistPackagesWithRequirements) as $package => $constraint) {
@@ -180,7 +180,7 @@ EOT
 
         // the arguments lock/nothing/mirrors are not package names but trigger a mirror update instead
         // they are further mutually exclusive with listing actual package names
-        $filteredPackages = array_filter($packages, function ($package) {
+        $filteredPackages = array_filter($packages, function ($package): bool {
             return !in_array($package, array('lock', 'nothing', 'mirrors'), true);
         });
         $updateMirrors = $input->getOption('lock') || count($filteredPackages) != count($packages);
@@ -245,7 +245,7 @@ EOT
      * @param array<string> $packages
      * @return array<string>
      */
-    private function getPackagesInteractively(IOInterface $io, InputInterface $input, OutputInterface $output, Composer $composer, array $packages)
+    private function getPackagesInteractively(IOInterface $io, InputInterface $input, OutputInterface $output, Composer $composer, array $packages): array
     {
         if (!$input->isInteractive()) {
             throw new \InvalidArgumentException('--interactive cannot be used in non-interactive terminals.');
@@ -312,7 +312,7 @@ EOT
      * @param string $constraint
      * @return Link
      */
-    private function appendConstraintToLink(Link $link, $constraint)
+    private function appendConstraintToLink(Link $link, string $constraint): Link
     {
         $parser = new VersionParser;
         $oldPrettyString = $link->getConstraint()->getPrettyString();

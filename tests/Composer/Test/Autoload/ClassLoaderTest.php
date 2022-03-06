@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -27,7 +27,7 @@ class ClassLoaderTest extends TestCase
      *
      * @param string $class The fully-qualified class name to test, without preceding namespace separator.
      */
-    public function testLoadClass($class)
+    public function testLoadClass(string $class): void
     {
         $loader = new ClassLoader();
         $loader->add('Namespaced\\', __DIR__ . '/Fixtures');
@@ -42,7 +42,7 @@ class ClassLoaderTest extends TestCase
      *
      * @return array<array<string>> Array of parameter sets to test with.
      */
-    public function getLoadClassTests()
+    public function getLoadClassTests(): array
     {
         return array(
             array('Namespaced\\Foo'),
@@ -54,7 +54,7 @@ class ClassLoaderTest extends TestCase
     /**
      * getPrefixes method should return empty array if ClassLoader does not have any psr-0 configuration
      */
-    public function testGetPrefixesWithNoPSR0Configuration()
+    public function testGetPrefixesWithNoPSR0Configuration(): void
     {
         $loader = new ClassLoader();
         $this->assertEmpty($loader->getPrefixes());

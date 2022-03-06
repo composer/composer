@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -52,10 +52,10 @@ abstract class ArchiverTest extends TestCase
      *
      * @return CompletePackage
      */
-    protected function setupPackage()
+    protected function setupPackage(): CompletePackage
     {
         $package = new CompletePackage('archivertest/archivertest', 'master', 'master');
-        $package->setSourceUrl(realpath($this->testDir));
+        $package->setSourceUrl((string) realpath($this->testDir));
         $package->setSourceReference('master');
         $package->setSourceType('git');
 

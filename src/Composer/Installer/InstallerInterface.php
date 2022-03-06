@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -31,7 +31,7 @@ interface InstallerInterface
      * @param  string $packageType
      * @return bool
      */
-    public function supports($packageType);
+    public function supports(string $packageType);
 
     /**
      * Checks that provided package is installed.
@@ -65,7 +65,7 @@ interface InstallerInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
      */
-    public function prepare($type, PackageInterface $package, PackageInterface $prevPackage = null);
+    public function prepare(string $type, PackageInterface $package, PackageInterface $prevPackage = null);
 
     /**
      * Installs specific package.
@@ -108,7 +108,7 @@ interface InstallerInterface
      * @param  PackageInterface      $prevPackage previous package instance in case of an update
      * @return PromiseInterface|null
      */
-    public function cleanup($type, PackageInterface $package, PackageInterface $prevPackage = null);
+    public function cleanup(string $type, PackageInterface $package, PackageInterface $prevPackage = null);
 
     /**
      * Returns the absolute installation path of a package.

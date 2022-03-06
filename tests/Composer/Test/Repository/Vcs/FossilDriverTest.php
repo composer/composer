@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -46,7 +46,7 @@ class FossilDriverTest extends TestCase
         $fs->removeDirectory($this->home);
     }
 
-    public static function supportProvider()
+    public static function supportProvider(): array
     {
         return array(
             array('http://fossil.kd2.org/kd2fw/', true),
@@ -61,7 +61,7 @@ class FossilDriverTest extends TestCase
      * @param string $url
      * @param bool   $assertion
      */
-    public function testSupport($url, $assertion)
+    public function testSupport(string $url, bool $assertion): void
     {
         $config = new Config();
         $result = FossilDriver::supports($this->getMockBuilder('Composer\IO\IOInterface')->getMock(), $config, $url);

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -12,6 +12,7 @@
 
 namespace Composer\Downloader;
 
+use React\Promise\PromiseInterface;
 use Composer\Package\PackageInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\ProcessExecutor;
@@ -24,7 +25,7 @@ class FossilDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doDownload(PackageInterface $package, $path, $url, PackageInterface $prevPackage = null)
+    protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
     {
         return \React\Promise\resolve();
     }
@@ -32,7 +33,7 @@ class FossilDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doInstall(PackageInterface $package, $path, $url)
+    protected function doInstall(PackageInterface $package, string $path, string $url): PromiseInterface
     {
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
@@ -60,7 +61,7 @@ class FossilDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function doUpdate(PackageInterface $initial, PackageInterface $target, $path, $url)
+    protected function doUpdate(PackageInterface $initial, PackageInterface $target, string $path, string $url): PromiseInterface
     {
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
@@ -83,7 +84,7 @@ class FossilDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    public function getLocalChanges(PackageInterface $package, $path)
+    public function getLocalChanges(PackageInterface $package, string $path): ?string
     {
         if (!$this->hasMetadataRepository($path)) {
             return null;
@@ -91,13 +92,15 @@ class FossilDownloader extends VcsDownloader
 
         $this->process->execute('fossil changes', $output, realpath($path));
 
-        return trim($output) ?: null;
+        $output = trim($output);
+
+        return strlen($output) > 0 ? $output : null;
     }
 
     /**
      * @inheritDoc
      */
-    protected function getCommitLogs($fromReference, $toReference, $path)
+    protected function getCommitLogs(string $fromReference, string $toReference, string $path): string
     {
         $command = sprintf('fossil timeline -t ci -W 0 -n 0 before %s', ProcessExecutor::escape($toReference));
 
@@ -121,7 +124,7 @@ class FossilDownloader extends VcsDownloader
     /**
      * @inheritDoc
      */
-    protected function hasMetadataRepository($path)
+    protected function hasMetadataRepository(string $path): bool
     {
         return is_file($path . '/.fslckout') || is_file($path . '/_FOSSIL_');
     }

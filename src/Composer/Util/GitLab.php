@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -55,7 +55,7 @@ class GitLab
      *
      * @return bool true on success
      */
-    public function authorizeOAuth($originUrl)
+    public function authorizeOAuth(string $originUrl): bool
     {
         // before composer 1.9, origin URLs had no port number in them
         $bcOriginUrl = Preg::replace('{:\d+}', '', $originUrl);
@@ -112,7 +112,7 @@ class GitLab
      *
      * @return bool true on success
      */
-    public function authorizeOAuthInteractively($scheme, $originUrl, $message = null)
+    public function authorizeOAuthInteractively(string $scheme, string $originUrl, string $message = null): bool
     {
         if ($message) {
             $this->io->writeError($message);
@@ -169,7 +169,7 @@ class GitLab
      *
      * @see https://docs.gitlab.com/ee/api/oauth2.html#resource-owner-password-credentials-flow
      */
-    private function createToken($scheme, $originUrl)
+    private function createToken(string $scheme, string $originUrl): array
     {
         $username = $this->io->ask('Username: ');
         $password = $this->io->askAndHideAnswer('Password: ');

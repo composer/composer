@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -22,11 +22,11 @@ use Psr\Log\LoggerInterface;
  */
 interface IOInterface extends LoggerInterface
 {
-    const QUIET = 1;
-    const NORMAL = 2;
-    const VERBOSE = 4;
-    const VERY_VERBOSE = 8;
-    const DEBUG = 16;
+    public const QUIET = 1;
+    public const NORMAL = 2;
+    public const VERBOSE = 4;
+    public const VERY_VERBOSE = 8;
+    public const DEBUG = 16;
 
     /**
      * Is this input means interactive?
@@ -72,7 +72,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function write($messages, $newline = true, $verbosity = self::NORMAL);
+    public function write($messages, bool $newline = true, int $verbosity = self::NORMAL);
 
     /**
      * Writes a message to the error output.
@@ -83,7 +83,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function writeError($messages, $newline = true, $verbosity = self::NORMAL);
+    public function writeError($messages, bool $newline = true, int $verbosity = self::NORMAL);
 
     /**
      * Writes a message to the output, without formatting it.
@@ -94,7 +94,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function writeRaw($messages, $newline = true, $verbosity = self::NORMAL);
+    public function writeRaw($messages, bool $newline = true, int $verbosity = self::NORMAL);
 
     /**
      * Writes a message to the error output, without formatting it.
@@ -105,7 +105,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function writeErrorRaw($messages, $newline = true, $verbosity = self::NORMAL);
+    public function writeErrorRaw($messages, bool $newline = true, int $verbosity = self::NORMAL);
 
     /**
      * Overwrites a previous message to the output.
@@ -117,7 +117,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function overwrite($messages, $newline = true, $size = null, $verbosity = self::NORMAL);
+    public function overwrite($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL);
 
     /**
      * Overwrites a previous message to the error output.
@@ -129,7 +129,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return void
      */
-    public function overwriteError($messages, $newline = true, $size = null, $verbosity = self::NORMAL);
+    public function overwriteError($messages, bool $newline = true, ?int $size = null, int $verbosity = self::NORMAL);
 
     /**
      * Asks a question to the user.
@@ -140,7 +140,7 @@ interface IOInterface extends LoggerInterface
      * @throws \RuntimeException If there is no data to read in the input stream
      * @return mixed       The user answer
      */
-    public function ask($question, $default = null);
+    public function ask(string $question, $default = null);
 
     /**
      * Asks a confirmation to the user.
@@ -152,7 +152,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return bool true if the user has confirmed, false otherwise
      */
-    public function askConfirmation($question, $default = true);
+    public function askConfirmation(string $question, bool $default = true);
 
     /**
      * Asks for a value and validates the response.
@@ -169,7 +169,7 @@ interface IOInterface extends LoggerInterface
      * @throws \Exception When any of the validators return an error
      * @return mixed
      */
-    public function askAndValidate($question, $validator, $attempts = null, $default = null);
+    public function askAndValidate(string $question, callable $validator, ?int $attempts = null, $default = null);
 
     /**
      * Asks a question to the user and hide the answer.
@@ -178,7 +178,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return string|null The answer
      */
-    public function askAndHideAnswer($question);
+    public function askAndHideAnswer(string $question);
 
     /**
      * Asks the user to select a value.
@@ -193,7 +193,7 @@ interface IOInterface extends LoggerInterface
      * @throws \InvalidArgumentException
      * @return int|string|string[]|bool     The selected value or values (the key of the choices array)
      */
-    public function select($question, $choices, $default, $attempts = false, $errorMessage = 'Value "%s" is invalid', $multiselect = false);
+    public function select(string $question, array $choices, $default, $attempts = false, string $errorMessage = 'Value "%s" is invalid', bool $multiselect = false);
 
     /**
      * Get all authentication information entered.
@@ -209,7 +209,7 @@ interface IOInterface extends LoggerInterface
      *
      * @return bool
      */
-    public function hasAuthentication($repositoryName);
+    public function hasAuthentication(string $repositoryName);
 
     /**
      * Get the username and password of repository.
@@ -218,18 +218,18 @@ interface IOInterface extends LoggerInterface
      *
      * @return array{username: string|null, password: string|null}
      */
-    public function getAuthentication($repositoryName);
+    public function getAuthentication(string $repositoryName);
 
     /**
      * Set the authentication information for the repository.
      *
-     * @param string  $repositoryName The unique name of repository
-     * @param string  $username       The username
-     * @param ?string $password       The password
+     * @param string      $repositoryName The unique name of repository
+     * @param string      $username       The username
+     * @param null|string $password       The password
      *
      * @return void
      */
-    public function setAuthentication($repositoryName, $username, $password = null);
+    public function setAuthentication(string $repositoryName, string $username, ?string $password = null);
 
     /**
      * Loads authentications from a config instance

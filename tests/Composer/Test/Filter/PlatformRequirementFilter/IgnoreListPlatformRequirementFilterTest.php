@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -24,7 +24,7 @@ final class IgnoreListPlatformRequirementFilterTest extends TestCase
      * @param string $req
      * @param bool $expectIgnored
      */
-    public function testIsIgnored(array $reqList, $req, $expectIgnored)
+    public function testIsIgnored(array $reqList, string $req, bool $expectIgnored): void
     {
         $platformRequirementFilter = new IgnoreListPlatformRequirementFilter($reqList);
 
@@ -34,7 +34,7 @@ final class IgnoreListPlatformRequirementFilterTest extends TestCase
     /**
      * @return array<string, mixed[]>
      */
-    public function dataIsIgnored()
+    public function dataIsIgnored(): array
     {
         return array(
             'ext-json is ignored if listed' => array(array('ext-json', 'monolog/monolog'), 'ext-json', true),

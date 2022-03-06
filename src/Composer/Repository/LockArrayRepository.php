@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -21,7 +21,7 @@ namespace Composer\Repository;
  */
 class LockArrayRepository extends ArrayRepository
 {
-    public function getRepoName()
+    public function getRepoName(): string
     {
         return 'lock repo';
     }

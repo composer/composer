@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -44,7 +44,7 @@ class Compiler
      *
      * @throws \RuntimeException
      */
-    public function compile($pharFile = 'composer.phar')
+    public function compile(string $pharFile = 'composer.phar'): void
     {
         if (file_exists($pharFile)) {
             unlink($pharFile);
@@ -82,7 +82,7 @@ class Compiler
 
         $phar->startBuffering();
 
-        $finderSort = function ($a, $b) {
+        $finderSort = function ($a, $b): int {
             return strcmp(strtr($a->getRealPath(), '\\', '/'), strtr($b->getRealPath(), '\\', '/'));
         };
 
@@ -118,7 +118,7 @@ class Compiler
         $finder = new Finder();
         $finder->files()
             ->ignoreVCS(true)
-            ->notPath('/\/(composer\.(json|lock)|[A-Z]+\.md|\.gitignore|appveyor.yml|phpunit\.xml\.dist|phpstan\.neon\.dist|phpstan-config\.neon)$/')
+            ->notPath('/\/(composer\.(json|lock)|[A-Z]+\.md|\.gitignore|appveyor.yml|phpunit\.xml\.dist|phpstan\.neon\.dist|phpstan-config\.neon|phpstan-baseline\.neon)$/')
             ->notPath('/bin\/(jsonlint|validate-json|simple-phpunit|phpstan|phpstan\.phar)(\.bat)?$/')
             ->notPath('symfony/console/Resources/completion.bash')
             ->notPath('justinrainbow/json-schema/demo/')
@@ -147,13 +147,13 @@ class Compiler
         $unexpectedFiles = array();
 
         foreach ($finder as $file) {
-            if (in_array(realpath($file), $extraFiles, true)) {
-                unset($extraFiles[array_search(realpath($file), $extraFiles, true)]);
-            } elseif (!Preg::isMatch('{([/\\\\]LICENSE|\.php)$}', $file)) {
+            if (false !== ($index = array_search($file->getRealPath(), $extraFiles, true))) {
+                unset($extraFiles[$index]);
+            } elseif (!Preg::isMatch('{(^LICENSE$|\.php$)}', $file->getFilename())) {
                 $unexpectedFiles[] = (string) $file;
             }
 
-            if (Preg::isMatch('{\.php[\d.]*$}', $file)) {
+            if (Preg::isMatch('{\.php[\d.]*$}', $file->getFilename())) {
                 $this->addFile($phar, $file);
             } else {
                 $this->addFile($phar, $file, false);
@@ -201,7 +201,7 @@ class Compiler
      * @param  \SplFileInfo $file
      * @return string
      */
-    private function getRelativeFilePath($file)
+    private function getRelativeFilePath(\SplFileInfo $file): string
     {
         $realPath = $file->getRealPath();
         $pathPrefix = dirname(__DIR__, 2).DIRECTORY_SEPARATOR;
@@ -217,13 +217,13 @@ class Compiler
      *
      * @return void
      */
-    private function addFile(\Phar $phar, \SplFileInfo $file, $strip = true)
+    private function addFile(\Phar $phar, \SplFileInfo $file, bool $strip = true): void
     {
         $path = $this->getRelativeFilePath($file);
-        $content = file_get_contents($file);
+        $content = file_get_contents((string) $file);
         if ($strip) {
             $content = $this->stripWhitespace($content);
-        } elseif ('LICENSE' === basename($file)) {
+        } elseif ('LICENSE' === $file->getFilename()) {
             $content = "\n".$content."\n";
         }
 
@@ -245,7 +245,7 @@ class Compiler
     /**
      * @return void
      */
-    private function addComposerBin(\Phar $phar)
+    private function addComposerBin(\Phar $phar): void
     {
         $content = file_get_contents(__DIR__.'/../../bin/composer');
         $content = Preg::replace('{^#!/usr/bin/env php\s*}', '', $content);
@@ -258,7 +258,7 @@ class Compiler
      * @param  string $source A PHP string
      * @return string The PHP string with the whitespace removed
      */
-    private function stripWhitespace($source)
+    private function stripWhitespace(string $source): string
     {
         if (!function_exists('token_get_all')) {
             return $source;
@@ -289,7 +289,7 @@ class Compiler
     /**
      * @return string
      */
-    private function getStub()
+    private function getStub(): string
     {
         $stub = <<<'EOF'
 #!/usr/bin/env php

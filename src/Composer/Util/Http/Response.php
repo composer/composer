@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -34,9 +34,9 @@ class Response
      * @param Request  $request
      * @param int      $code
      * @param list<string> $headers
-     * @param ?string  $body
+     * @param null|string  $body
      */
-    public function __construct(array $request, $code, array $headers, $body)
+    public function __construct(array $request, ?int $code, array $headers, ?string $body)
     {
         if (!isset($request['url'])) { // @phpstan-ignore-line
             throw new \LogicException('url key missing from request array');
@@ -50,7 +50,7 @@ class Response
     /**
      * @return int
      */
-    public function getStatusCode()
+    public function getStatusCode(): int
     {
         return $this->code;
     }
@@ -58,7 +58,7 @@ class Response
     /**
      * @return string|null
      */
-    public function getStatusMessage()
+    public function getStatusMessage(): ?string
     {
         $value = null;
         foreach ($this->headers as $header) {
@@ -75,7 +75,7 @@ class Response
     /**
      * @return string[]
      */
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->headers;
     }
@@ -84,7 +84,7 @@ class Response
      * @param  string  $name
      * @return ?string
      */
-    public function getHeader($name)
+    public function getHeader(string $name): ?string
     {
         return self::findHeaderValue($this->headers, $name);
     }
@@ -92,7 +92,7 @@ class Response
     /**
      * @return ?string
      */
-    public function getBody()
+    public function getBody(): ?string
     {
         return $this->body;
     }
@@ -109,7 +109,7 @@ class Response
      * @return void
      * @phpstan-impure
      */
-    public function collect()
+    public function collect(): void
     {
         /** @phpstan-ignore-next-line */
         $this->request = $this->code = $this->headers = $this->body = null;
@@ -120,7 +120,7 @@ class Response
      * @param  string      $name    header name (case insensitive)
      * @return string|null
      */
-    public static function findHeaderValue(array $headers, $name)
+    public static function findHeaderValue(array $headers, string $name): ?string
     {
         $value = null;
         foreach ($headers as $header) {

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -15,6 +15,7 @@ namespace Composer\Test\Repository;
 use Composer\Repository\RepositoryManager;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
+use Composer\Config;
 
 class RepositoryManagerTest extends TestCase
 {
@@ -35,11 +36,11 @@ class RepositoryManagerTest extends TestCase
         }
     }
 
-    public function testPrepend()
+    public function testPrepend(): void
     {
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            $this->getMockBuilder('Composer\Config')->getMock(),
+            new Config,
             $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
             $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
@@ -59,7 +60,7 @@ class RepositoryManagerTest extends TestCase
      * @param array<string, mixed> $options
      * @param class-string<\Throwable>|null $exception
      */
-    public function testRepoCreation($type, $options, ?string $exception = null)
+    public function testRepoCreation(string $type, array $options, ?string $exception = null): void
     {
         if ($exception !== null) {
             self::expectException($exception);
@@ -67,19 +68,13 @@ class RepositoryManagerTest extends TestCase
 
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
-            $config = $this->getMockBuilder('Composer\Config')->onlyMethods(array('get'))->getMock(),
+            $config = new Config,
             $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(),
             $this->getMockBuilder('Composer\EventDispatcher\EventDispatcher')->disableOriginalConstructor()->getMock()
         );
 
         $tmpdir = $this->tmpdir;
-        $config
-            ->expects($this->any())
-            ->method('get')
-            ->will($this->returnCallback(function ($arg) use ($tmpdir) {
-                return 'cache-repo-dir' === $arg ? $tmpdir : null;
-            }))
-        ;
+        $config->merge(['config' => ['cache-repo-dir' => $tmpdir]]);
 
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
@@ -95,7 +90,7 @@ class RepositoryManagerTest extends TestCase
         $this->assertInstanceOf('Composer\Repository\RepositoryInterface', $rm->createRepository($type, $options));
     }
 
-    public function provideRepoCreationTestCases()
+    public function provideRepoCreationTestCases(): array
     {
         $cases = array(
             array('composer', array('url' => 'http://example.org')),
@@ -115,7 +110,7 @@ class RepositoryManagerTest extends TestCase
         return $cases;
     }
 
-    public function testFilterRepoWrapping()
+    public function testFilterRepoWrapping(): void
     {
         $rm = new RepositoryManager(
             $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),

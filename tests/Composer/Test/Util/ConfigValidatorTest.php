@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -24,7 +24,7 @@ class ConfigValidatorTest extends TestCase
     /**
      * Test ConfigValidator warns on commit reference
      */
-    public function testConfigValidatorCommitRefWarning()
+    public function testConfigValidatorCommitRefWarning(): void
     {
         $configValidator = new ConfigValidator(new NullIO());
         list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_commit-ref.json');
@@ -35,7 +35,7 @@ class ConfigValidatorTest extends TestCase
         );
     }
 
-    public function testConfigValidatorWarnsOnScriptDescriptionForNonexistentScript()
+    public function testConfigValidatorWarnsOnScriptDescriptionForNonexistentScript(): void
     {
         $configValidator = new ConfigValidator(new NullIO());
         list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_scripts-descriptions.json');
@@ -46,7 +46,7 @@ class ConfigValidatorTest extends TestCase
         );
     }
 
-    public function testConfigValidatorWarnsOnUnnecessaryProvideReplace()
+    public function testConfigValidatorWarnsOnUnnecessaryProvideReplace(): void
     {
         $configValidator = new ConfigValidator(new NullIO());
         list(, , $warnings) = $configValidator->validate(__DIR__ . '/Fixtures/composer_provide-replace-requirements.json');

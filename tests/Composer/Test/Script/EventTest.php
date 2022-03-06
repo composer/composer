@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -19,7 +19,7 @@ use Composer\Test\TestCase;
 
 class EventTest extends TestCase
 {
-    public function testEventSetsOriginatingEvent()
+    public function testEventSetsOriginatingEvent(): void
     {
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $composer = $this->createComposerInstance();
@@ -43,7 +43,7 @@ class EventTest extends TestCase
         );
     }
 
-    public function testEventCalculatesNestedOriginatingEvent()
+    public function testEventCalculatesNestedOriginatingEvent(): void
     {
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $composer = $this->createComposerInstance();
@@ -71,7 +71,7 @@ class EventTest extends TestCase
     /**
      * @return Composer
      */
-    private function createComposerInstance()
+    private function createComposerInstance(): Composer
     {
         $composer = new Composer;
         $config = new Config;

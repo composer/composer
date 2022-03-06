@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /*
  * This file is part of Composer.
@@ -62,7 +62,7 @@ class LockTransaction extends Transaction
     /**
      * @return void
      */
-    public function setResultPackages(Pool $pool, Decisions $decisions)
+    public function setResultPackages(Pool $pool, Decisions $decisions): void
     {
         $this->resultPackages = array('all' => array(), 'non-dev' => array(), 'dev' => array());
         foreach ($decisions as $i => $decision) {
@@ -82,7 +82,7 @@ class LockTransaction extends Transaction
     /**
      * @return void
      */
-    public function setNonDevPackages(LockTransaction $extractionResult)
+    public function setNonDevPackages(LockTransaction $extractionResult): void
     {
         $packages = $extractionResult->getNewLockPackages(false);
 
@@ -106,7 +106,7 @@ class LockTransaction extends Transaction
      * @param bool $updateMirrors
      * @return BasePackage[]
      */
-    public function getNewLockPackages($devMode, $updateMirrors = false)
+    public function getNewLockPackages(bool $devMode, bool $updateMirrors = false): array
     {
         $packages = array();
         foreach ($this->resultPackages[$devMode ? 'dev' : 'non-dev'] as $package) {
@@ -119,7 +119,7 @@ class LockTransaction extends Transaction
                             if ($presentPackage->getSourceReference() && $presentPackage->getSourceType() === $package->getSourceType()) {
                                 $package->setSourceDistReferences($presentPackage->getSourceReference());
                             }
-                            if ($presentPackage->getReleaseDate() && $package instanceof Package) {
+                            if ($presentPackage->getReleaseDate() !== null && $package instanceof Package) {
                                 $package->setReleaseDate($presentPackage->getReleaseDate());
                             }
                         }
@@ -137,7 +137,7 @@ class LockTransaction extends Transaction
      * @param array<array{package: string, version: string, alias: string, alias_normalized: string}> $aliases
      * @return array<array{package: string, version: string, alias: string, alias_normalized: string}>
      */
-    public function getAliases($aliases)
+    public function getAliases(array $aliases): array
     {
         $usedAliases = array();
 
@@ -152,7 +152,7 @@ class LockTransaction extends Transaction
             }
         }
 
-        usort($usedAliases, function ($a, $b) {
+        usort($usedAliases, function ($a, $b): int {
             return strcmp($a['package'], $b['package']);
         });
 
