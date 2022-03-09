@@ -454,6 +454,14 @@ class HttpDownloader
      */
     public static function outputWarnings(IOInterface $io, $url, $data)
     {
+        $cleanMessage = function ($msg) use ($io) {
+            if (!$io->isDecorated()) {
+                $msg = Preg::replace('{'.chr(27).'\\[[;\d]*m}u', '', $msg);
+            }
+
+            return $msg;
+        };
+
         // legacy warning/info keys
         foreach (array('warning', 'info') as $type) {
             if (empty($data[$type])) {
@@ -469,7 +477,7 @@ class HttpDownloader
                 }
             }
 
-            $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$data[$type].'</'.$type.'>');
+            $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$cleanMessage($data[$type]).'</'.$type.'>');
         }
 
         // modern Composer 2.2+ format with support for multiple warning/info messages
@@ -487,7 +495,7 @@ class HttpDownloader
                     continue;
                 }
 
-                $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$spec['message'].'</'.$type.'>');
+                $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$cleanMessage($spec['message']).'</'.$type.'>');
             }
         }
     }
