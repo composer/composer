@@ -121,9 +121,9 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                         $this->io->writeError(sprintf('Symlinking from %s', $url), false);
                     }
                     if ($transportOptions['relative']) {
-                        $symfonyFilesystem->symlink($shortestPath, $path);
+                        $symfonyFilesystem->symlink($shortestPath.'/', $path);
                     } else {
-                        $symfonyFilesystem->symlink($realUrl, $path);
+                        $symfonyFilesystem->symlink($realUrl.'/', $path);
                     }
                 }
             } catch (IOException $e) {
