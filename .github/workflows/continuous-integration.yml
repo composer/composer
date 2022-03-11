@@ -76,23 +76,23 @@ jobs:
           tools: composer
 
       - name: "Handle lowest dependencies update"
-        if: "contains(matrix.dependencies, 'lowest')"
+        if: "matrix.dependencies == 'lowest'"
         run: "echo \"COMPOSER_UPDATE_FLAGS=$COMPOSER_UPDATE_FLAGS --prefer-lowest\" >> $GITHUB_ENV"
 
       - name: "Handle ignore-platform-reqs dependencies update"
-        if: "contains(matrix.dependencies, 'ignore')"
+        if: "matrix.dependencies == 'ignore'"
         run: "echo \"COMPOSER_FLAGS=$COMPOSER_FLAGS --ignore-platform-req=php\" >> $GITHUB_ENV"
 
       - name: "Remove platform config to get latest dependencies for current PHP version when build is not locked"
-        if: "contains(matrix.dependencies, 'highest') || contains(matrix.dependencies, 'lowest')"
+        if: "matrix.dependencies == 'highest' || matrix.dependencies == 'lowest'"
         run: "composer config platform --unset"
 
       - name: "Allow alpha releases for latest-deps builds to catch problems earlier"
-        if: "contains(matrix.dependencies, 'highest')"
+        if: "matrix.dependencies == 'highest'"
         run: "composer config minimum-stability alpha"
 
       - name: "Update dependencies from composer.json using composer binary provided by system"
-        if: "contains(matrix.dependencies, 'highest') || contains(matrix.dependencies, 'lowest')"
+        if: "matrix.dependencies == 'highest' || matrix.dependencies == 'lowest'"
         run: "composer update ${{ env.COMPOSER_UPDATE_FLAGS }} ${{ env.COMPOSER_FLAGS }}"
 
       - name: "Install dependencies from composer.lock using composer binary provided by system"
@@ -111,7 +111,7 @@ jobs:
         run: 'composer require --no-update --dev "symfony/phpunit-bridge:~5.4@dev"'
 
       - name: "Set ignored deprecations for php 8.1+ on lowest or locked deps"
-        if: "matrix.php-version >= '8.1' && !contains(matrix.dependencies, 'highest')"
+        if: "matrix.php-version >= '8.1' && matrix.dependencies != 'highest'"
         run: "echo \"SYMFONY_DEPRECATIONS_HELPER=baselineFile=./tests/deprecations-8.1.json&max[direct]=0\" >> $GITHUB_ENV"
 
       - name: "Update dev requirements to latest available for the current PHP even on locked builds as they are not bundled dependencies"
