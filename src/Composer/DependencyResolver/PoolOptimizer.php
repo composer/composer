@@ -490,22 +490,15 @@ class PoolOptimizer
      */
     private function expandDisjunctiveMultiConstraints(ConstraintInterface $constraint)
     {
-        $expanded = array();
         $constraint = Intervals::compactConstraint($constraint);
 
         if ($constraint instanceof MultiConstraint && $constraint->isDisjunctive()) {
-            foreach ($constraint->getConstraints() as $sub) {
-                // No need to call ourselves recursively here because Intervals::compactConstraint() ensures that there
-                // are no nested disjunctive MultiConstraint instances possible
-                $expanded[] = $sub;
-            }
-
-            return $expanded;
+            // No need to call ourselves recursively here because Intervals::compactConstraint() ensures that there
+            // are no nested disjunctive MultiConstraint instances possible
+            return $constraint->getConstraints();
         }
 
         // Regular constraints and conjunctive MultiConstraints
-        $expanded[] = $constraint;
-
-        return $expanded;
+        return array($constraint);
     }
 }
