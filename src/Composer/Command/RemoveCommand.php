@@ -234,6 +234,18 @@ EOT
         $commandEvent = new CommandEvent(PluginEvents::COMMAND, 'remove', $input, $output);
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
+        $allowPlugins = $composer->getConfig()->get('allow-plugins');
+        $removedPlugins = array_intersect(array_keys($allowPlugins), $packages);
+        if (!$dryRun && count($removedPlugins) !== 0) {
+            if (count($allowPlugins) === count($removedPlugins)) {
+                $json->removeConfigSetting('allow-plugins');
+            } else {
+                foreach ($removedPlugins as $plugin) {
+                    $json->removeConfigSetting('allow-plugins.'.$plugin);
+                }
+            }
+        }
+
         $composer->getInstallationManager()->setOutputProgress(!$input->getOption('no-progress'));
 
         $install = Installer::create($io, $composer);
