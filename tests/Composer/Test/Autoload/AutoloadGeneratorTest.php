@@ -1010,6 +1010,14 @@ EOF;
         $packages[] = $c = new Package('c/lorem', '1.0', '1.0');
         $packages[] = $e = new Package('e/e', '1.0', '1.0');
 
+        // expected order:
+        // c requires nothing
+        // d requires c
+        // b requires c & d
+        // e requires c
+        // z requires c
+        // (b, e, z ordered alphabetically)
+
         $z->setAutoload(array('files' => array('testA.php')));
         $z->setRequires(array('c/lorem' => new Link('z/foo', 'c/lorem', new MatchAllConstraint())));
 

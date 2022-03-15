@@ -17,7 +17,7 @@ update plugin/* symfony/console symfony/filesystem symfony/process
 !!PreUpdate:["composer/ca-bundle","composer/composer","composer/metadata-minifier","composer/pcre","composer/semver","composer/spdx-licenses","composer/xdebug-handler","justinrainbow/json-schema","psr/container","psr/log","psr/log-implementation","react/promise","seld/jsonlint","seld/phar-utils","symfony/console","symfony/deprecation-contracts","symfony/filesystem","symfony/finder","symfony/polyfill-ctype","symfony/polyfill-intl-grapheme","symfony/polyfill-intl-normalizer","symfony/polyfill-mbstring","symfony/polyfill-php73","symfony/polyfill-php80","symfony/process","symfony/service-contracts","symfony/string","plugin/a","plugin/b","root/pkg"]
 !!Versions:console:%[2-8]\.\d+\.\d+.0%;process:%[2-8]\.\d+\.\d+.0%;filesystem:%[2-8]\.\d+\.\d+.0%
 Loading composer repositories with package information
-Updating dependencies
+%((Info|Warning) from .*\n)?%Updating dependencies
 Lock file operations: 0 installs, 5 updates, 0 removals
   - Upgrading plugin/a (1.1.1 => 1.1.2)
   - Upgrading plugin/b (2.2.2 => 2.2.3)

@@ -110,21 +110,18 @@ class PoolOptimizer
 
         // Extract requested package requirements
         foreach ($request->getRequires() as $require => $constraint) {
-            $constraint = Intervals::compactConstraint($constraint);
-            $this->requireConstraintsPerPackage[$require][(string) $constraint] = $constraint;
+            $this->extractRequireConstraintsPerPackage($require, $constraint);
         }
 
         // First pass over all packages to extract information and mark package constraints irremovable
         foreach ($pool->getPackages() as $package) {
             // Extract package requirements
             foreach ($package->getRequires() as $link) {
-                $constraint = Intervals::compactConstraint($link->getConstraint());
-                $this->requireConstraintsPerPackage[$link->getTarget()][(string) $constraint] = $constraint;
+                $this->extractRequireConstraintsPerPackage($link->getTarget(), $link->getConstraint());
             }
             // Extract package conflicts
             foreach ($package->getConflicts() as $link) {
-                $constraint = Intervals::compactConstraint($link->getConstraint());
-                $this->conflictConstraintsPerPackage[$link->getTarget()][(string) $constraint] = $constraint;
+                $this->extractConflictConstraintsPerPackage($link->getTarget(), $link->getConstraint());
             }
 
             // Keep track of alias packages for every package so if either the alias or aliased is kept
@@ -451,5 +448,56 @@ class PoolOptimizer
                 }
             }
         }
+    }
+
+    /**
+     * Disjunctive require constraints need to be considered in their own group. E.g. "^2.14 || ^3.3" needs to generate
+     * two require constraint groups in order for us to keep the best matching package for "^2.14" AND "^3.3" as otherwise, we'd
+     * only keep either one which can cause trouble (e.g. when using --prefer-lowest).
+     *
+     * @param string $package
+     * @param ConstraintInterface $constraint
+     * @return void
+     */
+    private function extractRequireConstraintsPerPackage($package, ConstraintInterface $constraint)
+    {
+        foreach ($this->expandDisjunctiveMultiConstraints($constraint) as $expanded) {
+            $this->requireConstraintsPerPackage[$package][(string) $expanded] = $expanded;
+        }
+    }
+
+    /**
+     * Disjunctive conflict constraints need to be considered in their own group. E.g. "^2.14 || ^3.3" needs to generate
+     * two conflict constraint groups in order for us to keep the best matching package for "^2.14" AND "^3.3" as otherwise, we'd
+     * only keep either one which can cause trouble (e.g. when using --prefer-lowest).
+     *
+     * @param string $package
+     * @param ConstraintInterface $constraint
+     * @return void
+     */
+    private function extractConflictConstraintsPerPackage($package, ConstraintInterface $constraint)
+    {
+        foreach ($this->expandDisjunctiveMultiConstraints($constraint) as $expanded) {
+            $this->conflictConstraintsPerPackage[$package][(string) $expanded] = $expanded;
+        }
+    }
+
+    /**
+     *
+     * @param ConstraintInterface $constraint
+     * @return ConstraintInterface[]
+     */
+    private function expandDisjunctiveMultiConstraints(ConstraintInterface $constraint)
+    {
+        $constraint = Intervals::compactConstraint($constraint);
+
+        if ($constraint instanceof MultiConstraint && $constraint->isDisjunctive()) {
+            // No need to call ourselves recursively here because Intervals::compactConstraint() ensures that there
+            // are no nested disjunctive MultiConstraint instances possible
+            return $constraint->getConstraints();
+        }
+
+        // Regular constraints and conjunctive MultiConstraints
+        return array($constraint);
     }
 }

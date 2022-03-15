@@ -1334,7 +1334,7 @@ INITIALIZER;
     /**
      * Sorts packages by dependency weight
      *
-     * Packages of equal weight retain the original order
+     * Packages of equal weight are sorted alphabetically
      *
      * @param array<int, array{0: PackageInterface, 1: string}> $packageMap
      * @return array<int, array{0: PackageInterface, 1: string}>

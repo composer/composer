@@ -81,14 +81,14 @@ jobs:
       # This step requires a secret token with `pull` access to composer/docker. The default
       # secrets.GITHUB_TOKEN is scoped to this repository only which is not sufficient.
       - name: "Open issue @ Docker repository"
-        uses: actions/github-script@v2
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
           script: |
             // github.ref value looks like 'refs/tags/TAG', cleanup
             const tag = "${{ github.ref }}".replace(/refs\/tags\//, '');
             // create new issue on Docker repository
-            github.issues.create({
+            github.rest.issues.create({
               owner: "${{ github.repository_owner }}",
               repo: "docker",
               title: `New Composer tag: ${ tag }`,

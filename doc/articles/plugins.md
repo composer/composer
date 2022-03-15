@@ -323,6 +323,13 @@ hint to Composer that the plugin should be installed on its own before proceedin
 the rest of the package downloads. This slightly slows down the overall installation
 process however, so do not use it in plugins which do not absolutely require it.
 
+## Plugin Autoloading
+
+Due to plugins being loaded by Composer at runtime, and to ensure that plugins which
+depend on other packages can function correctly, a runtime autoloader is created whenever
+a plugin is loaded. That autoloader is only configured to load with the plugin dependencies,
+so you may not have access to all the packages which are installed.
+
 [1]: ../04-schema.md#type
 [2]: ../04-schema.md#extra
 [3]: https://github.com/composer/composer/blob/main/src/Composer/Plugin/PluginInterface.php
