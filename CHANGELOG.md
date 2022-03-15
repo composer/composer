@@ -19,6 +19,10 @@
   * Fixed symlink creation in linux VM guest filesystems to be recognized by Windows (#10592)
   * Performance improvement in pool optimization step (#10585)
 
+### [2.2.9] 2022-03-15
+
+  * Fixed regression with plugins that modify install path of packages, [see docs](https://getcomposer.org/doc/articles/plugins.md#plugin-modifies-install-path) if you are authoring such a plugin (#10621)
+
 ### [2.2.8] 2022-03-15
 
   * Fixed `files` autoloading sort order to be fully deterministic (#10617)
@@ -1424,6 +1428,7 @@
   * Initial release
 
 [2.3.0-RC1]: https://github.com/composer/composer/compare/2.2.9...2.3.0-RC1
+[2.2.9]: https://github.com/composer/composer/compare/2.2.8...2.2.9
 [2.2.8]: https://github.com/composer/composer/compare/2.2.7...2.2.8
 [2.2.7]: https://github.com/composer/composer/compare/2.2.6...2.2.7
 [2.2.6]: https://github.com/composer/composer/compare/2.2.5...2.2.6

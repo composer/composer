@@ -127,6 +127,23 @@ class PackageSorterTest extends TestCase
                     'foo/baz',
                 ),
             ),
+            'pre-weighted packages bumped to top incl their deps' => array(
+                array(
+                    $this->createPackage('foo/bar', array('foo/dep')),
+                    $this->createPackage('foo/bar2', array('foo/dep2')),
+                    $this->createPackage('foo/dep', array()),
+                    $this->createPackage('foo/dep2', array()),
+                ),
+                array(
+                    'foo/dep',
+                    'foo/bar',
+                    'foo/dep2',
+                    'foo/bar2',
+                ),
+                array(
+                    'foo/bar' => -1000
+                )
+            ),
         );
     }
 
@@ -135,10 +152,11 @@ class PackageSorterTest extends TestCase
      *
      * @param Package[] $packages
      * @param string[]  $expectedOrderedList
+     * @param array<string, int> $weights
      */
-    public function testSortingOrdersDependenciesHigherThanPackage(array $packages, array $expectedOrderedList): void
+    public function testSortingOrdersDependenciesHigherThanPackage(array $packages, array $expectedOrderedList, array $weights = []): void
     {
-        $sortedPackages = PackageSorter::sortPackages($packages);
+        $sortedPackages = PackageSorter::sortPackages($packages, $weights);
         $sortedPackageNames = array_map(function ($package): string {
             return $package->getName();
         }, $sortedPackages);
