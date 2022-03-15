@@ -225,6 +225,9 @@ EOT
 
                 return 1;
             }
+            if ($constraint === 'self.version') {
+                continue;
+            }
             $versionParser->parseConstraints($constraint);
         }
 
