@@ -1,3 +1,24 @@
+### [2.3.0-RC1] 2022-03-16
+
+  * BC Break: the minimum PHP version is now 7.2.5+, use the [Composer 2.2 LTS](https://github.com/composer/composer/issues/10340) if you are stuck with an older PHP (#10343)
+  * BC Break: added native parameter & return types to many internal APIs, we explicitly left the most extended/implemented symbols untouched but if this causes problems nonetheless please report it ASAP (#10547, #10561)
+  * BC Break: added visibility to all constants, a few internal ones have been made private/protected, if this causes problems please report it ASAP (#10550)
+  * BC Break: the minimum supported Symfony components version is now 5.4, this only affects you if you are requiring composer/composer directly however, which is generally frowned upon
+  * Bumped `composer-plugin-api` to `2.3.0`
+  * Bumped bundled Symfony components from 2.8 to 5.4 🥳
+  * Added `declare(strict_types=1)` to all the classes, which for sure could cause regressions in edge cases, please report with stack traces (#10567)
+  * Added `--patch-only` to the `outdated` command to only show updates to patch versions and ignore new major/minor versions (#10589)
+  * Added clickable links to various commands for terminals which support it (#10430)
+  * Added ProcessExecutor ability to receive commands as arrays by (internals/plugin change only) (#10435)
+  * Added abandoned flag to `show`/`outdated` commands JSON-formatted output (#10485)
+  * Added config.reference option to `path` repositories to configure the way the reference is generated, and possibly reduce composer.lock conflicts (#10488)
+  * Added automatic removal of allow-plugins rules when removing a plugin via the `remove` command (#10615)
+  * Added COMPOSER_IGNORE_PLATFOR_REQ & COMPOSER_IGNORE_PLATFOR_REQS env vars to configure the equivalent flags (#10616)
+  * Added support for Symfony 6.0 components
+  * Added support for psr/log 3.x (#10454)
+  * Fixed symlink creation in linux VM guest filesystems to be recognized by Windows (#10592)
+  * Performance improvement in pool optimization step (#10585)
+
 ### [2.2.8] 2022-03-15
 
   * Fixed `files` autoloading sort order to be fully deterministic (#10617)
@@ -1402,6 +1423,7 @@
 
   * Initial release
 
+[2.3.0-RC1]: https://github.com/composer/composer/compare/2.2.9...2.3.0-RC1
 [2.2.8]: https://github.com/composer/composer/compare/2.2.7...2.2.8
 [2.2.7]: https://github.com/composer/composer/compare/2.2.6...2.2.7
 [2.2.6]: https://github.com/composer/composer/compare/2.2.5...2.2.6
