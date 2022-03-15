@@ -323,6 +323,15 @@ hint to Composer that the plugin should be installed on its own before proceedin
 the rest of the package downloads. This slightly slows down the overall installation
 process however, so do not use it in plugins which do not absolutely require it.
 
+### plugin-modifies-install-path
+
+Some special plugins modify the install path of packages.
+
+As of Composer 2.2.9, you can specify `{"extra": {"plugin-modifies-install-path": true}}`
+in your composer.json to hint to Composer that the plugin should be activated as soon
+as possible to prevent any bad side-effects from Composer assuming packages are installed
+in another location than they actually are.
+
 ## Plugin Autoloading
 
 Due to plugins being loaded by Composer at runtime, and to ensure that plugins which
