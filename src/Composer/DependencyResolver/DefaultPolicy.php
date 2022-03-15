@@ -77,7 +77,6 @@ class DefaultPolicy implements PolicyInterface
 
         $packages = $this->groupLiteralsByName($pool, $literals);
 
-
         foreach ($packages as &$nameLiterals) {
             usort($nameLiterals, function ($a, $b) use ($pool, $requiredPackage, $poolId): int {
                 $cacheKey = 'i'.$a.'.'.$b.$requiredPackage; // i prefix -> ignoreReplace = true
