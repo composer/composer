@@ -140,6 +140,12 @@ EOT
             return 1;
         }
 
+        if ($input->getOption('patch-only') && $input->getOption('minor-only')) {
+            $io->writeError('The --patch-only option is not usable in combination with --minor-only');
+
+            return 1;
+        }
+
         if ($input->getOption('tree') && $input->getOption('latest')) {
             $io->writeError('The --tree (-t) option is not usable in combination with --latest (-l)');
 
