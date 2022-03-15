@@ -13,6 +13,7 @@
 namespace Composer\Util;
 
 use Composer\Package\PackageInterface;
+use Composer\Package\RootPackageInterface;
 
 class PackageSorter
 {
@@ -29,7 +30,11 @@ class PackageSorter
         $usageList = array();
 
         foreach ($packages as $package) {
-            foreach (array_merge($package->getRequires(), $package->getDevRequires()) as $link) {
+            $links = $package->getRequires();
+            if ($package instanceof RootPackageInterface) {
+                $links = array_merge($links, $package->getDevRequires());
+            }
+            foreach ($links as $link) {
                 $target = $link->getTarget();
                 $usageList[$target][] = $package->getName();
             }
