@@ -473,7 +473,8 @@ class Installer
             return $exitCode;
         }
 
-        if (method_exists('Composer\Semver\CompilingMatcher', 'clear')) {
+        // exists as of composer/semver 3.3.0
+        if (method_exists('Composer\Semver\CompilingMatcher', 'clear')) { // @phpstan-ignore-line
             \Composer\Semver\CompilingMatcher::clear();
         }
 
