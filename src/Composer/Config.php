@@ -341,7 +341,7 @@ class Config
 
             // numbers with kb/mb/gb support, without env var support
             case 'cache-files-maxsize':
-                if (!Preg::isMatch('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', $this->config[$key], $matches)) {
+                if (!Preg::isMatch('/^\s*([0-9.]+)\s*(?:([kmg])(?:i?b)?)?\s*$/i', (string) $this->config[$key], $matches)) {
                     throw new \RuntimeException(
                         "Could not parse the value of '$key': {$this->config[$key]}"
                     );
