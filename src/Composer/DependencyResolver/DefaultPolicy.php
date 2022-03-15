@@ -27,6 +27,10 @@ class DefaultPolicy implements PolicyInterface
     private $preferStable;
     /** @var bool */
     private $preferLowest;
+    /** @var array<int, array<string, array<int, int>>> */
+    private $preferredPackageResultCachePerPool;
+    /** @var array<int, array<string, int>> */
+    private $sortingCachePerPool;
 
     /**
      * @param bool $preferStable
@@ -63,11 +67,25 @@ class DefaultPolicy implements PolicyInterface
      */
     public function selectPreferredPackages(Pool $pool, array $literals, string $requiredPackage = null): array
     {
+        sort($literals);
+        $resultCacheKey = implode(',', $literals).$requiredPackage;
+        $poolId = spl_object_id($pool);
+
+        if (isset($this->preferredPackageResultCachePerPool[$poolId][$resultCacheKey])) {
+            return $this->preferredPackageResultCachePerPool[$poolId][$resultCacheKey];
+        }
+
         $packages = $this->groupLiteralsByName($pool, $literals);
 
         foreach ($packages as &$nameLiterals) {
-            usort($nameLiterals, function ($a, $b) use ($pool, $requiredPackage): int {
-                return $this->compareByPriority($pool, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage, true);
+            usort($nameLiterals, function ($a, $b) use ($pool, $requiredPackage, $poolId): int {
+                $cacheKey = 'i'.$a.'.'.$b.$requiredPackage; // i prefix -> ignoreReplace = true
+
+                if (isset($this->sortingCachePerPool[$poolId][$cacheKey])) {
+                    return $this->sortingCachePerPool[$poolId][$cacheKey];
+                }
+
+                return $this->sortingCachePerPool[$poolId][$cacheKey] = $this->compareByPriority($pool, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage, true);
             });
         }
 
@@ -79,11 +97,17 @@ class DefaultPolicy implements PolicyInterface
         $selected = \call_user_func_array('array_merge', array_values($packages));
 
         // now sort the result across all packages to respect replaces across packages
-        usort($selected, function ($a, $b) use ($pool, $requiredPackage): int {
-            return $this->compareByPriority($pool, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage);
+        usort($selected, function ($a, $b) use ($pool, $requiredPackage, $poolId): int {
+            $cacheKey = $a.'.'.$b.$requiredPackage; // no i prefix -> ignoreReplace = false
+
+            if (isset($this->sortingCachePerPool[$poolId][$cacheKey])) {
+                return $this->sortingCachePerPool[$poolId][$cacheKey];
+            }
+
+            return $this->sortingCachePerPool[$poolId][$cacheKey] = $this->compareByPriority($pool, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage);
         });
 
-        return $selected;
+        return $this->preferredPackageResultCachePerPool[$poolId][$resultCacheKey] = $selected;
     }
 
     /**
