@@ -212,13 +212,13 @@ abstract class BaseCommand extends Command
             $input->setOption('no-progress', true);
         }
 
-        if (true == $input->hasOption('no-dev')) {
+        if (true === $input->hasOption('no-dev')) {
             if (!$input->getOption('no-dev') && true == Platform::getEnv('COMPOSER_NO_DEV')) {
                 $input->setOption('no-dev', true);
             }
         }
 
-        if (true == $input->hasOption('ignore-platform-reqs')) {
+        if (true === $input->hasOption('ignore-platform-reqs')) {
             if (!$input->getOption('ignore-platform-reqs') && true == Platform::getEnv('COMPOSER_IGNORE_PLATFORM_REQS')) {
                 $input->setOption('ignore-platform-reqs', true);
 
@@ -226,16 +226,12 @@ abstract class BaseCommand extends Command
             }
         }
 
-        if (true == $input->hasOption('ignore-platform-req') && (!$input->hasOption('ignore-platform-reqs') || !$input->getOption('ignore-platform-reqs'))) {
-            $raw_ignored_platform_req = Platform::getEnv('COMPOSER_IGNORE_PLATFORM_REQ');
-            if (
-                ("" != $input->getOption('ignore-platform-req'))
-                && "" != $raw_ignored_platform_req
-                && false !== $raw_ignored_platform_req
-            ){
-                $input->setOption('ignore-platform-req', explode(',', $raw_ignored_platform_req));
+        if (true === $input->hasOption('ignore-platform-req') && (!$input->hasOption('ignore-platform-reqs') || !$input->getOption('ignore-platform-reqs'))) {
+            $ignorePlatformReqEnv = Platform::getEnv('COMPOSER_IGNORE_PLATFORM_REQ');
+            if (0 === count($input->getOption('ignore-platform-req')) && is_string($ignorePlatformReqEnv) && '' !== $ignorePlatformReqEnv) {
+                $input->setOption('ignore-platform-req', explode(',', $ignorePlatformReqEnv));
 
-                $io->writeError('<warning>COMPOSER_IGNORE_PLATFORM_REQ is set. You may experience unexpected errors.</warning>');
+                $io->writeError('<warning>COMPOSER_IGNORE_PLATFORM_REQ is set to ignore '.$ignorePlatformReqEnv.'. You may experience unexpected errors.</warning>');
             }
         }
 
