@@ -99,6 +99,20 @@ class PackageSorterTest extends TestCase
                     'foo/bar6',
                 ),
             ),
+            'equal weight sorted alphabetically' => array(
+                array(
+                    $this->createPackage('foo/bar10', array('foo/dep')),
+                    $this->createPackage('foo/bar2', array('foo/dep')),
+                    $this->createPackage('foo/baz', array('foo/dep')),
+                    $this->createPackage('foo/dep', array()),
+                ),
+                array(
+                    'foo/dep',
+                    'foo/bar2',
+                    'foo/bar10',
+                    'foo/baz',
+                ),
+            ),
         );
     }
 
