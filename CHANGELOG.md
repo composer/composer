@@ -1,3 +1,11 @@
+### [2.2.8] 2022-03-15
+
+  * Fixed `files` autoloading sort order to be fully deterministic (#10617)
+  * Fixed pool optimization pass edge cases (#10579)
+  * Fixed `require` command failing when `self.version` is used as constraint (#10593)
+  * Fixed --no-ansi / undecorated output still showing color in repo warnings (#10601)
+  * Performance improvement in pool optimization step (composer/semver#131)
+
 ### [2.2.7] 2022-02-25
 
   * Allow installation together with composer/xdebug-handler ^3 (#10528)
@@ -1394,6 +1402,7 @@
 
   * Initial release
 
+[2.2.8]: https://github.com/composer/composer/compare/2.2.7...2.2.8
 [2.2.7]: https://github.com/composer/composer/compare/2.2.6...2.2.7
 [2.2.6]: https://github.com/composer/composer/compare/2.2.5...2.2.6
 [2.2.5]: https://github.com/composer/composer/compare/2.2.4...2.2.5
