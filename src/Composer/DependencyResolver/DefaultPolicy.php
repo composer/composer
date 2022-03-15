@@ -27,7 +27,7 @@ class DefaultPolicy implements PolicyInterface
     private $preferStable;
     /** @var bool */
     private $preferLowest;
-    /** @var array<int, array<string, array>> */
+    /** @var array<int, array<string, array<int, int>>> */
     private $preferredPackageResultCachePerPool;
     /** @var array<int, array<string, int>> */
     private $sortingCachePerPool;
@@ -71,8 +71,8 @@ class DefaultPolicy implements PolicyInterface
         $resultCacheKey = implode(',', $literals).$requiredPackage;
         $poolId = spl_object_id($pool);
 
-        if (isset($this->preferredPackageResultCachePerPool[$resultCacheKey])) {
-            return $this->preferredPackageResultCachePerPool[$resultCacheKey];
+        if (isset($this->preferredPackageResultCachePerPool[$poolId][$resultCacheKey])) {
+            return $this->preferredPackageResultCachePerPool[$poolId][$resultCacheKey];
         }
 
         $packages = $this->groupLiteralsByName($pool, $literals);
@@ -108,7 +108,7 @@ class DefaultPolicy implements PolicyInterface
             return $this->sortingCachePerPool[$poolId][$cacheKey] = $this->compareByPriority($pool, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage);
         });
 
-        return $this->preferredPackageResultCachePerPool[$resultCacheKey] = $selected;
+        return $this->preferredPackageResultCachePerPool[$poolId][$resultCacheKey] = $selected;
     }
 
     /**
@@ -195,7 +195,7 @@ class DefaultPolicy implements PolicyInterface
             if ($link->getTarget() === $target->getName()
 //                && (null === $link->getConstraint() ||
 //                $link->getConstraint()->matches(new Constraint('==', $target->getVersion())))) {
-            ) {
+                ) {
                 return true;
             }
         }
