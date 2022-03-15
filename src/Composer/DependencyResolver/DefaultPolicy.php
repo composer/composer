@@ -27,6 +27,8 @@ class DefaultPolicy implements PolicyInterface
     private $preferStable;
     /** @var bool */
     private $preferLowest;
+    /** @var array<int, array<string, array>> */
+    private $preferredPackageResultCachePerPool;
     /** @var array<int, array<string, int>> */
     private $sortingCachePerPool;
 
@@ -65,12 +67,20 @@ class DefaultPolicy implements PolicyInterface
      */
     public function selectPreferredPackages(Pool $pool, array $literals, string $requiredPackage = null): array
     {
-        $packages = $this->groupLiteralsByName($pool, $literals);
+        sort($literals);
+        $resultCacheKey = implode(',', $literals).$requiredPackage;
         $poolId = spl_object_id($pool);
+
+        if (isset($this->preferredPackageResultCachePerPool[$resultCacheKey])) {
+            return $this->preferredPackageResultCachePerPool[$resultCacheKey];
+        }
+
+        $packages = $this->groupLiteralsByName($pool, $literals);
+
 
         foreach ($packages as &$nameLiterals) {
             usort($nameLiterals, function ($a, $b) use ($pool, $requiredPackage, $poolId): int {
-                $cacheKey = 'i'.$a.'.'.$b; // i prefix -> ignoreReplace = true
+                $cacheKey = 'i'.$a.'.'.$b.$requiredPackage; // i prefix -> ignoreReplace = true
 
                 if (isset($this->sortingCachePerPool[$poolId][$cacheKey])) {
                     return $this->sortingCachePerPool[$poolId][$cacheKey];
@@ -89,7 +99,7 @@ class DefaultPolicy implements PolicyInterface
 
         // now sort the result across all packages to respect replaces across packages
         usort($selected, function ($a, $b) use ($pool, $requiredPackage, $poolId): int {
-            $cacheKey = $a.'.'.$b; // no i prefix -> ignoreReplace = false
+            $cacheKey = $a.'.'.$b.$requiredPackage; // no i prefix -> ignoreReplace = false
 
             if (isset($this->sortingCachePerPool[$poolId][$cacheKey])) {
                 return $this->sortingCachePerPool[$poolId][$cacheKey];
@@ -98,7 +108,7 @@ class DefaultPolicy implements PolicyInterface
             return $this->sortingCachePerPool[$poolId][$cacheKey] = $this->compareByPriority($pool, $pool->literalToPackage($a), $pool->literalToPackage($b), $requiredPackage);
         });
 
-        return $selected;
+        return $this->preferredPackageResultCachePerPool[$resultCacheKey] = $selected;
     }
 
     /**
@@ -185,7 +195,7 @@ class DefaultPolicy implements PolicyInterface
             if ($link->getTarget() === $target->getName()
 //                && (null === $link->getConstraint() ||
 //                $link->getConstraint()->matches(new Constraint('==', $target->getVersion())))) {
-                ) {
+            ) {
                 return true;
             }
         }
