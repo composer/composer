@@ -99,6 +99,20 @@ class PackageSorterTest extends TestCase
                     'foo/bar6',
                 ),
             ),
+            'circular deps sorted alphabetically if weighted equally' => array(
+                array(
+                    $this->createPackage('foo/bar1', array('circular/part1')),
+                    $this->createPackage('foo/bar2', array('circular/part2')),
+                    $this->createPackage('circular/part1', array('circular/part2')),
+                    $this->createPackage('circular/part2', array('circular/part1')),
+                ),
+                array(
+                    'circular/part1',
+                    'circular/part2',
+                    'foo/bar1',
+                    'foo/bar2',
+                ),
+            ),
             'equal weight sorted alphabetically' => array(
                 array(
                     $this->createPackage('foo/bar10', array('foo/dep')),
