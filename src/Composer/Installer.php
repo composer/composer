@@ -473,6 +473,10 @@ class Installer
             return $exitCode;
         }
 
+        if (method_exists('Composer\Semver\CompilingMatcher', 'clear')) {
+            \Composer\Semver\CompilingMatcher::clear();
+        }
+
         // write lock
         $platformReqs = $this->extractPlatformRequirements($this->package->getRequires());
         $platformDevReqs = $this->extractPlatformRequirements($this->package->getDevRequires());
