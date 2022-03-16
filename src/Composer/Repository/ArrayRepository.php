@@ -57,16 +57,16 @@ class ArrayRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array())
+    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array())
     {
         $packages = $this->getPackages();
 
         $result = array();
         $namesFound = array();
         foreach ($packages as $package) {
-            if (array_key_exists($package->getName(), $packageMap)) {
+            if (array_key_exists($package->getName(), $packageNameMap)) {
                 if (
-                    (!$packageMap[$package->getName()] || $packageMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
+                    (!$packageNameMap[$package->getName()] || $packageNameMap[$package->getName()]->matches(new Constraint('==', $package->getVersion())))
                     && StabilityFilter::isPackageAcceptable($acceptableStabilities, $stabilityFlags, $package->getNames(), $package->getStability())
                     && !isset($alreadyLoaded[$package->getName()][$package->getVersion()])
                 ) {

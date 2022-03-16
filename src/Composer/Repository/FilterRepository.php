@@ -112,19 +112,19 @@ class FilterRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array()): array
+    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array()): array
     {
-        foreach ($packageMap as $name => $constraint) {
+        foreach ($packageNameMap as $name => $constraint) {
             if (!$this->isAllowed($name)) {
-                unset($packageMap[$name]);
+                unset($packageNameMap[$name]);
             }
         }
 
-        if (!$packageMap) {
+        if (!$packageNameMap) {
             return array('namesFound' => array(), 'packages' => array());
         }
 
-        $result = $this->repo->loadPackages($packageMap, $acceptableStabilities, $stabilityFlags, $alreadyLoaded);
+        $result = $this->repo->loadPackages($packageNameMap, $acceptableStabilities, $stabilityFlags, $alreadyLoaded);
         if (!$this->canonical) {
             $result['namesFound'] = array();
         }

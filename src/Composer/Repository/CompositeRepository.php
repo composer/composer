@@ -105,13 +105,13 @@ class CompositeRepository implements RepositoryInterface
     /**
      * @inheritDoc
      */
-    public function loadPackages(array $packageMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array()): array
+    public function loadPackages(array $packageNameMap, array $acceptableStabilities, array $stabilityFlags, array $alreadyLoaded = array()): array
     {
         $packages = array();
         $namesFound = array();
         foreach ($this->repositories as $repository) {
             /* @var $repository RepositoryInterface */
-            $result = $repository->loadPackages($packageMap, $acceptableStabilities, $stabilityFlags, $alreadyLoaded);
+            $result = $repository->loadPackages($packageNameMap, $acceptableStabilities, $stabilityFlags, $alreadyLoaded);
             $packages[] = $result['packages'];
             $namesFound[] = $result['namesFound'];
         }

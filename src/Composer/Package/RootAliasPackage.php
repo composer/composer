@@ -91,21 +91,21 @@ class RootAliasPackage extends CompleteAliasPackage implements RootPackageInterf
     /**
      * @inheritDoc
      */
-    public function setRequires(array $require): void
+    public function setRequires(array $requires): void
     {
-        $this->requires = $this->replaceSelfVersionDependencies($require, Link::TYPE_REQUIRE);
+        $this->requires = $this->replaceSelfVersionDependencies($requires, Link::TYPE_REQUIRE);
 
-        $this->aliasOf->setRequires($require);
+        $this->aliasOf->setRequires($requires);
     }
 
     /**
      * @inheritDoc
      */
-    public function setDevRequires(array $devRequire): void
+    public function setDevRequires(array $devRequires): void
     {
-        $this->devRequires = $this->replaceSelfVersionDependencies($devRequire, Link::TYPE_DEV_REQUIRE);
+        $this->devRequires = $this->replaceSelfVersionDependencies($devRequires, Link::TYPE_DEV_REQUIRE);
 
-        $this->aliasOf->setDevRequires($devRequire);
+        $this->aliasOf->setDevRequires($devRequires);
     }
 
     /**
