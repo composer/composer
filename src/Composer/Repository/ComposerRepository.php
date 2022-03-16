@@ -208,7 +208,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
             $packages = $this->loadAsyncPackages(array($name => $constraint));
 
-            return reset($packages['packages']);
+            if (count($packages['packages']) > 0) {
+                return reset($packages['packages']);
+            }
+
+            return null;
         }
 
         if ($hasProviders) {
