@@ -120,7 +120,7 @@ class Config
         $this->config = static::$defaultConfig;
 
         // TODO after July 2022 remove this and update the default value above in self::$defaultConfig + remove note from 06-config.md
-        if (strtotime('2022-07-01') < time()) {
+        if (strtotime('2022-07-01') > time()) {
             $this->config['allow-plugins'] = array();
         }
 
