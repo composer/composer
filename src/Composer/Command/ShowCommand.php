@@ -255,7 +255,7 @@ EOT
         // show single package or single version
         if (isset($package)) {
             $versions = array($package->getPrettyVersion() => $package->getVersion());
-        } elseif (null !== $packageFilter && str_contains($packageFilter, '*')) {
+        } elseif (null !== $packageFilter && !str_contains($packageFilter, '*')) {
             list($package, $versions) = $this->getPackage($installedRepo, $repos, $packageFilter, $input->getArgument('version'));
 
             if (!isset($package)) {
