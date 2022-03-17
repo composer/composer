@@ -235,8 +235,8 @@ EOT
         $composer->getEventDispatcher()->dispatch($commandEvent->getName(), $commandEvent);
 
         $allowPlugins = $composer->getConfig()->get('allow-plugins');
-        $removedPlugins = array_intersect(array_keys($allowPlugins), $packages);
-        if (!$dryRun && count($removedPlugins) !== 0) {
+        $removedPlugins = is_array($allowPlugins) ? array_intersect(array_keys($allowPlugins), $packages) : [];
+        if (!$dryRun && count($removedPlugins) > 0) {
             if (count($allowPlugins) === count($removedPlugins)) {
                 $json->removeConfigSetting('allow-plugins');
             } else {
