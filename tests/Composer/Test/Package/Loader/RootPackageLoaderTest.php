@@ -20,6 +20,7 @@ use Composer\Package\RootPackage;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Semver\VersionParser;
 use Composer\Test\TestCase;
+use Composer\Util\ProcessExecutor;
 
 class RootPackageLoaderTest extends TestCase
 {
@@ -36,8 +37,11 @@ class RootPackageLoaderTest extends TestCase
 
         $config = new Config;
         $config->merge(array('repositories' => array('packagist' => false)));
+        $processExecutor = new ProcessExecutor();
+        $processExecutor->enableAsync();
+        $guesser = new VersionGuesser($config, $processExecutor, new VersionParser());
 
-        $loader = new RootPackageLoader($manager, $config);
+        $loader = new RootPackageLoader($manager, $config, null, $guesser);
 
         return $loader->load($data);
     }

@@ -12,6 +12,8 @@
 
 namespace Composer\Test\Mock;
 
+use Composer\Test\TestCase;
+use PHPUnit\Framework\MockObject\MockBuilder;
 use React\Promise\PromiseInterface;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Platform;
@@ -41,6 +43,19 @@ class ProcessExecutorMock extends ProcessExecutor
      * @var string[]
      */
     private $log = array();
+    /**
+     * @var MockBuilder<Process>
+     */
+    private $processMockBuilder;
+
+    /**
+     * @param MockBuilder<Process> $processMockBuilder
+     */
+    public function __construct(MockBuilder $processMockBuilder)
+    {
+        parent::__construct();
+        $this->processMockBuilder = $processMockBuilder->disableOriginalConstructor();
+    }
 
     /**
      * @param array<string|array{cmd: string|list<string>, return?: int, stdout?: string, stderr?: string, callback?: callable}> $expectations
@@ -180,9 +195,16 @@ class ProcessExecutorMock extends ProcessExecutor
 
     public function executeAsync($command, ?string $cwd = null): PromiseInterface
     {
-        $resolver = function ($resolve, $reject): void {
-            // TODO strictly speaking this should resolve with a mock Process instance here
-            $resolve();
+        $cwd = $cwd ?? Platform::getCwd();
+
+        $resolver = function ($resolve, $reject) use ($command, $cwd): void {
+            $result = $this->doExecute($command, $cwd, false, $output);
+            $procMock = $this->processMockBuilder->getMock();
+            $procMock->method('getOutput')->willReturn($output);
+            $procMock->method('isSuccessful')->willReturn($result === 0);
+            $procMock->method('getExitCode')->willReturn($result);
+
+            $resolve($procMock);
         };
 
         $canceler = function (): void {
