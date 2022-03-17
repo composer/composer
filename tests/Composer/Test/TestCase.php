@@ -32,6 +32,7 @@ use Composer\Package\RootAliasPackage;
 use Composer\Package\CompletePackage;
 use Composer\Package\CompleteAliasPackage;
 use Composer\Package\Package;
+use Symfony\Component\Process\Process;
 
 abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
@@ -256,7 +257,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     protected function getProcessExecutorMock(): ProcessExecutorMock
     {
-        $this->processExecutorMocks[] = $mock = new ProcessExecutorMock();
+        $this->processExecutorMocks[] = $mock = new ProcessExecutorMock($this->getMockBuilder(Process::class));
 
         return $mock;
     }
