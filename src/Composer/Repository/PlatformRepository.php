@@ -618,13 +618,8 @@ class PlatformRepository extends ArrayRepository
 
     /**
      * Parses the version and adds a new package to the repository
-     *
-     * @param string      $name
-     * @param null|string $prettyVersion
-     *
-     * @return void
      */
-    private function addExtension(string $name, ?string $prettyVersion): void
+    private function addExtension(string $name, string $prettyVersion): void
     {
         $extraDescription = null;
 

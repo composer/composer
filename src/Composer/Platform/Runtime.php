@@ -98,7 +98,12 @@ class Runtime
      */
     public function getExtensionVersion(string $extension): string
     {
-        return phpversion($extension);
+        $version = phpversion($extension);
+        if ($version === false) {
+            $version = '0';
+        }
+
+        return $version;
     }
 
     /**
