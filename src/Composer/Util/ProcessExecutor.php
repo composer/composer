@@ -271,6 +271,16 @@ class ProcessExecutor
         }
     }
 
+    public function setMaxJobs(int $maxJobs): void
+    {
+        $this->maxJobs = $maxJobs;
+    }
+
+    public function resetMaxJobs(): void
+    {
+        $this->maxJobs = 10;
+    }
+
     /**
      * @param  ?int $index job id
      * @return void
@@ -278,7 +288,7 @@ class ProcessExecutor
     public function wait($index = null): void
     {
         while (true) {
-            if (!$this->countActiveJobs($index)) {
+            if (0 === $this->countActiveJobs($index)) {
                 return;
             }
 
