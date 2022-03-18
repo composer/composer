@@ -71,7 +71,7 @@ class LibraryInstaller implements InstallerInterface, BinaryPresenceInterface
     /**
      * @inheritDoc
      */
-    public function supports($packageType)
+    public function supports(string $packageType)
     {
         return $packageType === $this->type || null === $this->type;
     }

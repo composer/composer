@@ -37,7 +37,7 @@ class MetapackageInstaller implements InstallerInterface
     /**
      * @inheritDoc
      */
-    public function supports($packageType)
+    public function supports(string $packageType)
     {
         return $packageType === 'metapackage';
     }
