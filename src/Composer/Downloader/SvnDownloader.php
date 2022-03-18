@@ -39,7 +39,7 @@ class SvnDownloader extends VcsDownloader
             throw new \RuntimeException('svn was not found in your PATH, skipping source download');
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -61,7 +61,7 @@ class SvnDownloader extends VcsDownloader
         $this->io->writeError(" Checking out ".$package->getSourceReference());
         $this->execute($package, $url, "svn co", sprintf("%s/%s", $url, $ref), null, $path);
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -85,7 +85,7 @@ class SvnDownloader extends VcsDownloader
         $this->io->writeError(" Checking out " . $ref);
         $this->execute($target, $url, "svn switch" . $flags, sprintf("%s/%s", $url, $ref), $path);
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -133,7 +133,7 @@ class SvnDownloader extends VcsDownloader
     protected function cleanChanges(PackageInterface $package, string $path, bool $update): PromiseInterface
     {
         if (null === ($changes = $this->getLocalChanges($package, $path))) {
-            return \React\Promise\resolve();
+            return \React\Promise\resolve(null);
         }
 
         if (!$this->io->isInteractive()) {
@@ -185,7 +185,7 @@ class SvnDownloader extends VcsDownloader
             }
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -242,7 +242,7 @@ class SvnDownloader extends VcsDownloader
             throw new \RuntimeException("Could not reset changes\n\n:".$this->process->getErrorOutput());
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**

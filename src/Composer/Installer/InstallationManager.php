@@ -440,7 +440,7 @@ class InstallationManager
 
             $promise = $installer->prepare($opType, $package, $initialPackage);
             if (!$promise instanceof PromiseInterface) {
-                $promise = \React\Promise\resolve();
+                $promise = \React\Promise\resolve(null);
             }
 
             $promise = $promise->then(function () use ($opType, $repo, $operation) {
@@ -544,7 +544,7 @@ class InstallationManager
         } else {
             $promise = $this->getInstaller($initialType)->uninstall($repo, $initial);
             if (!$promise instanceof PromiseInterface) {
-                $promise = \React\Promise\resolve();
+                $promise = \React\Promise\resolve(null);
             }
 
             $installer = $this->getInstaller($targetType);
@@ -554,7 +554,7 @@ class InstallationManager
                     return $promise;
                 }
 
-                return \React\Promise\resolve();
+                return \React\Promise\resolve(null);
             });
         }
 

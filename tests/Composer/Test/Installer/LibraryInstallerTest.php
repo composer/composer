@@ -152,7 +152,7 @@ class LibraryInstallerTest extends TestCase
             ->expects($this->once())
             ->method('install')
             ->with($package, $this->vendorDir.'/some/package')
-            ->will($this->returnValue(\React\Promise\resolve()));
+            ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $this->repository
             ->expects($this->once())
@@ -192,7 +192,7 @@ class LibraryInstallerTest extends TestCase
             ->expects($this->once())
             ->method('update')
             ->with($initial, $target, $this->vendorDir.'/vendor/package1/newtarget')
-            ->will($this->returnValue(\React\Promise\resolve()));
+            ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $this->repository
             ->expects($this->once())
@@ -229,7 +229,7 @@ class LibraryInstallerTest extends TestCase
             ->expects($this->once())
             ->method('remove')
             ->with($package, $this->vendorDir.'/vendor/pkg')
-            ->will($this->returnValue(\React\Promise\resolve()));
+            ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $this->repository
             ->expects($this->once())

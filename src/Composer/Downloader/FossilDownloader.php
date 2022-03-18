@@ -27,7 +27,7 @@ class FossilDownloader extends VcsDownloader
      */
     protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
     {
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -55,7 +55,7 @@ class FossilDownloader extends VcsDownloader
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -78,7 +78,7 @@ class FossilDownloader extends VcsDownloader
             throw new \RuntimeException('Failed to execute ' . $command . "\n\n" . $this->process->getErrorOutput());
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**

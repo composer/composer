@@ -53,7 +53,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
         }
 
         if (realpath($path) === $realUrl) {
-            return \React\Promise\resolve();
+            return \React\Promise\resolve(null);
         }
 
         if (strpos(realpath($path) . DIRECTORY_SEPARATOR, $realUrl . DIRECTORY_SEPARATOR) === 0) {
@@ -69,7 +69,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             ));
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -86,7 +86,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 $this->io->writeError("  - " . InstallOperation::format($package) . $this->getInstallOperationAppendix($package, $path));
             }
 
-            return \React\Promise\resolve();
+            return \React\Promise\resolve(null);
         }
 
         // Get the transport options with default values
@@ -155,7 +155,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             $this->io->writeError('');
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -182,7 +182,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 throw new \RuntimeException('Could not reliably remove junction for package ' . $package->getName());
             }
 
-            return \React\Promise\resolve();
+            return \React\Promise\resolve(null);
         }
 
         // ensure that the source path (dist url) is not the same as the install path, which
@@ -197,7 +197,7 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
                 $this->io->writeError("  - " . UninstallOperation::format($package).", source is still present in $path");
             }
 
-            return \React\Promise\resolve();
+            return \React\Promise\resolve(null);
         }
 
         return parent::remove($package, $path, $output);

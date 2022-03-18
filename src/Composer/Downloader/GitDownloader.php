@@ -77,7 +77,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             throw new \RuntimeException('git was not found in your PATH, skipping source download');
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -142,7 +142,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $package->setSourceReference($newRef);
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -207,7 +207,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             $this->updateOriginUrl($path, $target->getSourceUrl());
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -341,7 +341,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
         }
 
         if (null === ($changes = $this->getLocalChanges($package, $path))) {
-            return \React\Promise\resolve();
+            return \React\Promise\resolve(null);
         }
 
         if (!$this->io->isInteractive()) {
@@ -411,7 +411,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
             }
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -564,7 +564,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $this->hasDiscardedChanges[$path] = true;
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -583,7 +583,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $this->hasStashedChanges[$path] = true;
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**

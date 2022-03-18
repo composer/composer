@@ -185,7 +185,7 @@ class ZipDownloader extends ArchiveDownloader
                 if (true === $extractResult) {
                     $zipArchive->close();
 
-                    return \React\Promise\resolve();
+                    return \React\Promise\resolve(null);
                 }
 
                 $processError = new \RuntimeException(rtrim("There was an error extracting the ZIP file, it is either corrupted or using an invalid format.\n"));

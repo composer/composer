@@ -202,7 +202,7 @@ class DownloadManager
 
             $downloader = $this->getDownloaderForPackage($package);
             if (!$downloader) {
-                return \React\Promise\resolve();
+                return \React\Promise\resolve(null);
             }
 
             $handleError = function ($e) use ($sources, $source, $package, $io, $download) {
@@ -258,7 +258,7 @@ class DownloadManager
             return $downloader->prepare($type, $package, $targetDir, $prevPackage);
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -279,7 +279,7 @@ class DownloadManager
             return $downloader->install($package, $targetDir);
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -300,7 +300,7 @@ class DownloadManager
 
         // no downloaders present means update from metapackage to metapackage, nothing to do
         if (!$initialDownloader && !$downloader) {
-            return \React\Promise\resolve();
+            return \React\Promise\resolve(null);
         }
 
         // if we have a downloader present before, but not after, the package became a metapackage and its files should be removed
@@ -349,7 +349,7 @@ class DownloadManager
             return $downloader->remove($package, $targetDir);
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -370,7 +370,7 @@ class DownloadManager
             return $downloader->cleanup($type, $package, $targetDir, $prevPackage);
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**

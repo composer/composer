@@ -296,7 +296,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
      */
     public function prepare(string $type, PackageInterface $package, string $path, PackageInterface $prevPackage = null): PromiseInterface
     {
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -327,7 +327,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             }
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -355,7 +355,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
             }
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**

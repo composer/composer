@@ -31,6 +31,6 @@ class TarDownloader extends ArchiveDownloader
         $archive = new \PharData($file);
         $archive->extractTo($path, null, true);
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 }

@@ -87,7 +87,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             }
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -104,7 +104,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             $this->cleanChanges($package, $path, false);
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -117,7 +117,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             unset($this->hasCleanedChanges[$prevPackage->getUniqueName()]);
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -152,7 +152,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             }
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -216,7 +216,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             throw $exception;
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -271,7 +271,7 @@ abstract class VcsDownloader implements DownloaderInterface, ChangeReportInterfa
             throw new \RuntimeException('Source directory ' . $path . ' has uncommitted changes.');
         }
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**

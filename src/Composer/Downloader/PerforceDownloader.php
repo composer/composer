@@ -30,7 +30,7 @@ class PerforceDownloader extends VcsDownloader
      */
     protected function doDownload(PackageInterface $package, string $path, string $url, PackageInterface $prevPackage = null): PromiseInterface
     {
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**
@@ -50,7 +50,7 @@ class PerforceDownloader extends VcsDownloader
         $this->perforce->syncCodeBase($label);
         $this->perforce->cleanupClientSpec();
 
-        return \React\Promise\resolve();
+        return \React\Promise\resolve(null);
     }
 
     /**

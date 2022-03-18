@@ -85,13 +85,13 @@ class PluginInstallerTest extends TestCase
             ->getMock();
         $dm->expects($this->any())
             ->method('install')
-            ->will($this->returnValue(\React\Promise\resolve()));
+            ->will($this->returnValue(\React\Promise\resolve(null)));
         $dm->expects($this->any())
             ->method('update')
-            ->will($this->returnValue(\React\Promise\resolve()));
+            ->will($this->returnValue(\React\Promise\resolve(null)));
         $dm->expects($this->any())
             ->method('remove')
-            ->will($this->returnValue(\React\Promise\resolve()));
+            ->will($this->returnValue(\React\Promise\resolve(null)));
 
         $this->repository = $this->getMockBuilder('Composer\Repository\InstalledRepositoryInterface')->getMock();
 
