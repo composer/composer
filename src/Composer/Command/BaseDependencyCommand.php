@@ -34,7 +34,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @author Niels Keurentjes <niels.keurentjes@omines.com>
  */
-class BaseDependencyCommand extends BaseCommand
+abstract class BaseDependencyCommand extends BaseCommand
 {
     protected const ARGUMENT_PACKAGE = 'package';
     protected const ARGUMENT_CONSTRAINT = 'version';
