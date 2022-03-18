@@ -58,3 +58,9 @@ parameters:
         - Composer\Composer::VERSION
         - Composer\Composer::RELEASE_DATE
         - Composer\Composer::SOURCE_VERSION
+
+services:
+	-
+		class: Composer\PHPStan\ConfigReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
