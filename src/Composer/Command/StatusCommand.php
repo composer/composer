@@ -32,6 +32,9 @@ use Composer\Util\ProcessExecutor;
  */
 class StatusCommand extends BaseCommand
 {
+    public static $defaultName = 'status';
+    public static $defaultDescription = 'Shows a list of locally modified packages.';
+
     private const EXIT_CODE_ERRORS = 1;
     private const EXIT_CODE_UNPUSHED_CHANGES = 2;
     private const EXIT_CODE_VERSION_CHANGES = 4;
@@ -43,8 +46,6 @@ class StatusCommand extends BaseCommand
     protected function configure(): void
     {
         $this
-            ->setName('status')
-            ->setDescription('Shows a list of locally modified packages.')
             ->setDefinition(array(
                 new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.'),
             ))

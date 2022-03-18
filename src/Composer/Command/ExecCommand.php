@@ -22,14 +22,17 @@ use Symfony\Component\Console\Input\InputArgument;
  */
 class ExecCommand extends BaseCommand
 {
+    public static $defaultName = 'exec';
+    public static $defaultDescription = 'Executes a vendored binary/script.';
+
     /**
      * @return void
      */
     protected function configure()
     {
         $this
-            ->setName('exec')
-            ->setDescription('Executes a vendored binary/script.')
+            ->setName((string) static::$defaultName)
+            ->setDescription((string) static::$defaultDescription)
             ->setDefinition(array(
                 new InputOption('list', 'l', InputOption::VALUE_NONE),
                 new InputArgument('binary', InputArgument::OPTIONAL, 'The binary to run, e.g. phpunit'),

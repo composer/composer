@@ -22,6 +22,9 @@ use Symfony\Component\Console\Input\InputOption;
  */
 class DependsCommand extends BaseDependencyCommand
 {
+    public static $defaultName = 'depends,why';
+    public static $defaultDescription = 'Shows which packages cause the given package to be installed.';
+
     /**
      * Configure command metadata.
      *
@@ -30,9 +33,6 @@ class DependsCommand extends BaseDependencyCommand
     protected function configure(): void
     {
         $this
-            ->setName('depends')
-            ->setAliases(array('why'))
-            ->setDescription('Shows which packages cause the given package to be installed.')
             ->setDefinition(array(
                 new InputArgument(self::ARGUMENT_PACKAGE, InputArgument::REQUIRED, 'Package to inspect'),
                 new InputOption(self::OPTION_RECURSIVE, 'r', InputOption::VALUE_NONE, 'Recursively resolves up to the root package'),

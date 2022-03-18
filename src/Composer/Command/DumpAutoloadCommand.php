@@ -23,15 +23,17 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class DumpAutoloadCommand extends BaseCommand
 {
+    public static $defaultName = 'dump-autoload,dumpautoload';
+    public static $defaultDescription = 'Dumps the autoloader.';
+
     /**
      * @return void
      */
     protected function configure()
     {
         $this
-            ->setName('dump-autoload')
-            ->setAliases(array('dumpautoload'))
-            ->setDescription('Dumps the autoloader.')
+            ->setName((string) static::$defaultName)
+            ->setDescription((string) static::$defaultDescription)
             ->setDefinition(array(
                 new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.'),
                 new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.'),

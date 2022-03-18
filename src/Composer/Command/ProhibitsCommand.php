@@ -22,6 +22,9 @@ use Symfony\Component\Console\Input\InputOption;
  */
 class ProhibitsCommand extends BaseDependencyCommand
 {
+    public static $defaultName = 'prohibits,why-not';
+    public static $defaultDescription = 'Shows which packages prevent the given package from being installed.';
+
     /**
      * Configure command metadata.
      *
@@ -30,9 +33,6 @@ class ProhibitsCommand extends BaseDependencyCommand
     protected function configure(): void
     {
         $this
-            ->setName('prohibits')
-            ->setAliases(array('why-not'))
-            ->setDescription('Shows which packages prevent the given package from being installed.')
             ->setDefinition(array(
                 new InputArgument(self::ARGUMENT_PACKAGE, InputArgument::REQUIRED, 'Package to inspect'),
                 new InputArgument(self::ARGUMENT_CONSTRAINT, InputArgument::REQUIRED, 'Version constraint, which version you expected to be installed'),

@@ -26,14 +26,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class GlobalCommand extends BaseCommand
 {
+    public static $defaultName = 'global';
+    public static $defaultDescription = 'Allows running commands in the global composer dir ($COMPOSER_HOME).';
+
     /**
      * @return void
      */
     protected function configure(): void
     {
         $this
-            ->setName('global')
-            ->setDescription('Allows running commands in the global composer dir ($COMPOSER_HOME).')
             ->setDefinition(array(
                 new InputArgument('command-name', InputArgument::REQUIRED, ''),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),

@@ -23,14 +23,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class SuggestsCommand extends BaseCommand
 {
+    public static $defaultName = 'suggests';
+    public static $defaultDescription = 'Shows package suggestions.';
+
     /**
      * @return void
      */
     protected function configure(): void
     {
         $this
-            ->setName('suggests')
-            ->setDescription('Shows package suggestions.')
             ->setDefinition(array(
                 new InputOption('by-package', null, InputOption::VALUE_NONE, 'Groups output by suggesting package (default)'),
                 new InputOption('by-suggestion', null, InputOption::VALUE_NONE, 'Groups output by suggested package'),

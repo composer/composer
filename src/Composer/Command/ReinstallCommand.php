@@ -32,14 +32,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ReinstallCommand extends BaseCommand
 {
+    public static $defaultName = 'reinstall';
+    public static $defaultDescription = 'Uninstalls and reinstalls the given package names';
+
     /**
      * @return void
      */
     protected function configure(): void
     {
         $this
-            ->setName('reinstall')
-            ->setDescription('Uninstalls and reinstalls the given package names')
             ->setDefinition(array(
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),

@@ -22,15 +22,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ClearCacheCommand extends BaseCommand
 {
+    public static $defaultName = 'clear-cache,clearcache,cc';
+    public static $defaultDescription = 'Clears composer\'s internal package cache.';
+
     /**
      * @return void
      */
     protected function configure(): void
     {
         $this
-            ->setName('clear-cache')
-            ->setAliases(array('clearcache', 'cc'))
-            ->setDescription('Clears composer\'s internal package cache.')
             ->setHelp(
                 <<<EOT
 The <info>clear-cache</info> deletes all cached packages from composer's

@@ -31,14 +31,15 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 class LicensesCommand extends BaseCommand
 {
+    public static $defaultName = 'licenses';
+    public static $defaultDescription = 'Shows information about licenses of dependencies.';
+
     /**
      * @return void
      */
     protected function configure(): void
     {
         $this
-            ->setName('licenses')
-            ->setDescription('Shows information about licenses of dependencies.')
             ->setDefinition(array(
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text, json or summary', 'text'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),

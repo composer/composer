@@ -56,6 +56,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ShowCommand extends BaseCommand
 {
+    public static $defaultName = 'show,info';
+    public static $defaultDescription = 'Shows information about packages.';
+
     /** @var VersionParser */
     protected $versionParser;
     /** @var string[] */
@@ -70,9 +73,8 @@ class ShowCommand extends BaseCommand
     protected function configure()
     {
         $this
-            ->setName('show')
-            ->setAliases(array('info'))
-            ->setDescription('Shows information about packages.')
+            ->setName((string) static::$defaultName)
+            ->setDescription((string) static::$defaultDescription)
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),

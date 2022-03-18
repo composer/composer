@@ -26,6 +26,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class RunScriptCommand extends BaseCommand
 {
+    public static $defaultName = 'run-script,run';
+    public static $defaultDescription = 'Runs the scripts defined in composer.json.';
+
     /**
      * @var string[] Array with command events
      */
@@ -50,9 +53,6 @@ class RunScriptCommand extends BaseCommand
     protected function configure(): void
     {
         $this
-            ->setName('run-script')
-            ->setAliases(array('run'))
-            ->setDescription('Runs the scripts defined in composer.json.')
             ->setDefinition(array(
                 new InputArgument('script', InputArgument::REQUIRED, 'Script name to run.'),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),

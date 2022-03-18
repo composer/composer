@@ -34,6 +34,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ValidateCommand extends BaseCommand
 {
+    public static $defaultName = 'validate';
+    public static $defaultDescription = 'Validates a composer.json and composer.lock.';
+
     /**
      * configure
      * @return void
@@ -41,8 +44,6 @@ class ValidateCommand extends BaseCommand
     protected function configure(): void
     {
         $this
-            ->setName('validate')
-            ->setDescription('Validates a composer.json and composer.lock.')
             ->setDefinition(array(
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not validate requires for overly strict/loose constraints'),
                 new InputOption('no-check-lock', null, InputOption::VALUE_NONE, 'Do not check if lock file is up to date'),

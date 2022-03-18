@@ -29,15 +29,17 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class InstallCommand extends BaseCommand
 {
+    public static $defaultName = 'install,i';
+    public static $defaultDescription = 'Installs the project dependencies from the composer.lock file if present, or falls back on the composer.json.';
+
     /**
      * @return void
      */
     protected function configure()
     {
         $this
-            ->setName('install')
-            ->setAliases(array('i'))
-            ->setDescription('Installs the project dependencies from the composer.lock file if present, or falls back on the composer.json.')
+            ->setName((string) static::$defaultName)
+            ->setDescription((string) static::$defaultDescription)
             ->setDefinition(array(
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),

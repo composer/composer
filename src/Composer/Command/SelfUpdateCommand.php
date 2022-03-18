@@ -36,6 +36,9 @@ use Symfony\Component\Finder\Finder;
  */
 class SelfUpdateCommand extends BaseCommand
 {
+    public static $defaultName = 'self-update,selfupdate';
+    public static $defaultDescription = 'Updates composer.phar to the latest version.';
+
     private const HOMEPAGE = 'getcomposer.org';
     private const OLD_INSTALL_EXT = '-old.phar';
 
@@ -45,9 +48,6 @@ class SelfUpdateCommand extends BaseCommand
     protected function configure(): void
     {
         $this
-            ->setName('self-update')
-            ->setAliases(array('selfupdate'))
-            ->setDescription('Updates composer.phar to the latest version.')
             ->setDefinition(array(
                 new InputOption('rollback', 'r', InputOption::VALUE_NONE, 'Revert to an older installation of composer'),
                 new InputOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update'),

@@ -40,6 +40,9 @@ use Symfony\Component\Process\ExecutableFinder;
  */
 class DiagnoseCommand extends BaseCommand
 {
+    public static $defaultName = 'diagnose';
+    public static $defaultDescription = 'Diagnoses the system to identify common errors.';
+
     /** @var HttpDownloader */
     protected $httpDownloader;
 
@@ -55,8 +58,6 @@ class DiagnoseCommand extends BaseCommand
     protected function configure(): void
     {
         $this
-            ->setName('diagnose')
-            ->setDescription('Diagnoses the system to identify common errors.')
             ->setHelp(
                 <<<EOT
 The <info>diagnose</info> command checks common errors to help debugging problems.

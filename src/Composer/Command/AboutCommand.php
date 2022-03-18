@@ -21,14 +21,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class AboutCommand extends BaseCommand
 {
+    public static $defaultName = 'about';
+    public static $defaultDescription = 'Shows a short information about Composer.';
+
     /**
      * @return void
      */
     protected function configure(): void
     {
         $this
-            ->setName('about')
-            ->setDescription('Shows a short information about Composer.')
             ->setHelp(
                 <<<EOT
 <info>php composer.phar about</info>

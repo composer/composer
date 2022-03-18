@@ -39,14 +39,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ArchiveCommand extends BaseCommand
 {
+    public static $defaultName = 'archive';
+    public static $defaultDescription = 'Creates an archive of this composer package.';
+
     /**
      * @return void
      */
     protected function configure(): void
     {
         $this
-            ->setName('archive')
-            ->setDescription('Creates an archive of this composer package.')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),

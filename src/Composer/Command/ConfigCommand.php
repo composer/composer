@@ -34,6 +34,9 @@ use Composer\Package\BasePackage;
  */
 class ConfigCommand extends BaseCommand
 {
+    public static $defaultName = 'config';
+    public static $defaultDescription = 'Sets config options.';
+
     /**
      * @var Config
      */
@@ -65,8 +68,6 @@ class ConfigCommand extends BaseCommand
     protected function configure(): void
     {
         $this
-            ->setName('config')
-            ->setDescription('Sets config options.')
             ->setDefinition(array(
                 new InputOption('global', 'g', InputOption::VALUE_NONE, 'Apply command to the global config file'),
                 new InputOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor'),

@@ -28,6 +28,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class HomeCommand extends BaseCommand
 {
+    public static $defaultName = 'browse,home';
+    public static $defaultDescription = 'Opens the package\'s repository URL or homepage in your browser.';
+
     /**
      * @inheritDoc
      *
@@ -36,9 +39,6 @@ class HomeCommand extends BaseCommand
     protected function configure(): void
     {
         $this
-            ->setName('browse')
-            ->setAliases(array('home'))
-            ->setDescription('Opens the package\'s repository URL or homepage in your browser.')
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY, 'Package(s) to browse to.'),
                 new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL.'),

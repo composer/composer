@@ -17,6 +17,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
 use Symfony\Component\Console\Application as BaseApplication;
+use Symfony\Component\Console\Command\LazyCommand;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -489,39 +490,46 @@ class Application extends BaseApplication
      */
     protected function getDefaultCommands(): array
     {
-        $commands = array_merge(parent::getDefaultCommands(), array(
-            new Command\AboutCommand(),
-            new Command\ConfigCommand(),
-            new Command\DependsCommand(),
-            new Command\ProhibitsCommand(),
-            new Command\InitCommand(),
-            new Command\InstallCommand(),
-            new Command\CreateProjectCommand(),
-            new Command\UpdateCommand(),
-            new Command\SearchCommand(),
-            new Command\ValidateCommand(),
-            new Command\ShowCommand(),
-            new Command\SuggestsCommand(),
-            new Command\RequireCommand(),
-            new Command\DumpAutoloadCommand(),
-            new Command\StatusCommand(),
-            new Command\ArchiveCommand(),
-            new Command\DiagnoseCommand(),
-            new Command\RunScriptCommand(),
-            new Command\LicensesCommand(),
-            new Command\GlobalCommand(),
-            new Command\ClearCacheCommand(),
-            new Command\RemoveCommand(),
-            new Command\HomeCommand(),
-            new Command\ExecCommand(),
-            new Command\OutdatedCommand(),
-            new Command\CheckPlatformReqsCommand(),
-            new Command\FundCommand(),
-            new Command\ReinstallCommand(),
-        ));
+        $commands = parent::getDefaultCommands();
 
+        $classes = [
+            Command\AboutCommand::class,
+            Command\ArchiveCommand::class,
+            Command\CheckPlatformReqsCommand::class,
+            Command\ClearCacheCommand::class,
+            Command\ConfigCommand::class,
+            Command\CreateProjectCommand::class,
+            Command\DependsCommand::class,
+            Command\DiagnoseCommand::class,
+            Command\DumpAutoloadCommand::class,
+            Command\ExecCommand::class,
+            Command\FundCommand::class,
+            Command\GlobalCommand::class,
+            Command\HomeCommand::class,
+            Command\InitCommand::class,
+            Command\InstallCommand::class,
+            Command\LicensesCommand::class,
+            Command\OutdatedCommand::class,
+            Command\ProhibitsCommand::class,
+            Command\ReinstallCommand::class,
+            Command\RemoveCommand::class,
+            Command\RequireCommand::class,
+            Command\RunScriptCommand::class,
+            Command\SearchCommand::class,
+            Command\ShowCommand::class,
+            Command\StatusCommand::class,
+            Command\SuggestsCommand::class,
+            Command\UpdateCommand::class,
+            Command\ValidateCommand::class,
+        ];
         if (strpos(__FILE__, 'phar:') === 0) {
-            $commands[] = new Command\SelfUpdateCommand();
+            $classes[] = Command\SelfUpdateCommand::class;
+        }
+
+        foreach ($classes as $commandClass) {
+            $aliases = explode(',', $commandClass::$defaultName);
+            $name = array_shift($aliases);
+            $commands[] = new LazyCommand($name, $aliases, $commandClass::$defaultDescription, false, function () use ($commandClass) { return new $commandClass; });
         }
 
         return $commands;

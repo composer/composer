@@ -39,6 +39,9 @@ class InitCommand extends BaseCommand
 {
     use PackageDiscoveryTrait;
 
+    public static $defaultName = 'init';
+    public static $defaultDescription = 'Creates a basic composer.json file in current directory.';
+
     /** @var array<string, string> */
     private $gitConfig;
 
@@ -50,8 +53,8 @@ class InitCommand extends BaseCommand
     protected function configure()
     {
         $this
-            ->setName('init')
-            ->setDescription('Creates a basic composer.json file in current directory.')
+            ->setName((string) static::$defaultName)
+            ->setDescription((string) static::$defaultDescription)
             ->setDefinition(array(
                 new InputOption('name', null, InputOption::VALUE_REQUIRED, 'Name of the package'),
                 new InputOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package'),

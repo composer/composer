@@ -41,6 +41,9 @@ class RequireCommand extends BaseCommand
 {
     use PackageDiscoveryTrait;
 
+    public static $defaultName = 'require';
+    public static $defaultDescription = 'Adds required packages to your composer.json and installs them.';
+
     /** @var bool */
     private $newlyCreated;
     /** @var bool */
@@ -64,8 +67,8 @@ class RequireCommand extends BaseCommand
     protected function configure()
     {
         $this
-            ->setName('require')
-            ->setDescription('Adds required packages to your composer.json and installs them.')
+            ->setName((string) static::$defaultName)
+            ->setDescription((string) static::$defaultDescription)
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Optional package name can also include a version constraint, e.g. foo/bar or foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Add requirement to require-dev.'),

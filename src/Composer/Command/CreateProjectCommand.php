@@ -55,6 +55,9 @@ use Composer\Package\Version\VersionParser;
  */
 class CreateProjectCommand extends BaseCommand
 {
+    public static $defaultName = 'create-project';
+    public static $defaultDescription = 'Creates new project from a package into given directory.';
+
     /**
      * @var SuggestedPackagesReporter
      */
@@ -66,8 +69,6 @@ class CreateProjectCommand extends BaseCommand
     protected function configure(): void
     {
         $this
-            ->setName('create-project')
-            ->setDescription('Creates new project from a package into given directory.')
             ->setDefinition(array(
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package name to be installed'),
                 new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),

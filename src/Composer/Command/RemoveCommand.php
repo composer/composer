@@ -32,14 +32,17 @@ use Composer\Package\BasePackage;
  */
 class RemoveCommand extends BaseCommand
 {
+    public static $defaultName = 'remove';
+    public static $defaultDescription = 'Removes a package from the require or require-dev.';
+
     /**
      * @return void
      */
     protected function configure()
     {
         $this
-            ->setName('remove')
-            ->setDescription('Removes a package from the require or require-dev.')
+            ->setName((string) static::$defaultName)
+            ->setDescription((string) static::$defaultDescription)
             ->setDefinition(array(
                 new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Packages that should be removed.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section.'),

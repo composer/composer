@@ -30,13 +30,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class FundCommand extends BaseCommand
 {
+    public static $defaultName = 'fund';
+    public static $defaultDescription = 'Discover how to help fund the maintenance of your dependencies.';
+
     /**
      * @return void
      */
     protected function configure(): void
     {
-        $this->setName('fund')
-            ->setDescription('Discover how to help fund the maintenance of your dependencies.')
+        $this
             ->setDefinition(array(
                 new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
             ))
