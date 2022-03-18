@@ -311,38 +311,41 @@ class VersionGuesser
 
             $promises = [];
             $this->process->setMaxJobs(30);
-            foreach ($branches as $candidate) {
-                $candidateVersion = Preg::replace('{^remotes/\S+/}', '', $candidate);
+            try {
+                foreach ($branches as $candidate) {
+                    $candidateVersion = Preg::replace('{^remotes/\S+/}', '', $candidate);
 
-                // do not compare against itself or other feature branches
-                if ($candidate === $branch || $this->isFeatureBranch($packageConfig, $candidateVersion)) {
-                    continue;
-                }
-
-                $cmdLine = str_replace(array('%candidate%', '%branch%'), array($candidate, $branch), $scmCmdline);
-                $promises[] = $this->process->executeAsync($cmdLine, $path)->then(function (Process $process) use (&$length, &$version, &$prettyVersion, $candidateVersion, &$promises): void {
-                    if (!$process->isSuccessful()) {
-                        return;
+                    // do not compare against itself or other feature branches
+                    if ($candidate === $branch || $this->isFeatureBranch($packageConfig, $candidateVersion)) {
+                        continue;
                     }
 
-                    $output = $process->getOutput();
-                    if (strlen($output) < $length) {
-                        $length = strlen($output);
-                        $version = $this->versionParser->normalizeBranch($candidateVersion);
-                        $prettyVersion = 'dev-' . $candidateVersion;
-                        if ($length === 0) {
-                            foreach ($promises as $promise) {
-                                if ($promise instanceof CancellablePromiseInterface) {
-                                    $promise->cancel();
+                    $cmdLine = str_replace(array('%candidate%', '%branch%'), array($candidate, $branch), $scmCmdline);
+                    $promises[] = $this->process->executeAsync($cmdLine, $path)->then(function (Process $process) use (&$length, &$version, &$prettyVersion, $candidateVersion, &$promises): void {
+                        if (!$process->isSuccessful()) {
+                            return;
+                        }
+
+                        $output = $process->getOutput();
+                        if (strlen($output) < $length) {
+                            $length = strlen($output);
+                            $version = $this->versionParser->normalizeBranch($candidateVersion);
+                            $prettyVersion = 'dev-' . $candidateVersion;
+                            if ($length === 0) {
+                                foreach ($promises as $promise) {
+                                    if ($promise instanceof CancellablePromiseInterface) {
+                                        $promise->cancel();
+                                    }
                                 }
                             }
                         }
-                    }
-                });
-            }
+                    });
+                }
 
-            $this->process->wait();
-            $this->process->resetMaxJobs();
+                $this->process->wait();
+            } finally {
+                $this->process->resetMaxJobs();
+            }
         }
 
         return array('version' => $version, 'pretty_version' => $prettyVersion);
