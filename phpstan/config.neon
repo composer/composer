@@ -60,7 +60,7 @@ parameters:
         - Composer\Composer::SOURCE_VERSION
 
 services:
-	-
-		class: Composer\PHPStan\ConfigReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
+    -
+        class: Composer\PHPStan\ConfigReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension
