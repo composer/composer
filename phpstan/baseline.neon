@@ -3801,11 +3801,6 @@ parameters:
 			path: ../src/Composer/Platform/Runtime.php
 
 		-
-			message: "#^Method Composer\\\\Platform\\\\Runtime\\:\\:getExtensionVersion\\(\\) should return string but returns string\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Platform/Runtime.php
-
-		-
 			message: "#^Casting to array\\<string\\> something that's already array\\<string\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Plugin/PluginManager.php
@@ -3942,11 +3937,6 @@ parameters:
 
 		-
 			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:filterPackages\\(\\) should return array\\<Composer\\\\Package\\\\BasePackage\\>\\|Composer\\\\Package\\\\BasePackage\\|null but returns Composer\\\\Package\\\\BasePackage\\|false\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
-			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:findPackage\\(\\) should return Composer\\\\Package\\\\BasePackage\\|null but returns Composer\\\\Package\\\\BasePackage\\|false\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
@@ -4344,18 +4334,8 @@ parameters:
 			path: ../src/Composer/Repository/PlatformRepository.php
 
 		-
-			message: "#^Parameter \\#1 \\$version of method Composer\\\\Semver\\\\VersionParser\\:\\:normalize\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/PlatformRepository.php
-
-		-
 			message: "#^Parameter \\#2 \\$prettyVersion of method Composer\\\\Repository\\\\PlatformRepository\\:\\:addLibrary\\(\\) expects string, string\\|null given\\.$#"
 			count: 3
-			path: ../src/Composer/Repository/PlatformRepository.php
-
-		-
-			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:isMatch\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
 			path: ../src/Composer/Repository/PlatformRepository.php
 
 		-
@@ -4484,16 +4464,6 @@ parameters:
 			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
 
 		-
-			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitBitbucketDriver\\:\\:\\$branches \\(array\\<string, string\\>\\) does not accept array\\<int\\|string, mixed\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
-
-		-
-			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitBitbucketDriver\\:\\:\\$tags \\(array\\<string, string\\>\\) does not accept array\\<int\\|string, mixed\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 2
 			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
@@ -4619,11 +4589,6 @@ parameters:
 			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
 
 		-
-			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\GitHubDriver\\:\\:\\$tags \\(array\\<string, string\\>\\) does not accept array\\<int\\|string, mixed\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 2
 			path: ../src/Composer/Repository/Vcs/GitHubDriver.php
@@ -4659,11 +4624,6 @@ parameters:
 			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, array\\<string, string\\> given\\.$#"
-			count: 2
-			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, Composer\\\\Repository\\\\Vcs\\\\GitDriver\\|null given\\.$#"
 			count: 8
 			path: ../src/Composer/Repository/Vcs/GitLabDriver.php
@@ -4695,16 +4655,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/HgDriver.php
-
-		-
-			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\HgDriver\\:\\:\\$branches \\(array\\<string, string\\>\\) does not accept array\\<int\\|string, mixed\\>\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/Vcs/HgDriver.php
-
-		-
-			message: "#^Property Composer\\\\Repository\\\\Vcs\\\\HgDriver\\:\\:\\$tags \\(array\\<string, string\\>\\) does not accept array\\<int\\|string, mixed\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/Vcs/HgDriver.php
 
@@ -5735,11 +5685,6 @@ parameters:
 
 		-
 			message: "#^Method Composer\\\\Util\\\\ProcessExecutor\\:\\:doExecute\\(\\) should return int but returns int\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Util/ProcessExecutor.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, int given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/ProcessExecutor.php
 

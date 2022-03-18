@@ -34,9 +34,9 @@ class GitBitbucketDriver extends VcsDriver
     private $hasIssues = false;
     /** @var ?string */
     private $rootIdentifier;
-    /** @var array<string, string> Map of tag name to identifier */
+    /** @var array<int|string, string> Map of tag name to identifier */
     private $tags;
-    /** @var array<string, string> Map of branch name to identifier */
+    /** @var array<int|string, string> Map of branch name to identifier */
     private $branches;
     /** @var string */
     private $branchesUrl = '';

@@ -50,10 +50,10 @@ class GitLabDriver extends VcsDriver
      */
     private $commits = array();
 
-    /** @var array<string, string> Map of tag name to identifier */
+    /** @var array<int|string, string> Map of tag name to identifier */
     private $tags;
 
-    /** @var array<string, string> Map of branch name to identifier */
+    /** @var array<int|string, string> Map of branch name to identifier */
     private $branches;
 
     /**
@@ -300,7 +300,7 @@ class GitLabDriver extends VcsDriver
             return $this->gitDriver->getBranches();
         }
 
-        if (!$this->branches) {
+        if (null === $this->branches) {
             $this->branches = $this->getReferences('branches');
         }
 
@@ -316,7 +316,7 @@ class GitLabDriver extends VcsDriver
             return $this->gitDriver->getTags();
         }
 
-        if (!$this->tags) {
+        if (null === $this->tags) {
             $this->tags = $this->getReferences('tags');
         }
 
