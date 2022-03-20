@@ -1,3 +1,11 @@
+### [2.3.0-RC2] 2022-03-20
+
+  * Fixed invalid return value in ComposerRepository::findPackage (#10622)
+  * Fixed many `show` command issues due to a flipped condition (#10623)
+  * Fixed `phpversion()` handling when it returns false due to an extension defining no version (#10631)
+  * Fixed `remove` command failing when no `allow-plugin` is defined in config (#10629)
+  * Performance improvement in Composer bootstrapping (version guessing) when on a feature branch (#10632)
+
 ### [2.3.0-RC1] 2022-03-16
 
   * BC Break: the minimum PHP version is now 7.2.5+, use the [Composer 2.2 LTS](https://github.com/composer/composer/issues/10340) if you are stuck with an older PHP (#10343)
@@ -1427,6 +1435,7 @@
 
   * Initial release
 
+[2.3.0-RC2]: https://github.com/composer/composer/compare/2.3.0-RC1...2.3.0-RC2
 [2.3.0-RC1]: https://github.com/composer/composer/compare/2.2.9...2.3.0-RC1
 [2.2.9]: https://github.com/composer/composer/compare/2.2.8...2.2.9
 [2.2.8]: https://github.com/composer/composer/compare/2.2.7...2.2.8
