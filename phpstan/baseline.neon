@@ -4261,6 +4261,16 @@ parameters:
 			path: ../src/Composer/Repository/PathRepository.php
 
 		-
+			message: "#^Constructor of class Composer\\\\Repository\\\\PathRepository has an unused parameter \\$dispatcher\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/PathRepository.php
+
+		-
+			message: "#^Constructor of class Composer\\\\Repository\\\\PathRepository has an unused parameter \\$httpDownloader\\.$#"
+			count: 1
+			path: ../src/Composer/Repository/PathRepository.php
+
+		-
 			message: "#^Only booleans are allowed in &&, string\\|false given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/PathRepository.php
