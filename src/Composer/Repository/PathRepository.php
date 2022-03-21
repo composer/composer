@@ -13,6 +13,7 @@
 namespace Composer\Repository;
 
 use Composer\Config;
+use Composer\EventDispatcher\EventDispatcher;
 use Composer\IO\IOInterface;
 use Composer\Json\JsonFile;
 use Composer\Package\CompleteAliasPackage;
@@ -21,6 +22,7 @@ use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Version\VersionGuesser;
 use Composer\Package\Version\VersionParser;
 use Composer\Pcre\Preg;
+use Composer\Util\HttpDownloader;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
@@ -109,7 +111,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
      * @param IOInterface $io
      * @param Config      $config
      */
-    public function __construct(array $repoConfig, IOInterface $io, Config $config)
+    public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null, ProcessExecutor $process = null)
     {
         if (!isset($repoConfig['url'])) {
             throw new \RuntimeException('You must specify the `url` configuration for the path repository');
@@ -117,7 +119,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
 
         $this->loader = new ArrayLoader(null, true);
         $this->url = Platform::expandPath($repoConfig['url']);
-        $this->process = new ProcessExecutor($io);
+        $this->process = $process ?? new ProcessExecutor($io);
         $this->versionGuesser = new VersionGuesser($config, $this->process, new VersionParser());
         $this->repoConfig = $repoConfig;
         $this->options = $repoConfig['options'] ?? array();
