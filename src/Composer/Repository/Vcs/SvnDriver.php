@@ -396,11 +396,11 @@ class SvnDriver extends VcsDriver
      * Build the identifier respecting "package-path" config option
      *
      * @param string $baseDir  The path to trunk/branch/tag
-     * @param int    $revision The revision mark to add to identifier
+     * @param string $revision The revision mark to add to identifier
      *
      * @return string
      */
-    protected function buildIdentifier(string $baseDir, int $revision): string
+    protected function buildIdentifier(string $baseDir, string $revision): string
     {
         return rtrim($baseDir, '/') . $this->packagePath . '/@' . $revision;
     }
