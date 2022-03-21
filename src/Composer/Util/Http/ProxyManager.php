@@ -42,14 +42,14 @@ class ProxyManager
 
     private function __construct()
     {
-        $this->fullProxy = $this->safeProxy = array(
+        $this->fullProxy = $this->safeProxy = [
             'http' => null,
             'https' => null,
-        );
+        ];
 
-        $this->streams['http'] = $this->streams['https'] = array(
+        $this->streams['http'] = $this->streams['https'] = [
             'options' => null,
-        );
+        ];
 
         $this->hasProxy = false;
         $this->initProxyData();
@@ -91,10 +91,10 @@ class ProxyManager
 
         $scheme = parse_url($requestUrl, PHP_URL_SCHEME) ?: 'http';
         $proxyUrl = '';
-        $options = array();
+        $options = [];
         $formattedProxyUrl = '';
 
-        if ($this->hasProxy && in_array($scheme, array('http', 'https'), true) && $this->fullProxy[$scheme]) {
+        if ($this->hasProxy && in_array($scheme, ['http', 'https'], true) && $this->fullProxy[$scheme]) {
             if ($this->noProxy($requestUrl)) {
                 $formattedProxyUrl = 'excluded by no_proxy';
             } else {
@@ -136,14 +136,14 @@ class ProxyManager
     private function initProxyData(): void
     {
         try {
-            list($httpProxy, $httpsProxy, $noProxy) = ProxyHelper::getProxyData();
+            [$httpProxy, $httpsProxy, $noProxy] = ProxyHelper::getProxyData();
         } catch (\RuntimeException $e) {
             $this->error = $e->getMessage();
 
             return;
         }
 
-        $info = array();
+        $info = [];
 
         if ($httpProxy) {
             $info[] = $this->setData($httpProxy, 'http');

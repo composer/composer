@@ -114,10 +114,10 @@ class AllFunctionalTest extends TestCase
             $fs->copy($testFileSetupDir, $this->testDir);
         }
 
-        $env = array(
+        $env = [
             'COMPOSER_HOME' => $this->testDir.'home',
             'COMPOSER_CACHE_DIR' => $this->testDir.'cache',
-        );
+        ];
 
         $proc = Process::fromShellCommandline(escapeshellcmd(PHP_BINARY).' '.escapeshellarg(self::$pharPath).' --no-ansi '.$testData['RUN'], $this->testDir, $env, null, 300);
         $output = '';
@@ -182,9 +182,9 @@ class AllFunctionalTest extends TestCase
      */
     public function getTestFiles(): array
     {
-        $tests = array();
+        $tests = [];
         foreach (Finder::create()->in(__DIR__.'/Fixtures/functional')->name('*.test')->files() as $file) {
-            $tests[$file->getFilename()] = array((string) $file);
+            $tests[$file->getFilename()] = [(string) $file];
         }
 
         return $tests;
@@ -197,7 +197,7 @@ class AllFunctionalTest extends TestCase
     private function parseTestFile(string $file): array
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
-        $data = array();
+        $data = [];
         $section = null;
 
         foreach ($tokens as $token) {

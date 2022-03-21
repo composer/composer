@@ -129,7 +129,7 @@ class GitLab
             } catch (TransportException $e) {
                 // 401 is bad credentials,
                 // 403 is max login attempts exceeded
-                if (in_array($e->getCode(), array(403, 401))) {
+                if (in_array($e->getCode(), [403, 401])) {
                     if (401 === $e->getCode()) {
                         $response = json_decode($e->getResponse(), true);
                         if (isset($response['error']) && $response['error'] === 'invalid_grant') {
@@ -174,22 +174,22 @@ class GitLab
         $username = $this->io->ask('Username: ');
         $password = $this->io->askAndHideAnswer('Password: ');
 
-        $headers = array('Content-Type: application/x-www-form-urlencoded');
+        $headers = ['Content-Type: application/x-www-form-urlencoded'];
 
         $apiUrl = $originUrl;
-        $data = http_build_query(array(
+        $data = http_build_query([
             'username' => $username,
             'password' => $password,
             'grant_type' => 'password',
-        ), '', '&');
-        $options = array(
+        ], '', '&');
+        $options = [
             'retry-auth-failure' => false,
-            'http' => array(
+            'http' => [
                 'method' => 'POST',
                 'header' => $headers,
                 'content' => $data,
-            ),
-        );
+            ],
+        ];
 
         $token = $this->httpDownloader->get($scheme.'://'.$apiUrl.'/oauth/token', $options)->decodeJson();
 

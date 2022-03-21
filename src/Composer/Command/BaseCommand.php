@@ -208,7 +208,7 @@ abstract class BaseCommand extends Command
             $composer->getEventDispatcher()->dispatch($preCommandRunEvent->getName(), $preCommandRunEvent);
         }
 
-        if (true === $input->hasParameterOption(array('--no-ansi')) && $input->hasOption('no-progress')) {
+        if (true === $input->hasParameterOption(['--no-ansi']) && $input->hasOption('no-progress')) {
             $input->setOption('no-progress', true);
         }
 
@@ -295,7 +295,7 @@ abstract class BaseCommand extends Command
             $preferDist = $input->getOption('prefer-dist');
         }
 
-        return array($preferSource, $preferDist);
+        return [$preferSource, $preferDist];
     }
 
     protected function getPlatformRequirementFilter(InputInterface $input): PlatformRequirementFilterInterface
@@ -323,7 +323,7 @@ abstract class BaseCommand extends Command
      */
     protected function formatRequirements(array $requirements)
     {
-        $requires = array();
+        $requires = [];
         $requirements = $this->normalizeRequirements($requirements);
         foreach ($requirements as $requirement) {
             if (!isset($requirement['version'])) {

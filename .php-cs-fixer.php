@@ -24,12 +24,12 @@ $config = new PhpCsFixer\Config();
 return $config->setRules([
         '@PSR2' => true,
         'binary_operator_spaces' => true,
-        'blank_line_before_statement' => array('statements' => array('declare', 'return')),
-        'cast_spaces' => array('space' => 'single'),
-        'header_comment' => array('header' => $header),
+        'blank_line_before_statement' => ['statements' => ['declare', 'return']],
+        'cast_spaces' => ['space' => 'single'],
+        'header_comment' => ['header' => $header],
         'include' => true,
 
-        'class_attributes_separation' => array('elements' => array('method' => 'one', 'trait_import' => 'none')),
+        'class_attributes_separation' => ['elements' => ['method' => 'one', 'trait_import' => 'none']],
         'no_blank_lines_after_class_opening' => true,
         'no_blank_lines_after_phpdoc' => true,
         'no_empty_statement' => true,
@@ -63,8 +63,8 @@ return $config->setRules([
 
         // PHP 7.2 migration
         // TODO later once 2.2 is more stable
-        // 'array_syntax' => true,
-        // 'list_syntax' => true,
+        'array_syntax' => true,
+        'list_syntax' => true,
         'visibility_required' => ['elements' => ['property', 'method', 'const']],
         'non_printable_character' => true,
         'combine_nested_dirname' => true,

@@ -34,11 +34,11 @@ class HttpDownloaderMock extends HttpDownloader
     /**
      * @var array{status: int, body: string, headers: array<string>}
      */
-    private $defaultHandler = array('status' => 200, 'body' => '', 'headers' => []);
+    private $defaultHandler = ['status' => 200, 'body' => '', 'headers' => []];
     /**
      * @var string[]
      */
-    private $log = array();
+    private $log = [];
 
     public function __construct(IOInterface $io = null, Config $config = null)
     {
@@ -56,7 +56,7 @@ class HttpDownloaderMock extends HttpDownloader
      * @param bool                                                                                                    $strict         set to true if you want to provide *all* expected http requests, and not just a subset you are interested in testing
      * @param array{status?: int, body?: string, headers?: array<string>}                                             $defaultHandler default URL handler for undefined requests if not in strict mode
      */
-    public function expects(array $expectations, bool $strict = false, array $defaultHandler = array('status' => 200, 'body' => '', 'headers' => [])): void
+    public function expects(array $expectations, bool $strict = false, array $defaultHandler = ['status' => 200, 'body' => '', 'headers' => []]): void
     {
         $default = ['url' => '', 'options' => null, 'status' => 200, 'body' => '', 'headers' => ['']];
         $this->expectations = array_map(function (array $expect) use ($default): array {
@@ -105,7 +105,7 @@ class HttpDownloaderMock extends HttpDownloader
         Assert::assertTrue(true); // @phpstan-ignore-line
     }
 
-    public function get($fileUrl, $options = array()): Response
+    public function get($fileUrl, $options = []): Response
     {
         $this->log[] = $fileUrl;
 
@@ -132,7 +132,7 @@ class HttpDownloaderMock extends HttpDownloader
     private function respond(string $url, int $status, array $headers, string $body): Response
     {
         if ($status < 400) {
-            return new Response(array('url' => $url), $status, $headers, $body);
+            return new Response(['url' => $url], $status, $headers, $body);
         }
 
         $e = new TransportException('The "'.$url.'" file could not be downloaded', $status);

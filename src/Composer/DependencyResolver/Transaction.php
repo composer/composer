@@ -44,7 +44,7 @@ class Transaction
     /**
      * @var array<string, PackageInterface[]>
      */
-    protected $resultPackagesByName = array();
+    protected $resultPackagesByName = [];
 
     /**
      * @param PackageInterface[] $presentPackages
@@ -84,7 +84,7 @@ class Transaction
             return strcmp($b->getName(), $a->getName());
         };
 
-        $this->resultPackageMap = array();
+        $this->resultPackageMap = [];
         foreach ($resultPackages as $package) {
             $this->resultPackageMap[spl_object_hash($package)] = $package;
             foreach ($package->getNames() as $name) {
@@ -103,12 +103,12 @@ class Transaction
      */
     protected function calculateOperations(): array
     {
-        $operations = array();
+        $operations = [];
 
-        $presentPackageMap = array();
-        $removeMap = array();
-        $presentAliasMap = array();
-        $removeAliasMap = array();
+        $presentPackageMap = [];
+        $removeMap = [];
+        $presentAliasMap = [];
+        $removeAliasMap = [];
         foreach ($this->presentPackages as $package) {
             if ($package instanceof AliasPackage) {
                 $presentAliasMap[$package->getName().'::'.$package->getVersion()] = $package;
@@ -121,8 +121,8 @@ class Transaction
 
         $stack = $this->getRootPackages();
 
-        $visited = array();
-        $processed = array();
+        $visited = [];
+        $processed = [];
 
         while (!empty($stack)) {
             $package = array_pop($stack);
@@ -247,7 +247,7 @@ class Transaction
     protected function getProvidersInResult(Link $link): array
     {
         if (!isset($this->resultPackagesByName[$link->getTarget()])) {
-            return array();
+            return [];
         }
 
         return $this->resultPackagesByName[$link->getTarget()];
@@ -268,12 +268,12 @@ class Transaction
      */
     private function movePluginsToFront(array $operations): array
     {
-        $dlModifyingPluginsNoDeps = array();
-        $dlModifyingPluginsWithDeps = array();
-        $dlModifyingPluginRequires = array();
-        $pluginsNoDeps = array();
-        $pluginsWithDeps = array();
-        $pluginRequires = array();
+        $dlModifyingPluginsNoDeps = [];
+        $dlModifyingPluginsWithDeps = [];
+        $dlModifyingPluginRequires = [];
+        $pluginsNoDeps = [];
+        $pluginsWithDeps = [];
+        $pluginRequires = [];
 
         foreach (array_reverse($operations, true) as $idx => $op) {
             if ($op instanceof Operation\InstallOperation) {
@@ -345,7 +345,7 @@ class Transaction
      */
     private function moveUninstallsToFront(array $operations): array
     {
-        $uninstOps = array();
+        $uninstOps = [];
         foreach ($operations as $idx => $op) {
             if ($op instanceof Operation\UninstallOperation || $op instanceof Operation\MarkAliasUninstalledOperation) {
                 $uninstOps[] = $op;

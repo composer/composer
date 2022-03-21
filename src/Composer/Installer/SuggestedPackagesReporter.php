@@ -32,7 +32,7 @@ class SuggestedPackagesReporter
     /**
      * @var array<array{source: string, target: string, reason: string}>
      */
-    protected $suggestedPackages = array();
+    protected $suggestedPackages = [];
 
     /**
      * @var IOInterface
@@ -65,11 +65,11 @@ class SuggestedPackagesReporter
      */
     public function addPackage(string $source, string $target, string $reason): SuggestedPackagesReporter
     {
-        $this->suggestedPackages[] = array(
+        $this->suggestedPackages[] = [
             'source' => $source,
             'target' => $target,
             'reason' => $reason,
-        );
+        ];
 
         return $this;
     }
@@ -108,8 +108,8 @@ class SuggestedPackagesReporter
     {
         $suggestedPackages = $this->getFilteredSuggestions($installedRepo, $onlyDependentsOf);
 
-        $suggesters = array();
-        $suggested = array();
+        $suggesters = [];
+        $suggested = [];
         foreach ($suggestedPackages as $suggestion) {
             $suggesters[$suggestion['source']][$suggestion['target']] = $suggestion['reason'];
             $suggested[$suggestion['target']][$suggestion['source']] = $suggestion['reason'];
@@ -186,7 +186,7 @@ class SuggestedPackagesReporter
     private function getFilteredSuggestions(InstalledRepository $installedRepo = null, PackageInterface $onlyDependentsOf = null): array
     {
         $suggestedPackages = $this->getPackages();
-        $installedNames = array();
+        $installedNames = [];
         if (null !== $installedRepo && !empty($suggestedPackages)) {
             foreach ($installedRepo->getPackages() as $package) {
                 $installedNames = array_merge(
@@ -196,7 +196,7 @@ class SuggestedPackagesReporter
             }
         }
 
-        $sourceFilter = array();
+        $sourceFilter = [];
         if ($onlyDependentsOf) {
             $sourceFilter = array_map(function ($link): string {
                 return $link->getTarget();
@@ -204,7 +204,7 @@ class SuggestedPackagesReporter
             $sourceFilter[] = $onlyDependentsOf->getName();
         }
 
-        $suggestions = array();
+        $suggestions = [];
         foreach ($suggestedPackages as $suggestion) {
             if (in_array($suggestion['target'], $installedNames) || ($sourceFilter && !in_array($suggestion['source'], $sourceFilter))) {
                 continue;

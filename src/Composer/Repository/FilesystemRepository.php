@@ -118,7 +118,7 @@ class FilesystemRepository extends WritableArrayRepository
      */
     public function write(bool $devMode, InstallationManager $installationManager)
     {
-        $data = array('packages' => array(), 'dev' => $devMode, 'dev-package-names' => array());
+        $data = ['packages' => [], 'dev' => $devMode, 'dev-package-names' => []];
         $dumper = new ArrayDumper();
 
         // make sure the directory is created so we can realpath it
@@ -128,7 +128,7 @@ class FilesystemRepository extends WritableArrayRepository
         $this->filesystem->ensureDirectoryExists($repoDir);
 
         $repoDir = $this->filesystem->normalizePath(realpath($repoDir));
-        $installPaths = array();
+        $installPaths = [];
 
         foreach ($this->getCanonicalPackages() as $package) {
             $pkgArray = $dumper->dump($package);
@@ -174,7 +174,7 @@ class FilesystemRepository extends WritableArrayRepository
      *
      * @return string
      */
-    private function dumpToPhpCode(array $array = array(), int $level = 0): string
+    private function dumpToPhpCode(array $array = [], int $level = 0): string
     {
         $lines = "array(\n";
         $level++;
@@ -219,7 +219,7 @@ class FilesystemRepository extends WritableArrayRepository
         }
 
         $devPackages = array_flip($this->devPackageNames);
-        $versions = array('versions' => array());
+        $versions = ['versions' => []];
         $packages = $this->getPackages();
         $packages[] = $rootPackage = $this->rootPackage;
         while ($rootPackage instanceof AliasPackage) {
@@ -248,15 +248,15 @@ class FilesystemRepository extends WritableArrayRepository
                 $installPath = $installPaths[$package->getName()];
             }
 
-            $versions['versions'][$package->getName()] = array(
+            $versions['versions'][$package->getName()] = [
                 'pretty_version' => $package->getPrettyVersion(),
                 'version' => $package->getVersion(),
                 'type' => $package->getType(),
                 'install_path' => $installPath,
-                'aliases' => array(),
+                'aliases' => [],
                 'reference' => $reference,
                 'dev_requirement' => isset($devPackages[$package->getName()]),
-            );
+            ];
             if ($package instanceof RootPackageInterface) {
                 $versions['root'] = $versions['versions'][$package->getName()];
                 unset($versions['root']['dev_requirement']);

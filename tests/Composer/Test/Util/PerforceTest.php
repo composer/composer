@@ -52,12 +52,12 @@ class PerforceTest extends TestCase
      */
     public function getTestRepoConfig(): array
     {
-        return array(
+        return [
             'depot' => self::TEST_DEPOT,
             'branch' => self::TEST_BRANCH,
             'p4user' => self::TEST_P4USER,
             'unique_perforce_client_name' => self::TEST_CLIENT_NAME,
-        );
+        ];
     }
 
     /**
@@ -225,12 +225,12 @@ class PerforceTest extends TestCase
 
     public function testQueryP4PasswordWithPasswordAlreadySet(): void
     {
-        $repoConfig = array(
+        $repoConfig = [
             'depot' => 'depot',
             'branch' => 'branch',
             'p4user' => 'user',
             'p4password' => 'TEST_PASSWORD',
-        );
+        ];
         $this->perforce = new Perforce($repoConfig, 'port', 'path', $this->processExecutor, false, $this->getMockIOInterface());
         $password = $this->perforce->queryP4Password();
         $this->assertEquals('TEST_PASSWORD', $password);
@@ -451,12 +451,12 @@ class PerforceTest extends TestCase
         );
 
         $result = $this->perforce->getComposerInformation('//depot');
-        $expected = array(
+        $expected = [
             'name' => 'test/perforce',
             'description' => 'Basic project for testing',
             'minimum-stability' => 'dev',
-            'autoload' => array('psr-0' => array()),
-        );
+            'autoload' => ['psr-0' => []],
+        ];
         $this->assertEquals($expected, $result);
     }
 
@@ -478,12 +478,12 @@ class PerforceTest extends TestCase
 
         $result = $this->perforce->getComposerInformation('//depot@0.0.1');
 
-        $expected = array(
+        $expected = [
             'name' => 'test/perforce',
             'description' => 'Basic project for testing',
             'minimum-stability' => 'dev',
-            'autoload' => array('psr-0' => array()),
-        );
+            'autoload' => ['psr-0' => []],
+        ];
         $this->assertEquals($expected, $result);
     }
 
@@ -503,12 +503,12 @@ class PerforceTest extends TestCase
 
         $result = $this->perforce->getComposerInformation('//depot/branch');
 
-        $expected = array(
+        $expected = [
             'name' => 'test/perforce',
             'description' => 'Basic project for testing',
             'minimum-stability' => 'dev',
-            'autoload' => array('psr-0' => array()),
-        );
+            'autoload' => ['psr-0' => []],
+        ];
         $this->assertEquals($expected, $result);
     }
 
@@ -532,12 +532,12 @@ class PerforceTest extends TestCase
 
         $result = $this->perforce->getComposerInformation('//depot/branch@0.0.1');
 
-        $expected = array(
+        $expected = [
             'name' => 'test/perforce',
             'description' => 'Basic project for testing',
             'minimum-stability' => 'dev',
-            'autoload' => array('psr-0' => array()),
-        );
+            'autoload' => ['psr-0' => []],
+        ];
         $this->assertEquals($expected, $result);
     }
 
@@ -617,7 +617,7 @@ class PerforceTest extends TestCase
      */
     private function getExpectedClientSpec(bool $withStream): array
     {
-        $expectedArray = array(
+        $expectedArray = [
             'Client: composer_perforce_TEST_depot',
             PHP_EOL,
             'Update:',
@@ -636,7 +636,7 @@ class PerforceTest extends TestCase
             PHP_EOL,
             'LineEnd:  local',
             PHP_EOL,
-        );
+        ];
         if ($withStream) {
             $expectedArray[] = 'Stream:';
             $expectedArray[] = '  //depot/branch';

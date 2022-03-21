@@ -38,7 +38,7 @@ final class TlsHelper
             return false;
         }
 
-        $combinedNames = array_merge($names['san'], array($names['cn']));
+        $combinedNames = array_merge($names['san'], [$names['cn']]);
         $hostname = strtolower($hostname);
 
         foreach ($combinedNames as $certName) {
@@ -74,7 +74,7 @@ final class TlsHelper
         }
 
         $commonName = strtolower($info['subject']['commonName']);
-        $subjectAltNames = array();
+        $subjectAltNames = [];
 
         if (isset($info['extensions']['subjectAltName'])) {
             $subjectAltNames = Preg::split('{\s*,\s*}', $info['extensions']['subjectAltName']);
@@ -88,10 +88,10 @@ final class TlsHelper
             $subjectAltNames = array_values($subjectAltNames);
         }
 
-        return array(
+        return [
             'cn' => $commonName,
             'san' => $subjectAltNames,
-        );
+        ];
     }
 
     /**

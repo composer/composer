@@ -117,14 +117,14 @@ class ArchiveDownloaderTest extends TestCase
 
     public function provideUrls(): array
     {
-        return array(
-            array('https://api.github.com/repos/composer/composer/zipball/master'),
-            array('https://api.github.com/repos/composer/composer/tarball/master'),
-            array('https://github.com/composer/composer/zipball/master'),
-            array('https://www.github.com/composer/composer/tarball/master'),
-            array('https://github.com/composer/composer/archive/master.zip'),
-            array('https://github.com/composer/composer/archive/master.tar.gz'),
-        );
+        return [
+            ['https://api.github.com/repos/composer/composer/zipball/master'],
+            ['https://api.github.com/repos/composer/composer/tarball/master'],
+            ['https://github.com/composer/composer/zipball/master'],
+            ['https://www.github.com/composer/composer/tarball/master'],
+            ['https://github.com/composer/composer/archive/master.zip'],
+            ['https://github.com/composer/composer/archive/master.tar.gz'],
+        ];
     }
 
     /**
@@ -156,11 +156,11 @@ class ArchiveDownloaderTest extends TestCase
 
     public function provideBitbucketUrls(): array
     {
-        return array(
-            array('https://bitbucket.org/davereid/drush-virtualhost/get/77ca490c26ac818e024d1138aa8bd3677d1ef21f', 'zip'),
-            array('https://bitbucket.org/davereid/drush-virtualhost/get/master', 'tar.gz'),
-            array('https://bitbucket.org/davereid/drush-virtualhost/get/v1.0', 'tar.bz2'),
-        );
+        return [
+            ['https://bitbucket.org/davereid/drush-virtualhost/get/77ca490c26ac818e024d1138aa8bd3677d1ef21f', 'zip'],
+            ['https://bitbucket.org/davereid/drush-virtualhost/get/master', 'tar.gz'],
+            ['https://bitbucket.org/davereid/drush-virtualhost/get/v1.0', 'tar.bz2'],
+        ];
     }
 
     /**
@@ -170,11 +170,11 @@ class ArchiveDownloaderTest extends TestCase
     {
         return $this->getMockForAbstractClass(
             'Composer\Downloader\ArchiveDownloader',
-            array(
+            [
                 $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock(),
                 $this->config = $this->getMockBuilder('Composer\Config')->getMock(),
                 new \Composer\Util\HttpDownloader($io, $this->config),
-            )
+            ]
         );
     }
 }

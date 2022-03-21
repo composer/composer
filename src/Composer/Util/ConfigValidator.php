@@ -50,9 +50,9 @@ class ConfigValidator
      */
     public function validate(string $file, int $arrayLoaderValidationFlags = ValidatingArrayLoader::CHECK_ALL, int $flags = self::CHECK_VERSION): array
     {
-        $errors = array();
-        $publishErrors = array();
-        $warnings = array();
+        $errors = [];
+        $publishErrors = [];
+        $warnings = [];
 
         // validate json schema
         $laxValid = false;
@@ -74,7 +74,7 @@ class ConfigValidator
         } catch (\Exception $e) {
             $errors[] = $e->getMessage();
 
-            return array($errors, $publishErrors, $warnings);
+            return [$errors, $publishErrors, $warnings];
         }
 
         // validate actual data
@@ -144,9 +144,9 @@ class ConfigValidator
         }
 
         // check for meaningless provide/replace satisfying requirements
-        foreach (array('provide', 'replace') as $linkType) {
+        foreach (['provide', 'replace'] as $linkType) {
             if (isset($manifest[$linkType])) {
-                foreach (array('require', 'require-dev') as $requireType) {
+                foreach (['require', 'require-dev'] as $requireType) {
                     if (isset($manifest[$requireType])) {
                         foreach ($manifest[$linkType] as $provide => $constraint) {
                             if (isset($manifest[$requireType][$provide])) {
@@ -159,8 +159,8 @@ class ConfigValidator
         }
 
         // check for commit references
-        $require = $manifest['require'] ?? array();
-        $requireDev = $manifest['require-dev'] ?? array();
+        $require = $manifest['require'] ?? [];
+        $requireDev = $manifest['require-dev'] ?? [];
         $packages = array_merge($require, $requireDev);
         foreach ($packages as $package => $version) {
             if (Preg::isMatch('/#/', $version)) {
@@ -172,8 +172,8 @@ class ConfigValidator
         }
 
         // report scripts-descriptions for non-existent scripts
-        $scriptsDescriptions = $manifest['scripts-descriptions'] ?? array();
-        $scripts = $manifest['scripts'] ?? array();
+        $scriptsDescriptions = $manifest['scripts-descriptions'] ?? [];
+        $scripts = $manifest['scripts'] ?? [];
         foreach ($scriptsDescriptions as $scriptName => $scriptDescription) {
             if (!array_key_exists($scriptName, $scripts)) {
                 $warnings[] = sprintf(
@@ -206,6 +206,6 @@ class ConfigValidator
 
         $warnings = array_merge($warnings, $loader->getWarnings());
 
-        return array($errors, $publishErrors, $warnings);
+        return [$errors, $publishErrors, $warnings];
     }
 }

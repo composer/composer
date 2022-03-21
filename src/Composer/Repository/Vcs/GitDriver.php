@@ -122,7 +122,7 @@ class GitDriver extends VcsDriver
      */
     public function getSource(string $identifier): array
     {
-        return array('type' => 'git', 'url' => $this->getUrl(), 'reference' => $identifier);
+        return ['type' => 'git', 'url' => $this->getUrl(), 'reference' => $identifier];
     }
 
     /**
@@ -167,7 +167,7 @@ class GitDriver extends VcsDriver
     public function getTags(): array
     {
         if (null === $this->tags) {
-            $this->tags = array();
+            $this->tags = [];
 
             $this->process->execute('git show-ref --tags --dereference', $output, $this->repoDir);
             foreach ($output = $this->process->splitLines($output) as $tag) {
@@ -186,7 +186,7 @@ class GitDriver extends VcsDriver
     public function getBranches(): array
     {
         if (null === $this->branches) {
-            $branches = array();
+            $branches = [];
 
             $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {

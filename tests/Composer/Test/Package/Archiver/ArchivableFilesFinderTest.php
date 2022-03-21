@@ -42,7 +42,7 @@ class ArchivableFilesFinderTest extends TestCase
             $this->getUniqueTmpDirectory()
         );
 
-        $fileTree = array(
+        $fileTree = [
             'A/prefixA.foo',
             'A/prefixB.foo',
             'A/prefixC.foo',
@@ -86,7 +86,7 @@ class ArchivableFilesFinderTest extends TestCase
             '!important!.txt',
             '!important_too!.txt',
             '#weirdfile',
-        );
+        ];
 
         foreach ($fileTree as $relativePath) {
             $path = $this->sources.'/'.$relativePath;
@@ -104,17 +104,17 @@ class ArchivableFilesFinderTest extends TestCase
 
     public function testManualExcludes(): void
     {
-        $excludes = array(
+        $excludes = [
             'prefixB.foo',
             '!/prefixB.foo',
             '/prefixA.foo',
             'prefixC.*',
             '!*/*/*/prefixC.foo',
-        );
+        ];
 
         $this->finder = new ArchivableFilesFinder($this->sources, $excludes);
 
-        $this->assertArchivableFiles(array(
+        $this->assertArchivableFiles([
             '/!important!.txt',
             '/!important_too!.txt',
             '/#weirdfile',
@@ -151,14 +151,14 @@ class ArchivableFilesFinderTest extends TestCase
             '/prefixF.foo',
             '/toplevelA.foo',
             '/toplevelB.foo',
-        ));
+        ]);
     }
 
     public function testGitExcludes(): void
     {
         $this->skipIfNotExecutable('git');
 
-        file_put_contents($this->sources.'/.gitattributes', implode("\n", array(
+        file_put_contents($this->sources.'/.gitattributes', implode("\n", [
             '',
             '# gitattributes rules with comments and blank lines',
             'prefixB.foo export-ignore',
@@ -185,9 +185,9 @@ class ArchivableFilesFinderTest extends TestCase
             'parameters.yml export-ignore',
             '\!important!.txt export-ignore',
             '\#* export-ignore',
-        )));
+        ]));
 
-        $this->finder = new ArchivableFilesFinder($this->sources, array());
+        $this->finder = new ArchivableFilesFinder($this->sources, []);
 
         $this->assertArchivableFiles($this->getArchivedFiles(
             'git init && '.
@@ -204,13 +204,13 @@ class ArchivableFilesFinderTest extends TestCase
 
     public function testSkipExcludes(): void
     {
-        $excludes = array(
+        $excludes = [
             'prefixB.foo',
-        );
+        ];
 
         $this->finder = new ArchivableFilesFinder($this->sources, $excludes, true);
 
-        $this->assertArchivableFiles(array(
+        $this->assertArchivableFiles([
             '/!important!.txt',
             '/!important_too!.txt',
             '/#weirdfile',
@@ -254,7 +254,7 @@ class ArchivableFilesFinderTest extends TestCase
             '/prefixF.foo',
             '/toplevelA.foo',
             '/toplevelB.foo',
-        ));
+        ]);
     }
 
     /**
@@ -262,7 +262,7 @@ class ArchivableFilesFinderTest extends TestCase
      */
     protected function getArchivableFiles(): array
     {
-        $files = array();
+        $files = [];
         foreach ($this->finder as $file) {
             if (!$file->isDir()) {
                 $files[] = Preg::replace('#^'.preg_quote($this->sources, '#').'#', '', $this->fs->normalizePath($file->getRealPath()));
@@ -287,7 +287,7 @@ class ArchivableFilesFinderTest extends TestCase
         $archive = new \PharData($this->sources.'/archive.zip');
         $iterator = new \RecursiveIteratorIterator($archive);
 
-        $files = array();
+        $files = [];
         foreach ($iterator as $file) {
             $files[] = Preg::replace('#^phar://'.preg_quote($this->sources, '#').'/archive\.zip/archive#', '', $this->fs->normalizePath((string) $file));
         }

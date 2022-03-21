@@ -32,11 +32,11 @@ class FossilDriverTest extends TestCase
     {
         $this->home = $this->getUniqueTmpDirectory();
         $this->config = new Config();
-        $this->config->merge(array(
-            'config' => array(
+        $this->config->merge([
+            'config' => [
                 'home' => $this->home,
-            ),
-        ));
+            ],
+        ]);
     }
 
     protected function tearDown(): void
@@ -48,11 +48,11 @@ class FossilDriverTest extends TestCase
 
     public static function supportProvider(): array
     {
-        return array(
-            array('http://fossil.kd2.org/kd2fw/', true),
-            array('https://chiselapp.com/user/rkeene/repository/flint/index', true),
-            array('ssh://fossil.kd2.org/kd2fw.fossil', true),
-        );
+        return [
+            ['http://fossil.kd2.org/kd2fw/', true],
+            ['https://chiselapp.com/user/rkeene/repository/flint/index', true],
+            ['ssh://fossil.kd2.org/kd2fw.fossil', true],
+        ];
     }
 
     /**

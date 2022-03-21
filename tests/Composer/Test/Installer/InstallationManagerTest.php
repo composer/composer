@@ -96,8 +96,8 @@ class InstallationManagerTest extends TestCase
     public function testExecute(): void
     {
         $manager = $this->getMockBuilder('Composer\Installer\InstallationManager')
-            ->setConstructorArgs(array($this->loop, $this->io))
-            ->onlyMethods(array('install', 'update', 'uninstall'))
+            ->setConstructorArgs([$this->loop, $this->io])
+            ->onlyMethods(['install', 'update', 'uninstall'])
             ->getMock();
 
         $installOperation = new InstallOperation($package = $this->createPackageMock());
@@ -125,7 +125,7 @@ class InstallationManagerTest extends TestCase
             ->with($this->repository, $updateOperation);
 
         $manager->addInstaller(new NoopInstaller());
-        $manager->execute($this->repository, array($installOperation, $removeOperation, $updateOperation));
+        $manager->execute($this->repository, [$installOperation, $removeOperation, $updateOperation]);
     }
 
     public function testInstall(): void

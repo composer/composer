@@ -86,11 +86,11 @@ class ZipDownloaderTest extends TestCase
         ;
         $this->package->expects($this->any())
             ->method('getDistUrls')
-            ->will($this->returnValue(array($distUrl)))
+            ->will($this->returnValue([$distUrl]))
         ;
         $this->package->expects($this->atLeastOnce())
             ->method('getTransportOptions')
-            ->will($this->returnValue(array()))
+            ->will($this->returnValue([]))
         ;
 
         $downloader = new ZipDownloader($this->io, $this->config, $this->httpDownloader);
@@ -98,7 +98,7 @@ class ZipDownloaderTest extends TestCase
         try {
             $loop = new Loop($this->httpDownloader);
             $promise = $downloader->download($this->package, $path = sys_get_temp_dir().'/composer-zip-test');
-            $loop->wait(array($promise));
+            $loop->wait([$promise]);
             $downloader->install($this->package, $path);
 
             $this->fail('Download of invalid zip files should throw an exception');
@@ -180,7 +180,7 @@ class ZipDownloaderTest extends TestCase
         self::expectExceptionMessage('Failed to extract : (1) unzip');
         $this->setPrivateProperty('isWindows', false);
         $this->setPrivateProperty('hasZipArchive', false);
-        $this->setPrivateProperty('unzipCommands', array(array('unzip', 'unzip -qq %s -d %s')));
+        $this->setPrivateProperty('unzipCommands', [['unzip', 'unzip -qq %s -d %s']]);
 
         $procMock = $this->getMockBuilder('Symfony\Component\Process\Process')->disableOriginalConstructor()->getMock();
         $procMock->expects($this->any())
@@ -207,7 +207,7 @@ class ZipDownloaderTest extends TestCase
     {
         $this->setPrivateProperty('isWindows', false);
         $this->setPrivateProperty('hasZipArchive', false);
-        $this->setPrivateProperty('unzipCommands', array(array('unzip', 'unzip -qq %s -d %s')));
+        $this->setPrivateProperty('unzipCommands', [['unzip', 'unzip -qq %s -d %s']]);
 
         $procMock = $this->getMockBuilder('Symfony\Component\Process\Process')->disableOriginalConstructor()->getMock();
         $procMock->expects($this->any())

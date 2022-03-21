@@ -57,9 +57,9 @@ class Package extends BasePackage
     /** @var ?\DateTimeInterface */
     protected $releaseDate;
     /** @var mixed[] */
-    protected $extra = array();
+    protected $extra = [];
     /** @var string[] */
-    protected $binaries = array();
+    protected $binaries = [];
     /** @var bool */
     protected $dev;
     /**
@@ -71,33 +71,33 @@ class Package extends BasePackage
     protected $notificationUrl;
 
     /** @var array<string, Link> */
-    protected $requires = array();
+    protected $requires = [];
     /** @var array<string, Link> */
-    protected $conflicts = array();
+    protected $conflicts = [];
     /** @var array<string, Link> */
-    protected $provides = array();
+    protected $provides = [];
     /** @var array<string, Link> */
-    protected $replaces = array();
+    protected $replaces = [];
     /** @var array<string, Link> */
-    protected $devRequires = array();
+    protected $devRequires = [];
     /** @var array<string, string> */
-    protected $suggests = array();
+    protected $suggests = [];
     /**
      * @var array
      * @phpstan-var AutoloadRules
      */
-    protected $autoload = array();
+    protected $autoload = [];
     /**
      * @var array
      * @phpstan-var DevAutoloadRules
      */
-    protected $devAutoload = array();
+    protected $devAutoload = [];
     /** @var string[] */
-    protected $includePaths = array();
+    protected $includePaths = [];
     /** @var bool */
     protected $isDefaultBranch = false;
     /** @var mixed[] */
-    protected $transportOptions = array();
+    protected $transportOptions = [];
 
     /**
      * Creates a new in memory package.
@@ -738,14 +738,14 @@ class Package extends BasePackage
     protected function getUrls(?string $url, ?array $mirrors, ?string $ref, ?string $type, string $urlType): array
     {
         if (!$url) {
-            return array();
+            return [];
         }
 
         if ($urlType === 'dist' && false !== strpos($url, '%')) {
             $url = ComposerMirror::processUrl($url, $this->name, $this->version, $ref, $type, $this->prettyVersion);
         }
 
-        $urls = array($url);
+        $urls = [$url];
         if ($mirrors) {
             foreach ($mirrors as $mirror) {
                 if ($urlType === 'dist') {
@@ -775,7 +775,7 @@ class Package extends BasePackage
     private function convertLinksToMap(array $links, string $source): array
     {
         trigger_error('Package::'.$source.' must be called with a map of lowercased package name => Link object, got a indexed array, this is deprecated and you should fix your usage.');
-        $newLinks = array();
+        $newLinks = [];
         foreach ($links as $link) {
             $newLinks[$link->getTarget()] = $link;
         }

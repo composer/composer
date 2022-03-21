@@ -32,12 +32,12 @@ class StrictConfirmationQuestionTest extends TestCase
      */
     public function getAskConfirmationBadData(): array
     {
-        return array(
-            array('not correct'),
-            array('no more'),
-            array('yes please'),
-            array('yellow'),
-        );
+        return [
+            ['not correct'],
+            ['no more'],
+            ['yes please'],
+            ['yellow'],
+        ];
     }
 
     /**
@@ -47,7 +47,7 @@ class StrictConfirmationQuestionTest extends TestCase
      */
     public function testAskConfirmationBadAnswer(string $answer): void
     {
-        list($input, $dialog) = $this->createInput($answer."\n");
+        [$input, $dialog] = $this->createInput($answer."\n");
 
         self::expectException('InvalidArgumentException');
         self::expectExceptionMessage('Please answer yes, y, no, or n.');
@@ -66,7 +66,7 @@ class StrictConfirmationQuestionTest extends TestCase
      */
     public function testAskConfirmation(string $question, bool $expected, bool $default = true): void
     {
-        list($input, $dialog) = $this->createInput($question."\n");
+        [$input, $dialog] = $this->createInput($question."\n");
 
         $question = new StrictConfirmationQuestion('Do you like French fries?', $default);
         $this->assertEquals($expected, $dialog->ask($input, $this->createOutputInterface(), $question), 'confirmation question should '.($expected ? 'pass' : 'cancel'));
@@ -79,24 +79,24 @@ class StrictConfirmationQuestionTest extends TestCase
      */
     public function getAskConfirmationData(): array
     {
-        return array(
-            array('', true),
-            array('', false, false),
-            array('y', true),
-            array('yes', true),
-            array('n', false),
-            array('no', false),
-        );
+        return [
+            ['', true],
+            ['', false, false],
+            ['y', true],
+            ['yes', true],
+            ['n', false],
+            ['no', false],
+        ];
     }
 
     public function testAskConfirmationWithCustomTrueAndFalseAnswer(): void
     {
         $question = new StrictConfirmationQuestion('Do you like French fries?', false, '/^ja$/i', '/^nein$/i');
 
-        list($input, $dialog) = $this->createInput("ja\n");
+        [$input, $dialog] = $this->createInput("ja\n");
         $this->assertTrue($dialog->ask($input, $this->createOutputInterface(), $question));
 
-        list($input, $dialog) = $this->createInput("nein\n");
+        [$input, $dialog] = $this->createInput("nein\n");
         $this->assertFalse($dialog->ask($input, $this->createOutputInterface(), $question));
     }
 
@@ -133,11 +133,11 @@ class StrictConfirmationQuestionTest extends TestCase
      */
     protected function createInput(string $entry): array
     {
-        $input = new ArrayInput(array('--no-interaction'));
+        $input = new ArrayInput(['--no-interaction']);
         $input->setStream($this->getInputStream($entry));
 
         $dialog = new QuestionHelper();
 
-        return array($input, $dialog);
+        return [$input, $dialog];
     }
 }

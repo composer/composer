@@ -27,7 +27,7 @@ class AuthHelper
     /** @var Config */
     protected $config;
     /** @var array<string, string> Map of origins to message displayed */
-    private $displayedOriginAuthentications = array();
+    private $displayedOriginAuthentications = [];
 
     public function __construct(IOInterface $io, Config $config)
     {
@@ -52,7 +52,7 @@ class AuthHelper
                 'Do you want to store credentials for '.$origin.' in '.$configSource->getName().' ? [Yn] ',
                 function ($value): string {
                     $input = strtolower(substr(trim($value), 0, 1));
-                    if (in_array($input, array('y','n'))) {
+                    if (in_array($input, ['y','n'])) {
                         return $input;
                     }
                     throw new \RuntimeException('Please answer (y)es or (n)o');
@@ -83,7 +83,7 @@ class AuthHelper
      *                                retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
      * @phpstan-return ?array{retry: bool, storeAuth: string|bool}
      */
-    public function promptAuthIfNeeded(string $url, string $origin, int $statusCode, ?string $reason = null, array $headers = array()): ?array
+    public function promptAuthIfNeeded(string $url, string $origin, int $statusCode, ?string $reason = null, array $headers = []): ?array
     {
         $storeAuth = false;
 
@@ -103,7 +103,7 @@ class AuthHelper
                 }
                 $this->io->ask('After authorizing your token, confirm that you would like to retry the request');
 
-                return array('retry' => true, 'storeAuth' => $storeAuth);
+                return ['retry' => true, 'storeAuth' => $storeAuth];
             }
 
             if ($rateLimited) {
@@ -139,7 +139,7 @@ class AuthHelper
 
             if ($this->io->hasAuthentication($origin)) {
                 $auth = $this->io->getAuthentication($origin);
-                if (in_array($auth['password'], array('gitlab-ci-token', 'private-token', 'oauth2'), true)) {
+                if (in_array($auth['password'], ['gitlab-ci-token', 'private-token', 'oauth2'], true)) {
                     throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
                 }
             }
@@ -205,7 +205,7 @@ class AuthHelper
             $storeAuth = $this->config->get('store-auths');
         }
 
-        return array('retry' => true, 'storeAuth' => $storeAuth);
+        return ['retry' => true, 'storeAuth' => $storeAuth];
     }
 
     /**
@@ -230,7 +230,7 @@ class AuthHelper
                 }
             } elseif (
                 in_array($origin, $this->config->get('gitlab-domains'), true)
-                && in_array($auth['password'], array('oauth2', 'private-token', 'gitlab-ci-token'), true)
+                && in_array($auth['password'], ['oauth2', 'private-token', 'gitlab-ci-token'], true)
             ) {
                 if ($auth['password'] === 'oauth2') {
                     $headers[] = 'Authorization: Bearer '.$auth['username'];
@@ -258,7 +258,7 @@ class AuthHelper
                 $this->io->writeError($authenticationDisplayMessage, true, IOInterface::DEBUG);
                 $this->displayedOriginAuthentications[$origin] = $authenticationDisplayMessage;
             }
-        } elseif (in_array($origin, array('api.bitbucket.org', 'api.github.com'), true)) {
+        } elseif (in_array($origin, ['api.bitbucket.org', 'api.github.com'], true)) {
             return $this->addAuthenticationHeader($headers, str_replace('api.', '', $origin), $url);
         }
 

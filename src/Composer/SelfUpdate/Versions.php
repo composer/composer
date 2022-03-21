@@ -21,7 +21,7 @@ use Composer\Config;
 class Versions
 {
     /** @var string[] */
-    public static $channels = array('stable', 'preview', 'snapshot', '1', '2');
+    public static $channels = ['stable', 'preview', 'snapshot', '1', '2'];
 
     /** @var HttpDownloader */
     private $httpDownloader;
@@ -50,7 +50,7 @@ class Versions
         $channelFile = $this->config->get('home').'/update-channel';
         if (file_exists($channelFile)) {
             $channel = trim(file_get_contents($channelFile));
-            if (in_array($channel, array('stable', 'preview', 'snapshot'), true)) {
+            if (in_array($channel, ['stable', 'preview', 'snapshot'], true)) {
                 return $this->channel = $channel;
             }
         }

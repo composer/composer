@@ -36,14 +36,14 @@ class RepositoryFactory
     public static function configFromString(IOInterface $io, Config $config, string $repository, bool $allowFilesystem = false)
     {
         if (0 === strpos($repository, 'http')) {
-            $repoConfig = array('type' => 'composer', 'url' => $repository);
+            $repoConfig = ['type' => 'composer', 'url' => $repository];
         } elseif ("json" === pathinfo($repository, PATHINFO_EXTENSION)) {
             $json = new JsonFile($repository, Factory::createHttpDownloader($io, $config));
             $data = $json->read();
             if (!empty($data['packages']) || !empty($data['includes']) || !empty($data['provider-includes'])) {
-                $repoConfig = array('type' => 'composer', 'url' => 'file://' . strtr(realpath($repository), '\\', '/'));
+                $repoConfig = ['type' => 'composer', 'url' => 'file://' . strtr(realpath($repository), '\\', '/')];
             } elseif ($allowFilesystem) {
-                $repoConfig = array('type' => 'filesystem', 'json' => $json);
+                $repoConfig = ['type' => 'filesystem', 'json' => $json];
             } else {
                 throw new \InvalidArgumentException("Invalid repository URL ($repository) given. This file does not contain a valid composer repository.");
             }
@@ -82,7 +82,7 @@ class RepositoryFactory
         if (!$rm) {
             $rm = static::manager($io, $config, Factory::createHttpDownloader($io, $config));
         }
-        $repos = self::createRepos($rm, array($repoConfig));
+        $repos = self::createRepos($rm, [$repoConfig]);
 
         return reset($repos);
     }
@@ -147,7 +147,7 @@ class RepositoryFactory
      */
     private static function createRepos(RepositoryManager $rm, array $repoConfigs): array
     {
-        $repos = array();
+        $repos = [];
 
         foreach ($repoConfigs as $index => $repo) {
             if (is_string($repo)) {

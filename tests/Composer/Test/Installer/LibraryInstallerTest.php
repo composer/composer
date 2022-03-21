@@ -81,12 +81,12 @@ class LibraryInstallerTest extends TestCase
         $this->binDir = $this->rootDir.DIRECTORY_SEPARATOR.'bin';
         self::ensureDirectoryExistsAndClear($this->binDir);
 
-        $this->config->merge(array(
-            'config' => array(
+        $this->config->merge([
+            'config' => [
                 'vendor-dir' => $this->vendorDir,
                 'bin-dir' => $this->binDir,
-            ),
-        ));
+            ],
+        ]);
 
         $this->dm = $this->getMockBuilder('Composer\Downloader\DownloadManager')
             ->disableOriginalConstructor()

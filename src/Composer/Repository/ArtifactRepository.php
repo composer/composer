@@ -107,7 +107,7 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         $json = null;
         $fileType = null;
         $fileExtension = pathinfo($file->getPathname(), PATHINFO_EXTENSION);
-        if (in_array($fileExtension, array('gz', 'tar', 'tgz'), true)) {
+        if (in_array($fileExtension, ['gz', 'tar', 'tgz'], true)) {
             $fileType = 'tar';
         } elseif ($fileExtension === 'zip') {
             $fileType = 'zip';
@@ -130,11 +130,11 @@ class ArtifactRepository extends ArrayRepository implements ConfigurableReposito
         }
 
         $package = JsonFile::parseJson($json, $file->getPathname().'#composer.json');
-        $package['dist'] = array(
+        $package['dist'] = [
             'type' => $fileType,
             'url' => strtr($file->getPathname(), '\\', '/'),
             'shasum' => sha1_file($file->getRealPath()),
-        );
+        ];
 
         try {
             $package = $this->loader->load($package);

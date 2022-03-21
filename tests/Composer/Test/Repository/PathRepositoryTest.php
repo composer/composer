@@ -26,8 +26,8 @@ class PathRepositoryTest extends TestCase
 
         $config = new \Composer\Config();
 
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'missing'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'missing']);
+        $repository = new PathRepository(['url' => $repositoryUrl], $ioInterface, $config);
         $repository->getPackages();
     }
 
@@ -39,8 +39,8 @@ class PathRepositoryTest extends TestCase
         $config = new \Composer\Config();
         $versionGuesser = null;
 
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'with-version'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'with-version']);
+        $repository = new PathRepository(['url' => $repositoryUrl], $ioInterface, $config);
         $repository->getPackages();
 
         $this->assertSame(1, $repository->count());
@@ -55,8 +55,8 @@ class PathRepositoryTest extends TestCase
         $config = new \Composer\Config();
         $versionGuesser = null;
 
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'without-version'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', 'without-version']);
+        $repository = new PathRepository(['url' => $repositoryUrl], $ioInterface, $config);
         $packages = $repository->getPackages();
 
         $this->assertGreaterThanOrEqual(1, $repository->count());
@@ -76,10 +76,10 @@ class PathRepositoryTest extends TestCase
         $config = new \Composer\Config();
         $versionGuesser = null;
 
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', '*']);
+        $repository = new PathRepository(['url' => $repositoryUrl], $ioInterface, $config);
         $packages = $repository->getPackages();
-        $names = array();
+        $names = [];
 
         $this->assertGreaterThanOrEqual(2, $repository->count());
 
@@ -90,7 +90,7 @@ class PathRepositoryTest extends TestCase
         $names[] = $package->getName();
 
         sort($names);
-        $this->assertEquals(array('test/path-unversioned', 'test/path-versioned'), $names);
+        $this->assertEquals(['test/path-unversioned', 'test/path-versioned'], $names);
     }
 
     public function testLoadPackageWithExplicitVersions(): void
@@ -101,17 +101,17 @@ class PathRepositoryTest extends TestCase
         $config = new \Composer\Config();
         $versionGuesser = null;
 
-        $options = array(
-            'versions' => array(
+        $options = [
+            'versions' => [
                 'test/path-unversioned' => '4.3.2.1',
                 'test/path-versioned' => '3.2.1.0',
-            ),
-        );
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);
+            ],
+        ];
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', '*']);
+        $repository = new PathRepository(['url' => $repositoryUrl, 'options' => $options], $ioInterface, $config);
         $packages = $repository->getPackages();
 
-        $versions = array();
+        $versions = [];
 
         $this->assertEquals(2, $repository->count());
 
@@ -122,7 +122,7 @@ class PathRepositoryTest extends TestCase
         $versions[$package->getName()] = $package->getVersion();
 
         ksort($versions);
-        $this->assertSame(array('test/path-unversioned' => '4.3.2.1', 'test/path-versioned' => '3.2.1.0'), $versions);
+        $this->assertSame(['test/path-unversioned' => '4.3.2.1', 'test/path-versioned' => '3.2.1.0'], $versions);
     }
 
     /**
@@ -138,12 +138,12 @@ class PathRepositoryTest extends TestCase
 
         // realpath() does not fully expand the paths
         // PHP Bug https://bugs.php.net/bug.php?id=72642
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(realpath(realpath(__DIR__)), 'Fixtures', 'path', 'with-version'));
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [realpath(realpath(__DIR__)), 'Fixtures', 'path', 'with-version']);
         // getcwd() not necessarily match __DIR__
         // PHP Bug https://bugs.php.net/bug.php?id=73797
         $relativeUrl = ltrim(substr($repositoryUrl, strlen(realpath(realpath(Platform::getCwd())))), DIRECTORY_SEPARATOR);
 
-        $repository = new PathRepository(array('url' => $relativeUrl), $ioInterface, $config);
+        $repository = new PathRepository(['url' => $relativeUrl], $ioInterface, $config);
         $packages = $repository->getPackages();
 
         $this->assertSame(1, $repository->count());
@@ -163,11 +163,11 @@ class PathRepositoryTest extends TestCase
 
         $config = new \Composer\Config();
 
-        $options = array(
+        $options = [
             'reference' => 'none',
-        );
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);
+        ];
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', '*']);
+        $repository = new PathRepository(['url' => $repositoryUrl, 'options' => $options], $ioInterface, $config);
         $packages = $repository->getPackages();
 
         $this->assertGreaterThanOrEqual(2, $repository->count());
@@ -184,12 +184,12 @@ class PathRepositoryTest extends TestCase
 
         $config = new \Composer\Config();
 
-        $options = array(
+        $options = [
             'reference' => 'config',
             'relative' => true,
-        );
-        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);
+        ];
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, [__DIR__, 'Fixtures', 'path', '*']);
+        $repository = new PathRepository(['url' => $repositoryUrl, 'options' => $options], $ioInterface, $config);
         $packages = $repository->getPackages();
 
         $this->assertGreaterThanOrEqual(2, $repository->count());

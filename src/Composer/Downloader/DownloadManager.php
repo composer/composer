@@ -33,11 +33,11 @@ class DownloadManager
     /** @var bool */
     private $preferSource;
     /** @var array<string, string> */
-    private $packagePreferences = array();
+    private $packagePreferences = [];
     /** @var Filesystem */
     private $filesystem;
     /** @var array<string, DownloaderInterface> */
-    private $downloaders = array();
+    private $downloaders = [];
 
     /**
      * Initializes download manager.
@@ -406,7 +406,7 @@ class DownloadManager
         $distType = $package->getDistType();
 
         // add source before dist by default
-        $sources = array();
+        $sources = [];
         if ($sourceType) {
             $sources[] = 'source';
         }

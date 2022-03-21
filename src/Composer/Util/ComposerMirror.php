@@ -38,8 +38,8 @@ class ComposerMirror
         }
         $version = strpos($version, '/') === false ? $version : md5($version);
 
-        $from = array('%package%', '%version%', '%reference%', '%type%');
-        $to = array($packageName, $version, $reference, $type);
+        $from = ['%package%', '%version%', '%reference%', '%type%'];
+        $to = [$packageName, $version, $reference, $type];
         if (null !== $prettyVersion) {
             $from[] = '%prettyVersion%';
             $to[] = $prettyVersion;
@@ -67,8 +67,8 @@ class ComposerMirror
         }
 
         return str_replace(
-            array('%package%', '%normalizedUrl%', '%type%'),
-            array($packageName, $url, $type),
+            ['%package%', '%normalizedUrl%', '%type%'],
+            [$packageName, $url, $type],
             $mirrorUrl
         );
     }

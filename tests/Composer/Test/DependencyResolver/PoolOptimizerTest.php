@@ -74,7 +74,7 @@ class PoolOptimizerTest extends TestCase
     public function provideIntegrationTests(): array
     {
         $fixturesDir = realpath(__DIR__.'/Fixtures/pooloptimizer/');
-        $tests = array();
+        $tests = [];
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($fixturesDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
             $file = (string) $file;
 
@@ -92,7 +92,7 @@ class PoolOptimizerTest extends TestCase
                 die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
             }
 
-            $tests[basename($file)] = array($requestData, $packagesBefore, $expectedPackages, $message);
+            $tests[basename($file)] = [$requestData, $packagesBefore, $expectedPackages, $message];
         }
 
         return $tests;
@@ -106,15 +106,15 @@ class PoolOptimizerTest extends TestCase
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
 
         /** @var array<string, bool> $sectionInfo */
-        $sectionInfo = array(
+        $sectionInfo = [
             'TEST' => true,
             'REQUEST' => true,
             'POOL-BEFORE' => true,
             'POOL-AFTER' => true,
-        );
+        ];
 
         $section = null;
-        $data = array();
+        $data = [];
         foreach ($tokens as $i => $token) {
             if (null === $section && empty($token)) {
                 continue; // skip leading blank
@@ -157,7 +157,7 @@ class PoolOptimizerTest extends TestCase
      */
     private function reducePackagesInfoForComparison(array $packages): array
     {
-        $packagesInfo = array();
+        $packagesInfo = [];
 
         foreach ($packages as $package) {
             $packagesInfo[] = $package->getName() . '@' . $package->getVersion() . ($package instanceof AliasPackage ? ' (alias of '.$package->getAliasOf()->getVersion().')' : '');
@@ -174,7 +174,7 @@ class PoolOptimizerTest extends TestCase
      */
     private function loadPackages(array $packagesData): array
     {
-        $packages = array();
+        $packages = [];
 
         foreach ($packagesData as $packageData) {
             $packages[] = $package = $this->loadPackage($packageData);

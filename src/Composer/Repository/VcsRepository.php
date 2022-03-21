@@ -66,9 +66,9 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     /** @var ?VersionCacheInterface */
     private $versionCache;
     /** @var string[] */
-    private $emptyReferences = array();
+    private $emptyReferences = [];
     /** @var array<'tags'|'branches', array<string, TransportException>> */
-    private $versionTransportExceptions = array();
+    private $versionTransportExceptions = [];
 
     /**
      * @param array{url: string, type?: string}&array<string, mixed> $repoConfig
@@ -77,7 +77,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
     public function __construct(array $repoConfig, IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $dispatcher = null, ProcessExecutor $process = null, array $drivers = null, VersionCacheInterface $versionCache = null)
     {
         parent::__construct();
-        $this->drivers = $drivers ?: array(
+        $this->drivers = $drivers ?: [
             'github' => 'Composer\Repository\Vcs\GitHubDriver',
             'gitlab' => 'Composer\Repository\Vcs\GitLabDriver',
             'bitbucket' => 'Composer\Repository\Vcs\GitBitbucketDriver',
@@ -88,7 +88,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
             'fossil' => 'Composer\Repository\Vcs\FossilDriver',
             // svn must be last because identifying a subversion server for sure is practically impossible
             'svn' => 'Composer\Repository\Vcs\SvnDriver',
-        );
+        ];
 
         $this->url = $repoConfig['url'];
         $this->io = $io;
@@ -328,7 +328,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $branches = $driver->getBranches();
         // make sure the root identifier branch gets loaded first
         if ($hasRootIdentifierComposerJson && isset($branches[$driver->getRootIdentifier()])) {
-            $branches = array($driver->getRootIdentifier() => $branches[$driver->getRootIdentifier()]) + $branches;
+            $branches = [$driver->getRootIdentifier() => $branches[$driver->getRootIdentifier()]] + $branches;
         }
 
         foreach ($branches as $branch => $identifier) {
@@ -546,6 +546,6 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
      */
     private function shouldRethrowTransportException(TransportException $e): bool
     {
-        return in_array($e->getCode(), array(401, 403, 429), true) || $e->getCode() >= 500;
+        return in_array($e->getCode(), [401, 403, 429], true) || $e->getCode() >= 500;
     }
 }

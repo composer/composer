@@ -26,7 +26,7 @@ class PharArchiverTest extends ArchiverTest
 
         // Test archive
         $archiver = new PharArchiver();
-        $archiver->archive($package->getSourceUrl(), $target, 'tar', array('foo/bar', 'baz', '!/foo/bar/baz'));
+        $archiver->archive($package->getSourceUrl(), $target, 'tar', ['foo/bar', 'baz', '!/foo/bar/baz']);
         $this->assertFileExists($target);
 
         $this->filesystem->removeDirectory(dirname($target));

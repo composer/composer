@@ -43,15 +43,15 @@ class Request
     /** @var ?LockArrayRepository */
     protected $lockedRepository;
     /** @var array<string, ConstraintInterface> */
-    protected $requires = array();
+    protected $requires = [];
     /** @var array<string, BasePackage> */
-    protected $fixedPackages = array();
+    protected $fixedPackages = [];
     /** @var array<string, BasePackage> */
-    protected $lockedPackages = array();
+    protected $lockedPackages = [];
     /** @var array<string, BasePackage> */
-    protected $fixedLockedPackages = array();
+    protected $fixedLockedPackages = [];
     /** @var string[] */
-    protected $updateAllowList = array();
+    protected $updateAllowList = [];
     /** @var false|self::UPDATE_* */
     protected $updateAllowTransitiveDependencies = false;
 
@@ -224,7 +224,7 @@ class Request
      */
     public function getPresentMap(bool $packageIds = false): array
     {
-        $presentMap = array();
+        $presentMap = [];
 
         if ($this->lockedRepository) {
             foreach ($this->lockedRepository->getPackages() as $package) {
@@ -244,7 +244,7 @@ class Request
      */
     public function getFixedPackagesMap(): array
     {
-        $fixedPackagesMap = array();
+        $fixedPackagesMap = [];
 
         foreach ($this->fixedPackages as $package) {
             $fixedPackagesMap[$package->getId()] = $package;

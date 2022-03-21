@@ -30,7 +30,7 @@ abstract class ArchiveDownloader extends FileDownloader
     /**
      * @var array<string, true>
      */
-    protected $cleanupExecuted = array();
+    protected $cleanupExecuted = [];
 
     /**
      * @return PromiseInterface

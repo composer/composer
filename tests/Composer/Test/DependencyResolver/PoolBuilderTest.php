@@ -47,10 +47,10 @@ class PoolBuilderTest extends TestCase
      */
     public function testPoolBuilder(string $file, string $message, array $expect, array $expectOptimized, array $root, array $requestData, array $packageRepos, array $fixed): void
     {
-        $rootAliases = !empty($root['aliases']) ? $root['aliases'] : array();
+        $rootAliases = !empty($root['aliases']) ? $root['aliases'] : [];
         $minimumStability = !empty($root['minimum-stability']) ? $root['minimum-stability'] : 'stable';
-        $stabilityFlags = !empty($root['stability-flags']) ? $root['stability-flags'] : array();
-        $rootReferences = !empty($root['references']) ? $root['references'] : array();
+        $stabilityFlags = !empty($root['stability-flags']) ? $root['stability-flags'] : [];
+        $rootReferences = !empty($root['references']) ? $root['references'] : [];
         $stabilityFlags = array_map(function ($stability): int {
             return BasePackage::$stabilities[$stability];
         }, $stabilityFlags);
@@ -62,7 +62,7 @@ class PoolBuilderTest extends TestCase
         }
 
         $loader = new ArrayLoader(null, true);
-        $packageIds = array();
+        $packageIds = [];
         $loadPackage = function ($data) use ($loader, &$packageIds): \Composer\Package\PackageInterface {
             /** @var ?int $id */
             $id = null;
@@ -152,7 +152,7 @@ class PoolBuilderTest extends TestCase
      */
     private function getPackageResultSet(Pool $pool, array $packageIds): array
     {
-        $result = array();
+        $result = [];
         for ($i = 1, $count = count($pool); $i <= $count; $i++) {
             $result[] = $pool->packageById($i);
         }
@@ -188,7 +188,7 @@ class PoolBuilderTest extends TestCase
     public function getIntegrationTests(): array
     {
         $fixturesDir = realpath(__DIR__.'/Fixtures/poolbuilder/');
-        $tests = array();
+        $tests = [];
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($fixturesDir), \RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
             $file = (string) $file;
 
@@ -202,10 +202,10 @@ class PoolBuilderTest extends TestCase
                 $message = $testData['TEST'];
 
                 $request = JsonFile::parseJson($testData['REQUEST']);
-                $root = !empty($testData['ROOT']) ? JsonFile::parseJson($testData['ROOT']) : array();
+                $root = !empty($testData['ROOT']) ? JsonFile::parseJson($testData['ROOT']) : [];
 
                 $packageRepos = JsonFile::parseJson($testData['PACKAGE-REPOS']);
-                $fixed = array();
+                $fixed = [];
                 if (!empty($testData['FIXED'])) {
                     $fixed = JsonFile::parseJson($testData['FIXED']);
                 }
@@ -215,7 +215,7 @@ class PoolBuilderTest extends TestCase
                 die(sprintf('Test "%s" is not valid: '.$e->getMessage(), str_replace($fixturesDir.'/', '', $file)));
             }
 
-            $tests[basename($file)] = array(str_replace($fixturesDir.'/', '', $file), $message, $expect, $expectOptimized, $root, $request, $packageRepos, $fixed);
+            $tests[basename($file)] = [str_replace($fixturesDir.'/', '', $file), $message, $expect, $expectOptimized, $root, $request, $packageRepos, $fixed];
         }
 
         return $tests;
@@ -228,7 +228,7 @@ class PoolBuilderTest extends TestCase
     {
         $tokens = Preg::split('#(?:^|\n*)--([A-Z-]+)--\n#', file_get_contents($file), -1, PREG_SPLIT_DELIM_CAPTURE);
 
-        $sectionInfo = array(
+        $sectionInfo = [
             'TEST' => true,
             'ROOT' => false,
             'REQUEST' => true,
@@ -236,10 +236,10 @@ class PoolBuilderTest extends TestCase
             'PACKAGE-REPOS' => true,
             'EXPECT' => true,
             'EXPECT-OPTIMIZED' => false,
-        );
+        ];
 
         $section = null;
-        $data = array();
+        $data = [];
         foreach ($tokens as $i => $token) {
             if (null === $section && empty($token)) {
                 continue; // skip leading blank

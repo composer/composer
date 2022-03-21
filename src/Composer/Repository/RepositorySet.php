@@ -53,7 +53,7 @@ class RepositorySet
     private $rootReferences;
 
     /** @var RepositoryInterface[] */
-    private $repositories = array();
+    private $repositories = [];
 
     /**
      * @var int[] array of stability => BasePackage::STABILITY_* value
@@ -93,12 +93,12 @@ class RepositorySet
      * @param ConstraintInterface[] $rootRequires an array of package name => constraint from the root package
      * @phpstan-param array<string, ConstraintInterface> $rootRequires
      */
-    public function __construct(string $minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
+    public function __construct(string $minimumStability = 'stable', array $stabilityFlags = [], array $rootAliases = [], array $rootReferences = [], array $rootRequires = [])
     {
         $this->rootAliases = self::getRootAliasesPerPackage($rootAliases);
         $this->rootReferences = $rootReferences;
 
-        $this->acceptableStabilities = array();
+        $this->acceptableStabilities = [];
         foreach (BasePackage::$stabilities as $stability => $value) {
             if ($value <= BasePackage::$stabilities[$minimumStability]) {
                 $this->acceptableStabilities[$stability] = $value;
@@ -151,7 +151,7 @@ class RepositorySet
         if ($repo instanceof CompositeRepository) {
             $repos = $repo->getRepositories();
         } else {
-            $repos = array($repo);
+            $repos = [$repo];
         }
 
         foreach ($repos as $repo) {
@@ -174,14 +174,14 @@ class RepositorySet
         $ignoreStability = ($flags & self::ALLOW_UNACCEPTABLE_STABILITIES) !== 0;
         $loadFromAllRepos = ($flags & self::ALLOW_SHADOWED_REPOSITORIES) !== 0;
 
-        $packages = array();
+        $packages = [];
         if ($loadFromAllRepos) {
             foreach ($this->repositories as $repository) {
-                $packages[] = $repository->findPackages($name, $constraint) ?: array();
+                $packages[] = $repository->findPackages($name, $constraint) ?: [];
             }
         } else {
             foreach ($this->repositories as $repository) {
-                $result = $repository->loadPackages(array($name => $constraint), $ignoreStability ? BasePackage::$stabilities : $this->acceptableStabilities, $ignoreStability ? array() : $this->stabilityFlags);
+                $result = $repository->loadPackages([$name => $constraint], $ignoreStability ? BasePackage::$stabilities : $this->acceptableStabilities, $ignoreStability ? [] : $this->stabilityFlags);
 
                 $packages[] = $result['packages'];
                 foreach ($result['namesFound'] as $nameFound) {
@@ -193,14 +193,14 @@ class RepositorySet
             }
         }
 
-        $candidates = $packages ? call_user_func_array('array_merge', $packages) : array();
+        $candidates = $packages ? call_user_func_array('array_merge', $packages) : [];
 
         // when using loadPackages above (!$loadFromAllRepos) the repos already filter for stability so no need to do it again
         if ($ignoreStability || !$loadFromAllRepos) {
             return $candidates;
         }
 
-        $result = array();
+        $result = [];
         foreach ($candidates as $candidate) {
             if ($this->isPackageAcceptable($candidate->getNames(), $candidate->getStability())) {
                 $result[] = $candidate;
@@ -218,7 +218,7 @@ class RepositorySet
      */
     public function getProviders(string $packageName): array
     {
-        $providers = array();
+        $providers = [];
         foreach ($this->repositories as $repository) {
             if ($repoProviders = $repository->getProviders($packageName)) {
                 $providers = array_merge($providers, $repoProviders);
@@ -275,7 +275,7 @@ class RepositorySet
 
         $this->locked = true;
 
-        $packages = array();
+        $packages = [];
         foreach ($this->repositories as $repository) {
             foreach ($repository->getPackages() as $package) {
                 $packages[] = $package;
@@ -307,7 +307,7 @@ class RepositorySet
     public function createPoolForPackage(string $packageName, LockArrayRepository $lockedRepo = null): Pool
     {
         // TODO unify this with above in some simpler version without "request"?
-        return $this->createPoolForPackages(array($packageName), $lockedRepo);
+        return $this->createPoolForPackages([$packageName], $lockedRepo);
     }
 
     /**
@@ -338,13 +338,13 @@ class RepositorySet
      */
     private static function getRootAliasesPerPackage(array $aliases): array
     {
-        $normalizedAliases = array();
+        $normalizedAliases = [];
 
         foreach ($aliases as $alias) {
-            $normalizedAliases[$alias['package']][$alias['version']] = array(
+            $normalizedAliases[$alias['package']][$alias['version']] = [
                 'alias' => $alias['alias'],
                 'alias_normalized' => $alias['alias_normalized'],
-            );
+            ];
         }
 
         return $normalizedAliases;

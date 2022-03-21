@@ -23,7 +23,7 @@ class ArchiveCommandTest extends TestCase
 {
     public function testUsesConfigFromComposerObject(): void
     {
-        $input = new ArrayInput(array());
+        $input = new ArrayInput([]);
 
         $output = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')
             ->getMock();
@@ -33,7 +33,7 @@ class ArchiveCommandTest extends TestCase
 
         $composer = new Composer;
         $config = new Config;
-        $config->merge(array('config' => array('archive-format' => 'zip')));
+        $config->merge(['config' => ['archive-format' => 'zip']]);
         $composer->setConfig($config);
 
         $manager = $this->getMockBuilder('Composer\Package\Archiver\ArchiveManager')
@@ -50,13 +50,13 @@ class ArchiveCommandTest extends TestCase
         $composer->setPackage($package);
 
         $command = $this->getMockBuilder('Composer\Command\ArchiveCommand')
-            ->onlyMethods(array(
+            ->onlyMethods([
                 'mergeApplicationDefinition',
                 'getSynopsis',
                 'initialize',
                 'tryComposer',
                 'requireComposer',
-            ))->getMock();
+            ])->getMock();
         $command->expects($this->atLeastOnce())->method('tryComposer')
             ->willReturn($composer);
         $command->expects($this->atLeastOnce())->method('requireComposer')
@@ -67,20 +67,20 @@ class ArchiveCommandTest extends TestCase
 
     public function testUsesConfigFromFactoryWhenComposerIsNotDefined(): void
     {
-        $input = new ArrayInput(array());
+        $input = new ArrayInput([]);
 
         $output = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')
             ->getMock();
         $config = Factory::createConfig();
 
         $command = $this->getMockBuilder('Composer\Command\ArchiveCommand')
-            ->onlyMethods(array(
+            ->onlyMethods([
                 'mergeApplicationDefinition',
                 'getSynopsis',
                 'initialize',
                 'tryComposer',
                 'archive',
-            ))->getMock();
+            ])->getMock();
         $command->expects($this->once())->method('tryComposer')
             ->willReturn(null);
         $command->expects($this->once())->method('archive')

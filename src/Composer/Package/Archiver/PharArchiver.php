@@ -20,23 +20,23 @@ namespace Composer\Package\Archiver;
 class PharArchiver implements ArchiverInterface
 {
     /** @var array<string, int> */
-    protected static $formats = array(
+    protected static $formats = [
         'zip' => \Phar::ZIP,
         'tar' => \Phar::TAR,
         'tar.gz' => \Phar::TAR,
         'tar.bz2' => \Phar::TAR,
-    );
+    ];
 
     /** @var array<string, int> */
-    protected static $compressFormats = array(
+    protected static $compressFormats = [
         'tar.gz' => \Phar::GZ,
         'tar.bz2' => \Phar::BZ2,
-    );
+    ];
 
     /**
      * @inheritDoc
      */
-    public function archive(string $sources, string $target, string $format, array $excludes = array(), bool $ignoreFilters = false): string
+    public function archive(string $sources, string $target, string $format, array $excludes = [], bool $ignoreFilters = false): string
     {
         $sources = realpath($sources);
 

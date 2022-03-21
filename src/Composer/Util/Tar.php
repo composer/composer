@@ -46,7 +46,7 @@ class Tar
             return $phar['composer.json']->getContent();
         }
 
-        $topLevelPaths = array();
+        $topLevelPaths = [];
         foreach ($phar as $folderFile) {
             $name = $folderFile->getBasename();
 

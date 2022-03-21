@@ -102,34 +102,34 @@ class ProxyManagerTest extends TestCase
 
     public function dataRequest(): array
     {
-        $server = array(
+        $server = [
             'http_proxy' => 'http://user:p%40ss@proxy.com',
             'https_proxy' => 'https://proxy.com:443',
             'no_proxy' => 'other.repo.org',
-        );
+        ];
 
         // server, url, expectedUrl, expectedOptions, expectedSecure, expectedMessage
-        return array(
-            array(array(), 'http://repo.org', '', array(), false, ''),
-            array($server, 'http://repo.org', 'http://user:p%40ss@proxy.com:80',
-                array('http' => array(
+        return [
+            [[], 'http://repo.org', '', [], false, ''],
+            [$server, 'http://repo.org', 'http://user:p%40ss@proxy.com:80',
+                ['http' => [
                     'proxy' => 'tcp://proxy.com:80',
                     'header' => 'Proxy-Authorization: Basic dXNlcjpwQHNz',
                     'request_fulluri' => true,
-                )),
+                ]],
                 false,
                 'http://user:***@proxy.com:80',
-            ),
-            array(
+            ],
+            [
                 $server, 'https://repo.org', 'https://proxy.com:443',
-                array('http' => array(
+                ['http' => [
                     'proxy' => 'ssl://proxy.com:443',
-                )),
+                ]],
                 true,
                 'https://proxy.com:443',
-            ),
-            array($server, 'https://other.repo.org', '', array(), false, 'no_proxy'),
-        );
+            ],
+            [$server, 'https://other.repo.org', '', [], false, 'no_proxy'],
+        ];
     }
 
     /**
@@ -157,19 +157,19 @@ class ProxyManagerTest extends TestCase
     public function dataStatus(): array
     {
         // server, expectedStatus, expectedMessage
-        return array(
-            array(array(), false, null),
-            array(array('http_proxy' => 'localhost'), false, 'malformed'),
-            array(
-                array('http_proxy' => 'http://user:p%40ss@proxy.com:80'),
+        return [
+            [[], false, null],
+            [['http_proxy' => 'localhost'], false, 'malformed'],
+            [
+                ['http_proxy' => 'http://user:p%40ss@proxy.com:80'],
                 true,
                 'http=http://user:***@proxy.com:80',
-            ),
-            array(
-                array('http_proxy' => 'proxy.com:80', 'https_proxy' => 'proxy.com:80'),
+            ],
+            [
+                ['http_proxy' => 'proxy.com:80', 'https_proxy' => 'proxy.com:80'],
                 true,
                 'http=proxy.com:80, https=proxy.com:80',
-            ),
-        );
+            ],
+        ];
     }
 }

@@ -43,7 +43,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * @var array<string, bool>
      */
-    private static $executableCache = array();
+    private static $executableCache = [];
 
     /**
      * @var list<HttpDownloaderMock>

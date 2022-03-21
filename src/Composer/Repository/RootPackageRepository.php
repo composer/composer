@@ -25,7 +25,7 @@ class RootPackageRepository extends ArrayRepository
 {
     public function __construct(RootPackageInterface $package)
     {
-        parent::__construct(array($package));
+        parent::__construct([$package]);
     }
 
     public function getRepoName(): string

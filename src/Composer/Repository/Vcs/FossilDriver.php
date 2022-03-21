@@ -143,7 +143,7 @@ class FossilDriver extends VcsDriver
      */
     public function getSource(string $identifier): array
     {
-        return array('type' => 'fossil', 'url' => $this->getUrl(), 'reference' => $identifier);
+        return ['type' => 'fossil', 'url' => $this->getUrl(), 'reference' => $identifier];
     }
 
     /**
@@ -175,7 +175,7 @@ class FossilDriver extends VcsDriver
     public function getChangeDate(string $identifier): ?\DateTimeImmutable
     {
         $this->process->execute('fossil finfo -b -n 1 composer.json', $output, $this->checkoutDir);
-        list(, $date) = explode(' ', trim($output), 3);
+        [, $date] = explode(' ', trim($output), 3);
 
         return new \DateTimeImmutable($date, new \DateTimeZone('UTC'));
     }
@@ -186,7 +186,7 @@ class FossilDriver extends VcsDriver
     public function getTags(): array
     {
         if (null === $this->tags) {
-            $tags = array();
+            $tags = [];
 
             $this->process->execute('fossil tag list', $output, $this->checkoutDir);
             foreach ($this->process->splitLines($output) as $tag) {
@@ -205,7 +205,7 @@ class FossilDriver extends VcsDriver
     public function getBranches(): array
     {
         if (null === $this->branches) {
-            $branches = array();
+            $branches = [];
 
             $this->process->execute('fossil branch list', $output, $this->checkoutDir);
             foreach ($this->process->splitLines($output) as $branch) {

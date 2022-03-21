@@ -30,9 +30,9 @@ class FilesystemRepositoryTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(array(
-                array('name' => 'package1', 'version' => '1.0.0-beta', 'type' => 'vendor'),
-            )));
+            ->will($this->returnValue([
+                ['name' => 'package1', 'version' => '1.0.0-beta', 'type' => 'vendor'],
+            ]));
         $json
             ->expects($this->once())
             ->method('exists')
@@ -76,7 +76,7 @@ class FilesystemRepositoryTest extends TestCase
             ->method('exists')
             ->will($this->returnValue(false));
 
-        $this->assertEquals(array(), $repository->getPackages());
+        $this->assertEquals([], $repository->getPackages());
     }
 
     public function testRepositoryWrite(): void
@@ -98,7 +98,7 @@ class FilesystemRepositoryTest extends TestCase
         $json
             ->expects($this->once())
             ->method('read')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue([]));
         $json
             ->expects($this->once())
             ->method('getPath')
@@ -110,16 +110,16 @@ class FilesystemRepositoryTest extends TestCase
         $json
             ->expects($this->once())
             ->method('write')
-            ->with(array(
-                'packages' => array(
-                    array('name' => 'mypkg', 'type' => 'library', 'version' => '0.1.10', 'version_normalized' => '0.1.10.0', 'install-path' => '../woop/woop'),
-                    array('name' => 'mypkg2', 'type' => 'library', 'version' => '1.2.3', 'version_normalized' => '1.2.3.0', 'install-path' => '../woop/woop'),
-                ),
+            ->with([
+                'packages' => [
+                    ['name' => 'mypkg', 'type' => 'library', 'version' => '0.1.10', 'version_normalized' => '0.1.10.0', 'install-path' => '../woop/woop'],
+                    ['name' => 'mypkg2', 'type' => 'library', 'version' => '1.2.3', 'version_normalized' => '1.2.3.0', 'install-path' => '../woop/woop'],
+                ],
                 'dev' => true,
-                'dev-package-names' => array('mypkg2'),
-            ));
+                'dev-package-names' => ['mypkg2'],
+            ]);
 
-        $repository->setDevPackageNames(array('mypkg2'));
+        $repository->setDevPackageNames(['mypkg2']);
         $repository->addPackage($this->getPackage('mypkg2', '1.2.3'));
         $repository->addPackage($this->getPackage('mypkg', '0.1.10'));
         $repository->write(true, $im);
@@ -135,19 +135,19 @@ class FilesystemRepositoryTest extends TestCase
         $rootPackage = $this->getPackage('__root__', 'dev-master', 'Composer\Package\RootPackage');
         $rootPackage->setSourceReference('sourceref-by-default');
         $rootPackage->setDistReference('distref');
-        $this->configureLinks($rootPackage, array('provide' => array('foo/impl' => '2.0')));
+        $this->configureLinks($rootPackage, ['provide' => ['foo/impl' => '2.0']]);
         /** @var RootAliasPackage $rootPackage */
         $rootPackage = $this->getAliasPackage($rootPackage, '1.10.x-dev');
 
         $repository = new FilesystemRepository($json, true, $rootPackage);
-        $repository->setDevPackageNames(array('c/c'));
+        $repository->setDevPackageNames(['c/c']);
         $pkg = $this->getPackage('a/provider', '1.1');
-        $this->configureLinks($pkg, array('provide' => array('foo/impl' => '^1.1', 'foo/impl2' => '2.0')));
+        $this->configureLinks($pkg, ['provide' => ['foo/impl' => '^1.1', 'foo/impl2' => '2.0']]);
         $pkg->setDistReference('distref-as-no-source');
         $repository->addPackage($pkg);
 
         $pkg = $this->getPackage('a/provider2', '1.2');
-        $this->configureLinks($pkg, array('provide' => array('foo/impl' => 'self.version', 'foo/impl2' => '2.0')));
+        $this->configureLinks($pkg, ['provide' => ['foo/impl' => 'self.version', 'foo/impl2' => '2.0']]);
         $pkg->setSourceReference('sourceref');
         $pkg->setDistReference('distref-as-installed-from-dist');
         $pkg->setInstallationSource('dist');
@@ -156,7 +156,7 @@ class FilesystemRepositoryTest extends TestCase
         $repository->addPackage($this->getAliasPackage($pkg, '1.4'));
 
         $pkg = $this->getPackage('b/replacer', '2.2');
-        $this->configureLinks($pkg, array('replace' => array('foo/impl2' => 'self.version', 'foo/replaced' => '^3.0')));
+        $this->configureLinks($pkg, ['replace' => ['foo/impl2' => 'self.version', 'foo/replaced' => '^3.0']]);
         $repository->addPackage($pkg);
 
         $pkg = $this->getPackage('c/c', '3.0');

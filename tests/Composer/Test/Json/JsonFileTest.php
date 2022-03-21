@@ -131,7 +131,7 @@ class JsonFileTest extends TestCase
             $this->fail('Expected exception to be thrown (strict)');
         } catch (JsonValidationException $e) {
             $this->assertEquals(sprintf('"%s" does not match the expected JSON schema', $file), $e->getMessage());
-            $this->assertEquals(array('The property foo is not defined and the definition does not allow additional properties'), $e->getErrors());
+            $this->assertEquals(['The property foo is not defined and the definition does not allow additional properties'], $e->getErrors());
         }
         $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
         unlink($file);
@@ -162,7 +162,7 @@ class JsonFileTest extends TestCase
             $this->fail('Expected exception to be thrown (strict)');
         } catch (JsonValidationException $e) {
             $this->assertEquals($expectedMessage, $e->getMessage());
-            $this->assertEquals(array('description : The property description is required'), $e->getErrors());
+            $this->assertEquals(['description : The property description is required'], $e->getErrors());
         }
         $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
 
@@ -172,7 +172,7 @@ class JsonFileTest extends TestCase
             $this->fail('Expected exception to be thrown (strict)');
         } catch (JsonValidationException $e) {
             $this->assertEquals($expectedMessage, $e->getMessage());
-            $this->assertEquals(array('name : The property name is required'), $e->getErrors());
+            $this->assertEquals(['name : The property name is required'], $e->getErrors());
         }
         $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
 
@@ -260,7 +260,7 @@ class JsonFileTest extends TestCase
 
     public function testSimpleJsonString(): void
     {
-        $data = array('name' => 'composer/composer');
+        $data = ['name' => 'composer/composer'];
         $json = '{
     "name": "composer/composer"
 }';
@@ -269,7 +269,7 @@ class JsonFileTest extends TestCase
 
     public function testTrailingBackslash(): void
     {
-        $data = array('Metadata\\' => 'src/');
+        $data = ['Metadata\\' => 'src/'];
         $json = '{
     "Metadata\\\\": "src/"
 }';
@@ -278,7 +278,7 @@ class JsonFileTest extends TestCase
 
     public function testFormatEmptyArray(): void
     {
-        $data = array('test' => array(), 'test2' => new \stdClass);
+        $data = ['test' => [], 'test2' => new \stdClass];
         $json = '{
     "test": [],
     "test2": {}
@@ -288,7 +288,7 @@ class JsonFileTest extends TestCase
 
     public function testEscape(): void
     {
-        $data = array("Metadata\\\"" => 'src/');
+        $data = ["Metadata\\\"" => 'src/'];
         $json = '{
     "Metadata\\\\\\"": "src/"
 }';
@@ -298,7 +298,7 @@ class JsonFileTest extends TestCase
 
     public function testUnicode(): void
     {
-        $data = array("Žluťoučký \" kůň" => "úpěl ďábelské ódy za €");
+        $data = ["Žluťoučký \" kůň" => "úpěl ďábelské ódy za €"];
         $json = '{
     "Žluťoučký \" kůň": "úpěl ďábelské ódy za €"
 }';
@@ -337,9 +337,9 @@ class JsonFileTest extends TestCase
     public function testDoubleEscapedUnicode(): void
     {
         $jsonFile = new JsonFile('composer.json');
-        $data = array("Zdjęcia","hjkjhl\\u0119kkjk");
+        $data = ["Zdjęcia","hjkjhl\\u0119kkjk"];
         $encodedData = $jsonFile->encode($data);
-        $doubleEncodedData = $jsonFile->encode(array('t' => $encodedData));
+        $doubleEncodedData = $jsonFile->encode(['t' => $encodedData]);
 
         $decodedData = json_decode($doubleEncodedData, true);
         $doubleData = json_decode($decodedData['t'], true);

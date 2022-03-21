@@ -52,7 +52,7 @@ class InitCommand extends BaseCommand
         $this
             ->setName('init')
             ->setDescription('Creates a basic composer.json file in current directory.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('name', null, InputOption::VALUE_REQUIRED, 'Name of the package'),
                 new InputOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package'),
                 new InputOption('author', null, InputOption::VALUE_REQUIRED, 'Author name of package'),
@@ -64,7 +64,7 @@ class InitCommand extends BaseCommand
                 new InputOption('license', 'l', InputOption::VALUE_REQUIRED, 'License of package'),
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories, either by URL or using JSON arrays'),
                 new InputOption('autoload', 'a', InputOption::VALUE_REQUIRED, 'Add PSR-4 autoload mapping. Maps your package\'s namespace to the provided directory. (Expects a relative path, e.g. src/)'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>init</info> command creates a basic composer.json file
@@ -85,7 +85,7 @@ EOT
     {
         $io = $this->getIO();
 
-        $allowlist = array('name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license', 'autoload');
+        $allowlist = ['name', 'description', 'author', 'type', 'homepage', 'require', 'require-dev', 'stability', 'license', 'autoload'];
         $options = array_filter(array_intersect_key($input->getOptions(), array_flip($allowlist)));
 
         if (isset($options['name']) && !Preg::isMatch('{^[a-z0-9_.-]+/[a-z0-9_.-]+$}D', $options['name'])) {
@@ -113,13 +113,13 @@ EOT
         }
 
         $options['require'] = isset($options['require']) ? $this->formatRequirements($options['require']) : new \stdClass;
-        if (array() === $options['require']) {
+        if ([] === $options['require']) {
             $options['require'] = new \stdClass;
         }
 
         if (isset($options['require-dev'])) {
             $options['require-dev'] = $this->formatRequirements($options['require-dev']);
-            if (array() === $options['require-dev']) {
+            if ([] === $options['require-dev']) {
                 $options['require-dev'] = new \stdClass;
             }
         }
@@ -129,18 +129,18 @@ EOT
         if (isset($options['autoload'])) {
             $autoloadPath = $options['autoload'];
             $namespace = $this->namespaceFromPackageName((string) $input->getOption('name'));
-            $options['autoload'] = (object) array(
-                'psr-4' => array(
+            $options['autoload'] = (object) [
+                'psr-4' => [
                     $namespace . '\\' => $autoloadPath,
-                ),
-            );
+                ],
+            ];
         }
 
         $file = new JsonFile(Factory::getComposerFile());
         $json = JsonFile::encode($options);
 
         if ($input->isInteractive()) {
-            $io->writeError(array('', $json, ''));
+            $io->writeError(['', $json, '']);
             if (!$io->askConfirmation('Do you confirm generation [<comment>yes</comment>]? ')) {
                 $io->writeError('<error>Command aborted</error>');
 
@@ -225,13 +225,13 @@ EOT
         $repositories = $input->getOption('repository');
         if (count($repositories) > 0) {
             $config = Factory::createConfig($io);
-            $repos = array(new PlatformRepository);
+            $repos = [new PlatformRepository];
             $createDefaultPackagistRepo = true;
             foreach ($repositories as $repo) {
                 $repoConfig = RepositoryFactory::configFromString($io, $config, $repo, true);
                 if (
-                    (isset($repoConfig['packagist']) && $repoConfig === array('packagist' => false))
-                    || (isset($repoConfig['packagist.org']) && $repoConfig === array('packagist.org' => false))
+                    (isset($repoConfig['packagist']) && $repoConfig === ['packagist' => false])
+                    || (isset($repoConfig['packagist.org']) && $repoConfig === ['packagist.org' => false])
                 ) {
                     $createDefaultPackagistRepo = false;
                     continue;
@@ -240,28 +240,28 @@ EOT
             }
 
             if ($createDefaultPackagistRepo) {
-                $repos[] = RepositoryFactory::createRepo($io, $config, array(
+                $repos[] = RepositoryFactory::createRepo($io, $config, [
                     'type' => 'composer',
                     'url' => 'https://repo.packagist.org',
-                ));
+                ]);
             }
 
             $this->repos = new CompositeRepository($repos);
             unset($repos, $config, $repositories);
         }
 
-        $io->writeError(array(
+        $io->writeError([
             '',
             $formatter->formatBlock('Welcome to the Composer config generator', 'bg=blue;fg=white', true),
             '',
-        ));
+        ]);
 
         // namespace
-        $io->writeError(array(
+        $io->writeError([
             '',
             'This command will guide you through creating your composer.json config.',
             '',
-        ));
+        ]);
 
         $cwd = realpath(".");
 
@@ -393,7 +393,7 @@ EOT
         );
         $input->setOption('license', $license);
 
-        $io->writeError(array('', 'Define your dependencies.', ''));
+        $io->writeError(['', 'Define your dependencies.', '']);
 
         // prepare to resolve dependencies
         $repos = $this->getRepos();
@@ -410,7 +410,7 @@ EOT
 
         $question = 'Would you like to define your dependencies (require) interactively [<comment>yes</comment>]? ';
         $require = $input->getOption('require');
-        $requirements = array();
+        $requirements = [];
         if (count($require) > 0 || $io->askConfirmation($question)) {
             $requirements = $this->determineRequirements($input, $output, $require, $platformRepo, $preferredStability);
         }
@@ -418,7 +418,7 @@ EOT
 
         $question = 'Would you like to define your dev dependencies (require-dev) interactively [<comment>yes</comment>]? ';
         $requireDev = $input->getOption('require-dev');
-        $devRequirements = array();
+        $devRequirements = [];
         if (count($requireDev) > 0 || $io->askConfirmation($question)) {
             $devRequirements = $this->determineRequirements($input, $output, $requireDev, $platformRepo, $preferredStability);
         }
@@ -467,10 +467,10 @@ EOT
                 throw new \InvalidArgumentException('Invalid email "'.$match['email'].'"');
             }
 
-            return array(
+            return [
                 'name' => trim($match['name']),
                 'email' => $hasEmail ? $match['email'] : null,
-            );
+            ];
         }
 
         throw new \InvalidArgumentException(
@@ -491,7 +491,7 @@ EOT
             unset($author['email']);
         }
 
-        return array($author);
+        return [$author];
     }
 
     /**
@@ -534,11 +534,11 @@ EOT
         $finder = new ExecutableFinder();
         $gitBin = $finder->find('git');
 
-        $cmd = new Process(array($gitBin, 'config', '-l'));
+        $cmd = new Process([$gitBin, 'config', '-l']);
         $cmd->run();
 
         if ($cmd->isSuccessful()) {
-            $this->gitConfig = array();
+            $this->gitConfig = [];
             Preg::matchAll('{^([^=]+)=(.*)$}m', $cmd->getOutput(), $matches);
             foreach ($matches[1] as $key => $match) {
                 $this->gitConfig[$match] = $matches[2][$key];
@@ -547,7 +547,7 @@ EOT
             return $this->gitConfig;
         }
 
-        return $this->gitConfig = array();
+        return $this->gitConfig = [];
     }
 
     /**
@@ -627,7 +627,7 @@ EOT
         try {
             $updateCommand = $this->getApplication()->find('update');
             $this->getApplication()->resetComposer();
-            $updateCommand->run(new ArrayInput(array()), $output);
+            $updateCommand->run(new ArrayInput([]), $output);
         } catch (\Exception $e) {
             $this->getIO()->writeError('Could not update dependencies. Run `composer update` to see more information.');
         }
@@ -641,7 +641,7 @@ EOT
         try {
             $command = $this->getApplication()->find('dump-autoload');
             $this->getApplication()->resetComposer();
-            $command->run(new ArrayInput(array()), $output);
+            $command->run(new ArrayInput([]), $output);
         } catch (\Exception $e) {
             $this->getIO()->writeError('Could not run dump-autoload.');
         }
@@ -654,7 +654,7 @@ EOT
     private function hasDependencies(array $options): bool
     {
         $requires = (array) $options['require'];
-        $devRequires = isset($options['require-dev']) ? (array) $options['require-dev'] : array();
+        $devRequires = isset($options['require-dev']) ? (array) $options['require-dev'] : [];
 
         return !empty($requires) || !empty($devRequires);
     }

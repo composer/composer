@@ -47,7 +47,7 @@ class Rule2Literals extends Rule
     /** @return int[] */
     public function getLiterals(): array
     {
-        return array($this->literal1, $this->literal2);
+        return [$this->literal1, $this->literal2];
     }
 
     /**

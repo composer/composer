@@ -31,11 +31,11 @@ class HgDriverTest extends TestCase
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->home = $this->getUniqueTmpDirectory();
         $this->config = new Config();
-        $this->config->merge(array(
-            'config' => array(
+        $this->config->merge([
+            'config' => [
                 'home' => $this->home,
-            ),
-        ));
+            ],
+        ]);
     }
 
     protected function tearDown(): void
@@ -59,12 +59,12 @@ class HgDriverTest extends TestCase
 
     public function supportsDataProvider(): array
     {
-        return array(
-            array('ssh://bitbucket.org/user/repo'),
-            array('ssh://hg@bitbucket.org/user/repo'),
-            array('ssh://user@bitbucket.org/user/repo'),
-            array('https://bitbucket.org/user/repo'),
-            array('https://user@bitbucket.org/user/repo'),
-        );
+        return [
+            ['ssh://bitbucket.org/user/repo'],
+            ['ssh://hg@bitbucket.org/user/repo'],
+            ['ssh://user@bitbucket.org/user/repo'],
+            ['https://bitbucket.org/user/repo'],
+            ['https://user@bitbucket.org/user/repo'],
+        ];
     }
 }

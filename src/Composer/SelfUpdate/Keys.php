@@ -28,7 +28,7 @@ class Keys
     {
         $hash = strtoupper(hash('sha256', Preg::replace('{\s}', '', file_get_contents($path))));
 
-        return implode(' ', array(
+        return implode(' ', [
             substr($hash, 0, 8),
             substr($hash, 8, 8),
             substr($hash, 16, 8),
@@ -38,6 +38,6 @@ class Keys
             substr($hash, 40, 8),
             substr($hash, 48, 8),
             substr($hash, 56, 8),
-        ));
+        ]);
     }
 }

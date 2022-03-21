@@ -23,7 +23,7 @@ class RootAliasPackageTest extends TestCase
 {
     public function testUpdateRequires(): void
     {
-        $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_REQUIRE, 'self.version'));
+        $links = [new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_REQUIRE, 'self.version')];
 
         $root = $this->getMockRootPackage();
         $root->expects($this->once())
@@ -38,7 +38,7 @@ class RootAliasPackageTest extends TestCase
 
     public function testUpdateDevRequires(): void
     {
-        $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_DEV_REQUIRE, 'self.version'));
+        $links = [new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_DEV_REQUIRE, 'self.version')];
 
         $root = $this->getMockRootPackage();
         $root->expects($this->once())
@@ -53,7 +53,7 @@ class RootAliasPackageTest extends TestCase
 
     public function testUpdateConflicts(): void
     {
-        $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_CONFLICT, 'self.version'));
+        $links = [new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_CONFLICT, 'self.version')];
 
         $root = $this->getMockRootPackage();
         $root->expects($this->once())
@@ -68,7 +68,7 @@ class RootAliasPackageTest extends TestCase
 
     public function testUpdateProvides(): void
     {
-        $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_PROVIDE, 'self.version'));
+        $links = [new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_PROVIDE, 'self.version')];
 
         $root = $this->getMockRootPackage();
         $root->expects($this->once())
@@ -83,7 +83,7 @@ class RootAliasPackageTest extends TestCase
 
     public function testUpdateReplaces(): void
     {
-        $links = array(new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_REPLACE, 'self.version'));
+        $links = [new Link('a', 'b', new MatchAllConstraint(), Link::TYPE_REPLACE, 'self.version')];
 
         $root = $this->getMockRootPackage();
         $root->expects($this->once())
@@ -107,19 +107,19 @@ class RootAliasPackageTest extends TestCase
             ->willReturn('something/something');
         $root->expects($this->atLeastOnce())
             ->method('getRequires')
-            ->willReturn(array());
+            ->willReturn([]);
         $root->expects($this->atLeastOnce())
             ->method('getDevRequires')
-            ->willReturn(array());
+            ->willReturn([]);
         $root->expects($this->atLeastOnce())
             ->method('getConflicts')
-            ->willReturn(array());
+            ->willReturn([]);
         $root->expects($this->atLeastOnce())
             ->method('getProvides')
-            ->willReturn(array());
+            ->willReturn([]);
         $root->expects($this->atLeastOnce())
             ->method('getReplaces')
-            ->willReturn(array());
+            ->willReturn([]);
 
         return $root;
     }

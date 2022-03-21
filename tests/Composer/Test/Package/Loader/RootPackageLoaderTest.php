@@ -36,7 +36,7 @@ class RootPackageLoaderTest extends TestCase
             ->getMock();
 
         $config = new Config;
-        $config->merge(array('repositories' => array('packagist' => false)));
+        $config->merge(['repositories' => ['packagist' => false]]);
         $processExecutor = new ProcessExecutor();
         $processExecutor->enableAsync();
         $guesser = new VersionGuesser($config, $processExecutor, new VersionParser());
@@ -48,8 +48,8 @@ class RootPackageLoaderTest extends TestCase
 
     public function testStabilityFlagsParsing(): void
     {
-        $package = $this->loadPackage(array(
-            'require' => array(
+        $package = $this->loadPackage([
+            'require' => [
                 'foo/bar' => '~2.1.0-beta2',
                 'bar/baz' => '1.0.x-dev as 1.2.0',
                 'qux/quux' => '1.0.*@rc',
@@ -58,12 +58,12 @@ class RootPackageLoaderTest extends TestCase
                 'multi/lowest-wins' => '^2.0@rc || >=3.0@dev , ~3.5@alpha',
                 'or/op-without-flags' => 'dev-master || 2.0 , ~3.5-alpha',
                 'or/op-without-flags2' => '3.0-beta || 2.0 , ~3.5-alpha',
-            ),
+            ],
             'minimum-stability' => 'alpha',
-        ));
+        ]);
 
         $this->assertEquals('alpha', $package->getMinimumStability());
-        $this->assertEquals(array(
+        $this->assertEquals([
             'bar/baz' => BasePackage::STABILITY_DEV,
             'qux/quux' => BasePackage::STABILITY_RC,
             'zux/complex' => BasePackage::STABILITY_DEV,
@@ -71,7 +71,7 @@ class RootPackageLoaderTest extends TestCase
             'multi/lowest-wins' => BasePackage::STABILITY_DEV,
             'or/op-without-flags' => BasePackage::STABILITY_DEV,
             'or/op-without-flags2' => BasePackage::STABILITY_ALPHA,
-        ), $package->getStabilityFlags());
+        ], $package->getStabilityFlags());
     }
 
     public function testNoVersionIsVisibleInPrettyVersion(): void
@@ -82,11 +82,11 @@ class RootPackageLoaderTest extends TestCase
         ;
 
         $config = new Config;
-        $config->merge(array('repositories' => array('packagist' => false)));
+        $config->merge(['repositories' => ['packagist' => false]]);
         $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $process = $this->getProcessExecutorMock(), new VersionParser()));
-        $process->expects(array(), false, array('return' => 1));
+        $process->expects([], false, ['return' => 1]);
 
-        $package = $loader->load(array());
+        $package = $loader->load([]);
 
         $this->assertEquals("1.0.0.0", $package->getVersion());
         $this->assertEquals(RootPackage::DEFAULT_PRETTY_VERSION, $package->getPrettyVersion());
@@ -99,16 +99,16 @@ class RootPackageLoaderTest extends TestCase
         $versionGuesser = $this->getMockBuilder('Composer\\Package\\Version\\VersionGuesser')->disableOriginalConstructor()->getMock();
         $versionGuesser->expects($this->atLeastOnce())
             ->method('guessVersion')
-            ->willReturn(array(
+            ->willReturn([
                 'name' => 'A',
                 'version' => '3.0.9999999.9999999-dev',
                 'pretty_version' => '3.0-dev',
                 'commit' => 'aabbccddee',
-            ));
+            ]);
         $config = new Config;
-        $config->merge(array('repositories' => array('packagist' => false)));
+        $config->merge(['repositories' => ['packagist' => false]]);
         $loader = new RootPackageLoader($manager, $config, null, $versionGuesser);
-        $package = $loader->load(array());
+        $package = $loader->load([]);
 
         $this->assertEquals('3.0-dev', $package->getPrettyVersion());
     }
@@ -125,18 +125,18 @@ class RootPackageLoaderTest extends TestCase
         ;
 
         $process = $this->getProcessExecutorMock();
-        $process->expects(array(
-            array(
+        $process->expects([
+            [
                 'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n",
-            ),
+            ],
             'git rev-list master..latest-production',
-        ), true);
+        ], true);
 
         $config = new Config;
-        $config->merge(array('repositories' => array('packagist' => false)));
+        $config->merge(['repositories' => ['packagist' => false]]);
         $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $process, new VersionParser()));
-        $package = $loader->load(array('require' => array('foo/bar' => 'self.version')));
+        $package = $loader->load(['require' => ['foo/bar' => 'self.version']]);
 
         $this->assertEquals("dev-master", $package->getPrettyVersion());
     }
@@ -153,17 +153,17 @@ class RootPackageLoaderTest extends TestCase
         ;
 
         $process = $this->getProcessExecutorMock();
-        $process->expects(array(
-            array(
+        $process->expects([
+            [
                 'cmd' => ['git', 'branch', '-a', '--no-color', '--no-abbrev', '-v'],
                 'stdout' => "* latest-production 38137d2f6c70e775e137b2d8a7a7d3eaebf7c7e5 Commit message\n  master 4f6ed96b0bc363d2aa4404c3412de1c011f67c66 Commit message\n",
-            ),
-        ), true);
+            ],
+        ], true);
 
         $config = new Config;
-        $config->merge(array('repositories' => array('packagist' => false)));
+        $config->merge(['repositories' => ['packagist' => false]]);
         $loader = new RootPackageLoader($manager, $config, null, new VersionGuesser($config, $process, new VersionParser()));
-        $package = $loader->load(array('require' => array('foo/bar' => 'self.version'), "non-feature-branches" => array("latest-.*")));
+        $package = $loader->load(['require' => ['foo/bar' => 'self.version'], "non-feature-branches" => ["latest-.*"]]);
 
         $this->assertEquals("dev-latest-production", $package->getPrettyVersion());
     }

@@ -20,7 +20,7 @@ use Psr\Log\LogLevel;
 abstract class BaseIO implements IOInterface
 {
     /** @var array<string, array{username: string|null, password: string|null}> */
-    protected $authentications = array();
+    protected $authentications = [];
 
     /**
      * @inheritDoc
@@ -35,7 +35,7 @@ abstract class BaseIO implements IOInterface
      */
     public function resetAuthentications()
     {
-        $this->authentications = array();
+        $this->authentications = [];
     }
 
     /**
@@ -55,7 +55,7 @@ abstract class BaseIO implements IOInterface
             return $this->authentications[$repositoryName];
         }
 
-        return array('username' => null, 'password' => null);
+        return ['username' => null, 'password' => null];
     }
 
     /**
@@ -63,7 +63,7 @@ abstract class BaseIO implements IOInterface
      */
     public function setAuthentication($repositoryName, $username, $password = null)
     {
-        $this->authentications[$repositoryName] = array('username' => $username, 'password' => $password);
+        $this->authentications[$repositoryName] = ['username' => $username, 'password' => $password];
     }
 
     /**
@@ -114,12 +114,12 @@ abstract class BaseIO implements IOInterface
      */
     public function loadConfiguration(Config $config)
     {
-        $bitbucketOauth = $config->get('bitbucket-oauth') ?: array();
-        $githubOauth = $config->get('github-oauth') ?: array();
-        $gitlabOauth = $config->get('gitlab-oauth') ?: array();
-        $gitlabToken = $config->get('gitlab-token') ?: array();
-        $httpBasic = $config->get('http-basic') ?: array();
-        $bearerToken = $config->get('bearer') ?: array();
+        $bitbucketOauth = $config->get('bitbucket-oauth') ?: [];
+        $githubOauth = $config->get('github-oauth') ?: [];
+        $gitlabOauth = $config->get('gitlab-oauth') ?: [];
+        $gitlabToken = $config->get('gitlab-token') ?: [];
+        $httpBasic = $config->get('http-basic') ?: [];
+        $bearerToken = $config->get('bearer') ?: [];
 
         // reload oauth tokens from config if available
 
@@ -159,51 +159,51 @@ abstract class BaseIO implements IOInterface
         ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
     }
 
-    public function emergency($message, array $context = array()): void
+    public function emergency($message, array $context = []): void
     {
         $this->log(LogLevel::EMERGENCY, $message, $context);
     }
 
-    public function alert($message, array $context = array()): void
+    public function alert($message, array $context = []): void
     {
         $this->log(LogLevel::ALERT, $message, $context);
     }
 
-    public function critical($message, array $context = array()): void
+    public function critical($message, array $context = []): void
     {
         $this->log(LogLevel::CRITICAL, $message, $context);
     }
 
-    public function error($message, array $context = array()): void
+    public function error($message, array $context = []): void
     {
         $this->log(LogLevel::ERROR, $message, $context);
     }
 
-    public function warning($message, array $context = array()): void
+    public function warning($message, array $context = []): void
     {
         $this->log(LogLevel::WARNING, $message, $context);
     }
 
-    public function notice($message, array $context = array()): void
+    public function notice($message, array $context = []): void
     {
         $this->log(LogLevel::NOTICE, $message, $context);
     }
 
-    public function info($message, array $context = array()): void
+    public function info($message, array $context = []): void
     {
         $this->log(LogLevel::INFO, $message, $context);
     }
 
-    public function debug($message, array $context = array()): void
+    public function debug($message, array $context = []): void
     {
         $this->log(LogLevel::DEBUG, $message, $context);
     }
 
-    public function log($level, $message, array $context = array()): void
+    public function log($level, $message, array $context = []): void
     {
         $message = (string) $message;
 
-        if (in_array($level, array(LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR))) {
+        if (in_array($level, [LogLevel::EMERGENCY, LogLevel::ALERT, LogLevel::CRITICAL, LogLevel::ERROR])) {
             $this->writeError('<error>'.$message.'</error>');
         } elseif ($level === LogLevel::WARNING) {
             $this->writeError('<warning>'.$message.'</warning>');

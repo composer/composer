@@ -38,11 +38,11 @@ class SvnTest extends TestCase
 
     public function urlProvider(): array
     {
-        return array(
-            array('http://till:test@svn.example.org/', $this->getCmd(" --username 'till' --password 'test' ")),
-            array('http://svn.apache.org/', ''),
-            array('svn://johndoe@example.org', $this->getCmd(" --username 'johndoe' --password '' ")),
-        );
+        return [
+            ['http://till:test@svn.example.org/', $this->getCmd(" --username 'till' --password 'test' ")],
+            ['http://svn.apache.org/', ''],
+            ['svn://johndoe@example.org', $this->getCmd(" --username 'johndoe' --password '' ")],
+        ];
     }
 
     public function testInteractiveString(): void
@@ -55,7 +55,7 @@ class SvnTest extends TestCase
 
         $this->assertEquals(
             $this->getCmd("svn ls --non-interactive  -- 'http://svn.example.org'"),
-            $reflMethod->invokeArgs($svn, array('svn ls', $url))
+            $reflMethod->invokeArgs($svn, ['svn ls', $url])
         );
     }
 
@@ -64,13 +64,13 @@ class SvnTest extends TestCase
         $url = 'http://svn.apache.org';
 
         $config = new Config();
-        $config->merge(array(
-            'config' => array(
-                'http-basic' => array(
-                    'svn.apache.org' => array('username' => 'foo', 'password' => 'bar'),
-                ),
-            ),
-        ));
+        $config->merge([
+            'config' => [
+                'http-basic' => [
+                    'svn.apache.org' => ['username' => 'foo', 'password' => 'bar'],
+                ],
+            ],
+        ]);
 
         $svn = new Svn($url, new NullIO, $config);
         $reflMethod = new \ReflectionMethod('Composer\\Util\\Svn', 'getCredentialString');
@@ -85,13 +85,13 @@ class SvnTest extends TestCase
 
         $config = new Config();
         $config->merge(
-            array(
-                'config' => array(
-                    'http-basic' => array(
-                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar'),
-                    ),
-                ),
-            )
+            [
+                'config' => [
+                    'http-basic' => [
+                        'svn.apache.org' => ['username' => 'foo', 'password' => 'bar'],
+                    ],
+                ],
+            ]
         );
 
         $svn = new Svn($url, new NullIO, $config);
@@ -108,13 +108,13 @@ class SvnTest extends TestCase
 
         $config = new Config();
         $config->merge(
-            array(
-                'config' => array(
-                    'http-basic' => array(
-                        'svn.apache.org' => array('username' => 'foo', 'password' => 'bar'),
-                    ),
-                ),
-            )
+            [
+                'config' => [
+                    'http-basic' => [
+                        'svn.apache.org' => ['username' => 'foo', 'password' => 'bar'],
+                    ],
+                ],
+            ]
         );
 
         $svn = new Svn($url, new NullIO, $config);

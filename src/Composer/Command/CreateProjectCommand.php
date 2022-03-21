@@ -68,7 +68,7 @@ class CreateProjectCommand extends BaseCommand
         $this
             ->setName('create-project')
             ->setDescription('Creates new project from a package into given directory.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputArgument('package', InputArgument::OPTIONAL, 'Package name to be installed'),
                 new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will default to latest'),
@@ -91,7 +91,7 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('ask', null, InputOption::VALUE_NONE, 'Whether to ask for project directory.'),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 The <info>create-project</info> command creates a new project from a given
@@ -127,7 +127,7 @@ EOT
         $config = Factory::createConfig();
         $io = $this->getIO();
 
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input, true);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($config, $input, true);
 
         if ($input->getOption('dev')) {
             $io->writeError('<warning>You are using the deprecated option "dev". Dev packages are installed by default now.</warning>');
@@ -223,8 +223,8 @@ EOT
                 $configSource = new JsonConfigSource(new JsonFile('composer.json'));
 
                 if (
-                    (isset($repoConfig['packagist']) && $repoConfig === array('packagist' => false))
-                    || (isset($repoConfig['packagist.org']) && $repoConfig === array('packagist.org' => false))
+                    (isset($repoConfig['packagist']) && $repoConfig === ['packagist' => false])
+                    || (isset($repoConfig['packagist.org']) && $repoConfig === ['packagist.org' => false])
                 ) {
                     $configSource->addRepository('packagist.org', false);
                 } else {
@@ -243,7 +243,7 @@ EOT
 
         // use the new config including the newly installed project
         $config = $composer->getConfig();
-        list($preferSource, $preferDist) = $this->getPreferredInstallOptions($config, $input);
+        [$preferSource, $preferDist] = $this->getPreferredInstallOptions($config, $input);
 
         // install dependencies of the created project
         if ($noInstall === false) {
@@ -285,7 +285,7 @@ EOT
         ) {
             $finder = new Finder();
             $finder->depth(0)->directories()->in(Platform::getCwd())->ignoreVCS(false)->ignoreDotFiles(false);
-            foreach (array('.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg', '.fslckout', '_FOSSIL_') as $vcsName) {
+            foreach (['.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg', '.fslckout', '_FOSSIL_'] as $vcsName) {
                 $finder->name($vcsName);
             }
 
@@ -353,11 +353,11 @@ EOT
     protected function installRootPackage(IOInterface $io, Config $config, string $packageName, PlatformRequirementFilterInterface $platformRequirementFilter, ?string $directory = null, ?string $packageVersion = null, ?string $stability = 'stable', bool $preferSource = false, bool $preferDist = false, bool $installDevPackages = false, array $repositories = null, bool $disablePlugins = false, bool $disableScripts = false, bool $noProgress = false, bool $secureHttp = true): bool
     {
         if (!$secureHttp) {
-            $config->merge(array('config' => array('secure-http' => false)), Config::SOURCE_COMMAND);
+            $config->merge(['config' => ['secure-http' => false]], Config::SOURCE_COMMAND);
         }
 
         $parser = new VersionParser();
-        $requirements = $parser->parseNameVersionPairs(array($packageName));
+        $requirements = $parser->parseNameVersionPairs([$packageName]);
         $name = strtolower($requirements[0]['name']);
         if (!$packageVersion && isset($requirements[0]['version'])) {
             $packageVersion = $requirements[0]['version'];
@@ -413,8 +413,8 @@ EOT
             foreach ($repositories as $repo) {
                 $repoConfig = RepositoryFactory::configFromString($io, $config, $repo, true);
                 if (
-                    (isset($repoConfig['packagist']) && $repoConfig === array('packagist' => false))
-                    || (isset($repoConfig['packagist.org']) && $repoConfig === array('packagist.org' => false))
+                    (isset($repoConfig['packagist']) && $repoConfig === ['packagist' => false])
+                    || (isset($repoConfig['packagist.org']) && $repoConfig === ['packagist.org' => false])
                 ) {
                     continue;
                 }
@@ -422,8 +422,8 @@ EOT
             }
         }
 
-        $platformOverrides = $config->get('platform') ?: array();
-        $platformRepo = new PlatformRepository(array(), $platformOverrides);
+        $platformOverrides = $config->get('platform') ?: [];
+        $platformRepo = new PlatformRepository([], $platformOverrides);
 
         // find the latest version if there are multiple
         $versionSelector = new VersionSelector($repositorySet, $platformRepo);
@@ -485,7 +485,7 @@ EOT
         $im = $composer->getInstallationManager();
         $im->setOutputProgress(!$noProgress);
         $im->addInstaller($projectInstaller);
-        $im->execute(new InstalledArrayRepository(), array(new InstallOperation($package)));
+        $im->execute(new InstalledArrayRepository(), [new InstallOperation($package)]);
         $im->notifyInstalls($io);
 
         // collect suggestions

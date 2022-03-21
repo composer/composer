@@ -33,12 +33,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      * @var bool[]
      * @phpstan-var array<string, bool>
      */
-    private $hasStashedChanges = array();
+    private $hasStashedChanges = [];
     /**
      * @var bool[]
      * @phpstan-var array<string, bool>
      */
-    private $hasDiscardedChanges = array();
+    private $hasDiscardedChanges = [];
     /**
      * @var GitUtil
      */
@@ -47,7 +47,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
      * @var array
      * @phpstan-var array<int, array<string, bool>>
      */
-    private $cachedPackages = array();
+    private $cachedPackages = [];
 
     public function __construct(IOInterface $io, Config $config, ProcessExecutor $process = null, Filesystem $fs = null)
     {
@@ -116,13 +116,13 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $commandCallable = function (string $url) use ($path, $command, $cachePath): string {
             return str_replace(
-                array('%url%', '%path%', '%cachePath%', '%sanitizedUrl%'),
-                array(
+                ['%url%', '%path%', '%cachePath%', '%sanitizedUrl%'],
+                [
                     ProcessExecutor::escape($url),
                     ProcessExecutor::escape($path),
                     ProcessExecutor::escape($cachePath),
                     ProcessExecutor::escape(Preg::replace('{://([^@]+?):(.+?)@}', '://', $url)),
-                ),
+                ],
                 $command
             );
         };
@@ -174,13 +174,13 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         $commandCallable = function ($url) use ($ref, $command, $cachePath): string {
             return str_replace(
-                array('%url%', '%ref%', '%cachePath%', '%sanitizedUrl%'),
-                array(
+                ['%url%', '%ref%', '%cachePath%', '%sanitizedUrl%'],
+                [
                     ProcessExecutor::escape($url),
                     ProcessExecutor::escape($ref.'^{commit}'),
                     ProcessExecutor::escape($cachePath),
                     ProcessExecutor::escape(Preg::replace('{://([^@]+?):(.+?)@}', '://', $url)),
-                ),
+                ],
                 $command
             );
         };
@@ -266,7 +266,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
 
         // do two passes, as if we find anything we want to fetch and then re-try
         for ($i = 0; $i <= 1; $i++) {
-            $remoteBranches = array();
+            $remoteBranches = [];
 
             // try to find matching branch names in remote repos
             foreach ($candidateBranches as $candidate) {
@@ -397,12 +397,12 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
                 case '?':
                 default:
                     help :
-                    $this->io->writeError(array(
+                    $this->io->writeError([
                         '    y - discard changes and apply the '.($update ? 'update' : 'uninstall'),
                         '    n - abort the '.($update ? 'update' : 'uninstall').' and let you manually clean things up',
                         '    v - view modified files',
                         '    d - view local modifications (diff)',
-                    ));
+                    ]);
                     if ($update) {
                         $this->io->writeError('    s - stash changes and try to reapply them after the update');
                     }
@@ -612,7 +612,7 @@ class GitDownloader extends VcsDownloader implements DvcsDownloaderInterface
     {
         if (Platform::isWindows() && strlen($path) > 0) {
             $basePath = $path;
-            $removed = array();
+            $removed = [];
 
             while (!is_dir($basePath) && $basePath !== '\\') {
                 array_unshift($removed, basename($basePath));

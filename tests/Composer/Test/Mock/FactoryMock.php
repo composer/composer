@@ -35,10 +35,10 @@ class FactoryMock extends Factory
     {
         $config = new Config(true, $cwd);
 
-        $config->merge(array(
-            'config' => array('home' => TestCase::getUniqueTmpDirectory()),
-            'repositories' => array('packagist' => false),
-        ));
+        $config->merge([
+            'config' => ['home' => TestCase::getUniqueTmpDirectory()],
+            'repositories' => ['packagist' => false],
+        ]);
 
         return $config;
     }

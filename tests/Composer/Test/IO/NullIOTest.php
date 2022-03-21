@@ -44,7 +44,7 @@ class NullIOTest extends TestCase
 
         $this->assertTrue(is_array($io->getAuthentications())); // @phpstan-ignore-line
         $this->assertEmpty($io->getAuthentications());
-        $this->assertEquals(array('username' => null, 'password' => null), $io->getAuthentication('foo'));
+        $this->assertEquals(['username' => null, 'password' => null], $io->getAuthentication('foo'));
     }
 
     public function testAsk(): void
@@ -74,6 +74,6 @@ class NullIOTest extends TestCase
     {
         $io = new NullIO();
 
-        $this->assertEquals('1', $io->select('question', array('item1', 'item2'), '1', 2, 'foo', true));
+        $this->assertEquals('1', $io->select('question', ['item1', 'item2'], '1', 2, 'foo', true));
     }
 }

@@ -30,7 +30,7 @@ class ExecCommand extends BaseCommand
         $this
             ->setName('exec')
             ->setDescription('Executes a vendored binary/script.')
-            ->setDefinition(array(
+            ->setDefinition([
                 new InputOption('list', 'l', InputOption::VALUE_NONE),
                 new InputArgument('binary', InputArgument::OPTIONAL, 'The binary to run, e.g. phpunit'),
                 new InputArgument(
@@ -38,7 +38,7 @@ class ExecCommand extends BaseCommand
                     InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
                     'Arguments to pass to the binary. Use <info>--</info> to separate from composer arguments'
                 ),
-            ))
+            ])
             ->setHelp(
                 <<<EOT
 Executes a vendored binary/script.

@@ -18,7 +18,7 @@ use PharData;
 class ArchivableFilesFilter extends FilterIterator
 {
     /** @var string[] */
-    private $dirs = array();
+    private $dirs = [];
 
     /**
      * @return bool true if the current element is acceptable, otherwise false.

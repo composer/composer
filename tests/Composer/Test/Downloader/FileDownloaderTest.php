@@ -48,7 +48,7 @@ class FileDownloaderTest extends TestCase
         $httpDownloader
             ->expects($this->any())
             ->method('addCopy')
-            ->will($this->returnValue(\React\Promise\resolve(new Response(array('url' => 'http://example.org/'), 200, array(), 'file~'))));
+            ->will($this->returnValue(\React\Promise\resolve(new Response(['url' => 'http://example.org/'], 200, [], 'file~'))));
         $this->httpDownloader = $httpDownloader;
 
         return new FileDownloader($io, $config, $httpDownloader, $eventDispatcher, $cache, $filesystem);
@@ -124,7 +124,7 @@ class FileDownloaderTest extends TestCase
         try {
             $loop = new Loop($this->httpDownloader);
             $promise = $downloader->download($package, $path);
-            $loop->wait(array($promise));
+            $loop->wait([$promise]);
 
             $this->fail('Download was expected to throw');
         } catch (\Exception $e) {
@@ -198,7 +198,7 @@ class FileDownloaderTest extends TestCase
                 $this->assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
 
                 return \React\Promise\resolve(
-                    new Response(array('url' => 'http://example.org/'), 200, array(), 'file~')
+                    new Response(['url' => 'http://example.org/'], 200, [], 'file~')
                 );
             }));
 
@@ -207,7 +207,7 @@ class FileDownloaderTest extends TestCase
         try {
             $loop = new Loop($this->httpDownloader);
             $promise = $downloader->download($package, $path);
-            $loop->wait(array($promise));
+            $loop->wait([$promise]);
 
             $this->fail('Download was expected to throw');
         } catch (\Exception $e) {
@@ -282,7 +282,7 @@ class FileDownloaderTest extends TestCase
                 $this->assertEquals($expectedUrl, $url, 'Failed assertion on $url argument of HttpDownloader::addCopy method:');
 
                 return \React\Promise\resolve(
-                    new Response(array('url' => 'http://example.org/'), 200, array(), 'file~')
+                    new Response(['url' => 'http://example.org/'], 200, [], 'file~')
                 );
             }));
 
@@ -291,7 +291,7 @@ class FileDownloaderTest extends TestCase
         try {
             $loop = new Loop($this->httpDownloader);
             $promise = $downloader->download($package, $path);
-            $loop->wait(array($promise));
+            $loop->wait([$promise]);
 
             $this->fail('Download was expected to throw');
         } catch (\Exception $e) {
@@ -354,7 +354,7 @@ class FileDownloaderTest extends TestCase
         try {
             $loop = new Loop($this->httpDownloader);
             $promise = $downloader->download($package, $path);
-            $loop->wait(array($promise));
+            $loop->wait([$promise]);
 
             $this->fail('Download was expected to throw');
         } catch (\Exception $e) {
@@ -403,7 +403,7 @@ class FileDownloaderTest extends TestCase
 
         $loop = new Loop($this->httpDownloader);
         $promise = $downloader->download($newPackage, $path, $oldPackage);
-        $loop->wait(array($promise));
+        $loop->wait([$promise]);
 
         $downloader->update($oldPackage, $newPackage, $path);
     }

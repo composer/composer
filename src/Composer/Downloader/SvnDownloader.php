@@ -175,12 +175,12 @@ class SvnDownloader extends VcsDownloader
 
                 case '?':
                 default:
-                    $this->io->writeError(array(
+                    $this->io->writeError([
                         '    y - discard changes and apply the '.($update ? 'update' : 'uninstall'),
                         '    n - abort the '.($update ? 'update' : 'uninstall').' and let you manually clean things up',
                         '    v - view modified files',
                         '    ? - print help',
-                    ));
+                    ]);
                     break;
             }
         }

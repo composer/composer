@@ -35,9 +35,9 @@ final class IgnoreAllPlatformRequirementFilterTest extends TestCase
      */
     public function dataIsIgnored(): array
     {
-        return array(
-            'php is ignored' => array('php', true),
-            'monolog/monolog is not ignored' => array('monolog/monolog', false),
-        );
+        return [
+            'php is ignored' => ['php', true],
+            'monolog/monolog is not ignored' => ['monolog/monolog', false],
+        ];
     }
 }

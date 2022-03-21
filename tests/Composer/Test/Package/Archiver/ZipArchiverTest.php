@@ -25,36 +25,36 @@ class ZipArchiverTest extends ArchiverTest
      */
     public function testGitignoreExcludeNegation(string $include): void
     {
-        $this->testZipArchive(array(
+        $this->testZipArchive([
             'docs/README.md' => '# The doc',
             '.gitignore' => "/*\n.*\n!.git*\n$include",
-        ));
+        ]);
     }
 
     public function provideGitignoreExcludeNegationTestCases(): array
     {
-        return array(
-            array('!/docs'),
-            array('!/docs/'),
-        );
+        return [
+            ['!/docs'],
+            ['!/docs/'],
+        ];
     }
 
     /**
      * @param array<string, string> $files
      */
-    public function testZipArchive(array $files = array()): void
+    public function testZipArchive(array $files = []): void
     {
         if (!class_exists('ZipArchive')) {
             $this->markTestSkipped('Cannot run ZipArchiverTest, missing class "ZipArchive".');
         }
 
         if (empty($files)) {
-            $files = array(
+            $files = [
                 'file.txt' => null,
                 'foo/bar/baz' => null,
                 'x/baz' => null,
                 'x/includeme' => null,
-            );
+            ];
 
             if (!Platform::isWindows()) {
                 $files['foo' . Platform::getCwd() . '/file.txt'] = null;

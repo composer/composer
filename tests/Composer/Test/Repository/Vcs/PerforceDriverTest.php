@@ -65,11 +65,11 @@ class PerforceDriverTest extends TestCase
     {
         $this->testPath = $this->getUniqueTmpDirectory();
         $this->config = $this->getTestConfig($this->testPath);
-        $this->repoConfig = array(
+        $this->repoConfig = [
             'url' => self::TEST_URL,
             'depot' => self::TEST_DEPOT,
             'branch' => self::TEST_BRANCH,
-        );
+        ];
         $this->io = $this->getMockIOInterface();
         $this->process = $this->getProcessExecutorMock();
         $this->httpDownloader = $this->getMockHttpDownloader();
@@ -105,7 +105,7 @@ class PerforceDriverTest extends TestCase
     protected function getTestConfig(string $testPath): Config
     {
         $config = new Config();
-        $config->merge(array('config' => array('home' => $testPath)));
+        $config->merge(['config' => ['home' => $testPath]]);
 
         return $config;
     }
@@ -131,7 +131,7 @@ class PerforceDriverTest extends TestCase
      */
     protected function getMockPerforce()
     {
-        $methods = array('p4login', 'checkStream', 'writeP4ClientSpec', 'connectClient', 'getComposerInformation', 'cleanupClientSpec');
+        $methods = ['p4login', 'checkStream', 'writeP4ClientSpec', 'connectClient', 'getComposerInformation', 'cleanupClientSpec'];
 
         return $this->getMockBuilder('Composer\Util\Perforce')->disableOriginalConstructor()->getMock();
     }
@@ -162,7 +162,7 @@ class PerforceDriverTest extends TestCase
     {
         $identifier = 'TEST_IDENTIFIER';
         $formatted_depot_path = '//' . self::TEST_DEPOT . '/' . $identifier;
-        $this->perforce->expects($this->any())->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue(array()));
+        $this->perforce->expects($this->any())->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue([]));
         $this->driver->initialize();
         $result = $this->driver->hasComposerFile($identifier);
         $this->assertFalse($result);
@@ -176,7 +176,7 @@ class PerforceDriverTest extends TestCase
     {
         $identifier = 'TEST_IDENTIFIER';
         $formatted_depot_path = '//' . self::TEST_DEPOT . '/' . $identifier;
-        $this->perforce->expects($this->any())->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue(array('')));
+        $this->perforce->expects($this->any())->method('getComposerInformation')->with($this->equalTo($formatted_depot_path))->will($this->returnValue(['']));
         $this->driver->initialize();
         $result = $this->driver->hasComposerFile($identifier);
         $this->assertTrue($result);

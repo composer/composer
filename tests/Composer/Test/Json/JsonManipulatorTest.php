@@ -34,8 +34,8 @@ class JsonManipulatorTest extends TestCase
 
     public function linkProvider(): array
     {
-        return array(
-            array(
+        return [
+            [
                 '{}',
                 'require',
                 'vendor/baz',
@@ -45,8 +45,8 @@ class JsonManipulatorTest extends TestCase
 "        \"vendor/baz\": \"qux\"\n".
 "    }\n".
 "}\n",
-            ),
-            array(
+            ],
+            [
                 '{
     "foo": "bar"
 }',
@@ -60,8 +60,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "require": {
     }
@@ -75,8 +75,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "empty": "",
     "require": {
@@ -94,8 +94,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "require":
     {
@@ -114,9 +114,9 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
+            ],
 
-            array(
+            [
                 '{
     "require":
     {
@@ -135,8 +135,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "require":
     {
@@ -155,8 +155,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "require":
     {
@@ -175,8 +175,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "require": {
         "foo": "bar"
@@ -207,8 +207,8 @@ class JsonManipulatorTest extends TestCase
     }]
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "repositories": [{
         "type": "package",
@@ -236,8 +236,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "require": {
         "php": "5.*"
@@ -255,8 +255,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "require": {
         "php": "5.*"
@@ -277,8 +277,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "repositories": [{
         "type": "package",
@@ -325,8 +325,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "config": {
         "cache-files-ttl": 0,
@@ -1288,8 +1288,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-        );
+            ],
+        ];
     }
 
     /**
@@ -1310,8 +1310,8 @@ class JsonManipulatorTest extends TestCase
 
     public function providerAddLinkAndSortPackages(): array
     {
-        return array(
-            array(
+        return [
+            [
                 '{
     "require": {
         "vendor/baz": "qux"
@@ -1328,8 +1328,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "require": {
         "vendor/baz": "qux"
@@ -1346,8 +1346,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            array(
+            ],
+            [
                 '{
     "require": {
         "foo": "baz",
@@ -1374,8 +1374,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-        );
+            ],
+        ];
     }
 
     /**
@@ -1397,8 +1397,8 @@ class JsonManipulatorTest extends TestCase
 
     public function removeSubNodeProvider(): array
     {
-        return array(
-            'works on simple ones first' => array(
+        return [
+            'works on simple ones first' => [
                 '{
     "repositories": {
         "foo": {
@@ -1422,8 +1422,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            'works on simple ones last' => array(
+            ],
+            'works on simple ones last' => [
                 '{
     "repositories": {
         "foo": {
@@ -1447,8 +1447,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            'works on simple ones unique' => array(
+            ],
+            'works on simple ones unique' => [
                 '{
     "repositories": {
         "foo": {
@@ -1464,8 +1464,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            'works on simple ones escaped slash' => array(
+            ],
+            'works on simple ones escaped slash' => [
                 '{
     "repositories": {
         "foo\/bar": {
@@ -1480,8 +1480,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            'works on simple ones middle' => array(
+            ],
+            'works on simple ones middle' => [
                 '{
     "repositories": {
         "foo": {
@@ -1513,8 +1513,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            'works on undefined ones' => array(
+            ],
+            'works on undefined ones' => [
                 '{
     "repositories": {
         "main": {
@@ -1534,8 +1534,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            'works on child having unmatched name' => array(
+            ],
+            'works on child having unmatched name' => [
                 '{
     "repositories": {
         "baz": {
@@ -1555,8 +1555,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            'works on child having duplicate name' => array(
+            ],
+            'works on child having duplicate name' => [
                 '{
     "repositories": {
         "foo": {
@@ -1578,28 +1578,28 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            'works on empty repos' => array(
+            ],
+            'works on empty repos' => [
                 '{
     "repositories": {
     }
 }',
                 'bar',
                 true,
-            ),
-            'works on empty repos2' => array(
+            ],
+            'works on empty repos2' => [
                 '{
     "repositories": {}
 }',
                 'bar',
                 true,
-            ),
-            'works on missing repos' => array(
+            ],
+            'works on missing repos' => [
                 "{\n}",
                 'bar',
                 true,
-            ),
-            'works on deep repos' => array(
+            ],
+            'works on deep repos' => [
                 '{
     "repositories": {
         "foo": {
@@ -1614,8 +1614,8 @@ class JsonManipulatorTest extends TestCase
     }
 }
 ',
-            ),
-            'works on deep repos with borked texts' => array(
+            ],
+            'works on deep repos with borked texts' => [
                 '{
     "repositories": {
         "foo": {
@@ -1637,8 +1637,8 @@ class JsonManipulatorTest extends TestCase
                 '{
 }
 ',
-            ),
-            'works on deep repos with borked texts2' => array(
+            ],
+            'works on deep repos with borked texts2' => [
                 '{
     "repositories": {
         "foo": {
@@ -1660,8 +1660,8 @@ class JsonManipulatorTest extends TestCase
                 '{
 }
 ',
-            ),
-            'fails on deep arrays with borked texts' => array(
+            ],
+            'fails on deep arrays with borked texts' => [
                 '{
     "repositories": [
         {
@@ -1671,8 +1671,8 @@ class JsonManipulatorTest extends TestCase
 }',
                 'bar',
                 false,
-            ),
-            'fails on deep arrays with borked texts2' => array(
+            ],
+            'fails on deep arrays with borked texts2' => [
                 '{
     "repositories": [
         {
@@ -1682,8 +1682,8 @@ class JsonManipulatorTest extends TestCase
 }',
                 'bar',
                 false,
-            ),
-        );
+            ],
+        ];
     }
 
     public function testRemoveSubNodeFromRequire(): void
@@ -1922,7 +1922,7 @@ class JsonManipulatorTest extends TestCase
   }
 }');
 
-        $this->assertTrue($manipulator->addRepository('bar', array('type' => 'composer')));
+        $this->assertTrue($manipulator->addRepository('bar', ['type' => 'composer']));
         $this->assertEquals('{
   "repositories": {
     "bar": {
@@ -1939,7 +1939,7 @@ class JsonManipulatorTest extends TestCase
 \t\"a\": \"b\"
 }");
 
-        $this->assertTrue($manipulator->addRepository('bar2', array('type' => 'composer')));
+        $this->assertTrue($manipulator->addRepository('bar2', ['type' => 'composer']));
         $this->assertEquals("{
 \t\"a\": \"b\",
 \t\"repositories\": {
@@ -1962,7 +1962,7 @@ class JsonManipulatorTest extends TestCase
     }
 }');
 
-        $this->assertTrue($manipulator->addRepository('bar', array('type' => 'composer'), true));
+        $this->assertTrue($manipulator->addRepository('bar', ['type' => 'composer'], true));
         $this->assertEquals('{
     "repositories": {
         "foo": {
@@ -1988,7 +1988,7 @@ class JsonManipulatorTest extends TestCase
     }
 }');
 
-        $this->assertTrue($manipulator->addRepository('bar', array('type' => 'composer'), false));
+        $this->assertTrue($manipulator->addRepository('bar', ['type' => 'composer'], false));
         $this->assertEquals('{
     "repositories": {
         "bar": {
@@ -2014,7 +2014,7 @@ class JsonManipulatorTest extends TestCase
     }
 }');
 
-        $this->assertTrue($manipulator->addRepository('baz', array('type' => 'composer')));
+        $this->assertTrue($manipulator->addRepository('baz', ['type' => 'composer']));
         $this->assertEquals('{
     "repositories": {
         "baz": {
@@ -2124,7 +2124,7 @@ class JsonManipulatorTest extends TestCase
     }
 }');
 
-        $this->assertTrue($manipulator->addConfigSetting('github-protocols', array('https', 'http')));
+        $this->assertTrue($manipulator->addConfigSetting('github-protocols', ['https', 'http']));
         $this->assertEquals('{
     "config": {
         "github-oauth": {
@@ -2135,7 +2135,7 @@ class JsonManipulatorTest extends TestCase
 }
 ', $manipulator->getContents());
 
-        $this->assertTrue($manipulator->addConfigSetting('github-oauth', array('github.com' => 'bar', 'alt.example.org' => 'baz')));
+        $this->assertTrue($manipulator->addConfigSetting('github-oauth', ['github.com' => 'bar', 'alt.example.org' => 'baz']));
         $this->assertEquals('{
     "config": {
         "github-oauth": {
@@ -2368,7 +2368,7 @@ class JsonManipulatorTest extends TestCase
     }
 }');
 
-        $this->assertTrue($manipulator->addMainKey('require-dev', array('foo' => 'qux')));
+        $this->assertTrue($manipulator->addMainKey('require-dev', ['foo' => 'qux']));
         $this->assertEquals('{
     "require": {
         "php": "5.*"
@@ -2497,16 +2497,16 @@ class JsonManipulatorTest extends TestCase
 
     public function testRemoveMainKeyRemovesKeyWhereValueIsNull(): void
     {
-        $manipulator = new JsonManipulator(json_encode(array(
+        $manipulator = new JsonManipulator(json_encode([
             'foo' => 9000,
             'bar' => null,
-        )));
+        ]));
 
         $manipulator->removeMainKey('bar');
 
-        $expected = json_encode(array(
+        $expected = json_encode([
             'foo' => 9000,
-        ));
+        ]);
 
         $this->assertJsonStringEqualsJsonString($expected, $manipulator->getContents());
     }
@@ -2520,7 +2520,7 @@ class JsonManipulatorTest extends TestCase
   }
 }');
 
-        $this->assertTrue($manipulator->addMainKey('require-dev', array('foo' => 'qux')));
+        $this->assertTrue($manipulator->addMainKey('require-dev', ['foo' => 'qux']));
         $this->assertEquals('{
 
   "require": {

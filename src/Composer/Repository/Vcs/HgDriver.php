@@ -110,7 +110,7 @@ class HgDriver extends VcsDriver
      */
     public function getSource(string $identifier): array
     {
-        return array('type' => 'hg', 'url' => $this->getUrl(), 'reference' => $identifier);
+        return ['type' => 'hg', 'url' => $this->getUrl(), 'reference' => $identifier];
     }
 
     /**
@@ -159,7 +159,7 @@ class HgDriver extends VcsDriver
     public function getTags(): array
     {
         if (null === $this->tags) {
-            $tags = array();
+            $tags = [];
 
             $this->process->execute('hg tags', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $tag) {
@@ -181,8 +181,8 @@ class HgDriver extends VcsDriver
     public function getBranches(): array
     {
         if (null === $this->branches) {
-            $branches = array();
-            $bookmarks = array();
+            $branches = [];
+            $bookmarks = [];
 
             $this->process->execute('hg branches', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {

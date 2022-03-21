@@ -33,11 +33,11 @@ final class PlatformRequirementFilterFactoryTest extends TestCase
      */
     public function dataFromBoolOrList(): array
     {
-        return array(
-            'true creates IgnoreAllFilter' => array(true, 'Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter'),
-            'false creates IgnoreNothingFilter' => array(false, 'Composer\Filter\PlatformRequirementFilter\IgnoreNothingPlatformRequirementFilter'),
-            'list creates IgnoreListFilter' => array(array('php', 'ext-json'), 'Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter'),
-        );
+        return [
+            'true creates IgnoreAllFilter' => [true, 'Composer\Filter\PlatformRequirementFilter\IgnoreAllPlatformRequirementFilter'],
+            'false creates IgnoreNothingFilter' => [false, 'Composer\Filter\PlatformRequirementFilter\IgnoreNothingPlatformRequirementFilter'],
+            'list creates IgnoreListFilter' => [['php', 'ext-json'], 'Composer\Filter\PlatformRequirementFilter\IgnoreListPlatformRequirementFilter'],
+        ];
     }
 
     public function testFromBoolThrowsExceptionIfTypeIsUnknown(): void

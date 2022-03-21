@@ -61,7 +61,7 @@ class XzDownloaderTest extends TestCase
         try {
             $loop = new Loop($httpDownloader);
             $promise = $downloader->download($package, $this->testDir.'/install-path');
-            $loop->wait(array($promise));
+            $loop->wait([$promise]);
             $downloader->install($package, $this->testDir.'/install-path');
 
             $this->fail('Download of invalid tarball should throw an exception');

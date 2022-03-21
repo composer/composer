@@ -12,7 +12,6 @@
 
 namespace Composer\Test\Mock;
 
-use Composer\Test\TestCase;
 use PHPUnit\Framework\MockObject\MockBuilder;
 use React\Promise\PromiseInterface;
 use Composer\Util\ProcessExecutor;
@@ -38,11 +37,11 @@ class ProcessExecutorMock extends ProcessExecutor
     /**
      * @var array{return: int, stdout: string, stderr: string}
      */
-    private $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => '');
+    private $defaultHandler = ['return' => 0, 'stdout' => '', 'stderr' => ''];
     /**
      * @var string[]
      */
-    private $log = array();
+    private $log = [];
     /**
      * @var MockBuilder<Process>
      */
@@ -64,10 +63,10 @@ class ProcessExecutorMock extends ProcessExecutor
      *
      * @return void
      */
-    public function expects(array $expectations, bool $strict = false, array $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => '')): void
+    public function expects(array $expectations, bool $strict = false, array $defaultHandler = ['return' => 0, 'stdout' => '', 'stderr' => '']): void
     {
         /** @var array{cmd: string|list<string>, return?: int, stdout?: string, stderr?: string, callback?: callable} $default */
-        $default = array('cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null);
+        $default = ['cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null];
         $this->expectations = array_map(function ($expect) use ($default): array {
             if (is_string($expect)) {
                 $command = $expect;

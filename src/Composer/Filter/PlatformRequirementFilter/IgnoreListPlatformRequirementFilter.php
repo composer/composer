@@ -39,7 +39,7 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
      */
     public function __construct(array $reqList)
     {
-        $ignoreAll = $ignoreUpperBound = array();
+        $ignoreAll = $ignoreUpperBound = [];
         foreach ($reqList as $req) {
             if (substr($req, -1) === '+') {
                 $ignoreUpperBound[] = substr($req, 0, -1);
@@ -85,7 +85,7 @@ final class IgnoreListPlatformRequirementFilter implements PlatformRequirementFi
         $intervals = Intervals::get($constraint);
         $last = end($intervals['numeric']);
         if ($last !== false && (string) $last->getEnd() !== (string) Interval::untilPositiveInfinity()) {
-            $constraint = new MultiConstraint(array($constraint, new Constraint('>=', $last->getEnd()->getVersion())), false);
+            $constraint = new MultiConstraint([$constraint, new Constraint('>=', $last->getEnd()->getVersion())], false);
         }
 
         return $constraint;

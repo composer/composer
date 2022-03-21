@@ -23,12 +23,12 @@ class NoProxyPattern
     /**
      * @var string[]
      */
-    protected $hostNames = array();
+    protected $hostNames = [];
 
     /**
      * @var (null|object)[]
      */
-    protected $rules = array();
+    protected $rules = [];
 
     /**
      * @var bool
@@ -97,7 +97,7 @@ class NoProxyPattern
         }
 
         $hostName = $host . ($port ? ':' . $port : '');
-        list($host, $port, $err) = $this->splitHostPort($hostName);
+        [$host, $port, $err] = $this->splitHostPort($hostName);
 
         if ($err || !$this->ipCheckData($host, $ipdata)) {
             return false;
@@ -193,7 +193,7 @@ class NoProxyPattern
         }
 
         $this->rules[$index] = null;
-        list($host, $port, $err) = $this->splitHostPort($hostName);
+        [$host, $port, $err] = $this->splitHostPort($hostName);
 
         if ($err || !$this->ipCheckData($host, $ipdata, true)) {
             return null;
@@ -222,7 +222,7 @@ class NoProxyPattern
 
         // Check for a CIDR prefix-length
         if (strpos($host, '/') !== false) {
-            list($host, $prefix) = explode('/', $host);
+            [$host, $prefix] = explode('/', $host);
 
             if (!$allowPrefix || !$this->validateInt($prefix, 0, 128)) {
                 return false;
@@ -236,7 +236,7 @@ class NoProxyPattern
             return !$modified;
         }
 
-        list($ip, $size) = $this->ipGetAddr($host);
+        [$ip, $size] = $this->ipGetAddr($host);
 
         if ($prefix !== null) {
             // Check for a valid prefix
@@ -244,7 +244,7 @@ class NoProxyPattern
                 return false;
             }
 
-            list($ip, $netmask) = $this->ipGetNetwork($ip, $size, $prefix);
+            [$ip, $netmask] = $this->ipGetNetwork($ip, $size, $prefix);
         }
 
         $ipdata = $this->makeIpData($ip, $size, $netmask);
@@ -268,7 +268,7 @@ class NoProxyPattern
         $size = strlen($ip);
         $mapped = $this->ipMapTo6($ip, $size);
 
-        return array($mapped, $size);
+        return [$mapped, $size];
     }
 
     /**
@@ -324,7 +324,7 @@ class NoProxyPattern
             $net .= chr($ip[$i] & $mask[$i]);
         }
 
-        return array($net, $netmask);
+        return [$net, $netmask];
     }
 
     /**
@@ -356,12 +356,12 @@ class NoProxyPattern
      */
     private function makeData(string $host, int $port, ?stdClass $ipdata): stdClass
     {
-        return (object) array(
+        return (object) [
             'host' => $host,
             'name' => '.' . ltrim($host, '.'),
             'port' => $port,
             'ipdata' => $ipdata,
-        );
+        ];
     }
 
     /**
@@ -375,11 +375,11 @@ class NoProxyPattern
      */
     private function makeIpData(string $ip, int $size, ?string $netmask): stdClass
     {
-        return (object) array(
+        return (object) [
             'ip' => $ip,
             'size' => $size,
             'netmask' => $netmask,
-        );
+        ];
     }
 
     /**
@@ -392,7 +392,7 @@ class NoProxyPattern
     private function splitHostPort(string $hostName): array
     {
         // host, port, err
-        $error = array('', '', true);
+        $error = ['', '', true];
         $port = 0;
         $ip6 = '';
 
@@ -427,7 +427,7 @@ class NoProxyPattern
 
         $host = $ip6 . $hostName;
 
-        return array($host, $port, false);
+        return [$host, $port, false];
     }
 
     /**
@@ -441,12 +441,12 @@ class NoProxyPattern
      */
     private function validateInt(string $int, int $min, int $max): bool
     {
-        $options = array(
-            'options' => array(
+        $options = [
+            'options' => [
                 'min_range' => $min,
                 'max_range' => $max,
-            ),
-        );
+            ],
+        ];
 
         return false !== filter_var($int, FILTER_VALIDATE_INT, $options);
     }

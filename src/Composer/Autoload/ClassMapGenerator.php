@@ -41,7 +41,7 @@ class ClassMapGenerator
      */
     public static function dump(iterable $dirs, string $file): void
     {
-        $maps = array();
+        $maps = [];
 
         foreach ($dirs as $dir) {
             $maps = array_merge($maps, static::createMap($dir));
@@ -62,12 +62,12 @@ class ClassMapGenerator
      * @return array<class-string, string> A class map array
      * @throws \RuntimeException When the path is neither an existing file nor directory
      */
-    public static function createMap($path, string $excluded = null, IOInterface $io = null, ?string $namespace = null, ?string $autoloadType = null, array &$scannedFiles = array()): array
+    public static function createMap($path, string $excluded = null, IOInterface $io = null, ?string $namespace = null, ?string $autoloadType = null, array &$scannedFiles = []): array
     {
         $basePath = $path;
         if (is_string($path)) {
             if (is_file($path)) {
-                $path = array(new \SplFileInfo($path));
+                $path = [new \SplFileInfo($path)];
             } elseif (is_dir($path) || strpos($path, '*') !== false) {
                 $path = Finder::create()->files()->followLinks()->name('/\.(php|inc|hh)$/')->in($path);
             } else {
@@ -80,13 +80,13 @@ class ClassMapGenerator
             throw new \RuntimeException('Path must be a string when specifying an autoload type');
         }
 
-        $map = array();
+        $map = [];
         $filesystem = new Filesystem();
         $cwd = realpath(Platform::getCwd());
 
         foreach ($path as $file) {
             $filePath = $file->getPathname();
-            if (!in_array(pathinfo($filePath, PATHINFO_EXTENSION), array('php', 'inc', 'hh'))) {
+            if (!in_array(pathinfo($filePath, PATHINFO_EXTENSION), ['php', 'inc', 'hh'])) {
                 continue;
             }
 
@@ -160,8 +160,8 @@ class ClassMapGenerator
      */
     private static function filterByNamespace(array $classes, string $filePath, string $baseNamespace, string $namespaceType, string $basePath, ?IOInterface $io): array
     {
-        $validClasses = array();
-        $rejectedClasses = array();
+        $validClasses = [];
+        $rejectedClasses = [];
 
         $realSubPath = substr($filePath, strlen($basePath) + 1);
         $dotPosition = strrpos($realSubPath, '.');
@@ -203,7 +203,7 @@ class ClassMapGenerator
                 }
             }
 
-            return array();
+            return [];
         }
 
         return $validClasses;
@@ -230,7 +230,7 @@ class ClassMapGenerator
                 $message = 'File at "%s" is not readable, check its permissions';
             } elseif ('' === trim((string) file_get_contents($path))) {
                 // The input file was really empty and thus contains no classes
-                return array();
+                return [];
             } else {
                 $message = 'File at "%s" could not be parsed as PHP, it may be binary or corrupted';
             }
@@ -244,7 +244,7 @@ class ClassMapGenerator
         // return early if there is no chance of matching anything in this file
         Preg::matchAll('{\b(?:class|interface|trait'.$extraTypes.')\s}i', $contents, $matches);
         if (!$matches) {
-            return array();
+            return [];
         }
 
         $p = new PhpFileCleaner($contents, count($matches[0]));
@@ -258,12 +258,12 @@ class ClassMapGenerator
             )
         }ix', $contents, $matches);
 
-        $classes = array();
+        $classes = [];
         $namespace = '';
 
         for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
             if (!empty($matches['ns'][$i])) {
-                $namespace = str_replace(array(' ', "\t", "\r", "\n"), '', (string) $matches['nsname'][$i]) . '\\';
+                $namespace = str_replace([' ', "\t", "\r", "\n"], '', (string) $matches['nsname'][$i]) . '\\';
             } else {
                 $name = $matches['name'][$i];
                 // skip anon classes extending/implementing
@@ -272,7 +272,7 @@ class ClassMapGenerator
                 }
                 if ($name[0] === ':') {
                     // This is an XHP class, https://github.com/facebook/xhp
-                    $name = 'xhp'.substr(str_replace(array('-', ':'), array('_', '__'), $name), 1);
+                    $name = 'xhp'.substr(str_replace(['-', ':'], ['_', '__'], $name), 1);
                 } elseif (strtolower($matches['type'][$i]) === 'enum') {
                     // something like:
                     //   enum Foo: int { HERP = '123'; }
