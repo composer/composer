@@ -325,4 +325,26 @@ class ArrayLoaderTest extends TestCase
         $package = $this->loader->load($config);
         $this->assertSame('1', $package->getPrettyVersion());
     }
+
+    public function testNoneStringSourceDistReference(): void
+    {
+        $config = array(
+            'name' => 'acme/package',
+            'version' => 'dev-main',
+            'source' => [
+                'type' => 'svn',
+                'url' => 'https://example.org/',
+                'reference' => 2019,
+            ],
+            'dist' => [
+                'type' => 'zip',
+                'url' => 'https://example.org/',
+                'reference' => 2019,
+            ],
+        );
+
+        $package = $this->loader->load($config);
+        $this->assertSame('2019', $package->getSourceReference());
+        $this->assertSame('2019', $package->getDistReference());
+    }
 }
