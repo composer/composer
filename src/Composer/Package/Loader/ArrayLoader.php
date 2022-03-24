@@ -421,6 +421,8 @@ class ArrayLoader implements LoaderInterface
 
         if (isset($config['extra']['branch-alias']) && \is_array($config['extra']['branch-alias'])) {
             foreach ($config['extra']['branch-alias'] as $sourceBranch => $targetBranch) {
+                $sourceBranch = (string) $sourceBranch;
+
                 // ensure it is an alias to a -dev package
                 if ('-dev' !== substr($targetBranch, -4)) {
                     continue;
