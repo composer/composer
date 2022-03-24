@@ -417,6 +417,20 @@ class ValidatingArrayLoaderTest extends TestCase
                     'require.foo/Bar : a package cannot set a require on itself',
                 ),
             ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'source' => array('url' => 1),
+                    'dist' => array('url' => null),
+                ),
+                array(
+                    'source.type : must be present',
+                    'source.url : should be a string, integer given',
+                    'source.reference : must be present',
+                    'dist.type : must be present',
+                    'dist.url : must be present',
+                ),
+            ),
         ));
     }
 

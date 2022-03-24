@@ -352,10 +352,10 @@ class ValidatingArrayLoader implements LoaderInterface
                 if ($srcType === 'source' && !isset($this->config[$srcType]['reference'])) {
                     $this->errors[] = $srcType . '.reference : must be present';
                 }
-                if (!is_string($this->config[$srcType]['type'])) {
+                if (isset($this->config[$srcType]['type']) && !is_string($this->config[$srcType]['type'])) {
                     $this->errors[] = $srcType . '.type : should be a string, '.gettype($this->config[$srcType]['type']).' given';
                 }
-                if (!is_string($this->config[$srcType]['url'])) {
+                if (isset($this->config[$srcType]['url']) && !is_string($this->config[$srcType]['url'])) {
                     $this->errors[] = $srcType . '.url : should be a string, '.gettype($this->config[$srcType]['url']).' given';
                 }
                 if (isset($this->config[$srcType]['reference']) && !is_string($this->config[$srcType]['reference']) && !is_int($this->config[$srcType]['reference'])) {
@@ -364,7 +364,7 @@ class ValidatingArrayLoader implements LoaderInterface
                 if (isset($this->config[$srcType]['reference']) && Preg::isMatch('{^\s*-}', (string) $this->config[$srcType]['reference'])) {
                     $this->errors[] = $srcType . '.reference : must not start with a "-", "'.$this->config[$srcType]['reference'].'" given';
                 }
-                if (Preg::isMatch('{^\s*-}', $this->config[$srcType]['url'])) {
+                if (isset($this->config[$srcType]['url']) && Preg::isMatch('{^\s*-}', (string) $this->config[$srcType]['url'])) {
                     $this->errors[] = $srcType . '.url : must not start with a "-", "'.$this->config[$srcType]['url'].'" given';
                 }
             }
