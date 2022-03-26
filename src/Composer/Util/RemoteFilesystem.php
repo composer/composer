@@ -526,7 +526,7 @@ class RemoteFilesystem
         } catch (\Throwable $e) {
         }
 
-        if ($maxFileSize !== null && Platform::strlen($result) >= $maxFileSize) {
+        if ($result !== false && $maxFileSize !== null && Platform::strlen($result) >= $maxFileSize) {
             throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($result) . ' of allowed ' .  $maxFileSize . ' bytes');
         }
 
