@@ -9,7 +9,7 @@ on:
       - 'doc/**'
 
 env:
-  COMPOSER_FLAGS: "--ansi --no-interaction --no-progress --prefer-dist"
+  COMPOSER_FLAGS: "--ansi --no-interaction --prefer-dist"
   SYMFONY_PHPUNIT_VERSION: ""
 
 jobs:
@@ -57,7 +57,7 @@ jobs:
 
       - name: "Install locked dependencies"
         if: "matrix.experimental == false"
-        run: "composer config platform --unset && composer update ${{ env.COMPOSER_FLAGS }}"
+        run: "composer config platform --unset && composer install ${{ env.COMPOSER_FLAGS }}"
 
       - name: "Initialize PHPUnit sources"
         run: "vendor/bin/simple-phpunit --filter NO_TEST_JUST_AUTOLOAD_THANKS"
