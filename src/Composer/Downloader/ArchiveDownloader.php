@@ -120,7 +120,9 @@ abstract class ArchiveDownloader extends FileDownloader
         }
 
         return $promise->then(function () use ($self, $package, $filesystem, $fileName, $temporaryDir, $path) {
-            $filesystem->unlink($fileName);
+            if (file_exists($fileName)) {
+                $filesystem->unlink($fileName);
+            }
 
             /**
              * Returns the folder content, excluding .DS_Store
