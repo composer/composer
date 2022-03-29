@@ -13,6 +13,7 @@
 namespace Composer\Downloader;
 
 use Composer\Package\PackageInterface;
+use Composer\Pcre\Preg;
 use Composer\Util\IniHelper;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
@@ -86,11 +87,11 @@ class ZipDownloader extends ArchiveDownloader
                 if ($procOpenMissing) {
                     $this->io->writeError("<warning>proc_open is disabled so 'unzip' and '7z' commands cannot be used, zip files are being unpacked using the PHP zip extension.</warning>");
                     $this->io->writeError("<warning>This may cause invalid reports of corrupted archives. Besides, any UNIX permissions (e.g. executable) defined in the archives will be lost.</warning>");
-                    $this->io->writeError("<warning>Enabling proc_open and installing 'unzip' or '7z' may remediate them.</warning>");
+                    $this->io->writeError("<warning>Enabling proc_open and installing 'unzip' or '7z' (21.01+) may remediate them.</warning>");
                 } else {
                     $this->io->writeError("<warning>As there is no 'unzip' nor '7z' command installed zip files are being unpacked using the PHP zip extension.</warning>");
                     $this->io->writeError("<warning>This may cause invalid reports of corrupted archives. Besides, any UNIX permissions (e.g. executable) defined in the archives will be lost.</warning>");
-                    $this->io->writeError("<warning>Installing 'unzip' or '7z' may remediate them.</warning>");
+                    $this->io->writeError("<warning>Installing 'unzip' or '7z' (21.01+) may remediate them.</warning>");
                 }
             }
         }
@@ -107,6 +108,8 @@ class ZipDownloader extends ArchiveDownloader
      */
     private function extractWithSystemUnzip(PackageInterface $package, $file, $path)
     {
+        static $warned7ZipLinux = false;
+
         // Force Exception throwing if the other alternative extraction method is not available
         $isLastChance = !self::$hasZipArchive;
 
@@ -125,6 +128,14 @@ class ZipDownloader extends ArchiveDownloader
         }
 
         $executable = $commandSpec[0];
+        if (!$warned7ZipLinux && !Platform::isWindows() && in_array($executable, array('7z', '7zz'), true)) {
+            $warned7ZipLinux = true;
+            if (0 === $this->process->execute($executable, $output)) {
+                if (Preg::isMatch('{^\s*7-Zip(?: \[64\])? ([0-9.]+)}', $output, $match) && version_compare($match[1], '21.01', '<')) {
+                    $this->io->writeError('    <warning>Unzipping using '.$executable.' '.$match[1].' may result in incorrect file permissions. Install '.$executable.' 21.01+ or unzip to ensure you get correct permissions.</warning>');
+                }
+            }
+        }
 
         $self = $this;
         $io = $this->io;
