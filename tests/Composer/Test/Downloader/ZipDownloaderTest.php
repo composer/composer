@@ -32,6 +32,8 @@ class ZipDownloaderTest extends TestCase
     private $config;
     /** @var \Composer\Package\PackageInterface&\PHPUnit\Framework\MockObject\MockObject */
     private $package;
+    /** @var string */
+    private $filename;
 
     public function setUp(): void
     {
@@ -41,6 +43,9 @@ class ZipDownloaderTest extends TestCase
         $dlConfig = $this->getMockBuilder('Composer\Config')->getMock();
         $this->httpDownloader = new HttpDownloader($this->io, $dlConfig);
         $this->package = $this->getMockBuilder('Composer\Package\PackageInterface')->getMock();
+
+        $this->filename = $this->testDir.'/composer-test.zip';
+        file_put_contents($this->filename, 'zip');
     }
 
     protected function tearDown(): void
@@ -126,7 +131,7 @@ class ZipDownloaderTest extends TestCase
             ->will($this->returnValue(false));
 
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, $this->filename, 'vendor/dir');
         $this->wait($promise);
     }
 
@@ -149,7 +154,7 @@ class ZipDownloaderTest extends TestCase
             ->will($this->throwException(new \ErrorException('Not a directory')));
 
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, $this->filename, 'vendor/dir');
         $this->wait($promise);
     }
 
@@ -170,7 +175,7 @@ class ZipDownloaderTest extends TestCase
             ->will($this->returnValue(true));
 
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, $this->filename, 'vendor/dir');
         $this->wait($promise);
     }
 
@@ -199,7 +204,7 @@ class ZipDownloaderTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve($procMock)));
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
-        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, $this->filename, 'vendor/dir');
         $this->wait($promise);
     }
 
@@ -226,7 +231,7 @@ class ZipDownloaderTest extends TestCase
             ->will($this->returnValue(\React\Promise\resolve($procMock)));
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
-        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, $this->filename, 'vendor/dir');
         $this->wait($promise);
     }
 
@@ -265,7 +270,7 @@ class ZipDownloaderTest extends TestCase
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, $this->filename, 'vendor/dir');
         $this->wait($promise);
     }
 
@@ -306,7 +311,7 @@ class ZipDownloaderTest extends TestCase
 
         $downloader = new MockedZipDownloader($this->io, $this->config, $this->httpDownloader, null, null, null, $processExecutor);
         $this->setPrivateProperty('zipArchiveObject', $zipArchive, $downloader);
-        $promise = $downloader->extract($this->package, 'testfile.zip', 'vendor/dir');
+        $promise = $downloader->extract($this->package, $this->filename, 'vendor/dir');
         $this->wait($promise);
     }
 

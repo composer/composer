@@ -132,6 +132,12 @@
                 }
             }
         },
+        "source": {
+            "$ref": "#/definitions/source"
+        },
+        "dist": {
+            "$ref": "#/definitions/dist"
+        },
         "_comment": {
             "type": ["array", "string"],
             "description": "A key to store comments in"
@@ -953,46 +959,52 @@
                     }
                 },
                 "source": {
-                    "type": "object",
-                    "required": ["type", "url", "reference"],
-                    "properties": {
-                        "type": {
-                            "type": "string"
-                        },
-                        "url": {
-                            "type": "string"
-                        },
-                        "reference": {
-                            "type": "string"
-                        },
-                        "mirrors": {
-                            "type": "array"
-                        }
-                    }
+                    "$ref": "#/definitions/source"
                 },
                 "dist": {
-                    "type": "object",
-                    "required": ["type", "url"],
-                    "properties": {
-                        "type": {
-                            "type": "string"
-                        },
-                        "url": {
-                            "type": "string"
-                        },
-                        "reference": {
-                            "type": "string"
-                        },
-                        "shasum": {
-                            "type": "string"
-                        },
-                        "mirrors": {
-                            "type": "array"
-                        }
-                    }
+                    "$ref": "#/definitions/dist"
                 }
             },
             "additionalProperties": true
+        },
+        "source": {
+            "type": "object",
+            "required": ["type", "url", "reference"],
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "reference": {
+                    "type": "string"
+                },
+                "mirrors": {
+                    "type": "array"
+                }
+            }
+        },
+        "dist": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "reference": {
+                    "type": "string"
+                },
+                "shasum": {
+                    "type": "string"
+                },
+                "mirrors": {
+                    "type": "array"
+                }
+            }
         }
     }
 }
