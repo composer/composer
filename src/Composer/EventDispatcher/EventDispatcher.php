@@ -91,14 +91,17 @@ class EventDispatcher
     /**
      * Dispatch an event
      *
-     * @param  string|null $eventName An event name if no $event is provided
-     * @param  Event       $event
+     * @param  string|null $eventName The event name, required if no $event is provided
+     * @param  Event       $event An event instance, required if no $eventName is provided
      * @return int         return code of the executed script if any, for php scripts a false return
      *                          value is changed to 1, anything else to 0
      */
     public function dispatch(?string $eventName, Event $event = null): int
     {
         if (null === $event) {
+            if (null === $eventName) {
+                throw new \InvalidArgumentException('If no $event is passed in to '.__METHOD__.' you have to pass in an $eventName, got null.');
+            }
             $event = new Event($eventName);
         }
 
