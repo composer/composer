@@ -184,7 +184,12 @@ class ZipDownloader extends ArchiveDownloader
         $zipArchive = $this->zipArchiveObject ?: new ZipArchive();
 
         try {
-            if (true === ($retval = $zipArchive->open($file))) {
+            if (!file_exists($file) || ($filesize = filesize($file)) === false || $filesize === 0) {
+                $retval = -1;
+            } else {
+                $retval = $zipArchive->open($file);
+            }
+            if (true === $retval) {
                 $extractResult = $zipArchive->extractTo($path);
 
                 if (true === $extractResult) {
@@ -251,6 +256,8 @@ class ZipDownloader extends ArchiveDownloader
                 return sprintf("Zip read error (%s)", $file);
             case ZipArchive::ER_SEEK:
                 return sprintf("Zip seek error (%s)", $file);
+            case -1:
+                return sprintf("'%s' is a corrupted zip archive (0 bytes), try again.", $file);
             default:
                 return sprintf("'%s' is not a valid zip archive, got error code: %s", $file, $retval);
         }
