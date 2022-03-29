@@ -357,10 +357,10 @@ class ArrayLoader implements LoaderInterface
     }
 
     /**
-     * @param  string                $source        source package name
-     * @param  string                $sourceVersion source package version (pretty version ideally)
-     * @param  string                $description   link description (e.g. requires, replaces, ..)
-     * @param  array<string, string> $links         array of package name => constraint mappings
+     * @param  string                    $source        source package name
+     * @param  string                    $sourceVersion source package version (pretty version ideally)
+     * @param  string                    $description   link description (e.g. requires, replaces, ..)
+     * @param  array<string|int, string> $links         array of package name => constraint mappings
      *
      * @return Link[]
      *
@@ -370,7 +370,7 @@ class ArrayLoader implements LoaderInterface
     {
         $res = array();
         foreach ($links as $target => $constraint) {
-            $target = strtolower($target);
+            $target = strtolower((string) $target);
             $res[$target] = $this->createLink($source, $sourceVersion, $description, $target, $constraint);
         }
 

@@ -315,6 +315,13 @@ class ArrayLoaderTest extends TestCase
         $this->assertSame('6.6.6', $links['composer-plugin-api']->getConstraint()->getPrettyString());
     }
 
+    public function testParseLinksIntegerTarget(): void
+    {
+        $links = $this->loader->parseLinks('Plugin', '9.9.9', Link::TYPE_REQUIRE, array('1' => 'dev-main'));
+
+        $this->assertArrayHasKey('1', $links);
+    }
+
     public function testNoneStringVersion(): void
     {
         $config = array(
