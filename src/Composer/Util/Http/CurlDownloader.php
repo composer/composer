@@ -333,6 +333,9 @@ class CurlDownloader
             }
 
             $progress = curl_getinfo($curlHandle);
+            if (false === $progress) {
+                throw new \RuntimeException('Failed getting info from curl handle '.$i.' ('.$this->jobs[$i]['url'].')');
+            }
             $job = $this->jobs[$i];
             unset($this->jobs[$i]);
             $error = curl_error($curlHandle);
@@ -364,7 +367,7 @@ class CurlDownloader
                         continue;
                     }
 
-                    if ($errno === 28 /* CURLE_OPERATION_TIMEDOUT */ && isset($progress['namelookup_time']) && $progress['namelookup_time'] == 0 && !$timeoutWarning) {
+                    if ($errno === 28 /* CURLE_OPERATION_TIMEDOUT */ && PHP_VERSION_ID >= 70300 && $progress['namelookup_time'] == 0 && !$timeoutWarning) {
                         $timeoutWarning = true;
                         $this->io->writeError('<warning>A connection timeout was encountered. If you intend to run Composer without connecting to the internet, run the command again prefixed with COMPOSER_DISABLE_NETWORK=1 to make Composer run in offline mode.</warning>');
                     }
@@ -443,14 +446,14 @@ class CurlDownloader
                     call_user_func($job['resolve'], $response);
                 }
             } catch (\Exception $e) {
-                if ($e instanceof TransportException && $headers) {
-                    $e->setHeaders($headers);
-                    $e->setStatusCode($statusCode);
-                }
-                if ($e instanceof TransportException && $response) {
-                    $e->setResponse($response->getBody());
-                }
-                if ($e instanceof TransportException && $progress) {
+                if ($e instanceof TransportException) {
+                    if (null !== $headers) {
+                        $e->setHeaders($headers);
+                        $e->setStatusCode($statusCode);
+                    }
+                    if (null !== $response) {
+                        $e->setResponse($response->getBody());
+                    }
                     $e->setResponseInfo($progress);
                 }
 

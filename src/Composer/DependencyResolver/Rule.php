@@ -373,6 +373,7 @@ abstract class Rule
                     $package = $pool->literalToPackage($literal);
                     $packageNames[$package->getName()] = true;
                 }
+                /** @var string $replacedName */
                 $replacedName = $this->reasonData;
 
                 if (count($packageNames) > 1) {

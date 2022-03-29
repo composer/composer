@@ -134,6 +134,7 @@ EOT
         $file = Factory::getComposerFile();
 
         $jsonFile = new JsonFile($file);
+        /** @var array{require?: array<string, string>, require-dev?: array<string, string>} $composer */
         $composer = $jsonFile->read();
         $composerBackup = file_get_contents($jsonFile->getPath());
 
@@ -176,7 +177,7 @@ EOT
                         }
                     }
                 }
-            } elseif (isset($composer[$type]) && $matches = Preg::grep(BasePackage::packageNameToRegexp($package), array_keys($composer[$type]))) {
+            } elseif (isset($composer[$type]) && count($matches = Preg::grep(BasePackage::packageNameToRegexp($package), array_keys($composer[$type]))) > 0) {
                 foreach ($matches as $matchedPackage) {
                     if ($dryRun) {
                         $toRemove[$type][] = $matchedPackage;
@@ -184,7 +185,7 @@ EOT
                         $json->removeLink($type, $matchedPackage);
                     }
                 }
-            } elseif (isset($composer[$altType]) && $matches = Preg::grep(BasePackage::packageNameToRegexp($package), array_keys($composer[$altType]))) {
+            } elseif (isset($composer[$altType]) && count($matches = Preg::grep(BasePackage::packageNameToRegexp($package), array_keys($composer[$altType]))) > 0) {
                 foreach ($matches as $matchedPackage) {
                     $io->writeError('<warning>' . $matchedPackage . ' could not be found in ' . $type . ' but it is present in ' . $altType . '</warning>');
                     if ($io->isInteractive()) {

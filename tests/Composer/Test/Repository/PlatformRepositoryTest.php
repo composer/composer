@@ -1078,7 +1078,7 @@ Linked Version => 1.2.11',
      *
      * @param string|string[]            $extensions
      * @param string|null                $info
-     * @param array<string,string|false> $expectations
+     * @param array<string,string|false|array{string|false, 1?: string[], 2?: string[]}> $expectations array of packageName => expected version (or false if expected to be msising), or packageName => array(expected version, expected replaced names, expected provided names)
      * @param list<mixed>                $functions
      * @param list<mixed>                $constants
      * @param list<mixed>                $classDefinitions
@@ -1153,10 +1153,6 @@ Linked Version => 1.2.11',
 
         $platformRepository = new PlatformRepository(array(), array(), $runtime);
 
-        $expectations = array_map(function ($expectation): array {
-            return array_replace(array(null, array(), array()), (array) $expectation);
-        }, $expectations);
-
         $libraries = array_map(
             function ($package): string {
                 return $package['name'];
@@ -1168,17 +1164,21 @@ Linked Version => 1.2.11',
                 }
             )
         );
-        $expectedLibraries = array_merge(array_keys(array_filter($expectations, function ($expectation): bool {
-            return $expectation[0] !== false;
-        })));
+        $expectedLibraries = array_keys(array_filter($expectations, function ($expectation): bool {
+            return $expectation !== false;
+        }));
         self::assertCount(count(array_filter($expectedLibraries)), $libraries, sprintf('Expected: %s, got %s', var_export($expectedLibraries, true), var_export($libraries, true)));
 
-        $expectations = array_merge($expectations, array_combine(array_map(function ($extension): string {
-            return 'ext-'.$extension;
-        }, $extensions), array_fill(0, count($extensions), array($extensionVersion, array(), array()))));
+        foreach ($extensions as $extension) {
+            $expectations['ext-'.$extension] = $extensionVersion;
+        }
 
-        foreach ($expectations as $packageName => $expectation) {
-            list($expectedVersion, $expectedReplaces, $expectedProvides) = $expectation;
+        foreach ($expectations as $expectedLibOrExt => $expectation) {
+            $packageName = $expectedLibOrExt;
+            if (!is_array($expectation)) {
+                $expectation = [$expectation, [], []];
+            }
+            list($expectedVersion, $expectedReplaces, $expectedProvides) = array_pad($expectation, 3, []);
 
             $package = $platformRepository->findPackage($packageName, '*');
             if ($expectedVersion === false) {
