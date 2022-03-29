@@ -347,4 +347,23 @@ class ArrayLoaderTest extends TestCase
         $this->assertSame('2019', $package->getSourceReference());
         $this->assertSame('2019', $package->getDistReference());
     }
+
+    public function testBranchAliasIntegerIndex(): void
+    {
+        $config = array(
+            'name' => 'acme/package',
+            'version' => 'dev-1',
+            'extra' => [
+                'branch-alias' => [
+                    '1' => '1.3-dev',
+                ],
+            ],
+            'dist' => [
+                'type' => 'zip',
+                'url' => 'https://example.org/',
+            ],
+        );
+
+        $this->assertNull($this->loader->getBranchAlias($config));
+    }
 }
