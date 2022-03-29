@@ -91,12 +91,12 @@ class EventDispatcher
     /**
      * Dispatch an event
      *
-     * @param  string $eventName An event name
-     * @param  Event  $event
-     * @return int    return code of the executed script if any, for php scripts a false return
+     * @param  string|null $eventName An event name if no $event is provided
+     * @param  Event       $event
+     * @return int         return code of the executed script if any, for php scripts a false return
      *                          value is changed to 1, anything else to 0
      */
-    public function dispatch(string $eventName, Event $event = null): int
+    public function dispatch(?string $eventName, Event $event = null): int
     {
         if (null === $event) {
             $event = new Event($eventName);
