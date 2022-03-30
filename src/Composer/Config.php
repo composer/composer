@@ -374,9 +374,7 @@ class Config
                 return (int) $this->config['cache-ttl'];
 
             case 'home':
-                $val = Preg::replace('#^(\$HOME|~)(/|$)#', rtrim(Platform::getEnv('HOME') ?: Platform::getEnv('USERPROFILE'), '/\\') . '/', $this->config[$key]);
-
-                return rtrim($this->process($val, $flags), '/\\');
+                return rtrim($this->process(Platform::expandPath($this->config[$key]), $flags), '/\\');
 
             case 'bin-compat':
                 $value = $this->getComposerEnv('COMPOSER_BIN_COMPAT') ?: $this->config[$key];
