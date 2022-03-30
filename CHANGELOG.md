@@ -1,3 +1,7 @@
+### [2.3.1] 2022-03-30
+
+  * Fixed type error when HOME env var is not set (#10670)
+
 ### [2.3.0] 2022-03-30
 
   * Fixed many strict types errors (#10646, #10642, #10647, #10658, #10656, #10665, #10660, #10663, #10662)
@@ -1445,6 +1449,7 @@
 
   * Initial release
 
+[2.3.1]: https://github.com/composer/composer/compare/2.3.0...2.3.1
 [2.3.0]: https://github.com/composer/composer/compare/2.3.0-RC2...2.3.0
 [2.3.0-RC2]: https://github.com/composer/composer/compare/2.3.0-RC1...2.3.0-RC2
 [2.3.0-RC1]: https://github.com/composer/composer/compare/2.2.9...2.3.0-RC1
