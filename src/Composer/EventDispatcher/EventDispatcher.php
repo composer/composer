@@ -394,13 +394,13 @@ class EventDispatcher
     /**
      * Add a listener for a particular event
      *
-     * @param string   $eventName The event name - typically a constant
-     * @param callable $listener  A callable expecting an event argument
-     * @param int      $priority  A higher value represents a higher priority
+     * @param string          $eventName The event name - typically a constant
+     * @param callable|string $listener  A callable expecting an event argument, or a command string to be executed (same as a composer.json "scripts" entry)
+     * @param int             $priority  A higher value represents a higher priority
      *
      * @return void
      */
-    public function addListener(string $eventName, callable $listener, int $priority = 0): void
+    public function addListener(string $eventName, $listener, int $priority = 0): void
     {
         $this->listeners[$eventName][$priority][] = $listener;
     }
