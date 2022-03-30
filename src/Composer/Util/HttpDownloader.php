@@ -479,7 +479,7 @@ class HttpDownloader
      *
      * @return ?string[]
      */
-    public static function getExceptionHints(\Exception $e): ?array
+    public static function getExceptionHints(\Throwable $e): ?array
     {
         if (!$e instanceof TransportException) {
             return null;

@@ -16,6 +16,7 @@ use Composer\IO\NullIO;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
+use LogicException;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Helper\HelperSet;
@@ -23,6 +24,7 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Seld\JsonLint\ParsingException;
 use Composer\Command;
@@ -343,11 +345,33 @@ class Application extends BaseApplication
             return $result;
         } catch (ScriptExecutionException $e) {
             return $e->getCode();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $ghe = new GithubActionError($this->io);
             $ghe->emit($e->getMessage());
 
-            $this->hintCommonErrors($e);
+            $this->hintCommonErrors($e, $output);
+
+            // symfony/console does not handle \Error subtypes so we have to renderThrowable ourselves
+            // instead of rethrowing those for consumption by the parent class
+            if (!$e instanceof \Exception) {
+                if ($output instanceof ConsoleOutputInterface) {
+                    $this->renderThrowable($e, $output->getErrorOutput());
+                } else {
+                    $this->renderThrowable($e, $output);
+                }
+
+                $exitCode = $e->getCode();
+                if (is_numeric($exitCode)) {
+                    $exitCode = (int) $exitCode;
+                    if (0 === $exitCode) {
+                        $exitCode = 1;
+                    }
+                } else {
+                    $exitCode = 1;
+                }
+
+                return $exitCode;
+            }
 
             throw $e;
         } finally {
@@ -374,9 +398,13 @@ class Application extends BaseApplication
     /**
      * @return void
      */
-    private function hintCommonErrors(\Exception $exception): void
+    private function hintCommonErrors(\Throwable $exception, OutputInterface $output): void
     {
         $io = $this->getIO();
+
+        if ((get_class($exception) === LogicException::class || $exception instanceof \Error) && $output->getVerbosity() < OutputInterface::VERBOSITY_VERBOSE) {
+            $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
+        }
 
         Silencer::suppress();
         try {
