@@ -621,11 +621,6 @@ parameters:
 			path: ../src/Composer/Command/ExecCommand.php
 
 		-
-			message: "#^Parameter \\#2 \\$listener of method Composer\\\\EventDispatcher\\\\EventDispatcher\\:\\:addListener\\(\\) expects callable\\(\\)\\: mixed, string given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ExecCommand.php
-
-		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 1
 			path: ../src/Composer/Command/FundCommand.php
@@ -1496,13 +1491,8 @@ parameters:
 			path: ../src/Composer/Config.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function rtrim expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Config.php
-
-		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Config.php
 
 		-
@@ -2641,13 +2631,8 @@ parameters:
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
-			message: "#^Parameter \\#2 \\$listener of method Composer\\\\EventDispatcher\\\\EventDispatcher\\:\\:addListener\\(\\) expects callable\\(\\)\\: mixed, array\\{Composer\\\\EventDispatcher\\\\EventSubscriberInterface, string\\} given\\.$#"
+			message: "#^Parameter \\#2 \\$listener of method Composer\\\\EventDispatcher\\\\EventDispatcher\\:\\:addListener\\(\\) expects \\(callable\\(\\)\\: mixed\\)\\|string, array\\{Composer\\\\EventDispatcher\\\\EventSubscriberInterface, string\\} given\\.$#"
 			count: 3
-			path: ../src/Composer/EventDispatcher/EventDispatcher.php
-
-		-
-			message: "#^Parameter \\#2 \\$subject of static method Composer\\\\Pcre\\\\Preg\\:\\:isMatch\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
 		-
@@ -6442,27 +6427,7 @@ parameters:
 			path: ../tests/Composer/Test/Mock/InstallationManagerMock.php
 
 		-
-			message: "#^Offset 'callback' does not exist on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\}\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
-
-		-
 			message: "#^Offset 'cmd' on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\} on left side of \\?\\? always exists and is not nullable\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
-
-		-
-			message: "#^Offset 'return' does not exist on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\}\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
-
-		-
-			message: "#^Offset 'stderr' does not exist on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\}\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
-
-		-
-			message: "#^Offset 'stdout' does not exist on array\\{cmd\\: array\\<int, string\\>\\|string, return\\?\\: int, stdout\\?\\: string, stderr\\?\\: string, callback\\?\\: callable\\(\\)\\: mixed\\}\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/Mock/ProcessExecutorMock.php
 

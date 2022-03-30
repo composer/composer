@@ -71,11 +71,6 @@ parameters:
 			path: ../src/Composer/Config.php
 
 		-
-			message: "#^Parameter \\#1 \\$string of function rtrim expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Config.php
-
-		-
 			message: "#^Parameter \\#1 \\$callback of function call_user_func_array expects callable\\(\\)\\: mixed, array\\{Composer\\\\Json\\\\JsonManipulator, string\\} given\\.$#"
 			count: 1
 			path: ../src/Composer/Config/JsonConfigSource.php
