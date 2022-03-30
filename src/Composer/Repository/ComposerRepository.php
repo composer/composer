@@ -650,7 +650,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->loadRootServerFile();
 
         if (null === $this->providerListing) {
-            $this->loadProviderListings($this->loadRootServerFile());
+            $data = $this->loadRootServerFile();
+            if (is_array($data)) {
+                $this->loadProviderListings($data);
+            }
         }
 
         if ($this->lazyProvidersUrl) {
@@ -706,7 +709,10 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
             }
 
             if (null === $this->providerListing) {
-                $this->loadProviderListings($this->loadRootServerFile());
+                $data = $this->loadRootServerFile();
+                if (is_array($data)) {
+                    $this->loadProviderListings($data);
+                }
             }
 
             $useLastModifiedCheck = false;
@@ -1013,9 +1019,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
     /**
      * @param int|null $rootMaxAge
-     * @return array<string, mixed>
+     * @return array<'providers'|'provider-includes'|'packages'|'providers-url'|'notify-batch'|'search'|'mirrors'|'providers-lazy-url'|'metadata-url'|'available-packages'|'available-package-patterns', mixed>|true
      */
-    protected function loadRootServerFile(?int $rootMaxAge = null): array
+    protected function loadRootServerFile(?int $rootMaxAge = null)
     {
         if (null !== $this->rootData) {
             return $this->rootData;
@@ -1156,6 +1162,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private function loadDataFromServer(): array
     {
         $data = $this->loadRootServerFile();
+        if (true === $data) {
+            throw new \LogicException('loadRootServerFile should not return true during initialization');
+        }
 
         return $this->loadIncludes($data);
     }
@@ -1572,6 +1581,9 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private function initializePartialPackages(): void
     {
         $rootData = $this->loadRootServerFile();
+        if ($rootData === true) {
+            return;
+        }
 
         $this->partialPackagesByName = array();
         foreach ($rootData['packages'] as $package => $versions) {
