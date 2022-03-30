@@ -3,6 +3,7 @@
   * Fixed type error when running `exec` command (#10672)
   * Fixed endless loop in plugin activation prompt when input is not fully interactive yet appears to be (#10648)
   * Fixed type error in ComposerRepository (#10675)
+  * Fixed issues loading platform packages where the version of a library cannot be established (#10631)
 
 ### [2.3.1] 2022-03-30
 
