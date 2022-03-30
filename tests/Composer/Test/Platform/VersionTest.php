@@ -62,6 +62,7 @@ class VersionTest extends TestCase
             // Additional cases
             array('1.2.3zh-fips-rc3', '1.2.3.34-rc3', true, '1.2.3.34-RC3'),
             array('1.2.3zh-alpha10-fips', '1.2.3.34-alpha10', true),
+            array('1.1.1l (Schannel)', '1.1.1.12'),
             // Check that alphabetical patch levels overflow correctly
             array('1.2.3', '1.2.3.0'),
             array('1.2.3a', '1.2.3.1'),
