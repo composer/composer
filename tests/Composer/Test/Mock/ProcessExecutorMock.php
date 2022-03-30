@@ -66,7 +66,7 @@ class ProcessExecutorMock extends ProcessExecutor
      */
     public function expects(array $expectations, bool $strict = false, array $defaultHandler = array('return' => 0, 'stdout' => '', 'stderr' => '')): void
     {
-        /** @var array{cmd: string|list<string>, return?: int, stdout?: string, stderr?: string, callback?: callable} $default */
+        /** @var array{cmd: string|list<string>, return: int, stdout: string, stderr: string, callback: callable} $default */
         $default = array('cmd' => '', 'return' => 0, 'stdout' => '', 'stderr' => '', 'callback' => null);
         $this->expectations = array_map(function ($expect) use ($default): array {
             if (is_string($expect)) {
