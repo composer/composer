@@ -713,8 +713,16 @@ class PluginManager
                 $composer = $isGlobalPlugin && $this->globalComposer !== null ? $this->globalComposer : $this->composer;
 
                 $this->io->writeError('<warning>'.$package.($isGlobalPlugin ? ' (installed globally)' : '').' contains a Composer plugin which is currently not in your allow-plugins config. See https://getcomposer.org/allow-plugins</warning>');
+                $attempts = 0;
                 while (true) {
-                    switch ($answer = $this->io->ask('Do you trust "<fg=green;options=bold>'.$package.'</>" to execute code and wish to enable it now? (writes "allow-plugins" to composer.json) [<comment>y,n,d,?</comment>] ', '?')) {
+                    // do not allow more than 5 prints of the help message, at some point assume the
+                    // input is not interactive and bail defaulting to a disabled plugin
+                    $default = '?';
+                    if ($attempts > 5) {
+                        $default = 'd';
+                    }
+
+                    switch ($answer = $this->io->ask('Do you trust "<fg=green;options=bold>'.$package.'</>" to execute code and wish to enable it now? (writes "allow-plugins" to composer.json) [<comment>y,n,d,?</comment>] ', $default)) {
                         case 'y':
                         case 'n':
                         case 'd':
@@ -736,6 +744,7 @@ class PluginManager
 
                         case '?':
                         default:
+                            $attempts++;
                             $this->io->writeError(array(
                                 'y - add package to allow-plugins in composer.json and let it run immediately',
                                 'n - add package (as disallowed) to allow-plugins in composer.json to suppress further prompts',
