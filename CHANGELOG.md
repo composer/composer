@@ -1,3 +1,9 @@
+### [2.3.2] 2022-03-30
+
+  * Fixed type error when running `exec` command (#10672)
+  * Fixed endless loop in plugin activation prompt when input is not fully interactive yet appears to be (#10648)
+  * Fixed type error in ComposerRepository (#10675)
+
 ### [2.3.1] 2022-03-30
 
   * Fixed type error when HOME env var is not set (#10670)
@@ -1449,6 +1455,7 @@
 
   * Initial release
 
+[2.3.2]: https://github.com/composer/composer/compare/2.3.1...2.3.2
 [2.3.1]: https://github.com/composer/composer/compare/2.3.0...2.3.1
 [2.3.0]: https://github.com/composer/composer/compare/2.3.0-RC2...2.3.0
 [2.3.0-RC2]: https://github.com/composer/composer/compare/2.3.0-RC1...2.3.0-RC2
