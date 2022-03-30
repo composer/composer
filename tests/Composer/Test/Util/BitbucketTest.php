@@ -197,9 +197,10 @@ class BitbucketTest extends TestCase
             ->method('writeError')
             ->withConsecutive(
                 array('<error>Invalid OAuth consumer provided.</error>'),
-                array('This can have two reasons:'),
+                array('This can have three reasons:'),
                 array('1. You are authenticating with a bitbucket username/password combination'),
-                array('2. You are using an OAuth consumer, but didn\'t configure a (dummy) callback url')
+                array('2. You are using an OAuth consumer, but didn\'t configure a (dummy) callback url'),
+                array('3. You are using an OAuth consumer, but didn\'t configure it as private consumer')
             );
 
         $this->httpDownloader->expects($this->once())
