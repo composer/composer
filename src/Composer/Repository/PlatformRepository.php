@@ -659,15 +659,18 @@ class PlatformRepository extends ArrayRepository
 
     /**
      * @param string      $name
-     * @param string      $prettyVersion
+     * @param string|null $prettyVersion
      * @param string|null $description
      * @param string[]    $replaces
      * @param string[]    $provides
      *
      * @return void
      */
-    private function addLibrary(string $name, string $prettyVersion, ?string $description = null, array $replaces = array(), array $provides = array()): void
+    private function addLibrary(string $name, ?string $prettyVersion, ?string $description = null, array $replaces = array(), array $provides = array()): void
     {
+        if (null === $prettyVersion) {
+            return;
+        }
         try {
             $version = $this->versionParser->normalize($prettyVersion);
         } catch (\UnexpectedValueException $e) {
