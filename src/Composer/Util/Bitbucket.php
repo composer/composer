@@ -112,9 +112,10 @@ class Bitbucket
         } catch (TransportException $e) {
             if ($e->getCode() === 400) {
                 $this->io->writeError('<error>Invalid OAuth consumer provided.</error>');
-                $this->io->writeError('This can have two reasons:');
+                $this->io->writeError('This can have three reasons:');
                 $this->io->writeError('1. You are authenticating with a bitbucket username/password combination');
                 $this->io->writeError('2. You are using an OAuth consumer, but didn\'t configure a (dummy) callback url');
+                $this->io->writeError('3. You are using an OAuth consumer, but didn\'t configure it as private consumer');
 
                 return false;
             }
