@@ -109,7 +109,7 @@ abstract class VcsDriver implements VcsDriverInterface
     /**
      * @param string $identifier
      *
-     * @return array<string, mixed>|null
+     * @return array<mixed>|null
      */
     protected function getBaseComposerInformation(string $identifier): ?array
     {
@@ -120,6 +120,10 @@ abstract class VcsDriver implements VcsDriverInterface
         }
 
         $composer = JsonFile::parseJson($composerFileContent, $identifier . ':composer.json');
+
+        if ([] === $composer || !is_array($composer)) {
+            return null;
+        }
 
         if (empty($composer['time']) && null !== ($changeDate = $this->getChangeDate($identifier))) {
             $composer['time'] = $changeDate->format(DATE_RFC3339);
@@ -134,7 +138,7 @@ abstract class VcsDriver implements VcsDriverInterface
     public function hasComposerFile(string $identifier): bool
     {
         try {
-            return (bool) $this->getComposerInformation($identifier);
+            return null !== $this->getComposerInformation($identifier);
         } catch (TransportException $e) {
         }
 

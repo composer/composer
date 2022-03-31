@@ -148,7 +148,7 @@ class SvnDriver extends VcsDriver
                     throw $e;
                 }
                 // remember a not-existent composer.json
-                $composer = [];
+                $composer = null;
             }
 
             if ($this->shouldCache($identifier)) {
@@ -156,6 +156,11 @@ class SvnDriver extends VcsDriver
             }
 
             $this->infoCache[$identifier] = $composer;
+        }
+
+        // old cache files had '' stored instead of null due to af3783b5f40bae32a23e353eaf0a00c9b8ce82e2, so we make sure here that we always return null or array
+        if (!is_array($this->infoCache[$identifier])) {
+            return null;
         }
 
         return $this->infoCache[$identifier];
