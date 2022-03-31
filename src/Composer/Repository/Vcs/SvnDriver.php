@@ -148,7 +148,7 @@ class SvnDriver extends VcsDriver
                     throw $e;
                 }
                 // remember a not-existent composer.json
-                $composer = '';
+                $composer = [];
             }
 
             if ($this->shouldCache($identifier)) {
