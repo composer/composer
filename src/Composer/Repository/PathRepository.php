@@ -198,7 +198,6 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 $package['dist']['reference'] = trim($output);
             }
 
-            $needsAlias = false;
             if (!isset($package['version'])) {
                 $versionData = $this->versionGuesser->guessVersion($package, $path);
                 if (is_array($versionData) && $versionData['pretty_version']) {
@@ -211,16 +210,10 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                     $package['version'] = $versionData['pretty_version'];
                 } else {
                     $package['version'] = 'dev-main';
-                    $needsAlias = true;
                 }
             }
 
-            $package = $this->loader->load($package);
-            if ($needsAlias && $package instanceof CompletePackage) {
-                // keep a dev-master alias to dev-main for BC
-                $package = new CompleteAliasPackage($package, 'dev-master', 'dev-master');
-            }
-            $this->addPackage($package);
+            $this->addPackage($this->loader->load($package));
         }
     }
 
