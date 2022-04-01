@@ -30,8 +30,8 @@ class Versions
     private $config;
     /** @var string */
     private $channel;
-    /** @var array<string, array<int, array{path: string, version: string, min-php: int, eol?: true}>> */
-    private $versionsData;
+    /** @var array<string, array<int, array{path: string, version: string, min-php: int, eol?: true}>>|null */
+    private $versionsData = null;
 
     public function __construct(Config $config, HttpDownloader $httpDownloader)
     {
@@ -99,7 +99,7 @@ class Versions
      */
     private function getVersionsData()
     {
-        if (!$this->versionsData) {
+        if (null === $this->versionsData) {
             if ($this->config->get('disable-tls') === true) {
                 $protocol = 'http';
             } else {
