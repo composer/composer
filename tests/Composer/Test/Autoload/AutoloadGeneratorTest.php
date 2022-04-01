@@ -14,6 +14,7 @@ namespace Composer\Test\Autoload;
 
 use Composer\Autoload\AutoloadGenerator;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
+use Composer\Package\CompletePackage;
 use Composer\Package\Link;
 use Composer\Package\Version\VersionParser;
 use Composer\Semver\Constraint\Constraint;
@@ -775,8 +776,8 @@ EOF;
             include $this->vendorDir.'/composer/autoload_classmap.php'
         );
         $this->assertAutoloadFiles('classmap5', $this->vendorDir.'/composer', 'classmap');
-        $this->assertStringNotContainsString('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
-        $this->assertStringNotContainsString('$loader->setApcuPrefix(', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertStringNotContainsString('$loader->setClassMapAuthoritative(true);', (string) file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertStringNotContainsString('$loader->setApcuPrefix(', (string) file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
     }
 
     public function testClassMapAutoloadingAuthoritativeAndApcu()
@@ -824,8 +825,8 @@ EOF;
         );
         $this->assertAutoloadFiles('classmap8', $this->vendorDir.'/composer', 'classmap');
 
-        $this->assertStringContainsString('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
-        $this->assertStringContainsString('$loader->setApcuPrefix(', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertStringContainsString('$loader->setClassMapAuthoritative(true);', (string) file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertStringContainsString('$loader->setApcuPrefix(', (string) file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
     }
 
     public function testClassMapAutoloadingAuthoritativeAndApcuPrefix()
@@ -873,8 +874,8 @@ EOF;
         );
         $this->assertAutoloadFiles('classmap8', $this->vendorDir.'/composer', 'classmap');
 
-        $this->assertStringContainsString('$loader->setClassMapAuthoritative(true);', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
-        $this->assertStringContainsString('$loader->setApcuPrefix(\'custom\\\'Prefix\');', file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertStringContainsString('$loader->setClassMapAuthoritative(true);', (string) file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+        $this->assertStringContainsString('$loader->setApcuPrefix(\'custom\\\'Prefix\');', (string) file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
     }
 
     public function testFilesAutoloadGeneration()
@@ -1442,8 +1443,8 @@ EOF;
         $this->assertStringEqualsFile($vendorDir.'/composer/autoload_namespaces.php', $expectedNamespace);
         $this->assertStringEqualsFile($vendorDir.'/composer/autoload_psr4.php', $expectedPsr4);
         $this->assertStringEqualsFile($vendorDir.'/composer/autoload_classmap.php', $expectedClassmap);
-        $this->assertStringContainsString("\$vendorDir . '/b/b/bootstrap.php',\n", file_get_contents($vendorDir.'/composer/autoload_files.php'));
-        $this->assertStringContainsString("\$baseDir . '/test.php',\n", file_get_contents($vendorDir.'/composer/autoload_files.php'));
+        $this->assertStringContainsString("\$vendorDir . '/b/b/bootstrap.php',\n", (string) file_get_contents($vendorDir.'/composer/autoload_files.php'));
+        $this->assertStringContainsString("\$baseDir . '/test.php',\n", (string) file_get_contents($vendorDir.'/composer/autoload_files.php'));
     }
 
     public function testUpLevelRelativePaths()
@@ -1527,7 +1528,85 @@ EOF;
         $this->assertStringEqualsFile($this->vendorDir.'/composer/autoload_namespaces.php', $expectedNamespace);
         $this->assertStringEqualsFile($this->vendorDir.'/composer/autoload_psr4.php', $expectedPsr4);
         $this->assertStringEqualsFile($this->vendorDir.'/composer/autoload_classmap.php', $expectedClassmap);
-        $this->assertStringContainsString("\$baseDir . '/../test.php',\n", file_get_contents($this->vendorDir.'/composer/autoload_files.php'));
+        $this->assertStringContainsString("\$baseDir . '/../test.php',\n", (string) file_get_contents($this->vendorDir.'/composer/autoload_files.php'));
+    }
+
+    public function testAutoloadRulesInPackageThatDoesNotExistOnDisk()
+    {
+        $package = new RootPackage('root/a', '1.0', '1.0');
+        $package->setRequires(array(
+            'dep/a' => new Link('root/a', 'dep/a', new MatchAllConstraint(), 'requires'),
+        ));
+        $dep = new CompletePackage('dep/a', '1.0', '1.0');
+
+        $this->repository->expects($this->any())
+            ->method('getCanonicalPackages')
+            ->will($this->returnValue(array($dep)));
+
+        $dep->setAutoload(array(
+            'psr-0' => array('Foo' => './src'),
+        ));
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_19');
+
+        $expectedNamespace = <<<'EOF'
+<?php
+
+// autoload_namespaces.php @generated by Composer
+
+$vendorDir = dirname(dirname(__FILE__));
+$baseDir = dirname($vendorDir);
+
+return array(
+    'Foo' => array($vendorDir . '/dep/a/src'),
+);
+
+EOF;
+        $this->assertStringEqualsFile($this->vendorDir.'/composer/autoload_namespaces.php', $expectedNamespace);
+
+        $dep->setAutoload(array(
+            'psr-4' => array('Acme\Foo\\' => './src-psr4'),
+        ));
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_19');
+
+        $expectedPsr4 = <<<'EOF'
+<?php
+
+// autoload_psr4.php @generated by Composer
+
+$vendorDir = dirname(dirname(__FILE__));
+$baseDir = dirname($vendorDir);
+
+return array(
+    'Acme\\Foo\\' => array($vendorDir . '/dep/a/src-psr4'),
+);
+
+EOF;
+        $this->assertStringEqualsFile($this->vendorDir.'/composer/autoload_psr4.php', $expectedPsr4);
+
+        $dep->setAutoload(array(
+            'classmap' => array('classmap'),
+        ));
+        try {
+            $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_19');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Could not scan for classes inside "'.$this->vendorDir.'/dep/a/classmap" which does not appear to be a file nor a folder', $e->getMessage());
+        }
+
+        $dep->setAutoload(array(
+            'files' => array('./test.php'),
+        ));
+        $this->generator->dump($this->config, $this->repository, $package, $this->im, 'composer', true, '_19');
+        $this->assertStringContainsString("\$vendorDir . '/dep/a/test.php',\n", (string) file_get_contents($this->vendorDir.'/composer/autoload_files.php'));
+
+        $package->setAutoload(array(
+            'exclude-from-classmap' => array('../excludedroot', 'root/excl'),
+        ));
+        $dep->setAutoload(array(
+            'exclude-from-classmap' => array('../../excluded', 'foo/bar'),
+        ));
+        $map = $this->generator->buildPackageMap($this->im, $package, array($dep));
+        $parsed = $this->generator->parseAutoloads($map, $package);
+        $this->assertSame(array(preg_quote(dirname($this->workingDir)).'/excludedroot($|/)', preg_quote($this->workingDir).'/root/excl($|/)'), $parsed['exclude-from-classmap']);
     }
 
     public function testEmptyPaths()
@@ -1745,10 +1824,10 @@ EOF;
 
         if (null === $expectedFixture) {
             $this->assertFalse(file_exists($this->vendorDir . '/composer/platform_check.php'));
-            $this->assertStringNotContainsString("require __DIR__ . '/platform_check.php';", file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+            $this->assertStringNotContainsString("require __DIR__ . '/platform_check.php';", (string) file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
         } else {
             $this->assertFileContentEquals(__DIR__ . '/Fixtures/platform/' . $expectedFixture . '.php', $this->vendorDir . '/composer/platform_check.php');
-            $this->assertStringContainsString("require __DIR__ . '/platform_check.php';", file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
+            $this->assertStringContainsString("require __DIR__ . '/platform_check.php';", (string) file_get_contents($this->vendorDir.'/composer/autoload_real.php'));
         }
     }
 
@@ -1883,8 +1962,8 @@ EOF;
     public static function assertFileContentEquals($expected, $actual, $message = '', $canonicalize = false, $ignoreCase = false)
     {
         self::assertEqualsNormalized(
-            file_get_contents($expected),
-            file_get_contents($actual),
+            (string) file_get_contents($expected),
+            (string) file_get_contents($actual),
             $message ?: $expected.' equals '.$actual,
             0,
             10,
