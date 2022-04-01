@@ -557,17 +557,18 @@ class Application extends BaseApplication
 
     public function getLongVersion(): string
     {
+        $branchAliasString = '';
         if (Composer::BRANCH_ALIAS_VERSION && Composer::BRANCH_ALIAS_VERSION !== '@package_branch_alias_version'.'@') {
-            return sprintf(
-                '<info>%s</info> version <comment>%s (%s)</comment> %s',
-                $this->getName(),
-                Composer::BRANCH_ALIAS_VERSION,
-                $this->getVersion(),
-                Composer::RELEASE_DATE
-            );
+            $branchAliasString = sprintf(' (%s)', Composer::BRANCH_ALIAS_VERSION);
         }
 
-        return parent::getLongVersion() . ' ' . Composer::RELEASE_DATE;
+        return sprintf(
+            '<info>%s</info> version <comment>%s%s</comment> %s',
+            $this->getName(),
+            $this->getVersion(),
+            $branchAliasString,
+            Composer::RELEASE_DATE
+        );
     }
 
     protected function getDefaultInputDefinition(): InputDefinition
