@@ -59,6 +59,7 @@ class SelfUpdateCommand extends BaseCommand
                 new InputOption('snapshot', null, InputOption::VALUE_NONE, 'Force an update to the snapshot channel'),
                 new InputOption('1', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 1.x versions'),
                 new InputOption('2', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 2.x versions'),
+                new InputOption('2.2', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 2.2.x LTS versions'),
                 new InputOption('set-channel-only', null, InputOption::VALUE_NONE, 'Only store the channel as the default one and then exit'),
             ))
             ->setHelp(
@@ -182,8 +183,12 @@ EOT
             }
         }
 
-        if ($requestedChannel && is_numeric($requestedChannel) && strpos($latestStable['version'], $requestedChannel) !== 0) {
-            $io->writeError('<warning>Warning: You forced the install of '.$latestVersion.' via --'.$requestedChannel.', but '.$latestStable['version'].' is the latest stable version. Updating to it via composer self-update --stable is recommended.</warning>');
+        $effectiveChannel = $requestedChannel === null ? $versionsUtil->getChannel() : $requestedChannel;
+        if (is_numeric($effectiveChannel) && strpos($latestStable['version'], $effectiveChannel) !== 0) {
+            $io->writeError('<warning>Warning: You forced the install of '.$latestVersion.' via --'.$effectiveChannel.', but '.$latestStable['version'].' is the latest stable version. Updating to it via composer self-update --stable is recommended.</warning>');
+        }
+        if (isset($latest['eol'])) {
+            $io->writeError('<warning>Warning: Version '.$latestVersion.' is EOL / End of Life. '.$latestStable['version'].' is the latest stable version. Updating to it via composer self-update --stable is recommended.</warning>');
         }
 
         if (Preg::isMatch('{^[0-9a-f]{40}$}', $updateVersion) && $updateVersion !== $latestVersion) {
