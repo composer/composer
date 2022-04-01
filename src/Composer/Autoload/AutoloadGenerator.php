@@ -721,12 +721,8 @@ EOF;
 
         $baseDir = '';
         if (strpos($path.'/', $vendorPath.'/') === 0) {
-            $path = substr($path, strlen($vendorPath));
-            $baseDir = '$vendorDir';
-
-            if ($path !== false) {
-                $baseDir .= " . ";
-            }
+            $path = (string) substr($path, strlen($vendorPath));
+            $baseDir = '$vendorDir . ';
         } else {
             $path = $filesystem->normalizePath($filesystem->findShortestPath($basePath, $path, true));
             if (!$filesystem->isAbsolutePath($path)) {
