@@ -316,13 +316,6 @@ class Factory
                 $message = $e->getMessage() . ':' . PHP_EOL . $errors;
                 throw new JsonValidationException($message);
             }
-            $jsonParser = new JsonParser;
-            try {
-                $jsonParser->parse(file_get_contents($localConfig), JsonParser::DETECT_KEY_CONFLICTS);
-            } catch (DuplicateKeyException $e) {
-                $details = $e->getDetails();
-                $io->writeError('<warning>Key '.$details['key'].' is a duplicate in '.$localConfig.' at line '.$details['line'].'</warning>');
-            }
 
             $localConfig = $file->read();
             $localConfigSource = $file->getPath();
