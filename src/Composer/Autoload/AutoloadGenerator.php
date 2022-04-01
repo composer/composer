@@ -162,6 +162,7 @@ class AutoloadGenerator
      * @param string $suffix
      * @return int
      * @throws \Seld\JsonLint\ParsingException
+     * @throws \RuntimeException
      */
     public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, string $targetDir, bool $scanPsrPackages = false, string $suffix = '')
     {
@@ -1240,6 +1241,9 @@ INITIALIZER;
                         }
 
                         $resolvedPath = realpath($installPath . '/' . $updir);
+                        if (false === $resolvedPath) {
+                            continue;
+                        }
                         $autoloads[] = preg_quote(strtr($resolvedPath, '\\', '/')) . '/' . $path . '($|/)';
                         continue;
                     }

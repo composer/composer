@@ -42,6 +42,14 @@
   * Fixed symlink creation in linux VM guest filesystems to be recognized by Windows (#10592)
   * Performance improvement in pool optimization step (#10585)
 
+### [2.2.11] 2022-04-01
+
+  * Added missing config.bitbucket-oauth in composer-schema.json
+  * Added --2.2 flag to `self-update` to pin the Composer version to the 2.2 LTS range (#10682)
+  * Updated semver, jsonlint deps for minor fixes
+  * Fixed generation of autoload crashing if a package has a broken path (#10688)
+  * Removed dev-master=>dev-main alias from #10372 as it does not work when reloading from lock file and extracting dev deps (#10651)
+
 ### [2.2.10] 2022-03-29
 
   * Fixed Bitbucket authorization detection due to API changes (#10657)
@@ -1461,6 +1469,7 @@
 [2.3.0]: https://github.com/composer/composer/compare/2.3.0-RC2...2.3.0
 [2.3.0-RC2]: https://github.com/composer/composer/compare/2.3.0-RC1...2.3.0-RC2
 [2.3.0-RC1]: https://github.com/composer/composer/compare/2.2.9...2.3.0-RC1
+[2.2.11]: https://github.com/composer/composer/compare/2.2.10...2.2.11
 [2.2.10]: https://github.com/composer/composer/compare/2.2.9...2.2.10
 [2.2.9]: https://github.com/composer/composer/compare/2.2.8...2.2.9
 [2.2.8]: https://github.com/composer/composer/compare/2.2.7...2.2.8

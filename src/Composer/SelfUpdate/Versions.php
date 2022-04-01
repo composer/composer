@@ -12,6 +12,7 @@
 
 namespace Composer\SelfUpdate;
 
+use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
 use Composer\Config;
 
@@ -21,7 +22,7 @@ use Composer\Config;
 class Versions
 {
     /** @var string[] */
-    public static $channels = array('stable', 'preview', 'snapshot', '1', '2');
+    public static $channels = array('stable', 'preview', 'snapshot', '1', '2', '2.2');
 
     /** @var HttpDownloader */
     private $httpDownloader;
@@ -29,8 +30,8 @@ class Versions
     private $config;
     /** @var string */
     private $channel;
-    /** @var array<string, array<int, array{path: string, version: string, min-php: int}>> */
-    private $versionsData;
+    /** @var array<string, array<int, array{path: string, version: string, min-php: int, eol?: true}>>|null */
+    private $versionsData = null;
 
     public function __construct(Config $config, HttpDownloader $httpDownloader)
     {
@@ -50,7 +51,7 @@ class Versions
         $channelFile = $this->config->get('home').'/update-channel';
         if (file_exists($channelFile)) {
             $channel = trim(file_get_contents($channelFile));
-            if (in_array($channel, array('stable', 'preview', 'snapshot'), true)) {
+            if (in_array($channel, array('stable', 'preview', 'snapshot', '2.2'), true)) {
                 return $this->channel = $channel;
             }
         }
@@ -71,13 +72,14 @@ class Versions
 
         $channelFile = $this->config->get('home').'/update-channel';
         $this->channel = $channel;
-        file_put_contents($channelFile, (is_numeric($channel) ? 'stable' : $channel).PHP_EOL);
+        // rewrite '2' and '1' channels to stable for future self-updates, but LTS ones like '2.2' remain pinned
+        file_put_contents($channelFile, (Preg::isMatch('{^\d+$}D', $channel) ? 'stable' : $channel).PHP_EOL);
     }
 
     /**
      * @param string|null $channel
      *
-     * @return array{path: string, version: string, min-php: int}
+     * @return array{path: string, version: string, min-php: int, eol?: true}
      */
     public function getLatest(?string $channel = null): array
     {
@@ -93,11 +95,11 @@ class Versions
     }
 
     /**
-     * @return array<string, array<int, array{path: string, version: string, min-php: int}>>
+     * @return array<string, array<int, array{path: string, version: string, min-php: int, eol?: true}>>
      */
     private function getVersionsData(): array
     {
-        if (!$this->versionsData) {
+        if (null === $this->versionsData) {
             if ($this->config->get('disable-tls') === true) {
                 $protocol = 'http';
             } else {
