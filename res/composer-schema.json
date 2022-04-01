@@ -498,6 +498,24 @@
                         "type": "string"
                     }
                 },
+                "bitbucket-oauth": {
+                    "type": "object",
+                    "description": "An object of domain name => {\"consumer-key\": \"...\", \"consumer-secret\": \"...\"}.",
+                    "additionalProperties": {
+                        "type": "object",
+                        "required": ["consumer-key", "consumer-secret"],
+                        "properties": {
+                            "consumer-key": {
+                                "type": "string",
+                                "description": "The consumer-key used for OAuth authentication"
+                            },
+                            "consumer-secret": {
+                                "type": "string",
+                                "description": "The consumer-secret used for OAuth authentication"
+                            }
+                        }
+                    }
+                },
                 "use-github-api": {
                     "type": "boolean",
                     "description": "Defaults to true.  If set to false, globally disables the use of the GitHub API for all GitHub repositories and clones the repository as it would for any other repository."
