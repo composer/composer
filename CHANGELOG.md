@@ -1,3 +1,15 @@
+### [2.3.3] 2022-04-01
+
+  * Added --2.2 flag to `self-update` to pin the Composer version to the 2.2 LTS range (#10682)
+  * Added missing config.bitbucket-oauth in composer-schema.json
+  * Fixed type errors in SvnDriver (#10681)
+  * Fixed --version output to match the pre-2.3 one (#10684)
+  * Fixed config/auth.json files not being validated against the composer-schema.json (#10685)
+  * Fixed generation of autoload crashing if a package has a broken path (#10688)
+  * Fixed GitDriver state issue when reusing old cache dirs and the default branch was renamed (#10687)
+  * Updated semver, jsonlint deps for minor fixes
+  * Removed dev-master=>dev-main alias from #10372 as it does not work when reloading from lock file and extracting dev deps (#10651)
+
 ### [2.3.2] 2022-03-30
 
   * Fixed type error when running `exec` command (#10672)
@@ -1464,6 +1476,7 @@
 
   * Initial release
 
+[2.3.3]: https://github.com/composer/composer/compare/2.3.2...2.3.3
 [2.3.2]: https://github.com/composer/composer/compare/2.3.1...2.3.2
 [2.3.1]: https://github.com/composer/composer/compare/2.3.0...2.3.1
 [2.3.0]: https://github.com/composer/composer/compare/2.3.0-RC2...2.3.0
