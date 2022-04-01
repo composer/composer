@@ -97,11 +97,8 @@ class GitDriver extends VcsDriver
             if (!(bool) Platform::getEnv('COMPOSER_DISABLE_NETWORK')) {
                 try {
                     $this->process->execute('git remote show origin', $output, $this->repoDir);
-                    $lines = $this->process->splitLines($output);
-                    foreach ($lines as $line) {
-                        if (Preg::match('{^\s*HEAD branch:\s(.+)\s*$}', $line, $matches) > 0) {
-                            return $this->rootIdentifier = $matches[1];
-                        }
+                    if (Preg::isMatch('{^\s*HEAD branch:\s(.+)\s*$}m', $output, $matches)) {
+                        return $this->rootIdentifier = $matches[1];
                     }
                 } catch (\Exception $e) {
                     $this->io->writeError('<error>Failed to fetch root identifier from remote: ' . $e->getMessage() . '</error>', true, IOInterface::DEBUG);
