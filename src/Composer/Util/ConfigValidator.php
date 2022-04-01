@@ -58,6 +58,7 @@ class ConfigValidator
 
         // validate json schema
         $laxValid = false;
+        $manifest = null;
         try {
             $json = new JsonFile($file, null, $this->io);
             $manifest = $json->read();
@@ -79,12 +80,14 @@ class ConfigValidator
             return array($errors, $publishErrors, $warnings);
         }
 
-        $jsonParser = new JsonParser();
-        try {
-            $jsonParser->parse(file_get_contents($file), JsonParser::DETECT_KEY_CONFLICTS);
-        } catch (DuplicateKeyException $e) {
-            $details = $e->getDetails();
-            $warnings[] = 'Key '.$details['key'].' is a duplicate in '.$file.' at line '.$details['line'];
+        if (is_array($manifest)) {
+            $jsonParser = new JsonParser();
+            try {
+                $jsonParser->parse((string) file_get_contents($file), JsonParser::DETECT_KEY_CONFLICTS);
+            } catch (DuplicateKeyException $e) {
+                $details = $e->getDetails();
+                $warnings[] = 'Key '.$details['key'].' is a duplicate in '.$file.' at line '.$details['line'];
+            }
         }
 
         // validate actual data

@@ -505,10 +505,10 @@ class Config
     /**
      * Replaces {$refs} inside a config string
      *
-     * @param  string|int|null $value a config string that can contain {$refs-to-other-config}
-     * @param  int             $flags Options (see class constants)
+     * @param  string|mixed $value a config string that can contain {$refs-to-other-config}
+     * @param  int          $flags Options (see class constants)
      *
-     * @return string|int|null
+     * @return string|mixed
      */
     private function process($value, int $flags)
     {

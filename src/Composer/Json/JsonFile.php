@@ -203,7 +203,18 @@ class JsonFile
         return self::validateJsonSchema($this->path, $data, $schema, $schemaFile);
     }
 
-    public static function validateJsonSchema($source, $data, int $schema, ?string $schemaFile = null): bool
+    /**
+     * Validates the schema of the current json file according to composer-schema.json rules
+     *
+     * @param  mixed                   $data       Decoded JSON data to validate
+     * @param  int                     $schema     a JsonFile::*_SCHEMA constant
+     * @param  string|null             $schemaFile a path to the schema file
+     * @throws JsonValidationException
+     * @return true                    true on success
+     *
+     * @phpstan-param self::*_SCHEMA $schema
+     */
+    public static function validateJsonSchema(string $source, $data, int $schema, ?string $schemaFile = null): bool
     {
         $isComposerSchemaFile = false;
         if (null === $schemaFile) {

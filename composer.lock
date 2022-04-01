@@ -695,23 +695,23 @@
         },
         {
             "name": "seld/jsonlint",
-            "version": "1.8.9",
+            "version": "1.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/jsonlint.git",
-                "reference": "d9a308b84277a7dd651ba89bf5ed37b88497b171"
+                "reference": "4211420d25eba80712bff236a98960ef68b866b7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/d9a308b84277a7dd651ba89bf5ed37b88497b171",
-                "reference": "d9a308b84277a7dd651ba89bf5ed37b88497b171",
+                "url": "https://api.github.com/repos/Seldaek/jsonlint/zipball/4211420d25eba80712bff236a98960ef68b866b7",
+                "reference": "4211420d25eba80712bff236a98960ef68b866b7",
                 "shasum": ""
             },
             "require": {
                 "php": "^5.3 || ^7.0 || ^8.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "^0.12.59",
+                "phpstan/phpstan": "^1.5",
                 "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.0 || ^8.5.13"
             },
             "bin": [
@@ -743,7 +743,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/jsonlint/issues",
-                "source": "https://github.com/Seldaek/jsonlint/tree/1.8.9"
+                "source": "https://github.com/Seldaek/jsonlint/tree/1.9.0"
             },
             "funding": [
                 {
@@ -755,7 +755,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-03-31T11:30:35+00:00"
+            "time": "2022-04-01T13:37:23+00:00"
         },
         {
             "name": "seld/phar-utils",

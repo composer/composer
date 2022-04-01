@@ -182,7 +182,7 @@ class Factory
         // load global config
         $file = new JsonFile($config->get('home').'/config.json');
         if ($file->exists()) {
-            if ($io) {
+            if ($io instanceof IOInterface) {
                 $io->writeError('Loading config file ' . $file->getPath(), true, IOInterface::DEBUG);
             }
             self::validateJsonSchema($io, $file);
@@ -209,7 +209,7 @@ class Factory
         // load global auth file
         $file = new JsonFile($config->get('home').'/auth.json');
         if ($file->exists()) {
-            if ($io) {
+            if ($io instanceof IOInterface) {
                 $io->writeError('Loading config file ' . $file->getPath(), true, IOInterface::DEBUG);
             }
             self::validateJsonSchema($io, $file, JsonFile::AUTH_SCHEMA);
@@ -221,11 +221,11 @@ class Factory
         if ($composerAuthEnv = Platform::getEnv('COMPOSER_AUTH')) {
             $authData = json_decode($composerAuthEnv);
             if (null === $authData) {
-                if ($io) {
+                if ($io instanceof IOInterface) {
                     $io->writeError('<error>COMPOSER_AUTH environment variable is malformed, should be a valid JSON object</error>');
                 }
             } else {
-                if ($io) {
+                if ($io instanceof IOInterface) {
                     $io->writeError('Loading auth config from COMPOSER_AUTH', true, IOInterface::DEBUG);
                 }
                 self::validateJsonSchema($io, $authData, JsonFile::AUTH_SCHEMA, 'COMPOSER_AUTH');
@@ -702,11 +702,14 @@ class Factory
             if ($fileOrData instanceof JsonFile) {
                 $fileOrData->validateSchema($schema);
             } else {
+                if (null === $source) {
+                    throw new \InvalidArgumentException('$source is required to be provided if $fileOrData is arbitrary data');
+                }
                 JsonFile::validateJsonSchema($source, $fileOrData, $schema);
             }
         } catch (JsonValidationException $e) {
             $msg = $e->getMessage().', this may result in errors and should be resolved:'.PHP_EOL.' - '.implode(PHP_EOL.' - ', $e->getErrors());
-            if ($io) {
+            if ($io instanceof IOInterface) {
                 $io->writeError('<warning>'.$msg.'</>');
             } else {
                 throw new UnexpectedValueException($msg);
