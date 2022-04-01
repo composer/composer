@@ -128,8 +128,9 @@ class ProcessExecutorTest extends TestCase
         $this->assertEquals(1, $process->countActiveJobs());
         $promise->cancel();
         $this->assertEquals(0, $process->countActiveJobs());
+        $process->wait();
         $end = microtime(true);
-        $this->assertTrue($end - $start < 0.5, 'Canceling took longer than it should, lasted '.($end - $start));
+        $this->assertTrue($end - $start < 2, 'Canceling took longer than it should, lasted '.($end - $start));
     }
 
     /**
