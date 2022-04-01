@@ -40,6 +40,7 @@ use Composer\Downloader\TransportException;
 use Composer\Json\JsonValidationException;
 use Composer\Repository\InstalledRepositoryInterface;
 use Seld\JsonLint\JsonParser;
+use UnexpectedValueException;
 use ZipArchive;
 
 /**
@@ -170,18 +171,21 @@ class Factory
 
         // determine and add main dirs to the config
         $home = self::getHomeDir();
-        $config->merge(array('config' => array(
-            'home' => $home,
-            'cache-dir' => self::getCacheDir($home),
-            'data-dir' => self::getDataDir($home),
-        )), Config::SOURCE_DEFAULT);
+        $config->merge(array(
+            'config' => array(
+                'home' => $home,
+                'cache-dir' => self::getCacheDir($home),
+                'data-dir' => self::getDataDir($home),
+            )
+        ), Config::SOURCE_DEFAULT);
 
         // load global config
         $file = new JsonFile($config->get('home').'/config.json');
         if ($file->exists()) {
-            if ($io && $io->isDebug()) {
-                $io->writeError('Loading config file ' . $file->getPath());
+            if ($io) {
+                $io->writeError('Loading config file ' . $file->getPath(), true, IOInterface::DEBUG);
             }
+            self::validateJsonSchema($io, $file);
             $config->merge($file->read(), $file->getPath());
         }
         $config->setConfigSource(new JsonConfigSource($file));
@@ -205,26 +209,30 @@ class Factory
         // load global auth file
         $file = new JsonFile($config->get('home').'/auth.json');
         if ($file->exists()) {
-            if ($io && $io->isDebug()) {
-                $io->writeError('Loading config file ' . $file->getPath());
+            if ($io) {
+                $io->writeError('Loading config file ' . $file->getPath(), true, IOInterface::DEBUG);
             }
+            self::validateJsonSchema($io, $file, JsonFile::AUTH_SCHEMA);
             $config->merge(array('config' => $file->read()), $file->getPath());
         }
         $config->setAuthConfigSource(new JsonConfigSource($file, true));
 
         // load COMPOSER_AUTH environment variable if set
         if ($composerAuthEnv = Platform::getEnv('COMPOSER_AUTH')) {
-            $authData = json_decode($composerAuthEnv, true);
-
+            $authData = json_decode($composerAuthEnv);
             if (null === $authData) {
                 if ($io) {
                     $io->writeError('<error>COMPOSER_AUTH environment variable is malformed, should be a valid JSON object</error>');
                 }
             } else {
-                if ($io && $io->isDebug()) {
-                    $io->writeError('Loading auth config from COMPOSER_AUTH');
+                if ($io) {
+                    $io->writeError('Loading auth config from COMPOSER_AUTH', true, IOInterface::DEBUG);
                 }
-                $config->merge(array('config' => $authData), 'COMPOSER_AUTH');
+                self::validateJsonSchema($io, $authData, JsonFile::AUTH_SCHEMA, 'COMPOSER_AUTH');
+                $authData = json_decode($composerAuthEnv, true);
+                if (null !== $authData) {
+                    $config->merge(array('config' => $authData), 'COMPOSER_AUTH');
+                }
             }
         }
 
@@ -689,5 +697,27 @@ class Factory
         }
 
         return rtrim(strtr($home, '\\', '/'), '/');
+    }
+
+    /**
+     * @param mixed $fileOrData
+     * @param JsonFile::*_SCHEMA $schema
+     */
+    private static function validateJsonSchema(?IOInterface $io, $fileOrData, int $schema = JsonFile::LAX_SCHEMA, ?string $source = null): void
+    {
+        try {
+            if ($fileOrData instanceof JsonFile) {
+                $fileOrData->validateSchema($schema);
+            } else {
+                JsonFile::validateJsonSchema($source, $fileOrData, $schema);
+            }
+        } catch (JsonValidationException $e) {
+            $msg = $e->getMessage().', this may result in errors and should be resolved:'.PHP_EOL.' - '.implode(PHP_EOL.' - ', $e->getErrors());
+            if ($io) {
+                $io->writeError('<warning>'.$msg.'</>');
+            } else {
+                throw new UnexpectedValueException($msg);
+            }
+        }
     }
 }

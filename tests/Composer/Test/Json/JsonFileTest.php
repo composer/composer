@@ -239,6 +239,20 @@ class JsonFileTest extends TestCase
         unlink($schema);
     }
 
+    public function testAuthSchemaValidationWithCustomDataSource(): void
+    {
+        $json = json_decode('{"github-oauth": "foo"}');
+        $expectedMessage = sprintf('"COMPOSER_AUTH" does not match the expected JSON schema');
+        $expectedError = 'github-oauth : String value found, but an object is required';
+        try {
+            JsonFile::validateJsonSchema('COMPOSER_AUTH', $json, JsonFile::AUTH_SCHEMA);
+            $this->fail('Expected exception to be thrown');
+        } catch (JsonValidationException $e) {
+            $this->assertEquals($expectedMessage, $e->getMessage());
+            $this->assertSame([$expectedError], $e->getErrors());
+        }
+    }
+
     public function testParseErrorDetectMissingCommaMultiline(): void
     {
         $json = '{
