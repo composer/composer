@@ -13,6 +13,7 @@
 namespace Composer\Repository\Vcs;
 
 use Composer\Pcre\Preg;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Filesystem;
 use Composer\Util\Url;
@@ -92,6 +93,20 @@ class GitDriver extends VcsDriver
     {
         if (null === $this->rootIdentifier) {
             $this->rootIdentifier = 'master';
+
+            if (!(bool) Platform::getEnv('COMPOSER_DISABLE_NETWORK')) {
+                try {
+                    $this->process->execute('git remote show origin', $output, $this->repoDir);
+                    $lines = $this->process->splitLines($output);
+                    foreach ($lines as $line) {
+                        if (Preg::match('{^\s*HEAD branch:\s(.+)\s*$}', $line, $matches) > 0) {
+                            return $this->rootIdentifier = $matches[1];
+                        }
+                    }
+                } catch (\Exception $e) {
+                    $this->io->writeError('<error>Failed to fetch root identifier from remote: ' . $e->getMessage() . '</error>', true, IOInterface::DEBUG);
+                }
+            }
 
             // select currently checked out branch if master is not available
             $this->process->execute('git branch --no-color', $output, $this->repoDir);
