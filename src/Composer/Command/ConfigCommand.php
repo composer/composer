@@ -185,7 +185,7 @@ EOT
 
         $authConfigFile = $input->getOption('global')
             ? ($this->config->get('home') . '/auth.json')
-            : dirname(realpath($configFile)) . '/auth.json';
+            : dirname($configFile) . '/auth.json';
 
         $this->authConfigFile = new JsonFile($authConfigFile, null, $io);
         $this->authConfigSource = new JsonConfigSource($this->authConfigFile, true);
