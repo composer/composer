@@ -1608,7 +1608,7 @@ EOF;
         $parsed = $this->generator->parseAutoloads($map, $package);
         $this->assertSame(array(
             preg_quote(strtr((string) realpath(dirname($this->workingDir)), '\\', '/')).'/excludedroot($|/)',
-            preg_quote(strtr((string) realpath(dirname($this->workingDir)), '\\', '/')).'/root/excl($|/)'
+            preg_quote(strtr((string) realpath($this->workingDir), '\\', '/')).'/root/excl($|/)'
         ), $parsed['exclude-from-classmap']);
     }
 
