@@ -1597,7 +1597,10 @@ EOF;
         ));
         $map = $this->generator->buildPackageMap($this->im, $package, array($dep));
         $parsed = $this->generator->parseAutoloads($map, $package);
-        $this->assertSame(array(preg_quote(dirname($this->workingDir)).'/excludedroot($|/)', preg_quote($this->workingDir).'/root/excl($|/)'), $parsed['exclude-from-classmap']);
+        $this->assertSame(array(
+            preg_quote(strtr((string) realpath(dirname($this->workingDir)), '\\', '/')).'/excludedroot($|/)',
+            preg_quote(strtr((string) realpath($this->workingDir), '\\', '/')).'/root/excl($|/)'
+        ), $parsed['exclude-from-classmap']);
     }
 
     public function testEmptyPaths(): void
