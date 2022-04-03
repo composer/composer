@@ -571,7 +571,7 @@ class EventDispatcher
     private function ensureBinDirIsInPath(): void
     {
         $pathEnv = 'PATH';
-        if (false === Platform::getEnv('PATH') && false !== Platform::getEnv('Path')) {
+        if (!isset($_SERVER[$pathEnv]) && isset($_SERVER['Path'])) {
             $pathEnv = 'Path';
         }
 
