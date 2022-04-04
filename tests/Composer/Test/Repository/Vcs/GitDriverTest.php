@@ -42,12 +42,43 @@ class GitDriverTest extends TestCase
         }
     }
 
+    public function testGetRootIdentifierFromRemoteLocalRepository(): void
+    {
+        $process = $this->getProcessExecutorMock();
+        $io = $this->getMockBuilder(IOInterface::class)->getMock();
+
+        $driver = new GitDriver(['url' => $this->home], $io, $this->config, $this->getHttpDownloaderMock(), $process);
+        $this->setRepoDir($driver, $this->home);
+
+        $stdoutFailure = <<<GITFAILURE
+fatal: could not read Username for 'https://example.org/acme.git': terminal prompts disabled
+GITFAILURE;
+
+        $stdout = <<<GIT
+* main
+  2.2
+  1.10
+GIT;
+
+        $process
+            ->expects([[
+                'cmd' => 'git remote show origin',
+                'stdout' => $stdoutFailure,
+            ], [
+                'cmd' => 'git branch --no-color',
+                'stdout' => $stdout,
+            ]]);
+
+        $this->assertSame('main', $driver->getRootIdentifier());
+    }
+
     public function testGetRootIdentifierFromRemote(): void
     {
         $process = $this->getProcessExecutorMock();
         $io = $this->getMockBuilder(IOInterface::class)->getMock();
 
         $driver = new GitDriver(['url' => 'https://example.org/acme.git'], $io, $this->config, $this->getHttpDownloaderMock(), $process);
+        $this->setRepoDir($driver, $this->home);
 
         $stdout = <<<GIT
 * remote origin
@@ -62,7 +93,10 @@ GIT;
 
         $process
             ->expects([[
-                'cmd' => 'git remote show origin',
+                'cmd' => 'git remote -v',
+                'stdout' => '',
+            ],[
+                'cmd' => "git remote set-url origin -- 'https://example.org/acme.git' && git remote show origin && git remote set-url origin -- 'https://example.org/acme.git'",
                 'stdout' => $stdout,
             ]]);
 
@@ -77,6 +111,7 @@ GIT;
         $io = $this->getMockBuilder(IOInterface::class)->getMock();
 
         $driver = new GitDriver(['url' => 'https://example.org/acme.git'], $io, $this->config, $this->getHttpDownloaderMock(), $process);
+        $this->setRepoDir($driver, $this->home);
 
         $stdout = <<<GIT
 * main
@@ -91,5 +126,13 @@ GIT;
             ]]);
 
         $this->assertSame('main', $driver->getRootIdentifier());
+    }
+
+    private function setRepoDir(GitDriver $driver, string $path): void
+    {
+        $reflectionClass = new \ReflectionClass($driver);
+        $reflectionProperty = $reflectionClass->getProperty('repoDir');
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($driver, $path);
     }
 }

@@ -46,10 +46,12 @@ class Git
      * @param string      $url
      * @param string|null $cwd
      * @param bool        $initialClone
+     * @param mixed       $commandOutput  the output will be written into this var if passed by ref
+     *                                    if a callable is passed it will be used as output handler
      *
      * @return void
      */
-    public function runCommand(callable $commandCallable, string $url, ?string $cwd, bool $initialClone = false): void
+    public function runCommand(callable $commandCallable, string $url, ?string $cwd, bool $initialClone = false, &$commandOutput = null): void
     {
         // Ensure we are allowed to use this URL by config
         $this->config->prohibitUrlByConfig($url, $this->io);
@@ -85,7 +87,7 @@ class Git
                     $protoUrl = $protocol . "://" . $match[1] . "/" . $match[2];
                 }
 
-                if (0 === $this->process->execute(call_user_func($commandCallable, $protoUrl), $ignoredOutput, $cwd)) {
+                if (0 === $this->process->execute(call_user_func($commandCallable, $protoUrl), $commandOutput, $cwd)) {
                     return;
                 }
                 $messages[] = '- ' . $protoUrl . "\n" . Preg::replace('#^#m', '  ', $this->process->getErrorOutput());
@@ -108,7 +110,7 @@ class Git
 
         $auth = null;
         $credentials = array();
-        if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $ignoredOutput, $cwd)) {
+        if ($bypassSshForGitHub || 0 !== $this->process->execute($command, $commandOutput, $cwd)) {
             $errorMsg = $this->process->getErrorOutput();
             // private github repository without ssh key access, try https with auth
             if (Preg::isMatch('{^git@' . self::getGitHubDomainsRegex($this->config) . ':(.+?)\.git$}i', $url, $match)
@@ -127,7 +129,7 @@ class Git
                     $auth = $this->io->getAuthentication($match[1]);
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
                     $command = call_user_func($commandCallable, $authUrl);
-                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
 
@@ -162,7 +164,7 @@ class Git
                     $authUrl = 'https://' . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[1] . '/' . $match[2] . '.git';
 
                     $command = call_user_func($commandCallable, $authUrl);
-                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
 
@@ -172,7 +174,7 @@ class Git
                     $sshUrl = 'git@bitbucket.org:' . $match[2] . '.git';
                     $this->io->writeError('    No bitbucket authentication configured. Falling back to ssh.');
                     $command = call_user_func($commandCallable, $sshUrl);
-                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
 
@@ -204,7 +206,7 @@ class Git
                     }
 
                     $command = call_user_func($commandCallable, $authUrl);
-                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         return;
                     }
 
@@ -241,7 +243,7 @@ class Git
                     $authUrl = $match[1] . rawurlencode($auth['username']) . ':' . rawurlencode($auth['password']) . '@' . $match[2] . $match[3];
 
                     $command = call_user_func($commandCallable, $authUrl);
-                    if (0 === $this->process->execute($command, $ignoredOutput, $cwd)) {
+                    if (0 === $this->process->execute($command, $commandOutput, $cwd)) {
                         $this->io->setAuthentication($match[2], $auth['username'], $auth['password']);
                         $authHelper = new AuthHelper($this->io, $this->config);
                         $authHelper->storeAuth($match[2], $storeAuth);
@@ -390,6 +392,38 @@ class Git
         }
 
         return false;
+    }
+
+    public function getMirrorDefaultBranch(string $url, string $dir, bool $isLocalPathRepository): ?string
+    {
+        if ((bool) Platform::getEnv('COMPOSER_DISABLE_NETWORK')) {
+            return null;
+        }
+
+        try {
+            if ($isLocalPathRepository) {
+                $this->process->execute('git remote show origin', $output, $dir);
+            } else {
+                $commandCallable = function ($url): string {
+                    $sanitizedUrl = Preg::replace('{://([^@]+?):(.+?)@}', '://', $url);
+
+                    return sprintf('git remote set-url origin -- %s && git remote show origin && git remote set-url origin -- %s', ProcessExecutor::escape($url), ProcessExecutor::escape($sanitizedUrl));
+                };
+
+                $this->runCommand($commandCallable, $url, $dir, false, $output);
+            }
+
+            $lines = $this->process->splitLines($output);
+            foreach ($lines as $line) {
+                if (Preg::match('{^\s*HEAD branch:\s(.+)\s*$}m', $line, $matches) > 0) {
+                    return $matches[1];
+                }
+            }
+        } catch (\Exception $e) {
+            $this->io->writeError('<error>Failed to fetch root identifier from remote: ' . $e->getMessage() . '</error>', true, IOInterface::DEBUG);
+        }
+
+        return null;
     }
 
     /**

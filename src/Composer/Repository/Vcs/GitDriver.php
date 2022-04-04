@@ -94,15 +94,10 @@ class GitDriver extends VcsDriver
         if (null === $this->rootIdentifier) {
             $this->rootIdentifier = 'master';
 
-            if (!(bool) Platform::getEnv('COMPOSER_DISABLE_NETWORK')) {
-                try {
-                    $this->process->execute('git remote show origin', $output, $this->repoDir);
-                    if (Preg::isMatch('{^\s*HEAD branch:\s(.+)\s*$}m', $output, $matches)) {
-                        return $this->rootIdentifier = $matches[1];
-                    }
-                } catch (\Exception $e) {
-                    $this->io->writeError('<error>Failed to fetch root identifier from remote: ' . $e->getMessage() . '</error>', true, IOInterface::DEBUG);
-                }
+            $gitUtil = new GitUtil($this->io, $this->config, $this->process, new Filesystem());
+            $defaultBranch = $gitUtil->getMirrorDefaultBranch($this->url, $this->repoDir, Filesystem::isLocalPath($this->url));
+            if ($defaultBranch !== null) {
+                return $this->rootIdentifier = $defaultBranch;
             }
 
             // select currently checked out branch if master is not available
