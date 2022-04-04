@@ -212,7 +212,7 @@ EOT
 
             // remove all backups except for the most recent, if any
             if ($input->getOption('clean-backups')) {
-                $this->cleanBackups($rollbackDir, $this->getLastBackupVersion($rollbackDir));
+                $this->cleanBackups($rollbackDir);
             }
 
             return 0;
@@ -484,12 +484,12 @@ TAGSPUBKEY
 
     /**
      * @param string $rollbackDir
-     * @param string|null $except
      *
      * @return void
      */
-    protected function cleanBackups(string $rollbackDir, ?string $except = null): void
+    protected function cleanBackups(string $rollbackDir): void
     {
+        $except = $this->getLastBackupVersion($rollbackDir);
         $finder = $this->getOldInstallationFinder($rollbackDir);
         $io = $this->getIO();
         $fs = new Filesystem;
