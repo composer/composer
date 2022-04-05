@@ -80,6 +80,10 @@ In the above example, if you wanted to check out the `my-feature` branch, you wo
 
 When branch names look like versions, we have to clarify for Composer that we're trying to check out a branch and not a tag. In the above example, we have two version branches: `v1` and `v2`. To get Composer to check out one of these branches, you must specify a version constraint that looks like this: `v1.x-dev`. The `.x` is an arbitrary string that Composer requires to tell it that we're talking about the `v1` branch and not a `v1` tag (alternatively, you can name the branch `v1.x` instead of `v1`). In the case of a branch with a version-like name (`v1`, in this case), you append `-dev` as a suffix, rather than using `dev-` as a prefix.
 
+#### Commits
+
+If you want to check out to a particular commit, you need to point to a branch with the commit using the [`dev-*`](#branches) followed by a `#` and the commit hash of your commit. E.g. if you wanted to check out commit with hash `93bfd2e` on `my-feature` you would specify `dev-my-feature#93bfd2e` as your version constraint.
+
 ### Stabilities
 
 Composer recognizes the following stabilities (in order of stability): dev,
