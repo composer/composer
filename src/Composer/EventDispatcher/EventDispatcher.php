@@ -571,6 +571,10 @@ class EventDispatcher
     private function ensureBinDirIsInPath(): void
     {
         $pathEnv = 'PATH';
+
+        // checking if only Path and not PATH is set then we probably need to update the Path env
+        // on Windows getenv is case-insensitive so we cannot check it via Platform::getEnv and
+        // we need to check in $_SERVER directly
         if (!isset($_SERVER[$pathEnv]) && isset($_SERVER['Path'])) {
             $pathEnv = 'Path';
         }
