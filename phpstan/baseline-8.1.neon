@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 1
+			path: ../src/Composer/Autoload/AutoloadGenerator.php
+
+		-
 			message: "#^Parameter \\#1 \\$callback of function spl_autoload_register expects \\(callable\\(string\\)\\: void\\)\\|null, array\\{\\$this\\(Composer\\\\Autoload\\\\ClassLoader\\), 'loadClass'\\} given\\.$#"
 			count: 1
 			path: ../src/Composer/Autoload/ClassLoader.php
@@ -31,21 +36,6 @@ parameters:
 			path: ../src/Composer/Command/ExecCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$from of function rename expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/SelfUpdateCommand.php
-
-		-
-			message: "#^Parameter \\#1 \\$user_id of function posix_getpwuid expects int, int\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/SelfUpdateCommand.php
-
-		-
-			message: "#^Parameter \\#2 \\$permissions of function chmod expects int, int\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/SelfUpdateCommand.php
-
-		-
 			message: "#^Parameter \\#1 \\$value of function count expects array\\|Countable, array\\<int, array\\<string, array\\|string\\>\\>\\|string given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ShowCommand.php
@@ -64,11 +54,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$callback of function call_user_func expects callable\\(\\)\\: mixed, array\\{Composer\\\\Package\\\\RootPackageInterface, 'getDevRequires'\\|'getRequires'\\} given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ValidateCommand.php
-
-		-
-			message: "#^Parameter \\#1 \\$string of function rtrim expects string, int\\|string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Config.php
 
 		-
 			message: "#^Parameter \\#1 \\$callback of function call_user_func_array expects callable\\(\\)\\: mixed, array\\{Composer\\\\Json\\\\JsonManipulator, string\\} given\\.$#"
@@ -194,6 +179,11 @@ parameters:
 			message: "#^Parameter \\#2 \\$string of function explode expects string, string\\|false\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/AuthHelper.php
+
+		-
+			message: "#^Casting to string something that's already string\\.$#"
+			count: 4
+			path: ../src/Composer/Util/Filesystem.php
 
 		-
 			message: "#^Parameter \\#1 \\$string of function rawurlencode expects string, string\\|null given\\.$#"
