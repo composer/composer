@@ -31,7 +31,7 @@ class ComposerAutoloaderInitFilesAutoload
         set_include_path(implode(PATH_SEPARATOR, $includePaths));
 
         require __DIR__ . '/autoload_static.php';
-        \Composer\Autoload\ComposerStaticInitFilesAutoload::getInitializer($loader)();
+        call_user_func(\Composer\Autoload\ComposerStaticInitFilesAutoload::getInitializer($loader));
 
         $loader->register(true);
 

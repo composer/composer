@@ -27,7 +27,7 @@ class ComposerAutoloaderInitFilesAutoload
         spl_autoload_unregister(array('ComposerAutoloaderInitFilesAutoload', 'loadClassLoader'));
 
         require __DIR__ . '/autoload_static.php';
-        \Composer\Autoload\ComposerStaticInitFilesAutoload::getInitializer($loader)();
+        call_user_func(\Composer\Autoload\ComposerStaticInitFilesAutoload::getInitializer($loader));
 
         $loader->register(true);
 

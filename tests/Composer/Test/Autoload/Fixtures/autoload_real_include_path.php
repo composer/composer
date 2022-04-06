@@ -27,7 +27,7 @@ class ComposerAutoloaderInitIncludePath
         spl_autoload_unregister(array('ComposerAutoloaderInitIncludePath', 'loadClassLoader'));
 
         require __DIR__ . '/autoload_static.php';
-        \Composer\Autoload\ComposerStaticInitIncludePath::getInitializer($loader)();
+        call_user_func(\Composer\Autoload\ComposerStaticInitIncludePath::getInitializer($loader));
 
         $loader->setUseIncludePath(true);
         spl_autoload_register(array('ComposerAutoloaderInitIncludePath', 'autoload'), true, true);
