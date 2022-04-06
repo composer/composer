@@ -78,7 +78,7 @@ class ZipArchiver implements ArchiverInterface
     /**
      * @inheritDoc
      */
-    public function supports(string $format, string $sourceType): bool
+    public function supports(string $format, ?string $sourceType): bool
     {
         return isset(static::$formats[$format]) && $this->compressionAvailable();
     }

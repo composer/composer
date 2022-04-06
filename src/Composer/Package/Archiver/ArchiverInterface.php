@@ -36,9 +36,9 @@ interface ArchiverInterface
      * Format supported by the archiver.
      *
      * @param string $format     The archive format
-     * @param string $sourceType The source type (git, svn, hg, etc.)
+     * @param ?string $sourceType The source type (git, svn, hg, etc.)
      *
      * @return bool true if the format is supported by the archiver
      */
-    public function supports(string $format, string $sourceType): bool;
+    public function supports(string $format, ?string $sourceType): bool;
 }
