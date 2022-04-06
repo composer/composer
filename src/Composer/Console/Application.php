@@ -548,7 +548,7 @@ class Application extends BaseApplication
             new Command\ReinstallCommand(),
         ));
 
-        if (strpos(__FILE__, 'phar:') === 0) {
+        if (strpos(__FILE__, 'phar:') === 0 || '1' === Platform::getEnv('COMPOSER_TESTS_ARE_RUNNING')) {
             $commands[] = new Command\SelfUpdateCommand();
         }
 

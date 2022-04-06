@@ -100,7 +100,7 @@ EOT
 
         // switch channel if requested
         $requestedChannel = null;
-        foreach (Versions::$channels as $channel) {
+        foreach (Versions::CHANNELS as $channel) {
             if ($input->getOption($channel)) {
                 $requestedChannel = $channel;
                 $versionsUtil->setChannel($channel);
@@ -115,7 +115,10 @@ EOT
         $cacheDir = $config->get('cache-dir');
         $rollbackDir = $config->get('data-dir');
         $home = $config->get('home');
-        $localFilename = realpath($_SERVER['argv'][0]) ?: $_SERVER['argv'][0];
+        $localFilename = realpath($_SERVER['argv'][0]);
+        if (false === $localFilename) {
+            $localFilename = $_SERVER['argv'][0];
+        }
 
         if ($input->getOption('update-keys')) {
             $this->fetchKeys($io, $config);
@@ -138,10 +141,13 @@ EOT
 
         // check if composer is running as the same user that owns the directory root, only if POSIX is defined and callable
         if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
-            $composeUser = posix_getpwuid(posix_geteuid());
-            $homeOwner = posix_getpwuid(fileowner($home));
-            if (isset($composeUser['name'], $homeOwner['name']) && $composeUser['name'] !== $homeOwner['name']) {
-                $io->writeError('<warning>You are running Composer as "'.$composeUser['name'].'", while "'.$home.'" is owned by "'.$homeOwner['name'].'"</warning>');
+            $composerUser = posix_getpwuid(posix_geteuid());
+            $homeDirOwnerId = fileowner($home);
+            if (is_array($composerUser) && $homeDirOwnerId !== false) {
+                $homeOwner = posix_getpwuid($homeDirOwnerId);
+                if (is_array($homeOwner) && isset($composerUser['name'], $homeOwner['name']) && $composerUser['name'] !== $homeOwner['name']) {
+                    $io->writeError('<warning>You are running Composer as "'.$composerUser['name'].'", while "'.$home.'" is owned by "'.$homeOwner['name'].'"</warning>');
+                }
             }
         }
 
@@ -157,12 +163,12 @@ EOT
             $latestPreview = $latestStable;
         }
         $latestVersion = $latest['version'];
-        $updateVersion = $input->getArgument('version') ?: $latestVersion;
+        $updateVersion = $input->getArgument('version') ?? $latestVersion;
         $currentMajorVersion = Preg::replace('{^(\d+).*}', '$1', Composer::getVersion());
         $updateMajorVersion = Preg::replace('{^(\d+).*}', '$1', $updateVersion);
         $previewMajorVersion = Preg::replace('{^(\d+).*}', '$1', $latestPreview['version']);
 
-        if ($versionsUtil->getChannel() === 'stable' && !$input->getArgument('version')) {
+        if ($versionsUtil->getChannel() === 'stable' && null === $input->getArgument('version')) {
             // if requesting stable channel and no specific version, avoid automatically upgrading to the next major
             // simply output a warning that the next major stable is available and let users upgrade to it manually
             if ($currentMajorVersion < $updateMajorVersion) {
@@ -243,7 +249,7 @@ EOT
         $httpDownloader->copy($remoteFilename, $tempFilename);
         $io->writeError('');
 
-        if (!file_exists($tempFilename) || !$signature) {
+        if (!file_exists($tempFilename) || null === $signature || '' === $signature) {
             $io->writeError('<error>The download of the new composer version failed for an unexpected reason</error>');
 
             return 1;
@@ -306,12 +312,15 @@ TAGSPUBKEY
                 throw new \RuntimeException('Failed loading the public key from '.$sigFile);
             }
             $algo = defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'SHA384';
-            if (!in_array('sha384', array_map('strtolower', openssl_get_md_methods()))) {
+            if (!in_array('sha384', array_map('strtolower', openssl_get_md_methods()), true)) {
                 throw new \RuntimeException('SHA384 is not supported by your openssl extension, could not verify the phar file integrity');
             }
-            $signature = json_decode($signature, true);
-            $signature = base64_decode($signature['sha384']);
-            $verified = 1 === openssl_verify(file_get_contents($tempFilename), $signature, $pubkeyid, $algo);
+            $signatureData = json_decode($signature, true);
+            $signatureSha384 = base64_decode($signatureData['sha384'], true);
+            if (false === $signatureSha384) {
+                throw new \RuntimeException('Failed loading the phar signature from '.$remoteFilename.'.sig, got '.$signature);
+            }
+            $verified = 1 === openssl_verify((string) file_get_contents($tempFilename), $signatureSha384, $pubkeyid, $algo);
 
             // PHP 8 automatically frees the key instance and deprecates the function
             if (PHP_VERSION_ID < 80000) {
@@ -405,7 +414,7 @@ TAGSPUBKEY
     protected function rollback(OutputInterface $output, string $rollbackDir, string $localFilename): int
     {
         $rollbackVersion = $this->getLastBackupVersion($rollbackDir);
-        if (!$rollbackVersion) {
+        if (null === $rollbackVersion) {
             throw new \UnexpectedValueException('Composer rollback failed: no installation to roll back to in "'.$rollbackDir.'"');
         }
 
@@ -439,13 +448,16 @@ TAGSPUBKEY
     protected function setLocalPhar(string $localFilename, string $newFilename, string $backupTarget = null): bool
     {
         $io = $this->getIO();
-        @chmod($newFilename, fileperms($localFilename));
+        $perms = @fileperms($localFilename);
+        if ($perms !== false) {
+            @chmod($newFilename, $perms);
+        }
 
         // check phar validity
         if (!$this->validatePhar($newFilename, $error)) {
-            $io->writeError('<error>The '.($backupTarget ? 'update' : 'backup').' file is corrupted ('.$error.')</error>');
+            $io->writeError('<error>The '.($backupTarget !== null ? 'update' : 'backup').' file is corrupted ('.$error.')</error>');
 
-            if ($backupTarget) {
+            if ($backupTarget !== null) {
                 $io->writeError('<error>Please re-run the self-update command to try again.</error>');
             }
 
@@ -453,7 +465,7 @@ TAGSPUBKEY
         }
 
         // copy current file into backups dir
-        if ($backupTarget) {
+        if ($backupTarget !== null) {
             @copy($localFilename, $backupTarget);
         }
 
@@ -477,7 +489,7 @@ TAGSPUBKEY
             }
 
             @unlink($newFilename);
-            $action = 'Composer '.($backupTarget ? 'update' : 'rollback');
+            $action = 'Composer '.($backupTarget !== null ? 'update' : 'rollback');
             throw new FilesystemException($action.' failed: "'.$localFilename.'" could not be written.'.PHP_EOL.$e->getMessage());
         }
     }
@@ -495,7 +507,7 @@ TAGSPUBKEY
         $fs = new Filesystem;
 
         foreach ($finder as $file) {
-            if ($except && $file->getBasename(self::OLD_INSTALL_EXT) === $except) {
+            if ($file->getBasename(self::OLD_INSTALL_EXT) === $except) {
                 continue;
             }
             $file = (string) $file;
@@ -504,21 +516,17 @@ TAGSPUBKEY
         }
     }
 
-    /**
-     * @param string $rollbackDir
-     * @return string|false
-     */
-    protected function getLastBackupVersion(string $rollbackDir)
+    protected function getLastBackupVersion(string $rollbackDir): ?string
     {
         $finder = $this->getOldInstallationFinder($rollbackDir);
         $finder->sortByName();
         $files = iterator_to_array($finder);
 
-        if (count($files)) {
+        if (count($files) > 0) {
             return end($files)->getBasename(self::OLD_INSTALL_EXT);
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -548,7 +556,7 @@ TAGSPUBKEY
      */
     protected function validatePhar(string $pharFile, ?string &$error): bool
     {
-        if (ini_get('phar.readonly')) {
+        if ((bool) ini_get('phar.readonly')) {
             return true;
         }
 
@@ -610,6 +618,11 @@ TAGSPUBKEY
         }
 
         $tmpFile = tempnam(sys_get_temp_dir(), '');
+        if (false === $tmpFile) {
+            $io->writeError('<error>Operation failed.'.$helpMessage.'</error>');
+
+            return false;
+        }
         $script = $tmpFile.'.vbs';
         rename($tmpFile, $script);
 

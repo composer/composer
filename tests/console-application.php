@@ -12,4 +12,6 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+\Composer\Util\Platform::putEnv('COMPOSER_TESTS_ARE_RUNNING', '1');
+
 return new \Composer\Console\Application();

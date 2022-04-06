@@ -21,8 +21,13 @@ use Composer\Config;
  */
 class Versions
 {
-    /** @var string[] */
-    public static $channels = array('stable', 'preview', 'snapshot', '1', '2', '2.2');
+    /**
+     * @var string[]
+     * @deprecated use Versions::CHANNELS
+     */
+    public static $channels = self::CHANNELS;
+
+    public const CHANNELS = ['stable', 'preview', 'snapshot', '1', '2', '2.2'];
 
     /** @var HttpDownloader */
     private $httpDownloader;
