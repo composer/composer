@@ -156,6 +156,9 @@ class PathRepositoryTest extends TestCase
         $this->assertSame($relativeUrl, $package->getDistUrl());
     }
 
+    /**
+     * @deprecated Should be removed when config value "none" will be removed
+     */
     public function testReferenceNone(): void
     {
         $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
@@ -165,6 +168,27 @@ class PathRepositoryTest extends TestCase
 
         $options = array(
             'reference' => 'none',
+        );
+        $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
+        $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);
+        $packages = $repository->getPackages();
+
+        $this->assertGreaterThanOrEqual(2, $repository->count());
+
+        foreach ($packages as $package) {
+            $this->assertEquals($package->getDistReference(), null);
+        }
+    }
+
+    public function testReferenceNull(): void
+    {
+        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
+            ->getMock();
+
+        $config = new \Composer\Config();
+
+        $options = array(
+            'reference' => 'null',
         );
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
         $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);

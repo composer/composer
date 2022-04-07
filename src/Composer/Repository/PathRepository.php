@@ -62,7 +62,7 @@ use Composer\Util\Git as GitUtil;
  *         "type": "path",
  *         "url": "../../relative/path/to/package/",
  *         "options": {
- *             "reference": "none"
+ *             "reference": "null"
  *         }
  *     },
  * ]
@@ -182,7 +182,7 @@ class PathRepository extends ArrayRepository implements ConfigurableRepositoryIn
                 'url' => $url,
             );
             $reference = $this->options['reference'] ?? 'auto';
-            if ('none' === $reference) {
+            if ('none' === $reference  || 'null' === $reference) {
                 $package['dist']['reference'] = null;
             } elseif ('config' === $reference || 'auto' === $reference) {
                 $package['dist']['reference'] = sha1($json . serialize($this->options));
