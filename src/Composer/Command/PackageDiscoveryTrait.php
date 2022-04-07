@@ -186,7 +186,7 @@ trait PackageDiscoveryTrait
                     $io->writeError($choices);
                     $io->writeError('');
 
-                    $validator = function ($selection) use ($matches, $versionParser) {
+                    $validator = function (string $selection) use ($matches, $versionParser) {
                         if ('' === $selection) {
                             return false;
                         }
@@ -218,13 +218,13 @@ trait PackageDiscoveryTrait
                         'Enter package # to add, or the complete package name if it is not listed: ',
                         $validator,
                         3,
-                        false
+                        ''
                     );
                 }
 
                 // no constraint yet, determine the best version automatically
                 if (false !== $package && false === strpos($package, ' ')) {
-                    $validator = function ($input) {
+                    $validator = function (string $input) {
                         $input = trim($input);
 
                         return strlen($input) > 0 ? $input : false;
@@ -234,7 +234,7 @@ trait PackageDiscoveryTrait
                         'Enter the version constraint to require (or leave blank to use the latest version): ',
                         $validator,
                         3,
-                        false
+                        ''
                     );
 
                     if (false === $constraint) {
