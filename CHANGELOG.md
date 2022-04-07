@@ -1,3 +1,11 @@
+### [2.3.4] 2022-04-07
+
+  * Fixed the generated autoload.php to support running on PHP 5.6+ (down from 7.0+) and warn clearly on older PHP versions (#10714)
+  * Fixed run-script --list flag regression (#10710)
+  * Fixed curl downloader handling of DNS resolution failures to do an automatic retry (#10716)
+  * Fixed script handling of external commands not setting the Path env correctly on windows (#10700)
+  * Fixed various type errors (#10694, #10696, #10702, #10712, #10703)
+
 ### [2.3.3] 2022-04-01
 
   * Added --2.2 flag to `self-update` to pin the Composer version to the 2.2 LTS range (#10682)
@@ -1476,6 +1484,7 @@
 
   * Initial release
 
+[2.3.4]: https://github.com/composer/composer/compare/2.3.3...2.3.4
 [2.3.3]: https://github.com/composer/composer/compare/2.3.2...2.3.3
 [2.3.2]: https://github.com/composer/composer/compare/2.3.1...2.3.2
 [2.3.1]: https://github.com/composer/composer/compare/2.3.0...2.3.1
