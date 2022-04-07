@@ -131,11 +131,6 @@ parameters:
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
 
 		-
-			message: "#^Parameter \\#2 \\$excluded of method Composer\\\\Autoload\\\\AutoloadGenerator\\:\\:generateClassMap\\(\\) expects array\\<int, string\\>\\|null, array\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Autoload/AutoloadGenerator.php
-
-		-
 			message: "#^Parameter \\#2 \\$excluded of static method Composer\\\\Autoload\\\\ClassMapGenerator\\:\\:createMap\\(\\) expects string\\|null, array\\|string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
@@ -758,6 +753,11 @@ parameters:
 		-
 			message: "#^Foreach overwrites \\$type with its key variable\\.$#"
 			count: 1
+			path: ../src/Composer/Command/RemoveCommand.php
+
+		-
+			message: "#^Offset 'require'\\|'require\\-dev' does not exist on array\\{require\\?\\: array\\<string, string\\>, require\\-dev\\?\\: array\\<string, string\\>\\}\\.$#"
+			count: 8
 			path: ../src/Composer/Command/RemoveCommand.php
 
 		-
@@ -2132,7 +2132,7 @@ parameters:
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 4
+			count: 3
 			path: ../src/Composer/Downloader/FileDownloader.php
 
 		-
@@ -2416,11 +2416,6 @@ parameters:
 			path: ../src/Composer/Downloader/VcsDownloader.php
 
 		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 2
-			path: ../src/Composer/Downloader/VcsDownloader.php
-
-		-
 			message: "#^Only booleans are allowed in &&, string\\|null given on the right side\\.$#"
 			count: 3
 			path: ../src/Composer/Downloader/ZipDownloader.php
@@ -2542,11 +2537,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#3 \\$priority of method Composer\\\\EventDispatcher\\\\EventDispatcher\\:\\:addListener\\(\\) expects int, int\\|string given\\.$#"
-			count: 1
-			path: ../src/Composer/EventDispatcher/EventDispatcher.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
 			count: 1
 			path: ../src/Composer/EventDispatcher/EventDispatcher.php
 
@@ -3136,11 +3126,6 @@ parameters:
 			path: ../src/Composer/Package/Archiver/ArchiveManager.php
 
 		-
-			message: "#^Parameter \\#2 \\$sourceType of method Composer\\\\Package\\\\Archiver\\\\ArchiverInterface\\:\\:supports\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Archiver/ArchiveManager.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Archiver/BaseExcludeFilter.php
@@ -3201,7 +3186,7 @@ parameters:
 			path: ../src/Composer/Package/Comparer/Comparer.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, int given\\.$#"
+			message: "#^Only booleans are allowed in a negated boolean, int\\<0, 3\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Package/Comparer/Comparer.php
 
@@ -3482,7 +3467,7 @@ parameters:
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 3
+			count: 2
 			path: ../src/Composer/Package/Locker.php
 
 		-
@@ -3622,7 +3607,7 @@ parameters:
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 4
+			count: 3
 			path: ../src/Composer/Platform/HhvmDetector.php
 
 		-
@@ -4219,11 +4204,6 @@ parameters:
 			path: ../src/Composer/Repository/RepositoryManager.php
 
 		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/RepositoryManager.php
-
-		-
 			message: "#^Foreach overwrites \\$repo with its value variable\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/RepositorySet.php
@@ -4705,7 +4685,7 @@ parameters:
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 7
+			count: 6
 			path: ../src/Composer/Repository/VcsRepository.php
 
 		-
@@ -5209,11 +5189,6 @@ parameters:
 			path: ../src/Composer/Util/Http/RequestProxy.php
 
 		-
-			message: "#^Argument of an invalid type array\\<array\\<string, string\\>\\>\\|string supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
 			message: "#^Cannot call method abortRequest\\(\\) on Composer\\\\Util\\\\Http\\\\CurlDownloader\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Util/HttpDownloader.php
@@ -5264,6 +5239,21 @@ parameters:
 			path: ../src/Composer/Util/HttpDownloader.php
 
 		-
+			message: "#^Offset 'info'\\|'warning' does not exist on array\\{warning\\?\\: string, info\\?\\: string, warning\\-versions\\?\\: string, info\\-versions\\?\\: string, warnings\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>, infos\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>\\}\\.$#"
+			count: 1
+			path: ../src/Composer/Util/HttpDownloader.php
+
+		-
+			message: "#^Offset 'info\\-versions'\\|'warning\\-versions' does not exist on array\\{warning\\?\\: string, info\\?\\: string, warning\\-versions\\?\\: string, info\\-versions\\?\\: string, warnings\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>, infos\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>\\}\\.$#"
+			count: 1
+			path: ../src/Composer/Util/HttpDownloader.php
+
+		-
+			message: "#^Offset 'infos'\\|'warnings' does not exist on array\\{warning\\?\\: string, info\\?\\: string, warning\\-versions\\?\\: string, info\\-versions\\?\\: string, warnings\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>, infos\\?\\: array\\<array\\{versions\\: string, message\\: string\\}\\>\\}\\.$#"
+			count: 1
+			path: ../src/Composer/Util/HttpDownloader.php
+
+		-
 			message: "#^Offset 'options' does not exist on array\\{url\\: string, options\\?\\: array, copyTo\\?\\: string\\|null\\}\\.$#"
 			count: 3
 			path: ../src/Composer/Util/HttpDownloader.php
@@ -5291,11 +5281,6 @@ parameters:
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
 			count: 2
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
-			message: "#^Parameter \\#1 \\$constraints of method Composer\\\\Package\\\\Version\\\\VersionParser\\:\\:parseConstraints\\(\\) expects string, array\\<array\\<string, string\\>\\>\\|string given\\.$#"
-			count: 1
 			path: ../src/Composer/Util/HttpDownloader.php
 
 		-
