@@ -54,7 +54,7 @@ class RunScriptCommand extends BaseCommand
             ->setAliases(array('run'))
             ->setDescription('Runs the scripts defined in composer.json.')
             ->setDefinition(array(
-                new InputArgument('script', InputArgument::REQUIRED, 'Script name to run.'),
+                new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run.'),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
                 new InputOption('timeout', null, InputOption::VALUE_REQUIRED, 'Sets script timeout in seconds, or 0 for never.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
@@ -80,6 +80,10 @@ EOT
         }
 
         $script = $input->getArgument('script');
+        if ($script === null) {
+            throw new \RuntimeException('Missing required argument "script"');
+        }
+
         if (!in_array($script, $this->scriptEvents)) {
             if (defined('Composer\Script\ScriptEvents::'.str_replace('-', '_', strtoupper($script)))) {
                 throw new \InvalidArgumentException(sprintf('Script "%s" cannot be run with this command', $script));

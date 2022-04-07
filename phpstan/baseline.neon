@@ -5896,6 +5896,11 @@ parameters:
 		-
 			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
 			count: 1
+			path: ../tests/Composer/Test/Command/RunScriptCommandTest.php
+
+		-
+			message: "#^Dynamic call to static method Composer\\\\Test\\\\TestCase\\:\\:getUniqueTmpDirectory\\(\\)\\.$#"
+			count: 1
 			path: ../tests/Composer/Test/Config/JsonConfigSourceTest.php
 
 		-
