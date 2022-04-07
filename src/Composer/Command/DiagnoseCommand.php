@@ -80,6 +80,9 @@ EOT
 
             $io->write('Checking composer.json: ', false);
             $this->outputResult($this->checkComposerSchema());
+            $this->process = $composer->getLoop()->getProcessExecutor() ?? new ProcessExecutor($io);
+        } else {
+            $this->process = new ProcessExecutor($io);
         }
 
         if ($composer) {
@@ -92,7 +95,6 @@ EOT
         $config->prohibitUrlByConfig('http://repo.packagist.org', new NullIO);
 
         $this->httpDownloader = Factory::createHttpDownloader($io, $config);
-        $this->process = new ProcessExecutor($io);
 
         $io->write('Checking platform settings: ', false);
         $this->outputResult($this->checkPlatform());

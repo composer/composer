@@ -68,7 +68,7 @@ class Locker
         $this->contentHash = self::getContentHash($composerFileContents);
         $this->loader = new ArrayLoader(null, true);
         $this->dumper = new ArrayDumper();
-        $this->process = $process ?: new ProcessExecutor($io);
+        $this->process = $process ?? new ProcessExecutor($io);
     }
 
     /**

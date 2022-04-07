@@ -235,7 +235,7 @@ EOT
             }
         }
 
-        $process = new ProcessExecutor($io);
+        $process = $composer->getLoop()->getProcessExecutor();
         $fs = new Filesystem($process);
 
         // dispatch event

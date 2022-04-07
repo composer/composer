@@ -71,7 +71,7 @@ class EventDispatcher
     {
         $this->composer = $composer;
         $this->io = $io;
-        $this->process = $process ?: new ProcessExecutor($io);
+        $this->process = $process ?? new ProcessExecutor($io);
         $this->eventStack = array();
     }
 

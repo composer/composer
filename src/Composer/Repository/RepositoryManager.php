@@ -51,7 +51,7 @@ class RepositoryManager
         $this->config = $config;
         $this->httpDownloader = $httpDownloader;
         $this->eventDispatcher = $eventDispatcher;
-        $this->process = $process ?: new ProcessExecutor($io);
+        $this->process = $process ?? new ProcessExecutor($io);
     }
 
     /**

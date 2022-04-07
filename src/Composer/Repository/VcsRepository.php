@@ -99,7 +99,7 @@ class VcsRepository extends ArrayRepository implements ConfigurableRepositoryInt
         $this->repoConfig = $repoConfig;
         $this->versionCache = $versionCache;
         $this->httpDownloader = $httpDownloader;
-        $this->processExecutor = $process ?: new ProcessExecutor($io);
+        $this->processExecutor = $process ?? new ProcessExecutor($io);
     }
 
     public function getRepoName()

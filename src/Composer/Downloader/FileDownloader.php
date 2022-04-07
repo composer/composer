@@ -89,7 +89,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
         $this->eventDispatcher = $eventDispatcher;
         $this->httpDownloader = $httpDownloader;
         $this->cache = $cache;
-        $this->process = $process ?: new ProcessExecutor($io);
+        $this->process = $process ?? new ProcessExecutor($io);
         $this->filesystem = $filesystem ?: new Filesystem($this->process);
 
         if ($this->cache && $this->cache->gcIsNecessary()) {

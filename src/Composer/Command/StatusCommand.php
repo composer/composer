@@ -96,7 +96,7 @@ EOT
         $vcsVersionChanges = array();
 
         $parser = new VersionParser;
-        $guesser = new VersionGuesser($composer->getConfig(), new ProcessExecutor($io), $parser);
+        $guesser = new VersionGuesser($composer->getConfig(), $composer->getLoop()->getProcessExecutor() ?? new ProcessExecutor($io), $parser);
         $dumper = new ArrayDumper;
 
         // list packages
