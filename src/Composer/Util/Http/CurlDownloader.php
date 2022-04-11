@@ -168,7 +168,7 @@ class CurlDownloader
 
         // check URL can be accessed (i.e. is not insecure), but allow insecure Packagist calls to $hashed providers as file integrity is verified with sha256
         if (!Preg::isMatch('{^http://(repo\.)?packagist\.org/p/}', $url) || (false === strpos($url, '$') && false === strpos($url, '%24'))) {
-            $this->config->prohibitUrlByConfig($url, $this->io);
+            $this->config->prohibitUrlByConfig($url, $this->io, $options);
         }
 
         $curlHandle = curl_init();

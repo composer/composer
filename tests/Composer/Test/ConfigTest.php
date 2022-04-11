@@ -13,6 +13,9 @@
 namespace Composer\Test;
 
 use Composer\Config;
+use Composer\IO\BaseIO;
+use Composer\IO\IOInterface;
+use Composer\IO\NullIO;
 use Composer\Util\Platform;
 
 class ConfigTest extends TestCase
@@ -306,6 +309,24 @@ class ConfigTest extends TestCase
         return array_combine($urls, array_map(function ($e): array {
             return array($e);
         }, $urls));
+    }
+
+    public function testProhibitedUrlsWarningVerifyPeer(): void
+    {
+        $io = $this->getMockBuilder(IOInterface::class)->disableOriginalConstructor()->getMock();
+
+        $io
+            ->expects($this->once())
+            ->method('writeError')
+            ->with($this->equalTo('<warning>Warning: Accessing example.org with verify_peer and verify_peer_name disabled.</warning>'));
+
+        $config = new Config(false);
+        $config->prohibitUrlByConfig('https://example.org', $io, [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ]
+        ]);
     }
 
     /**
