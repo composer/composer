@@ -71,7 +71,7 @@ GIT;
      * @param GitDriver $driver
      * @param string $path
      */
-    private function setRepoDir($driver, $path)
+    private function setRepoDir($driver, $path): void
     {
         $reflectionClass = new \ReflectionClass($driver);
         $reflectionProperty = $reflectionClass->getProperty('repoDir');
