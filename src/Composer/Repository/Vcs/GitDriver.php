@@ -130,6 +130,10 @@ class GitDriver extends VcsDriver
      */
     public function getFileContent($file, $identifier)
     {
+        if (isset($identifier[0]) && $identifier[0] === '-') {
+            throw new \RuntimeException('Invalid git identifier detected. Identifier must not start with a -, given: ' . $identifier);
+        }
+
         $resource = sprintf('%s:%s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
         $this->process->execute(sprintf('git show %s', $resource), $content, $this->repoDir);
 
@@ -183,7 +187,7 @@ class GitDriver extends VcsDriver
             $this->process->execute('git branch --no-color --no-abbrev -v', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
                 if ($branch && !preg_match('{^ *[^/]+/HEAD }', $branch)) {
-                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match)) {
+                    if (preg_match('{^(?:\* )? *(\S+) *([a-f0-9]+)(?: .*)?$}', $branch, $match) && $match[1][0] !== '-') {
                         $branches[$match[1]] = $match[2];
                     }
                 }

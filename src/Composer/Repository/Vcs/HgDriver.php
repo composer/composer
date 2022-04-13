@@ -122,7 +122,11 @@ class HgDriver extends VcsDriver
      */
     public function getFileContent($file, $identifier)
     {
-        $resource = sprintf('hg cat -r %s %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
+        if (isset($identifier[0]) && $identifier[0] === '-') {
+            throw new \RuntimeException('Invalid hg identifier detected. Identifier must not start with a -, given: ' . $identifier);
+        }
+
+        $resource = sprintf('hg cat -r %s -- %s', ProcessExecutor::escape($identifier), ProcessExecutor::escape($file));
         $this->process->execute($resource, $content, $this->repoDir);
 
         if (!trim($content)) {
@@ -182,14 +186,14 @@ class HgDriver extends VcsDriver
 
             $this->process->execute('hg branches', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('(^([^\s]+)\s+\d+:([a-f0-9]+))', $branch, $match)) {
+                if ($branch && preg_match('(^([^\s]+)\s+\d+:([a-f0-9]+))', $branch, $match) && $match[1][0] !== '-') {
                     $branches[$match[1]] = $match[2];
                 }
             }
 
             $this->process->execute('hg bookmarks', $output, $this->repoDir);
             foreach ($this->process->splitLines($output) as $branch) {
-                if ($branch && preg_match('(^(?:[\s*]*)([^\s]+)\s+\d+:(.*)$)', $branch, $match)) {
+                if ($branch && preg_match('(^(?:[\s*]*)([^\s]+)\s+\d+:(.*)$)', $branch, $match) && $match[1][0] !== '-') {
                     $bookmarks[$match[1]] = $match[2];
                 }
             }
