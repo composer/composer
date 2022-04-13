@@ -56,7 +56,7 @@ GIT;
 
     public function testFileGetContentInvalidIdentifier()
     {
-        $this->expectException('\RuntimeException');
+        $this->setExpectedException('\RuntimeException');
 
         $process = new ProcessExecutorMock;
         $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();

@@ -103,7 +103,7 @@ HG_BOOKMARKS;
 
     public function testFileGetContentInvalidIdentifier()
     {
-        $this->expectException('\RuntimeException');
+        $this->setExpectedException('\RuntimeException');
 
         $process = new ProcessExecutorMock;
         $driver = new HgDriver(array('url' => 'https://example.org/acme.git'), $this->io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
