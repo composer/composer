@@ -45,7 +45,7 @@ class ValidateCommand extends BaseCommand
             ->setDescription('Validates a composer.json and composer.lock.')
             ->setDefinition(array(
                 new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not validate requires for overly strict/loose constraints'),
-                new InputOption('check-lock', null, InputOption::VALUE_NONE, 'Check if lock file is up to date (even config.lock is false, overrides --no-check-lock)'),
+                new InputOption('check-lock', null, InputOption::VALUE_NONE, 'Check if lock file is up to date (even when config.lock is false)'),
                 new InputOption('no-check-lock', null, InputOption::VALUE_NONE, 'Do not check if lock file is up to date'),
                 new InputOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors'),
                 new InputOption('no-check-version', null, InputOption::VALUE_NONE, 'Do not report a warning if the version field is present'),
