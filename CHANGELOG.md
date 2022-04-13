@@ -1,3 +1,10 @@
+### [2.2.12] 2022-04-13
+
+  * Security: Fixed command injection vulnerability in HgDriver/GitDriver (GHSA-x7cr-6qr6-2hh6 / CVE-2022-24828)
+  * Fixed curl downloader not retrying when a DNS resolution failure occurs (#10716)
+  * Fixed composer.lock file still being used/read when the `lock` config option is disabled (#10726)
+  * Fixed `validate` command checking the lock file even if the `lock` option is disabled (#10723)
+
 ### [2.2.11] 2022-04-01
 
   * Added missing config.bitbucket-oauth in composer-schema.json
@@ -1420,6 +1427,7 @@
 
   * Initial release
 
+[2.2.12]: https://github.com/composer/composer/compare/2.2.11...2.2.12
 [2.2.11]: https://github.com/composer/composer/compare/2.2.10...2.2.11
 [2.2.10]: https://github.com/composer/composer/compare/2.2.9...2.2.10
 [2.2.9]: https://github.com/composer/composer/compare/2.2.8...2.2.9
