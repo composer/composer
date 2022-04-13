@@ -13,6 +13,7 @@
 namespace Composer\Test\Repository\Vcs;
 
 use Composer\Repository\Vcs\HgDriver;
+use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
 use Composer\Config;
@@ -65,5 +66,50 @@ class HgDriverTest extends TestCase
             array('https://bitbucket.org/user/repo'),
             array('https://user@bitbucket.org/user/repo'),
         );
+    }
+
+    public function testGetBranchesFilterInvalidBranchNames()
+    {
+        $process = new ProcessExecutorMock;
+
+        $driver = new HgDriver(array('url' => 'https://example.org/acme.git'), $this->io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
+
+        $stdout = <<<HG_BRANCHES
+default 1:dbf6c8acb640
+--help  1:dbf6c8acb640
+HG_BRANCHES;
+
+        $stdout1 = <<<HG_BOOKMARKS
+help    1:dbf6c8acb641
+--help  1:dbf6c8acb641
+
+HG_BOOKMARKS;
+
+        $process
+            ->expects(array(array(
+                'cmd' => 'hg branches',
+                'stdout' => $stdout,
+            ), array(
+                'cmd' => 'hg bookmarks',
+                'stdout' => $stdout1,
+            )));
+
+        $branches = $driver->getBranches();
+        $this->assertSame(array(
+            'help' => 'dbf6c8acb641',
+            'default' => 'dbf6c8acb640',
+        ), $branches);
+    }
+
+    public function testFileGetContentInvalidIdentifier()
+    {
+        $this->expectException('\RuntimeException');
+
+        $process = new ProcessExecutorMock;
+        $driver = new HgDriver(array('url' => 'https://example.org/acme.git'), $this->io, $this->config, $this->getMockBuilder('Composer\Util\HttpDownloader')->disableOriginalConstructor()->getMock(), $process);
+
+        $this->assertNull($driver->getFileContent('file.txt', 'h'));
+
+        $driver->getFileContent('file.txt', '-h');
     }
 }
