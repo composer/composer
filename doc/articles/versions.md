@@ -181,7 +181,7 @@ The `^` operator behaves very similarly, but it sticks closer to semantic
 versioning, and will always allow non-breaking updates. For example `^1.2.3`
 is equivalent to `>=1.2.3 <2.0.0` as none of the releases until 2.0 should
 break backwards compatibility. For pre-1.0 versions it also acts with safety
-in mind and treats `^0.3` as `>=0.3.0 <0.4.0`.
+in mind and treats `^0.3` as `>=0.3.0 <0.4.0` and `^0.0.3` as `>=0.0.3 <0.0.4`.
 
 This is the recommended operator for maximum interoperability when writing
 library code.
