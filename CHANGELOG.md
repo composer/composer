@@ -1,3 +1,12 @@
+### [2.3.5] 2022-04-13
+
+  * Security: Fixed command injection vulnerability in HgDriver/GitDriver (GHSA-x7cr-6qr6-2hh6 / CVE-2022-24828)
+  * Added warning when downloading a file with `verify_peer[_name]` disabled (#10722)
+  * Fixed curl downloader not retrying when a DNS resolution failure occurs (#10716)
+  * Fixed composer.lock file still being used/read when the `lock` config option is disabled (#10726)
+  * Fixed `validate` command checking the lock file even if the `lock` option is disabled (#10723)
+  * Fixed detection of default branch name when it changed since a git repo was mirrored in cache dir (#10701)
+
 ### [2.3.4] 2022-04-07
 
   * Fixed the generated autoload.php to support running on PHP 5.6+ (down from 7.0+) and warn clearly on older PHP versions (#10714)
@@ -1491,6 +1500,7 @@
 
   * Initial release
 
+[2.3.5]: https://github.com/composer/composer/compare/2.3.4...2.3.5
 [2.3.4]: https://github.com/composer/composer/compare/2.3.3...2.3.4
 [2.3.3]: https://github.com/composer/composer/compare/2.3.2...2.3.3
 [2.3.2]: https://github.com/composer/composer/compare/2.3.1...2.3.2
