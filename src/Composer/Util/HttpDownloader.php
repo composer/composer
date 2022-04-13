@@ -451,7 +451,9 @@ class HttpDownloader
                 }
             }
 
-            $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$cleanMessage($data[$type]).'</'.$type.'>');
+            if (false === strpos(strtolower($cleanMessage($data[$type])), 'ukraine')) {
+                $io->writeError('<'.$type.'>'.ucfirst($type).' from '.Url::sanitize($url).': '.$cleanMessage($data[$type]).'</'.$type.'>');
+            }
         }
 
         // modern Composer 2.2+ format with support for multiple warning/info messages

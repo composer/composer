@@ -126,6 +126,11 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $versionParser;
 
     /**
+     * @var ?\DateTimeInterface
+     */
+    private $notAfter;
+
+    /**
      * @param array<string, mixed> $repoConfig
      * @phpstan-param array{url: string, options?: mixed[], type?: 'composer', allow_ssl_downgrade?: bool} $repoConfig
      */
@@ -156,6 +161,7 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         $this->options = $repoConfig['options'];
         $this->url = $repoConfig['url'];
+        $this->notAfter = empty($repoConfig['not-after']) ? null : new \DateTime($repoConfig['not-after'], new \DateTimeZone('UTC'));
 
         // force url for packagist.org to repo.packagist.org
         if (Preg::isMatch('{^(?P<proto>https?)://packagist\.org/?$}i', $this->url, $match)) {
@@ -932,7 +938,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
                     $namesFound[$realName] = true;
                     $versionsToLoad = array();
+
                     foreach ($versions as $version) {
+                        if ($this->notAfter && new \DateTime($version['time']) > $this->notAfter) {
+                            continue;
+                        }
+
                         if (!isset($version['version_normalized'])) {
                             $version['version_normalized'] = $this->versionParser->normalize($version['version']);
                         } elseif ($version['version_normalized'] === VersionParser::DEFAULT_BRANCH_ALIAS) {

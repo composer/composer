@@ -714,6 +714,10 @@
             "properties": {
                 "type": { "type": "string", "enum": ["composer"] },
                 "url": { "type": "string" },
+                "not-after": {
+                    "type": "string",
+                    "description": "Release time restriction in 'YYYY-MM-DD', 'YYYY-MM-DD HH:MM:SS' or 'YYYY-MM-DDTHH:MM:SSZ' format."
+                },
                 "canonical": { "type": "boolean" },
                 "only": {
                     "type": "array",
