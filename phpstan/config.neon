@@ -16,6 +16,7 @@ parameters:
        - '../src/Composer/Console/HtmlOutputFormatter.php'
 
     reportUnmatchedIgnoredErrors: false
+    treatPhpDocTypesAsCertain: false
 
     ignoreErrors:
         # unused parameters
