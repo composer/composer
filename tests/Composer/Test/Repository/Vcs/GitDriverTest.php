@@ -77,6 +77,10 @@ GIT;
         $process = $this->getProcessExecutorMock();
         $io = $this->getMockBuilder(IOInterface::class)->getMock();
 
+        $io
+            ->expects($this->never())
+            ->method('writeError');
+
         $driver = new GitDriver(['url' => 'https://example.org/acme.git'], $io, $this->config, $this->getHttpDownloaderMock(), $process);
         $this->setRepoDir($driver, $this->home);
 
@@ -95,8 +99,8 @@ GIT;
             ->expects([[
                 'cmd' => 'git remote -v',
                 'stdout' => '',
-            ],[
-                'cmd' => "git remote set-url origin -- 'https://example.org/acme.git' && git remote show origin && git remote set-url origin -- 'https://example.org/acme.git'",
+            ], [
+                'cmd' => Platform::isWindows() ? "git remote set-url origin -- https://example.org/acme.git && git remote show origin && git remote set-url origin -- https://example.org/acme.git" : "git remote set-url origin -- 'https://example.org/acme.git' && git remote show origin && git remote set-url origin -- 'https://example.org/acme.git'",
                 'stdout' => $stdout,
             ]]);
 
