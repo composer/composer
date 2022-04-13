@@ -107,6 +107,8 @@ class Config
     private $useEnvironment;
     /** @var array<string, true> */
     private $warnedHosts = array();
+    /** @var array<string, true> */
+    private $sslVerifyWarnedHosts = array();
     /** @var array<string, string> */
     private $sourceOfConfigValue = array();
 
@@ -575,10 +577,11 @@ class Config
      *
      * @param string      $url
      * @param IOInterface $io
+     * @param mixed[]     $repoOptions
      *
      * @return void
      */
-    public function prohibitUrlByConfig(string $url, IOInterface $io = null): void
+    public function prohibitUrlByConfig(string $url, IOInterface $io = null, array $repoOptions = []): void
     {
         // Return right away if the URL is malformed or custom (see issue #5173)
         if (false === filter_var($url, FILTER_VALIDATE_URL)) {
@@ -600,14 +603,29 @@ class Config
 
                 throw new TransportException("Your configuration does not allow connections to $url. See https://getcomposer.org/doc/06-config.md#secure-http for details.");
             }
-            if ($io) {
-                $host = parse_url($url, PHP_URL_HOST);
-                if (is_string($host)) {
-                    if (!isset($this->warnedHosts[$host])) {
-                        $io->writeError("<warning>Warning: Accessing $host over $scheme which is an insecure protocol.</warning>");
+            if ($io  !== null) {
+                if (is_string($hostname)) {
+                    if (!isset($this->warnedHosts[$hostname])) {
+                        $io->writeError("<warning>Warning: Accessing $hostname over $scheme which is an insecure protocol.</warning>");
                     }
-                    $this->warnedHosts[$host] = true;
+                    $this->warnedHosts[$hostname] = true;
                 }
+            }
+        }
+
+        if ($io !== null && is_string($hostname) && !isset($this->sslVerifyWarnedHosts[$hostname])) {
+            $warning = null;
+            if (isset($repoOptions['ssl']['verify_peer']) && !(bool) $repoOptions['ssl']['verify_peer']) {
+                $warning = 'verify_peer';
+            }
+
+            if (isset($repoOptions['ssl']['verify_peer_name']) && !(bool) $repoOptions['ssl']['verify_peer_name']) {
+                $warning = $warning === null ? 'verify_peer_name' : $warning . ' and verify_peer_name';
+            }
+
+            if ($warning !== null) {
+                $io->writeError("<warning>Warning: Accessing $hostname with $warning disabled.</warning>");
+                $this->sslVerifyWarnedHosts[$hostname] = true;
             }
         }
     }
