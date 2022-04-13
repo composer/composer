@@ -427,6 +427,13 @@ class Config
 
                 return $protos;
 
+            case 'autoloader-suffix':
+                if ($this->config[$key] === '') { // we need to guarantee null or non-empty-string
+                    return null;
+                }
+
+                return $this->process($this->config[$key], $flags);
+
             default:
                 if (!isset($this->config[$key])) {
                     return null;

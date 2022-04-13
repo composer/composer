@@ -159,12 +159,12 @@ class AutoloadGenerator
     /**
      * @param string $targetDir
      * @param bool $scanPsrPackages
-     * @param string $suffix
+     * @param string|null $suffix
      * @return int
      * @throws \Seld\JsonLint\ParsingException
      * @throws \RuntimeException
      */
-    public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, $targetDir, $scanPsrPackages = false, $suffix = '')
+    public function dump(Config $config, InstalledRepositoryInterface $localRepo, RootPackageInterface $rootPackage, InstallationManager $installationManager, $targetDir, $scanPsrPackages = false, $suffix = null)
     {
         if ($this->classMapAuthoritative) {
             // Force scanPsrPackages when classmap is authoritative
@@ -374,16 +374,23 @@ EOF;
         }
         $classmapFile .= ");\n";
 
-        if (!$suffix) {
-            if (!$config->get('autoloader-suffix') && Filesystem::isReadable($vendorPath.'/autoload.php')) {
+        if ('' === $suffix) {
+            $suffix = null;
+        }
+        if (null === $suffix) {
+            $suffix = $config->get('autoloader-suffix');
+
+            // carry over existing autoload.php's suffix if possible and none is configured
+            if (null === $suffix && Filesystem::isReadable($vendorPath.'/autoload.php')) {
                 $content = file_get_contents($vendorPath.'/autoload.php');
                 if (Preg::isMatch('{ComposerAutoloaderInit([^:\s]+)::}', $content, $match)) {
                     $suffix = $match[1];
                 }
             }
 
-            if (!$suffix) {
-                $suffix = $config->get('autoloader-suffix') ?: md5(uniqid('', true));
+            // generate one if we still haven't got a suffix
+            if (null === $suffix) {
+                $suffix = md5(uniqid('', true));
             }
         }
 

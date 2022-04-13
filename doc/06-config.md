@@ -315,8 +315,8 @@ with other autoloaders.
 
 ## autoloader-suffix
 
-Defaults to `null`. String to be used as a suffix for the generated Composer
-autoloader. When null a random one will be generated.
+Defaults to `null`. Non-empty string to be used as a suffix for the generated
+Composer autoloader. When null a random one will be generated.
 
 ## optimize-autoloader
 
