@@ -127,7 +127,7 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$str of function strtr expects string, string\\|false given\\.$#"
-			count: 3
+			count: 2
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
 
 		-
@@ -606,11 +606,6 @@ parameters:
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
-			message: "#^Parameter \\#1 \\$path of function dirname expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ConfigCommand.php
-
-		-
 			message: "#^Parameter \\#1 \\$path of function realpath expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ConfigCommand.php
@@ -1067,11 +1062,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/InitCommand.php
-
-		-
-			message: "#^Only booleans are allowed in a negated boolean, true\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
 
@@ -1662,7 +1652,7 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in &&, string\\|null given on the left side\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Command/SelfUpdateCommand.php
 
 		-
@@ -2441,22 +2431,12 @@ parameters:
 			path: ../src/Composer/Compiler.php
 
 		-
-			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Compiler.php
-
-		-
 			message: "#^Parameter \\#1 \\$source of method Composer\\\\Compiler\\:\\:stripWhitespace\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Compiler.php
 
 		-
 			message: "#^Parameter \\#1 \\$str of function strtr expects string, string\\|false given\\.$#"
-			count: 2
-			path: ../src/Composer/Compiler.php
-
-		-
-			message: "#^Parameter \\#1 \\$str of function substr_replace expects array\\|string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Compiler.php
 
@@ -3506,16 +3486,6 @@ parameters:
 			path: ../src/Composer/Downloader/PathDownloader.php
 
 		-
-			message: "#^Call to function in_array\\(\\) with arguments 20, non\\-empty\\-array\\<int, 10\\|20\\> and true will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
-			message: "#^Else branch is unreachable because previous condition is always true\\.$#"
-			count: 1
-			path: ../src/Composer/Downloader/PathDownloader.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, array\\<string, string\\|null\\>\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Downloader/PathDownloader.php
@@ -3871,18 +3841,23 @@ parameters:
 			path: ../src/Composer/Factory.php
 
 		-
-			message: "#^Offset 'line' does not exist on array\\{text\\?\\: string, token\\?\\: string, line\\?\\: int, loc\\?\\: array\\{first_line\\: int, first_column\\: int, last_line\\: int, last_column\\: int\\}, expected\\?\\: array\\<string\\>, key\\: string\\}\\.$#"
-			count: 1
-			path: ../src/Composer/Factory.php
-
-		-
 			message: "#^Only booleans are allowed in &&, Composer\\\\IO\\\\IOInterface\\|null given on the left side\\.$#"
 			count: 3
 			path: ../src/Composer/Factory.php
 
 		-
+			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
+			count: 1
+			path: ../src/Composer/Factory.php
+
+		-
 			message: "#^Only booleans are allowed in a negated boolean, string\\|false given\\.$#"
 			count: 3
+			path: ../src/Composer/Factory.php
+
+		-
+			message: "#^Only booleans are allowed in a ternary operator condition, mixed given\\.$#"
+			count: 1
 			path: ../src/Composer/Factory.php
 
 		-
@@ -4481,13 +4456,8 @@ parameters:
 			path: ../src/Composer/Package/Archiver/ArchivableFilesFinder.php
 
 		-
-			message: "#^Parameter \\#1 \\$haystack of function strpos expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Package/Archiver/ArchivableFilesFinder.php
-
-		-
 			message: "#^Parameter \\#1 \\$path of method Composer\\\\Util\\\\Filesystem\\:\\:normalizePath\\(\\) expects string, string\\|false given\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Package/Archiver/ArchivableFilesFinder.php
 
 		-
@@ -5186,11 +5156,6 @@ parameters:
 			path: ../src/Composer/Repository/ArtifactRepository.php
 
 		-
-			message: "#^Parameter \\#1 \\$filename of function sha1_file expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ArtifactRepository.php
-
-		-
 			message: "#^Anonymous function uses \\$this assigned to variable \\$repo\\. Use \\$this directly in the function body\\.$#"
 			count: 3
 			path: ../src/Composer/Repository/ComposerRepository.php
@@ -5223,11 +5188,6 @@ parameters:
 		-
 			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:findPackages\\(\\) should return array\\<Composer\\\\Package\\\\BasePackage\\> but returns array\\<Composer\\\\Package\\\\BasePackage\\>\\|Composer\\\\Package\\\\BasePackage\\|null\\.$#"
 			count: 2
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
-			message: "#^Method Composer\\\\Repository\\\\ComposerRepository\\:\\:getProviderNames\\(\\) should return array\\<string\\> but returns array\\<int, int\\|string\\>\\.$#"
-			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
@@ -5342,16 +5302,11 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string\\|null given\\.$#"
-			count: 13
+			count: 12
 			path: ../src/Composer/Repository/ComposerRepository.php
 
 		-
 			message: "#^Only booleans are allowed in \\|\\|, string\\|null given on the right side\\.$#"
-			count: 1
-			path: ../src/Composer/Repository/ComposerRepository.php
-
-		-
-			message: "#^Parameter \\#1 \\$input of function array_keys expects array, array\\<string, array\\<string, string\\>\\>\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Repository/ComposerRepository.php
 
@@ -6266,11 +6221,6 @@ parameters:
 			path: ../src/Composer/SelfUpdate/Keys.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, array\\<string, array\\<int, array\\<string, int\\|string\\>\\>\\> given\\.$#"
-			count: 1
-			path: ../src/Composer/SelfUpdate/Versions.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string given\\.$#"
 			count: 1
 			path: ../src/Composer/SelfUpdate/Versions.php
@@ -6912,11 +6862,6 @@ parameters:
 
 		-
 			message: "#^Argument of an invalid type array\\<array\\<string, string\\>\\>\\|string supplied for foreach, only iterables are supported\\.$#"
-			count: 1
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
-			message: "#^Binary operation \"\\.\" between non\\-empty\\-string and non\\-empty\\-array\\<array\\{versions\\: string, message\\: string\\}\\>\\|non\\-empty\\-string results in an error\\.$#"
 			count: 1
 			path: ../src/Composer/Util/HttpDownloader.php
 
@@ -7616,11 +7561,6 @@ parameters:
 			path: ../tests/Composer/Test/AllFunctionalTest.php
 
 		-
-			message: "#^Method Composer\\\\Test\\\\AllFunctionalTest\\:\\:getTestFiles\\(\\) should return array\\<string, array\\<string\\>\\> but returns array\\<string, array\\<int, string\\|false\\>\\>\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/AllFunctionalTest.php
-
-		-
 			message: "#^Only booleans are allowed in an if condition, string\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/AllFunctionalTest.php
@@ -7696,28 +7636,8 @@ parameters:
 			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$expected of static method Composer\\\\Test\\\\Autoload\\\\AutoloadGeneratorTest\\:\\:assertEqualsNormalized\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
-
-		-
 			message: "#^Parameter \\#1 \\$new_include_path of function set_include_path expects string, string\\|false given\\.$#"
 			count: 2
-			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$actual of static method Composer\\\\Test\\\\Autoload\\\\AutoloadGeneratorTest\\:\\:assertEqualsNormalized\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$haystack of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertStringContainsString\\(\\) expects string, string\\|false given\\.$#"
-			count: 8
-			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$haystack of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertStringNotContainsString\\(\\) expects string, string\\|false given\\.$#"
-			count: 3
 			path: ../tests/Composer/Test/Autoload/AutoloadGeneratorTest.php
 
 		-
@@ -7836,11 +7756,6 @@ parameters:
 			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$filename of function file_get_contents expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
-
-		-
 			message: "#^Parameter \\#2 \\$fixturesDir of method Composer\\\\Test\\\\DependencyResolver\\\\PoolBuilderTest\\:\\:readTestFile\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/DependencyResolver/PoolBuilderTest.php
@@ -7872,11 +7787,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$directory of class RecursiveDirectoryIterator constructor expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/DependencyResolver/PoolOptimizerTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$filename of function file_get_contents expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/DependencyResolver/PoolOptimizerTest.php
 
@@ -8205,11 +8115,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$directory of class RecursiveDirectoryIterator constructor expects string, string\\|false given\\.$#"
-			count: 1
-			path: ../tests/Composer/Test/InstallerTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$filename of function file_get_contents expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../tests/Composer/Test/InstallerTest.php
 

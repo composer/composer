@@ -442,8 +442,11 @@ class Factory
         // init locker if possible
         if ($fullLoad && isset($composerFile)) {
             $lockFile = self::getLockFile($composerFile);
+            if (!$config->get('lock') && file_exists($lockFile)) {
+                $io->writeError('<warning>'.$lockFile.' is present but ignored as the "lock" config option is disabled.</warning>');
+            }
 
-            $locker = new Package\Locker($io, new JsonFile($lockFile, null, $io), $im, file_get_contents($composerFile), $process);
+            $locker = new Package\Locker($io, new JsonFile($config->get('lock') ? $lockFile : Platform::getDevNull(), null, $io), $im, file_get_contents($composerFile), $process);
             $composer->setLocker($locker);
         }
 

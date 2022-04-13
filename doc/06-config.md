@@ -396,7 +396,7 @@ in the Composer home, cache, and data directories.
 ## lock
 
 Defaults to `true`. If set to `false`, Composer will not create a `composer.lock`
-file.
+file and will ignore it if one is present.
 
 ## platform-check
 
