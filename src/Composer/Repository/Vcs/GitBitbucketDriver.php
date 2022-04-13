@@ -48,6 +48,8 @@ class GitBitbucketDriver extends VcsDriver
     private $website = '';
     /** @var string */
     private $cloneHttpsUrl = '';
+    /** @var array<string, mixed> */
+    private $repoData;
 
     /**
      * @var ?VcsDriver
@@ -124,6 +126,8 @@ class GitBitbucketDriver extends VcsDriver
         $this->homeUrl = $repoData['links']['html']['href'];
         $this->website = $repoData['website'];
         $this->vcsType = $repoData['scm'];
+
+        $this->repoData = $repoData;
 
         return true;
     }
@@ -473,25 +477,6 @@ class GitBitbucketDriver extends VcsDriver
     }
 
     /**
-     * @return (array{name: string}&mixed[])|null
-     */
-    protected function getMainBranchData(): ?array
-    {
-        $resource = sprintf(
-            'https://api.bitbucket.org/2.0/repositories/%s/%s?fields=mainbranch',
-            $this->owner,
-            $this->repository
-        );
-
-        $data = $this->fetchWithOAuthCredentials($resource)->decodeJson();
-        if (isset($data['mainbranch'])) {
-            return $data['mainbranch'];
-        }
-
-        return null;
-    }
-
-    /**
      * @inheritDoc
      */
     public function getRootIdentifier(): string
@@ -517,8 +502,7 @@ class GitBitbucketDriver extends VcsDriver
                 );
             }
 
-            $mainBranchData = $this->getMainBranchData();
-            $this->rootIdentifier = !empty($mainBranchData['name']) ? $mainBranchData['name'] : 'master';
+            $this->rootIdentifier = $this->repoData['mainbranch']['name'] ?? 'master';
         }
 
         return $this->rootIdentifier;
