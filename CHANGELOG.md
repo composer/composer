@@ -1,3 +1,7 @@
+### [1.10.26] 2022-04-13
+
+  * Security: Fixed command injection vulnerability in HgDriver/GitDriver (GHSA-x7cr-6qr6-2hh6 / CVE-2022-24828)
+
 ### [1.10.25] 2022-01-21
 
   * Fixed selfupdate on Windows + PHP 8.1 regression (#10446)
@@ -952,6 +956,7 @@
 
   * Initial release
 
+[1.10.26]: https://github.com/composer/composer/compare/1.10.25...1.10.26
 [1.10.25]: https://github.com/composer/composer/compare/1.10.24...1.10.25
 [1.10.24]: https://github.com/composer/composer/compare/1.10.23...1.10.24
 [1.10.23]: https://github.com/composer/composer/compare/1.10.22...1.10.23
