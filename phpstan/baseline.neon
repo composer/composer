@@ -2366,6 +2366,11 @@ parameters:
 			path: ../src/Composer/Command/ValidateCommand.php
 
 		-
+			message: "#^Only booleans are allowed in &&, mixed given on the right side\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ValidateCommand.php
+
+		-
 			message: "#^Only booleans are allowed in a negated boolean, array\\<Composer\\\\Package\\\\BasePackage\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ValidateCommand.php
@@ -2397,6 +2402,11 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in an if condition, mixed given\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ValidateCommand.php
+
+		-
+			message: "#^Only booleans are allowed in \\|\\|, mixed given on the right side\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ValidateCommand.php
 
