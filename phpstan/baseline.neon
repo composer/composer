@@ -61,13 +61,8 @@ parameters:
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
-			count: 1
-			path: ../src/Composer/Autoload/AutoloadGenerator.php
-
-		-
 			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
-			count: 4
+			count: 3
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
 
 		-
@@ -147,7 +142,7 @@ parameters:
 
 		-
 			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Composer/Autoload/AutoloadGenerator.php
 
 		-
@@ -1286,6 +1281,11 @@ parameters:
 			path: ../src/Composer/Command/UpdateCommand.php
 
 		-
+			message: "#^Only booleans are allowed in &&, mixed given on the right side\\.$#"
+			count: 1
+			path: ../src/Composer/Command/ValidateCommand.php
+
+		-
 			message: "#^Only booleans are allowed in a negated boolean, array\\<Composer\\\\Package\\\\BasePackage\\> given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ValidateCommand.php
@@ -1367,11 +1367,6 @@ parameters:
 
 		-
 			message: "#^Only booleans are allowed in a ternary operator condition, string\\|null given\\.$#"
-			count: 1
-			path: ../src/Composer/Config.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, Composer\\\\IO\\\\IOInterface\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Config.php
 
@@ -2551,8 +2546,18 @@ parameters:
 			path: ../src/Composer/Factory.php
 
 		-
+			message: "#^Only booleans are allowed in a negated boolean, mixed given\\.$#"
+			count: 1
+			path: ../src/Composer/Factory.php
+
+		-
 			message: "#^Only booleans are allowed in a negated boolean, string\\|false given\\.$#"
 			count: 3
+			path: ../src/Composer/Factory.php
+
+		-
+			message: "#^Only booleans are allowed in a ternary operator condition, mixed given\\.$#"
+			count: 1
 			path: ../src/Composer/Factory.php
 
 		-

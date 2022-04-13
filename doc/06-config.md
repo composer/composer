@@ -315,8 +315,8 @@ with other autoloaders.
 
 ## autoloader-suffix
 
-Defaults to `null`. String to be used as a suffix for the generated Composer
-autoloader. When null a random one will be generated.
+Defaults to `null`. Non-empty string to be used as a suffix for the generated
+Composer autoloader. When null a random one will be generated.
 
 ## optimize-autoloader
 
@@ -396,7 +396,7 @@ in the Composer home, cache, and data directories.
 ## lock
 
 Defaults to `true`. If set to `false`, Composer will not create a `composer.lock`
-file.
+file and will ignore it if one is present.
 
 ## platform-check
 

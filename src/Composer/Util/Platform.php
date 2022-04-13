@@ -275,4 +275,16 @@ class Platform
 
         return self::$isVirtualBoxGuest;
     }
+
+    /**
+     * @return 'NUL'|'/dev/null'
+     */
+    public static function getDevNull(): string
+    {
+        if (self::isWindows()) {
+            return 'NUL';
+        }
+
+        return '/dev/null';
+    }
 }
