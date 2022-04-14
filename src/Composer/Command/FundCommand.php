@@ -37,9 +37,7 @@ class FundCommand extends BaseCommand
     {
         $this->setName('fund')
             ->setDescription('Discover how to help fund the maintenance of your dependencies.')
-            ->setDefinition(array(
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
-            ))
+            ->addOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text')
         ;
     }
 

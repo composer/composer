@@ -48,20 +48,18 @@ class SelfUpdateCommand extends BaseCommand
             ->setName('self-update')
             ->setAliases(array('selfupdate'))
             ->setDescription('Updates composer.phar to the latest version.')
-            ->setDefinition(array(
-                new InputOption('rollback', 'r', InputOption::VALUE_NONE, 'Revert to an older installation of composer'),
-                new InputOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update'),
-                new InputArgument('version', InputArgument::OPTIONAL, 'The version to update to'),
-                new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
-                new InputOption('update-keys', null, InputOption::VALUE_NONE, 'Prompt user for a key update'),
-                new InputOption('stable', null, InputOption::VALUE_NONE, 'Force an update to the stable channel'),
-                new InputOption('preview', null, InputOption::VALUE_NONE, 'Force an update to the preview channel'),
-                new InputOption('snapshot', null, InputOption::VALUE_NONE, 'Force an update to the snapshot channel'),
-                new InputOption('1', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 1.x versions'),
-                new InputOption('2', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 2.x versions'),
-                new InputOption('2.2', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 2.2.x LTS versions'),
-                new InputOption('set-channel-only', null, InputOption::VALUE_NONE, 'Only store the channel as the default one and then exit'),
-            ))
+            ->addOption('rollback', 'r', InputOption::VALUE_NONE, 'Revert to an older installation of composer')
+            ->addOption('clean-backups', null, InputOption::VALUE_NONE, 'Delete old backups during an update. This makes the current version of composer the only backup available after the update')
+            ->addArgument('version', InputArgument::OPTIONAL, 'The version to update to')
+            ->addOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.')
+            ->addOption('update-keys', null, InputOption::VALUE_NONE, 'Prompt user for a key update')
+            ->addOption('stable', null, InputOption::VALUE_NONE, 'Force an update to the stable channel')
+            ->addOption('preview', null, InputOption::VALUE_NONE, 'Force an update to the preview channel')
+            ->addOption('snapshot', null, InputOption::VALUE_NONE, 'Force an update to the snapshot channel')
+            ->addOption('1', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 1.x versions')
+            ->addOption('2', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 2.x versions')
+            ->addOption('2.2', null, InputOption::VALUE_NONE, 'Force an update to the stable channel, but only use 2.2.x LTS versions')
+            ->addOption('set-channel-only', null, InputOption::VALUE_NONE, 'Only store the channel as the default one and then exit')
             ->setHelp(
                 <<<EOT
 The <info>self-update</info> command checks getcomposer.org for newer

@@ -47,15 +47,13 @@ class ArchiveCommand extends BaseCommand
         $this
             ->setName('archive')
             ->setDescription('Creates an archive of this composer package.')
-            ->setDefinition(array(
-                new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project'),
-                new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar, tar.gz, tar.bz2 or zip (default tar)'),
-                new InputOption('dir', null, InputOption::VALUE_REQUIRED, 'Write the archive to this directory'),
-                new InputOption('file', null, InputOption::VALUE_REQUIRED, 'Write the archive with the given file name.'
-                    .' Note that the format will be appended.'),
-                new InputOption('ignore-filters', null, InputOption::VALUE_NONE, 'Ignore filters when saving package'),
-            ))
+            ->addArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project')
+            ->addArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive')
+            ->addOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar, tar.gz, tar.bz2 or zip (default tar)')
+            ->addOption('dir', null, InputOption::VALUE_REQUIRED, 'Write the archive to this directory')
+            ->addOption('file', null, InputOption::VALUE_REQUIRED, 'Write the archive with the given file name.'
+                    .' Note that the format will be appended.')
+            ->addOption('ignore-filters', null, InputOption::VALUE_NONE, 'Ignore filters when saving package')
             ->setHelp(
                 <<<EOT
 The <info>archive</info> command creates an archive of the specified format

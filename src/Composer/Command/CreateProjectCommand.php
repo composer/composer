@@ -68,30 +68,28 @@ class CreateProjectCommand extends BaseCommand
         $this
             ->setName('create-project')
             ->setDescription('Creates new project from a package into given directory.')
-            ->setDefinition(array(
-                new InputArgument('package', InputArgument::OPTIONAL, 'Package name to be installed'),
-                new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
-                new InputArgument('version', InputArgument::OPTIONAL, 'Version, will default to latest'),
-                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum-stability allowed (unless a version is specified).'),
-                new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
-                new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),
-                new InputOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).'),
-                new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories to look the package up, either by URL or using JSON arrays'),
-                new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'DEPRECATED: Use --repository instead.'),
-                new InputOption('add-repository', null, InputOption::VALUE_NONE, 'Add the custom repository in the composer.json. If a lock file is present it will be deleted and an update will be run instead of install.'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).'),
-                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
-                new InputOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.'),
-                new InputOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.'),
-                new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
-                new InputOption('no-secure-http', null, InputOption::VALUE_NONE, 'Disable the secure-http config option temporarily while installing the root package. Use at your own risk. Using this flag is a bad idea.'),
-                new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deleting the vcs folder.'),
-                new InputOption('remove-vcs', null, InputOption::VALUE_NONE, 'Whether to force deletion of the vcs folder without prompting.'),
-                new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
-                new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
-                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
-                new InputOption('ask', null, InputOption::VALUE_NONE, 'Whether to ask for project directory.'),
-            ))
+            ->addArgument('package', InputArgument::OPTIONAL, 'Package name to be installed')
+            ->addArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created')
+            ->addArgument('version', InputArgument::OPTIONAL, 'Version, will default to latest')
+            ->addOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum-stability allowed (unless a version is specified).')
+            ->addOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.')
+            ->addOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).')
+            ->addOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).')
+            ->addOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories to look the package up, either by URL or using JSON arrays')
+            ->addOption('repository-url', null, InputOption::VALUE_REQUIRED, 'DEPRECATED: Use --repository instead.')
+            ->addOption('add-repository', null, InputOption::VALUE_NONE, 'Add the custom repository in the composer.json. If a lock file is present it will be deleted and an update will be run instead of install.')
+            ->addOption('dev', null, InputOption::VALUE_NONE, 'Enables installation of require-dev packages (enabled by default, only present for BC).')
+            ->addOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.')
+            ->addOption('no-custom-installers', null, InputOption::VALUE_NONE, 'DEPRECATED: Use no-plugins instead.')
+            ->addOption('no-scripts', null, InputOption::VALUE_NONE, 'Whether to prevent execution of all defined scripts in the root package.')
+            ->addOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.')
+            ->addOption('no-secure-http', null, InputOption::VALUE_NONE, 'Disable the secure-http config option temporarily while installing the root package. Use at your own risk. Using this flag is a bad idea.')
+            ->addOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deleting the vcs folder.')
+            ->addOption('remove-vcs', null, InputOption::VALUE_NONE, 'Whether to force deletion of the vcs folder without prompting.')
+            ->addOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.')
+            ->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).')
+            ->addOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).')
+            ->addOption('ask', null, InputOption::VALUE_NONE, 'Whether to ask for project directory.')
             ->setHelp(
                 <<<EOT
 The <info>create-project</info> command creates a new project from a given

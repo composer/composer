@@ -53,14 +53,12 @@ class RunScriptCommand extends BaseCommand
             ->setName('run-script')
             ->setAliases(array('run'))
             ->setDescription('Runs the scripts defined in composer.json.')
-            ->setDefinition(array(
-                new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run.'),
-                new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
-                new InputOption('timeout', null, InputOption::VALUE_REQUIRED, 'Sets script timeout in seconds, or 0 for never.'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
-                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),
-                new InputOption('list', 'l', InputOption::VALUE_NONE, 'List scripts.'),
-            ))
+            ->addArgument('script', InputArgument::OPTIONAL, 'Script name to run.')
+            ->addArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, '')
+            ->addOption('timeout', null, InputOption::VALUE_REQUIRED, 'Sets script timeout in seconds, or 0 for never.')
+            ->addOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.')
+            ->addOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.')
+            ->addOption('list', 'l', InputOption::VALUE_NONE, 'List scripts.')
             ->setHelp(
                 <<<EOT
 The <info>run-script</info> command runs scripts defined in composer.json:

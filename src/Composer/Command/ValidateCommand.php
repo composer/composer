@@ -43,16 +43,14 @@ class ValidateCommand extends BaseCommand
         $this
             ->setName('validate')
             ->setDescription('Validates a composer.json and composer.lock.')
-            ->setDefinition(array(
-                new InputOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not validate requires for overly strict/loose constraints'),
-                new InputOption('check-lock', null, InputOption::VALUE_NONE, 'Check if lock file is up to date (even when config.lock is false)'),
-                new InputOption('no-check-lock', null, InputOption::VALUE_NONE, 'Do not check if lock file is up to date'),
-                new InputOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors'),
-                new InputOption('no-check-version', null, InputOption::VALUE_NONE, 'Do not report a warning if the version field is present'),
-                new InputOption('with-dependencies', 'A', InputOption::VALUE_NONE, 'Also validate the composer.json of all installed dependencies'),
-                new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code for warnings as well as errors'),
-                new InputArgument('file', InputArgument::OPTIONAL, 'path to composer.json file'),
-            ))
+            ->addOption('no-check-all', null, InputOption::VALUE_NONE, 'Do not validate requires for overly strict/loose constraints')
+            ->addOption('check-lock', null, InputOption::VALUE_NONE, 'Check if lock file is up to date (even when config.lock is false)')
+            ->addOption('no-check-lock', null, InputOption::VALUE_NONE, 'Do not check if lock file is up to date')
+            ->addOption('no-check-publish', null, InputOption::VALUE_NONE, 'Do not check for publish errors')
+            ->addOption('no-check-version', null, InputOption::VALUE_NONE, 'Do not report a warning if the version field is present')
+            ->addOption('with-dependencies', 'A', InputOption::VALUE_NONE, 'Also validate the composer.json of all installed dependencies')
+            ->addOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code for warnings as well as errors')
+            ->addArgument('file', InputArgument::OPTIONAL, 'path to composer.json file')
             ->setHelp(
                 <<<EOT
 The validate command validates a given composer.json and composer.lock

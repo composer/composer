@@ -40,20 +40,18 @@ class ReinstallCommand extends BaseCommand
         $this
             ->setName('reinstall')
             ->setDescription('Uninstalls and reinstalls the given package names')
-            ->setDefinition(array(
-                new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
-                new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),
-                new InputOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).'),
-                new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
-                new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
-                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump'),
-                new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
-                new InputOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
-                new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
-                new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
-                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'List of package names to reinstall, can include a wildcard (*) to match any substring.'),
-            ))
+            ->addOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.')
+            ->addOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).')
+            ->addOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).')
+            ->addOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation')
+            ->addOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.')
+            ->addOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump')
+            ->addOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.')
+            ->addOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.')
+            ->addOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader')
+            ->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).')
+            ->addOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).')
+            ->addArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'List of package names to reinstall, can include a wildcard (*) to match any substring.')
             ->setHelp(
                 <<<EOT
 The <info>reinstall</info> command looks up installed packages by name,

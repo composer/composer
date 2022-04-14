@@ -67,21 +67,19 @@ class ConfigCommand extends BaseCommand
         $this
             ->setName('config')
             ->setDescription('Sets config options.')
-            ->setDefinition(array(
-                new InputOption('global', 'g', InputOption::VALUE_NONE, 'Apply command to the global config file'),
-                new InputOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor'),
-                new InputOption('auth', 'a', InputOption::VALUE_NONE, 'Affect auth config file (only used for --editor)'),
-                new InputOption('unset', null, InputOption::VALUE_NONE, 'Unset the given setting-key'),
-                new InputOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings'),
-                new InputOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json'),
-                new InputOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative'),
-                new InputOption('json', 'j', InputOption::VALUE_NONE, 'JSON decode the setting value, to be used with extra.* keys'),
-                new InputOption('merge', 'm', InputOption::VALUE_NONE, 'Merge the setting value with the current value, to be used with extra.* keys in combination with --json'),
-                new InputOption('append', null, InputOption::VALUE_NONE, 'When adding a repository, append it (lowest priority) to the existing ones instead of prepending it (highest priority)'),
-                new InputOption('source', null, InputOption::VALUE_NONE, 'Display where the config value is loaded from'),
-                new InputArgument('setting-key', null, 'Setting key'),
-                new InputArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value'),
-            ))
+            ->addOption('global', 'g', InputOption::VALUE_NONE, 'Apply command to the global config file')
+            ->addOption('editor', 'e', InputOption::VALUE_NONE, 'Open editor')
+            ->addOption('auth', 'a', InputOption::VALUE_NONE, 'Affect auth config file (only used for --editor)')
+            ->addOption('unset', null, InputOption::VALUE_NONE, 'Unset the given setting-key')
+            ->addOption('list', 'l', InputOption::VALUE_NONE, 'List configuration settings')
+            ->addOption('file', 'f', InputOption::VALUE_REQUIRED, 'If you want to choose a different composer.json or config.json')
+            ->addOption('absolute', null, InputOption::VALUE_NONE, 'Returns absolute paths when fetching *-dir config values instead of relative')
+            ->addOption('json', 'j', InputOption::VALUE_NONE, 'JSON decode the setting value, to be used with extra.* keys')
+            ->addOption('merge', 'm', InputOption::VALUE_NONE, 'Merge the setting value with the current value, to be used with extra.* keys in combination with --json')
+            ->addOption('append', null, InputOption::VALUE_NONE, 'When adding a repository, append it (lowest priority) to the existing ones instead of prepending it (highest priority)')
+            ->addOption('source', null, InputOption::VALUE_NONE, 'Display where the config value is loaded from')
+            ->addArgument('setting-key', null, 'Setting key')
+            ->addArgument('setting-value', InputArgument::IS_ARRAY, 'Setting value')
             ->setHelp(
                 <<<EOT
 This command allows you to edit composer config settings and repositories

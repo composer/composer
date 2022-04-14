@@ -38,13 +38,11 @@ class SearchCommand extends BaseCommand
         $this
             ->setName('search')
             ->setDescription('Searches for packages.')
-            ->setDefinition(array(
-                new InputOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in package names'),
-                new InputOption('only-vendor', 'O', InputOption::VALUE_NONE, 'Search only for vendor / organization names, returns only "vendor" as result'),
-                new InputOption('type', 't', InputOption::VALUE_REQUIRED, 'Search for a specific package type'),
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
-                new InputArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for'),
-            ))
+            ->addOption('only-name', 'N', InputOption::VALUE_NONE, 'Search only in package names')
+            ->addOption('only-vendor', 'O', InputOption::VALUE_NONE, 'Search only for vendor / organization names, returns only "vendor" as result')
+            ->addOption('type', 't', InputOption::VALUE_REQUIRED, 'Search for a specific package type')
+            ->addOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text')
+            ->addArgument('tokens', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'tokens to search for')
             ->setHelp(
                 <<<EOT
 The search command searches for packages by its name

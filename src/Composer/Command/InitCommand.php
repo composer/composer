@@ -52,19 +52,17 @@ class InitCommand extends BaseCommand
         $this
             ->setName('init')
             ->setDescription('Creates a basic composer.json file in current directory.')
-            ->setDefinition(array(
-                new InputOption('name', null, InputOption::VALUE_REQUIRED, 'Name of the package'),
-                new InputOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package'),
-                new InputOption('author', null, InputOption::VALUE_REQUIRED, 'Author name of package'),
-                new InputOption('type', null, InputOption::VALUE_OPTIONAL, 'Type of package (e.g. library, project, metapackage, composer-plugin)'),
-                new InputOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package'),
-                new InputOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
-                new InputOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"'),
-                new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')'),
-                new InputOption('license', 'l', InputOption::VALUE_REQUIRED, 'License of package'),
-                new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories, either by URL or using JSON arrays'),
-                new InputOption('autoload', 'a', InputOption::VALUE_REQUIRED, 'Add PSR-4 autoload mapping. Maps your package\'s namespace to the provided directory. (Expects a relative path, e.g. src/)'),
-            ))
+            ->addOption('name', null, InputOption::VALUE_REQUIRED, 'Name of the package')
+            ->addOption('description', null, InputOption::VALUE_REQUIRED, 'Description of package')
+            ->addOption('author', null, InputOption::VALUE_REQUIRED, 'Author name of package')
+            ->addOption('type', null, InputOption::VALUE_OPTIONAL, 'Type of package (e.g. library, project, metapackage, composer-plugin)')
+            ->addOption('homepage', null, InputOption::VALUE_REQUIRED, 'Homepage of package')
+            ->addOption('require', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"')
+            ->addOption('require-dev', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Package to require for development with a version constraint, e.g. foo/bar:1.0.0 or foo/bar=1.0.0 or "foo/bar 1.0.0"')
+            ->addOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum stability (empty or one of: '.implode(', ', array_keys(BasePackage::$stabilities)).')')
+            ->addOption('license', 'l', InputOption::VALUE_REQUIRED, 'License of package')
+            ->addOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories, either by URL or using JSON arrays')
+            ->addOption('autoload', 'a', InputOption::VALUE_REQUIRED, 'Add PSR-4 autoload mapping. Maps your package\'s namespace to the provided directory. (Expects a relative path, e.g. src/)')
             ->setHelp(
                 <<<EOT
 The <info>init</info> command creates a basic composer.json file

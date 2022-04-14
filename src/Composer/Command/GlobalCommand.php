@@ -34,10 +34,8 @@ class GlobalCommand extends BaseCommand
         $this
             ->setName('global')
             ->setDescription('Allows running commands in the global composer dir ($COMPOSER_HOME).')
-            ->setDefinition(array(
-                new InputArgument('command-name', InputArgument::REQUIRED, ''),
-                new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
-            ))
+            ->addArgument('command-name', InputArgument::REQUIRED, '')
+            ->addArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, '')
             ->setHelp(
                 <<<EOT
 Use this command as a wrapper to run other Composer commands

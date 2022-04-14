@@ -45,9 +45,7 @@ class StatusCommand extends BaseCommand
         $this
             ->setName('status')
             ->setDescription('Shows a list of locally modified packages.')
-            ->setDefinition(array(
-                new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.'),
-            ))
+            ->addOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Show modified files for each directory that contains changes.')
             ->setHelp(
                 <<<EOT
 The status command displays a list of dependencies that have

@@ -46,34 +46,32 @@ class UpdateCommand extends BaseCommand
             ->setName('update')
             ->setAliases(array('u', 'upgrade'))
             ->setDescription('Updates your dependencies to the latest version according to composer.json, and updates the composer.lock file.')
-            ->setDefinition(array(
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that should be updated, if not provided all packages are.'),
-                new InputOption('with', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Temporary version constraint to add, e.g. foo/bar:1.0.0 or foo/bar=1.0.0'),
-                new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
-                new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),
-                new InputOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).'),
-                new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'DEPRECATED: Enables installation of require-dev packages (enabled by default, only present for BC).'),
-                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
-                new InputOption('lock', null, InputOption::VALUE_NONE, 'Overwrites the lock file hash to suppress warning about the lock file being out of date without updating package versions. Package metadata like mirrors and URLs are updated if they changed.'),
-                new InputOption('no-install', null, InputOption::VALUE_NONE, 'Skip the install step after updating the composer.lock file.'),
-                new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
-                new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.'),
-                new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
-                new InputOption('with-dependencies', 'w', InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, except those which are root requirements.'),
-                new InputOption('with-all-dependencies', 'W', InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, including those which are root requirements.'),
-                new InputOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.'),
-                new InputOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.'),
-                new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.'),
-                new InputOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
-                new InputOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader'),
-                new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
-                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
-                new InputOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.'),
-                new InputOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.'),
-                new InputOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.'),
-                new InputOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.'),
-            ))
+            ->addArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that should be updated, if not provided all packages are.')
+            ->addOption('with', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_REQUIRED, 'Temporary version constraint to add, e.g. foo/bar:1.0.0 or foo/bar=1.0.0')
+            ->addOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.')
+            ->addOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).')
+            ->addOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).')
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).')
+            ->addOption('dev', null, InputOption::VALUE_NONE, 'DEPRECATED: Enables installation of require-dev packages (enabled by default, only present for BC).')
+            ->addOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.')
+            ->addOption('lock', null, InputOption::VALUE_NONE, 'Overwrites the lock file hash to suppress warning about the lock file being out of date without updating package versions. Package metadata like mirrors and URLs are updated if they changed.')
+            ->addOption('no-install', null, InputOption::VALUE_NONE, 'Skip the install step after updating the composer.lock file.')
+            ->addOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation')
+            ->addOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.')
+            ->addOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.')
+            ->addOption('with-dependencies', 'w', InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, except those which are root requirements.')
+            ->addOption('with-all-dependencies', 'W', InputOption::VALUE_NONE, 'Update also dependencies of packages in the argument list, including those which are root requirements.')
+            ->addOption('verbose', 'v|vv|vvv', InputOption::VALUE_NONE, 'Shows more details including new commits pulled in when updating packages.')
+            ->addOption('optimize-autoloader', 'o', InputOption::VALUE_NONE, 'Optimize autoloader during autoloader dump.')
+            ->addOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize-autoloader`.')
+            ->addOption('apcu-autoloader', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.')
+            ->addOption('apcu-autoloader-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu-autoloader')
+            ->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).')
+            ->addOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).')
+            ->addOption('prefer-stable', null, InputOption::VALUE_NONE, 'Prefer stable versions of dependencies.')
+            ->addOption('prefer-lowest', null, InputOption::VALUE_NONE, 'Prefer lowest versions of dependencies.')
+            ->addOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive interface with autocompletion to select the packages to update.')
+            ->addOption('root-reqs', null, InputOption::VALUE_NONE, 'Restricts the update to your first degree dependencies.')
             ->setHelp(
                 <<<EOT
 The <info>update</info> command reads the composer.json file from the

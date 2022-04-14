@@ -43,11 +43,9 @@ class ScriptAliasCommand extends BaseCommand
         $this
             ->setName($this->script)
             ->setDescription($this->description)
-            ->setDefinition(array(
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),
-                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.'),
-                new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
-            ))
+            ->addOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.')
+            ->addOption('no-dev', null, InputOption::VALUE_NONE, 'Disables the dev mode.')
+            ->addArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, '')
             ->setHelp(
                 <<<EOT
 The <info>run-script</info> command runs scripts defined in composer.json:

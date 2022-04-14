@@ -32,16 +32,14 @@ class DumpAutoloadCommand extends BaseCommand
             ->setName('dump-autoload')
             ->setAliases(array('dumpautoload'))
             ->setDescription('Dumps the autoloader.')
-            ->setDefinition(array(
-                new InputOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.'),
-                new InputOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.'),
-                new InputOption('apcu', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.'),
-                new InputOption('apcu-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu'),
-                new InputOption('dev', null, InputOption::VALUE_NONE, 'Enables autoload-dev rules. Composer will by default infer this automatically according to the last install or update --no-dev state.'),
-                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules. Composer will by default infer this automatically according to the last install or update --no-dev state.'),
-                new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
-                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
-            ))
+            ->addOption('optimize', 'o', InputOption::VALUE_NONE, 'Optimizes PSR0 and PSR4 packages to be loaded with classmaps too, good for production.')
+            ->addOption('classmap-authoritative', 'a', InputOption::VALUE_NONE, 'Autoload classes from the classmap only. Implicitly enables `--optimize`.')
+            ->addOption('apcu', null, InputOption::VALUE_NONE, 'Use APCu to cache found/not-found classes.')
+            ->addOption('apcu-prefix', null, InputOption::VALUE_REQUIRED, 'Use a custom prefix for the APCu autoloader cache. Implicitly enables --apcu')
+            ->addOption('dev', null, InputOption::VALUE_NONE, 'Enables autoload-dev rules. Composer will by default infer this automatically according to the last install or update --no-dev state.')
+            ->addOption('no-dev', null, InputOption::VALUE_NONE, 'Disables autoload-dev rules. Composer will by default infer this automatically according to the last install or update --no-dev state.')
+            ->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).')
+            ->addOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).')
             ->setHelp(
                 <<<EOT
 <info>php composer.phar dump-autoload</info>

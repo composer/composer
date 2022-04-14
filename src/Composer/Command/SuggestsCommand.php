@@ -31,14 +31,12 @@ class SuggestsCommand extends BaseCommand
         $this
             ->setName('suggests')
             ->setDescription('Shows package suggestions.')
-            ->setDefinition(array(
-                new InputOption('by-package', null, InputOption::VALUE_NONE, 'Groups output by suggesting package (default)'),
-                new InputOption('by-suggestion', null, InputOption::VALUE_NONE, 'Groups output by suggested package'),
-                new InputOption('all', 'a', InputOption::VALUE_NONE, 'Show suggestions from all dependencies, including transitive ones'),
-                new InputOption('list', null, InputOption::VALUE_NONE, 'Show only list of suggested package names'),
-                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Exclude suggestions from require-dev packages'),
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that you want to list suggestions from.'),
-            ))
+            ->addOption('by-package', null, InputOption::VALUE_NONE, 'Groups output by suggesting package (default)')
+            ->addOption('by-suggestion', null, InputOption::VALUE_NONE, 'Groups output by suggested package')
+            ->addOption('all', 'a', InputOption::VALUE_NONE, 'Show suggestions from all dependencies, including transitive ones')
+            ->addOption('list', null, InputOption::VALUE_NONE, 'Show only list of suggested package names')
+            ->addOption('no-dev', null, InputOption::VALUE_NONE, 'Exclude suggestions from require-dev packages')
+            ->addArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that you want to list suggestions from.')
             ->setHelp(
                 <<<EOT
 

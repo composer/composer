@@ -31,21 +31,19 @@ class OutdatedCommand extends BaseCommand
         $this
             ->setName('outdated')
             ->setDescription('Shows a list of installed packages that have updates available, including their latest version.')
-            ->setDefinition(array(
-                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.'),
-                new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show only packages that are outdated (this is the default, but present here for compat with `show`'),
-                new InputOption('all', 'a', InputOption::VALUE_NONE, 'Show all installed packages with their latest versions'),
-                new InputOption('locked', null, InputOption::VALUE_NONE, 'Shows updates for packages from the lock file, regardless of what is currently in vendor dir'),
-                new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
-                new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
-                new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.'),
-                new InputOption('patch-only', 'p', InputOption::VALUE_NONE, 'Show only packages that have patch SemVer-compatible updates. Use with the --outdated option.'),
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
-                new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it with the --outdated option if you don\'t want to be informed about new versions of some packages.'),
-                new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
-                new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages). Use with the --outdated option'),
-                new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages). Use with the --outdated option'),
-            ))
+            ->addArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.')
+            ->addOption('outdated', 'o', InputOption::VALUE_NONE, 'Show only packages that are outdated (this is the default, but present here for compat with `show`')
+            ->addOption('all', 'a', InputOption::VALUE_NONE, 'Show all installed packages with their latest versions')
+            ->addOption('locked', null, InputOption::VALUE_NONE, 'Shows updates for packages from the lock file, regardless of what is currently in vendor dir')
+            ->addOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package')
+            ->addOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages')
+            ->addOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.')
+            ->addOption('patch-only', 'p', InputOption::VALUE_NONE, 'Show only packages that have patch SemVer-compatible updates. Use with the --outdated option.')
+            ->addOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text')
+            ->addOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it with the --outdated option if you don\'t want to be informed about new versions of some packages.')
+            ->addOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.')
+            ->addOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages). Use with the --outdated option')
+            ->addOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages). Use with the --outdated option')
             ->setHelp(
                 <<<EOT
 The outdated command is just a proxy for `composer show -l`
