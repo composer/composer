@@ -12,22 +12,17 @@
 
 namespace Composer\Command;
 
-use Symfony\Component\Console\Completion\CompletionInput;
-use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
+use Composer\Console\Input\InputArgument;
+use Composer\Console\Input\InputOption;
 
 /**
  * @author Niels Keurentjes <niels.keurentjes@omines.com>
  */
 class DependsCommand extends BaseDependencyCommand
 {
-    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
-    {
-        $this->completeInstalledPackage($input, $suggestions);
-    }
+    use CompletionTrait;
 
     /**
      * Configure command metadata.
@@ -41,7 +36,7 @@ class DependsCommand extends BaseDependencyCommand
             ->setAliases(array('why'))
             ->setDescription('Shows which packages cause the given package to be installed.')
             ->setDefinition(array(
-                new InputArgument(self::ARGUMENT_PACKAGE, InputArgument::REQUIRED, 'Package to inspect'),
+                new InputArgument(self::ARGUMENT_PACKAGE, InputArgument::REQUIRED, 'Package to inspect', null, $this->suggestInstalledPackage()),
                 new InputOption(self::OPTION_RECURSIVE, 'r', InputOption::VALUE_NONE, 'Recursively resolves up to the root package'),
                 new InputOption(self::OPTION_TREE, 't', InputOption::VALUE_NONE, 'Prints the results as a nested tree'),
             ))

@@ -12,25 +12,16 @@
 
 namespace Composer\Command;
 
-use Symfony\Component\Console\Completion\CompletionInput;
-use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Input\InputArgument;
+use Composer\Console\Input\InputArgument;
 
 /**
  * @author Davey Shafik <me@daveyshafik.com>
  */
 class ExecCommand extends BaseCommand
 {
-    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
-    {
-        if ($input->mustSuggestArgumentValuesFor('binary')) {
-            $suggestions->suggestValues($this->getBinaries(false));
-        }
-    }
-
     /**
      * @return void
      */
@@ -41,7 +32,9 @@ class ExecCommand extends BaseCommand
             ->setDescription('Executes a vendored binary/script.')
             ->setDefinition(array(
                 new InputOption('list', 'l', InputOption::VALUE_NONE),
-                new InputArgument('binary', InputArgument::OPTIONAL, 'The binary to run, e.g. phpunit'),
+                new InputArgument('binary', InputArgument::OPTIONAL, 'The binary to run, e.g. phpunit', null, function () {
+                    return $this->getBinaries(false);
+                }),
                 new InputArgument(
                     'args',
                     InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
@@ -61,9 +54,9 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $composer = $this->requireComposer();
-        if ($input->getOption('list') || !$input->getArgument('binary')) {
+        if ($input->getOption('list') || null === $input->getArgument('binary')) {
             $bins = $this->getBinaries(true);
-            if (count($bins) > 0) {
+            if ([] === $bins) {
                 $binDir = $composer->getConfig()->get('bin-dir');
 
                 throw new \RuntimeException("No binaries found in composer.json or in bin-dir ($binDir)");
@@ -107,7 +100,7 @@ EOT
 
     private function getBinaries(bool $forDisplay): array
     {
-        $composer = $this->getComposer();
+        $composer = $this->requireComposer();
         $binDir = $composer->getConfig()->get('bin-dir');
         $bins = glob($binDir . '/*');
         $localBins = $composer->getPackage()->getBinaries();

@@ -27,11 +27,9 @@ use Composer\Util\Filesystem;
 use Composer\Util\Loop;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Symfony\Component\Console\Completion\CompletionInput;
-use Symfony\Component\Console\Completion\CompletionSuggestions;
-use Symfony\Component\Console\Input\InputArgument;
+use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -41,16 +39,9 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ArchiveCommand extends BaseCommand
 {
-    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
-    {
-        if ($this->completeAvailablePackage($input, $suggestions)) {
-            return;
-        }
+    use CompletionTrait;
 
-        if ($input->mustSuggestOptionValuesFor('format')) {
-            $suggestions->suggestValues(['tar', 'tar.gz', 'tar.bz2', 'zip']);
-        }
-    }
+    private const FORMATS = ['tar', 'tar.gz', 'tar.bz2', 'zip'];
 
     /**
      * @return void
@@ -61,9 +52,9 @@ class ArchiveCommand extends BaseCommand
             ->setName('archive')
             ->setDescription('Creates an archive of this composer package.')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project'),
+                new InputArgument('package', InputArgument::OPTIONAL, 'The package to archive instead of the current project', null, $this->suggestAvailablePackage()),
                 new InputArgument('version', InputArgument::OPTIONAL, 'A version constraint to find the package to archive'),
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar, tar.gz, tar.bz2 or zip (default tar)'),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the resulting archive: tar, tar.gz, tar.bz2 or zip (default tar)', null, self::FORMATS),
                 new InputOption('dir', null, InputOption::VALUE_REQUIRED, 'Write the archive to this directory'),
                 new InputOption('file', null, InputOption::VALUE_REQUIRED, 'Write the archive with the given file name.'
                     .' Note that the format will be appended.'),

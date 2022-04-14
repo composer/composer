@@ -16,19 +16,14 @@ use Composer\Repository\PlatformRepository;
 use Composer\Repository\RootPackageRepository;
 use Composer\Repository\InstalledRepository;
 use Composer\Installer\SuggestedPackagesReporter;
-use Symfony\Component\Console\Completion\CompletionInput;
-use Symfony\Component\Console\Completion\CompletionSuggestions;
-use Symfony\Component\Console\Input\InputArgument;
+use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class SuggestsCommand extends BaseCommand
 {
-    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
-    {
-        $this->completeInstalledPackage($input, $suggestions);
-    }
+    use CompletionTrait;
 
     /**
      * @return void
@@ -44,7 +39,7 @@ class SuggestsCommand extends BaseCommand
                 new InputOption('all', 'a', InputOption::VALUE_NONE, 'Show suggestions from all dependencies, including transitive ones'),
                 new InputOption('list', null, InputOption::VALUE_NONE, 'Show only list of suggested package names'),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Exclude suggestions from require-dev packages'),
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that you want to list suggestions from.'),
+                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Packages that you want to list suggestions from.', null, $this->suggestInstalledPackage()),
             ))
             ->setHelp(
                 <<<EOT

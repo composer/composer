@@ -15,21 +15,16 @@ namespace Composer\Command;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Console\Application;
+use Composer\Console\Input\InputArgument;
+use Composer\Console\Input\InputOption;
 use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
-use Composer\Package\Package;
-use Composer\Package\PackageInterface;
 use Composer\Plugin\PreCommandRunEvent;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
-use Composer\Repository\CompositeRepository;
-use Composer\Repository\InstalledRepository;
-use Composer\Repository\PlatformRepository;
-use Composer\Repository\RepositoryInterface;
-use Composer\Repository\RootPackageRepository;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
@@ -192,6 +187,30 @@ abstract class BaseCommand extends Command
     }
 
     /**
+     * @inheritdoc
+     *
+     * Backport suggested values definition from symfony/console 6.1+
+     */
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $definition = $this->getDefinition();
+        $name = (string) $input->getCompletionName();
+        if (CompletionInput::TYPE_OPTION_VALUE === $input->getCompletionType()
+            && $definition->hasOption($name)
+            && ($option = $definition->getOption($name)) instanceof InputOption
+        ) {
+            $option->complete($input, $suggestions);
+        } elseif (CompletionInput::TYPE_ARGUMENT_VALUE === $input->getCompletionType()
+            && $definition->hasArgument($name)
+            && ($argument = $definition->getArgument($name)) instanceof InputArgument
+        ) {
+            $argument->complete($input, $suggestions);
+        } else {
+            parent::complete($input, $suggestions);
+        }
+    }
+
+    /**
      * @inheritDoc
      *
      * @return void
@@ -326,96 +345,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * Suggestion values for "prefer-install" option
-     */
-    protected function completePreferInstall(CompletionInput $input, CompletionSuggestions $suggestions): bool
-    {
-        if ($input->mustSuggestOptionValuesFor('prefer-install')) {
-            $suggestions->suggestValues(['dist', 'source', 'auto']);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Suggest package names from installed ones.
-     */
-    protected function completeInstalledPackage(CompletionInput $input, CompletionSuggestions $suggestions): bool
-    {
-        if (!$input->mustSuggestArgumentValuesFor('packages') &&
-            !$input->mustSuggestArgumentValuesFor('package') &&
-            !$input->mustSuggestOptionValuesFor('ignore')
-        ) {
-            return false;
-        }
-
-        $composer = $this->getComposer();
-        $installedRepos = [new RootPackageRepository(clone $composer->getPackage())];
-
-        $locker = $composer->getLocker();
-        if ($locker->isLocked()) {
-            $installedRepos[] = $locker->getLockedRepository(true);
-        } else {
-            $installedRepos[] = $composer->getRepositoryManager()->getLocalRepository();
-        }
-
-        $installedRepo = new InstalledRepository($installedRepos);
-        $suggestions->suggestValues(array_map(function (PackageInterface $package) {
-            return $package->getName();
-        }, $installedRepo->getPackages()));
-
-        return true;
-    }
-
-    /**
-     * Suggest package names available on all configured repositories.
-     */
-    protected function completeAvailablePackage(CompletionInput $input, CompletionSuggestions $suggestions): bool
-    {
-        if (!$input->mustSuggestArgumentValuesFor('packages') &&
-            !$input->mustSuggestArgumentValuesFor('package') &&
-            !$input->mustSuggestOptionValuesFor('require') &&
-            !$input->mustSuggestOptionValuesFor('require-dev')
-        ) {
-            return false;
-        }
-
-        $composer = $this->getComposer();
-        $repos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
-
-        $packages = $repos->search('^'.preg_quote($input->getCompletionValue()), RepositoryInterface::SEARCH_NAME);
-
-        foreach (array_slice($packages, 0, 150) as $package) {
-            $suggestions->suggestValue($package['name']);
-        }
-
-        return true;
-    }
-
-    /**
-     * Suggests ext- packages from the ones available on the currently-running PHP
-     */
-    protected function completePlatformPackage(CompletionInput $input, CompletionSuggestions $suggestions): bool
-    {
-        if (!$input->mustSuggestOptionValuesFor('require') &&
-            !$input->mustSuggestOptionValuesFor('require-dev') &&
-            !str_starts_with($input->getCompletionValue(), 'ext-')
-        ) {
-            return false;
-        }
-
-        $repos = new PlatformRepository([], $this->getComposer()->getConfig()->get('platform') ?? []);
-        $suggestions->suggestValues(array_map(function (PackageInterface $package) {
-            return $package->getName();
-        }, $repos->getPackages()));
-
-        return true;
-    }
-
-    /**
-     * @param array<string, string> $requirements
+     * @param array<string> $requirements
      *
      * @return array<string, string>
      */

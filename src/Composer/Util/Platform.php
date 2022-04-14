@@ -226,6 +226,14 @@ class Platform
     }
 
     /**
+     * @return bool Whether the current command is for bash completion
+     */
+    public static function isInputCompletionProcess(): bool
+    {
+        return '_complete' === ($_SERVER['argv'][1] ?? null);
+    }
+
+    /**
      * @return void
      */
     public static function workaroundFilesystemIssues(): void
