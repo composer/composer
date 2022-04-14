@@ -105,6 +105,8 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
     private $hasPartialPackages = false;
     /** @var ?array<string, mixed[]> */
     private $partialPackagesByName = null;
+    /** @var bool */
+    private $displayedWarningAboutNonMatchingPackageIndex = false;
 
     /**
      * @var array list of package names which are fresh and can be loaded from the cache directly in case loadPackage is called several times
@@ -1235,8 +1237,13 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
 
         if (isset($data['packages'])) {
             foreach ($data['packages'] as $package => $versions) {
+                $packageName = strtolower((string) $package);
                 foreach ($versions as $version => $metadata) {
                     $packages[] = $metadata;
+                    if (!$this->displayedWarningAboutNonMatchingPackageIndex && $packageName !== strtolower((string) ($metadata['name'] ?? ''))) {
+                        $this->displayedWarningAboutNonMatchingPackageIndex = true;
+                        $this->io->writeError(sprintf("<warning>Warning: the packages key '%s' doesn't match the name defined in the package metadata '%s' in repository %s</warning>", $package, $metadata['name'] ?? '', $this->baseUrl));
+                    }
                 }
             }
         }
@@ -1588,7 +1595,12 @@ class ComposerRepository extends ArrayRepository implements ConfigurableReposito
         $this->partialPackagesByName = array();
         foreach ($rootData['packages'] as $package => $versions) {
             foreach ($versions as $version) {
-                $this->partialPackagesByName[strtolower($version['name'])][] = $version;
+                $versionPackageName = strtolower((string) ($version['name'] ?? ''));
+                $this->partialPackagesByName[$versionPackageName][] = $version;
+                if (!$this->displayedWarningAboutNonMatchingPackageIndex && $versionPackageName !== strtolower($package)) {
+                    $this->io->writeError(sprintf("<warning>Warning: the packages key '%s' doesn't match the name defined in the package metadata '%s' in repository %s</warning>", $package, $version['name'] ?? '', $this->baseUrl));
+                    $this->displayedWarningAboutNonMatchingPackageIndex = true;
+                }
             }
         }
 
