@@ -104,7 +104,7 @@ EOT
         foreach (Versions::$channels as $channel) {
             if ($input->getOption($channel)) {
                 $requestedChannel = $channel;
-                $versionsUtil->setChannel($channel);
+                $versionsUtil->setChannel($channel, $io);
                 break;
             }
         }

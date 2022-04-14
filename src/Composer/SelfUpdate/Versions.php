@@ -12,6 +12,7 @@
 
 namespace Composer\SelfUpdate;
 
+use Composer\IO\IOInterface;
 use Composer\Pcre\Preg;
 use Composer\Util\HttpDownloader;
 use Composer\Config;
@@ -64,7 +65,7 @@ class Versions
      *
      * @return void
      */
-    public function setChannel($channel)
+    public function setChannel($channel, IOInterface $io = null)
     {
         if (!in_array($channel, self::$channels, true)) {
             throw new \InvalidArgumentException('Invalid channel '.$channel.', must be one of: ' . implode(', ', self::$channels));
@@ -72,8 +73,15 @@ class Versions
 
         $channelFile = $this->config->get('home').'/update-channel';
         $this->channel = $channel;
+
+        $storedChannel = Preg::isMatch('{^\d+$}D', $channel) ? 'stable' : $channel;
+        $previouslyStored = file_exists($channelFile) ? trim((string) file_get_contents($channelFile)) : null;
         // rewrite '2' and '1' channels to stable for future self-updates, but LTS ones like '2.2' remain pinned
-        file_put_contents($channelFile, (Preg::isMatch('{^\d+$}D', $channel) ? 'stable' : $channel).PHP_EOL);
+        file_put_contents($channelFile, $storedChannel.PHP_EOL);
+
+        if ($io !== null && $previouslyStored !== $storedChannel) {
+            $io->writeError('Storing "<info>'.$storedChannel.'</info>" as default update channel for the next self-update run.');
+        }
     }
 
     /**
