@@ -83,9 +83,6 @@ EOT
 
                 $table = new Table($output);
                 $table->setStyle('compact');
-                $tableStyle = $table->getStyle();
-                $tableStyle->setVerticalBorderChars('');
-                $tableStyle->setCellRowContentFormat('%s  ');
                 $table->setHeaders(array('Name', 'Version', 'Licenses'));
                 foreach ($packages as $package) {
                     $link = PackageInfo::getViewSourceOrHomepageUrl($package);

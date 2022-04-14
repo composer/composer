@@ -356,9 +356,6 @@ abstract class BaseCommand extends Command
     {
         $renderer = new Table($output);
         $renderer->setStyle('compact');
-        $rendererStyle = $renderer->getStyle();
-        $rendererStyle->setVerticalBorderChars('');
-        $rendererStyle->setCellRowContentFormat('%s  ');
         $renderer->setRows($table)->render();
     }
 
