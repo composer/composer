@@ -22,6 +22,9 @@ use Symfony\Component\Console\Tester\CommandCompletionTester;
  */
 class CompletionFunctionalTest extends TestCase
 {
+    /**
+     * @return iterable<array<string|string[]|null>>
+     */
     public function getCommandSuggestions(): iterable
     {
         $randomProject = '104corp/cache';

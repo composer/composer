@@ -14,6 +14,8 @@ namespace Composer\Console\Input;
 
 use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Completion\CompletionSuggestions;
+use Symfony\Component\Console\Completion\Suggestion;
+use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputOption as BaseInputOption;
 
@@ -27,22 +29,25 @@ use Symfony\Component\Console\Input\InputOption as BaseInputOption;
 class InputOption extends BaseInputOption
 {
     /**
-     * @var string[]|\Closure
+     * @var string[]|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion>
      */
     private $suggestedValues;
 
     /**
-     * @inheritdoc
+     * @param string|string[]|null                $shortcut The shortcuts, can be null, a string of shortcuts delimited by | or an array of shortcuts
+     * @param int|null                            $mode     The option mode: One of the VALUE_* constants
+     * @param string|bool|int|float|string[]|null $default  The default value (must be null for self::VALUE_NONE)
+     * @param string[]|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion> $suggestedValues The values used for input completionnull for self::VALUE_NONE)
      *
-     * @param string[]|\Closure(CompletionInput,CompletionSuggestions):list<string|Suggestion> $suggestedValues The values used for input completion
+     * @throws InvalidArgumentException If option mode is invalid or incompatible
      */
     public function __construct(string $name, $shortcut = null, int $mode = null, string $description = '', $default = null, $suggestedValues = [])
     {
-        parent::__construct($name, $shortcut, $mode, $description, $default, $suggestedValues);
+        parent::__construct($name, $shortcut, $mode, $description, $default);
 
         $this->suggestedValues = $suggestedValues;
 
-        if ($suggestedValues && !$this->acceptValue()) {
+        if ([] !== $suggestedValues && !$this->acceptValue()) {
             throw new LogicException('Cannot set suggested values if the option does not accept a value.');
         }
     }
@@ -55,10 +60,10 @@ class InputOption extends BaseInputOption
     public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
     {
         $values = $this->suggestedValues;
-        if ($values instanceof \Closure && !\is_array($values = $values($input))) {
+        if ($values instanceof \Closure && !\is_array($values = $values($input, $suggestions))) {
             throw new LogicException(sprintf('Closure for argument "%s" must return an array. Got "%s".', $this->getName(), get_debug_type($values)));
         }
-        if ($values) {
+        if ([] !== $values) {
             $suggestions->suggestValues($values);
         }
     }

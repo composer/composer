@@ -98,6 +98,10 @@ EOT
         return $dispatcher->dispatchScript('__exec_command', true, $input->getArgument('args'));
     }
 
+    /**
+     * @param bool $forDisplay
+     * @return string[]
+     */
     private function getBinaries(bool $forDisplay): array
     {
         $composer = $this->requireComposer();
