@@ -92,7 +92,14 @@ class GitLab
         if (isset($token)) {
             $username = is_array($token) && array_key_exists("username", $token) ? $token["username"] : $token;
             $password = is_array($token) && array_key_exists("token", $token) ? $token["token"] : 'private-token';
-            $this->io->setAuthentication($originUrl, $username, $password);
+
+            // Composer expects the GitLab token to be stored as username and 'private-token' or 'gitlab-ci-token' to be stored as password
+            // Detect cases where this is reversed and resolve automatically resolve it
+            if (in_array($username, array('private-token', 'gitlab-ci-token',  'oauth2'), true)) {
+                $this->io->setAuthentication($originUrl, $password, $username);
+            } else {
+                $this->io->setAuthentication($originUrl, $username, $password);
+            }
 
             return true;
         }
