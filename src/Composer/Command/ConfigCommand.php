@@ -214,7 +214,7 @@ EOT
     {
         // Open file in editor
         if (true === $input->getOption('editor')) {
-            $editor = escapeshellcmd(Platform::getEnv('EDITOR') ?: '');
+            $editor = Platform::getEnv('EDITOR');
             if (!$editor) {
                 if (Platform::isWindows()) {
                     $editor = 'notepad';
@@ -226,6 +226,8 @@ EOT
                         }
                     }
                 }
+            } else {
+                $editor = escapeshellcmd($editor);
             }
 
             $file = $input->getOption('auth') ? $this->authConfigFile->getPath() : $this->configFile->getPath();
