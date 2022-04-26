@@ -223,7 +223,8 @@ production env or define your target platform in the config. Example: `{"php":
 This will make sure that no package requiring more than PHP 7.0.3 can be installed
 regardless of the actual PHP version you run locally. However it also means
 the dependencies are not checked correctly anymore, if you run PHP 5.6 it will
-install fine as it assumes 7.0.3, but then it will fail at runtime.
+install fine as it assumes 7.0.3, but then it will fail at runtime. This also means if
+`{"php":"7.4"}` is specified; no packages will be used that define `7.4.1` as minimum.
 
 Therefore if you use this it is recommended, and safer, to also run the
 [`check-platform-reqs`](03-cli.md#check-platform-reqs) command as part of your
