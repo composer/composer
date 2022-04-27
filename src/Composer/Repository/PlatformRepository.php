@@ -564,12 +564,6 @@ class PlatformRepository extends ArrayRepository
 
         // Skip if PHP is overridden and we are adding a php-* package
         if (isset($this->overrides['php']) && 0 === strpos($package->getName(), 'php-')) {
-            if (isset($this->overrides[$package->getName()]) && $this->overrides[$package->getName()]['version'] === false) {
-                $this->addDisabledPackage($package);
-
-                return;
-            }
-
             $overrider = $this->addOverriddenPackage($this->overrides['php'], $package->getPrettyName());
             if ($package->getVersion() === $overrider->getVersion()) {
                 $actualText = 'same as actual';
