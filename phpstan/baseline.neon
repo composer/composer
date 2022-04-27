@@ -401,22 +401,12 @@ parameters:
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, string given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ConfigCommand.php
-
-		-
 			message: "#^Only booleans are allowed in an elseif condition, int\\<0, max\\>\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ConfigCommand.php
 
 		-
 			message: "#^Only booleans are allowed in an if condition, string given\\.$#"
-			count: 1
-			path: ../src/Composer/Command/ConfigCommand.php
-
-		-
-			message: "#^Parameter \\#1 \\$command of function escapeshellcmd expects string, string\\|false given\\.$#"
 			count: 1
 			path: ../src/Composer/Command/ConfigCommand.php
 
@@ -671,6 +661,11 @@ parameters:
 			path: ../src/Composer/Command/InitCommand.php
 
 		-
+			message: "#^Left side of && is always false\\.$#"
+			count: 1
+			path: ../src/Composer/Command/InitCommand.php
+
+		-
 			message: "#^Method Composer\\\\Command\\\\InitCommand\\:\\:getGitConfig\\(\\) should return array\\<string, string\\> but returns array\\<int\\|string, mixed\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
@@ -707,6 +702,11 @@ parameters:
 
 		-
 			message: "#^Property Composer\\\\Command\\\\InitCommand\\:\\:\\$gitConfig \\(array\\<string, string\\>\\) does not accept array\\<int\\|string, mixed\\>\\.$#"
+			count: 1
+			path: ../src/Composer/Command/InitCommand.php
+
+		-
+			message: "#^Right side of && is always false\\.$#"
 			count: 1
 			path: ../src/Composer/Command/InitCommand.php
 
@@ -781,6 +781,11 @@ parameters:
 			path: ../src/Composer/Command/RequireCommand.php
 
 		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: ../src/Composer/Command/RequireCommand.php
+
+		-
 			message: "#^Method Composer\\\\Command\\\\RequireCommand\\:\\:getPackagesByRequireKey\\(\\) should return array\\<string, string\\> but returns array\\<int\\|string, string\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Command/RequireCommand.php
@@ -817,6 +822,11 @@ parameters:
 
 		-
 			message: "#^Property Composer\\\\Command\\\\RequireCommand\\:\\:\\$lockBackup \\(string\\|null\\) does not accept string\\|false\\|null\\.$#"
+			count: 1
+			path: ../src/Composer/Command/RequireCommand.php
+
+		-
+			message: "#^Right side of && is always true\\.$#"
 			count: 1
 			path: ../src/Composer/Command/RequireCommand.php
 
@@ -4260,7 +4270,7 @@ parameters:
 
 		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
-			count: 5
+			count: 4
 			path: ../src/Composer/Repository/Vcs/GitBitbucketDriver.php
 
 		-
@@ -4540,7 +4550,7 @@ parameters:
 
 		-
 			message: "#^Cannot call method write\\(\\) on Composer\\\\Cache\\|null\\.$#"
-			count: 1
+			count: 2
 			path: ../src/Composer/Repository/Vcs/SvnDriver.php
 
 		-
@@ -5231,11 +5241,6 @@ parameters:
 		-
 			message: "#^Offset 'copyTo' does not exist on array\\{url\\: string, options\\?\\: array, copyTo\\?\\: string\\|null\\}\\.$#"
 			count: 2
-			path: ../src/Composer/Util/HttpDownloader.php
-
-		-
-			message: "#^Offset 'curl_id' on array\\{curl_id\\: int, exception\\: Composer\\\\Downloader\\\\TransportException, id\\: int, origin\\: string, reject\\: mixed, request\\: array\\{url\\: string, options\\?\\: array, copyTo\\?\\: string\\|null\\}, resolve\\: mixed, response\\: Composer\\\\Util\\\\Http\\\\Response, \\.\\.\\.\\} in isset\\(\\) always exists and is not nullable\\.$#"
-			count: 1
 			path: ../src/Composer/Util/HttpDownloader.php
 
 		-

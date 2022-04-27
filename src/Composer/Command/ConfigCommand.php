@@ -215,7 +215,7 @@ EOT
         // Open file in editor
         if (true === $input->getOption('editor')) {
             $editor = Platform::getEnv('EDITOR');
-            if (!$editor) {
+            if (false === $editor || '' === $editor) {
                 if (Platform::isWindows()) {
                     $editor = 'notepad';
                 } else {
