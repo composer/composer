@@ -474,6 +474,9 @@ class AuthHelperTest extends TestCase
         $this->authHelper->storeAuth($origin, $storeAuth);
     }
 
+    /**
+     * @return void
+     */
     public function testStoreAuthWithPromptInvalidAnswer()
     {
         $this->setExpectedException('RuntimeException');
@@ -514,6 +517,9 @@ class AuthHelperTest extends TestCase
         $this->authHelper->storeAuth($origin, $storeAuth);
     }
 
+    /**
+     * @return void
+     */
     public function testPromptAuthIfNeededGitLabNoAuthChange()
     {
         $this->setExpectedException('Composer\Downloader\TransportException');
