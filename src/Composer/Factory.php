@@ -331,6 +331,7 @@ class Factory
             $localAuthFile = new JsonFile(dirname(realpath($composerFile)) . '/auth.json', null, $io);
             if ($localAuthFile->exists()) {
                 $io->writeError('Loading config file ' . $localAuthFile->getPath(), true, IOInterface::DEBUG);
+                self::validateJsonSchema($io, $localAuthFile, JsonFile::AUTH_SCHEMA);
                 $config->merge(array('config' => $localAuthFile->read()), $localAuthFile->getPath());
                 $config->setAuthConfigSource(new JsonConfigSource($localAuthFile, true));
             }
