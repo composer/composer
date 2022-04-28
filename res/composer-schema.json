@@ -326,7 +326,7 @@
                 },
                 "github-protocols": {
                     "type": "array",
-                    "description": "A list of protocols to use for github.com clones, in priority order, defaults to [\"git\", \"https\", \"http\"].",
+                    "description": "A list of protocols to use for github.com clones, in priority order, defaults to [\"https\", \"ssh\", \"git\"].",
                     "items": {
                         "type": "string"
                     }
