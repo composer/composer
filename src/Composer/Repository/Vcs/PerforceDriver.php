@@ -62,7 +62,7 @@ class PerforceDriver extends VcsDriver
             return;
         }
 
-        if (!Cache::isUsable((string) $this->config->get('cache-vcs-dir'))) {
+        if (!Cache::isUsable($this->config->get('cache-vcs-dir'))) {
             throw new \RuntimeException('PerforceDriver requires a usable cache directory, and it looks like you set it to be disabled');
         }
 

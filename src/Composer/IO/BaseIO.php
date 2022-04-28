@@ -141,8 +141,8 @@ abstract class BaseIO implements IOInterface
         }
 
         foreach ($gitlabToken as $domain => $token) {
-            $username = is_array($token) && array_key_exists("username", $token) ? $token["username"] : $token;
-            $password = is_array($token) && array_key_exists("token", $token) ? $token["token"] : 'private-token';
+            $username = is_array($token) ? $token["username"] : $token;
+            $password = is_array($token) ? $token["token"] : 'private-token';
             $this->checkAndSetAuthentication($domain, $username, $password);
         }
 
@@ -156,7 +156,7 @@ abstract class BaseIO implements IOInterface
         }
 
         // setup process timeout
-        ProcessExecutor::setTimeout((int) $config->get('process-timeout'));
+        ProcessExecutor::setTimeout($config->get('process-timeout'));
     }
 
     public function emergency($message, array $context = array()): void

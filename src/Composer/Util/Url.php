@@ -90,9 +90,8 @@ class Url
         // Gitlab can be installed in a non-root context (i.e. gitlab.com/foo). When downloading archives the originUrl
         // is the host without the path, so we look for the registered gitlab-domains matching the host here
         if (
-            is_array($config->get('gitlab-domains'))
-            && false === strpos($origin, '/')
-            && !in_array($origin, $config->get('gitlab-domains'))
+            false === strpos($origin, '/')
+            && !in_array($origin, $config->get('gitlab-domains'), true)
         ) {
             foreach ($config->get('gitlab-domains') as $gitlabDomain) {
                 if (0 === strpos($gitlabDomain, $origin)) {

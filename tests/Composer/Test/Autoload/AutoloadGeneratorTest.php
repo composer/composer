@@ -104,6 +104,9 @@ class AutoloadGeneratorTest extends TestCase
             'platform-check' => function (): bool {
                 return true;
             },
+            'use-include-path' => function (): bool {
+                return false;
+            },
         );
 
         $this->config->expects($this->atLeastOnce())

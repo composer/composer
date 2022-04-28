@@ -11,6 +11,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -29,7 +30,10 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
 
     public function __construct()
     {
-        $schema = JsonFile::parseJson(file_get_contents(__DIR__.'/../../../res/composer-schema.json'));
+        $schema = JsonFile::parseJson((string) file_get_contents(__DIR__.'/../../../res/composer-schema.json'));
+        /**
+         * @var string $prop
+         */
         foreach ($schema['properties']['config']['properties'] as $prop => $conf) {
             $type = $this->parseType($conf, $prop);
 
@@ -66,7 +70,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
     }
 
     /**
-     * @param array<mixed> $types
+     * @param array<mixed> $def
      */
     private function parseType(array $def, string $path): Type
     {
@@ -75,15 +79,17 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
             foreach ((array) $def['type'] as $type) {
                 switch ($type) {
                     case 'integer':
-                        if (in_array($path, ['process-timeout', 'cache-ttl', 'cache-files-ttl'], true)) {
-                            $types[] = IntegerRangeType::createAllGreaterThan(0);
+                        if (in_array($path, ['process-timeout', 'cache-ttl', 'cache-files-ttl', 'cache-files-maxsize'], true)) {
+                            $types[] = IntegerRangeType::createAllGreaterThanOrEqualTo(0);
                         } else {
                             $types[] = new IntegerType();
                         }
                         break;
 
                     case 'string':
-                        if ($path === 'discard-changes') {
+                        if ($path === 'cache-files-maxsize') {
+                            // passthru, skip as it is always converted to int
+                        } elseif ($path === 'discard-changes') {
                             $types[] = new ConstantStringType('stash');
                         } elseif ($path === 'use-parent-dir') {
                             $types[] = new ConstantStringType('prompt');
@@ -101,7 +107,11 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
                         break;
 
                     case 'boolean':
-                        $types[] = new BooleanType();
+                        if ($path === 'platform.additionalProperties') {
+                            $types[] = new ConstantBooleanType(false);
+                        } else {
+                            $types[] = new BooleanType();
+                        }
                         break;
 
                     case 'object':
@@ -116,7 +126,7 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
                             foreach ($def['properties'] as $propName => $propdef) {
                                 $keyNames[] = new ConstantStringType($propName);
                                 $valType = $this->parseType($propdef, $path.'.'.$propName);
-                                if (!isset($def['required']) || !in_array($propName, $def['required'])) {
+                                if (!isset($def['required']) || !in_array($propName, $def['required'], true)) {
                                     $valType = TypeCombinator::addNull($valType);
                                 }
                                 $valTypes[] = $valType;
@@ -146,15 +156,15 @@ final class ConfigReturnTypeExtension implements DynamicMethodReturnTypeExtensio
                         $types[] = new MixedType();
                 }
             }
+
+            $type = TypeCombinator::union(...$types);
         } elseif (isset($def['enum'])) {
-            $types[] = TypeCombinator::union(...array_map(function (string $value): ConstantStringType {
+            $type = TypeCombinator::union(...array_map(function (string $value): ConstantStringType {
                 return new ConstantStringType($value);
             }, $def['enum']));
         } else {
-            $types = [new MixedType()];
+            $type = new MixedType();
         }
-
-        $type = \count($types) === 1 ? $types[0] : TypeCombinator::union(...$types);
 
         // allow-plugins defaults to null until July 1st 2022 for some BC hackery, but after that it is not nullable anymore
         if ($path === 'allow-plugins' && time() < strtotime('2022-07-01')) {

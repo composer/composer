@@ -94,7 +94,7 @@ class FileDownloader implements DownloaderInterface, ChangeReportInterface
 
         if ($this->cache && $this->cache->gcIsNecessary()) {
             $this->io->writeError('Running cache garbage collection', true, IOInterface::VERY_VERBOSE);
-            $this->cache->gc((int) $config->get('cache-files-ttl'), (int) $config->get('cache-files-maxsize'));
+            $this->cache->gc($config->get('cache-files-ttl'), $config->get('cache-files-maxsize'));
         }
     }
 

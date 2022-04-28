@@ -90,8 +90,8 @@ class GitLab
         }
 
         if (isset($token)) {
-            $username = is_array($token) && array_key_exists("username", $token) ? $token["username"] : $token;
-            $password = is_array($token) && array_key_exists("token", $token) ? $token["token"] : 'private-token';
+            $username = is_array($token) ? $token["username"] : $token;
+            $password = is_array($token) ? $token["token"] : 'private-token';
             $this->io->setAuthentication($originUrl, $username, $password);
 
             return true;
