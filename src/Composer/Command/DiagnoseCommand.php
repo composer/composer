@@ -114,7 +114,7 @@ EOT
             $this->outputResult($this->checkHttpProxy());
         }
 
-        if ($oauth = $config->get('github-oauth')) {
+        if (count($oauth = $config->get('github-oauth')) > 0) {
             foreach ($oauth as $domain => $token) {
                 $io->write('Checking '.$domain.' oauth access: ', false);
                 $this->outputResult($this->checkGithubOauth($domain, $token));

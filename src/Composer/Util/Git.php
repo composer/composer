@@ -74,9 +74,6 @@ class Git
         }
 
         $protocols = $this->config->get('github-protocols');
-        if (!is_array($protocols)) {
-            throw new \RuntimeException('Config value "github-protocols" must be an array, got ' . gettype($protocols));
-        }
         // public github, autoswitch protocols
         if (Preg::isMatch('{^(?:https?|git)://' . self::getGitHubDomainsRegex($this->config) . '/(.*)}', $url, $match)) {
             $messages = array();

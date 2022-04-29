@@ -202,7 +202,7 @@ class AutoloadGenerator
         // See https://bugs.php.net/bug.php?id=72738
         $basePath = $filesystem->normalizePath(realpath(realpath(Platform::getCwd())));
         $vendorPath = $filesystem->normalizePath(realpath(realpath($config->get('vendor-dir'))));
-        $useGlobalIncludePath = (bool) $config->get('use-include-path');
+        $useGlobalIncludePath = $config->get('use-include-path');
         $prependAutoloader = $config->get('prepend-autoloader') === false ? 'false' : 'true';
         $targetDir = $vendorPath.'/'.$targetDir;
         $filesystem->ensureDirectoryExists($targetDir);
@@ -408,7 +408,7 @@ EOF;
             unlink($includeFilesFilePath);
         }
         $filesystem->filePutContentsIfModified($targetDir.'/autoload_static.php', $this->getStaticFile($suffix, $targetDir, $vendorPath, $basePath));
-        $checkPlatform = $config->get('platform-check') && !($this->platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter);
+        $checkPlatform = $config->get('platform-check') !== false && !($this->platformRequirementFilter instanceof IgnoreAllPlatformRequirementFilter);
         $platformCheckContent = null;
         if ($checkPlatform) {
             $platformCheckContent = $this->getPlatformCheck($packageMap, $config->get('platform-check'), $devPackageNames);
@@ -429,7 +429,7 @@ EOF;
 
         if ($this->runScripts) {
             $this->eventDispatcher->dispatchScript(ScriptEvents::POST_AUTOLOAD_DUMP, $this->devMode, array(), array(
-                'optimize' => (bool) $scanPsrPackages,
+                'optimize' => $scanPsrPackages,
             ));
         }
 

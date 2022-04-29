@@ -337,17 +337,17 @@ class Locker
     /**
      * Locks provided data into lockfile.
      *
-     * @param PackageInterface[]      $packages          array of packages
-     * @param PackageInterface[]|null $devPackages       array of dev packages or null if installed without --dev
-     * @param array<string, string>   $platformReqs      array of package name => constraint for required platform packages
-     * @param array<string, string>   $platformDevReqs   array of package name => constraint for dev-required platform packages
-     * @param string[][]              $aliases           array of aliases
-     * @param string                  $minimumStability
-     * @param array<string, int>      $stabilityFlags
-     * @param bool                    $preferStable
-     * @param bool                    $preferLowest
-     * @param array<string, string>   $platformOverrides
-     * @param bool                    $write             Whether to actually write data to disk, useful in tests and for --dry-run
+     * @param PackageInterface[]          $packages          array of packages
+     * @param PackageInterface[]|null     $devPackages       array of dev packages or null if installed without --dev
+     * @param array<string, string>       $platformReqs      array of package name => constraint for required platform packages
+     * @param array<string, string>       $platformDevReqs   array of package name => constraint for dev-required platform packages
+     * @param string[][]                  $aliases           array of aliases
+     * @param string                      $minimumStability
+     * @param array<string, int>          $stabilityFlags
+     * @param bool                        $preferStable
+     * @param bool                        $preferLowest
+     * @param array<string, string|false> $platformOverrides
+     * @param bool                        $write             Whether to actually write data to disk, useful in tests and for --dry-run
      *
      * @return bool
      *
@@ -386,7 +386,7 @@ class Locker
 
         $lock['platform'] = $platformReqs;
         $lock['platform-dev'] = $platformDevReqs;
-        if ($platformOverrides) {
+        if (\count($platformOverrides) > 0) {
             $lock['platform-overrides'] = $platformOverrides;
         }
         $lock['plugin-api-version'] = PluginInterface::PLUGIN_API_VERSION;

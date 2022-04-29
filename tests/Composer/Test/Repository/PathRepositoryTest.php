@@ -14,33 +14,26 @@ namespace Composer\Test\Repository;
 
 use Composer\Repository\PathRepository;
 use Composer\Test\TestCase;
+use Composer\Util\HttpDownloader;
+use Composer\Util\Loop;
 use Composer\Util\Platform;
+use Composer\Util\ProcessExecutor;
 
 class PathRepositoryTest extends TestCase
 {
     public function testLoadPackageFromFileSystemWithIncorrectPath(): void
     {
         self::expectException('RuntimeException');
-        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-
-        $config = new \Composer\Config();
 
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'missing'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
+        $repository = $this->createPathRepo(array('url' => $repositoryUrl));
         $repository->getPackages();
     }
 
     public function testLoadPackageFromFileSystemWithVersion(): void
     {
-        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-
-        $config = new \Composer\Config();
-        $versionGuesser = null;
-
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'with-version'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
+        $repository = $this->createPathRepo(array('url' => $repositoryUrl));
         $repository->getPackages();
 
         $this->assertSame(1, $repository->count());
@@ -49,14 +42,8 @@ class PathRepositoryTest extends TestCase
 
     public function testLoadPackageFromFileSystemWithoutVersion(): void
     {
-        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-
-        $config = new \Composer\Config();
-        $versionGuesser = null;
-
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', 'without-version'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
+        $repository = $this->createPathRepo(array('url' => $repositoryUrl));
         $packages = $repository->getPackages();
 
         $this->assertGreaterThanOrEqual(1, $repository->count());
@@ -70,14 +57,8 @@ class PathRepositoryTest extends TestCase
 
     public function testLoadPackageFromFileSystemWithWildcard(): void
     {
-        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-
-        $config = new \Composer\Config();
-        $versionGuesser = null;
-
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = new PathRepository(array('url' => $repositoryUrl), $ioInterface, $config);
+        $repository = $this->createPathRepo(array('url' => $repositoryUrl));
         $packages = $repository->getPackages();
         $names = array();
 
@@ -95,12 +76,6 @@ class PathRepositoryTest extends TestCase
 
     public function testLoadPackageWithExplicitVersions(): void
     {
-        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-
-        $config = new \Composer\Config();
-        $versionGuesser = null;
-
         $options = array(
             'versions' => array(
                 'test/path-unversioned' => '4.3.2.1',
@@ -108,7 +83,7 @@ class PathRepositoryTest extends TestCase
             ),
         );
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);
+        $repository = $this->createPathRepo(array('url' => $repositoryUrl, 'options' => $options));
         $packages = $repository->getPackages();
 
         $versions = array();
@@ -130,12 +105,6 @@ class PathRepositoryTest extends TestCase
      */
     public function testUrlRemainsRelative(): void
     {
-        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-
-        $config = new \Composer\Config();
-        $versionGuesser = null;
-
         // realpath() does not fully expand the paths
         // PHP Bug https://bugs.php.net/bug.php?id=72642
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(realpath(realpath(__DIR__)), 'Fixtures', 'path', 'with-version'));
@@ -143,7 +112,7 @@ class PathRepositoryTest extends TestCase
         // PHP Bug https://bugs.php.net/bug.php?id=73797
         $relativeUrl = ltrim(substr($repositoryUrl, strlen(realpath(realpath(Platform::getCwd())))), DIRECTORY_SEPARATOR);
 
-        $repository = new PathRepository(array('url' => $relativeUrl), $ioInterface, $config);
+        $repository = $this->createPathRepo(array('url' => $relativeUrl));
         $packages = $repository->getPackages();
 
         $this->assertSame(1, $repository->count());
@@ -158,16 +127,11 @@ class PathRepositoryTest extends TestCase
 
     public function testReferenceNone(): void
     {
-        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-
-        $config = new \Composer\Config();
-
         $options = array(
             'reference' => 'none',
         );
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);
+        $repository = $this->createPathRepo(array('url' => $repositoryUrl, 'options' => $options));
         $packages = $repository->getPackages();
 
         $this->assertGreaterThanOrEqual(2, $repository->count());
@@ -179,17 +143,12 @@ class PathRepositoryTest extends TestCase
 
     public function testReferenceConfig(): void
     {
-        $ioInterface = $this->getMockBuilder('Composer\IO\IOInterface')
-            ->getMock();
-
-        $config = new \Composer\Config();
-
         $options = array(
             'reference' => 'config',
             'relative' => true,
         );
         $repositoryUrl = implode(DIRECTORY_SEPARATOR, array(__DIR__, 'Fixtures', 'path', '*'));
-        $repository = new PathRepository(array('url' => $repositoryUrl, 'options' => $options), $ioInterface, $config);
+        $repository = $this->createPathRepo(array('url' => $repositoryUrl, 'options' => $options));
         $packages = $repository->getPackages();
 
         $this->assertGreaterThanOrEqual(2, $repository->count());
@@ -200,5 +159,20 @@ class PathRepositoryTest extends TestCase
                 sha1(file_get_contents($package->getDistUrl() . '/composer.json') . serialize($options))
             );
         }
+    }
+
+    /**
+     * @param array<mixed> $options
+     */
+    private function createPathRepo(array $options): PathRepository
+    {
+        $io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
+
+        $config = new \Composer\Config();
+        $proc = new ProcessExecutor();
+        $loop = new Loop(new HttpDownloader($io, $config), $proc);
+
+
+        return new PathRepository($options, $io, $config, null, null, $proc);
     }
 }

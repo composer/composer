@@ -49,7 +49,7 @@ class GitDriver extends VcsDriver
             $this->repoDir = $this->url;
             $cacheUrl = realpath($this->url);
         } else {
-            if (!Cache::isUsable((string) $this->config->get('cache-vcs-dir'))) {
+            if (!Cache::isUsable($this->config->get('cache-vcs-dir'))) {
                 throw new \RuntimeException('GitDriver requires a usable cache directory, and it looks like you set it to be disabled');
             }
 

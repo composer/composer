@@ -301,6 +301,10 @@ class Config
                     $this->setSourceOfConfigValue($val, $key, $env);
                 }
 
+                if ($key === 'process-timeout') {
+                    return max(0, false !== $val ? (int) $val : $this->config[$key]);
+                }
+
                 $val = rtrim((string) $this->process(false !== $val ? $val : $this->config[$key], $flags), '/\\');
                 $val = Platform::expandPath($val);
 
@@ -339,7 +343,7 @@ class Config
 
             // ints without env var support
             case 'cache-ttl':
-                return (int) $this->config[$key];
+                return max(0, (int) $this->config[$key]);
 
             // numbers with kb/mb/gb support, without env var support
             case 'cache-files-maxsize':
@@ -348,7 +352,7 @@ class Config
                         "Could not parse the value of '$key': {$this->config[$key]}"
                     );
                 }
-                $size = $matches[1];
+                $size = (float) $matches[1];
                 if (isset($matches[2])) {
                     switch (strtolower($matches[2])) {
                         case 'g':
@@ -365,15 +369,15 @@ class Config
                     }
                 }
 
-                return $size;
+                return max(0, (int) $size);
 
             // special cases below
             case 'cache-files-ttl':
                 if (isset($this->config[$key])) {
-                    return (int) $this->config[$key];
+                    return max(0, (int) $this->config[$key]);
                 }
 
-                return (int) $this->config['cache-ttl'];
+                return $this->get('cache-ttl');
 
             case 'home':
                 return rtrim($this->process(Platform::expandPath($this->config[$key]), $flags), '/\\');

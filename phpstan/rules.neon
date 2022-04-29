@@ -1,0 +1,10 @@
+# Composer-specific PHPStan extensions
+#
+# These can be reused by third party packages by including 'vendor/composer/composer/phpstan/rules.neon'
+# in your phpstan config
+
+services:
+    -
+        class: Composer\PHPStan\ConfigReturnTypeExtension
+        tags:
+            - phpstan.broker.dynamicMethodReturnTypeExtension

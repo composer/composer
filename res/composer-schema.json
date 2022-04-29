@@ -289,7 +289,7 @@
             "properties": {
                 "platform": {
                     "type": "object",
-                    "description": "This is an object of package name (keys) and version (values) that will be used to mock the platform packages on this machine.",
+                    "description": "This is an object of package name (keys) and version (values) that will be used to mock the platform packages on this machine, the version can be set to false to make it appear like the package is not present.",
                     "additionalProperties": {
                         "type": ["string", "boolean"]
                     }
@@ -326,7 +326,7 @@
                 },
                 "github-protocols": {
                     "type": "array",
-                    "description": "A list of protocols to use for github.com clones, in priority order, defaults to [\"git\", \"https\", \"http\"].",
+                    "description": "A list of protocols to use for github.com clones, in priority order, defaults to [\"https\", \"ssh\", \"git\"].",
                     "items": {
                         "type": "string"
                     }
@@ -347,9 +347,20 @@
                 },
                 "gitlab-token": {
                     "type": "object",
-                    "description": "An object of domain name => gitlab private tokens, typically {\"gitlab.com\":\"<token>\"}.",
+                    "description": "An object of domain name => gitlab private tokens, typically {\"gitlab.com\":\"<token>\"}, or an object with username and token keys.",
                     "additionalProperties": {
-                        "type": "string"
+                        "type": ["string", "object"],
+                        "required": ["username", "token"],
+                        "properties": {
+                            "username": {
+                                "type": "string",
+                                "description": "The username used for GitLab authentication"
+                            },
+                            "token": {
+                                "type": "string",
+                                "description": "The token used for GitLab authentication"
+                            }
+                        }
                     }
                 },
                 "gitlab-protocol": {
@@ -512,6 +523,14 @@
                             "consumer-secret": {
                                 "type": "string",
                                 "description": "The consumer-secret used for OAuth authentication"
+                            },
+                            "access-token": {
+                                "type": "string",
+                                "description": "The OAuth token retrieved from Bitbucket's API, this is written by Composer and you should not set it nor modify it."
+                            },
+                            "access-token-expiration": {
+                                "type": "integer",
+                                "description": "The generated token's expiration timestamp, this is written by Composer and you should not set it nor modify it."
                             }
                         }
                     }

@@ -111,7 +111,7 @@ class GitLabDriver extends VcsDriver
         }
         $this->originUrl = $origin;
 
-        if ($protocol = $this->config->get('gitlab-protocol')) {
+        if (is_string($protocol = $this->config->get('gitlab-protocol'))) {
             // https treated as a synonym for http.
             if (!in_array($protocol, array('git', 'http', 'https'))) {
                 throw new \RuntimeException('gitlab-protocol must be one of git, http.');
@@ -582,7 +582,7 @@ class GitLabDriver extends VcsDriver
         $guessedDomain = !empty($match['domain']) ? $match['domain'] : $match['domain2'];
         $urlParts = explode('/', $match['parts']);
 
-        if (false === self::determineOrigin((array) $config->get('gitlab-domains'), $guessedDomain, $urlParts, $match['port'])) {
+        if (false === self::determineOrigin($config->get('gitlab-domains'), $guessedDomain, $urlParts, $match['port'])) {
             return false;
         }
 
