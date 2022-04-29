@@ -27,7 +27,7 @@ use React\Promise\Promise;
  * @internal
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @author Nicolas Grekas <p@tchwork.com>
- * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int, retries: int, storeAuth: bool}
+ * @phpstan-type Attributes array{retryAuthFailure: bool, redirects: int<0, max>, retries: int<0, max>, storeAuth: 'prompt'|bool}
  * @phpstan-type Job array{url: string, origin: string, attributes: Attributes, options: mixed[], progress: mixed[], curlHandle: resource, filename: string|null, headerHandle: resource, bodyHandle: resource, resolve: callable, reject: callable}
  */
 class CurlDownloader
@@ -152,7 +152,7 @@ class CurlDownloader
      * @param mixed[]  $options
      * @param null|string  $copyTo
      *
-     * @param array{retryAuthFailure?: bool, redirects?: int, retries?: int, storeAuth?: bool} $attributes
+     * @param array{retryAuthFailure?: bool, redirects?: int<0, max>, retries?: int<0, max>, storeAuth?: 'prompt'|bool} $attributes
      *
      * @return int internal job id
      */
@@ -176,6 +176,7 @@ class CurlDownloader
         if (false === $headerHandle) {
             throw new \RuntimeException('Failed to open a temp stream to store curl headers');
         }
+
 
         if ($copyTo) {
             $errorMessage = '';
@@ -363,7 +364,7 @@ class CurlDownloader
                         ) && $job['attributes']['retries'] < $this->maxRetries
                     ) {
                         $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to curl error '. $errno, true, IOInterface::DEBUG);
-                        $this->restartJob($job, $job['url'], array('retries' => $job['attributes']['retries'] + 1));
+                        $this->restartJobWithDelay($job, $job['url'], array('retries' => $job['attributes']['retries'] + 1));
                         continue;
                     }
 
@@ -427,14 +428,14 @@ class CurlDownloader
                         && $job['attributes']['retries'] < $this->maxRetries
                     ) {
                         $this->io->writeError('Retrying ('.($job['attributes']['retries'] + 1).') ' . Url::sanitize($job['url']) . ' due to status code '. $statusCode, true, IOInterface::DEBUG);
-                        $this->restartJob($job, $job['url'], array('retries' => $job['attributes']['retries'] + 1));
+                        $this->restartJobWithDelay($job, $job['url'], array('retries' => $job['attributes']['retries'] + 1));
                         continue;
                     }
 
                     throw $this->failResponse($job, $response, $response->getStatusMessage());
                 }
 
-                if ($job['attributes']['storeAuth']) {
+                if ($job['attributes']['storeAuth'] !== false) {
                     $this->authHelper->storeAuth($job['origin'], $job['attributes']['storeAuth']);
                 }
 
@@ -524,8 +525,8 @@ class CurlDownloader
     }
 
     /**
-     * @param  Job                                        $job
-     * @return array{retry: bool, storeAuth: string|bool}
+     * @param  Job                                          $job
+     * @return array{retry: bool, storeAuth: 'prompt'|bool}
      */
     private function isAuthenticatedRetryNeeded(array $job, Response $response): array
     {
@@ -578,7 +579,7 @@ class CurlDownloader
      * @param  Job    $job
      * @param  string $url
      *
-     * @param  array{retryAuthFailure?: bool, redirects?: int, storeAuth?: bool} $attributes
+     * @param  array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries?: int<1, max>} $attributes
      *
      * @return void
      */
@@ -592,6 +593,25 @@ class CurlDownloader
         $origin = Url::getOrigin($this->config, $url);
 
         $this->initDownload($job['resolve'], $job['reject'], $origin, $url, $job['options'], $job['filename'], $attributes);
+    }
+
+    /**
+     * @param  Job    $job
+     * @param  string $url
+     *
+     * @param  array{retryAuthFailure?: bool, redirects?: int<0, max>, storeAuth?: 'prompt'|bool, retries: int<1, max>} $attributes
+     *
+     * @return void
+     */
+    private function restartJobWithDelay(array $job, string $url, array $attributes): void
+    {
+        if ($attributes['retries'] >= 3) {
+            usleep(500000); // half a second delay for 3rd retry and beyond
+        } elseif ($attributes['retries'] >= 2) {
+            usleep(100000); // 100ms delay for 2nd retry
+        } // no sleep for the first retry
+
+        $this->restartJob($job, $url, $attributes);
     }
 
     /**

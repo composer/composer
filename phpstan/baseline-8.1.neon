@@ -256,7 +256,7 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: CurlHandle\\|resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\.$#"
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: CurlHandle\\|resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 

@@ -4814,16 +4814,6 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:isAuthenticatedRetryNeeded\\(\\) should return array\\{retry\\: bool, storeAuth\\: bool\\|string\\} but returns array\\{retry\\: bool, storeAuth\\: bool\\|string\\}\\|null\\.$#"
-			count: 2
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
-			message: "#^Offset 'retry' does not exist on array\\{retry\\: bool, storeAuth\\: bool\\|string\\}\\|null\\.$#"
-			count: 2
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Only booleans are allowed in &&, int given on the right side\\.$#"
 			count: 2
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -4939,11 +4929,6 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Parameter \\#3 \\$attributes of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:restartJob\\(\\) expects array\\{retryAuthFailure\\?\\: bool, redirects\\?\\: int, storeAuth\\?\\: bool\\}, array\\{storeAuth\\: bool\\|string\\} given\\.$#"
-			count: 1
-			path: ../src/Composer/Util/Http/CurlDownloader.php
-
-		-
 			message: "#^Parameter \\#3 \\$errorMessage of method Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:failResponse\\(\\) expects string, string\\|null given\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
@@ -4954,7 +4939,7 @@ parameters:
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
 		-
-			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int, retries\\: int, storeAuth\\: bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\.$#"
+			message: "#^Property Composer\\\\Util\\\\Http\\\\CurlDownloader\\:\\:\\$jobs \\(array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\) does not accept non\\-empty\\-array\\<array\\{url\\: string, origin\\: string, attributes\\: array\\{retryAuthFailure\\: bool, redirects\\: int\\<0, max\\>, retries\\: int\\<0, max\\>, storeAuth\\: 'prompt'\\|bool\\}, options\\: array, progress\\: array, curlHandle\\: resource, filename\\: string\\|null, headerHandle\\: resource, \\.\\.\\.\\}\\>\\.$#"
 			count: 1
 			path: ../src/Composer/Util/Http/CurlDownloader.php
 
@@ -5360,16 +5345,6 @@ parameters:
 
 		-
 			message: "#^Method Composer\\\\Util\\\\RemoteFilesystem\\:\\:get\\(\\) should return bool\\|string but returns string\\|true\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Util/RemoteFilesystem.php
-
-		-
-			message: "#^Offset 'retry' does not exist on array\\{retry\\: bool, storeAuth\\: bool\\|string\\}\\|null\\.$#"
-			count: 1
-			path: ../src/Composer/Util/RemoteFilesystem.php
-
-		-
-			message: "#^Offset 'storeAuth' does not exist on array\\{retry\\: bool, storeAuth\\: bool\\|string\\}\\|null\\.$#"
 			count: 1
 			path: ../src/Composer/Util/RemoteFilesystem.php
 

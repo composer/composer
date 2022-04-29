@@ -37,7 +37,7 @@ class AuthHelper
 
     /**
      * @param string      $origin
-     * @param string|bool $storeAuth
+     * @param 'prompt'|bool $storeAuth
      *
      * @return void
      */
@@ -79,11 +79,11 @@ class AuthHelper
      * @param  int         $statusCode HTTP status code that triggered this call
      * @param  string|null $reason     a message/description explaining why this was called
      * @param  string[]    $headers
-     * @return array|null  containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
+     * @return array       containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
      *                                retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
-     * @phpstan-return ?array{retry: bool, storeAuth: string|bool}
+     * @phpstan-return array{retry: bool, storeAuth: 'prompt'|bool}
      */
-    public function promptAuthIfNeeded(string $url, string $origin, int $statusCode, ?string $reason = null, array $headers = array()): ?array
+    public function promptAuthIfNeeded(string $url, string $origin, int $statusCode, ?string $reason = null, array $headers = array()): array
     {
         $storeAuth = false;
 
@@ -185,7 +185,7 @@ class AuthHelper
         } else {
             // 404s are only handled for github
             if ($statusCode === 404) {
-                return null;
+                return ['retry' => false, 'storeAuth' => false];
             }
 
             // fail if the console is not interactive
