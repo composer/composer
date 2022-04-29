@@ -321,7 +321,7 @@ class ArrayRepository implements RepositoryInterface
     /**
      * Returns the number of packages in this repository
      *
-     * @return int Number of packages
+     * @return 0|positive-int Number of packages
      */
     public function count(): int
     {

@@ -42,7 +42,7 @@ class RuleSet implements \IteratorAggregate, \Countable
     /** @var array<self::TYPE_*, Rule[]> */
     protected $rules;
 
-    /** @var int */
+    /** @var 0|positive-int */
     protected $nextRuleId = 0;
 
     /** @var array<int|string, Rule|Rule[]> */
