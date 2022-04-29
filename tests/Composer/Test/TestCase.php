@@ -141,7 +141,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     /**
      * @param string $version
-     * @return AliasPackage|RootAliasPackage|CompleteAliasPackage
+     * @return ($package is RootPackage ? RootAliasPackage : ($package is CompletePackage ? CompleteAliasPackage : AliasPackage))
      */
     protected function getAliasPackage(Package $package, string $version): AliasPackage
     {

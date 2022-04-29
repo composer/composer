@@ -132,11 +132,10 @@ class FilesystemRepositoryTest extends TestCase
 
         $json = new JsonFile($dir.'/installed.json');
 
-        $rootPackage = $this->getPackage('__root__', 'dev-master', 'Composer\Package\RootPackage');
+        $rootPackage = $this->getRootPackage('__root__', 'dev-master');
         $rootPackage->setSourceReference('sourceref-by-default');
         $rootPackage->setDistReference('distref');
         $this->configureLinks($rootPackage, array('provide' => array('foo/impl' => '2.0')));
-        /** @var RootAliasPackage $rootPackage */
         $rootPackage = $this->getAliasPackage($rootPackage, '1.10.x-dev');
 
         $repository = new FilesystemRepository($json, true, $rootPackage);

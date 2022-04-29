@@ -26,7 +26,7 @@ final class IgnoreNothingPlatformRequirementFilterTest extends TestCase
     {
         $platformRequirementFilter = new IgnoreNothingPlatformRequirementFilter();
 
-        $this->assertFalse($platformRequirementFilter->isIgnored($req));
+        $this->assertFalse($platformRequirementFilter->isIgnored($req)); // @phpstan-ignore-line
     }
 
     /**

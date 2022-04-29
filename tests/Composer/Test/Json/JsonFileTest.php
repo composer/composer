@@ -92,9 +92,11 @@ class JsonFileTest extends TestCase
 
     public function testSchemaValidation(): void
     {
+        self::expectNotToPerformAssertions();
+
         $json = new JsonFile(__DIR__.'/Fixtures/composer.json');
-        $this->assertTrue($json->validateSchema());
-        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+        $json->validateSchema();
+        $json->validateSchema(JsonFile::LAX_SCHEMA);
     }
 
     public function testSchemaValidationError(): void
@@ -133,7 +135,7 @@ class JsonFileTest extends TestCase
             $this->assertEquals(sprintf('"%s" does not match the expected JSON schema', $file), $e->getMessage());
             $this->assertEquals(array('The property foo is not defined and the definition does not allow additional properties'), $e->getErrors());
         }
-        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+        $json->validateSchema(JsonFile::LAX_SCHEMA);
         unlink($file);
     }
 
@@ -154,7 +156,7 @@ class JsonFileTest extends TestCase
             $this->assertContains('name : The property name is required', $errors);
             $this->assertContains('description : The property description is required', $errors);
         }
-        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+        $json->validateSchema(JsonFile::LAX_SCHEMA);
 
         file_put_contents($file, '{ "name": "vendor/package" }');
         try {
@@ -164,7 +166,7 @@ class JsonFileTest extends TestCase
             $this->assertEquals($expectedMessage, $e->getMessage());
             $this->assertEquals(array('description : The property description is required'), $e->getErrors());
         }
-        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+        $json->validateSchema(JsonFile::LAX_SCHEMA);
 
         file_put_contents($file, '{ "description": "generic description" }');
         try {
@@ -174,7 +176,7 @@ class JsonFileTest extends TestCase
             $this->assertEquals($expectedMessage, $e->getMessage());
             $this->assertEquals(array('name : The property name is required'), $e->getErrors());
         }
-        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+        $json->validateSchema(JsonFile::LAX_SCHEMA);
 
         file_put_contents($file, '{ "type": "library" }');
         try {
@@ -186,7 +188,7 @@ class JsonFileTest extends TestCase
             $this->assertContains('name : The property name is required', $errors);
             $this->assertContains('description : The property description is required', $errors);
         }
-        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+        $json->validateSchema(JsonFile::LAX_SCHEMA);
 
         file_put_contents($file, '{ "type": "project" }');
         try {
@@ -198,17 +200,18 @@ class JsonFileTest extends TestCase
             $this->assertContains('name : The property name is required', $errors);
             $this->assertContains('description : The property description is required', $errors);
         }
-        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+        $json->validateSchema(JsonFile::LAX_SCHEMA);
 
         file_put_contents($file, '{ "name": "vendor/package", "description": "generic description" }');
-        $this->assertTrue($json->validateSchema());
-        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA));
+        $json->validateSchema();
+        $json->validateSchema(JsonFile::LAX_SCHEMA);
 
         unlink($file);
     }
 
     public function testCustomSchemaValidationLax(): void
     {
+        self::expectNotToPerformAssertions();
         $file = $this->createTempFile();
         file_put_contents($file, '{ "custom": "property", "another custom": "property" }');
 
@@ -217,7 +220,7 @@ class JsonFileTest extends TestCase
 
         $json = new JsonFile($file);
 
-        $this->assertTrue($json->validateSchema(JsonFile::LAX_SCHEMA, $schema));
+        $json->validateSchema(JsonFile::LAX_SCHEMA, $schema);
 
         unlink($file);
         unlink($schema);
@@ -225,6 +228,7 @@ class JsonFileTest extends TestCase
 
     public function testCustomSchemaValidationStrict(): void
     {
+        self::expectNotToPerformAssertions();
         $file = $this->createTempFile();
         file_put_contents($file, '{ "custom": "property" }');
 
@@ -233,7 +237,7 @@ class JsonFileTest extends TestCase
 
         $json = new JsonFile($file);
 
-        $this->assertTrue($json->validateSchema(JsonFile::STRICT_SCHEMA, $schema));
+        $json->validateSchema(JsonFile::STRICT_SCHEMA, $schema);
 
         unlink($file);
         unlink($schema);
