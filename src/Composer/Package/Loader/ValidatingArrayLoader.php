@@ -258,9 +258,9 @@ class ValidatingArrayLoader implements LoaderInterface
                         continue;
                     }
                     if ($err = self::hasPackageNamingError($package, true)) {
-                        $this->errors[] = $linkType.'.'.$err;
+                        $this->warnings[] = $linkType.'.'.$err;
                     } elseif (!Preg::isMatch('{^[A-Za-z0-9_./-]+$}', $package)) {
-                        $this->warnings[] = $linkType.'.'.$package.' : invalid key, package names must be strings containing only [A-Za-z0-9_./-]';
+                        $this->errors[] = $linkType.'.'.$package.' : invalid key, package names must be strings containing only [A-Za-z0-9_./-]';
                     }
                     if (!is_string($constraint)) {
                         $this->errors[] = $linkType.'.'.$package.' : invalid value, must be a string containing a version constraint';

@@ -355,18 +355,6 @@ class ValidatingArrayLoaderTest extends TestCase
             array(
                 array(
                     'name' => 'foo/bar',
-                    'require' => array(
-                        'Foo/Baz' => '^1.0',
-                    ),
-                ),
-                array(
-                    'require.Foo/Baz is invalid, it should not contain uppercase characters. Please use foo/baz instead.',
-                ),
-                false,
-            ),
-            array(
-                array(
-                    'name' => 'foo/bar',
                     'autoload' => 'strings',
                 ),
                 array(
@@ -520,6 +508,18 @@ class ValidatingArrayLoaderTest extends TestCase
                 ),
                 array(
                     'extra.branch-alias.5.x-dev : the target branch (3.1-dev) is not a valid numeric alias for this version',
+                ),
+                false,
+            ),
+            array(
+                array(
+                    'name' => 'foo/bar',
+                    'require' => array(
+                        'Foo/Baz' => '^1.0',
+                    ),
+                ),
+                array(
+                    'require.Foo/Baz is invalid, it should not contain uppercase characters. Please use foo/baz instead.',
                 ),
                 false,
             ),
