@@ -12,6 +12,7 @@
 
 namespace Composer\Test\Util;
 
+use Composer\Downloader\TransportException;
 use Composer\IO\IOInterface;
 use Composer\Test\TestCase;
 use Composer\Util\AuthHelper;
@@ -509,6 +510,41 @@ class AuthHelperTest extends TestCase
             });
 
         $this->authHelper->storeAuth($origin, $storeAuth);
+    }
+
+    public function testPromptAuthIfNeededGitLabNoAuthChange(): void
+    {
+        self::expectException('Composer\Downloader\TransportException');
+
+        $origin = 'gitlab.com';
+
+        $this->io
+            ->method('hasAuthentication')
+            ->with($origin)
+            ->willReturn(true);
+
+        $this->io
+            ->method('getAuthentication')
+            ->with($origin)
+            ->willReturn(array(
+                'username' => 'gitlab-user',
+                'password' => 'gitlab-password',
+            ));
+
+        $this->io
+            ->expects($this->once())
+            ->method('setAuthentication')
+            ->with('gitlab.com', 'gitlab-user', 'gitlab-password');
+
+        $this->config
+            ->method('get')
+            ->willReturnMap(array(
+                array('github-domains', 0, array()),
+                array('gitlab-domains', 0, array('gitlab.com')),
+                array('gitlab-token', 0, array('gitlab.com' => array('username' => 'gitlab-user', 'token' => 'gitlab-password'))),
+            ));
+
+        $this->authHelper->promptAuthIfNeeded('https://gitlab.com/acme/archive.zip', $origin, 404, 'GitLab requires authentication and it was not provided');
     }
 
     /**
