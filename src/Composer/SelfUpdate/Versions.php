@@ -79,9 +79,9 @@ class Versions
         $channelFile = $this->config->get('home').'/update-channel';
         $this->channel = $channel;
 
+        // rewrite '2' and '1' channels to stable for future self-updates, but LTS ones like '2.2' remain pinned
         $storedChannel = Preg::isMatch('{^\d+$}D', $channel) ? 'stable' : $channel;
         $previouslyStored = file_exists($channelFile) ? trim((string) file_get_contents($channelFile)) : null;
-        // rewrite '2' and '1' channels to stable for future self-updates, but LTS ones like '2.2' remain pinned
         file_put_contents($channelFile, $storedChannel.PHP_EOL);
 
         if ($io !== null && $previouslyStored !== $storedChannel) {
