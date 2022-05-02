@@ -430,9 +430,14 @@ class InstallationManager
             }
             $installer = $this->getInstaller($package->getType());
 
-            $event = 'Composer\Installer\PackageEvents::PRE_PACKAGE_'.strtoupper($opType);
-            if (defined($event) && $runScripts && $this->eventDispatcher) {
-                $this->eventDispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $allOperations, $operation);
+            $eventName = [
+                'install' => PackageEvents::PRE_PACKAGE_INSTALL,
+                'update' => PackageEvents::PRE_PACKAGE_UPDATE,
+                'uninstall' => PackageEvents::PRE_PACKAGE_UNINSTALL,
+            ][$opType] ?? null;
+
+            if (null !== $eventName && $runScripts && $this->eventDispatcher) {
+                $this->eventDispatcher->dispatchPackageEvent($eventName, $devMode, $repo, $allOperations, $operation);
             }
 
             $dispatcher = $this->eventDispatcher;
@@ -454,12 +459,17 @@ class InstallationManager
                 throw $e;
             });
 
-            $postExecCallbacks[] = function () use ($opType, $runScripts, $dispatcher, $devMode, $repo, $allOperations, $operation): void {
-                $event = 'Composer\Installer\PackageEvents::POST_PACKAGE_'.strtoupper($opType);
-                if (defined($event) && $runScripts && $dispatcher) {
-                    $dispatcher->dispatchPackageEvent(constant($event), $devMode, $repo, $allOperations, $operation);
-                }
-            };
+            $eventName = [
+                'install' => PackageEvents::POST_PACKAGE_INSTALL,
+                'update' => PackageEvents::POST_PACKAGE_UPDATE,
+                'uninstall' => PackageEvents::POST_PACKAGE_UNINSTALL,
+            ][$opType] ?? null;
+
+            if (null !== $eventName && $runScripts && $dispatcher) {
+                $postExecCallbacks[] = function () use ($dispatcher, $eventName, $devMode, $repo, $allOperations, $operation): void {
+                    $dispatcher->dispatchPackageEvent($eventName, $devMode, $repo, $allOperations, $operation);
+                };
+            }
 
             $promises[] = $promise;
         }
