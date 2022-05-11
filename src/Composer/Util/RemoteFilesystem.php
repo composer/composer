@@ -594,7 +594,7 @@ class RemoteFilesystem
      */
     protected function promptAuthAndRetry($httpStatus, ?string $reason = null, array $headers = array())
     {
-        $result = $this->authHelper->promptAuthIfNeeded($this->fileUrl, $this->originUrl, $httpStatus, $reason, $headers);
+        $result = $this->authHelper->promptAuthIfNeeded($this->fileUrl, $this->originUrl, $httpStatus, $reason, $headers, 1 /** always pass 1 as RemoteFilesystem is single threaded there is no race condition possible */);
 
         $this->storeAuth = $result['storeAuth'];
         $this->retry = $result['retry'];
