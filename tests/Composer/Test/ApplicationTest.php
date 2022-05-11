@@ -59,6 +59,10 @@ class ApplicationTest extends TestCase
      */
     public function testDevWarningSuppressedForSelfUpdate(): void
     {
+        if (Platform::isWindows()) {
+            $this->markTestSkipped('Does not run on windows');
+        }
+
         $application = new Application;
         $application->add(new \Composer\Command\SelfUpdateCommand);
 
