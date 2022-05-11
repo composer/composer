@@ -13,7 +13,9 @@
 namespace Composer\Test;
 
 use Composer\Console\Application;
+use Composer\Util\Platform;
 use Composer\XdebugHandler\XdebugHandler;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class ApplicationTest extends TestCase
@@ -22,124 +24,51 @@ class ApplicationTest extends TestCase
     {
         parent::tearDown();
 
-        putenv('COMPOSER_NO_INTERACTION');
+        Platform::clearEnv('COMPOSER_DISABLE_XDEBUG_WARN');
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Platform::putEnv('COMPOSER_DISABLE_XDEBUG_WARN', '1');
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testDevWarning(): void
     {
         $application = new Application;
 
-        $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
-        $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
-
-        putenv('COMPOSER_NO_INTERACTION=1');
-
-        $inputMock->expects($this->any())
-            ->method('hasParameterOption')
-            ->willReturnCallback(function ($opt): bool {
-                switch ($opt) {
-                    case '--no-plugins':
-                        return true;
-                    case '--no-scripts':
-                        return false;
-                    case '--no-cache':
-                        return false;
-                }
-
-                return false;
-            });
-
-        $inputMock->expects($this->once())
-            ->method('setInteractive')
-            ->with($this->equalTo(false));
-
-        $inputMock->expects($this->once())
-            ->method('getParameterOption')
-            ->with($this->equalTo(array('--working-dir', '-d')), $this->equalTo(null))
-            ->will($this->returnValue(null));
-
-        $inputMock->expects($this->any())
-            ->method('getFirstArgument')
-            ->will($this->returnValue('about'));
-
-        $output = new BufferedOutput();
-        $expectedOutput = '';
-
-        if (XdebugHandler::isXdebugActive()) {
-            $expectedOutput .= '<warning>Composer is operating slower than normal because you have Xdebug enabled. See https://getcomposer.org/xdebug</warning>'.PHP_EOL;
-        }
-
-        $expectedOutput .= sprintf('<warning>Warning: This development build of Composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']).PHP_EOL;
-
         if (!defined('COMPOSER_DEV_WARNING_TIME')) {
             define('COMPOSER_DEV_WARNING_TIME', time() - 1);
         }
 
-        $application->doRun($inputMock, $output);
+        $output = new BufferedOutput();
+        $application->doRun(new ArrayInput(['command' => 'about']), $output);
 
+        $expectedOutput = sprintf('<warning>Warning: This development build of Composer is over 60 days old. It is recommended to update it by running "%s self-update" to get the latest version.</warning>', $_SERVER['PHP_SELF']).PHP_EOL;
         $this->assertStringContainsString($expectedOutput, $output->fetch());
     }
 
     /**
-     * @param  string $command
-     * @return void
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
      */
-    public function ensureNoDevWarning(string $command): void
+    public function testDevWarningSuppressedForSelfUpdate(): void
     {
         $application = new Application;
-
         $application->add(new \Composer\Command\SelfUpdateCommand);
-
-        $inputMock = $this->getMockBuilder('Symfony\Component\Console\Input\InputInterface')->getMock();
-        $outputMock = $this->getMockBuilder('Symfony\Component\Console\Output\OutputInterface')->getMock();
-
-        putenv('COMPOSER_NO_INTERACTION=1');
-
-        $inputMock->expects($this->any())
-            ->method('hasParameterOption')
-            ->willReturnCallback(function ($opt): bool {
-                switch ($opt) {
-                    case '--no-plugins':
-                        return true;
-                    case '--no-scripts':
-                        return false;
-                    case '--no-cache':
-                        return false;
-                }
-
-                return false;
-            });
-
-        $inputMock->expects($this->once())
-            ->method('setInteractive')
-            ->with($this->equalTo(false));
-
-        $inputMock->expects($this->once())
-            ->method('getParameterOption')
-            ->with($this->equalTo(array('--working-dir', '-d')), $this->equalTo(null))
-            ->will($this->returnValue(null));
-
-        $inputMock->expects($this->any())
-            ->method('getFirstArgument')
-            ->will($this->returnValue('about'));
-
-        $outputMock->expects($this->never())
-            ->method("writeln");
 
         if (!defined('COMPOSER_DEV_WARNING_TIME')) {
             define('COMPOSER_DEV_WARNING_TIME', time() - 1);
         }
 
-        $application->doRun($inputMock, $outputMock);
-    }
+        $output = new BufferedOutput();
+        $application->doRun(new ArrayInput(['command' => 'self-update']), $output);
 
-    public function testDevWarningPrevented(): void
-    {
-        $this->ensureNoDevWarning('self-update');
-    }
-
-    public function testDevWarningPreventedAlias(): void
-    {
-        $this->ensureNoDevWarning('self-up');
+        $this->assertSame('', $output->fetch());
     }
 }

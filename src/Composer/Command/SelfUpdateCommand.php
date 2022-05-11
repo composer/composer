@@ -80,6 +80,10 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        if ($_SERVER['argv'][0] === 'Standard input code') {
+            return 1;
+        }
+
         // trigger autoloading of a few classes which may be needed when verifying/swapping the phar file
         // to ensure we do not try to load them from the new phar, see https://github.com/composer/composer/issues/10252
         class_exists('Composer\Util\Platform');
