@@ -79,11 +79,12 @@ class AuthHelper
      * @param  int         $statusCode HTTP status code that triggered this call
      * @param  string|null $reason     a message/description explaining why this was called
      * @param  string[]    $headers
+     * @param  int         $retryCount the amount of retries already done on this URL
      * @return array|null  containing retry (bool) and storeAuth (string|bool) keys, if retry is true the request should be
      *                                retried, if storeAuth is true then on a successful retry the authentication should be persisted to auth.json
      * @phpstan-return ?array{retry: bool, storeAuth: string|bool}
      */
-    public function promptAuthIfNeeded($url, $origin, $statusCode, $reason = null, $headers = array())
+    public function promptAuthIfNeeded($url, $origin, $statusCode, $reason = null, $headers = array(), $retryCount = 0)
     {
         $storeAuth = false;
 
@@ -200,8 +201,15 @@ class AuthHelper
 
                 throw new TransportException($message, $statusCode);
             }
+
             // fail if we already have auth
             if ($this->io->hasAuthentication($origin)) {
+                // if two or more requests are started together for the same host, and the first
+                // received authentication already, we let the others retry before failing them
+                if ($retryCount === 0) {
+                    return array('retry' => true, 'storeAuth' => false);
+                }
+
                 throw new TransportException("Invalid credentials for '" . $url . "', aborting.", $statusCode);
             }
 
