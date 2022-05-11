@@ -91,7 +91,7 @@ class AutoloadGeneratorTest extends TestCase
     {
         $this->fs = new Filesystem;
 
-        $this->workingDir = $this->getUniqueTmpDirectory();
+        $this->workingDir = self::getUniqueTmpDirectory();
         $this->vendorDir = $this->workingDir.DIRECTORY_SEPARATOR.'composer-test-autoload';
         $this->ensureDirectoryExistsAndClear($this->vendorDir);
 

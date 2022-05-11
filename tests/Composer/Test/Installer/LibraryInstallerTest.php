@@ -74,7 +74,7 @@ class LibraryInstallerTest extends TestCase
         $this->config = new Config(false);
         $this->composer->setConfig($this->config);
 
-        $this->rootDir = $this->getUniqueTmpDirectory();
+        $this->rootDir = self::getUniqueTmpDirectory();
         $this->vendorDir = $this->rootDir.DIRECTORY_SEPARATOR.'vendor';
         self::ensureDirectoryExistsAndClear($this->vendorDir);
 

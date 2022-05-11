@@ -12,35 +12,14 @@
 
 namespace Composer\Test\Command;
 
-use Composer\Command\RunScriptCommand;
 use Composer\Composer;
 use Composer\Config;
-use Composer\Console\Application;
 use Composer\Script\Event as ScriptEvent;
 use Composer\Test\TestCase;
 use Composer\Util\Filesystem;
-use Symfony\Component\Console\Tester\ApplicationTester;
 
 class RunScriptCommandTest extends TestCase
 {
-    /**
-     * @var string
-     */
-    private $home;
-
-    public function setUp(): void
-    {
-        $this->home = $this->getUniqueTmpDirectory();
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $fs = new Filesystem();
-        $fs->removeDirectory($this->home);
-    }
-
     /**
      * @dataProvider getDevOptions
      * @param bool $dev
@@ -112,7 +91,7 @@ class RunScriptCommandTest extends TestCase
 
     public function testCanListScripts(): void
     {
-        $manifest = [
+        $this->initTempComposer([
             'scripts' => [
                 'test' => '@php test',
                 'fix-cs' => 'php-cs-fixer fix',
@@ -120,20 +99,14 @@ class RunScriptCommandTest extends TestCase
             'scripts-descriptions' => [
                 'fix-cs' => 'Run the codestyle fixer',
             ],
-        ];
+        ]);
 
-        file_put_contents($this->home.'/composer.json', json_encode($manifest));
+        $appTester = $this->getApplicationTester();
+        $appTester->run(['command' => 'run-script', '--list' => true]);
 
-        $application = new Application();
-        $application->setAutoExit(false);
-        $application->add(new RunScriptCommand());
+        $appTester->assertCommandIsSuccessful();
 
-        $tester = new ApplicationTester($application);
-        $tester->run(['command' => 'run-script', '--list' => true, '-d' => $this->home]);
-
-        $tester->assertCommandIsSuccessful();
-
-        $output = $tester->getDisplay();
+        $output = $appTester->getDisplay();
 
         $this->assertStringContainsString('Runs the test script as defined in composer.json.', $output, 'The default description for the test script should be printed');
         $this->assertStringContainsString('Run the codestyle fixer', $output, 'The custom description for the fix-cs script should be printed');

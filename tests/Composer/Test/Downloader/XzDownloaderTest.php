@@ -36,7 +36,7 @@ class XzDownloaderTest extends TestCase
         if (Platform::isWindows()) {
             $this->markTestSkipped('Skip test on Windows');
         }
-        $this->testDir = $this->getUniqueTmpDirectory();
+        $this->testDir = self::getUniqueTmpDirectory();
     }
 
     protected function tearDown(): void

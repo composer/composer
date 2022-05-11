@@ -63,7 +63,7 @@ class PerforceDriverTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->testPath = $this->getUniqueTmpDirectory();
+        $this->testPath = self::getUniqueTmpDirectory();
         $this->config = $this->getTestConfig($this->testPath);
         $this->repoConfig = array(
             'url' => self::TEST_URL,

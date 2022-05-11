@@ -24,7 +24,7 @@ class RepositoryManagerTest extends TestCase
 
     public function setUp(): void
     {
-        $this->tmpdir = $this->getUniqueTmpDirectory();
+        $this->tmpdir = self::getUniqueTmpDirectory();
     }
 
     protected function tearDown(): void

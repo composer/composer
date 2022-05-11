@@ -13,7 +13,9 @@
 namespace Composer\Test;
 
 use Composer\Config;
+use Composer\Console\Application;
 use Composer\IO\IOInterface;
+use Composer\Json\JsonFile;
 use Composer\Pcre\Preg;
 use Composer\Semver\VersionParser;
 use Composer\Package\PackageInterface;
@@ -23,6 +25,7 @@ use Composer\Test\Mock\ProcessExecutorMock;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\Silencer;
+use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\Process\ExecutableFinder;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\BasePackage;
@@ -53,6 +56,12 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
      * @var list<ProcessExecutorMock>
      */
     private $processExecutorMocks = [];
+    /**
+     * @var list<string>
+     */
+    private $tempComposerDirs = [];
+    /** @var string|null */
+    private $prevCwd = null;
 
     protected function tearDown(): void
     {
@@ -62,6 +71,17 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         }
         foreach ($this->processExecutorMocks as $mock) {
             $mock->assertComplete();
+        }
+
+        if (null !== $this->prevCwd) {
+            chdir($this->prevCwd);
+            $this->prevCwd = null;
+            Platform::clearEnv('COMPOSER_HOME');
+            Platform::clearEnv('COMPOSER_DISABLE_XDEBUG_WARN');
+        }
+        $fs = new Filesystem();
+        foreach ($this->tempComposerDirs as $dir) {
+            $fs->removeDirectory($dir);
         }
     }
 
@@ -82,6 +102,42 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         } while (--$attempts);
 
         throw new \RuntimeException('Failed to create a unique temporary directory.');
+    }
+
+    /**
+     * Creates a composer.json / auth.json inside a temp dir and chdir() into it
+     *
+     * The directory will be cleaned up on tearDown automatically.
+     *
+     * @param mixed[] $composerJson
+     * @param mixed[] $authJson
+     * @return string the newly created temp dir
+     */
+    public function initTempComposer(array $composerJson = [], array $authJson = []): string
+    {
+        $dir = self::getUniqueTmpDirectory();
+
+        $this->tempComposerDirs[] = $dir;
+
+        $this->prevCwd = Platform::getCwd();
+
+        Platform::putEnv('COMPOSER_HOME', $dir.'/composer-home');
+        Platform::putEnv('COMPOSER_DISABLE_XDEBUG_WARN', '1');
+
+        chdir($dir);
+        file_put_contents($dir.'/composer.json', JsonFile::encode($composerJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT));
+        file_put_contents($dir.'/auth.json', JsonFile::encode($authJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT));
+
+        return $dir;
+    }
+
+    public function getApplicationTester(): ApplicationTester
+    {
+        $application = new Application();
+        $application->setAutoExit(false);
+        $application->setCatchExceptions(false);
+
+        return new ApplicationTester($application);
     }
 
     /**

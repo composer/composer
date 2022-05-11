@@ -305,7 +305,7 @@ EOT
             }
 
             if (is_array($value)) {
-                $value = json_encode($value);
+                $value = JsonFile::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             }
 
             $sourceOfConfigValue = '';

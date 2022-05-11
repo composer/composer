@@ -53,8 +53,8 @@ class VcsRepositoryTest extends TestCase
         }
 
         $oldCwd = Platform::getCwd();
-        self::$composerHome = $this->getUniqueTmpDirectory();
-        self::$gitRepo = $this->getUniqueTmpDirectory();
+        self::$composerHome = self::getUniqueTmpDirectory();
+        self::$gitRepo = self::getUniqueTmpDirectory();
 
         if (!@chdir(self::$gitRepo)) {
             $this->skipped = 'Could not move into the temp git repo '.self::$gitRepo;

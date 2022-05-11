@@ -73,7 +73,7 @@ class PluginInstallerTest extends TestCase
     {
         $loader = new JsonLoader(new ArrayLoader());
         $this->packages = array();
-        $this->directory = $this->getUniqueTmpDirectory();
+        $this->directory = self::getUniqueTmpDirectory();
         for ($i = 1; $i <= 8; $i++) {
             $filename = '/Fixtures/plugin-v'.$i.'/composer.json';
             mkdir(dirname($this->directory . $filename), 0777, true);

@@ -39,7 +39,7 @@ class ArchivableFilesFinderTest extends TestCase
         $this->fs = $fs;
 
         $this->sources = $fs->normalizePath(
-            $this->getUniqueTmpDirectory()
+            self::getUniqueTmpDirectory()
         );
 
         $fileTree = array(

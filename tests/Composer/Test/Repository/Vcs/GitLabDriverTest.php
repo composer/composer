@@ -51,7 +51,7 @@ class GitLabDriverTest extends TestCase
 
     public function setUp(): void
     {
-        $this->home = $this->getUniqueTmpDirectory();
+        $this->home = self::getUniqueTmpDirectory();
         $this->config = $this->getConfig([
             'home' => $this->home,
             'gitlab-domains' => array(

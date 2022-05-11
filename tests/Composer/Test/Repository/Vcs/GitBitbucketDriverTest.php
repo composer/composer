@@ -37,7 +37,7 @@ class GitBitbucketDriverTest extends TestCase
     {
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
 
-        $this->home = $this->getUniqueTmpDirectory();
+        $this->home = self::getUniqueTmpDirectory();
 
         $this->config = new Config();
         $this->config->merge(array(

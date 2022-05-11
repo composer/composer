@@ -148,7 +148,7 @@ class ClassMapGeneratorTest extends TestCase
     {
         $this->checkIfFinderIsAvailable();
 
-        $tempDir = $this->getUniqueTmpDirectory();
+        $tempDir = self::getUniqueTmpDirectory();
         $this->ensureDirectoryExistsAndClear($tempDir . '/other');
 
         $finder = new Finder();
@@ -190,7 +190,7 @@ class ClassMapGeneratorTest extends TestCase
      */
     public function testUnambiguousReference(): void
     {
-        $tempDir = $this->getUniqueTmpDirectory();
+        $tempDir = self::getUniqueTmpDirectory();
 
         file_put_contents($tempDir . '/A.php', "<?php\nclass A {}");
         file_put_contents(

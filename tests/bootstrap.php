@@ -23,3 +23,8 @@ require __DIR__.'/../src/Composer/InstalledVersions.php';
 require __DIR__.'/Composer/Test/TestCase.php';
 
 Platform::putEnv('COMPOSER_TESTS_ARE_RUNNING', '1');
+
+// symfony/phpunit-bridge sets some default env vars which we do not need polluting the test env
+Platform::clearEnv('COMPOSER');
+Platform::clearEnv('COMPOSER_VENDOR_DIR');
+Platform::clearEnv('COMPOSER_BIN_DIR');

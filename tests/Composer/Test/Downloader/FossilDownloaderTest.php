@@ -23,7 +23,7 @@ class FossilDownloaderTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->workingDir = $this->getUniqueTmpDirectory();
+        $this->workingDir = self::getUniqueTmpDirectory();
     }
 
     protected function tearDown(): void

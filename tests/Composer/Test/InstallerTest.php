@@ -45,7 +45,7 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
 class InstallerTest extends TestCase
 {
     /** @var string */
-    protected $prevCwd;
+    private $prevCwd;
     /** @var ?string */
     protected $tempComposerHome;
 

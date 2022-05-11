@@ -30,7 +30,7 @@ class CacheTest extends TestCase
 
     public function setUp(): void
     {
-        $this->root = $this->getUniqueTmpDirectory();
+        $this->root = self::getUniqueTmpDirectory();
         $this->files = array();
         $zeros = str_repeat('0', 1000);
 

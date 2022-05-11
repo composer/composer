@@ -46,7 +46,7 @@ class InstalledVersionsTest extends TestCase
 
     public function setUp(): void
     {
-        $this->root = $this->getUniqueTmpDirectory();
+        $this->root = self::getUniqueTmpDirectory();
 
         $dir = $this->root;
         InstalledVersions::reload(require __DIR__.'/Repository/Fixtures/installed.php');

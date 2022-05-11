@@ -33,7 +33,7 @@ class GitDownloaderTest extends TestCase
         $this->initGitVersion('1.0.0');
 
         $this->fs = new Filesystem;
-        $this->workingDir = $this->getUniqueTmpDirectory();
+        $this->workingDir = self::getUniqueTmpDirectory();
     }
 
     protected function tearDown(): void

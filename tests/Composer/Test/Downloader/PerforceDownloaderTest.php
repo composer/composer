@@ -43,7 +43,7 @@ class PerforceDownloaderTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->testPath = $this->getUniqueTmpDirectory();
+        $this->testPath = self::getUniqueTmpDirectory();
         $this->repoConfig = $this->getRepoConfig();
         $this->config = $this->getConfig();
         $this->io = $this->getMockIoInterface();

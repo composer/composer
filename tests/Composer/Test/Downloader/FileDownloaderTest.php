@@ -69,7 +69,7 @@ class FileDownloaderTest extends TestCase
         $package = $this->getPackage();
         $package->setDistUrl('url');
 
-        $path = $this->createTempFile($this->getUniqueTmpDirectory());
+        $path = $this->createTempFile(self::getUniqueTmpDirectory());
         $downloader = $this->getDownloader();
 
         try {
@@ -105,7 +105,7 @@ class FileDownloaderTest extends TestCase
         $package = $this->getPackage();
         $package->setDistUrl('http://example.com/script.js');
 
-        $path = $this->getUniqueTmpDirectory();
+        $path = self::getUniqueTmpDirectory();
         $ioMock = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $ioMock->expects($this->any())
             ->method('write')
@@ -142,7 +142,7 @@ class FileDownloaderTest extends TestCase
 
     public function testDownloadWithCustomProcessedUrl(): void
     {
-        $path = $this->getUniqueTmpDirectory();
+        $path = self::getUniqueTmpDirectory();
 
         $package = $this->getPackage();
         $package->setDistUrl('url');
@@ -225,7 +225,7 @@ class FileDownloaderTest extends TestCase
 
     public function testDownloadWithCustomCacheKey(): void
     {
-        $path = $this->getUniqueTmpDirectory();
+        $path = self::getUniqueTmpDirectory();
 
         $package = $this->getPackage();
         $package->setDistUrl('url');
@@ -339,7 +339,7 @@ class FileDownloaderTest extends TestCase
 
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();
 
-        $path = $this->getUniqueTmpDirectory();
+        $path = self::getUniqueTmpDirectory();
         $config = $this->getConfig(['vendor-dir' => $path.'/vendor']);
 
         $downloader = $this->getDownloader(null, $config, null, null, null, $filesystem);
@@ -384,7 +384,7 @@ class FileDownloaderTest extends TestCase
                 [$this->stringContains('Downgrading')]
             );
 
-        $path = $this->getUniqueTmpDirectory();
+        $path = self::getUniqueTmpDirectory();
         $config = $this->getConfig(['vendor-dir' => $path.'/vendor']);
 
         $filesystem = $this->getMockBuilder('Composer\Util\Filesystem')->getMock();

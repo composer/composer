@@ -48,7 +48,7 @@ class BinaryInstallerTest extends TestCase
     {
         $this->fs = new Filesystem;
 
-        $this->rootDir = $this->getUniqueTmpDirectory();
+        $this->rootDir = self::getUniqueTmpDirectory();
         $this->vendorDir = $this->rootDir.DIRECTORY_SEPARATOR.'vendor';
         $this->ensureDirectoryExistsAndClear($this->vendorDir);
 

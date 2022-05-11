@@ -38,7 +38,7 @@ abstract class ArchiverTest extends TestCase
     {
         $this->filesystem = new Filesystem();
         $this->process = new ProcessExecutor();
-        $this->testDir = $this->getUniqueTmpDirectory();
+        $this->testDir = self::getUniqueTmpDirectory();
     }
 
     protected function tearDown(): void

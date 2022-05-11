@@ -37,7 +37,7 @@ class ZipDownloaderTest extends TestCase
 
     public function setUp(): void
     {
-        $this->testDir = $this->getUniqueTmpDirectory();
+        $this->testDir = self::getUniqueTmpDirectory();
         $this->io = $this->getMockBuilder('Composer\IO\IOInterface')->getMock();
         $this->config = $this->getMockBuilder('Composer\Config')->getMock();
         $dlConfig = $this->getMockBuilder('Composer\Config')->getMock();

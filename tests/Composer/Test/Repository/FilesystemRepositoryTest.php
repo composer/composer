@@ -127,7 +127,7 @@ class FilesystemRepositoryTest extends TestCase
 
     public function testRepositoryWritesInstalledPhp(): void
     {
-        $dir = $this->getUniqueTmpDirectory();
+        $dir = self::getUniqueTmpDirectory();
         chdir($dir);
 
         $json = new JsonFile($dir.'/installed.json');

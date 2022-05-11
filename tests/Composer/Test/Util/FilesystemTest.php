@@ -35,8 +35,8 @@ class FilesystemTest extends TestCase
     public function setUp(): void
     {
         $this->fs = new Filesystem;
-        $this->workingDir = $this->getUniqueTmpDirectory();
-        $this->testFile = $this->getUniqueTmpDirectory() . '/composer_test_file';
+        $this->workingDir = self::getUniqueTmpDirectory();
+        $this->testFile = self::getUniqueTmpDirectory() . '/composer_test_file';
     }
 
     protected function tearDown(): void

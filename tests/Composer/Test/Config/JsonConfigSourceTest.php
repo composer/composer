@@ -37,7 +37,7 @@ class JsonConfigSourceTest extends TestCase
     protected function setUp(): void
     {
         $this->fs = new Filesystem;
-        $this->workingDir = $this->getUniqueTmpDirectory();
+        $this->workingDir = self::getUniqueTmpDirectory();
     }
 
     protected function tearDown(): void
