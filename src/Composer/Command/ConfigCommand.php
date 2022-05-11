@@ -634,6 +634,11 @@ EOT
         if ($input->getOption('global') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]) || strpos($settingKey, 'extra.') === 0)) {
             throw new \InvalidArgumentException('The ' . $settingKey . ' property can not be set in the global config.json file. Use `composer global config` to apply changes to the global composer.json');
         }
+        if ($input->getOption('unset') && (isset($uniqueProps[$settingKey]) || isset($multiProps[$settingKey]))) {
+            $this->configSource->removeProperty($settingKey);
+
+            return 0;
+        }
         if (isset($uniqueProps[$settingKey])) {
             $this->handleSingleValue($settingKey, $uniqueProps[$settingKey], $values, 'addProperty');
 
@@ -796,6 +801,7 @@ EOT
             return 0;
         }
 
+        // handle unsetting other top level properties
         if ($input->getOption('unset')) {
             $this->configSource->removeProperty($settingKey);
 
