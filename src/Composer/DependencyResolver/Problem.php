@@ -363,7 +363,7 @@ class Problem
             $providersStr = implode(array_map(function ($p): string {
                 $description = $p['description'] ? ' '.substr($p['description'], 0, 100) : '';
 
-                return "      - ${p['name']}".$description."\n";
+                return '      - '.$p['name'].$description."\n";
             }, count($providers) > $maxProviders + 1 ? array_slice($providers, 0, $maxProviders) : $providers));
             if (count($providers) > $maxProviders + 1) {
                 $providersStr .= '      ... and '.(count($providers) - $maxProviders).' more.'."\n";

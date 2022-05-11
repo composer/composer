@@ -507,23 +507,25 @@ class Installer
                 }
             }
 
-            $this->io->writeError(sprintf(
-                "<info>Lock file operations: %d install%s, %d update%s, %d removal%s</info>",
-                count($installNames),
-                1 === count($installNames) ? '' : 's',
-                count($updateNames),
-                1 === count($updateNames) ? '' : 's',
-                count($uninstalls),
-                1 === count($uninstalls) ? '' : 's'
-            ));
-            if ($installNames) {
-                $this->io->writeError("Installs: ".implode(', ', $installNames), true, IOInterface::VERBOSE);
-            }
-            if ($updateNames) {
-                $this->io->writeError("Updates: ".implode(', ', $updateNames), true, IOInterface::VERBOSE);
-            }
-            if ($uninstalls) {
-                $this->io->writeError("Removals: ".implode(', ', $uninstallNames), true, IOInterface::VERBOSE);
+            if ($this->config->get('lock')) {
+                $this->io->writeError(sprintf(
+                    "<info>Lock file operations: %d install%s, %d update%s, %d removal%s</info>",
+                    count($installNames),
+                    1 === count($installNames) ? '' : 's',
+                    count($updateNames),
+                    1 === count($updateNames) ? '' : 's',
+                    count($uninstalls),
+                    1 === count($uninstalls) ? '' : 's'
+                ));
+                if ($installNames) {
+                    $this->io->writeError("Installs: ".implode(', ', $installNames), true, IOInterface::VERBOSE);
+                }
+                if ($updateNames) {
+                    $this->io->writeError("Updates: ".implode(', ', $updateNames), true, IOInterface::VERBOSE);
+                }
+                if ($uninstalls) {
+                    $this->io->writeError("Removals: ".implode(', ', $uninstallNames), true, IOInterface::VERBOSE);
+                }
             }
         }
 
@@ -550,8 +552,8 @@ class Installer
                 $this->suggestedPackagesReporter->addSuggestionsFromPackage($operation->getPackage());
             }
 
-            // output op, but alias op only in debug verbosity
-            if (false === strpos($operation->getOperationType(), 'Alias') || $this->io->isDebug()) {
+            // output op if lock file is enabled, but alias op only in debug verbosity
+            if ($this->config->get('lock') && (false === strpos($operation->getOperationType(), 'Alias') || $this->io->isDebug())) {
                 $this->io->writeError('  - ' . $operation->show(true));
             }
         }
@@ -655,7 +657,9 @@ class Installer
      */
     protected function doInstall(InstalledRepositoryInterface $localRepo, bool $alreadySolved = false): int
     {
-        $this->io->writeError('<info>Installing dependencies from lock file'.($this->devMode ? ' (including require-dev)' : '').'</info>');
+        if ($this->config->get('lock')) {
+            $this->io->writeError('<info>Installing dependencies from lock file'.($this->devMode ? ' (including require-dev)' : '').'</info>');
+        }
 
         $lockedRepository = $this->locker->getLockedRepository($this->devMode);
 
