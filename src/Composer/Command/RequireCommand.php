@@ -117,9 +117,9 @@ EOT
     {
         if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
             pcntl_async_signals(true);
-            pcntl_signal(SIGINT, array($this, 'revertComposerFile'));
-            pcntl_signal(SIGTERM, array($this, 'revertComposerFile'));
-            pcntl_signal(SIGHUP, array($this, 'revertComposerFile'));
+            pcntl_signal(SIGINT, function () { $this->revertComposerFile(); });
+            pcntl_signal(SIGTERM, function () { $this->revertComposerFile(); });
+            pcntl_signal(SIGHUP, function () { $this->revertComposerFile(); });
         }
 
         $this->file = Factory::getComposerFile();
