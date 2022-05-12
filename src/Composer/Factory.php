@@ -704,6 +704,10 @@ class Factory
      */
     private static function validateJsonSchema(?IOInterface $io, $fileOrData, int $schema = JsonFile::LAX_SCHEMA, ?string $source = null): void
     {
+        if (Platform::isInputCompletionProcess()) {
+            return;
+        }
+
         try {
             if ($fileOrData instanceof JsonFile) {
                 $fileOrData->validateSchema($schema);
