@@ -466,7 +466,7 @@ class Application extends BaseApplication
 
         if (null === $this->composer) {
             try {
-                $this->composer = Factory::create($this->io, null, $disablePlugins, $disableScripts);
+                $this->composer = Factory::create(Platform::isInputCompletionProcess() ? new NullIO() : $this->io, null, $disablePlugins, $disableScripts);
             } catch (\InvalidArgumentException $e) {
                 if ($required) {
                     $this->io->writeError($e->getMessage());
