@@ -190,6 +190,8 @@ abstract class BaseCommand extends Command
      * @inheritdoc
      *
      * Backport suggested values definition from symfony/console 6.1+
+     *
+     * TODO drop when PHP 8.1 / symfony 6.1+ can be required
      */
     public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
     {
