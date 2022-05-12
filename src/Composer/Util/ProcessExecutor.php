@@ -490,7 +490,8 @@ class ProcessExecutor
         // New lines break cmd.exe command parsing
         $argument = strtr($argument, "\n", ' ');
 
-        $quote = strpbrk($argument, " \t") !== false;
+        // In addition to whitespace, commas need quoting to preserve paths
+        $quote = strpbrk($argument, " \t,") !== false;
         $argument = Preg::replace('/(\\\\*)"/', '$1$1\\"', $argument, -1, $dquotes);
         $meta = $dquotes || Preg::isMatch('/%[^%]+%|![^!]+!/', $argument);
 
