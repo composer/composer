@@ -40,6 +40,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Semver;
 use Composer\Spdx\SpdxLicenses;
 use Composer\Util\PackageInfo;
+use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use Composer\Console\Input\InputArgument;
@@ -75,7 +76,7 @@ class ShowCommand extends BaseCommand
             ->setAliases(array('info'))
             ->setDescription('Shows information about packages.')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.', null, $this->suggestInstalledPackage()),
+                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.', null, $this->suggestPackageBasedOnMode()),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),
                 new InputOption('all', null, InputOption::VALUE_NONE, 'List all packages'),
                 new InputOption('locked', null, InputOption::VALUE_NONE, 'List all locked packages'),
@@ -107,6 +108,21 @@ Read more at https://getcomposer.org/doc/03-cli.md#show
 EOT
             )
         ;
+    }
+
+    protected function suggestPackageBasedOnMode(): \Closure
+    {
+        return function (CompletionInput $input) {
+            if ($input->getOption('available') || $input->getOption('all')) {
+                return $this->suggestAvailablePackageInclPlatform()($input);
+            }
+
+            if ($input->getOption('platform')) {
+                return $this->suggestPlatformPackage()($input);
+            }
+
+            return $this->suggestInstalledPackage()($input);
+        };
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
