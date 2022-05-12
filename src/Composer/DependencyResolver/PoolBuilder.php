@@ -234,30 +234,6 @@ class PoolBuilder
             $this->loadPackagesMarkedForLoading($request, $repositories);
         }
 
-        foreach ($this->packages as $i => $package) {
-            // we check all alias related packages at once, so no need to check individual aliases
-            // isset also checks non-null value
-            if (!$package instanceof AliasPackage) {
-                $constraint = new Constraint('==', $package->getVersion());
-                $aliasedPackages = array($i => $package);
-                if (isset($this->aliasMap[spl_object_hash($package)])) {
-                    $aliasedPackages += $this->aliasMap[spl_object_hash($package)];
-                }
-
-                $found = false;
-                foreach ($aliasedPackages as $packageOrAlias) {
-                    if (CompilingMatcher::match($constraint, Constraint::OP_EQ, $packageOrAlias->getVersion())) {
-                        $found = true;
-                    }
-                }
-                if (!$found) {
-                    foreach ($aliasedPackages as $index => $packageOrAlias) {
-                        unset($this->packages[$index]);
-                    }
-                }
-            }
-        }
-
         if ($this->eventDispatcher) {
             $prePoolCreateEvent = new PrePoolCreateEvent(
                 PluginEvents::PRE_POOL_CREATE,
