@@ -97,7 +97,7 @@ gets installed with a Composer version supporting the feature.
 
 As of Composer 2.2.2, a new `$_composer_bin_dir` global variable
 is defined by the bin proxy file, so that when your binary gets executed
-it can use it to easily locate the project's autoloader.
+it can use it to easily locate the project's Composer bin directory.
 
 For non-PHP binaries, as of Composer 2.2.6, the bin proxy sets a
 `COMPOSER_RUNTIME_BIN_DIR` environment variable.
