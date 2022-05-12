@@ -1168,8 +1168,6 @@ fully offline with `1`.
 If set to `1`, outputs information about events being dispatched, which can be
 useful for plugin authors to identify what is firing when exactly.
 
-&larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
-
 ### COMPOSER_NO_DEV
 
 If set to `1`, it is the equivalent of passing the `--no-dev` argument to `install` or
@@ -1180,5 +1178,6 @@ If set to `1`, it is the equivalent of passing the `--no-dev` argument to `insta
 If `COMPOSER_IGNORE_PLATFORM_REQS` set to `1`, it is the equivalent of passing the `--ignore-platform-reqs` argument.
 Otherwise, specifying a comma separated list in `COMPOSER_IGNORE_PLATFORM_REQ` will ignore those specific requirements.
 
-For example, if a development workstation will never run database queries, this can be used to ignore the requirement for the database extensions to be available.
-If you set `COMPOSER_IGNORE_PLATFORM_REQ=ext-oci8`, then composer will allow packages to be installed even if the `oci8` PHP extension is not enabled.
+For example, if a development workstation will never run database queries, this can be used to ignore the requirement for the database extensions to be available. If you set `COMPOSER_IGNORE_PLATFORM_REQ=ext-oci8`, then composer will allow packages to be installed even if the `oci8` PHP extension is not enabled.
+
+&larr; [Libraries](02-libraries.md)  |  [Schema](04-schema.md) &rarr;
