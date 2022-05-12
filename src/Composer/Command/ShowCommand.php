@@ -472,7 +472,11 @@ EOT
                         if ($writeLatest && $latestPackage) {
                             $packageViewData['latest'] = $latestPackage->getFullPrettyVersion();
                             $packageViewData['latest-status'] = $this->getUpdateStatus($latestPackage, $package);
-                            $latestLength = max($latestLength, strlen($latestPackage->getFullPrettyVersion()));
+                            $latestLength = max($latestLength, strlen($packageViewData['latest']));
+                        } elseif ($writeLatest) {
+                            $packageViewData['latest'] = '[none matched]';
+                            $packageViewData['latest-status'] = 'up-to-date';
+                            $latestLength = max($latestLength, strlen($packageViewData['latest']));
                         }
                         if ($writeDescription && $package instanceof CompletePackageInterface) {
                             $packageViewData['description'] = $package->getDescription();
