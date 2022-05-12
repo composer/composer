@@ -126,14 +126,31 @@ trait CompletionTrait
                 $vendors = false;
             }
 
-            $results = array_column(array_slice($results, 0, $max), 'name');
+            $results = array_column($results, 'name');
+
             if ($vendors) {
                 $results = array_map(function (string $name): string {
                     return $name.'/';
                 }, $results);
+
+                // sort shorter results first to avoid auto-expanding the completion to a longer string than needed
+                usort($results, function (string $a, string $b) {
+                    return \strlen($a) - \strlen($b);
+                });
+
+                $pinned = [];
+
+                // ensure if the input is an exact match that it is always in the result set
+                $completionInput = $input->getCompletionValue().'/';
+                if (in_array($completionInput, $results, true)) {
+                    $pinned[] = $completionInput;
+                    array_splice($results, array_search($completionInput, $results, true), 1);
+                }
+
+                return array_merge($pinned, array_slice($results, 0, $max - \count($pinned)));
             }
 
-            return $results;
+            return array_slice($results, 0, $max);
         };
     }
 
