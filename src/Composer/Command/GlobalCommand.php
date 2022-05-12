@@ -36,12 +36,16 @@ class GlobalCommand extends BaseCommand
             $suggestions->suggestValues(array_filter(array_map(function (Command $command) {
                 return $command->isHidden() ? null : $command->getName();
             }, $application->all())));
+
+            return;
         }
 
         if ($application->has($commandName = $input->getArgument('command-name'))) {
             $input = $this->prepareSubcommandInput($input, true);
-            $input = CompletionInput::fromString($input->__toString(), 3);
-            $command = $this->getApplication()->find($commandName);
+            $input = CompletionInput::fromString($input->__toString(), 2);
+            $command = $application->find($commandName);
+            $command->mergeApplicationDefinition();
+
             $input->bind($command->getDefinition());
             $command->complete($input, $suggestions);
         }
