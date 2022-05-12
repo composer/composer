@@ -59,6 +59,10 @@ class PoolBuilder
      */
     private $rootReferences;
     /**
+     * @var array<string, ConstraintInterface>
+     */
+    private $temporaryConstraints;
+    /**
      * @var ?EventDispatcher
      */
     private $eventDispatcher;
@@ -142,8 +146,9 @@ class PoolBuilder
      * @phpstan-param array<string, array<string, array{alias: string, alias_normalized: string}>> $rootAliases
      * @param string[] $rootReferences an array of package name => source reference
      * @phpstan-param array<string, string> $rootReferences
+     * @param array<string, ConstraintInterface> $temporaryConstraints Runtime temporary constraints that will be used to filter packages
      */
-    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, EventDispatcher $eventDispatcher = null, PoolOptimizer $poolOptimizer = null)
+    public function __construct(array $acceptableStabilities, array $stabilityFlags, array $rootAliases, array $rootReferences, IOInterface $io, EventDispatcher $eventDispatcher = null, PoolOptimizer $poolOptimizer = null, array $temporaryConstraints = [])
     {
         $this->acceptableStabilities = $acceptableStabilities;
         $this->stabilityFlags = $stabilityFlags;
@@ -152,6 +157,7 @@ class PoolBuilder
         $this->eventDispatcher = $eventDispatcher;
         $this->poolOptimizer = $poolOptimizer;
         $this->io = $io;
+        $this->temporaryConstraints = $temporaryConstraints;
     }
 
     /**
@@ -234,24 +240,28 @@ class PoolBuilder
             $this->loadPackagesMarkedForLoading($request, $repositories);
         }
 
-        foreach ($this->packages as $i => $package) {
-            // we check all alias related packages at once, so no need to check individual aliases
-            // isset also checks non-null value
-            if (!$package instanceof AliasPackage) {
-                $constraint = new Constraint('==', $package->getVersion());
-                $aliasedPackages = array($i => $package);
+        if (\count($this->temporaryConstraints) > 0) {
+            foreach ($this->packages as $i => $package) {
+                // we check all alias related packages at once, so no need to check individual aliases
+                if (!isset($this->temporaryConstraints[$package->getName()]) || $package instanceof AliasPackage) {
+                    continue;
+                }
+
+                $constraint = $this->temporaryConstraints[$package->getName()];
+                $packageAndAliases = array($i => $package);
                 if (isset($this->aliasMap[spl_object_hash($package)])) {
-                    $aliasedPackages += $this->aliasMap[spl_object_hash($package)];
+                    $packageAndAliases += $this->aliasMap[spl_object_hash($package)];
                 }
 
                 $found = false;
-                foreach ($aliasedPackages as $packageOrAlias) {
+                foreach ($packageAndAliases as $packageOrAlias) {
                     if (CompilingMatcher::match($constraint, Constraint::OP_EQ, $packageOrAlias->getVersion())) {
                         $found = true;
                     }
                 }
+
                 if (!$found) {
-                    foreach ($aliasedPackages as $index => $packageOrAlias) {
+                    foreach ($packageAndAliases as $index => $packageOrAlias) {
                         unset($this->packages[$index]);
                     }
                 }

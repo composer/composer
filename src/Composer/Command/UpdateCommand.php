@@ -21,6 +21,7 @@ use Composer\Pcre\Preg;
 use Composer\Plugin\CommandEvent;
 use Composer\Plugin\PluginEvents;
 use Composer\Package\Version\VersionParser;
+use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Util\HttpDownloader;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Package\Link;
@@ -144,20 +145,13 @@ EOT
             }
         }
 
-        $rootPackage = $composer->getPackage();
-        $rootRequires = $rootPackage->getRequires();
-        $rootDevRequires = $rootPackage->getDevRequires();
+        $parser = new VersionParser;
+        $temporaryConstraints = [];
         foreach ($reqs as $package => $constraint) {
-            if (isset($rootRequires[$package])) {
-                $rootRequires[$package] = $this->appendConstraintToLink($rootRequires[$package], $constraint);
-            } elseif (isset($rootDevRequires[$package])) {
-                $rootDevRequires[$package] = $this->appendConstraintToLink($rootDevRequires[$package], $constraint);
-            } else {
-                throw new \UnexpectedValueException('Only root package requirements can receive temporary constraints and '.$package.' is not one');
-            }
+            $temporaryConstraints[strtolower($package)] = $parser->parseConstraints($constraint);
         }
-        $rootPackage->setRequires($rootRequires);
-        $rootPackage->setDevRequires($rootDevRequires);
+
+        $rootPackage = $composer->getPackage();
         $rootPackage->setReferences(RootPackageLoader::extractReferences($reqs, $rootPackage->getReferences()));
         $rootPackage->setStabilityFlags(RootPackageLoader::extractStabilityFlags($reqs, $rootPackage->getMinimumStability(), $rootPackage->getStabilityFlags()));
 
@@ -166,9 +160,9 @@ EOT
         }
 
         if ($input->getOption('root-reqs')) {
-            $requires = array_keys($rootRequires);
+            $requires = array_keys($rootPackage->getRequires());
             if (!$input->getOption('no-dev')) {
-                $requires = array_merge($requires, array_keys($rootDevRequires));
+                $requires = array_merge($requires, array_keys($rootPackage->getDevRequires()));
             }
 
             if (!empty($packages)) {
@@ -232,6 +226,7 @@ EOT
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
+            ->setTemporaryConstraints($temporaryConstraints)
         ;
 
         if ($input->getOption('no-plugins')) {
@@ -306,26 +301,5 @@ EOT
         }
 
         throw new \RuntimeException('Installation aborted.');
-    }
-
-    /**
-     * @param string $constraint
-     * @return Link
-     */
-    private function appendConstraintToLink(Link $link, string $constraint): Link
-    {
-        $parser = new VersionParser;
-        $oldPrettyString = $link->getConstraint()->getPrettyString();
-        $newConstraint = MultiConstraint::create(array($link->getConstraint(), $parser->parseConstraints($constraint)));
-        $newConstraint->setPrettyString($oldPrettyString.', '.$constraint);
-
-        return new Link(
-            $link->getSource(),
-            $link->getTarget(),
-            $newConstraint,
-            /** @phpstan-ignore-next-line */
-            $link->getDescription(),
-            $link->getPrettyConstraint() . ', ' . $constraint
-        );
     }
 }
