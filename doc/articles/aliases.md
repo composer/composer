@@ -92,7 +92,7 @@ Add this to your project's root `composer.json`:
 Or let Composer add it for you with:
 
 ```
-php composer.phar require monolog/monolog:"dev-bugfix as 1.0.x-dev"
+php composer.phar require "monolog/monolog:dev-bugfix as 1.0.x-dev"
 ```
 
 That will fetch the `dev-bugfix` version of `monolog/monolog` from your GitHub
