@@ -13,6 +13,12 @@ php composer.phar dump
 ```
 calls `composer dump-autoload`.
 
+## Bash Completions
+
+To install bash completions you can run `composer completion bash > completion.bash` (put the file
+in /etc/bash_completion.d/composer to make it load automatically in new terminals) and then
+`source completion.bash` to enable it in the current terminal session.
+
 ## Global Options
 
 The following options are available with every command:
