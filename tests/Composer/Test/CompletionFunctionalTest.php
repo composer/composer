@@ -50,7 +50,7 @@ class CompletionFunctionalTest extends TestCase
         yield ['init --require-dev foo/bar --require-dev ', [$randomVendor]];
 
         yield ['install --prefer-install ', $preferInstall];
-        yield ['install ', $installedPackages];
+        yield ['install ', null];
 
         yield ['outdated ', $installedPackages];
 
