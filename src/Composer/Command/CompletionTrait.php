@@ -66,7 +66,7 @@ trait CompletionTrait
                 if ($locker->isLocked()) {
                     $platformRepo = new PlatformRepository(array(), $locker->getPlatformOverrides());
                 } else {
-                    $platformRepo = new PlatformRepository(array(), $composer->getConfig()->get('platform') ?: array());
+                    $platformRepo = new PlatformRepository(array(), $composer->getConfig()->get('platform'));
                 }
                 if ($input->getCompletionValue() === '') {
                     // to reduce noise, when no text is yet entered we list only two entries for ext- and lib- prefixes
@@ -115,36 +115,43 @@ trait CompletionTrait
             $repos = new CompositeRepository($composer->getRepositoryManager()->getRepositories());
 
             $results = [];
+            $showVendors = false;
             if (!str_contains($input->getCompletionValue(), '/')) {
                 $results = $repos->search('^' . preg_quote($input->getCompletionValue()), RepositoryInterface::SEARCH_VENDOR);
-                $vendors = true;
+                $showVendors = true;
             }
 
             // if we get a single vendor, we expand it into its contents already
             if (\count($results) <= 1) {
                 $results = $repos->search('^'.preg_quote($input->getCompletionValue()), RepositoryInterface::SEARCH_NAME);
-                $vendors = false;
+                $showVendors = false;
             }
 
             $results = array_column($results, 'name');
 
-            if ($vendors) {
+            if ($showVendors) {
                 $results = array_map(function (string $name): string {
                     return $name.'/';
                 }, $results);
 
                 // sort shorter results first to avoid auto-expanding the completion to a longer string than needed
                 usort($results, function (string $a, string $b) {
-                    return \strlen($a) - \strlen($b);
+                    $lenA = \strlen($a);
+                    $lenB = \strlen($b);
+                    if ($lenA === $lenB) {
+                        return $a <=> $b;
+                    }
+
+                    return $lenA - $lenB;
                 });
 
                 $pinned = [];
 
                 // ensure if the input is an exact match that it is always in the result set
                 $completionInput = $input->getCompletionValue().'/';
-                if (in_array($completionInput, $results, true)) {
+                if (false !== ($exactIndex = array_search($completionInput, $results, true))) {
                     $pinned[] = $completionInput;
-                    array_splice($results, array_search($completionInput, $results, true), 1);
+                    array_splice($results, $exactIndex, 1);
                 }
 
                 return array_merge($pinned, array_slice($results, 0, $max - \count($pinned)));
@@ -177,7 +184,7 @@ trait CompletionTrait
     private function suggestPlatformPackage(): \Closure
     {
         return function (CompletionInput $input): array {
-            $repos = new PlatformRepository([], $this->requireComposer()->getConfig()->get('platform') ?? []);
+            $repos = new PlatformRepository([], $this->requireComposer()->getConfig()->get('platform'));
 
             $pattern = BasePackage::packageNameToRegexp($input->getCompletionValue().'*');
             return array_filter(array_map(function (PackageInterface $package) {

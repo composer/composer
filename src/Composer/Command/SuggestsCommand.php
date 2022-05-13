@@ -65,7 +65,7 @@ EOT
             $installedRepos[] = new PlatformRepository(array(), $locker->getPlatformOverrides());
             $installedRepos[] = $locker->getLockedRepository(!$input->getOption('no-dev'));
         } else {
-            $installedRepos[] = new PlatformRepository(array(), $composer->getConfig()->get('platform') ?: array());
+            $installedRepos[] = new PlatformRepository(array(), $composer->getConfig()->get('platform'));
             $installedRepos[] = $composer->getRepositoryManager()->getLocalRepository();
         }
 

@@ -119,6 +119,10 @@ EOT
 
     private function prepareSubcommandInput(InputInterface $input, bool $quiet = false): StringInput
     {
+        if (!method_exists($input, '__toString')) {
+            throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
+        }
+
         // The COMPOSER env var should not apply to the global execution scope
         if (Platform::getEnv('COMPOSER')) {
             Platform::clearEnv('COMPOSER');

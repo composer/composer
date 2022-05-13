@@ -59,7 +59,7 @@ class InputArgument extends BaseInputArgument
     public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
     {
         $values = $this->suggestedValues;
-        if ($values instanceof \Closure && !\is_array($values = $values($input, $suggestions))) {
+        if ($values instanceof \Closure && !\is_array($values = $values($input, $suggestions))) { // @phpstan-ignore-line
             throw new LogicException(sprintf('Closure for option "%s" must return an array. Got "%s".', $this->getName(), get_debug_type($values)));
         }
         if ([] !== $values) {

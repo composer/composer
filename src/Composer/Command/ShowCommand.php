@@ -187,7 +187,7 @@ EOT
         // init repos
         $platformOverrides = array();
         if ($composer) {
-            $platformOverrides = $composer->getConfig()->get('platform') ?: array();
+            $platformOverrides = $composer->getConfig()->get('platform');
         }
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
         $lockedRepo = null;

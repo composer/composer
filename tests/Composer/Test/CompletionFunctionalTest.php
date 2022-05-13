@@ -27,34 +27,34 @@ class CompletionFunctionalTest extends TestCase
      */
     public function getCommandSuggestions(): iterable
     {
-        $randomProject = '104corp/cache';
+        $randomVendor = 'a/';
         $installedPackages = ['composer/semver', 'psr/log'];
         $preferInstall = ['dist', 'source', 'auto'];
 
-        yield ['archive ', [$randomProject]];
+        yield ['archive ', [$randomVendor]];
         yield ['archive symfony/http-', ['symfony/http-kernel', 'symfony/http-foundation']];
         yield ['archive --format ', ['tar', 'zip']];
 
-        yield ['create-project ', [$randomProject]];
+        yield ['create-project ', [$randomVendor]];
         yield ['create-project symfony/skeleton --prefer-install ', $preferInstall];
 
         yield ['depends ', $installedPackages];
         yield ['why ', $installedPackages];
 
-        yield ['exec ', ['composer', 'compile']];
+        yield ['exec ', ['composer', 'jsonlint', 'phpstan', 'phpstan.phar', 'simple-phpunit', 'validate-json']];
 
         yield ['browse ', $installedPackages];
         yield ['home -H ', $installedPackages];
 
-        yield ['init --require ', [$randomProject]];
-        yield ['init --require-dev foo/bar --require-dev ', [$randomProject]];
+        yield ['init --require ', [$randomVendor]];
+        yield ['init --require-dev foo/bar --require-dev ', [$randomVendor]];
 
         yield ['install --prefer-install ', $preferInstall];
         yield ['install ', $installedPackages];
 
         yield ['outdated ', $installedPackages];
 
-        yield ['prohibits ', [$randomProject]];
+        yield ['prohibits ', [$randomVendor]];
         yield ['why-not symfony/http-ker', ['symfony/http-kernel']];
 
         yield ['reinstall --prefer-install ', $preferInstall];
@@ -63,7 +63,7 @@ class CompletionFunctionalTest extends TestCase
         yield ['remove ', $installedPackages];
 
         yield ['require --prefer-install ', $preferInstall];
-        yield ['require ', [$randomProject]];
+        yield ['require ', [$randomVendor]];
         yield ['require --dev symfony/http-', ['symfony/http-kernel', 'symfony/http-foundation']];
 
         yield ['run-script ', ['compile', 'test', 'phpstan']];
