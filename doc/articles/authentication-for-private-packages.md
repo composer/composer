@@ -18,6 +18,7 @@ for credentials and save them (or a token if Composer is able to retrieve one).
 |---|---|
 |[http-basic](#http-basic)|yes|
 |[Inline http-basic](#inline-http-basic)|no|
+|[HTTP Bearer](#http-bearer)|no?|
 |[Custom header](#custom-token-authentication)|no|
 |[gitlab-oauth](#gitlab-oauth)|yes|
 |[gitlab-token](#gitlab-token)|yes|
@@ -50,6 +51,7 @@ Composer home directory.
 For all authentication methods it is possible to edit them using the command line;
  - [http-basic](#command-line-http-basic)
  - [Inline http-basic](#command-line-inline-http-basic)
+ - [HTTP Bearer](#http-bearer)
  - [gitlab-oauth](#command-line-gitlab-oauth)
  - [gitlab-token](#command-line-gitlab-token)
  - [github-oauth](#command-line-github-oauth)
@@ -69,6 +71,7 @@ php composer.phar config --global --editor [--auth]
 For specific authentication implementations, see their sections;
  - [http-basic](#manual-http-basic)
  - [Inline http-basic](#manual-inline-http-basic)
+ - [HTTP Bearer](#http-bearer)
  - [custom header](#manual-custom-token-authentication)
  - [gitlab-oauth](#manual-gitlab-oauth)
  - [gitlab-token](#manual-gitlab-token)
@@ -166,6 +169,19 @@ php composer.phar config [--global] --editor
     ]
 }
 ```
+
+## HTTP Bearer
+
+TODO
+
+```json
+{
+    "bearer": {
+        "example.org": "TOKEN"
+    }
+}
+```
+
 
 ## Custom token authentication
 
