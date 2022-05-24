@@ -179,6 +179,9 @@ class ProcessExecutorTest extends TestCase
             // no whitespace must not be quoted
             'no-ws' => array('abc', 'abc', "'abc'"),
 
+            // commas must be quoted
+            'comma' => array('a,bc', '"a,bc"', "'a,bc'"),
+
             // double-quotes must be backslash-escaped
             'dq' => array('a"bc', 'a\^"bc', "'a\"bc'"),
 

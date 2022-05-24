@@ -6,7 +6,7 @@
         "name": {
             "type": "string",
             "description": "Package name, including 'vendor-name/' prefix.",
-            "pattern": "^[a-z0-9]([_.-]?[a-z0-9]+)*/[a-z0-9](([_.]?|-{0,2})[a-z0-9]+)*$"
+            "pattern": "^[a-z0-9]([_.-]?[a-z0-9]++)*+/[a-z0-9](([_.]|-{1,2})?[a-z0-9]++)*+$"
         },
         "description": {
             "type": "string",
