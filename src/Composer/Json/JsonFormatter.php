@@ -108,9 +108,7 @@ class JsonFormatter
                     // If this character is the end of an element,
                     // output a new line and indent the next line
                     $result .= $newLine;
-                    for ($j = 0; $j < $pos; $j++) {
-                        $result .= $indentStr;
-                    }
+                    $result .= str_repeat($indentStr, $pos);
                 } else {
                     // Collapse empty {} and []
                     $result = rtrim($result);
@@ -128,9 +126,7 @@ class JsonFormatter
                     $pos++;
                 }
 
-                for ($j = 0; $j < $pos; $j++) {
-                    $result .= $indentStr;
-                }
+                $result .= str_repeat($indentStr, $pos);
             }
         }
 
