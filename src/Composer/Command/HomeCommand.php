@@ -170,6 +170,6 @@ EOT
             );
         }
 
-        return RepositoryFactory::defaultRepos($this->getIO());
+        return RepositoryFactory::defaultReposWithDefaultManager($this->getIO());
     }
 }

@@ -87,9 +87,11 @@ class PoolBuilderTest extends TestCase
         chdir(__DIR__.'/Fixtures/poolbuilder/');
 
         $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $rootReferences);
+        $config = new Config(false);
+        $rm = RepositoryFactory::manager($io = new NullIO(), $config);
         foreach ($packageRepos as $packages) {
             if (isset($packages['type'])) {
-                $repo = RepositoryFactory::createRepo(new NullIO, new Config(false), $packages);
+                $repo = RepositoryFactory::createRepo($io, $config, $packages, $rm);
                 $repositorySet->addRepository($repo);
                 continue;
             }
