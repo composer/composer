@@ -80,7 +80,8 @@ class RepositoryFactory
     public static function createRepo(IOInterface $io, Config $config, array $repoConfig, RepositoryManager $rm = null): RepositoryInterface
     {
         if (!$rm) {
-            $rm = static::manager($io, $config, Factory::createHttpDownloader($io, $config));
+            @trigger_error('Not passing a repository manager when calling createRepo is deprecated since Composer 2.3.6', E_USER_DEPRECATED);
+            $rm = static::manager($io, $config);
         }
         $repos = self::createRepos($rm, array($repoConfig));
 
@@ -95,14 +96,18 @@ class RepositoryFactory
      */
     public static function defaultRepos(IOInterface $io = null, Config $config = null, RepositoryManager $rm = null): array
     {
-        if (!$config) {
+        if (null === $rm) {
+            @trigger_error('Not passing a repository manager when calling defaultRepos is deprecated since Composer 2.3.6, use defaultReposWithDefaultManager() instead if you cannot get a manager.', E_USER_DEPRECATED);
+        }
+
+        if (null === $config) {
             $config = Factory::createConfig($io);
         }
-        if ($io) {
+        if (null !== $io) {
             $io->loadConfiguration($config);
         }
-        if (!$rm) {
-            if (!$io) {
+        if (null === $rm) {
+            if (null === $io) {
                 throw new \InvalidArgumentException('This function requires either an IOInterface or a RepositoryManager');
             }
             $rm = static::manager($io, $config, Factory::createHttpDownloader($io, $config));
@@ -118,8 +123,16 @@ class RepositoryFactory
      * @param  HttpDownloader    $httpDownloader
      * @return RepositoryManager
      */
-    public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader, EventDispatcher $eventDispatcher = null, ProcessExecutor $process = null): RepositoryManager
+    public static function manager(IOInterface $io, Config $config, HttpDownloader $httpDownloader = null, EventDispatcher $eventDispatcher = null, ProcessExecutor $process = null): RepositoryManager
     {
+        if ($httpDownloader === null) {
+            $httpDownloader = Factory::createHttpDownloader($io, $config);
+        }
+        if ($process === null) {
+            $process = new ProcessExecutor($io);
+            $process->enableAsync();
+        }
+
         $rm = new RepositoryManager($io, $config, $httpDownloader, $eventDispatcher, $process);
         $rm->setRepositoryClass('composer', 'Composer\Repository\ComposerRepository');
         $rm->setRepositoryClass('vcs', 'Composer\Repository\VcsRepository');
@@ -139,6 +152,18 @@ class RepositoryFactory
 
         return $rm;
     }
+
+    /**
+     * @return RepositoryInterface[]
+     */
+    public static function defaultReposWithDefaultManager(IOInterface $io): array
+    {
+        $manager = RepositoryFactory::manager($io, $config = Factory::createConfig($io));
+        $io->loadConfiguration($config);
+
+        return RepositoryFactory::defaultRepos($io, $config, $manager);
+    }
+
 
     /**
      * @param array<int|string, mixed> $repoConfigs
