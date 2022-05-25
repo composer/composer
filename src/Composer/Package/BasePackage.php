@@ -53,7 +53,6 @@ abstract class BasePackage implements PackageInterface
      * READ-ONLY: The package id, public for fast access in dependency solver
      * @var int
      * @internal
-     * @readonly
      */
     public $id;
     /** @var string */

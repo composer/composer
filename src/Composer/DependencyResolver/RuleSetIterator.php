@@ -75,7 +75,7 @@ class RuleSetIterator implements \Iterator
                 }
 
                 $this->currentType = $this->types[$this->currentTypeOffset];
-            } while (isset($this->types[$this->currentTypeOffset]) && !\count($this->rules[$this->currentType]));
+            } while (0 === \count($this->rules[$this->currentType]));
         }
     }
 
@@ -95,7 +95,7 @@ class RuleSetIterator implements \Iterator
             }
 
             $this->currentType = $this->types[$this->currentTypeOffset];
-        } while (isset($this->types[$this->currentTypeOffset]) && !\count($this->rules[$this->currentType]));
+        } while (0 === \count($this->rules[$this->currentType]));
     }
 
     public function valid(): bool
