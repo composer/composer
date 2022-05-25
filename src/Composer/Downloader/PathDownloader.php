@@ -280,6 +280,15 @@ class PathDownloader extends FileDownloader implements VcsCapableDownloaderInter
             $allowedStrategies = array(self::STRATEGY_MIRROR);
         }
 
+        // Check we can use symlink() otherwise
+        if (!Platform::isWindows() && self::STRATEGY_SYMLINK === $currentStrategy && !function_exists('symlink')) {
+            if (!in_array(self::STRATEGY_MIRROR, $allowedStrategies, true)) {
+                throw new \RuntimeException('Your PHP has the symlink() function disabled which does not allow Composer to use symlinks and this path repository has symlink:true in its options so copying is not allowed');
+            }
+            $currentStrategy = self::STRATEGY_MIRROR;
+            $allowedStrategies = array(self::STRATEGY_MIRROR);
+        }
+
         return array($currentStrategy, $allowedStrategies);
     }
 

@@ -43,6 +43,7 @@ class ArchivableFilesFinderTest extends TestCase
         );
 
         $fileTree = array(
+            '.foo',
             'A/prefixA.foo',
             'A/prefixB.foo',
             'A/prefixC.foo',
@@ -110,6 +111,7 @@ class ArchivableFilesFinderTest extends TestCase
             '/prefixA.foo',
             'prefixC.*',
             '!*/*/*/prefixC.foo',
+            '.*',
         );
 
         $this->finder = new ArchivableFilesFinder($this->sources, $excludes);
@@ -214,6 +216,7 @@ class ArchivableFilesFinderTest extends TestCase
             '/!important!.txt',
             '/!important_too!.txt',
             '/#weirdfile',
+            '/.foo',
             '/A/prefixA.foo',
             '/A/prefixB.foo',
             '/A/prefixC.foo',
