@@ -295,6 +295,13 @@ class GitHubDriver extends VcsDriver
 
         $resource = $this->getApiUrl() . '/repos/'.$this->owner.'/'.$this->repository.'/contents/' . $file . '?ref='.urlencode($identifier);
         $resource = $this->getContents($resource)->decodeJson();
+
+        // The GitHub contents API only returns files up to 1MB as base64 encoded files
+        // larger files either need be fetched with a raw accept header or by using the git blob endpoint
+        if ((!isset($resource['content']) || $resource['content'] === '') && $resource['encoding'] === 'none' && isset($resource['git_url'])) {
+            $resource = $this->getContents($resource['git_url'])->decodeJson();
+        }
+
         if (empty($resource['content']) || $resource['encoding'] !== 'base64' || !($content = base64_decode($resource['content']))) {
             throw new \RuntimeException('Could not retrieve ' . $file . ' for '.$identifier);
         }

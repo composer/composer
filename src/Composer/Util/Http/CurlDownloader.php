@@ -17,6 +17,7 @@ use Composer\Downloader\MaxFileSizeExceededException;
 use Composer\IO\IOInterface;
 use Composer\Downloader\TransportException;
 use Composer\Pcre\Preg;
+use Composer\Util\Platform;
 use Composer\Util\StreamContextFactory;
 use Composer\Util\AuthHelper;
 use Composer\Util\Url;
@@ -394,8 +395,19 @@ class CurlDownloader
                     $response = new CurlResponse(array('url' => $progress['url']), $statusCode, $headers, $contents, $progress);
                     $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
                 } else {
+                    $maxFileSize = $job['options']['max_file_size'] ?? null;
                     rewind($job['bodyHandle']);
-                    $contents = stream_get_contents($job['bodyHandle']);
+                    if ($maxFileSize !== null) {
+                        $contents = stream_get_contents($job['bodyHandle'], $maxFileSize);
+                        // Gzipped responses with missing Content-Length header cannot be detected during the file download
+                        // because $progress['size_download'] refers to the gzipped size downloaded, not the actual file size
+                        if ($contents !== false && Platform::strlen($contents) >= $maxFileSize) {
+                            throw new MaxFileSizeExceededException('Maximum allowed download size reached. Downloaded ' . Platform::strlen($contents) . ' of allowed ' .  $maxFileSize . ' bytes');
+                        }
+                    } else {
+                        $contents = stream_get_contents($job['bodyHandle']);
+                    }
+
                     $response = new CurlResponse(array('url' => $progress['url']), $statusCode, $headers, $contents, $progress);
                     $this->io->writeError('['.$statusCode.'] '.Url::sanitize($progress['url']), true, IOInterface::DEBUG);
                 }

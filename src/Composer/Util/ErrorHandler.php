@@ -38,8 +38,10 @@ class ErrorHandler
      */
     public static function handle(int $level, string $message, string $file, int $line): bool
     {
+        $isDeprecationNotice = $level === E_DEPRECATED || $level === E_USER_DEPRECATED;
+
         // error code is not included in error_reporting
-        if (!(error_reporting() & $level)) {
+        if (!$isDeprecationNotice && !(error_reporting() & $level)) {
             return true;
         }
 
@@ -48,7 +50,7 @@ class ErrorHandler
             "\na legitimately suppressed error that you were not supposed to see.";
         }
 
-        if ($level !== E_DEPRECATED && $level !== E_USER_DEPRECATED) {
+        if (!$isDeprecationNotice) {
             throw new \ErrorException($message, 0, $level, $file, $line);
         }
 

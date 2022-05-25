@@ -18,6 +18,7 @@ use Composer\Package\CompletePackageInterface;
 use Composer\Package\RootPackage;
 use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\CompositeRepository;
+use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RootPackageRepository;
 use Composer\Repository\InstalledRepository;
 use Composer\Repository\PlatformRepository;
@@ -80,7 +81,7 @@ abstract class BaseDependencyCommand extends BaseCommand
         // If the version we ask for is not installed then we need to locate it in remote repos and add it.
         // This is needed for why-not to resolve conflicts from an uninstalled version against installed packages.
         if (!$installedRepo->findPackage($needle, $textConstraint)) {
-            $defaultRepos = new CompositeRepository(RepositoryFactory::defaultRepos($this->getIO()));
+            $defaultRepos = new CompositeRepository(RepositoryFactory::defaultRepos($this->getIO(), $composer->getConfig(), $composer->getRepositoryManager()));
             if ($match = $defaultRepos->findPackage($needle, $textConstraint)) {
                 $installedRepo->addRepository(new InstalledArrayRepository(array(clone $match)));
             }

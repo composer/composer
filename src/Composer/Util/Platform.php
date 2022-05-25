@@ -201,6 +201,9 @@ class Platform
     {
         if ($fd === null) {
             $fd = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'w');
+            if ($fd === false) {
+                return false;
+            }
         }
 
         // detect msysgit/mingw and assume this is a tty because detection

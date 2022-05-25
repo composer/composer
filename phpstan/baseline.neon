@@ -2167,7 +2167,7 @@ parameters:
 
 		-
 			message: "#^Call to function in_array\\(\\) with arguments 20, array\\{0\\: 10\\|20, 1\\?\\: 20\\} and true will always evaluate to true\\.$#"
-			count: 1
+			count: 2
 			path: ../src/Composer/Downloader/PathDownloader.php
 
 		-
