@@ -294,6 +294,16 @@ class Problem
                 }
             }
 
+            $tempReqs = $repositorySet->getTemporaryConstraints();
+            if (isset($tempReqs[$packageName])) {
+                $filtered = array_filter($packages, function ($p) use ($tempReqs, $packageName): bool {
+                    return $tempReqs[$packageName]->matches(new Constraint('==', $p->getVersion()));
+                });
+                if (0 === count($filtered)) {
+                    return array("- Root composer.json requires $packageName".self::constraintToText($constraint) . ', ', 'found '.self::getPackageList($packages, $isVerbose, $pool, $constraint).' but '.(self::hasMultipleNames($packages) ? 'these conflict' : 'it conflicts').' with your temporary update constraint ('.$packageName.':'.$tempReqs[$packageName]->getPrettyString().').');
+                }
+            }
+
             if ($lockedPackage) {
                 $fixedConstraint = new Constraint('==', $lockedPackage->getVersion());
                 $filtered = array_filter($packages, function ($p) use ($fixedConstraint): bool {

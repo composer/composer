@@ -124,9 +124,16 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
         Platform::putEnv('COMPOSER_HOME', $dir.'/composer-home');
         Platform::putEnv('COMPOSER_DISABLE_XDEBUG_WARN', '1');
 
+        if ($composerJson === []) {
+            $composerJson = new \stdClass;
+        }
+        if ($authJson === []) {
+            $authJson = new \stdClass;
+        }
+
         chdir($dir);
-        file_put_contents($dir.'/composer.json', JsonFile::encode($composerJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT));
-        file_put_contents($dir.'/auth.json', JsonFile::encode($authJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT));
+        file_put_contents($dir.'/composer.json', JsonFile::encode($composerJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        file_put_contents($dir.'/auth.json', JsonFile::encode($authJson, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
         return $dir;
     }

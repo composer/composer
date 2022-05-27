@@ -60,6 +60,7 @@ use Composer\Repository\RepositoryInterface;
 use Composer\Repository\RepositoryManager;
 use Composer\Repository\LockArrayRepository;
 use Composer\Script\ScriptEvents;
+use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Util\Platform;
 
 /**
@@ -188,6 +189,9 @@ class Installer
      * @var ?RepositoryInterface
      */
     protected $additionalFixedRepository;
+
+    /** @var array<string, ConstraintInterface> */
+    protected $temporaryConstraints = [];
 
     /**
      * Constructor
@@ -837,7 +841,7 @@ class Installer
 
         $stabilityFlags[$this->package->getName()] = BasePackage::$stabilities[VersionParser::parseStability($this->package->getVersion())];
 
-        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $this->package->getReferences(), $rootRequires);
+        $repositorySet = new RepositorySet($minimumStability, $stabilityFlags, $rootAliases, $this->package->getReferences(), $rootRequires, $this->temporaryConstraints);
         $repositorySet->addRepository(new RootPackageRepository($this->fixedRootPackage));
         $repositorySet->addRepository($platformRepo);
         if ($this->additionalFixedRepository) {
@@ -1063,6 +1067,14 @@ class Installer
         $this->additionalFixedRepository = $additionalFixedRepository;
 
         return $this;
+    }
+
+    /**
+     * @param array<string, ConstraintInterface> $constraints
+     */
+    public function setTemporaryConstraints(array $constraints): void
+    {
+        $this->temporaryConstraints = $constraints;
     }
 
     /**

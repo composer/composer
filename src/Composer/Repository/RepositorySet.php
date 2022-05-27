@@ -73,6 +73,11 @@ class RepositorySet
      */
     private $rootRequires;
 
+    /**
+     * @var array<string, ConstraintInterface>
+     */
+    private $temporaryConstraints;
+
     /** @var bool */
     private $locked = false;
     /** @var bool */
@@ -92,8 +97,9 @@ class RepositorySet
      * @phpstan-param array<string, string> $rootReferences
      * @param ConstraintInterface[] $rootRequires an array of package name => constraint from the root package
      * @phpstan-param array<string, ConstraintInterface> $rootRequires
+     * @param array<string, ConstraintInterface> $temporaryConstraints Runtime temporary constraints that will be used to filter packages
      */
-    public function __construct(string $minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array())
+    public function __construct(string $minimumStability = 'stable', array $stabilityFlags = array(), array $rootAliases = array(), array $rootReferences = array(), array $rootRequires = array(), array $temporaryConstraints = [])
     {
         $this->rootAliases = self::getRootAliasesPerPackage($rootAliases);
         $this->rootReferences = $rootReferences;
@@ -111,6 +117,8 @@ class RepositorySet
                 unset($this->rootRequires[$name]);
             }
         }
+
+        $this->temporaryConstraints = $temporaryConstraints;
     }
 
     /**
@@ -130,6 +138,14 @@ class RepositorySet
     public function getRootRequires(): array
     {
         return $this->rootRequires;
+    }
+
+    /**
+     * @return array<string, ConstraintInterface> Runtime temporary constraints that will be used to filter packages
+     */
+    public function getTemporaryConstraints(): array
+    {
+        return $this->temporaryConstraints;
     }
 
     /**
@@ -247,7 +263,7 @@ class RepositorySet
      */
     public function createPool(Request $request, IOInterface $io, EventDispatcher $eventDispatcher = null, PoolOptimizer $poolOptimizer = null): Pool
     {
-        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer);
+        $poolBuilder = new PoolBuilder($this->acceptableStabilities, $this->stabilityFlags, $this->rootAliases, $this->rootReferences, $io, $eventDispatcher, $poolOptimizer, $this->temporaryConstraints);
 
         foreach ($this->repositories as $repo) {
             if (($repo instanceof InstalledRepositoryInterface || $repo instanceof InstalledRepository) && !$this->allowInstalledRepositories) {
