@@ -121,7 +121,7 @@ Read more about the usage of this environment variable [here](../03-cli.md#compo
 php composer.phar config [--global] http-basic.repo.example.org username password
 ```
 
-In the above command, the config key `http-basic.example.org` consists of two parts:
+In the above command, the config key `http-basic.repo.example.org` consists of two parts:
 
 - `http-basic` is the authentication method.
 - `repo.example.org` is the repository host name, you should replace it with the host name of your repository. 
