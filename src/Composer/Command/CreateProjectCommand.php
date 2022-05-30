@@ -44,6 +44,7 @@ use Composer\Util\Filesystem;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Package\Version\VersionParser;
+use Composer\Util\Auditor;
 
 /**
  * Install a package as new project into new directory.
@@ -88,6 +89,8 @@ class CreateProjectCommand extends BaseCommand
                 new InputOption('keep-vcs', null, InputOption::VALUE_NONE, 'Whether to prevent deleting the vcs folder.'),
                 new InputOption('remove-vcs', null, InputOption::VALUE_NONE, 'Whether to force deletion of the vcs folder without prompting.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Whether to skip installation of the package dependencies.'),
+                new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Whether to skip auditing of the installed package dependencies.'),
+                new InputOption('audit-format', null, InputOption::VALUE_OPTIONAL, 'Audit output format. Must be "table" or "plain".', Auditor::FORMAT_TABLE),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages).'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages).'),
                 new InputOption('ask', null, InputOption::VALUE_NONE, 'Whether to ask for project directory.'),
@@ -257,7 +260,9 @@ EOT
                 ->setSuggestedPackagesReporter($this->suggestedPackagesReporter)
                 ->setOptimizeAutoloader($config->get('optimize-autoloader'))
                 ->setClassMapAuthoritative($config->get('classmap-authoritative'))
-                ->setApcuAutoloader($config->get('apcu-autoloader'));
+                ->setApcuAutoloader($config->get('apcu-autoloader'))
+                ->setAudit(!$input->getOption('no-audit'))
+                ->setAuditFormat($input->getOption('audit-format'));
 
             if (!$composer->getLocker()->isLocked()) {
                 $installer->setUpdate(true);

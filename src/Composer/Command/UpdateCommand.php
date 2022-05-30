@@ -25,6 +25,7 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Util\HttpDownloader;
 use Composer\Semver\Constraint\MultiConstraint;
 use Composer\Package\Link;
+use Composer\Util\Auditor;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -58,6 +59,8 @@ class UpdateCommand extends BaseCommand
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables installation of require-dev packages.'),
                 new InputOption('lock', null, InputOption::VALUE_NONE, 'Overwrites the lock file hash to suppress warning about the lock file being out of date without updating package versions. Package metadata like mirrors and URLs are updated if they changed.'),
                 new InputOption('no-install', null, InputOption::VALUE_NONE, 'Skip the install step after updating the composer.lock file.'),
+                new InputOption('no-audit', null, InputOption::VALUE_NONE, 'Skip the audit step after updating the composer.lock file.'),
+                new InputOption('audit-format', null, InputOption::VALUE_OPTIONAL, 'Audit output format. Must be "table" or "plain".', Auditor::FORMAT_TABLE),
                 new InputOption('no-autoloader', null, InputOption::VALUE_NONE, 'Skips autoloader generation'),
                 new InputOption('no-suggest', null, InputOption::VALUE_NONE, 'DEPRECATED: This flag does not exist anymore.'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),
@@ -227,6 +230,8 @@ EOT
             ->setPreferStable($input->getOption('prefer-stable'))
             ->setPreferLowest($input->getOption('prefer-lowest'))
             ->setTemporaryConstraints($temporaryConstraints)
+            ->setAudit(!$input->getOption('no-audit'))
+            ->setAuditFormat($input->getOption('audit-format'))
         ;
 
         if ($input->getOption('no-plugins')) {

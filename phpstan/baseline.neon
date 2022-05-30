@@ -4579,6 +4579,21 @@ parameters:
 			path: ../src/Composer/SelfUpdate/Versions.php
 
 		-
+			message: "#^Method Composer\\\\Command\\\\AuditCommand\\:\\:configure\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: src/Composer/Command/AuditCommand.php
+
+		-
+			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
+			count: 2
+			path: src/Composer/Util/Auditor.php
+
+		-
+			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
+			count: 1
+			path: src/Composer/Util/Auditor.php
+
+		-
 			message: "#^Call to function in_array\\(\\) requires parameter \\#3 to be set\\.$#"
 			count: 1
 			path: ../src/Composer/Util/AuthHelper.php

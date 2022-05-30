@@ -103,6 +103,8 @@ resolution.
 * **--no-autoloader:** Skips autoloader generation.
 * **--no-progress:** Removes the progress display that can mess with some
   terminals or scripts which don't handle backspace characters.
+* **--no-audit:** Does not run the audit step after installation is complete.
+* **--audit-format:** Audit output format. Must be "table" (default) or "plain".
 * **--optimize-autoloader (-o):** Convert PSR-0/4 autoloading to classmap to get a faster
   autoloader. This is recommended especially for production, but can take
   a bit of time to run so it is currently not done by default.
@@ -182,6 +184,8 @@ and this feature is only available for your root package dependencies.
 * **--dev:** Install packages listed in `require-dev` (this is the default behavior).
 * **--no-dev:** Skip installing packages listed in `require-dev`. The autoloader generation skips the `autoload-dev` rules.
 * **--no-install:** Does not run the install step after updating the composer.lock file.
+* **--no-audit:** Does not run the audit steps after updating the composer.lock file.
+* **--audit-format:** Audit output format. Must be "table" (default) or "plain".
 * **--lock:** Only updates the lock file hash to suppress warning about the
   lock file being out of date.
 * **--with:** Temporary version constraint to add, e.g. foo/bar:1.0.0 or foo/bar=1.0.0
@@ -253,6 +257,8 @@ If you do not specify a package, Composer will prompt you to search for a packag
   terminals or scripts which don't handle backspace characters.
 * **--no-update:** Disables the automatic update of the dependencies (implies --no-install).
 * **--no-install:** Does not run the install step after updating the composer.lock file.
+* **--no-audit:** Does not run the audit steps after updating the composer.lock file.
+* **--audit-format:** Audit output format. Must be "table" (default) or "plain".
 * **--update-no-dev:** Run the dependency update with the `--no-dev` option.
 * **--update-with-dependencies (-w):** Also update dependencies of the newly required packages, except those that are root requirements.
 * **--update-with-all-dependencies (-W):** Also update dependencies of the newly required packages, including those that are root requirements.
@@ -850,6 +856,8 @@ By default the command checks for the packages on packagist.org.
   mode.
 * **--remove-vcs:** Force-remove the VCS metadata without prompting.
 * **--no-install:** Disables installation of the vendors.
+* **--no-audit:** Does not run the audit steps after installation is complete.
+* **--audit-format:** Audit output format. Must be "table" (default) or "plain".
 * **--ignore-platform-reqs:** ignore all platform requirements (`php`, `hhvm`,
   `lib-*` and `ext-*`) and force the installation even if the local machine does
   not fulfill these.
@@ -954,6 +962,22 @@ php composer.phar archive vendor/package 2.0.21 --format=zip
   or zip (default: "tar").
 * **--dir:** Write the archive to this directory (default: ".")
 * **--file:** Write the archive with the given file name.
+
+## audit
+
+This command is used to audit the packages in your composer.lock
+for possible security issues. Currently this only checks for and
+lists security vulnerability advisories according to the
+[packagist api](https://packagist.org/apidoc#list-security-advisories).
+
+```sh
+php composer.phar audit
+```
+
+### Options
+
+* **--no-dev:** Disables auditing of require-dev packages.
+* **--format (-f):** Audit output format. Must be "table" (default) or "plain".
 
 ## help
 

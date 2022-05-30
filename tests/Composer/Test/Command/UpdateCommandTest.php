@@ -26,7 +26,7 @@ class UpdateCommandTest extends TestCase
         $this->initTempComposer($composerJson);
 
         $appTester = $this->getApplicationTester();
-        $appTester->run(array_merge(['command' => 'update', '--dry-run' => true], $command));
+        $appTester->run(array_merge(['command' => 'update', '--dry-run' => true, '--no-audit' => true], $command));
 
         $this->assertSame(trim($expected), trim($appTester->getDisplay()));
     }

@@ -280,6 +280,7 @@ EOT
             ->setUpdateAllowTransitiveDependencies($updateAllowTransitiveDependencies)
             ->setPlatformRequirementFilter($this->getPlatformRequirementFilter($input))
             ->setDryRun($dryRun)
+            ->setAudit(false)
         ;
 
         // if no lock is present, we do not do a partial update as

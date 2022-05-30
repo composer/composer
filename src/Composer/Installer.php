@@ -61,6 +61,7 @@ use Composer\Repository\RepositoryManager;
 use Composer\Repository\LockArrayRepository;
 use Composer\Script\ScriptEvents;
 use Composer\Semver\Constraint\ConstraintInterface;
+use Composer\Util\Auditor;
 use Composer\Util\Platform;
 
 /**
@@ -163,6 +164,10 @@ class Installer
     protected $writeLock;
     /** @var bool */
     protected $executeOperations = true;
+    /** @var bool */
+    protected $audit = true;
+    /** @var string */
+    protected $auditFormat = Auditor::FORMAT_TABLE;
 
     /** @var bool */
     protected $updateMirrors = false;
@@ -379,6 +384,16 @@ class Installer
         // re-enable GC except on HHVM which triggers a warning here
         if (!defined('HHVM_VERSION')) {
             gc_enable();
+        }
+
+        if ($this->audit) {
+            $packages = $this->locker->getLockedRepository($this->devMode)->getPackages();
+            if (count($packages) > 0) {
+                $auditor = new Auditor(Factory::createHttpDownloader($this->io, $this->config), $this->auditFormat);
+                $auditor->audit($this->io, $packages);
+            } else {
+                $this->io->writeError('No packages - skipping audit.');
+            }
         }
 
         return 0;
@@ -1417,6 +1432,32 @@ class Installer
     public function setExecuteOperations(bool $executeOperations = true): self
     {
         $this->executeOperations = (bool) $executeOperations;
+
+        return $this;
+    }
+
+    /**
+     * Should an audit be run after installation is complete?
+     *
+     * @param boolean $audit
+     * @return Installer
+     */
+    public function setAudit(bool $audit): self
+    {
+        $this->audit = $audit;
+
+        return $this;
+    }
+
+    /**
+     * What format should be used for audit output?
+     *
+     * @param string $auditFormat
+     * @return Installer
+     */
+    public function setAuditFormat(string $auditFormat): self
+    {
+        $this->auditFormat = $auditFormat;
 
         return $this;
     }
