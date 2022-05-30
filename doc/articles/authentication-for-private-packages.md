@@ -104,7 +104,7 @@ section or directly in the repository definition.
 
 > **Note:** Using the command line environment variable method also has security implications.
 > These credentials will most likely be stored in memory,
-> and on be persisted to a file like `~/.bash_history`(linux) or `ConsoleHost_history.txt`
+> and may be persisted to a file like `~/.bash_history` (linux) or `ConsoleHost_history.txt`
 > (PowerShell on Windows) when closing a session.
 
 The final option to supply Composer with credentials is to use the `COMPOSER_AUTH` environment variable.
@@ -118,8 +118,13 @@ Read more about the usage of this environment variable [here](../03-cli.md#compo
 ### Command line http-basic
 
 ```sh
-php composer.phar config [--global] http-basic.example.org username password
+php composer.phar config [--global] http-basic.repo.example.org username password
 ```
+
+In the above command, the config key `http-basic.example.org` consists of two parts:
+
+- `http-basic` is the authentication method.
+- `repo.example.org` is the repository host name, you should replace it with the host name of your repository. 
 
 ### Manual http-basic
 
@@ -172,7 +177,22 @@ php composer.phar config [--global] --editor
 
 ## HTTP Bearer
 
-TODO
+### Command line HTTP Bearer authentication
+
+```sh
+php composer.phar config [--global] bearer.repo.example.org token
+```
+
+In the above command, the config key `bearer.repo.example.org` consists of two parts:
+
+- `bearer` is the authentication method.
+- `repo.example.org` is the repository host name, you should replace it with the host name of your repository. 
+
+### Manual HTTP Bearer authentication
+
+```sh
+php composer.phar config [--global] --editor --auth
+```
 
 ```json
 {
@@ -217,8 +237,13 @@ php composer.phar config [--global] --editor
 ### Command line gitlab-oauth
 
 ```sh
-php composer.phar config [--global] gitlab-oauth.example.org token
+php composer.phar config [--global] gitlab-oauth.gitlab.example.org token
 ```
+
+In the above command, the config key `gitlab-oauth.gitlab.example.org` consists of two parts:
+
+- `gitlab-oauth` is the authentication method.
+- `gitlab.example.org` is the host name of your GitLab instance, you should replace it with the host name of your GitLab instance or use `gitlab.com` if you don't have a self-hosted GitLab instance.
 
 ### Manual gitlab-oauth
 
@@ -247,8 +272,13 @@ When creating a gitlab token manually, make sure it has either the `read_api` or
 ### Command line gitlab-token
 
 ```sh
-php composer.phar config [--global] gitlab-token.example.org token
+php composer.phar config [--global] gitlab-token.gitlab.example.org token
 ```
+
+In the above command, the config key `gitlab-token.gitlab.example.org` consists of two parts:
+
+- `gitlab-token` is the authentication method.
+- `gitlab.example.org` is the host name of your GitLab instance, you should replace it with the host name of your GitLab instance or use `gitlab.com` if you don't have a self-hosted GitLab instance.
 
 ### Manual gitlab-token
 
@@ -280,6 +310,11 @@ Read more about [Personal Access Tokens](https://docs.github.com/en/authenticati
 php composer.phar config [--global] github-oauth.github.com token
 ```
 
+In the above command, the config key `github-oauth.github.com` consists of two parts:
+
+- `github-oauth` is the authentication method.
+- `github.com` is the host name for which this token applies. For GitHub you most likely do not need to change this.
+
 ### Manual github-oauth
 
 ```sh
@@ -303,6 +338,11 @@ The BitBucket driver uses OAuth to access your private repositories via the BitB
 ```sh
 php composer.phar config [--global] bitbucket-oauth.bitbucket.org consumer-key consumer-secret
 ```
+
+In the above command, the config key `bitbucket-oauth.bitbucket.org` consists of two parts:
+
+- `bitbucket-oauth` is the authentication method.
+- `bitbucket.org` is the host name for which this token applies. Unless you have a private instance you don't need to change this.
 
 ### Manual bitbucket-oauth
 
