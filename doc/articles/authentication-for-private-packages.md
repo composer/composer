@@ -18,7 +18,7 @@ for credentials and save them (or a token if Composer is able to retrieve one).
 |---|---|
 |[http-basic](#http-basic)|yes|
 |[Inline http-basic](#inline-http-basic)|no|
-|[HTTP Bearer](#http-bearer)|no?|
+|[HTTP Bearer](#http-bearer)|no|
 |[Custom header](#custom-token-authentication)|no|
 |[gitlab-oauth](#gitlab-oauth)|yes|
 |[gitlab-token](#gitlab-token)|yes|
