@@ -1071,10 +1071,13 @@ class Installer
 
     /**
      * @param array<string, ConstraintInterface> $constraints
+     * @return Installer
      */
-    public function setTemporaryConstraints(array $constraints): void
+    public function setTemporaryConstraints(array $constraints): self
     {
         $this->temporaryConstraints = $constraints;
+
+        return $this;
     }
 
     /**
