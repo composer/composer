@@ -120,7 +120,6 @@ class Compiler
             ->ignoreVCS(true)
             ->notPath('/\/(composer\.(json|lock)|[A-Z]+\.md|\.gitignore|appveyor.yml|phpunit\.xml\.dist|phpstan\.neon\.dist|phpstan-config\.neon|phpstan-baseline\.neon)$/')
             ->notPath('/bin\/(jsonlint|validate-json|simple-phpunit|phpstan|phpstan\.phar)(\.bat)?$/')
-            ->notPath('symfony/console/Resources/completion.bash')
             ->notPath('justinrainbow/json-schema/demo/')
             ->notPath('justinrainbow/json-schema/dist/')
             ->notPath('composer/installed.json')
@@ -138,6 +137,7 @@ class Compiler
             __DIR__ . '/../../vendor/composer/spdx-licenses/res/spdx-licenses.json',
             CaBundle::getBundledCaBundlePath(),
             __DIR__ . '/../../vendor/symfony/console/Resources/bin/hiddeninput.exe',
+            __DIR__ . '/../../vendor/symfony/console/Resources/completion.bash',
         ) as $file) {
             $extraFiles[$file] = realpath($file);
             if (!file_exists($file)) {
