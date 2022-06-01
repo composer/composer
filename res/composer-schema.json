@@ -349,7 +349,18 @@
                     "type": "object",
                     "description": "An object of domain name => gitlab private tokens, typically {\"gitlab.com\":\"<token>\"}.",
                     "additionalProperties": {
-                        "type": "string"
+                        "type": ["string", "object"],
+                        "required": ["username", "token"],
+                        "properties": {
+                            "username": {
+                                "type": "string",
+                                "description": "The username used for GitLab authentication"
+                            },
+                            "token": {
+                                "type": "string",
+                                "description": "The token used for GitLab authentication"
+                            }
+                        }
                     }
                 },
                 "gitlab-protocol": {
