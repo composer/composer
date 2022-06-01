@@ -33,9 +33,9 @@ use Composer\Repository\InstalledArrayRepository;
 use Composer\Repository\RepositorySet;
 use Composer\Script\ScriptEvents;
 use Composer\Util\Silencer;
-use Symfony\Component\Console\Input\InputArgument;
+use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use Composer\Json\JsonFile;
@@ -55,6 +55,8 @@ use Composer\Package\Version\VersionParser;
  */
 class CreateProjectCommand extends BaseCommand
 {
+    use CompletionTrait;
+
     /**
      * @var SuggestedPackagesReporter
      */
@@ -69,13 +71,13 @@ class CreateProjectCommand extends BaseCommand
             ->setName('create-project')
             ->setDescription('Creates new project from a package into given directory.')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::OPTIONAL, 'Package name to be installed'),
+                new InputArgument('package', InputArgument::OPTIONAL, 'Package name to be installed', null, $this->suggestAvailablePackage()),
                 new InputArgument('directory', InputArgument::OPTIONAL, 'Directory where the files should be created'),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version, will default to latest'),
                 new InputOption('stability', 's', InputOption::VALUE_REQUIRED, 'Minimum-stability allowed (unless a version is specified).'),
                 new InputOption('prefer-source', null, InputOption::VALUE_NONE, 'Forces installation from package sources when possible, including VCS information.'),
                 new InputOption('prefer-dist', null, InputOption::VALUE_NONE, 'Forces installation from package dist (default behavior).'),
-                new InputOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).'),
+                new InputOption('prefer-install', null, InputOption::VALUE_REQUIRED, 'Forces installation from package dist|source|auto (auto chooses source for dev versions, dist for the rest).', null, $this->suggestPreferInstall()),
                 new InputOption('repository', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Add custom repositories to look the package up, either by URL or using JSON arrays'),
                 new InputOption('repository-url', null, InputOption::VALUE_REQUIRED, 'DEPRECATED: Use --repository instead.'),
                 new InputOption('add-repository', null, InputOption::VALUE_NONE, 'Add the custom repository in the composer.json. If a lock file is present it will be deleted and an update will be run instead of install.'),
@@ -157,7 +159,7 @@ EOT
             $preferSource,
             $preferDist,
             !$input->getOption('no-dev'),
-            $input->getOption('repository') ?: $input->getOption('repository-url'),
+            \count($input->getOption('repository')) > 0 ? $input->getOption('repository') : $input->getOption('repository-url'),
             $input->getOption('no-plugins'),
             $input->getOption('no-scripts'),
             $input->getOption('no-progress'),
@@ -195,7 +197,7 @@ EOT
             $repositories = (array) $repositories;
         }
 
-        $platformRequirementFilter = $platformRequirementFilter ?: PlatformRequirementFilterFactory::ignoreNothing();
+        $platformRequirementFilter = $platformRequirementFilter ?? PlatformRequirementFilterFactory::ignoreNothing();
 
         // we need to manually load the configuration to pass the auth credentials to the io interface!
         $io->loadConfiguration($config);
@@ -422,7 +424,7 @@ EOT
             }
         }
 
-        $platformOverrides = $config->get('platform') ?: array();
+        $platformOverrides = $config->get('platform');
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
 
         // find the latest version if there are multiple

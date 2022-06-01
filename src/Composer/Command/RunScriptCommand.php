@@ -17,8 +17,8 @@ use Composer\Script\ScriptEvents;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Platform;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
+use Composer\Console\Input\InputOption;
+use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -54,7 +54,9 @@ class RunScriptCommand extends BaseCommand
             ->setAliases(array('run'))
             ->setDescription('Runs the scripts defined in composer.json.')
             ->setDefinition(array(
-                new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run.'),
+                new InputArgument('script', InputArgument::OPTIONAL, 'Script name to run.', null, function () {
+                    return array_keys($this->requireComposer()->getPackage()->getScripts());
+                }),
                 new InputArgument('args', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, ''),
                 new InputOption('timeout', null, InputOption::VALUE_REQUIRED, 'Sets script timeout in seconds, or 0 for never.'),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Sets the dev mode.'),

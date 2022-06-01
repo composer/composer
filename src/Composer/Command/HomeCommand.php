@@ -18,8 +18,8 @@ use Composer\Repository\RootPackageRepository;
 use Composer\Repository\RepositoryFactory;
 use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
+use Composer\Console\Input\InputArgument;
+use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -28,6 +28,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class HomeCommand extends BaseCommand
 {
+    use CompletionTrait;
+
     /**
      * @inheritDoc
      *
@@ -40,7 +42,7 @@ class HomeCommand extends BaseCommand
             ->setAliases(array('home'))
             ->setDescription('Opens the package\'s repository URL or homepage in your browser.')
             ->setDefinition(array(
-                new InputArgument('packages', InputArgument::IS_ARRAY, 'Package(s) to browse to.'),
+                new InputArgument('packages', InputArgument::IS_ARRAY, 'Package(s) to browse to.', null, $this->suggestInstalledPackage()),
                 new InputOption('homepage', 'H', InputOption::VALUE_NONE, 'Open the homepage instead of the repository URL.'),
                 new InputOption('show', 's', InputOption::VALUE_NONE, 'Only show the homepage or repository URL.'),
             ))

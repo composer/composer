@@ -309,12 +309,14 @@ class Factory
                 throw new \InvalidArgumentException($message.PHP_EOL.$instructions);
             }
 
-            try {
-                $file->validateSchema(JsonFile::LAX_SCHEMA);
-            } catch (JsonValidationException $e) {
-                $errors = ' - ' . implode(PHP_EOL . ' - ', $e->getErrors());
-                $message = $e->getMessage() . ':' . PHP_EOL . $errors;
-                throw new JsonValidationException($message);
+            if (!Platform::isInputCompletionProcess()) {
+                try {
+                    $file->validateSchema(JsonFile::LAX_SCHEMA);
+                } catch (JsonValidationException $e) {
+                    $errors = ' - ' . implode(PHP_EOL . ' - ', $e->getErrors());
+                    $message = $e->getMessage() . ':' . PHP_EOL . $errors;
+                    throw new JsonValidationException($message);
+                }
             }
 
             $localConfig = $file->read();
@@ -702,6 +704,10 @@ class Factory
      */
     private static function validateJsonSchema(?IOInterface $io, $fileOrData, int $schema = JsonFile::LAX_SCHEMA, ?string $source = null): void
     {
+        if (Platform::isInputCompletionProcess()) {
+            return;
+        }
+
         try {
             if ($fileOrData instanceof JsonFile) {
                 $fileOrData->validateSchema($schema);

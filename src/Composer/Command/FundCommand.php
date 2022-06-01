@@ -21,7 +21,7 @@ use Composer\Repository\CompositeRepository;
 use Composer\Semver\Constraint\MatchAllConstraint;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -38,7 +38,7 @@ class FundCommand extends BaseCommand
         $this->setName('fund')
             ->setDescription('Discover how to help fund the maintenance of your dependencies.')
             ->setDefinition(array(
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['text', 'json']),
             ))
         ;
     }

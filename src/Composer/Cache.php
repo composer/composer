@@ -248,6 +248,10 @@ class Cache
             return false;
         }
 
+        if (Platform::isInputCompletionProcess()) {
+            return false;
+        }
+
         return !random_int(0, 50);
     }
 

@@ -16,8 +16,11 @@ use Composer\Factory;
 use Composer\Pcre\Preg;
 use Composer\Util\Filesystem;
 use Composer\Util\Platform;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputArgument;
+use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -26,6 +29,28 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class GlobalCommand extends BaseCommand
 {
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $application = $this->getApplication();
+        if ($input->mustSuggestArgumentValuesFor('command-name')) {
+            $suggestions->suggestValues(array_filter(array_map(function (Command $command) {
+                return $command->isHidden() ? null : $command->getName();
+            }, $application->all())));
+
+            return;
+        }
+
+        if ($application->has($commandName = $input->getArgument('command-name'))) {
+            $input = $this->prepareSubcommandInput($input, true);
+            $input = CompletionInput::fromString($input->__toString(), 2);
+            $command = $application->find($commandName);
+            $command->mergeApplicationDefinition();
+
+            $input->bind($command->getDefinition());
+            $command->complete($input, $suggestions);
+        }
+    }
+
     /**
      * @return void
      */
@@ -87,6 +112,17 @@ EOT
             return parent::run($input, $output);
         }
 
+        $input = $this->prepareSubcommandInput($input);
+
+        return $this->getApplication()->run($input, $output);
+    }
+
+    private function prepareSubcommandInput(InputInterface $input, bool $quiet = false): StringInput
+    {
+        if (!method_exists($input, '__toString')) {
+            throw new \LogicException('Expected an Input instance that is stringable, got '.get_class($input));
+        }
+
         // The COMPOSER env var should not apply to the global execution scope
         if (Platform::getEnv('COMPOSER')) {
             Platform::clearEnv('COMPOSER');
@@ -109,13 +145,15 @@ EOT
         } catch (\Exception $e) {
             throw new \RuntimeException('Could not switch to home directory "'.$home.'"', 0, $e);
         }
-        $this->getIO()->writeError('<info>Changed current directory to '.$home.'</info>');
+        if (!$quiet) {
+            $this->getIO()->writeError('<info>Changed current directory to '.$home.'</info>');
+        }
 
         // create new input without "global" command prefix
         $input = new StringInput(Preg::replace('{\bg(?:l(?:o(?:b(?:a(?:l)?)?)?)?)?\b}', '', $input->__toString(), 1));
         $this->getApplication()->resetComposer();
 
-        return $this->getApplication()->run($input, $output);
+        return $input;
     }
 
     /**

@@ -21,8 +21,8 @@ use Composer\Plugin\PluginEvents;
 use Composer\Json\JsonFile;
 use Composer\Factory;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\InputArgument;
+use Composer\Console\Input\InputOption;
+use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Output\OutputInterface;
 use Composer\Package\BasePackage;
 
@@ -32,6 +32,8 @@ use Composer\Package\BasePackage;
  */
 class RemoveCommand extends BaseCommand
 {
+    use CompletionTrait;
+
     /**
      * @return void
      */
@@ -41,7 +43,7 @@ class RemoveCommand extends BaseCommand
             ->setName('remove')
             ->setDescription('Removes a package from the require or require-dev.')
             ->setDefinition(array(
-                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Packages that should be removed.'),
+                new InputArgument('packages', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Packages that should be removed.', null, $this->suggestInstalledPackage(true)),
                 new InputOption('dev', null, InputOption::VALUE_NONE, 'Removes a package from the require-dev section.'),
                 new InputOption('dry-run', null, InputOption::VALUE_NONE, 'Outputs the operations but will not execute anything (implicitly enables --verbose).'),
                 new InputOption('no-progress', null, InputOption::VALUE_NONE, 'Do not output download progress.'),

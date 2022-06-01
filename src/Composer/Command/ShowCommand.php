@@ -20,7 +20,6 @@ use Composer\Package\BasePackage;
 use Composer\Package\CompletePackageInterface;
 use Composer\Package\Link;
 use Composer\Package\AliasPackage;
-use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Package\Version\VersionParser;
 use Composer\Package\Version\VersionSelector;
@@ -41,11 +40,12 @@ use Composer\Semver\Constraint\ConstraintInterface;
 use Composer\Semver\Semver;
 use Composer\Spdx\SpdxLicenses;
 use Composer\Util\PackageInfo;
+use Symfony\Component\Console\Completion\CompletionInput;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use Symfony\Component\Console\Input\InputArgument;
+use Composer\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Composer\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -56,6 +56,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class ShowCommand extends BaseCommand
 {
+    use CompletionTrait;
+
     /** @var VersionParser */
     protected $versionParser;
     /** @var string[] */
@@ -74,7 +76,7 @@ class ShowCommand extends BaseCommand
             ->setAliases(array('info'))
             ->setDescription('Shows information about packages.')
             ->setDefinition(array(
-                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.'),
+                new InputArgument('package', InputArgument::OPTIONAL, 'Package to inspect. Or a name including a wildcard (*) to filter lists of packages instead.', null, $this->suggestPackageBasedOnMode()),
                 new InputArgument('version', InputArgument::OPTIONAL, 'Version or version constraint to inspect'),
                 new InputOption('all', null, InputOption::VALUE_NONE, 'List all packages'),
                 new InputOption('locked', null, InputOption::VALUE_NONE, 'List all locked packages'),
@@ -87,12 +89,12 @@ class ShowCommand extends BaseCommand
                 new InputOption('tree', 't', InputOption::VALUE_NONE, 'List the dependencies as a tree'),
                 new InputOption('latest', 'l', InputOption::VALUE_NONE, 'Show the latest version'),
                 new InputOption('outdated', 'o', InputOption::VALUE_NONE, 'Show the latest version but only for packages that are outdated'),
-                new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it with the --outdated option if you don\'t want to be informed about new versions of some packages.'),
+                new InputOption('ignore', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore specified package(s). Use it with the --outdated option if you don\'t want to be informed about new versions of some packages.', null, $this->suggestInstalledPackage()),
                 new InputOption('minor-only', 'm', InputOption::VALUE_NONE, 'Show only packages that have minor SemVer-compatible updates. Use with the --outdated option.'),
                 new InputOption('patch-only', null, InputOption::VALUE_NONE, 'Show only packages that have patch SemVer-compatible updates. Use with the --outdated option.'),
                 new InputOption('direct', 'D', InputOption::VALUE_NONE, 'Shows only packages that are directly required by the root package'),
                 new InputOption('strict', null, InputOption::VALUE_NONE, 'Return a non-zero exit code when there are outdated packages'),
-                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text'),
+                new InputOption('format', 'f', InputOption::VALUE_REQUIRED, 'Format of the output: text or json', 'text', ['json', 'text']),
                 new InputOption('no-dev', null, InputOption::VALUE_NONE, 'Disables search in require-dev packages.'),
                 new InputOption('ignore-platform-req', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Ignore a specific platform requirement (php & ext- packages). Use with the --outdated option'),
                 new InputOption('ignore-platform-reqs', null, InputOption::VALUE_NONE, 'Ignore all platform requirements (php & ext- packages). Use with the --outdated option'),
@@ -106,6 +108,21 @@ Read more at https://getcomposer.org/doc/03-cli.md#show
 EOT
             )
         ;
+    }
+
+    protected function suggestPackageBasedOnMode(): \Closure
+    {
+        return function (CompletionInput $input) {
+            if ($input->getOption('available') || $input->getOption('all')) {
+                return $this->suggestAvailablePackageInclPlatform()($input);
+            }
+
+            if ($input->getOption('platform')) {
+                return $this->suggestPlatformPackage()($input);
+            }
+
+            return $this->suggestInstalledPackage()($input);
+        };
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -170,7 +187,7 @@ EOT
         // init repos
         $platformOverrides = array();
         if ($composer) {
-            $platformOverrides = $composer->getConfig()->get('platform') ?: array();
+            $platformOverrides = $composer->getConfig()->get('platform');
         }
         $platformRepo = new PlatformRepository(array(), $platformOverrides);
         $lockedRepo = null;

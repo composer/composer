@@ -15,6 +15,8 @@ namespace Composer\Command;
 use Composer\Composer;
 use Composer\Config;
 use Composer\Console\Application;
+use Composer\Console\Input\InputArgument;
+use Composer\Console\Input\InputOption;
 use Composer\Factory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterFactory;
 use Composer\Filter\PlatformRequirementFilter\PlatformRequirementFilterInterface;
@@ -24,6 +26,8 @@ use Composer\Plugin\PreCommandRunEvent;
 use Composer\Package\Version\VersionParser;
 use Composer\Plugin\PluginEvents;
 use Composer\Util\Platform;
+use Symfony\Component\Console\Completion\CompletionInput;
+use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
@@ -180,6 +184,32 @@ abstract class BaseCommand extends Command
     public function setIO(IOInterface $io)
     {
         $this->io = $io;
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * Backport suggested values definition from symfony/console 6.1+
+     *
+     * TODO drop when PHP 8.1 / symfony 6.1+ can be required
+     */
+    public function complete(CompletionInput $input, CompletionSuggestions $suggestions): void
+    {
+        $definition = $this->getDefinition();
+        $name = (string) $input->getCompletionName();
+        if (CompletionInput::TYPE_OPTION_VALUE === $input->getCompletionType()
+            && $definition->hasOption($name)
+            && ($option = $definition->getOption($name)) instanceof InputOption
+        ) {
+            $option->complete($input, $suggestions);
+        } elseif (CompletionInput::TYPE_ARGUMENT_VALUE === $input->getCompletionType()
+            && $definition->hasArgument($name)
+            && ($argument = $definition->getArgument($name)) instanceof InputArgument
+        ) {
+            $argument->complete($input, $suggestions);
+        } else {
+            parent::complete($input, $suggestions);
+        }
     }
 
     /**

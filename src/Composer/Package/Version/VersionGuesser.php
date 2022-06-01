@@ -19,6 +19,7 @@ use Composer\IO\NullIO;
 use Composer\Semver\VersionParser as SemverVersionParser;
 use Composer\Util\Git as GitUtil;
 use Composer\Util\HttpDownloader;
+use Composer\Util\Platform;
 use Composer\Util\ProcessExecutor;
 use Composer\Util\Svn as SvnUtil;
 use React\Promise\CancellablePromiseInterface;
@@ -71,6 +72,12 @@ class VersionGuesser
     public function guessVersion(array $packageConfig, string $path): ?array
     {
         if (!function_exists('proc_open')) {
+            return null;
+        }
+
+        // bypass version guessing in bash completions as it takes time to create
+        // new processes and the root version is usually not that important
+        if (Platform::isInputCompletionProcess()) {
             return null;
         }
 
