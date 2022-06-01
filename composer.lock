@@ -807,16 +807,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v5.4.8",
+            "version": "v5.4.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "ffe3aed36c4d60da2cf1b0a1cee6b8f2e5fa881b"
+                "reference": "829d5d1bf60b2efeb0887b7436873becc71a45eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/ffe3aed36c4d60da2cf1b0a1cee6b8f2e5fa881b",
-                "reference": "ffe3aed36c4d60da2cf1b0a1cee6b8f2e5fa881b",
+                "url": "https://api.github.com/repos/symfony/console/zipball/829d5d1bf60b2efeb0887b7436873becc71a45eb",
+                "reference": "829d5d1bf60b2efeb0887b7436873becc71a45eb",
                 "shasum": ""
             },
             "require": {
@@ -886,7 +886,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v5.4.8"
+                "source": "https://github.com/symfony/console/tree/v5.4.9"
             },
             "funding": [
                 {
@@ -902,7 +902,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-04-12T16:02:29+00:00"
+            "time": "2022-05-18T06:17:34+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -973,16 +973,16 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v5.4.7",
+            "version": "v5.4.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "3a4442138d80c9f7b600fb297534ac718b61d37f"
+                "reference": "36a017fa4cce1eff1b8e8129ff53513abcef05ba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/3a4442138d80c9f7b600fb297534ac718b61d37f",
-                "reference": "3a4442138d80c9f7b600fb297534ac718b61d37f",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/36a017fa4cce1eff1b8e8129ff53513abcef05ba",
+                "reference": "36a017fa4cce1eff1b8e8129ff53513abcef05ba",
                 "shasum": ""
             },
             "require": {
@@ -1017,7 +1017,7 @@
             "description": "Provides basic utilities for the filesystem",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/filesystem/tree/v5.4.7"
+                "source": "https://github.com/symfony/filesystem/tree/v5.4.9"
             },
             "funding": [
                 {
@@ -1033,7 +1033,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-04-01T12:33:59+00:00"
+            "time": "2022-05-20T13:55:35+00:00"
         },
         {
             "name": "symfony/finder",
@@ -1737,16 +1737,16 @@
         },
         {
             "name": "symfony/string",
-            "version": "v5.4.8",
+            "version": "v5.4.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "3c061a76bff6d6ea427d85e12ad1bb8ed8cd43e8"
+                "reference": "985e6a9703ef5ce32ba617c9c7d97873bb7b2a99"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/3c061a76bff6d6ea427d85e12ad1bb8ed8cd43e8",
-                "reference": "3c061a76bff6d6ea427d85e12ad1bb8ed8cd43e8",
+                "url": "https://api.github.com/repos/symfony/string/zipball/985e6a9703ef5ce32ba617c9c7d97873bb7b2a99",
+                "reference": "985e6a9703ef5ce32ba617c9c7d97873bb7b2a99",
                 "shasum": ""
             },
             "require": {
@@ -1803,7 +1803,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v5.4.8"
+                "source": "https://github.com/symfony/string/tree/v5.4.9"
             },
             "funding": [
                 {
@@ -1825,16 +1825,16 @@
     "packages-dev": [
         {
             "name": "phpstan/phpstan",
-            "version": "1.7.1",
+            "version": "1.7.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "e3baed2ee2ef322e0f9b8fe8f87fdbe024c7c719"
+                "reference": "2bf3d43015d56abac4d002a4d2d6c3a7d6fa627a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e3baed2ee2ef322e0f9b8fe8f87fdbe024c7c719",
-                "reference": "e3baed2ee2ef322e0f9b8fe8f87fdbe024c7c719",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/2bf3d43015d56abac4d002a4d2d6c3a7d6fa627a",
+                "reference": "2bf3d43015d56abac4d002a4d2d6c3a7d6fa627a",
                 "shasum": ""
             },
             "require": {
@@ -1860,7 +1860,7 @@
             "description": "PHPStan - PHP Static Analysis Tool",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan/issues",
-                "source": "https://github.com/phpstan/phpstan/tree/1.7.1"
+                "source": "https://github.com/phpstan/phpstan/tree/1.7.8"
             },
             "funding": [
                 {
@@ -1880,7 +1880,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-05-24T09:05:09+00:00"
+            "time": "2022-06-01T13:43:17+00:00"
         },
         {
             "name": "phpstan/phpstan-deprecation-rules",
@@ -2034,22 +2034,22 @@
         },
         {
             "name": "phpstan/phpstan-symfony",
-            "version": "1.1.8",
+            "version": "1.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-symfony.git",
-                "reference": "4bdffcf1033b6c60662a28419d0192e0dda5684f"
+                "reference": "30f12aeab960c7f324eee3b39645655cf8a84146"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-symfony/zipball/4bdffcf1033b6c60662a28419d0192e0dda5684f",
-                "reference": "4bdffcf1033b6c60662a28419d0192e0dda5684f",
+                "url": "https://api.github.com/repos/phpstan/phpstan-symfony/zipball/30f12aeab960c7f324eee3b39645655cf8a84146",
+                "reference": "30f12aeab960c7f324eee3b39645655cf8a84146",
                 "shasum": ""
             },
             "require": {
                 "ext-simplexml": "*",
-                "php": "^7.1 || ^8.0",
-                "phpstan/phpstan": "^1.4"
+                "php": "^7.2 || ^8.0",
+                "phpstan/phpstan": "^1.6"
             },
             "conflict": {
                 "symfony/framework-bundle": "<3.0"
@@ -2073,9 +2073,6 @@
             },
             "type": "phpstan-extension",
             "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0-dev"
-                },
                 "phpstan": {
                     "includes": [
                         "extension.neon",
@@ -2102,22 +2099,22 @@
             "description": "Symfony Framework extensions and rules for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-symfony/issues",
-                "source": "https://github.com/phpstan/phpstan-symfony/tree/1.1.8"
+                "source": "https://github.com/phpstan/phpstan-symfony/tree/1.2.2"
             },
-            "time": "2022-03-24T07:56:03+00:00"
+            "time": "2022-05-28T15:18:51+00:00"
         },
         {
             "name": "symfony/phpunit-bridge",
-            "version": "v6.0.8",
+            "version": "v6.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/phpunit-bridge.git",
-                "reference": "4959a1eedd473bdb3f19db5b1525d5415dfab471"
+                "reference": "092ccc3b364925cd8ed6046bc31dcf3a022bd5a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/phpunit-bridge/zipball/4959a1eedd473bdb3f19db5b1525d5415dfab471",
-                "reference": "4959a1eedd473bdb3f19db5b1525d5415dfab471",
+                "url": "https://api.github.com/repos/symfony/phpunit-bridge/zipball/092ccc3b364925cd8ed6046bc31dcf3a022bd5a4",
+                "reference": "092ccc3b364925cd8ed6046bc31dcf3a022bd5a4",
                 "shasum": ""
             },
             "require": {
@@ -2171,7 +2168,7 @@
             "description": "Provides utilities for PHPUnit, especially user deprecation notices management",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/phpunit-bridge/tree/v6.0.8"
+                "source": "https://github.com/symfony/phpunit-bridge/tree/v6.1.0"
             },
             "funding": [
                 {
@@ -2187,7 +2184,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-04-12T16:11:42+00:00"
+            "time": "2022-04-12T16:22:53+00:00"
         }
     ],
     "aliases": [],
