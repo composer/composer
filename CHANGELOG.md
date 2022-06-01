@@ -1,3 +1,16 @@
+### [2.3.6] 2022-06-01
+
+  * Added `Composer\PHPStan\ConfigReturnTypeExtension` to improve return types of `Config::get()` which you can also use in plugins CI (#10635)
+  * Fixed name validation regex in schema causing issues with JS IDEs like VS Code (#10811)
+  * Fixed unnecessary HTTP request in BitbucketDriver (#10729)
+  * Fixed invalid credentials loop when setting up GitLab token (#10748)
+  * Fixed PHP 8.2 deprecations (#10766)
+  * Fixed lock file changes being output even when the lock file creation is disabled
+  * Fixed race condition when multiple requests asking for auth on the same hostname fired concurrently (#10763)
+  * Fixed quoting of commas on Windows (#10775)
+  * Fixed issue installing path repos with a disabled symlink function (#10786)
+  * Fixed various type errors (#10753, #10739, #10751)
+
 ### [2.3.5] 2022-04-13
 
   * Security: Fixed command injection vulnerability in HgDriver/GitDriver (GHSA-x7cr-6qr6-2hh6 / CVE-2022-24828)
@@ -1509,6 +1522,7 @@
 
   * Initial release
 
+[2.3.6]: https://github.com/composer/composer/compare/2.3.5...2.3.6
 [2.3.5]: https://github.com/composer/composer/compare/2.3.4...2.3.5
 [2.3.4]: https://github.com/composer/composer/compare/2.3.3...2.3.4
 [2.3.3]: https://github.com/composer/composer/compare/2.3.2...2.3.3
