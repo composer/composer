@@ -1,0 +1,5 @@
+# Exclude all files not meant for re-use by composer package consumers
+
+baseline* export-ignore
+config.neon
+*.php export-ignore
